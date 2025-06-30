@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "tier2.icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

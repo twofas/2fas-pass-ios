@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "github.icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

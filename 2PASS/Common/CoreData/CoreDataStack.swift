@@ -1,0 +1,183 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
+import Foundation
+import CoreData
+
+public final class CoreDataStack {
+    private let migrator: CoreDataMigratorProtocol?
+    
+    public var logError: ((String) -> Void)?
+    public var presentErrorToUser: ((String) -> Void)?
+    
+    private var readOnly = false
+    private var name: String
+    private var bundle: Bundle
+    private var storeInGroup: Bool
+    private var isPersistent: Bool
+    
+    private let persistentContainer: NSPersistentContainer
+    
+    public init(
+        readOnly: Bool,
+        name: String,
+        bundle: Bundle,
+        storeInGroup: Bool = false,
+        migrator: CoreDataMigratorProtocol? = nil,
+        isPersistent: Bool = true
+    ) {
+        self.name = name
+        self.bundle = bundle
+        self.readOnly = readOnly
+        self.storeInGroup = storeInGroup
+        self.migrator = migrator
+        migrator?.bundle = bundle
+        self.isPersistent = isPersistent
+        
+        let container = NSPersistentContainer(name: name, bundle: bundle)
+        self.persistentContainer = container
+        configurePersistentContainer(container)
+    }
+    
+    private func configurePersistentContainer(_ container: NSPersistentContainer) {
+        let name = self.name
+        container.persistentStoreDescriptions = [storeDescription]
+
+        migrateStoreIfNeeded {
+            container.loadPersistentStores { [weak self] _, error in
+                if let error = error as NSError? {
+                    // swiftlint:disable line_length
+                    let err = "Unresolved error while loadPersistentStores: \(error), \(error.userInfo), for stack: \(name)"
+                    // swiftlint:enable line_length
+                    self?.logError?(err)
+                    self?.parseError(with: error.userInfo)
+                    fatalError(err)
+                }
+            }
+        }
+        container.viewContext.automaticallyMergesChangesFromParent = true
+    }
+    
+    private lazy var storeDescription: NSPersistentStoreDescription = {
+        let storeUrl: URL = {
+            if storeInGroup {
+                FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
+                    .appendingPathComponent("\(name).sqlite")
+            } else {
+                getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
+            }
+        }()
+        
+        let description = NSPersistentStoreDescription()
+        description.shouldInferMappingModelAutomatically = false
+        description.shouldMigrateStoreAutomatically = false
+        description.isReadOnly = readOnly
+        if isPersistent {
+            description.url = storeUrl
+            description.type = NSSQLiteStoreType
+            description.shouldAddStoreAsynchronously = true
+        } else {
+            description.url = URL(fileURLWithPath: "/dev/null")
+            description.type = NSSQLiteStoreType
+            description.shouldAddStoreAsynchronously = false
+        }
+        
+        return description
+    }()
+    
+    private func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        return documentsDirectory
+    }
+    
+    public var context: NSManagedObjectContext { persistentContainer.viewContext }
+    
+    public func save() {
+        let context = persistentContainer.viewContext
+        save(onContext: context)
+    }
+    
+    public func performInBackground(_ closure: @escaping (NSManagedObjectContext) -> Void) {
+        let context = persistentContainer.newBackgroundContext()
+        context.automaticallyMergesChangesFromParent = true
+        context.perform { [weak self] in
+            closure(context)
+            self?.save(onContext: context)
+        }
+    }
+    
+    public func performAndWaitInBackground(_ closure: @escaping (NSManagedObjectContext) -> Void) {
+        let context = persistentContainer.newBackgroundContext()
+        context.automaticallyMergesChangesFromParent = true
+        context.performAndWait { [weak self] in
+            closure(context)
+            self?.save(onContext: context)
+        }
+    }
+    
+    public func createBackgroundContext() -> NSManagedObjectContext {
+        persistentContainer.newBackgroundContext()
+    }
+    
+    private func save(onContext context: NSManagedObjectContext) {
+        guard context.hasChanges else { return }
+        
+        do {
+            try context.save()
+        } catch {
+            let nserror = error as NSError
+            // swiftlint:disable line_length
+            let err = "Unresolved error while saving data: \(nserror), \(nserror.userInfo), for stack: \(String(describing: name))"
+            // swiftlint:enable line_length
+            logError?(err)
+            assertionFailure(err)
+        }
+    }
+    
+    private func migrateStoreIfNeeded(completion: @escaping () -> Void) {
+        guard let migrator, isPersistent else {
+            completion()
+            return
+        }
+        guard let storeURL = storeDescription.url else {
+            fatalError("persistentContainer was not set up properly")
+        }
+        
+        if migrator.requiresMigrationToCurrentVersion(at: storeURL) {
+            migrator.migrateStoreToCurrentVersion(at: storeURL)
+        }
+        completion()
+    }
+    
+    private func parseError(with dict: [String: Any]) {
+        guard let value = dict["NSSQLiteErrorDomain"] as? Int, value == 13 else { return }
+        // swiftlint:disable line_length
+        presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past") // TODO: Add translation!
+        // swiftlint:enable line_length
+    }
+}
+
+public extension NSPersistentContainer {
+    @nonobjc convenience init(name: String, bundle: Bundle) {
+        
+        guard let modelURL = bundle.url(forResource: name, withExtension: "momd"),
+            let mom = NSManagedObjectModel(contentsOf: modelURL)
+            else {
+                Log("Unable to located Core Data model", module: .storage)
+                fatalError("Unable to located Core Data model")
+            }
+        
+        self.init(name: name, managedObjectModel: mom)
+    }
+}
+
+public extension NSManagedObject {
+    @nonobjc func delete() {
+        managedObjectContext?.delete(self)
+    }
+}
+

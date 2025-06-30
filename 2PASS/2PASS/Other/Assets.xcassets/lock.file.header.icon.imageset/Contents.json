@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "vault.decryption.kit.header.icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

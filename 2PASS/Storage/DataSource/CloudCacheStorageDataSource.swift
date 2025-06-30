@@ -1,0 +1,143 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
+import Foundation
+import CoreData
+import Common
+
+public protocol CloudCacheStorageDataSource: AnyObject {
+    var storageError: ((String) -> Void)? { get set }
+    
+    // MARK: Cloud Cached Passwords
+    
+    func createCloudCachedPassword(
+        passwordID: PasswordID,
+        name: Data?,
+        username: Data?,
+        password: Data?,
+        notes: Data?,
+        creationDate: Date,
+        modificationDate: Date,
+        iconType: PasswordEncryptedIconType,
+        trashedStatus: PasswordTrashedStatus,
+        protectionLevel: PasswordProtectionLevel,
+        vaultID: VaultID,
+        uris: PasswordEncryptedURIs?,
+        metadata: Data
+    )
+    
+    func updateCloudCachedPassword(
+        passwordID: PasswordID,
+        name: Data?,
+        username: Data?,
+        password: Data?,
+        notes: Data?,
+        creationDate: Date,
+        modificationDate: Date,
+        iconType: PasswordEncryptedIconType,
+        trashedStatus: PasswordTrashedStatus,
+        protectionLevel: PasswordProtectionLevel,
+        uris: PasswordEncryptedURIs?,
+        metadata: Data
+    )
+    
+    func getCloudCachedPasswordEntity(passwordID: PasswordID) -> CloudDataPassword?
+    
+    func listCloudCachedPasswords(in vaultID: VaultID) -> [CloudDataPassword]
+    func listAllCloudCachedPasswords() -> [CloudDataPassword]
+        
+    func deleteCloudCachedPassword(passwordID: PasswordID)
+    func deleteAllCloudCachedPasswords()
+    
+    // MARK: Cloud Cached Vaults
+    
+    func listCloudCachedVaults() -> [VaultCloudData]
+    func getCloudCachedVault(for vaultID: VaultID) -> VaultCloudData?
+    func createCloudCachedVault(
+        vaultID: VaultID,
+        name: String,
+        createdAt: Date,
+        updatedAt: Date,
+        metadata: Data,
+        deviceNames: Data,
+        deviceID: DeviceID,
+        schemaVersion: Int,
+        seedHash: String,
+        reference: String,
+        kdfSpec: Data
+    )
+    func updateCloudCachedVault(
+        vaultID: VaultID,
+        name: String,
+        createdAt: Date,
+        updatedAt: Date,
+        metadata: Data,
+        deviceNames: Data,
+        deviceID: DeviceID,
+        schemaVersion: Int,
+        seedHash: String,
+        reference: String,
+        kdfSpec: Data
+    )
+    func deleteCloudCachedVault(_ vaultID: VaultID)
+    func deleteAllCloudCachedVaults()
+    
+    // MARK: Cloud Cached Tags
+    
+    func createCloudCachedTag(
+        metadata: Data,
+        tagID: ItemTagID,
+        name: Data,
+        color: String?,
+        position: Int16,
+        modificationDate: Date,
+        vaultID: VaultID
+    )
+    
+    func updateCloudCachedTag(
+        metadata: Data,
+        tagID: ItemTagID,
+        name: Data,
+        color: String?,
+        position: Int16,
+        modificationDate: Date,
+        vaultID: VaultID,
+    )
+    
+    func getCloudCachedTag(tagID: ItemTagID) -> CloudDataTagItem?
+    
+    func listCloudCachedTags(in vaultID: VaultID, limit: Int?) -> [CloudDataTagItem]
+    func listAllCloudCachedTags(limit: Int?) -> [CloudDataTagItem]
+    
+    func deleteCloudCachedTag(tagID: ItemTagID)
+    func deleteAllCloudCachedTags()
+    
+    // MARK: Deleted Items
+    
+    func createCloudCachedDeletedItem(
+        metadata: Data,
+        itemID: DeletedItemID,
+        kind: DeletedItemData.Kind,
+        deletedAt: Date,
+        in vaultID: VaultID
+    )
+    func updateCloudCachedDeletedItem(
+        metadata: Data,
+        itemID: DeletedItemID,
+        kind: DeletedItemData.Kind,
+        deletedAt: Date,
+        in vaultID: VaultID
+    )
+    func listCloudCachedDeletedItems(in vaultID: VaultID, limit: Int?) -> [CloudDataDeletedItem]
+    func listAllCloudCachedDeletedItems(limit: Int?) -> [CloudDataDeletedItem]
+    func deleteCloudCachedDeletedItem(itemID: DeletedItemID)
+    func cloudCacheDeleteAllDeletedItems()
+    
+    // MARK: Storage
+    
+    func warmUp()
+    func save()
+}

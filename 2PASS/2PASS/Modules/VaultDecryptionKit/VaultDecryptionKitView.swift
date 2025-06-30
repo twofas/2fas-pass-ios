@@ -1,0 +1,132 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
+import SwiftUI
+import CommonUI
+
+private struct Constants {
+    static let documentImageMaxHeight = 249.0
+    static let stepProgess: Float = 0.8
+}
+
+struct VaultDecryptionKitView: View {
+
+    @State
+    var presenter: VaultDecryptionKitPresenter
+        
+    init(presenter: VaultDecryptionKitPresenter) {
+        self.presenter = presenter
+    }
+    
+    var body: some View {
+        switch presenter.kind {
+        case .onboarding:
+            content
+                .onboardingStepTopPadding()
+                .onboardingStepProgress(Constants.stepProgess)
+            
+        case .settings:
+            content
+        }
+    }
+    
+    private var content: some View {
+        VStack(spacing: 0) {
+            HeaderContentView(
+                title: Text(T.decryptionKitTitle.localizedKey),
+                subtitle: Text(T.decryptionKitDescription.localizedKey),
+                icon: {
+                    if presenter.kind != .onboarding {
+                        Image(.lockFileHeaderIcon)
+                    }
+                }
+            )
+            .padding(.top, Spacing.l)
+            
+            VStack(spacing: Spacing.s) {
+                Label(T.decryptionKitStep1.localizedKey, systemImage: "arrow.down.circle.fill")
+                Label(T.decryptionKitStep2.localizedKey, systemImage: "printer.fill")
+            }
+            .padding(.top, Spacing.xl)
+            .labelStyle(StepLabelStyle())
+            
+            Spacer(minLength: Spacing.xl)
+            
+            documentImage
+                .resizable()
+                .scaledToFit()
+                .frame(maxHeight: Constants.documentImageMaxHeight)
+            
+            InfoToggle(
+                icon: Image(.warningIcon),
+                title: Text(T.decryptionKitNoticeTitle.localizedKey),
+                description: Text(T.decryptionKitNoticeMsg.localizedKey),
+                isOn: $presenter.isToggleOn
+            )
+            .disabled(presenter.isPDFSaving)
+                        
+            Button {
+                presenter.onSaveRecoveryKit()
+            } label: {
+                Text(T.decryptionKitCta.localizedKey)
+                    .accessoryLoader(presenter.isPDFSaving)
+            }
+            .buttonStyle(.filled)
+            .controlSize(.large)
+            .disabled(presenter.savePDFDisabled)
+            .allowsHitTesting(presenter.isPDFSaving == false)
+            .padding(.top, Spacing.xll)
+            .padding(.bottom, Spacing.xl)
+        }
+        .padding(.horizontal, Spacing.xl)
+        .slideToolbarTrailingItems {
+            settingsButton
+                .padding(.horizontal, Spacing.s)
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                settingsButton
+            }
+        }
+        .router(router: VaultDecryptionKitRouter(), destination: $presenter.destination)
+        .readableContentMargins()
+    }
+    
+    private var documentImage: Image {
+        if presenter.includeMasterKey {
+            Image(.vaultDecryptionKitDocumentSeedMasterkey)
+        } else {
+            Image(.vaultDecryptionKitDocumentSeed)
+        }
+    }
+
+    private var settingsButton: some View {
+        Button {
+            presenter.onSettings()
+        } label: {
+            Image(systemName: "gearshape")
+                .font(.system(size: 22))
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        VaultDecryptionKitRouter.buildView(kind: .settings)
+    }
+}
+
+public struct StepLabelStyle: LabelStyle {
+    
+    public func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: Spacing.xs) {
+            configuration.icon
+                .foregroundStyle(.neutral500)
+            configuration.title
+                .foregroundStyle(.neutral600)
+        }
+    }
+}

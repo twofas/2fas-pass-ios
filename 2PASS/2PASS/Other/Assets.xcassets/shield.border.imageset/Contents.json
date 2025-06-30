@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "shield.border.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
