@@ -228,13 +228,14 @@ extension MergeHandler {
             if cloudVault.deviceID != deviceID {
                 if isMultiDeviceSyncEnabled {
                     cloudVault.update(deviceID: deviceID, updatedAt: date)
-                    vaultAddIfDataModifed = cloudVault
                 } else {
                     syncNotAllowed?()
                     completion(.failure(.syncNotAllowed))
                     return
                 }
             }
+            
+            vaultAddIfDataModifed = cloudVault
             
         } else {
             if let vaultToAdd = createVaultToAdd(
