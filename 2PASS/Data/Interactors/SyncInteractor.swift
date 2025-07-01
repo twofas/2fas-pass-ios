@@ -89,7 +89,7 @@ extension SyncInteractor: SyncInteracting {
         })
                              
         deletedTags.forEach({
-            passwordInteractor.externalDeleteTag(id: $0.tagID)
+            passwordInteractor.externalDeleteTag(tagID: $0.tagID)
         })
         
         addedDeleted.forEach({

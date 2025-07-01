@@ -29,17 +29,34 @@ extension TagEncryptedEntity : Identifiable {}
 extension TagEncryptedEntity {
     
     @discardableResult
-    static func create(from data: ItemTagEncryptedData, on context: NSManagedObjectContext) -> TagEncryptedEntity {
+    @nonobjc static func create(from data: ItemTagEncryptedData, on context: NSManagedObjectContext) -> TagEncryptedEntity {
         let entity = TagEncryptedEntity(context: context)
         entity.tagID = data.id
         entity.vaultID = data.vaultID
-        entity.update(with: data)
+        entity.setData(data)
         return entity
     }
     
-    static func find(id: ItemTagID, on context: NSManagedObjectContext) -> TagEncryptedEntity? {
+    @discardableResult
+    @nonobjc static func update(from data: ItemTagEncryptedData, on context: NSManagedObjectContext) -> TagEncryptedEntity? {
+        guard let entity = find(tagID: data.tagID, on: context),
+              data.tagID == entity.tagID,
+              data.vaultID == entity.vaultID else {
+            return nil
+        }
+        entity.update(from: data)
+        return entity
+    }
+    
+    @discardableResult
+    @nonobjc func update(from data: ItemTagEncryptedData) -> TagEncryptedEntity? {
+        setData(data)
+        return self
+    }
+    
+    @nonobjc static func find(tagID: ItemTagID, on context: NSManagedObjectContext) -> TagEncryptedEntity? {
         let request = TagEncryptedEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "%K == %@", #keyPath(TagEncryptedEntity.tagID), id as CVarArg)
+        request.predicate = NSPredicate(format: "%K == %@", #keyPath(TagEncryptedEntity.tagID), tagID as CVarArg)
         request.fetchLimit = 1
         
         do {
@@ -54,7 +71,7 @@ extension TagEncryptedEntity {
         }
     }
     
-    static func list(on context: NSManagedObjectContext, in vaultID: VaultID) -> [TagEncryptedEntity] {
+    @nonobjc static func list(on context: NSManagedObjectContext, in vaultID: VaultID) -> [TagEncryptedEntity] {
         let request = TagEncryptedEntity.fetchRequest()
         request.predicate = NSPredicate(format: "vaultID == %@", vaultID as CVarArg)
         do {
@@ -67,15 +84,20 @@ extension TagEncryptedEntity {
             return []
         }
     }
+    
+    @nonobjc static func delete(on context: NSManagedObjectContext, tagID: ItemTagID) {
+        guard let entity = find(tagID: tagID, on: context) else { return }
+        context.delete(entity)
+    }
+    
+    @nonobjc static func delete(on context: NSManagedObjectContext, entity: TagEncryptedEntity) {
+        context.delete(entity)
+    }
 }
 
 extension TagEncryptedEntity {
     
-    func update(with data: ItemTagEncryptedData) {
-        guard data.tagID == tagID, data.vaultID == vaultID else {
-            return
-        }
-        
+    @nonobjc func setData(_ data: ItemTagEncryptedData) {
         self.name = data.name
         self.modificationDate = data.modificationDate
         self.color = data.color

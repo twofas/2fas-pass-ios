@@ -105,7 +105,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func removeTag(_ tagID: ItemTagID) {
-        passwordInteractor.deleteTag(id: tagID)
+        passwordInteractor.deleteTag(tagID: tagID)
     }
     
     func removePassword(_ passwordID: PasswordID) {

@@ -187,8 +187,8 @@ extension InMemoryStorageDataSourceImpl {
             )
     }
     
-    public func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date, vaultID: VaultID) {
-        let listAll = TagEntity.listItems(on: context, options: .all(vaultID))
+    public func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date) {
+        let listAll = TagEntity.listItems(on: context, options: .all)
         for tag in tags {
             if let entity = listAll.first(where: { $0.tagID == tag.id }) {
                 TagEntity
@@ -228,8 +228,8 @@ extension InMemoryStorageDataSourceImpl {
         TagEntity.delete(on: context, entity: entity)
     }
     
-    public func deleteAllTagEntities(for vaultID: VaultID) {
-        TagEntity.deleteAllTagEntities(on: context, vaultID: vaultID)
+    public func deleteAllTagEntities() {
+        TagEntity.deleteAllTagEntities(on: context)
     }
 }
 

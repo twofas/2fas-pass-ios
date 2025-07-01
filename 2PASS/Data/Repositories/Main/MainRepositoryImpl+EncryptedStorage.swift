@@ -8,6 +8,9 @@ import Foundation
 import Common
 
 extension MainRepositoryImpl {
+    
+    // MARK: Passwords
+    
     func createEncryptedPassword(
         passwordID: PasswordID,
         name: Data?,
@@ -169,6 +172,7 @@ extension MainRepositoryImpl {
     }
     
     // MARK: Deleted Items
+    
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID) {
         Log("Creating Deleted Item for ItemID: \(id)", module: .mainRepository)
         encryptedStorage.createDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
@@ -188,6 +192,8 @@ extension MainRepositoryImpl {
         encryptedStorage.deleteDeletedItem(id: id)
     }
     
+    // MARK: Tags
+    
     func createEncryptedTag(_ tag: ItemTagEncryptedData) {
         encryptedStorage.createEncryptedTag(tag)
     }
@@ -196,13 +202,23 @@ extension MainRepositoryImpl {
         encryptedStorage.updateEncryptedTag(tag)
     }
     
-    func deleteEncryptedTag(id: ItemTagID) -> Bool {
-        encryptedStorage.deleteEncryptedTag(id: id)
+    func deleteEncryptedTag(tagID: ItemTagID) {
+        encryptedStorage.deleteEncryptedTag(tagID: tagID)
     }
     
     func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData] {
         encryptedStorage.listEncryptedTags(in: vaultID)
     }
+    
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID) {
+        encryptedStorage.encryptedTagBatchUpdate(tags, in: vault)
+    }
+    
+    func deleteAllEncryptedTags(in vault: VaultID) {
+        encryptedStorage.deleteAllEncryptedTags(in: vault)
+    }
+    
+    // MARK: Web Browser Extension
     
     func createEncryptedWebBrowser(_ data: WebBrowserEncryptedData) {
         encryptedStorage.createEncryptedWebBrowser(data)

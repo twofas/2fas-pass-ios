@@ -143,8 +143,8 @@ public protocol PasswordInteracting: AnyObject {
     @discardableResult
     func updateTag(data: ItemTagData) -> Bool
     
-    func deleteTag(id: ItemTagID)
-    func externalDeleteTag(id: ItemTagID)
+    func deleteTag(tagID: ItemTagID)
+    func externalDeleteTag(tagID: ItemTagID)
     
     func listAllTags() -> [ItemTagData]
 }
@@ -641,16 +641,15 @@ extension PasswordInteractor: PasswordInteracting {
         return true
     }
     
-    func deleteTag(id: ItemTagID) {
-        guard mainRepository.deleteEncryptedTag(id: id) else {
-            return
-        }
-        // TODO: Add deletition in in-memory storage
-        createDeletedItem(id: id, kind: .tag, deletedAt: mainRepository.currentDate)
+    func deleteTag(tagID: ItemTagID) {
+        mainRepository.deleteTag(tagID: tagID)
+        mainRepository.deleteEncryptedTag(tagID: tagID)
+
+        createDeletedItem(id: tagID, kind: .tag, deletedAt: mainRepository.currentDate)
     }
     
-    func externalDeleteTag(id: ItemTagID) {
-        mainRepository.deleteEncryptedTag(id: id)
+    func externalDeleteTag(tagID: ItemTagID) {
+        mainRepository.deleteEncryptedTag(tagID: tagID)
     }
     
     func listAllTags() -> [ItemTagData] {
