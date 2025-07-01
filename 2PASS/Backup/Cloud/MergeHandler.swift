@@ -228,6 +228,7 @@ extension MergeHandler {
             if cloudVault.deviceID != deviceID {
                 if isMultiDeviceSyncEnabled {
                     cloudVault.update(deviceID: deviceID, updatedAt: date)
+                    vaultAddIfDataModifed = cloudVault
                 } else {
                     syncNotAllowed?()
                     completion(.failure(.syncNotAllowed))
@@ -235,7 +236,6 @@ extension MergeHandler {
                 }
             }
             
-            vaultAddIfDataModifed = cloudVault
         } else {
             if let vaultToAdd = createVaultToAdd(
                 from: localVault,
@@ -498,7 +498,7 @@ extension MergeHandler {
             }
         }
         
-        if let vaultAddIfDataModifed, !recordsToCreateUpdate.isEmpty || !recordIDsForRemoval.isEmpty {
+        if let vaultAddIfDataModifed {
             Log("Merge Handler: appending Vault with new modification date", module: .cloudSync)
             if let cloudVault = updateExistingCloudVault(vaultAddIfDataModifed),
                let record = VaultRecord.recreate(from: cloudVault) {
