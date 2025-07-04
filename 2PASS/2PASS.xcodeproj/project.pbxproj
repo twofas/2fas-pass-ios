@@ -1925,6 +1925,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C27D99FF2BD596630008203F /* Build configuration list for PBXNativeTarget "2PASS" */;
 			buildPhases = (
+				540D72282E17DBC6000834DE /* ShellScript */,
 				C27D99E72BD596620008203F /* Sources */,
 				C27D99E82BD596620008203F /* Frameworks */,
 				C27D99E92BD596620008203F /* Resources */,
@@ -2204,6 +2205,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		540D72282E17DBC6000834DE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/2PASS/GoogleService-Info-Dev.plist",
+				"$(SRCROOT)/2PASS/GoogleService-Info-Prod.plist",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/2PASS/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "FIREBASE_CONFIG_DIR=\"${SRCROOT}/2PASS\"\nDESTINATION=\"$FIREBASE_CONFIG_DIR/GoogleService-Info.plist\"\n\nif [ \"$CONFIGURATION\" = \"Prod\" ]; then\n    cp \"${FIREBASE_CONFIG_DIR}/GoogleService-Info-Prod.plist\" \"$DESTINATION\"\nelse\n    cp \"${FIREBASE_CONFIG_DIR}/GoogleService-Info-Dev.plist\" \"$DESTINATION\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		54571D6E2D688AC200FC2DB3 /* Sources */ = {
