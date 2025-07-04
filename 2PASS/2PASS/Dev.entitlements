@@ -8,7 +8,7 @@
 	<true/>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.com.twopass.org.Vault</string>
+		<string>iCloud.com.twopass.org.dev.Vault</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>

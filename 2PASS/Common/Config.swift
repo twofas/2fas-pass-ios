@@ -46,7 +46,11 @@ public enum Config {
     
     public static let cloudSchemaVersion = 1
     public static let indexSchemaVersion = 1
+    #if PROD
     public static let containerIdentifier = "iCloud.com.twopass.org.Vault"
+    #else
+    public static let containerIdentifier = "iCloud.com.twopass.org.dev.Vault"
+    #endif
     
     public static let maximumExternalImportFileSize = 1024 * 1024 * 20
     
