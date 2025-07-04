@@ -88,8 +88,13 @@ public enum Config {
     }
     
     public enum Payment {
+        #if PROD
         public static let apiKey = "appl_LGhEtuwpiAFxecagLsZOLhrQecu"
         public static let subscriptionId = "unlimited" // entitlement_id
+        #else
+        public static let apiKey = "appl_yjcWohjWjdFeWjdyYEUuCcTPagb"
+        public static let subscriptionId = "unlimited" // entitlement_id
+        #endif
         
         public static let freeEntitlements = SubscriptionPlan.Entitlements(itemsLimit: 50, connectedBrowsersLimit: 1, multiDeviceSync: false)
         public static let premiumEntitlements = SubscriptionPlan.Entitlements(itemsLimit: nil, connectedBrowsersLimit: nil, multiDeviceSync: true)
