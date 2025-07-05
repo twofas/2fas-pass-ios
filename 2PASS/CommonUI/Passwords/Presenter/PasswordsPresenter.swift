@@ -42,6 +42,7 @@ final class PasswordsPresenter {
     private let interactor: PasswordsModuleInteracting
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
+    private var listData: [Int: [PasswordData]] = [:]
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
@@ -130,25 +131,22 @@ extension PasswordsPresenter {
         }
     }
     
-    func onDidSelectAt(_ offset: Int) {
-        let list = interactor.loadList()
-        guard let password = list[safe: offset] else { return }
+    func onDidSelectAt(_ indexPath: IndexPath) {
+        guard let passwordData = item(at: indexPath) else {
+            return
+        }
         
-        if isAutoFillExtension {
-            flowController.selectPassword(passwordID: password.passwordID)
-        } else {
-            switch interactor.selectAction {
-            case .viewDetails:
-                flowController.selectPassword(passwordID: password.passwordID)
-            case .copyPassword:
-                copyPassword(id: password.id)
-            case .goToURI:
-                if let uri = password.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
-                    flowController.toURI(normalized)
-                }
-            case .edit:
-                flowController.toEditPassword(passwordID: password.id)
+        switch interactor.selectAction {
+        case .viewDetails:
+            flowController.selectPassword(passwordID: passwordData.passwordID)
+        case .copyPassword:
+            copyPassword(id: passwordData.passwordID)
+        case .goToURI:
+            if let uri = passwordData.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
+                flowController.toURI(normalized)
             }
+        case .edit:
+            flowController.toEditPassword(passwordID: passwordData.passwordID)
         }
     }
     
@@ -194,11 +192,19 @@ private extension PasswordsPresenter {
         }
     }
     
+    func item(at indexPath: IndexPath) -> PasswordData? {
+        listData[indexPath.section]?[safe: indexPath.item]
+    }
+    
     func reload() {
+        listData.removeAll()
+        
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
             let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers)
+            listData[0] = list.suggested
+            listData[1] = list.rest
             let suggestedCells = list.suggested.map(makeCellData(for:))
             let restCells = list.rest.map(makeCellData(for:))
             let suggestedSection = PasswordSectionData(title: T.commonSuggested)
@@ -215,6 +221,7 @@ private extension PasswordsPresenter {
             
         } else {
             let list = interactor.loadList()
+            listData[0] = list
             let cells = list.map(makeCellData(for:))
             let section = PasswordSectionData()
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
