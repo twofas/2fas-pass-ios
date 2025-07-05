@@ -138,16 +138,18 @@ private extension PasswordsCellView {
             iconContainer.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor),
             iconContainer.centerYAnchor.constraint(equalTo: mainContainer.centerYAnchor),
             iconContainer.widthAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
-            iconContainer.heightAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension))
+            iconContainer.heightAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
+            iconContainer.topAnchor.constraint(greaterThanOrEqualTo: mainContainer.topAnchor),
+            iconContainer.bottomAnchor.constraint(lessThanOrEqualTo: mainContainer.bottomAnchor)
         ])
                 
         mainContainer.addSubview(textContainer, with: [
             textContainer.leadingAnchor.constraint(equalTo: iconContainer.trailingAnchor, constant: Spacing.m),
             textContainer.centerYAnchor.constraint(equalTo: mainContainer.centerYAnchor),
             textContainer.topAnchor.constraint(greaterThanOrEqualTo: mainContainer.topAnchor),
-            textContainer.bottomAnchor.constraint(lessThanOrEqualTo: mainContainer.bottomAnchor),
+            textContainer.bottomAnchor.constraint(lessThanOrEqualTo: mainContainer.bottomAnchor)
         ])
-        
+
         textContainer.axis = .vertical
         textContainer.spacing = Spacing.xxs
         textContainer.addArrangedSubview(nameLabel)
