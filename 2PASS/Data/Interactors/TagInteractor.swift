@@ -23,6 +23,8 @@ public protocol TagInteracting: AnyObject {
     func getTag(for id: ItemTagID) -> ItemTagData?
     func getTags(by tagIDs: [ItemTagID]) -> [ItemTagData]
     func listTagWith(_ phrase: String) -> [ItemTagData]
+    
+    func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData])
 }
 
 final class TagInteractor {
@@ -71,6 +73,22 @@ extension TagInteractor: TagInteracting {
         )
     }
     
+    func updateTag(tagID: ItemTagID, name: String, color: UIColor?) {
+        guard let tag = getTag(for: tagID) else {
+            Log("TagInteractor: Error while finding tag for tag update", module: .interactor, severity: .error)
+            return
+        }
+        updateTag(
+            data: .init(tagID: tagID,
+                        vaultID: tag.vaultID,
+                        name: name,
+                        color: color,
+                        position: tag.position,
+                        modificationDate: mainRepository.currentDate
+                       )
+        )
+    }
+    
     func updateTag(data: ItemTagData) {
         guard let nameEnc = encryptName(data.name) else {
             Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
@@ -116,6 +134,35 @@ extension TagInteractor: TagInteracting {
     func listTagWith(_ phrase: String) -> [ItemTagData] {
         mainRepository.listTags(options: .byName(phrase))
     }
+    
+    func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData]) {
+        guard let vaultID = mainRepository.selectedVault?.vaultID else {
+            Log("TagInteractor: Error while getting vaultID for batch tag update", module: .interactor, severity: .error)
+            return
+        }
+        let date = mainRepository.currentDate
+        var encryptedTags: [ItemTagEncryptedData] = []
+        
+        for tag in tags {
+            guard let nameEnc = encryptName(tag.name) else {
+                Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
+                continue
+            }
+            encryptedTags.append(
+                ItemTagEncryptedData(
+                    tagID: tag.id,
+                    vaultID: vaultID,
+                    name: nameEnc,
+                    color: tag.color?.hexString,
+                    position: tag.position,
+                    modificationDate: date
+                )
+            )
+        }
+        
+        mainRepository.batchUpdateRencryptedTags(tags, date: date)
+        mainRepository.encryptedTagBatchUpdate(encryptedTags, in: vaultID)
+    }
 }
 
 private extension TagInteractor {
@@ -128,11 +175,11 @@ private extension TagInteractor {
     }
     
     func encryptName(_ name: String) -> Data? {
-       guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal),
-                 let nameData = name.data(using: .utf8),
-                 let nameEnc = mainRepository.encrypt(nameData, key: key) else {
-                     return nil
-                 }
+        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal),
+              let nameData = name.data(using: .utf8),
+              let nameEnc = mainRepository.encrypt(nameData, key: key) else {
+            return nil
+        }
         return nameEnc
     }
 }

@@ -712,9 +712,7 @@ extension PasswordInteractor: PasswordInteracting {
         mainRepository.encryptedPasswordsBatchUpdate(fullyEncrypted)
         Log("Password interactor - Password encrypted entries updated", module: .interactor)
         
-        for tag in tags {
-            tagInteractor.updateTag(data: tag)
-        }
+        tagInteractor.batchUpdateTagsForNewEncryption(tags)
         
         saveStorage()
         
