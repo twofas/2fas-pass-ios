@@ -45,7 +45,8 @@ public final class InteractorFactory {
         PasswordInteractor(
             mainRepository: MainRepositoryImpl.shared,
             protectionInteractor: protectionInteractor(),
-            uriInteractor: uriInteractor()
+            uriInteractor: uriInteractor(),
+            deletedItemsInteractor: deletedItemsInteractor()
         )
     }
     
@@ -147,6 +148,7 @@ public final class InteractorFactory {
         PasswordImportInteractor(
             fileIconInteractor: fileIconInteractor(),
             passwordInteractor: passwordInteractor(),
+            deletedItemsInteractor: deletedItemsInteractor(),
             syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false),
             mainRepository: MainRepositoryImpl.shared
         )
@@ -177,6 +179,7 @@ public final class InteractorFactory {
         SyncInteractor(
             passwordInteractor: passwordInteractor(),
             passwordImportInteractor: passwordImportInteractor(),
+            deletedItemsInteractor: deletedItemsInteractor(),
             autoFillCredentialsInteractor: autoFillCredentialsInteractor()
         )
     }
@@ -205,6 +208,7 @@ public final class InteractorFactory {
             ),
             localStorage: LocalStorageImpl(
                 passwordInteractor: passwordInteractor(),
+                deletedItemsInteractor: deletedItemsInteractor(),
                 mainRepository: MainRepositoryImpl.shared
             ),
             mainRepository: MainRepositoryImpl.shared,
@@ -281,6 +285,10 @@ public final class InteractorFactory {
     
     public func connectOnboardingInteractor() -> ConnectOnboardingInteracting {
         ConnectOnboardingInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+    
+    public func deletedItemsInteractor() -> DeletedItemsInteracting {
+        DeletedItemsInteractor(mainRepository: MainRepositoryImpl.shared)
     }
 }
 

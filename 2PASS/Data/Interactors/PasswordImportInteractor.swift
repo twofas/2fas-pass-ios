@@ -15,17 +15,20 @@ public protocol PasswordImportInteracting: AnyObject {
 final class PasswordImportInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let passwordInteractor: PasswordInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     private let mainRepository: MainRepository
     
     init(
         fileIconInteractor: FileIconInteracting,
         passwordInteractor: PasswordInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
         mainRepository: MainRepository
     ) {
         self.fileIconInteractor = fileIconInteractor
         self.passwordInteractor = passwordInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
         self.mainRepository = mainRepository
     }
@@ -38,10 +41,10 @@ extension PasswordImportInteractor: PasswordImportInteracting {
     }
     
     func importDeleted(_ deleted: [DeletedItemData]) {
-        let current = Set(passwordInteractor.listDeletedItems())
+        let current = Set(deletedItemsInteractor.listDeletedItems())
         let toAdd = Set(deleted).subtracting(current)
         toAdd.forEach {
-            passwordInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
+            deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
         }
         Log("PasswordImportInteractor - deleted passwords to add: \(toAdd.count)", module: .interactor)
         passwordInteractor.saveStorage()

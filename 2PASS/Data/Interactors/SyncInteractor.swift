@@ -26,11 +26,18 @@ final class SyncInteractor {
     
     private let passwordInteractor: PasswordInteracting
     private let passwordImportInteractor: PasswordImportInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     
-    init(passwordInteractor: PasswordInteracting, passwordImportInteractor: PasswordImportInteracting, autoFillCredentialsInteractor: AutoFillCredentialsInteracting) {
+    init(
+        passwordInteractor: PasswordInteracting,
+        passwordImportInteractor: PasswordImportInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting,
+        autoFillCredentialsInteractor: AutoFillCredentialsInteracting
+    ) {
         self.passwordInteractor = passwordInteractor
         self.passwordImportInteractor = passwordImportInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
     }
 }
@@ -39,7 +46,7 @@ extension SyncInteractor: SyncInteracting {
     func syncAndApplyChanges(from external: [PasswordData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
         let local = passwordInteractor.listAllPasswords()
         let localTags = passwordInteractor.listAllTags()
-        let localDeleted = passwordInteractor.listDeletedItems()
+        let localDeleted = deletedItemsInteractor.listDeletedItems()
         
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
         
@@ -93,15 +100,15 @@ extension SyncInteractor: SyncInteracting {
         })
         
         addedDeleted.forEach({
-            passwordInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
+            deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
         })
         
         modifiedDeleted.forEach({
-            passwordInteractor.updateDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
+            deletedItemsInteractor.updateDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
         })
         
         removedDeleted.forEach { deleted in
-            passwordInteractor.deleteDeletedItem(id: deleted.itemID)
+            deletedItemsInteractor.deleteDeletedItem(id: deleted.itemID)
         }
         
         Log("SyncInteractor:\nadded: \(addedPasswords.count)\nmodified: \(modifiedPasswords.count)\ntrashed: \(deletedPasswords.count)\nadded deletitions: \(addedDeleted.count)\nremoved deletitions: \(removedDeleted.count)")

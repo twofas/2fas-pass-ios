@@ -127,12 +127,6 @@ public protocol PasswordInteracting: AnyObject {
         completion: @escaping (Result<Void, PasswordInteractorReencryptError>) -> Void
     )
     
-    // MARK: - Deleted Items
-    func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
-    func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
-    func listDeletedItems() -> [DeletedItemData]
-    func deleteDeletedItem(id: DeletedItemID)
-    
     // MARK: - Tags
     @discardableResult
     func createTag(name: String, color: String) -> Bool
@@ -155,15 +149,18 @@ final class PasswordInteractor {
     private let mainRepository: MainRepository
     private let protectionInteractor: ProtectionInteracting
     private let uriInteractor: URIInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
     
     init(
         mainRepository: MainRepository,
         protectionInteractor: ProtectionInteracting,
-        uriInteractor: URIInteracting
+        uriInteractor: URIInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting
     ) {
         self.mainRepository = mainRepository
         self.protectionInteractor = protectionInteractor
         self.uriInteractor = uriInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
     }
 }
 
@@ -511,7 +508,7 @@ extension PasswordInteractor: PasswordInteracting {
         }
         
         markAsTrashed(entity: entity, encryptedEntity: encryptedEntity, date: date)
-        mainRepository.createDeletedItem(id: passwordID, kind: .login, deletedAt: date, in: encryptedEntity.vaultID)
+        deletedItemsInteractor.createDeletedItem(id: passwordID, kind: .login, deletedAt: date)
     }
     
     func externalMarkAsTrashed(for passwordID: PasswordID) {
@@ -569,7 +566,7 @@ extension PasswordInteractor: PasswordInteracting {
             uris: encryptedEntity.uris,
             tagIds: encryptedEntity.tagIds
         )
-        mainRepository.deleteDeletedItem(id: passwordID)
+        deletedItemsInteractor.deleteDeletedItem(id: passwordID)
     }
     
     func createTag(data: ItemTagData) -> Bool {
@@ -645,7 +642,7 @@ extension PasswordInteractor: PasswordInteracting {
         mainRepository.deleteTag(tagID: tagID)
         mainRepository.deleteEncryptedTag(tagID: tagID)
 
-        createDeletedItem(id: tagID, kind: .tag, deletedAt: mainRepository.currentDate)
+        deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: mainRepository.currentDate)
     }
     
     func externalDeleteTag(tagID: ItemTagID) {
@@ -865,35 +862,6 @@ extension PasswordInteractor: PasswordInteracting {
         saveStorage()
         
         completion(.success(()))
-    }
-    
-    // MARK: - Deleted Items
-    func createDeletedItem(id: ItemTagID, kind: DeletedItemData.Kind, deletedAt: Date) {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("PasswordInteractor - error while getting vaultID for Deleted Password creation", module: .interactor, severity: .error)
-            return
-        }
-        mainRepository.createDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
-    }
-    
-    func listDeletedItems() -> [DeletedItemData] {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("PasswordInteractor - error while getting vaultID for listing Deleted Password", module: .interactor, severity: .error)
-            return []
-        }
-        return mainRepository.listDeletedItems(in: vaultID, limit: nil)
-    }
-    
-    func deleteDeletedItem(id: PasswordID) {
-        mainRepository.deleteDeletedItem(id: id)
-    }
-    
-    func updateDeletedItem(id: PasswordID, kind: DeletedItemData.Kind, deletedAt: Date) {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("PasswordInteractor - error while getting vaultID for Deleted Password update", module: .interactor, severity: .error)
-            return
-        }
-        mainRepository.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
     }
     
     @discardableResult func loadTrustedKey() -> Bool {

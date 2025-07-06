@@ -10,10 +10,16 @@ import Common
 
 final class LocalStorageImpl {
     private let passwordInteractor: PasswordInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
     private let mainRepository: MainRepository
     
-    init(passwordInteractor: PasswordInteracting, mainRepository: MainRepository) {
+    init(
+        passwordInteractor: PasswordInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting,
+        mainRepository: MainRepository
+    ) {
         self.passwordInteractor = passwordInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
         self.mainRepository = mainRepository
     }
 }
@@ -28,7 +34,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listAllDeletedItems() -> [DeletedItemData] {
-        passwordInteractor.listDeletedItems()
+        deletedItemsInteractor.listDeletedItems()
     }
     
     func listAllTags() -> [ItemTagData] {
@@ -40,7 +46,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func createDeletedItem(_ deletedItem: DeletedItemData) {
-        passwordInteractor.createDeletedItem(
+        deletedItemsInteractor.createDeletedItem(
             id: deletedItem.itemID,
             kind: deletedItem.kind,
             deletedAt: deletedItem.deletedAt
@@ -52,7 +58,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func updateDeletedItem(_ deletedItem: DeletedItemData) {
-        passwordInteractor.updateDeletedItem(
+        deletedItemsInteractor.updateDeletedItem(
             id: deletedItem.itemID,
             kind: deletedItem.kind,
             deletedAt: deletedItem.deletedAt
@@ -93,7 +99,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func removeDeletedItem(_ deletedItem: DeletedItemID) {
-        passwordInteractor.deleteDeletedItem(id: deletedItem)
+        deletedItemsInteractor.deleteDeletedItem(id: deletedItem)
     }
     
     func createTag(_ tag: ItemTagData) {
