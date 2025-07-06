@@ -17,6 +17,7 @@ final class PasswordImportInteractor {
     private let passwordInteractor: PasswordInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
     
     init(
@@ -24,12 +25,14 @@ final class PasswordImportInteractor {
         passwordInteractor: PasswordInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
+        tagInteractor: TagInteracting,
         mainRepository: MainRepository
     ) {
         self.fileIconInteractor = fileIconInteractor
         self.passwordInteractor = passwordInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
     }
 }
@@ -60,7 +63,7 @@ private extension PasswordImportInteractor {
         var new = 0
         var failure = 0
         
-        let localTags = passwordInteractor.listAllTags()
+        let localTags = tagInteractor.listAllTags()
         let localPasswords = passwordInteractor.listAllPasswords()
         
         let decryptedLocalPasswordValues: [PasswordID: String] = localPasswords.reduce(into: [:]) { result, password in
@@ -90,9 +93,9 @@ private extension PasswordImportInteractor {
         
         for tag in tags {
             if localTags.contains(where: { $0.id == tag.id }) {
-                passwordInteractor.updateTag(data: tag)
+                tagInteractor.updateTag(data: tag)
             } else {
-                passwordInteractor.createTag(data: tag)
+                tagInteractor.createTag(data: tag)
             }
         }
         

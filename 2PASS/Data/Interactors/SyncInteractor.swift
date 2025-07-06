@@ -27,17 +27,20 @@ final class SyncInteractor {
     private let passwordInteractor: PasswordInteracting
     private let passwordImportInteractor: PasswordImportInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
+    private let tagInteractor: TagInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     
     init(
         passwordInteractor: PasswordInteracting,
         passwordImportInteractor: PasswordImportInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
+        tagInteractor: TagInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     ) {
         self.passwordInteractor = passwordInteractor
         self.passwordImportInteractor = passwordImportInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
+        self.tagInteractor = tagInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
     }
 }
@@ -45,7 +48,7 @@ final class SyncInteractor {
 extension SyncInteractor: SyncInteracting {
     func syncAndApplyChanges(from external: [PasswordData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
         let local = passwordInteractor.listAllPasswords()
-        let localTags = passwordInteractor.listAllTags()
+        let localTags = tagInteractor.listAllTags()
         let localDeleted = deletedItemsInteractor.listDeletedItems()
         
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
@@ -88,15 +91,15 @@ extension SyncInteractor: SyncInteracting {
         }
         
         addedTags.forEach({
-            passwordInteractor.createTag(data: $0)
+            tagInteractor.createTag(data: $0)
         })
         
         modifiedTags.forEach({
-            passwordInteractor.updateTag(data: $0)
+            tagInteractor.updateTag(data: $0)
         })
                              
         deletedTags.forEach({
-            passwordInteractor.externalDeleteTag(tagID: $0.tagID)
+            tagInteractor.externalDeleteTag(tagID: $0.tagID)
         })
         
         addedDeleted.forEach({

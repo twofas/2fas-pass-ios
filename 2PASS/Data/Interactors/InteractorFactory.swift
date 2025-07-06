@@ -46,7 +46,8 @@ public final class InteractorFactory {
             mainRepository: MainRepositoryImpl.shared,
             protectionInteractor: protectionInteractor(),
             uriInteractor: uriInteractor(),
-            deletedItemsInteractor: deletedItemsInteractor()
+            deletedItemsInteractor: deletedItemsInteractor(),
+            tagInteractor: tagInteractor()
         )
     }
     
@@ -116,6 +117,7 @@ public final class InteractorFactory {
         ExportInteractor(
             mainRepository: MainRepositoryImpl.shared,
             passwordInteractor: passwordInteractor(),
+            tagInteractor: tagInteractor(),
             uriInteractor: uriInteractor()
         )
     }
@@ -150,6 +152,7 @@ public final class InteractorFactory {
             passwordInteractor: passwordInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
             syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false),
+            tagInteractor: tagInteractor(),
             mainRepository: MainRepositoryImpl.shared
         )
     }
@@ -180,6 +183,7 @@ public final class InteractorFactory {
             passwordInteractor: passwordInteractor(),
             passwordImportInteractor: passwordImportInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
+            tagInteractor: tagInteractor(),
             autoFillCredentialsInteractor: autoFillCredentialsInteractor()
         )
     }
@@ -209,6 +213,7 @@ public final class InteractorFactory {
             localStorage: LocalStorageImpl(
                 passwordInteractor: passwordInteractor(),
                 deletedItemsInteractor: deletedItemsInteractor(),
+                tagInteractor: tagInteractor(),
                 mainRepository: MainRepositoryImpl.shared
             ),
             mainRepository: MainRepositoryImpl.shared,
@@ -267,6 +272,7 @@ public final class InteractorFactory {
         ConnectExportInteractor(
             mainRepository: MainRepositoryImpl.shared,
             passwordInteractor: passwordInteractor(),
+            tagInteractor: tagInteractor(),
             uriInteractor: uriInteractor()
         )
     }
@@ -289,6 +295,17 @@ public final class InteractorFactory {
     
     public func deletedItemsInteractor() -> DeletedItemsInteracting {
         DeletedItemsInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+    
+    public func passwordListInteractor() -> PasswordListInteracting {
+        PasswordListInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+    
+    public func tagInteractor() -> TagInteracting {
+        TagInteractor(
+            deletedItemsInteractor: deletedItemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
     }
 }
 

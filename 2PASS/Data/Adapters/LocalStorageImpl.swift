@@ -11,15 +11,18 @@ import Common
 final class LocalStorageImpl {
     private let passwordInteractor: PasswordInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
+    private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
     
     init(
         passwordInteractor: PasswordInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
+        tagInteractor: TagInteracting,
         mainRepository: MainRepository
     ) {
         self.passwordInteractor = passwordInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
+        self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
     }
 }
@@ -38,7 +41,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listAllTags() -> [ItemTagData] {
-        passwordInteractor.listAllTags()
+        tagInteractor.listAllTags()
     }
     
     func listTrashedPasswords() -> [PasswordData] {
@@ -103,15 +106,15 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func createTag(_ tag: ItemTagData) {
-        passwordInteractor.createTag(data: tag)
+        tagInteractor.createTag(data: tag)
     }
     
     func updateTag(_ tag: ItemTagData) {
-        passwordInteractor.updateTag(data: tag)
+        tagInteractor.updateTag(data: tag)
     }
     
     func removeTag(_ tagID: ItemTagID) {
-        passwordInteractor.deleteTag(tagID: tagID)
+        tagInteractor.deleteTag(tagID: tagID)
     }
     
     func removePassword(_ passwordID: PasswordID) {
