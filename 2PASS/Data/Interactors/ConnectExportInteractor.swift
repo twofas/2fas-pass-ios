@@ -17,11 +17,18 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     
     private let mainRepository: MainRepository
     private let passwordInteractor: PasswordInteracting
+    private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting, uriInteractor: URIInteracting) {
+    init(
+        mainRepository: MainRepository,
+        passwordInteractor: PasswordInteracting,
+        tagInteractor: TagInteracting,
+        uriInteractor: URIInteracting
+    ) {
         self.mainRepository = mainRepository
         self.passwordInteractor = passwordInteractor
+        self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
     }
     
@@ -61,7 +68,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     }
     
     func prepareTagsForConnectExport() async throws(ExportError) -> Data {
-        let tags = passwordInteractor.listAllTags()
+        let tags = tagInteractor.listAllTags()
             .map {
                 ConnectTag(
                     id: $0.id.uuidString,

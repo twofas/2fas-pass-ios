@@ -156,7 +156,7 @@ public final class CoreDataStack {
     private func parseError(with dict: [String: Any]) {
         guard let value = dict["NSSQLiteErrorDomain"] as? Int, value == 13 else { return }
         // swiftlint:disable line_length
-        presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past") // TODO: Add translation!
+        presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past")
         // swiftlint:enable line_length
     }
 }

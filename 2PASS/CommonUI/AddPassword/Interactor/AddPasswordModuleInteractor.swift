@@ -59,6 +59,7 @@ final class AddPasswordModuleInteractor {
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let fileIconInteractor: FileIconInteracting
     private let currentDateInteractor: CurrentDateInteracting
+    private let passwordListInteractor: PasswordListInteracting
     private let editPasswordID: PasswordID?
     
     private var modificationDate: Date?
@@ -72,6 +73,7 @@ final class AddPasswordModuleInteractor {
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         fileIconInteractor: FileIconInteracting,
         currentDateInteractor: CurrentDateInteracting,
+        passwordListInteractor: PasswordListInteracting,
         editPasswordID: PasswordID?,
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
@@ -83,6 +85,7 @@ final class AddPasswordModuleInteractor {
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.fileIconInteractor = fileIconInteractor
         self.currentDateInteractor = currentDateInteractor
+        self.passwordListInteractor = passwordListInteractor
         self.editPasswordID = editPasswordID
         self.changeRequest = changeRequest
     }
@@ -194,7 +197,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
     }
     
     func mostUsedUsernames() -> [String] {
-        passwordInteractor.mostUsedUsernames()
+        passwordListInteractor.mostUsedUsernames()
     }
     
     func normalizeURLString(_ str: String) -> String? {

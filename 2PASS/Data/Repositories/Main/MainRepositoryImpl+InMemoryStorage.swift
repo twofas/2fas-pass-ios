@@ -9,6 +9,9 @@ import Common
 import Storage
 
 extension MainRepositoryImpl {
+    
+    // MARK: Passwords
+    
     func createPassword(
         passwordID: PasswordID,
         name: String?,
@@ -113,6 +116,44 @@ extension MainRepositoryImpl {
     func deleteAllPasswords() {
         inMemoryStorage?.deleteAllPasswordEntities()
     }
+    
+    // MARK: Tags
+    
+    func createTag(_ tag: ItemTagData) {
+        inMemoryStorage?
+            .createTag(
+                tagID: tag.tagID,
+                name: tag.name,
+                modificationDate: tag.modificationDate,
+                position: Int16(tag.position),
+                vaultID: tag.vaultID,
+                color: tag.color
+            )
+    }
+    
+    func updateTag(_ tag: ItemTagData) {
+        inMemoryStorage?.updateTag(
+            tagID: tag.tagID,
+            name: tag.name,
+            modificationDate: tag.modificationDate,
+            position: Int16(tag.position),
+            vaultID: tag.vaultID,
+            color: tag.color)
+    }
+    
+    func deleteTag(tagID: ItemTagID) {
+        inMemoryStorage?.deleteTag(tagID: tagID)
+    }
+    
+    func listTags(options: TagListOptions) -> [ItemTagData] {
+        inMemoryStorage?.listTags(options: options) ?? []
+    }
+    
+    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date) {
+        inMemoryStorage?.batchUpdateRencryptedTags(tags, date: date)
+    }
+    
+    // MARK: Other
     
     func saveStorage() {
         Log("Save In-memory Storage", module: .mainRepository)

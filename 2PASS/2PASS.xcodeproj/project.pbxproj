@@ -219,6 +219,9 @@
 		C28231162C84EE6300AAE7A0 /* QueryItemsType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231142C84E6BE00AAE7A0 /* QueryItemsType.swift */; };
 		C28231182C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231172C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift */; };
 		C282311A2C84F29B00AAE7A0 /* EnterWordsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231192C84F29B00AAE7A0 /* EnterWordsViewController.swift */; };
+		C284D6B62E1AFD2600149FFA /* DeletedItemsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C284D6B52E1AFD2200149FFA /* DeletedItemsInteractor.swift */; };
+		C284D6B82E1B140F00149FFA /* TagInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C284D6B72E1B140B00149FFA /* TagInteractor.swift */; };
+		C284D6BA2E1B14B600149FFA /* PasswordListInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C284D6B92E1B14AF00149FFA /* PasswordListInteractor.swift */; };
 		C288423F2CFCF89B00FCFF2D /* Backup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2B0FC1B2CE91C4D005CFADD /* Backup.framework */; };
 		C28842452CFCF8F800FCFF2D /* MainRepositoryImpl+Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28842442CFCF8F800FCFF2D /* MainRepositoryImpl+Backup.swift */; };
 		C28842472CFD048900FCFF2D /* WebDAVBackupInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28842462CFD047F00FCFF2D /* WebDAVBackupInteractor.swift */; };
@@ -669,6 +672,9 @@
 		C28231142C84E6BE00AAE7A0 /* QueryItemsType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryItemsType.swift; sourceTree = "<group>"; };
 		C28231172C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLQueryItem_Sequence+.swift"; sourceTree = "<group>"; };
 		C28231192C84F29B00AAE7A0 /* EnterWordsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsViewController.swift; sourceTree = "<group>"; };
+		C284D6B52E1AFD2200149FFA /* DeletedItemsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedItemsInteractor.swift; sourceTree = "<group>"; };
+		C284D6B72E1B140B00149FFA /* TagInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagInteractor.swift; sourceTree = "<group>"; };
+		C284D6B92E1B14AF00149FFA /* PasswordListInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordListInteractor.swift; sourceTree = "<group>"; };
 		C28842442CFCF8F800FCFF2D /* MainRepositoryImpl+Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainRepositoryImpl+Backup.swift"; sourceTree = "<group>"; };
 		C28842462CFD047F00FCFF2D /* WebDAVBackupInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebDAVBackupInteractor.swift; sourceTree = "<group>"; };
 		C28842482CFD1E0A00FCFF2D /* PasswordImportInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordImportInteractor.swift; sourceTree = "<group>"; };
@@ -1655,6 +1661,8 @@
 		C2F81ECD2BE4285F008FD374 /* Interactors */ = {
 			isa = PBXGroup;
 			children = (
+				C284D6B92E1B14AF00149FFA /* PasswordListInteractor.swift */,
+				C284D6B72E1B140B00149FFA /* TagInteractor.swift */,
 				C26C43FD2BED7205000F63B0 /* InteractorFactory.swift */,
 				C233A7792DC183B6000F017F /* CurrentDateInteractor.swift */,
 				C2BCEE152DB6DC6D00763C8B /* TimeVerificationInteractor.swift */,
@@ -1683,6 +1691,7 @@
 				C2256BA12BE7E86A00E8748C /* SecurityInteractor.swift */,
 				C2A328AF2BEFD73A00BE73CC /* ProtectionInteractor.swift */,
 				C218E89D2C31D20C007E307E /* PasswordInteractor.swift */,
+				C284D6B52E1AFD2200149FFA /* DeletedItemsInteractor.swift */,
 				C2C883AC2C3AD28B00F6A8C0 /* SystemInteractor.swift */,
 				C2B609442C4DC7720041AC06 /* ConfigInteractor.swift */,
 				C2BCEF972C52EDBD004B3468 /* FileIconInteractor.swift */,
@@ -2419,7 +2428,9 @@
 				C2F81ED62BE44431008FD374 /* MainRepository.swift in Sources */,
 				C2F81ED12BE43F6E008FD374 /* CameraPermissionInteractor.swift in Sources */,
 				C2F81ED32BE43FAA008FD374 /* AppStateInteractor.swift in Sources */,
+				C284D6BA2E1B14B600149FFA /* PasswordListInteractor.swift in Sources */,
 				54878E592D7F13790073BFC8 /* ConnectExportInteractor.swift in Sources */,
+				C284D6B82E1B140F00149FFA /* TagInteractor.swift in Sources */,
 				C29308832D2EF46500CA8E89 /* MainRepositoryImpl+Scan.swift in Sources */,
 				C2370AFE2BE67C330059FBA6 /* MainRepositoryImpl+InMemoryStorage.swift in Sources */,
 				C2E5EAC52C767DD80091767C /* BiometryInteractor.swift in Sources */,
@@ -2511,6 +2522,7 @@
 				C2370AE92BE667D10059FBA6 /* MainRepositoryImpl+AppLock.swift in Sources */,
 				C2AA587D2CCE6E6F00DC3613 /* BackupImportInteractor.swift in Sources */,
 				C2DE428F2C7BA0EC00BD1A85 /* RecoveryKitLink.swift in Sources */,
+				C284D6B62E1AFD2600149FFA /* DeletedItemsInteractor.swift in Sources */,
 				C2B609432C4DC7210041AC06 /* MainRepositoryImpl+Config.swift in Sources */,
 				C2CBA2F52D187BDD009C4C37 /* WebDAVState.swift in Sources */,
 				C21422E02C8E47F200C978F9 /* DebugInteractor.swift in Sources */,

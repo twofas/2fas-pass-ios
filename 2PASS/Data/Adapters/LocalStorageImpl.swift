@@ -10,10 +10,19 @@ import Common
 
 final class LocalStorageImpl {
     private let passwordInteractor: PasswordInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
+    private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
     
-    init(passwordInteractor: PasswordInteracting, mainRepository: MainRepository) {
+    init(
+        passwordInteractor: PasswordInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting,
+        tagInteractor: TagInteracting,
+        mainRepository: MainRepository
+    ) {
         self.passwordInteractor = passwordInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
+        self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
     }
 }
@@ -28,11 +37,11 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listAllDeletedItems() -> [DeletedItemData] {
-        passwordInteractor.listDeletedItems()
+        deletedItemsInteractor.listDeletedItems()
     }
     
     func listAllTags() -> [ItemTagData] {
-        passwordInteractor.listAllTags()
+        tagInteractor.listAllTags()
     }
     
     func listTrashedPasswords() -> [PasswordData] {
@@ -40,7 +49,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func createDeletedItem(_ deletedItem: DeletedItemData) {
-        passwordInteractor.createDeletedItem(
+        deletedItemsInteractor.createDeletedItem(
             id: deletedItem.itemID,
             kind: deletedItem.kind,
             deletedAt: deletedItem.deletedAt
@@ -52,7 +61,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func updateDeletedItem(_ deletedItem: DeletedItemData) {
-        passwordInteractor.updateDeletedItem(
+        deletedItemsInteractor.updateDeletedItem(
             id: deletedItem.itemID,
             kind: deletedItem.kind,
             deletedAt: deletedItem.deletedAt
@@ -93,19 +102,19 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func removeDeletedItem(_ deletedItem: DeletedItemID) {
-        passwordInteractor.deleteDeletedItem(id: deletedItem)
+        deletedItemsInteractor.deleteDeletedItem(id: deletedItem)
     }
     
     func createTag(_ tag: ItemTagData) {
-        passwordInteractor.createTag(data: tag)
+        tagInteractor.createTag(data: tag)
     }
     
     func updateTag(_ tag: ItemTagData) {
-        passwordInteractor.updateTag(data: tag)
+        tagInteractor.updateTag(data: tag)
     }
     
     func removeTag(_ tagID: ItemTagID) {
-        passwordInteractor.deleteTag(id: tagID)
+        tagInteractor.deleteTag(tagID: tagID)
     }
     
     func removePassword(_ passwordID: PasswordID) {

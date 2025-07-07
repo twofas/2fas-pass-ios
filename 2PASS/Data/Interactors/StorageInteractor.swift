@@ -4,7 +4,7 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import Foundation
+import UIKit
 import Common
 import CryptoKit
 import LocalAuthentication
@@ -17,7 +17,7 @@ public protocol StorageInteracting: AnyObject {
 }
 
 extension StorageInteracting {
- 
+    
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID()) -> VaultID? {
         createNewVault(masterKey: masterKey, appKey: appKey, vaultID: vaultID, creationDate: nil, modificationDate: nil)
     }
@@ -98,8 +98,7 @@ extension StorageInteractor: StorageInteracting {
             excludeProtectionLevels: mainRepository.isMainAppProcess ? [] : Config.autoFillExcludeProtectionLevels
         )
         
-        // TODO: Import tags to in-memory storage
-        //let tags = mainRepository.listEncryptedTags(in: vaultID)
+        let tags = mainRepository.listEncryptedTags(in: vaultID)
         
         let group = DispatchGroup()
         
@@ -161,6 +160,26 @@ extension StorageInteractor: StorageInteracting {
             }
         }
         
+        for tag in tags {
+            group.enter()
+            
+            let decryptedName = decryptData(tag.name, protectionLevel: .normal) ?? "" // no other fail available
+            
+            DispatchQueue.main.async {
+                self.mainRepository.createTag(
+                    .init(
+                        tagID: tag.tagID,
+                        vaultID: tag.vaultID,
+                        name: decryptedName,
+                        color: UIColor(hexString: tag.color),
+                        position: tag.position,
+                        modificationDate: tag.modificationDate
+                    )
+                )
+                group.leave()
+            }
+        }
+        
         group.notify(queue: .main) { [weak self] in
             Task.detached(priority: .utility) {
                 try await self?.autoFillInteractor.syncSuggestions()
@@ -181,21 +200,21 @@ extension StorageInteractor: StorageInteracting {
     func decryptData(
         _ data: Data?,
         protectionLevel: PasswordProtectionLevel) -> String? {
-        guard let data else { return nil }
-        guard let key = mainRepository.getKey(
-            isPassword: false,
-            protectionLevel: protectionLevel
-        ) else {
-            Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
-            return nil
+            guard let data else { return nil }
+            guard let key = mainRepository.getKey(
+                isPassword: false,
+                protectionLevel: protectionLevel
+            ) else {
+                Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
+                return nil
+            }
+            
+            guard let value = mainRepository.decrypt(data, key: key) else {
+                Log("StorageInteractor - can't decrypt data", module: .interactor, severity: .error)
+                return nil
+            }
+            return String(data: value, encoding: .utf8)
         }
-        
-        guard let value = mainRepository.decrypt(data, key: key) else {
-            Log("StorageInteractor - can't decrypt data", module: .interactor, severity: .error)
-            return nil
-        }
-        return String(data: value, encoding: .utf8)
-    }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {
         let date = mainRepository.currentDate
@@ -300,7 +319,7 @@ extension StorageInteractor: StorageInteracting {
         mainRepository.selectVault(vaultID)
         
         Log("StorageInteractor - selected vault update!", module: .interactor)
-
+        
         return true
     }
 }

@@ -23,13 +23,20 @@ public protocol ExportInteracting: AnyObject {
 final class ExportInteractor {
     private let mainRepository: MainRepository
     private let passwordInteractor: PasswordInteracting
+    private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     private let queue: DispatchQueue
     private let writeQueue: DispatchQueue
     
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting, uriInteractor: URIInteracting) {
+    init(
+        mainRepository: MainRepository,
+        passwordInteractor: PasswordInteracting,
+        tagInteractor: TagInteracting,
+        uriInteractor: URIInteracting
+    ) {
         self.mainRepository = mainRepository
         self.passwordInteractor = passwordInteractor
+        self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
         self.queue = DispatchQueue(label: "ExportQueue", qos: .userInitiated, attributes: .concurrent)
         self.writeQueue = DispatchQueue(label: "ExportWriteArray", qos: .userInitiated)
@@ -52,7 +59,7 @@ extension ExportInteractor: ExportInteracting {
             
             DispatchQueue.main.async {
                 let passwords = self.mainRepository.listPasswords(options: .allNotTrashed)
-                let tags = self.passwordInteractor.listAllTags()
+                let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []
                 
                 DispatchQueue.global(qos: .userInitiated).async {

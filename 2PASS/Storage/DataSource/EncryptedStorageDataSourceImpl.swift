@@ -277,25 +277,35 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     }
     
     public func updateEncryptedTag(_ tag: ItemTagEncryptedData) {
-        guard let entity = TagEncryptedEntity.find(id: tag.id, on: context) else {
-            Log("No entity available to update TagEncryptedEntity", module: .storage)
-            return
-        }
-        entity.update(with: tag)
+        TagEncryptedEntity.update(from: tag, on: context)
     }
     
-    public func deleteEncryptedTag(id: ItemTagID) -> Bool {
-        guard let entity = TagEncryptedEntity.find(id: id, on: context) else {
-            Log("No entity available to delete TagEncryptedEntity", module: .storage)
-            return false
-        }
-        context.delete(entity)
-        return true
+    public func deleteEncryptedTag(tagID: ItemTagID) {
+        TagEncryptedEntity.delete(on: context, tagID: tagID)
     }
     
     public func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData] {
         TagEncryptedEntity.list(on: context, in: vaultID)
             .map(ItemTagEncryptedData.init)
+    }
+    
+    public func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vaultID: VaultID) {
+        let listAll: [ItemTagID: TagEncryptedEntity] = TagEncryptedEntity.list(on: context, in: vaultID)
+            .reduce(into: [:]) { result, entity in
+                result[entity.tagID] = entity
+            }
+        for tag in tags {
+            if let entity = listAll[tag.tagID] {
+                entity.update(from: tag)
+            } else {
+                Log("Error while searching for Tag Encrypted Entity \(tag.tagID)")
+            }
+        }
+    }
+    
+    public func deleteAllEncryptedTags(in vault: VaultID) {
+        let listAll = TagEncryptedEntity.list(on: context, in: vault)
+        listAll.forEach { TagEncryptedEntity.delete(on: context, entity: $0) }
     }
     
     public func warmUp() {

@@ -10,6 +10,7 @@ import Security
 import CryptoKit
 import LocalAuthentication
 import Backup
+import Storage
 
 enum HMACStringReturnType {
     case hex
@@ -313,11 +314,18 @@ protocol MainRepository: AnyObject {
     func createInMemoryStorage()
     func destroyInMemoryStorage()
     
+    // MARK: Tags
+    func createTag(_ tag: ItemTagData)
+    func updateTag(_ tag: ItemTagData)
+    func deleteTag(tagID: ItemTagID)
+    func listTags(options: TagListOptions) -> [ItemTagData]
+    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
+    
     // MARK: - Encrypted Storage
     
     func saveEncryptedStorage()
     
-    // MARK: Passwords
+    // MARK: Encrypted Passwords
     
     func createEncryptedPassword(
         passwordID: PasswordID,
@@ -392,11 +400,13 @@ protocol MainRepository: AnyObject {
     func deleteEncryptedWebBrowser(id: UUID)
     func listEncryptedWebBrowsers() -> [WebBrowserEncryptedData]
     
-    // MARK: - Tags
+    // MARK: - Encrypted Tags
     func createEncryptedTag(_ tag: ItemTagEncryptedData)
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
-    @discardableResult func deleteEncryptedTag(id: ItemTagID) -> Bool
+    func deleteEncryptedTag(tagID: ItemTagID)
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
+    func deleteAllEncryptedTags(in vault: VaultID)
     
     // MARK: - Sort
     var sortType: SortType? { get }

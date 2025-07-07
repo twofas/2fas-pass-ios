@@ -104,8 +104,8 @@ final class TagEntity: NSManagedObject {
         context.delete(entity)
     }
     
-    @nonobjc static func deleteAllTagEntities(on context: NSManagedObjectContext, vaultID: VaultID) {
-        let items = listItems(on: context, options: .all(vaultID))
+    @nonobjc static func deleteAllTagEntities(on context: NSManagedObjectContext) {
+        let items = listItems(on: context, options: .all)
         items.forEach { item in
             context.delete(item)
         }
@@ -115,11 +115,13 @@ final class TagEntity: NSManagedObject {
 private extension TagEntity {
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
-        predicate: NSPredicate,
+        predicate: NSPredicate?,
         sortDescriptors: [NSSortDescriptor]?
     ) -> [TagEntity] {
         let fetchRequest = TagEntity.fetchRequest()
-        fetchRequest.predicate = predicate
+        if let predicate {
+            fetchRequest.predicate = predicate
+        }
         if let sortDescriptors {
             fetchRequest.sortDescriptors = sortDescriptors
         }

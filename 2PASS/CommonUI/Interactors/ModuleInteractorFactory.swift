@@ -34,6 +34,7 @@ public final class ModuleInteractorFactory {
             passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             currentDateInteractor: InteractorFactory.shared.currentDateInteractor(),
+            passwordListInteractor: InteractorFactory.shared.passwordListInteractor(),
             editPasswordID: editPasswordID,
             changeRequest: changeRequest
         )
@@ -48,7 +49,8 @@ public final class ModuleInteractorFactory {
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
             autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
-            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
+            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
+            passwordListInteractor: InteractorFactory.shared.passwordListInteractor()
         )
     }
     

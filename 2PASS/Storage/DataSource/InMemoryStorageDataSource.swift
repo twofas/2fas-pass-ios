@@ -76,7 +76,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         color: UIColor?
     )
     
-    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date, vaultID: VaultID)
+    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
     
     func getTagEntity(
         tagID: ItemTagID
@@ -87,7 +87,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     ) -> [ItemTagData]
     
     func deleteTag(tagID: ItemTagID)
-    func deleteAllTagEntities(for vaultID: VaultID)
+    func deleteAllTagEntities()
     
     // MARK: - Other
     
