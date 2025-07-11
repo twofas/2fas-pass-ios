@@ -11,7 +11,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.twofas.org.TwoPASS.dev</string>
+	<string>com.twofas.org.TwoPASS</string>
 	<key>PROJECT_ID</key>
 	<string>pass-419709</string>
 	<key>STORAGE_BUCKET</key>
@@ -27,6 +27,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:805053880916:ios:8e6a9438ff393956eaabc1</string>
+	<string>1:805053880916:ios:dc5df66a25438990eaabc1</string>
 </dict>
 </plist>

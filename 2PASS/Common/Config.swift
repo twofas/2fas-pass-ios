@@ -7,8 +7,22 @@
 import Foundation
 
 public enum Config {
+    
     public static let tosURL = URL(string: "https://2fas.com/terms-of-service/")!
+    
+    #if PROD
     public static let suiteName = "group.twopass.twofas.com"
+    #else
+    public static let suiteName = "group.dev.twopass.twofas.com"
+    #endif
+    
+    #if PROD
+    public static let keychainGroup = "ZY8UR5ADFW.group.com.twofas.org.TwoPASS"
+    public static let keychainSharedGroup = "ZY8UR5ADFW.group.com.twofas.org.TwoPASS.Shared"
+    #else
+    public static let keychainGroup = "ZY8UR5ADFW.group.com.twofas.org.TwoPASS.dev"
+    public static let keychainSharedGroup = "ZY8UR5ADFW.group.com.twofas.org.TwoPASS.dev.Shared"
+    #endif
 
     public static let maxIdentifierLength: Int = 128
     public static let minMasterPasswordLength = 9
@@ -32,7 +46,11 @@ public enum Config {
     
     public static let cloudSchemaVersion = 1
     public static let indexSchemaVersion = 1
+    #if PROD
     public static let containerIdentifier = "iCloud.com.twopass.org.Vault"
+    #else
+    public static let containerIdentifier = "iCloud.com.twopass.org.dev.Vault"
+    #endif
     
     public static let maximumExternalImportFileSize = 1024 * 1024 * 20
     
@@ -48,12 +66,19 @@ public enum Config {
         name.twoLetters
     }
     
+    #if PROD
     public static let twoFASBaseURL = URL(string: "https://pass.2fas.com/")!
-    public static let devTwoFASBaseURL = URL(string: "https://dev-pass.2fas.com/")!
-    
+    #else
+    public static let twoFASBaseURL = URL(string: "https://dev-pass.2fas.com/")!
+    #endif
+        
     public enum Connect {
+        #if PROD
         public static let baseURL = URL(string: "wss://pass.2fas.com/proxy/mobile/")!
-        public static let devBaseURL = URL(string: "wss://dev-pass.2fas.com/proxy/mobile/")!
+        #else
+        public static let baseURL = URL(string: "wss://dev-pass.2fas.com/proxy/mobile/")!
+        #endif
+        
         public static let schemeVersion = 1
         
         public static let sessionIdByteCount = 16
@@ -67,8 +92,13 @@ public enum Config {
     }
     
     public enum Payment {
+        #if PROD
         public static let apiKey = "appl_LGhEtuwpiAFxecagLsZOLhrQecu"
         public static let subscriptionId = "unlimited" // entitlement_id
+        #else
+        public static let apiKey = "appl_yjcWohjWjdFeWjdyYEUuCcTPagb"
+        public static let subscriptionId = "unlimited" // entitlement_id
+        #endif
         
         public static let freeEntitlements = SubscriptionPlan.Entitlements(itemsLimit: 50, connectedBrowsersLimit: 1, multiDeviceSync: false)
         public static let premiumEntitlements = SubscriptionPlan.Entitlements(itemsLimit: nil, connectedBrowsersLimit: nil, multiDeviceSync: true)

@@ -8,7 +8,7 @@
 	<true/>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.com.twopass.org.Vault</string>
+		<string>iCloud.com.twopass.org.dev.Vault</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>
@@ -16,12 +16,12 @@
 	</array>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.twopass.twofas.com</string>
+		<string>group.dev.twopass.twofas.com</string>
 	</array>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)group.com.twofas.org.TwoPASS</string>
-		<string>$(AppIdentifierPrefix)group.com.twofas.org.TwoPASS.Shared</string>
+		<string>$(AppIdentifierPrefix)group.com.twofas.org.TwoPASS.dev</string>
+		<string>$(AppIdentifierPrefix)group.com.twofas.org.TwoPASS.dev.Shared</string>
 	</array>
 </dict>
 </plist>

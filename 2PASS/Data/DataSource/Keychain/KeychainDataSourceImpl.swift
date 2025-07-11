@@ -6,13 +6,14 @@
 
 import Foundation
 import KeychainAccess
+import Common
 
 final class KeychainDataSourceImpl {
-    private let keychain = Keychain(service: "TWOPASS")
+    private let keychain = Keychain(service: "TWOPASS", accessGroup: Config.keychainGroup)
             .synchronizable(false)
             .accessibility(.afterFirstUnlockThisDeviceOnly)
     
-    private let sharedKeychain = Keychain(service: "TWOPASS", accessGroup: "ZY8UR5ADFW.group.com.twofas.org.TwoPASS.Shared")
+    private let sharedKeychain = Keychain(service: "TWOPASS", accessGroup: Config.keychainSharedGroup)
             .synchronizable(false)
             .accessibility(.afterFirstUnlockThisDeviceOnly)
     
