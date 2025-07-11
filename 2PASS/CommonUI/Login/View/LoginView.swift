@@ -82,6 +82,13 @@ public struct LoginView: View {
                 }
             }
             .readableContentMargins()
+            .navigationDestination(isPresented: $presenter.showMigrationFailed) {
+                ResultView(kind: .failure, title: Text(T.migrationErrorTitle.localizedKey)) {
+                    Button(T.commonClose) {
+                        presenter.onMigrationFailedClose()
+                    }
+                }
+            }
         }
     }
     

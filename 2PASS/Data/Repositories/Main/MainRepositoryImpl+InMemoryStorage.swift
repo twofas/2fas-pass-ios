@@ -21,8 +21,8 @@ extension MainRepositoryImpl {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) {
@@ -50,8 +50,8 @@ extension MainRepositoryImpl {
         notes: String?,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) {

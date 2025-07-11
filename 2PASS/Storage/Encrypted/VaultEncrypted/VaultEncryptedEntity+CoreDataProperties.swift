@@ -18,6 +18,7 @@ extension VaultEncryptedEntity {
     @NSManaged var trustedKey: Data
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
+    @NSManaged var items: Set<ItemEncryptedEntity>?
     @NSManaged var passwords: Set<PasswordEncryptedEntity>?
 }
 
@@ -34,6 +35,18 @@ extension VaultEncryptedEntity {
 
     @objc(removePasswords:)
     @NSManaged func removeFromPasswords(_ values: Set<PasswordEncryptedEntity>)
+    
+    @objc(addItemsObject:)
+    @NSManaged func addToItems(_ value: ItemEncryptedEntity)
+
+    @objc(removeItemsObject:)
+    @NSManaged func removeFromItems(_ value: ItemEncryptedEntity)
+
+    @objc(addItems:)
+    @NSManaged func addToItems(_ values: Set<ItemEncryptedEntity>)
+
+    @objc(removeItems:)
+    @NSManaged func removeFromItems(_ values: Set<ItemEncryptedEntity>)
 }
 
 extension VaultEncryptedEntity: Identifiable {}
@@ -46,7 +59,7 @@ extension VaultEncryptedEntity {
             trustedKey: trustedKey,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            isEmpty: passwords?.isEmpty ?? true
+            isEmpty: items?.isEmpty ?? true
         )
     }
 }

@@ -65,11 +65,11 @@ extension PasswordEncryptedEntity {
             ),
             trashedStatus: {
                 if isTrashed, let trashingDate {
-                    return PasswordTrashedStatus.yes(trashingDate: trashingDate)
+                    return ItemTrashedStatus.yes(trashingDate: trashingDate)
                 }
                 return .no
             }(),
-            protectionLevel: PasswordProtectionLevel(level: level),
+            protectionLevel: ItemProtectionLevel(level: level),
             vaultID: vault.vaultID,
             uris: { () -> PasswordEncryptedURIs? in
                 guard let uris, let urisMatching else { return nil }

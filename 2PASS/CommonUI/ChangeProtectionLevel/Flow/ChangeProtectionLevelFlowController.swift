@@ -12,19 +12,19 @@ protocol ChangeProtectionLevelFlowControllerParent: AnyObject {
 }
 
 protocol ChangeProtectionLevelFlowControlling: AnyObject {
-    func toSelectedProtectionLevel(value: PasswordProtectionLevel)
+    func toSelectedProtectionLevel(value: ItemProtectionLevel)
     func close()
 }
 
 final class ChangeProtectionLevelFlowController: FlowController {
     private weak var parent: ChangeProtectionLevelFlowControllerParent?
-    private var completion: ((PasswordProtectionLevel) -> Void)?
+    private var completion: ((ItemProtectionLevel) -> Void)?
     
     static func push(
         on navigationController: UINavigationController,
         parent: ChangeProtectionLevelFlowControllerParent,
-        current: PasswordProtectionLevel,
-        completion: @escaping (PasswordProtectionLevel) -> Void
+        current: ItemProtectionLevel,
+        completion: @escaping (ItemProtectionLevel) -> Void
     ) {
         let view = ChangeProtectionLevelViewController()
         let flowController = ChangeProtectionLevelFlowController(viewController: view)
@@ -42,7 +42,7 @@ final class ChangeProtectionLevelFlowController: FlowController {
 }
 
 extension ChangeProtectionLevelFlowController: ChangeProtectionLevelFlowControlling {
-    func toSelectedProtectionLevel(value: PasswordProtectionLevel) {
+    func toSelectedProtectionLevel(value: ItemProtectionLevel) {
         completion?(value)
     }
     

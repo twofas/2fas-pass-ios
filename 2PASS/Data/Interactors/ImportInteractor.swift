@@ -606,7 +606,7 @@ private extension ImportInteractor {
         else {
             return nil
         }
-        let protectionLevel: PasswordProtectionLevel = {
+        let protectionLevel: ItemProtectionLevel = {
             switch exchangeLogin.securityType {
             case 0: .topSecret
             case 1: .confirm

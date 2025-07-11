@@ -85,7 +85,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
 }
 
 private extension ExternalServiceImportInteractor {
-    func encryptPassword(_ string: String, for protectionLevel: PasswordProtectionLevel) -> Data? {
+    func encryptPassword(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
         guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel),
               let passwordData = string.data(using: .utf8),
               let password = mainRepository.encrypt(passwordData, key: key) else {

@@ -68,7 +68,7 @@ final class AppSecurityPresenter {
             interactor.limitOfFailedAttempts = limitOfFailedAttempts
         }
     }
-    private(set) var defaultSecurityTier: PasswordProtectionLevel
+    private(set) var defaultSecurityTier: ItemProtectionLevel
     
     private let interactor: AppSecurityModuleInteracting
     

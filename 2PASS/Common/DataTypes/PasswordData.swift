@@ -19,8 +19,8 @@ public struct PasswordData: Hashable, Identifiable {
     public let creationDate: Date
     public let modificationDate: Date
     public let iconType: PasswordIconType
-    public let trashedStatus: PasswordTrashedStatus
-    public let protectionLevel: PasswordProtectionLevel
+    public let trashedStatus: ItemTrashedStatus
+    public let protectionLevel: ItemProtectionLevel
     public let uris: [PasswordURI]?
     public let tagIds: [ItemTagID]?
     
@@ -33,8 +33,8 @@ public struct PasswordData: Hashable, Identifiable {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) {

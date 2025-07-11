@@ -774,7 +774,7 @@ extension MainRepositoryImpl {
         hmac(key: seed.hexEncodedString(), message: vaultID.exportString() + "/eKey")
     }
     
-    func getKey(isPassword: Bool, protectionLevel: PasswordProtectionLevel) -> SymmetricKey? {
+    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey? {
         switch (isPassword, protectionLevel) {
         case (false, .normal), (false, .confirm), (true, .normal):
             if let _trustedKeySymm {

@@ -21,7 +21,7 @@ protocol ViewPasswordFlowControlling: AnyObject {
 
 final class ViewPasswordFlowController: FlowController {
     private weak var parent: ViewPasswordFlowControllerParent?
-    private var completion: ((PasswordProtectionLevel) -> Void)?
+    private var completion: ((ItemProtectionLevel) -> Void)?
     
     static func push(
         on navigationController: UINavigationController,

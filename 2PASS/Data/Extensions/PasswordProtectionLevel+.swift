@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-extension PasswordProtectionLevel {
+extension ItemProtectionLevel {
     var dataFieldsVaultEncryptionKey: VaultEncryptionKey {
         switch self {
         case .normal, .confirm: .trusted

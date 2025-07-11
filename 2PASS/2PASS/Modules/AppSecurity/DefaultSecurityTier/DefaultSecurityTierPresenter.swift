@@ -10,7 +10,7 @@ import Common
 @Observable
 final class DefaultSecurityTierPresenter {
     
-    var selected: PasswordProtectionLevel {
+    var selected: ItemProtectionLevel {
         didSet {
             interactor.defaultSecurityTier = selected
         }

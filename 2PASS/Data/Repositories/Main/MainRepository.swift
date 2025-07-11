@@ -159,7 +159,7 @@ protocol MainRepository: AnyObject {
     )
     func createSymmetricKeyFromSecureEnclave(from key: Data) -> SymmetricKey?
     func createSymmetricKey(from key: Data) -> SymmetricKey
-    func getKey(isPassword: Bool, protectionLevel: PasswordProtectionLevel) -> SymmetricKey?
+    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey?
     
     func encrypt(
         _ data: Data,
@@ -276,8 +276,8 @@ protocol MainRepository: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     )
@@ -289,8 +289,8 @@ protocol MainRepository: AnyObject {
         notes: String?,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     )
@@ -325,44 +325,41 @@ protocol MainRepository: AnyObject {
     
     func saveEncryptedStorage()
     
-    // MARK: Encrypted Passwords
+    // MARK: Encrypted Items
     
     func createEncryptedPassword(
         passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     )
     func updateEncryptedPassword(
         passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     )
-    func encryptedPasswordsBatchUpdate(_ passwords: [PasswordEncryptedData])
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> PasswordEncryptedData?
-    func listEncryptedPasswords(in vaultID: VaultID) -> [PasswordEncryptedData]
-    func listEncryptedPasswords(in vaultID: VaultID, excludeProtectionLevels: Set<PasswordProtectionLevel>) -> [PasswordEncryptedData]
+    func encryptedPasswordsBatchUpdate(_ passwords: [ItemEncryptedData])
+    func getEncryptedPasswordEntity(passwordID: PasswordID) -> ItemEncryptedData?
+    func listEncryptedPasswords(in vaultID: VaultID) -> [ItemEncryptedData]
+    func listEncryptedPasswords(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
     func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID)
     func deleteEncryptedPassword(passwordID: PasswordID)
     func deleteAllEncryptedPasswords()
+    
+    func shouldMigrate() -> Bool
+    func migrateDatabaseFromPasswordsToItems() throws(MigrationError)
     
     // MARK: Encrypted Vaults
     
@@ -440,8 +437,8 @@ protocol MainRepository: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
         uris: PasswordEncryptedURIs?,
         metadata: Data
@@ -455,8 +452,8 @@ protocol MainRepository: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: PasswordEncryptedURIs?,
         metadata: Data
     )
@@ -551,8 +548,8 @@ protocol MainRepository: AnyObject {
     func warningFeedback()
     
     // MARK: - Config
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel)
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
     var defaultPassswordListAction: PasswordListAction { get }

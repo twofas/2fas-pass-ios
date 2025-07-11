@@ -183,16 +183,16 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.synchronize()
     }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         guard let string = userDefaults.string(forKey: Keys.defaultProtectionLevel.rawValue),
-              let value = PasswordProtectionLevel(rawValue: string)
+              let value = ItemProtectionLevel(rawValue: string)
         else {
-            return PasswordProtectionLevel.default
+            return ItemProtectionLevel.default
         }
         return value
     }
     
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel) {
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
         userDefaults.setValue(value.rawValue, forKey: Keys.defaultProtectionLevel.rawValue)
         userDefaults.synchronize()
     }

@@ -9,17 +9,25 @@ import Common
 import CommonCrypto
 
 public enum LoginMasterPasswordResult {
-    case success
+    case success(_ migrationError: MigrationError? = nil)
     case invalidPassword
     case invalidPasswordAppLocked
     case appLocked
+    
+    static var success: LoginMasterPasswordResult {
+        .success()
+    }
 }
 
 public enum LoginBiometryResult {
-    case success
+    case success(_ migrationError: MigrationError? = nil)
     case failure
     case unavailable
     case appLocked
+    
+    static var success: LoginBiometryResult {
+        .success()
+    }
 }
 
 public protocol LoginInteracting: AnyObject {
@@ -210,9 +218,9 @@ extension LoginInteractor: LoginInteracting {
             completion(.invalidPassword)
             return
         }
-        guard let trustedPasswordName = mainRepository
+        guard let trustedContent = mainRepository
             .listEncryptedPasswords(in: vault.vaultID)
-            .filter({ $0.protectionLevel != .topSecret }).first?.name else {
+            .filter({ $0.protectionLevel != .topSecret }).first?.content else {
             Log("LoginInteractor: Can't get Trusted Password", module: .interactor, severity: .error)
             completion(.invalidPassword)
             return
@@ -226,12 +234,12 @@ extension LoginInteractor: LoginInteracting {
             
         }
         if mainRepository.decrypt(
-            trustedPasswordName,
+            trustedContent,
             key: mainRepository.createSymmetricKey(from: trustedKey)
         ) != nil {
             securityInteractor.markCorrectLogin()
-            userLoggedIn(using: masterPassword) { [weak self] in
-                completion(.success)
+            userLoggedIn(using: masterPassword) { [weak self] result in
+                completion(.success(result.migrationError))
                 self?.protectionInteractor.clearAfterInit()
             }
             return
@@ -358,8 +366,8 @@ private extension LoginInteractor {
             Log("LoginInteractor: Master Password verified succesfully", module: .interactor)
             securityInteractor.markCorrectLogin()
             if login {
-                userLoggedIn(using: masterPassword) { [weak self] in
-                    completion(.success)
+                userLoggedIn(using: masterPassword) { [weak self] result in
+                    completion(.success(result.migrationError))
                     self?.protectionInteractor.clearAfterInit()
                 }
             } else {
@@ -389,8 +397,8 @@ private extension LoginInteractor {
             case .success(let masterKey):
                 self?.securityInteractor.markCorrectLogin()
                 if login {
-                    self?.userLoggedInUsingBiometry(with: masterKey, completion: { [weak self] in
-                        completion(.success)
+                    self?.userLoggedInUsingBiometry(with: masterKey, completion: { [weak self] result in
+                        completion(.success(result.migrationError))
                         self?.protectionInteractor.clearAfterInit()
                     })
                 } else {
@@ -408,25 +416,25 @@ private extension LoginInteractor {
         }
     }
     
-    func userLoggedIn(using masterPassword: String, completion: @escaping () -> Void) {
+    func userLoggedIn(using masterPassword: String, completion: @escaping (StorageInitializeResult) -> Void) {
         Log("LoginInteractor: User logged in using Master Password", module: .interactor)
         protectionInteractor.setMasterKey(for: masterPassword)
         protectionInteractor.setupKeys()
-        storageInteractor.initialize { [weak self] in
-            completion()
+        storageInteractor.initialize { [weak self] result in
+            completion(result)
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)
         }
     }
     
-    func userLoggedInUsingBiometry(with masterKey: MasterKey, completion: @escaping () -> Void) {
+    func userLoggedInUsingBiometry(with masterKey: MasterKey, completion: @escaping (StorageInitializeResult) -> Void) {
         Log("LoginInteractor: login using Biometry", module: .interactor)
         protectionInteractor.restoreEntropy()
         protectionInteractor.createSeed()
         protectionInteractor.createSalt()
         protectionInteractor.setMasterKey(masterKey)
         protectionInteractor.setupKeys()
-        storageInteractor.initialize { [weak self] in
-            completion()
+        storageInteractor.initialize { [weak self] result in
+            completion(result)
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)
         }
     }

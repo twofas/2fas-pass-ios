@@ -174,7 +174,9 @@ extension StartupInteractor: StartupInteracting {
             self?.protectionInteractor.selectVault()
             self?.protectionInteractor.setupKeys()
             self?.protectionInteractor.saveEntropy()
-            self?.storageInteractor.initialize(completion: completion)
+            self?.storageInteractor.initialize { _ in
+                completion()
+            }
         }
     }
     
@@ -215,7 +217,7 @@ extension StartupInteractor: StartupInteracting {
         protectionInteractor.selectVault()
         protectionInteractor.setupKeys()
         protectionInteractor.saveEntropy()
-        storageInteractor.initialize(completion: {})
+        storageInteractor.initialize(completion: { _ in })
         
         return true
     }

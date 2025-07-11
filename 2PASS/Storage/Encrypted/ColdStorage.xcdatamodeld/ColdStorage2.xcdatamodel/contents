@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24F74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="DeletedItemEncryptedEntity" representedClassName=".DeletedItemEncryptedEntity" syncable="YES">
+        <attribute name="deletedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="itemID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="kind" attributeType="String"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="ItemEncryptedEntity" representedClassName=".ItemEncryptedEntity" syncable="YES">
+        <attribute name="content" attributeType="Binary"/>
+        <attribute name="contentType" attributeType="String"/>
+        <attribute name="contentVersion" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="isTrashed" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="itemID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="level" attributeType="String"/>
+        <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="tagIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
+        <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="vault" maxCount="1" deletionRule="Nullify" destinationEntity="VaultEncryptedEntity" inverseName="items" inverseEntity="VaultEncryptedEntity"/>
+    </entity>
+    <entity name="PasswordEncryptedEntity" representedClassName=".PasswordEncryptedEntity" syncable="YES">
+        <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="iconCustomURL" optional="YES" attributeType="Binary"/>
+        <attribute name="iconDomain" optional="YES" attributeType="Binary"/>
+        <attribute name="iconFile" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="iconType" attributeType="String"/>
+        <attribute name="isTrashed" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="labelColor" optional="YES" attributeType="String"/>
+        <attribute name="labelTitle" optional="YES" attributeType="Binary"/>
+        <attribute name="level" attributeType="String"/>
+        <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="Binary"/>
+        <attribute name="notes" optional="YES" attributeType="Binary"/>
+        <attribute name="password" optional="YES" attributeType="Binary"/>
+        <attribute name="passwordID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="tagIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
+        <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="uris" optional="YES" attributeType="Binary" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[URL]"/>
+        <attribute name="urisMatching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
+        <attribute name="username" optional="YES" attributeType="Binary"/>
+        <relationship name="vault" maxCount="1" deletionRule="Nullify" destinationEntity="VaultEncryptedEntity" inverseName="passwords" inverseEntity="VaultEncryptedEntity"/>
+    </entity>
+    <entity name="TagEncryptedEntity" representedClassName=".TagEncryptedEntity" syncable="YES">
+        <attribute name="color" optional="YES" attributeType="String"/>
+        <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="Binary"/>
+        <attribute name="position" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="tagID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="VaultEncryptedEntity" representedClassName=".VaultEncryptedEntity" syncable="YES">
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="trustedKey" attributeType="Binary"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ItemEncryptedEntity" inverseName="vault" inverseEntity="ItemEncryptedEntity"/>
+        <relationship name="passwords" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PasswordEncryptedEntity" inverseName="vault" inverseEntity="PasswordEncryptedEntity"/>
+    </entity>
+    <entity name="WebBrowserEncryptedEntity" representedClassName=".WebBrowserEncryptedEntity" syncable="YES">
+        <attribute name="extensionName" attributeType="Binary"/>
+        <attribute name="firstConnectionDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastConnectionDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="Binary"/>
+        <attribute name="nextSessionId" optional="YES" attributeType="Binary"/>
+        <attribute name="publicKey" attributeType="Binary"/>
+        <attribute name="version" attributeType="Binary"/>
+        <attribute name="webBrowserID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+</model>

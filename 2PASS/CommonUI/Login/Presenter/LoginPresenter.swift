@@ -31,7 +31,8 @@ public final class LoginPresenter {
     private(set) var lockTimeRemaining: Duration?
     private(set) var isBiometryScanning: Bool = false
     private(set) var hasAppReset = false
-
+    
+    var showMigrationFailed = false
     var hideKeyboard: Callback?
     
     var showBiometryButton: Bool {
@@ -105,11 +106,10 @@ extension LoginPresenter {
         
         interactor.verifyPassword(loginInput) { [weak self] result in
             switch result {
-            case .success:
+            case .success(let migrationError):
                 self?.hideKeyboard?()
-
+                
                 self?.loginInput = ""
-                self?.loginSuccessful()
                 
                 if self?.isBiometryAllowed == true
                     && self?.interactor.shouldRequestForBiometryToLogin == true {
@@ -117,12 +117,18 @@ extension LoginPresenter {
                         self?.interactor.setMasterKey(for: loginInput)
                     }
                 }
+                
+                if migrationError != nil {
+                    self?.showMigrationFailed = true
+                } else {
+                    self?.loginSuccessful()
+                }
             case .appLocked:
                 self?.loginInput = ""
                 self?.refreshStatus()
             case .invalidPassword:
                 self?.refreshStatus()
-
+                
                 Task { @MainActor in
                     self?.errorDescription = T.lockScreenUnlockInvalidPassword
                     self?.inputError = true
@@ -141,8 +147,12 @@ extension LoginPresenter {
             self?.isBiometryScanning = false
             
             switch result {
-            case .success:
-                self?.loginSuccessful()
+            case .success(let migrationError):
+                if migrationError != nil {
+                    self?.showMigrationFailed = true
+                } else {
+                    self?.loginSuccessful()
+                }
             case .failure, .unavailable:
                 self?.biometryFailed = true
                 self?.errorDescription = T.lockScreenUnlockBiometricsError
@@ -158,6 +168,10 @@ extension LoginPresenter {
     func onAppReset() {
         interactor.resetApp()
         appReset?()
+    }
+    
+    func onMigrationFailedClose() {
+        loginSuccessful()
     }
 }
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum PasswordTrashedStatus: Hashable, Codable {
+public enum ItemTrashedStatus: Hashable, Codable {
     case no
     case yes(trashingDate: Date)
 }

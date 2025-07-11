@@ -25,7 +25,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
     var hasPasswords: Bool { get }
     var changeRequest: PasswordDataChangeRequest? { get }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
     
     func getEditPassword() -> PasswordData?
     func getDecryptedPassword() -> String?
@@ -36,7 +36,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
         password: String?,
         notes: String?,
         iconType: PasswordIconType,
-        protectionLevel: PasswordProtectionLevel,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?
     ) -> SavePasswordResult
     
@@ -97,7 +97,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         passwordInteractor.hasPasswords
     }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
     }
     
@@ -124,7 +124,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         password: String?,
         notes: String?,
         iconType: PasswordIconType,
-        protectionLevel: PasswordProtectionLevel,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?
     ) -> SavePasswordResult {
         let date = currentDateInteractor.currentDate

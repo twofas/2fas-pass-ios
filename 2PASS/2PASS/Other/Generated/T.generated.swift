@@ -713,6 +713,8 @@ internal enum T {
   }
   /// The passwords don't match
   internal static let masterPasswordNotMatch = T.tr("Localizable", "master_password_not_match", fallback: "The passwords don't match")
+  /// Migration failed
+  internal static let migrationErrorTitle = T.tr("Localizable", "migration_error_title", fallback: "Migration failed")
   /// It is used to unlock the app and recover your 2FAS Pass Vault.
   internal static let onboardingCreateMasterPasswordDescription = T.tr("Localizable", "onboarding_create_master_password_description", fallback: "It is used to unlock the app and recover your 2FAS Pass Vault.")
   /// This simple tutorial will help you prepare and memorize your Master Password.
@@ -797,8 +799,8 @@ internal enum T {
   internal static let onboardingWelcomeCta1 = T.tr("Localizable", "onboarding_welcome_cta1", fallback: "Get Started")
   /// Recover / Synchronize
   internal static let onboardingWelcomeCta2 = T.tr("Localizable", "onboarding_welcome_cta2", fallback: "Recover / Synchronize")
-  /// Opening a 2FAS Pass backup file is not supported in Files. Go to 2FAS Pass Settings to import it.
-  internal static let openExternalFileErrorBody = T.tr("Localizable", "open_external_file_error_body", fallback: "Opening a 2FAS Pass backup file is not supported in Files. Go to 2FAS Pass Settings to import it.")
+  /// Opening a 2FAS Pass backup file is not supported. Go to 2FAS Pass Settings to import it.
+  internal static let openExternalFileErrorBody = T.tr("Localizable", "open_external_file_error_body", fallback: "Opening a 2FAS Pass backup file is not supported. Go to 2FAS Pass Settings to import it.")
   /// Error while copying password
   internal static let passwordErrorCopyPassword = T.tr("Localizable", "password_error_copy_password", fallback: "Error while copying password")
   /// Error while copying username
@@ -1221,8 +1223,8 @@ internal enum T {
   internal static let settingsEntryAutofillDescription = T.tr("Localizable", "settings_entry_autofill_description", fallback: "Enable autofill to automatically fill in Item details.")
   /// Autofill lockout time
   internal static let settingsEntryAutofillLockTime = T.tr("Localizable", "settings_entry_autofill_lock_time", fallback: "Autofill lockout time")
-  /// Set the duration after which the autofill service will require the Master Password again. This is only relevant for Tier 3 services.
-  internal static let settingsEntryAutofillLockTimeDescription = T.tr("Localizable", "settings_entry_autofill_lock_time_description", fallback: "Set the duration after which the autofill service will require the Master Password again. This is only relevant for Tier 3 services.")
+  /// Set the duration after which the autofill service will require the Master Password again. This is only relevant for services assigned to the Secret Tier.
+  internal static let settingsEntryAutofillLockTimeDescription = T.tr("Localizable", "settings_entry_autofill_lock_time_description", fallback: "Set the duration after which the autofill service will require the Master Password again. This is only relevant for services assigned to the Secret Tier.")
   /// Biometrics
   internal static let settingsEntryBiometrics = T.tr("Localizable", "settings_entry_biometrics", fallback: "Biometrics")
   /// Use your biometric data to unlock the app instead of using a Master Password.
