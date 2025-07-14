@@ -9,6 +9,9 @@ import CoreData
 import Common
 
 public protocol EncryptedStorageDataSource: AnyObject {
+    func loadStore()
+    var migrationRequired: Bool { get }
+    
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: Encrypted Passwords
@@ -93,10 +96,4 @@ public protocol EncryptedStorageDataSource: AnyObject {
     
     func warmUp()
     func save()
-    
-    // MARK: Migration (Passwords -> Items)
-    func listAllEncryptedItems() -> [ItemEncryptedData]
-    func encryptedPasswordsCount() -> Int
-    func listEncryptedPasswords() -> [PasswordEncryptedData]
-    func deleteAllEncryptedPasswords()
 }

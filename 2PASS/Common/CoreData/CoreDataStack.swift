@@ -13,13 +13,14 @@ public final class CoreDataStack {
     public var logError: ((String) -> Void)?
     public var presentErrorToUser: ((String) -> Void)?
     
-    private var readOnly = false
-    private var name: String
-    private var bundle: Bundle
-    private var storeInGroup: Bool
-    private var isPersistent: Bool
-    
+    private let readOnly: Bool
+    private let name: String
+    private let bundle: Bundle
+    private let storeInGroup: Bool
+    private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
+
+    private var isLoaded: Bool = false
     
     public init(
         readOnly: Bool,
@@ -39,7 +40,12 @@ public final class CoreDataStack {
         
         let container = NSPersistentContainer(name: name, bundle: bundle)
         self.persistentContainer = container
-        configurePersistentContainer(container)
+    }
+    
+    public func loadStore() {
+        guard isLoaded == false else { return }
+        isLoaded = true
+        configurePersistentContainer(persistentContainer)
     }
     
     private func configurePersistentContainer(_ container: NSPersistentContainer) {
@@ -136,6 +142,16 @@ public final class CoreDataStack {
             logError?(err)
             assertionFailure(err)
         }
+    }
+    
+    public var migrationRequired: Bool {
+        guard let migrator, isPersistent else {
+            return false
+        }
+        guard let storeURL = storeDescription.url else {
+            fatalError("persistentContainer was not set up properly")
+        }
+        return migrator.requiresMigrationToCurrentVersion(at: storeURL)
     }
     
     private func migrateStoreIfNeeded(completion: @escaping () -> Void) {

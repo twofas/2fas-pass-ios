@@ -106,7 +106,7 @@ extension LoginPresenter {
         
         interactor.verifyPassword(loginInput) { [weak self] result in
             switch result {
-            case .success(let migrationError):
+            case .success:
                 self?.hideKeyboard?()
                 
                 self?.loginInput = ""
@@ -118,11 +118,7 @@ extension LoginPresenter {
                     }
                 }
                 
-                if migrationError != nil {
-                    self?.showMigrationFailed = true
-                } else {
-                    self?.loginSuccessful()
-                }
+                self?.loginSuccessful()
             case .appLocked:
                 self?.loginInput = ""
                 self?.refreshStatus()
@@ -147,12 +143,8 @@ extension LoginPresenter {
             self?.isBiometryScanning = false
             
             switch result {
-            case .success(let migrationError):
-                if migrationError != nil {
-                    self?.showMigrationFailed = true
-                } else {
-                    self?.loginSuccessful()
-                }
+            case .success:
+                self?.loginSuccessful()
             case .failure, .unavailable:
                 self?.biometryFailed = true
                 self?.errorDescription = T.lockScreenUnlockBiometricsError

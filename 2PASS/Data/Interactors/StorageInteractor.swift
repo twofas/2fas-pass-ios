@@ -9,19 +9,9 @@ import Common
 import CryptoKit
 import LocalAuthentication
 
-public enum StorageInitializeResult {
-    case success(migrationError: MigrationError?)
-    
-    var migrationError: MigrationError? {
-        switch self {
-        case .success(let error):
-            return error
-        }
-    }
-}
-
 public protocol StorageInteracting: AnyObject {
-    func initialize(completion: @escaping (StorageInitializeResult) -> Void)
+    func loadStore()
+    func initialize(completion: @escaping () -> Void)
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
     func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
     func clear()
@@ -50,18 +40,20 @@ final class StorageInteractor {
 
 extension StorageInteractor: StorageInteracting {
     
-    func initialize(completion: @escaping (StorageInitializeResult) -> Void) {
+    func loadStore() {
+        mainRepository.loadEncryptedStore()
+    }
+    
+    func initialize(completion: @escaping () -> Void) {
         Log(
             "StorageInteractor - initialize",
             module: .interactor
         )
         
-        var migrationError: MigrationError?
         if migrationInteractor.shouldMigrate() {
             do {
                 try migrationInteractor.migrate()
             } catch {
-                migrationError = error
             }
         }
         
@@ -171,8 +163,8 @@ extension StorageInteractor: StorageInteracting {
             }
             
             self?.mainRepository.saveStorage()
-            completion(.success(migrationError: migrationError))
-        }
+            completion()
+            }
     }
     
     func clear() {

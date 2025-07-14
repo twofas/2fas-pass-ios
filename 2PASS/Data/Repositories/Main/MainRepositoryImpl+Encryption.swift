@@ -797,6 +797,10 @@ extension MainRepositoryImpl {
         }
     }
     
+    func hasCachedKeys() -> Bool {
+        _trustedKeySymm != nil && _secureKeySymm != nil && _externalKeySymm != nil
+    }
+    
     func preparedCachedKeys() {
         guard let trustedKey, let secureKey, let externalKey else {
             Log(

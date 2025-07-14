@@ -126,7 +126,6 @@ final class MainRepositoryImpl: MainRepository {
 
         LogStorage.setStorage(logDataSource)
         
-        encryptedStorage.warmUp()
         cloudCache.warmUp()
         
         updateTimeOffsetListeners()
