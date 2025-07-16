@@ -10,7 +10,21 @@ import AVFoundation
 extension LogMessage.Interpolation {
     
     mutating func appendInterpolation(_ value: @autoclosure () -> AVAuthorizationStatus, privacy: LogPrivacy = .auto) {
-        appendInterpolation("\(value())", privacy: privacy == .auto ? .public : privacy)
+        let desctiption = {
+            switch value() {
+            case .notDetermined:
+                "Not Determined"
+            case .authorized:
+                "Authorized"
+            case .denied:
+                "Denied"
+            case .restricted:
+                "Restricted"
+            @unknown default:
+                "Unknown"
+            }
+        }()
+        appendInterpolation(desctiption, privacy: privacy == .auto ? .public : privacy)
     }
     
     mutating func appendInterpolation(_ value: @autoclosure () -> CameraPermissionState, privacy: LogPrivacy = .auto) {
