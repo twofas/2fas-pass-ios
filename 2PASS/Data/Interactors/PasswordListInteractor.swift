@@ -27,7 +27,7 @@ extension PasswordListInteractor: PasswordListInteracting {
     }
     
     func setSortType(_ sortType: SortType) {
-        Log("PasswordListInteractor: setting sort type to: \(sortType)", module: .interactor)
+        Log("PasswordListInteractor: setting sort type to: \(sortType.rawValue, privacy: .public)", module: .interactor)
         mainRepository.setSortType(sortType)
     }
     

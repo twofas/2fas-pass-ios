@@ -10,7 +10,7 @@ import CoreData
 public final class CoreDataStack {
     private let migrator: CoreDataMigratorProtocol?
     
-    public var logError: ((String) -> Void)?
+    public var logError: ((LogMessage) -> Void)?
     public var presentErrorToUser: ((String) -> Void)?
     
     private var readOnly = false
@@ -50,11 +50,11 @@ public final class CoreDataStack {
             container.loadPersistentStores { [weak self] _, error in
                 if let error = error as NSError? {
                     // swiftlint:disable line_length
-                    let err = "Unresolved error while loadPersistentStores: \(error), \(error.userInfo), for stack: \(name)"
+                    let err: LogMessage = "Unresolved error while loadPersistentStores: \(error), \(error.userInfo), for stack: \(name)"
                     // swiftlint:enable line_length
                     self?.logError?(err)
                     self?.parseError(with: error.userInfo)
-                    fatalError(err)
+                    fatalError(err.description)
                 }
             }
         }
@@ -131,10 +131,10 @@ public final class CoreDataStack {
         } catch {
             let nserror = error as NSError
             // swiftlint:disable line_length
-            let err = "Unresolved error while saving data: \(nserror), \(nserror.userInfo), for stack: \(String(describing: name))"
+            let err: LogMessage = "Unresolved error while saving data: \(nserror), \(nserror.userInfo), for stack: \(String(describing: name), privacy: .public)"
             // swiftlint:enable line_length
             logError?(err)
-            assertionFailure(err)
+            assertionFailure(err.description)
         }
     }
     
