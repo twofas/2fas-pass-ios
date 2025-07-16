@@ -34,13 +34,15 @@ public enum LogSeverity: Int, CaseIterable {
 
 var focusOn: [LogModule]?
 
-// TODO: Add obfuscation
 public func Log(
     _ content: LogMessage,
     module: LogModule = .unknown,
     severity: LogSeverity = .unknown,
     save: Bool = true,
-    obfuscate: Bool = false
+    file: String = #file,
+    function: String = #function,
+    line: UInt = #line,
+    column: UInt = #column
 ) {
     if let focusOn {
         guard focusOn.contains(module) else { return }
@@ -52,7 +54,9 @@ public func Log(
     }
     
 #if DEBUG
-    LogPrinter.printLog(content: content.description, timestamp: date, module: module, severity: severity)
+    let filename = URL(string: file)?.lastPathComponent ?? ""
+    let formattedContent = "\(content.description) | \(function) + \(line) (\(filename)) "
+    LogPrinter.printLog(content: formattedContent, timestamp: date, module: module, severity: severity)
 #endif
 }
 
