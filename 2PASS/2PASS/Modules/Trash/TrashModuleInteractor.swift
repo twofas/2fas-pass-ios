@@ -60,13 +60,13 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     }
     
     func delete(with passwordID: PasswordID) {
-        Log("TrashModuleInteractor: Deleting password: \(passwordID)", module: .moduleInteractor, obfuscate: true)
+        Log("TrashModuleInteractor: Deleting password: \(passwordID)", module: .moduleInteractor)
         passwordInteractor.deletePassword(for: passwordID)
         passwordInteractor.saveStorage()
     }
     
     func restore(with passwordID: PasswordID) {
-        Log("TrashModuleInteractor: Restoring password: \(passwordID)", module: .moduleInteractor, obfuscate: true)
+        Log("TrashModuleInteractor: Restoring password: \(passwordID)", module: .moduleInteractor)
         passwordInteractor.markAsNotTrashed(for: passwordID)
         passwordInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
