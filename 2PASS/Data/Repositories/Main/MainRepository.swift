@@ -646,8 +646,4 @@ protocol MainRepository: AnyObject {
     // MARK: - URI Cache
     func uriCacheSet(originalUri: String, parsedUri: String)
     func uriCacheGet(originalUri: String) -> String?
-    
-    // MARK: - PGP
-    func encryptUsingPGP(_ data: Data, key: Data) throws -> Data
-    
 }

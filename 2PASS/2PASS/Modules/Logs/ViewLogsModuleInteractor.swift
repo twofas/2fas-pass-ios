@@ -14,11 +14,9 @@ protocol ViewLogsModuleInteracting: AnyObject {
 
 final class ViewLogsModuleInteractor {
     private let debugInteractor: DebugInteracting
-    private let pgpInteractor: PGPInteracting
     
-    init(debugInteractor: DebugInteracting, pgpInteractor: PGPInteracting) {
+    init(debugInteractor: DebugInteracting) {
         self.debugInteractor = debugInteractor
-        self.pgpInteractor = pgpInteractor
     }
 }
 
@@ -30,7 +28,6 @@ extension ViewLogsModuleInteractor: ViewLogsModuleInteracting {
     
     enum GenerateLogFileError: Error {
         case badData
-        case encryptionFailed(Error)
         case writeFailed(Error)
     }
     
@@ -41,16 +38,7 @@ extension ViewLogsModuleInteractor: ViewLogsModuleInteracting {
             throw .badData
         }
         
-        let encryptedData = try encrypt(logsData)
-        return try writeToFile(encryptedData)
-    }
-    
-    private func encrypt(_ data: Data) throws(GenerateLogFileError) -> Data {
-        do {
-            return try pgpInteractor.encryptUsingSupportKey(data)
-        } catch {
-            throw .encryptionFailed(error)
-        }
+        return try writeToFile(logsData)
     }
     
     private func writeToFile(_ data: Data) throws(GenerateLogFileError) -> URL {

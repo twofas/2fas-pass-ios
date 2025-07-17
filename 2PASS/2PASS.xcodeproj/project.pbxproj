@@ -53,7 +53,6 @@
 		54878E5B2D7F15870073BFC8 /* ConnectLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54878E5A2D7F15820073BFC8 /* ConnectLogin.swift */; };
 		549200602DD4D83100C2431E /* ios-secret-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 5492005F2DD4D83100C2431E /* ios-secret-key.json */; };
 		549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */; };
-		549B13992E290D7800A0A076 /* PGPInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B13982E290D7000A0A076 /* PGPInteractor.swift */; };
 		549B139B2E291D5100A0A076 /* security_public.asc in Resources */ = {isa = PBXBuildFile; fileRef = 549B139A2E291D5100A0A076 /* security_public.asc */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
 		549BF4A62D7B57B500E0C297 /* ConnectIdenticonInteractor+Content.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549BF4A52D7B57A800E0C297 /* ConnectIdenticonInteractor+Content.swift */; };
@@ -88,9 +87,6 @@
 		54C090552D6E6B4C00954E76 /* ModuleInteractorFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C090532D6E6B4C00954E76 /* ModuleInteractorFactory.swift */; };
 		54C7B8112D708DAE0004FD1D /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 54C7B8102D708DAE0004FD1D /* SwiftUIIntrospect */; };
 		54C7B8132D708E490004FD1D /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 54C7B8122D708E490004FD1D /* SwiftUIIntrospect */; };
-		54D0BBD42E29243C00FA09D5 /* ObjectivePGP in Frameworks */ = {isa = PBXBuildFile; productRef = 54D0BBD32E29243C00FA09D5 /* ObjectivePGP */; };
-		54D0BBD62E29252900FA09D5 /* ObjectivePGP in Frameworks */ = {isa = PBXBuildFile; productRef = 54D0BBD52E29252900FA09D5 /* ObjectivePGP */; };
-		54D0BBD92E292AEE00FA09D5 /* MainRepositoryImpl+PGP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D0BBD82E292ADF00FA09D5 /* MainRepositoryImpl+PGP.swift */; };
 		54D5E2992D81D64500981A09 /* UTType+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D5E2982D81D64500981A09 /* UTType+.swift */; };
 		54DA26092DB0C0AC00C91F0B /* Striing+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DA26082DB0C0A700C91F0B /* Striing+SwiftUI.swift */; };
 		54DA29042DB0CBC900C91F0B /* T.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D62BF94F4200F95A55 /* T.generated.swift */; };
@@ -526,7 +522,6 @@
 		54878E5A2D7F15820073BFC8 /* ConnectLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectLogin.swift; sourceTree = "<group>"; };
 		5492005F2DD4D83100C2431E /* ios-secret-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ios-secret-key.json"; sourceTree = "<group>"; };
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
-		549B13982E290D7000A0A076 /* PGPInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PGPInteractor.swift; sourceTree = "<group>"; };
 		549B139A2E291D5100A0A076 /* security_public.asc */ = {isa = PBXFileReference; lastKnownFileType = text; path = security_public.asc; sourceTree = "<group>"; };
 		549BF4A52D7B57A800E0C297 /* ConnectIdenticonInteractor+Content.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConnectIdenticonInteractor+Content.swift"; sourceTree = "<group>"; };
 		549BF8F62D7C812B00E0C297 /* WebBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBrowser.swift; sourceTree = "<group>"; };
@@ -552,7 +547,6 @@
 		54BBB2892DCA30F600BDD13F /* ConnectInteractor+Pairing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConnectInteractor+Pairing.swift"; sourceTree = "<group>"; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C090532D6E6B4C00954E76 /* ModuleInteractorFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleInteractorFactory.swift; sourceTree = "<group>"; };
-		54D0BBD82E292ADF00FA09D5 /* MainRepositoryImpl+PGP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainRepositoryImpl+PGP.swift"; sourceTree = "<group>"; };
 		54D5E2982D81D64500981A09 /* UTType+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+.swift"; sourceTree = "<group>"; };
 		54DA26082DB0C0A700C91F0B /* Striing+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Striing+SwiftUI.swift"; sourceTree = "<group>"; };
 		54EABA712DD2537B0018189F /* ShareSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetView.swift; sourceTree = "<group>"; };
@@ -922,7 +916,6 @@
 				C2B0FC212CE91C4D005CFADD /* Backup.framework in Frameworks */,
 				54BB9E3A2DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				C249E77C2BF10B23003464D5 /* Storage.framework in Frameworks */,
-				54D0BBD62E29252900FA09D5 /* ObjectivePGP in Frameworks */,
 				C26D2BE42DD91DDA00B16D73 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -947,7 +940,6 @@
 				545B19432D78BBBB00BE2B14 /* Gzip in Frameworks */,
 				C2145B602BF555F800A40A0A /* Storage.framework in Frameworks */,
 				C2E119DF2CA18CD0008928E6 /* SignalArgon2 in Frameworks */,
-				54D0BBD42E29243C00FA09D5 /* ObjectivePGP in Frameworks */,
 				C26D2BE22DD91D7E00B16D73 /* RevenueCatUI in Frameworks */,
 				54878E4C2D7ED4D00073BFC8 /* Common.framework in Frameworks */,
 				C288423F2CFCF89B00FCFF2D /* Backup.framework in Frameworks */,
@@ -1128,7 +1120,6 @@
 				C2BCEE172DB6DF0F00763C8B /* MainRepositoryImpl+TimeOffset.swift */,
 				C26D2BE62DD9407A00B16D73 /* MainRepositoryImpl+Payment.swift */,
 				C241B5392DE3B9DF00F58556 /* MainRepositoryImpl+UriCache.swift */,
-				54D0BBD82E292ADF00FA09D5 /* MainRepositoryImpl+PGP.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -1710,7 +1701,6 @@
 				C2C3BE7E2DC3E7AC006E7DCE /* ExternalServiceImportInteractor.swift */,
 				C266B11B2DDA52140000A30D /* PaymentHandlingInteractor.swift */,
 				C266B11D2DDA5E5C0000A30D /* PaymentStatusInteractor.swift */,
-				549B13982E290D7000A0A076 /* PGPInteractor.swift */,
 			);
 			path = Interactors;
 			sourceTree = "<group>";
@@ -1975,7 +1965,6 @@
 				549BF4952D7B091E00E0C297 /* SVGView */,
 				54BB9E392DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport */,
 				54BB9E3B2DC89D5900BDD13F /* FirebaseMessaging */,
-				54D0BBD52E29252900FA09D5 /* ObjectivePGP */,
 			);
 			productName = 2PASS;
 			productReference = C27D99EB2BD596620008203F /* 2FAS Pass.app */;
@@ -2038,7 +2027,6 @@
 				C2DCD9162DC6C96300CBF641 /* ZIPFoundation */,
 				C26D2BDF2DD91D7E00B16D73 /* RevenueCat */,
 				C26D2BE12DD91D7E00B16D73 /* RevenueCatUI */,
-				54D0BBD32E29243C00FA09D5 /* ObjectivePGP */,
 			);
 			productName = Data;
 			productReference = C2F81EC22BE42858008FD374 /* Data.framework */;
@@ -2110,7 +2098,6 @@
 				C2DCD9152DC6C96300CBF641 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				54BB9E382DC89D5900BDD13F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				C26D2BDE2DD91D7E00B16D73 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
-				54D0BBD22E29243C00FA09D5 /* XCRemoteSwiftPackageReference "ObjectivePGP" */,
 			);
 			productRefGroup = C27D99EC2BD596620008203F /* Products */;
 			projectDirPath = "";
@@ -2483,7 +2470,6 @@
 				C26C43FE2BED7205000F63B0 /* InteractorFactory.swift in Sources */,
 				C2370B0D2BE694630059FBA6 /* CloudState.swift in Sources */,
 				54BB9E4B2DC8A00200BDD13F /* AppNotifications.swift in Sources */,
-				54D0BBD92E292AEE00FA09D5 /* MainRepositoryImpl+PGP.swift in Sources */,
 				54003B482DEB174C00CA28FF /* ConnectOnboardingInteractor.swift in Sources */,
 				C28842492CFD1E1000FCFF2D /* PasswordImportInteractor.swift in Sources */,
 				C2BCEF922C52EB4A004B3468 /* NetworkError.swift in Sources */,
@@ -2512,7 +2498,6 @@
 				C2D828CD2C9C868F00BCF3E8 /* ExportInteractor.swift in Sources */,
 				C298AEBA2C6931CA0009BAA2 /* StorageInteractor.swift in Sources */,
 				C218E89E2C31D20C007E307E /* PasswordInteractor.swift in Sources */,
-				549B13992E290D7800A0A076 /* PGPInteractor.swift in Sources */,
 				C2D034C92D0F8DB1008BC1D0 /* WebDAVIndex.swift in Sources */,
 				C2370AEB2BE668CB0059FBA6 /* MainRepositoryImpl+Security.swift in Sources */,
 				C21A59612D306C3700CF553E /* WebDAVRecoveryInteractor.swift in Sources */,
@@ -3912,14 +3897,6 @@
 				minimumVersion = 11.12.0;
 			};
 		};
-		54D0BBD22E29243C00FA09D5 /* XCRemoteSwiftPackageReference "ObjectivePGP" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/krzyzanowskim/ObjectivePGP.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		54FC49A12D652D5F00CF27E0 /* XCRemoteSwiftPackageReference "swiftui-introspect" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/siteline/swiftui-introspect.git";
@@ -4029,16 +4006,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 54FC49A12D652D5F00CF27E0 /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
 			productName = SwiftUIIntrospect;
-		};
-		54D0BBD32E29243C00FA09D5 /* ObjectivePGP */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 54D0BBD22E29243C00FA09D5 /* XCRemoteSwiftPackageReference "ObjectivePGP" */;
-			productName = ObjectivePGP;
-		};
-		54D0BBD52E29252900FA09D5 /* ObjectivePGP */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 54D0BBD22E29243C00FA09D5 /* XCRemoteSwiftPackageReference "ObjectivePGP" */;
-			productName = ObjectivePGP;
 		};
 		8F1D89FE2D2DEE6400960ABF /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
