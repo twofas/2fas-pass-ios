@@ -8,7 +8,7 @@
 
 import Common
 
-public class MigrationController {
+public final class MigrationController {
     
     public static var current: MigrationController?
     

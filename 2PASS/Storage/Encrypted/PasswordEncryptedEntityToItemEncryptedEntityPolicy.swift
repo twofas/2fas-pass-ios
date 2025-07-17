@@ -1,17 +1,15 @@
+// SPDX-License-Identifier: BUSL-1.1
 //
-//  PasswordEncryptedEntityToItemEncryptedEntityPolicy.swift
-//  2PASS
-//
-//  Created by Maciej Szewczyk on 09/07/2025.
-//  Copyright © 2025 Two Factor Authentication Service, Inc. All rights reserved.
-//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
 
 import CoreData
 import Common
 
 @objc
-class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigrationPolicy {
-
+final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigrationPolicy {
+    
     let migrationController = MigrationController.current!
     
     enum PasswordKeys: String {
@@ -46,11 +44,11 @@ class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigrationPolic
         Log("Migration - createDestinationInstances", module: .storage)
 
         guard let destination = manager.destinationInstances(forEntityMappingName: mapping.name, sourceInstances: [sInstance]).first else {
-            fatalError("Must return item")
+            throw MigrationError.missingDestinationInstance
         }
 
         guard let protectionLevelValue = sInstance.primitiveValue(forKey: PasswordKeys.level.rawValue) as? String else {
-            return
+            throw MigrationError.missingSourceValue(key: PasswordKeys.level.rawValue)
         }
         
         if let vault = sInstance.value(forKey: PasswordKeys.vault.rawValue) as? NSManagedObject,
