@@ -1,5 +1,5 @@
 {
-  "originHash" : "7fbd5bbea009167d60de91f46388a8efd4645505fe4e5d7f7b8627e27e49430c",
+  "originHash" : "3abccb87e468609033c0e7c0bdc9bba8e6c647636ab18645a1a9e8dd214d5e9c",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -152,6 +152,15 @@
       "state" : {
         "revision" : "b7e1104502eca3a213b46303391ca4d3bc8ddec1",
         "version" : "2.30910.0"
+      }
+    },
+    {
+      "identity" : "objectivepgp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/ObjectivePGP.git",
+      "state" : {
+        "revision" : "29d7a531f00140224434d0cbaf5f2f21168bfe9c",
+        "version" : "1.0.0"
       }
     },
     {

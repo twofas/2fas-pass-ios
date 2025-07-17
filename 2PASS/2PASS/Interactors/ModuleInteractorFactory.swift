@@ -368,4 +368,11 @@ extension ModuleInteractorFactory {
             systemInteractor: InteractorFactory.shared.systemInteractor()
         )
     }
+    
+    func viewLogsModuleInteractor() -> ViewLogsModuleInteracting {
+        ViewLogsModuleInteractor(
+            debugInteractor: InteractorFactory.shared.debugInteractor(),
+            pgpInteractor: InteractorFactory.shared.pgpInteractor()
+        )
+    }
 }

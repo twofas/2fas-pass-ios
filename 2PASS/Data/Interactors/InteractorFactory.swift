@@ -307,6 +307,10 @@ public final class InteractorFactory {
             mainRepository: MainRepositoryImpl.shared
         )
     }
+    
+    public func pgpInteractor() -> PGPInteracting {
+        PGPInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
 }
 
 private extension InteractorFactory {

@@ -66,6 +66,10 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.isActiveSearchEnabled
     }
     
+    var deviceModelName: String {
+        Device.current.description
+    }
+    
     var deviceName: String {
         let name = UIDevice.current.name
         
@@ -75,6 +79,10 @@ extension MainRepositoryImpl {
         } else {
             return "\(device) (\(name))"
         }
+    }
+    
+    var systemVersion: String {
+        "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
     }
     
     func readFileData(from url: URL) async -> Data? {

@@ -122,6 +122,8 @@ protocol MainRepository: AnyObject {
     var cloudSync: CloudSync { get }
     
     var deviceName: String { get }
+    var deviceModelName: String { get }
+    var systemVersion: String { get }
     
     func checkFileSize(for url: URL) -> Int?
     func readFileData(from url: URL) async -> Data?
@@ -644,4 +646,8 @@ protocol MainRepository: AnyObject {
     // MARK: - URI Cache
     func uriCacheSet(originalUri: String, parsedUri: String)
     func uriCacheGet(originalUri: String) -> String?
+    
+    // MARK: - PGP
+    func encryptUsingPGP(_ data: Data, key: Data) throws -> Data
+    
 }
