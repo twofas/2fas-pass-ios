@@ -9,25 +9,17 @@ import Common
 import CommonCrypto
 
 public enum LoginMasterPasswordResult {
-    case success(_ migrationError: MigrationError? = nil)
+    case success
     case invalidPassword
     case invalidPasswordAppLocked
     case appLocked
-    
-    static var success: LoginMasterPasswordResult {
-        .success()
-    }
 }
 
 public enum LoginBiometryResult {
-    case success(_ migrationError: MigrationError? = nil)
+    case success
     case failure
     case unavailable
     case appLocked
-    
-    static var success: LoginBiometryResult {
-        .success()
-    }
 }
 
 public protocol LoginInteracting: AnyObject {
@@ -238,8 +230,8 @@ extension LoginInteractor: LoginInteracting {
             key: mainRepository.createSymmetricKey(from: trustedKey)
         ) != nil {
             securityInteractor.markCorrectLogin()
-            userLoggedIn(using: masterPassword) { [weak self] result in
-                completion(.success(result.migrationError))
+            userLoggedIn(using: masterPassword) { [weak self] in
+                completion(.success)
                 self?.protectionInteractor.clearAfterInit()
             }
             return
@@ -366,8 +358,8 @@ private extension LoginInteractor {
             Log("LoginInteractor: Master Password verified succesfully", module: .interactor)
             securityInteractor.markCorrectLogin()
             if login {
-                userLoggedIn(using: masterPassword) { [weak self] result in
-                    completion(.success(result.migrationError))
+                userLoggedIn(using: masterPassword) { [weak self] in
+                    completion(.success)
                     self?.protectionInteractor.clearAfterInit()
                 }
             } else {
@@ -397,8 +389,8 @@ private extension LoginInteractor {
             case .success(let masterKey):
                 self?.securityInteractor.markCorrectLogin()
                 if login {
-                    self?.userLoggedInUsingBiometry(with: masterKey, completion: { [weak self] result in
-                        completion(.success(result.migrationError))
+                    self?.userLoggedInUsingBiometry(with: masterKey, completion: { [weak self] in
+                        completion(.success)
                         self?.protectionInteractor.clearAfterInit()
                     })
                 } else {
@@ -416,25 +408,25 @@ private extension LoginInteractor {
         }
     }
     
-    func userLoggedIn(using masterPassword: String, completion: @escaping (StorageInitializeResult) -> Void) {
+    func userLoggedIn(using masterPassword: String, completion: @escaping () -> Void) {
         Log("LoginInteractor: User logged in using Master Password", module: .interactor)
         protectionInteractor.setMasterKey(for: masterPassword)
         protectionInteractor.setupKeys()
-        storageInteractor.initialize { [weak self] result in
-            completion(result)
+        storageInteractor.initialize { [weak self] in
+            completion()
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)
         }
     }
     
-    func userLoggedInUsingBiometry(with masterKey: MasterKey, completion: @escaping (StorageInitializeResult) -> Void) {
+    func userLoggedInUsingBiometry(with masterKey: MasterKey, completion: @escaping () -> Void) {
         Log("LoginInteractor: login using Biometry", module: .interactor)
         protectionInteractor.restoreEntropy()
         protectionInteractor.createSeed()
         protectionInteractor.createSalt()
         protectionInteractor.setMasterKey(masterKey)
         protectionInteractor.setupKeys()
-        storageInteractor.initialize { [weak self] result in
-            completion(result)
+        storageInteractor.initialize { [weak self] in
+            completion()
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)
         }
     }

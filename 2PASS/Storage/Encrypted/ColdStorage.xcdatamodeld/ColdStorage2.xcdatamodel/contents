@@ -19,28 +19,6 @@
         <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="vault" maxCount="1" deletionRule="Nullify" destinationEntity="VaultEncryptedEntity" inverseName="items" inverseEntity="VaultEncryptedEntity"/>
     </entity>
-    <entity name="PasswordEncryptedEntity" representedClassName=".PasswordEncryptedEntity" syncable="YES">
-        <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="iconCustomURL" optional="YES" attributeType="Binary"/>
-        <attribute name="iconDomain" optional="YES" attributeType="Binary"/>
-        <attribute name="iconFile" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
-        <attribute name="iconType" attributeType="String"/>
-        <attribute name="isTrashed" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="labelColor" optional="YES" attributeType="String"/>
-        <attribute name="labelTitle" optional="YES" attributeType="Binary"/>
-        <attribute name="level" attributeType="String"/>
-        <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="name" optional="YES" attributeType="Binary"/>
-        <attribute name="notes" optional="YES" attributeType="Binary"/>
-        <attribute name="password" optional="YES" attributeType="Binary"/>
-        <attribute name="passwordID" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="tagIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
-        <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="uris" optional="YES" attributeType="Binary" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[URL]"/>
-        <attribute name="urisMatching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
-        <attribute name="username" optional="YES" attributeType="Binary"/>
-        <relationship name="vault" maxCount="1" deletionRule="Nullify" destinationEntity="VaultEncryptedEntity" inverseName="passwords" inverseEntity="VaultEncryptedEntity"/>
-    </entity>
     <entity name="TagEncryptedEntity" representedClassName=".TagEncryptedEntity" syncable="YES">
         <attribute name="color" optional="YES" attributeType="String"/>
         <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
@@ -56,7 +34,6 @@
         <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="items" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ItemEncryptedEntity" inverseName="vault" inverseEntity="ItemEncryptedEntity"/>
-        <relationship name="passwords" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PasswordEncryptedEntity" inverseName="vault" inverseEntity="PasswordEncryptedEntity"/>
     </entity>
     <entity name="WebBrowserEncryptedEntity" representedClassName=".WebBrowserEncryptedEntity" syncable="YES">
         <attribute name="extensionName" attributeType="Binary"/>

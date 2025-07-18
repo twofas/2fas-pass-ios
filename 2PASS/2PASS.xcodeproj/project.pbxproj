@@ -605,6 +605,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		544D71BC2E25003600290EFA /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"ColdStorage-ColdStorage2.xcmappingmodel",
+			);
+			target = 54571D712D688AC200FC2DB3 /* AutoFill */;
+		};
 		54571D832D688AC200FC2DB3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -656,7 +663,7 @@
 		54405B542D93FD7A009C66C1 /* MasterPassword */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = MasterPassword; sourceTree = "<group>"; };
 		544D68902E211F4800290EFA /* Interactors */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Interactors; sourceTree = "<group>"; };
 		544D68ED2E21200400290EFA /* DataTypes */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DataTypes; sourceTree = "<group>"; };
-		544D691F2E21204A00290EFA /* Encrypted */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Encrypted; sourceTree = "<group>"; };
+		544D691F2E21204A00290EFA /* Encrypted */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (544D71BC2E25003600290EFA /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Encrypted; sourceTree = "<group>"; };
 		545579222DD27ADB00712716 /* TransferItems */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TransferItems; sourceTree = "<group>"; };
 		54571D752D688AC200FC2DB3 /* AutoFill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54571D832D688AC200FC2DB3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = AutoFill; sourceTree = "<group>"; };
 		547139D72D89644100A81142 /* AppSecurity */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppSecurity; sourceTree = "<group>"; };

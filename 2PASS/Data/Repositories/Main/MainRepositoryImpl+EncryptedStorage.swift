@@ -6,6 +6,7 @@
 
 import Foundation
 import Common
+import Storage
 
 public enum MigrationError: Error {
     case verificationFailed
@@ -163,133 +164,64 @@ extension MainRepositoryImpl {
         _selectedVault = nil
     }
     
-    func shouldMigrate() -> Bool {
-        encryptedStorage.encryptedPasswordsCount() > 0
+    func requiresReencryptionMigration() -> Bool {
+        hasEncryptionReference && encryptedStorage.migrationRequired
     }
     
-    func migrateDatabaseFromPasswordsToItems() throws(MigrationError) {
-        let allPasswords = encryptedStorage.listEncryptedPasswords()
-        guard allPasswords.isEmpty == false else {
-            return
-        }
-        
-        let allItemsIds: Set<PasswordID> = encryptedStorage.listAllEncryptedItems().reduce(into: []) { output, item in
-            output.insert(item.itemID)
-        }
-        
-        for password in allPasswords {
-            guard let key = getKey(isPassword: false, protectionLevel: password.protectionLevel) else {
-                continue
-            }
-                        
-            let name = {
-                if let name = password.name, let nameData = decrypt(name, key: key) {
-                    return String(data: nameData, encoding: .utf8)
-                }
-                return nil
-            }()
-            
-            let username = {
-                if let username = password.username, let usernameData = decrypt(username, key: key) {
-                    return String(data: usernameData, encoding: .utf8)
-                }
-                return nil
-            }()
-            
-            let notes = {
-                if let notes = password.notes, let notesData = decrypt(notes, key: key) {
-                    return String(data: notesData, encoding: .utf8)
-                }
-                return nil
-            }()
-            
-            let uris: [PasswordURI]? = {
-                guard let passEncryptedUris = password.uris else {
-                    return nil
-                }
-                
-                let urisData = passEncryptedUris.uris
-                let matchList = passEncryptedUris.match
-                
-                guard let decryptedUrisData = decrypt(urisData, key: key) else {
-                    return nil
-                }
-                
-                guard let uris = try? jsonDecoder.decode([String].self, from: decryptedUrisData) else {
-                    return nil
-                }
-                
-                guard uris.count == matchList.count else {
-                    return nil
-                }
-                
-                return uris.enumerated().compactMap { index, uri in
-                    guard let match = matchList[safe: index] else {
-                        return nil
-                    }
-                    return PasswordURI(uri: uri, match: match)
-                }
-            }()
-            
-            let content = PasswordItemContent(
-                name: name,
-                username: username,
-                password: password.password,
-                notes: notes,
-                iconType: .default,
-                uris: uris
-            )
-            
-            guard let contentData = try? jsonEncoder.encode(content), let contentDataEnc = encrypt(contentData, key: key) else {
-                continue
-            }
-            
-            if allItemsIds.contains(password.passwordID) {
-                encryptedStorage.updateEncryptedPassword(
-                    itemID: password.passwordID,
-                    modificationDate: password.modificationDate,
-                    trashedStatus: password.trashedStatus,
-                    protectionLevel: password.protectionLevel,
-                    contentType: .login,
-                    contentVersion: 1,
-                    content: contentDataEnc,
-                    vaultID: password.vaultID,
-                    tagIds: password.tagIds
-                )
-            } else {
-                encryptedStorage.createEncryptedPassword(
-                    itemID: password.passwordID,
-                    creationDate: password.creationDate,
-                    modificationDate: password.modificationDate,
-                    trashedStatus: password.trashedStatus,
-                    protectionLevel: password.protectionLevel,
-                    contentType: .login,
-                    contentVersion: 1,
-                    content: contentDataEnc,
-                    vaultID: password.vaultID,
-                    tagIds: password.tagIds
-                )
-            }
-        }
-        
-        encryptedStorage.save()
-        
-        guard verifyMigration(oldPasswords: allPasswords) else {
-            throw MigrationError.verificationFailed
-        }
-        
-        encryptedStorage.deleteAllEncryptedPasswords()
-        encryptedStorage.save()
+    func loadEncryptedStore() {
+        encryptedStorage.loadStore()
+        encryptedStorage.warmUp()
     }
     
-    private func verifyMigration(oldPasswords: [PasswordEncryptedData]) -> Bool {
-        let allPasswordIds: Set<PasswordID> = oldPasswords.reduce(into: []) { output, password in
-            output.insert(password.passwordID)
-        }
-        let allItemsIds: Set<PasswordID> = encryptedStorage.listAllEncryptedItems().reduce(into: []) { output, item in
-            output.insert(item.itemID)
-        }
-        return allItemsIds.isSuperset(of: allPasswordIds)
+    func loadEncryptedStoreWithReencryptionMigration() {
+        MigrationController.current = .init(
+            setupKeys: { vaultID in
+                guard self.hasCachedKeys() == false else {
+                    return
+                }
+                
+                guard let masterKey = self.empheralMasterKey else {
+                    Log("Error while getting Master Key - it's missing", severity: .error)
+                    return
+                }
+                
+                guard let trustedKey = self.generateTrustedKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                    let trustedKeyData = Data(hexString: trustedKey) else {
+                    return
+                }
+                self.setTrustedKey(trustedKeyData)
+                
+                guard let secureKey = self.generateSecureKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                    let secureKeyData = Data(hexString: secureKey) else {
+                    return
+                }
+                self.setSecureKey(secureKeyData)
+                
+                guard let externalKey = self.generateExternalKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                    let externalKeyData = Data(hexString: externalKey) else {
+                    return
+                }
+                self.setExternalKey(externalKeyData)
+                
+                self.preparedCachedKeys()
+            },
+            encrypt: { data, protectionLevel in
+                if let key = self.getKey(isPassword: false, protectionLevel: protectionLevel) {
+                    return self.encrypt(data, key: key)
+                }
+                return nil
+            },
+            decrypt: { data, protectionLevel in
+                if let key = self.getKey(isPassword: false, protectionLevel: protectionLevel) {
+                    return self.decrypt(data, key: key)
+                }
+                return nil
+            }
+        )
+        
+        encryptedStorage.loadStore()
+        
+        MigrationController.current = nil
     }
     
     // MARK: Deleted Items

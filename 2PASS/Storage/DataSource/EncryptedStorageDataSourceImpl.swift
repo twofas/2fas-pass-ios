@@ -33,6 +33,14 @@ public final class EncryptedStorageDataSourceImpl {
 
 extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     
+    public var migrationRequired: Bool {
+        coreDataStack.migrationRequired
+    }
+    
+    public func loadStore() {
+        coreDataStack.loadStore()
+    }
+    
     // MARK: Encrypted Passwords
     
     public func createEncryptedPassword(
@@ -297,23 +305,6 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     public func deleteAllEncryptedTags(in vault: VaultID) {
         let listAll = TagEncryptedEntity.list(on: context, in: vault)
         listAll.forEach { TagEncryptedEntity.delete(on: context, entity: $0) }
-    }
-    
-    public func encryptedPasswordsCount() -> Int {
-        do {
-            return try context.count(for: PasswordEncryptedEntity.fetchRequest())
-        } catch {
-            return 0
-        }
-    }
-    
-    public func listEncryptedPasswords() -> [PasswordEncryptedData] {
-        PasswordEncryptedEntity.listItems(on: context)
-            .map { $0.toData() }
-    }
-    
-    public func deleteAllEncryptedPasswords() {
-        PasswordEncryptedEntity.deleteAllEncryptedPasswords(on: context)
     }
     
     public func warmUp() {

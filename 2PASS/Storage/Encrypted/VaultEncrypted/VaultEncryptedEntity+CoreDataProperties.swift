@@ -19,23 +19,10 @@ extension VaultEncryptedEntity {
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
     @NSManaged var items: Set<ItemEncryptedEntity>?
-    @NSManaged var passwords: Set<PasswordEncryptedEntity>?
 }
 
 // MARK: Generated accessors for passwords
-extension VaultEncryptedEntity {
-    @objc(addPasswordsObject:)
-    @NSManaged func addToPasswords(_ value: PasswordEncryptedEntity)
-
-    @objc(removePasswordsObject:)
-    @NSManaged func removeFromPasswords(_ value: PasswordEncryptedEntity)
-
-    @objc(addPasswords:)
-    @NSManaged func addToPasswords(_ values: Set<PasswordEncryptedEntity>)
-
-    @objc(removePasswords:)
-    @NSManaged func removeFromPasswords(_ values: Set<PasswordEncryptedEntity>)
-    
+extension VaultEncryptedEntity {    
     @objc(addItemsObject:)
     @NSManaged func addToItems(_ value: ItemEncryptedEntity)
 

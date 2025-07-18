@@ -6,7 +6,7 @@
 
 public protocol MigrationInteracting {
     func shouldMigrate() -> Bool
-    func migrate() throws(MigrationError)
+    func migrate()
 }
 
 final class MigrationInteractor: MigrationInteracting {
@@ -18,10 +18,10 @@ final class MigrationInteractor: MigrationInteracting {
     }
     
     func shouldMigrate() -> Bool {
-        mainRepository.shouldMigrate()
+        mainRepository.requiresReencryptionMigration()
     }
     
-    func migrate() throws(MigrationError) {
-        try mainRepository.migrateDatabaseFromPasswordsToItems()
+    func migrate() {
+        mainRepository.loadEncryptedStoreWithReencryptionMigration()
     }
 }

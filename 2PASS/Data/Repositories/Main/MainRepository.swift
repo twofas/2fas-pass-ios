@@ -238,6 +238,7 @@ protocol MainRepository: AnyObject {
     
     func clearAllEmphemeral()
     
+    func hasCachedKeys() -> Bool
     func preparedCachedKeys()
     
     /// Used for veryfiying the Master Key
@@ -358,8 +359,9 @@ protocol MainRepository: AnyObject {
     func deleteEncryptedPassword(passwordID: PasswordID)
     func deleteAllEncryptedPasswords()
     
-    func shouldMigrate() -> Bool
-    func migrateDatabaseFromPasswordsToItems() throws(MigrationError)
+    func requiresReencryptionMigration() -> Bool
+    func loadEncryptedStore()
+    func loadEncryptedStoreWithReencryptionMigration()
     
     // MARK: Encrypted Vaults
     

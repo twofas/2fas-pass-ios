@@ -80,7 +80,8 @@ public final class InteractorFactory {
             protectionInteractor: protectionInteractor(),
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
-            onboardingInteractor: onboardingInteractor()
+            onboardingInteractor: onboardingInteractor(),
+            migrationInteractor: migrationInteractor()
         )
     }
     
