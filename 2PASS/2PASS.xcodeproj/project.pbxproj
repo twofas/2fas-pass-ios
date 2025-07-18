@@ -214,10 +214,8 @@
 		C27D99FB2BD596630008203F /* Base in Resources */ = {isa = PBXBuildFile; fileRef = C27D99FA2BD596630008203F /* Base */; };
 		C27F0BE42CC3D96E00F5688F /* ChangePasswordInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27F0BE32CC3D96600F5688F /* ChangePasswordInteractor.swift */; };
 		C27F0BE92CC437FF00F5688F /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = C27F0BE82CC437FF00F5688F /* DeviceKit */; };
-		C27F0BEB2CC44C4A00F5688F /* ExchangeVault+summary.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27F0BEA2CC44C4400F5688F /* ExchangeVault+summary.swift */; };
 		C28231132C84A6D100AAE7A0 /* EnterWordsFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231122C84A6D100AAE7A0 /* EnterWordsFlowController.swift */; };
 		C28231162C84EE6300AAE7A0 /* QueryItemsType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231142C84E6BE00AAE7A0 /* QueryItemsType.swift */; };
-		C28231182C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231172C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift */; };
 		C282311A2C84F29B00AAE7A0 /* EnterWordsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231192C84F29B00AAE7A0 /* EnterWordsViewController.swift */; };
 		C284D6B62E1AFD2600149FFA /* DeletedItemsInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C284D6B52E1AFD2200149FFA /* DeletedItemsInteractor.swift */; };
 		C284D6B82E1B140F00149FFA /* TagInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C284D6B72E1B140B00149FFA /* TagInteractor.swift */; };
@@ -245,7 +243,6 @@
 		C298AEB52C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEB42C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift */; };
 		C298AEB82C692D030009BAA2 /* MainRepositoryImpl+EncryptedStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEB72C692D030009BAA2 /* MainRepositoryImpl+EncryptedStorage.swift */; };
 		C298AEBA2C6931CA0009BAA2 /* StorageInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEB92C6931CA0009BAA2 /* StorageInteractor.swift */; };
-		C298AEBC2C695AF30009BAA2 /* PasswordProtectionLevel+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEBB2C695AF30009BAA2 /* PasswordProtectionLevel+.swift */; };
 		C298AEBE2C695B260009BAA2 /* VaultEncryptionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEBD2C695B260009BAA2 /* VaultEncryptionKey.swift */; };
 		C298FD222D39B3ED00CFFB3D /* CloudCache.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = C298FD202D39B3ED00CFFB3D /* CloudCache.xcdatamodeld */; };
 		C298FD262D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD242D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift */; };
@@ -289,7 +286,6 @@
 		C2C1EAAB2D49898B00F02B20 /* EncryptionHandlerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C1EAAA2D49898900F02B20 /* EncryptionHandlerImpl.swift */; };
 		C2C3BE7F2DC3E7B8006E7DCE /* ExternalServiceImportInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3BE7E2DC3E7AC006E7DCE /* ExternalServiceImportInteractor.swift */; };
 		C2C3BE842DC41954006E7DCE /* SwiftCSV in Frameworks */ = {isa = PBXBuildFile; productRef = C2C3BE832DC41954006E7DCE /* SwiftCSV */; };
-		C2C3BE862DC42629006E7DCE /* String+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3BE852DC42626006E7DCE /* String+.swift */; };
 		C2C5301C2C77472500AA11A2 /* MainRepositoryImpl+Biometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C5301B2C77472500AA11A2 /* MainRepositoryImpl+Biometry.swift */; };
 		C2C883AD2C3AD28B00F6A8C0 /* SystemInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C883AC2C3AD28B00F6A8C0 /* SystemInteractor.swift */; };
 		C2C883AF2C3AD36200F6A8C0 /* MainRepositoryImpl+System.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C883AE2C3AD36200F6A8C0 /* MainRepositoryImpl+System.swift */; };
@@ -315,7 +311,6 @@
 		C2DE428F2C7BA0EC00BD1A85 /* RecoveryKitLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DE428E2C7BA0EC00BD1A85 /* RecoveryKitLink.swift */; };
 		C2E119DF2CA18CD0008928E6 /* SignalArgon2 in Frameworks */ = {isa = PBXBuildFile; productRef = C2E119DE2CA18CD0008928E6 /* SignalArgon2 */; };
 		C2E119E02CA1FEB3008928E6 /* KDFSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25F30312CA0B090009E44DB /* KDFSpec.swift */; };
-		C2E119E22CA1FECA008928E6 /* KDFSpec+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E119E12CA1FEC4008928E6 /* KDFSpec+.swift */; };
 		C2E231D12C9A1FAA00A3142A /* Exchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E231D02C9A1FA300A3142A /* Exchange.swift */; };
 		C2E5EAC52C767DD80091767C /* BiometryInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E5EAC42C767DD80091767C /* BiometryInteractor.swift */; };
 		C2F489512D3C761E00F3761B /* CloudCached.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F489502D3C761C00F3761B /* CloudCached.swift */; };
@@ -668,10 +663,8 @@
 		C27D99FA2BD596630008203F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C27D99FC2BD596630008203F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C27F0BE32CC3D96600F5688F /* ChangePasswordInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordInteractor.swift; sourceTree = "<group>"; };
-		C27F0BEA2CC44C4400F5688F /* ExchangeVault+summary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExchangeVault+summary.swift"; sourceTree = "<group>"; };
 		C28231122C84A6D100AAE7A0 /* EnterWordsFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsFlowController.swift; sourceTree = "<group>"; };
 		C28231142C84E6BE00AAE7A0 /* QueryItemsType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueryItemsType.swift; sourceTree = "<group>"; };
-		C28231172C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLQueryItem_Sequence+.swift"; sourceTree = "<group>"; };
 		C28231192C84F29B00AAE7A0 /* EnterWordsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsViewController.swift; sourceTree = "<group>"; };
 		C284D6B52E1AFD2200149FFA /* DeletedItemsInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedItemsInteractor.swift; sourceTree = "<group>"; };
 		C284D6B72E1B140B00149FFA /* TagInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagInteractor.swift; sourceTree = "<group>"; };
@@ -697,7 +690,6 @@
 		C298AEB42C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedStorageDataSourceImpl.swift; sourceTree = "<group>"; };
 		C298AEB72C692D030009BAA2 /* MainRepositoryImpl+EncryptedStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainRepositoryImpl+EncryptedStorage.swift"; sourceTree = "<group>"; };
 		C298AEB92C6931CA0009BAA2 /* StorageInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageInteractor.swift; sourceTree = "<group>"; };
-		C298AEBB2C695AF30009BAA2 /* PasswordProtectionLevel+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PasswordProtectionLevel+.swift"; sourceTree = "<group>"; };
 		C298AEBD2C695B260009BAA2 /* VaultEncryptionKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEncryptionKey.swift; sourceTree = "<group>"; };
 		C298FD212D39B3ED00CFFB3D /* CloudCache.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CloudCache.xcdatamodel; sourceTree = "<group>"; };
 		C298FD242D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeletedItemCachedEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -738,7 +730,6 @@
 		C2C1EAAA2D49898900F02B20 /* EncryptionHandlerImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionHandlerImpl.swift; sourceTree = "<group>"; };
 		C2C3BE7E2DC3E7AC006E7DCE /* ExternalServiceImportInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalServiceImportInteractor.swift; sourceTree = "<group>"; };
 		C2C3BE802DC3E9FE006E7DCE /* ExternalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalService.swift; sourceTree = "<group>"; };
-		C2C3BE852DC42626006E7DCE /* String+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+.swift"; sourceTree = "<group>"; };
 		C2C5301B2C77472500AA11A2 /* MainRepositoryImpl+Biometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainRepositoryImpl+Biometry.swift"; sourceTree = "<group>"; };
 		C2C883AC2C3AD28B00F6A8C0 /* SystemInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInteractor.swift; sourceTree = "<group>"; };
 		C2C883AE2C3AD36200F6A8C0 /* MainRepositoryImpl+System.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainRepositoryImpl+System.swift"; sourceTree = "<group>"; };
@@ -761,7 +752,6 @@
 		C2D828CC2C9C868900BCF3E8 /* ExportInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportInteractor.swift; sourceTree = "<group>"; };
 		C2D828CE2C9C89CA00BCF3E8 /* UUID+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UUID+.swift"; sourceTree = "<group>"; };
 		C2DE428E2C7BA0EC00BD1A85 /* RecoveryKitLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryKitLink.swift; sourceTree = "<group>"; };
-		C2E119E12CA1FEC4008928E6 /* KDFSpec+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KDFSpec+.swift"; sourceTree = "<group>"; };
 		C2E231D02C9A1FA300A3142A /* Exchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exchange.swift; sourceTree = "<group>"; };
 		C2E5EAC42C767DD80091767C /* BiometryInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometryInteractor.swift; sourceTree = "<group>"; };
 		C2F489502D3C761C00F3761B /* CloudCached.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCached.swift; sourceTree = "<group>"; };
@@ -836,6 +826,8 @@
 		54571D752D688AC200FC2DB3 /* AutoFill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54571D832D688AC200FC2DB3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = AutoFill; sourceTree = "<group>"; };
 		547139D72D89644100A81142 /* AppSecurity */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppSecurity; sourceTree = "<group>"; };
 		549BF8D92D7C6D6A00E0C297 /* Connect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Connect; sourceTree = "<group>"; };
+		54A490492E27B9F100DAF740 /* Extensions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Extensions; sourceTree = "<group>"; };
+		54A490502E27DB0E00DAF740 /* Logs */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Logs; sourceTree = "<group>"; };
 		54A825872D82DA3700CBC463 /* Settings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Settings; sourceTree = "<group>"; };
 		54AFB3212DA441BB00EE00E9 /* Connect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Connect; sourceTree = "<group>"; };
 		54B6643F2D84E09700AB4691 /* AutofillSettings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AutofillSettings; sourceTree = "<group>"; };
@@ -1042,18 +1034,6 @@
 				544617892D413DAE003A14E1 /* GenerateSecretKeyRouter.swift */,
 			);
 			path = GenerateSecretKey;
-			sourceTree = "<group>";
-		};
-		C21422C22C8E0E6B00C978F9 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				C2C3BE852DC42626006E7DCE /* String+.swift */,
-				C27F0BEA2CC44C4400F5688F /* ExchangeVault+summary.swift */,
-				C2E119E12CA1FEC4008928E6 /* KDFSpec+.swift */,
-				C298AEBB2C695AF30009BAA2 /* PasswordProtectionLevel+.swift */,
-				C28231172C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift */,
-			);
-			path = Extensions;
 			sourceTree = "<group>";
 		};
 		C21422C52C8E425E00C978F9 /* Log */ = {
@@ -1589,6 +1569,7 @@
 		C2B0B8222C1E050500D26D11 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				54A490502E27DB0E00DAF740 /* Logs */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				C267F9202BE2CA61005F7B89 /* Root */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
@@ -1651,7 +1632,7 @@
 				549BF8D92D7C6D6A00E0C297 /* Connect */,
 				C21E887D2D46F5650010EE54 /* Adapters */,
 				C29DF36D2C60131000E19DFF /* BIP-0039_English.txt */,
-				C21422C22C8E0E6B00C978F9 /* Extensions */,
+				54A490492E27B9F100DAF740 /* Extensions */,
 				54B664A42D85653D00AB4691 /* DataSource */,
 				C2370AEE2BE66EB20059FBA6 /* ModelsTypes */,
 				C2F81ED92BE44C63008FD374 /* Controllers */,
@@ -1958,6 +1939,7 @@
 				54405B542D93FD7A009C66C1 /* MasterPassword */,
 				545579222DD27ADB00712716 /* TransferItems */,
 				547139D72D89644100A81142 /* AppSecurity */,
+				54A490502E27DB0E00DAF740 /* Logs */,
 				54A825872D82DA3700CBC463 /* Settings */,
 				54AFB3212DA441BB00EE00E9 /* Connect */,
 				54B6643F2D84E09700AB4691 /* AutofillSettings */,
@@ -2027,6 +2009,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				549BF8D92D7C6D6A00E0C297 /* Connect */,
+				54A490492E27B9F100DAF740 /* Extensions */,
 				54B664A42D85653D00AB4691 /* DataSource */,
 				54BB9E422DC89F2A00BDD13F /* 2FASWebService */,
 			);
@@ -2471,7 +2454,6 @@
 				C233A77A2DC183BA000F017F /* CurrentDateInteractor.swift in Sources */,
 				C21E887F2D46F5820010EE54 /* LocalStorageImpl.swift in Sources */,
 				C2B609452C4DC7720041AC06 /* ConfigInteractor.swift in Sources */,
-				C2E119E22CA1FECA008928E6 /* KDFSpec+.swift in Sources */,
 				C2BCEE162DB6DC7500763C8B /* TimeVerificationInteractor.swift in Sources */,
 				C2256BA22BE7E86A00E8748C /* SecurityInteractor.swift in Sources */,
 				C2C3BE7F2DC3E7B8006E7DCE /* ExternalServiceImportInteractor.swift in Sources */,
@@ -2494,12 +2476,10 @@
 				C22C96E12D5D0DF4004E6A64 /* CloudRecoveryInteractor.swift in Sources */,
 				C2BCEF982C52EDBD004B3468 /* FileIconInteractor.swift in Sources */,
 				C21EB4D02CBBE83100902AA4 /* RecoveryKitInteractor.swift in Sources */,
-				C2C3BE862DC42629006E7DCE /* String+.swift in Sources */,
 				54878E5B2D7F15870073BFC8 /* ConnectLogin.swift in Sources */,
 				54B664D92D85E1E900AB4691 /* WebBrowsersInteractor.swift in Sources */,
 				C2A10D002D245CE300105C81 /* SyncInteractor.swift in Sources */,
 				C2BCEF942C52EC0D004B3468 /* NetworkStatusError.swift in Sources */,
-				C298AEBC2C695AF30009BAA2 /* PasswordProtectionLevel+.swift in Sources */,
 				C2370AFA2BE67BD10059FBA6 /* AppLockBlockTime.swift in Sources */,
 				C266B11A2DDA42C60000A30D /* RevenueCatDelegate.swift in Sources */,
 				C2F81ECF2BE42879008FD374 /* RootInteractor.swift in Sources */,
@@ -2530,7 +2510,6 @@
 				5402A7482D63A1590092765B /* MainRepositoryImpl+Onboarding.swift in Sources */,
 				54BB9E472DC89FA500BDD13F /* MainRepositoryImpl+2FASWebService.swift in Sources */,
 				54FC49A02D652C1D00CF27E0 /* PasswordGeneratorInteractor.swift in Sources */,
-				C28231182C84EFE000AAE7A0 /* URLQueryItem_Sequence+.swift in Sources */,
 				C2C1EAAB2D49898B00F02B20 /* EncryptionHandlerImpl.swift in Sources */,
 				54B664DD2D85FC2F00AB4691 /* WebBrowser.swift in Sources */,
 				54B664962D8555DB00AB4691 /* MainRepositoryImpl+AutoFill.swift in Sources */,
@@ -2541,7 +2520,6 @@
 				C2370B082BE6917D0059FBA6 /* PermissionsStateDataController.swift in Sources */,
 				C26D2BE72DD9408400B16D73 /* MainRepositoryImpl+Payment.swift in Sources */,
 				549BF4A62D7B57B500E0C297 /* ConnectIdenticonInteractor+Content.swift in Sources */,
-				C27F0BEB2CC44C4A00F5688F /* ExchangeVault+summary.swift in Sources */,
 				C27F0BE42CC3D96E00F5688F /* ChangePasswordInteractor.swift in Sources */,
 				C28842452CFCF8F800FCFF2D /* MainRepositoryImpl+Backup.swift in Sources */,
 				C21EB4D32CBBEC3B00902AA4 /* RecoveryKitPDFGenerator.swift in Sources */,

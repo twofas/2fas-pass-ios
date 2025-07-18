@@ -6,10 +6,16 @@
 
 import Foundation
 import SwiftUI
+import CommonUI
+
+enum AboutDestination: RouterDestination {
+    case viewLogs
+}
 
 @Observable @MainActor
 final class AboutPresenter {
     
+    var destination: AboutDestination?
     var anonymousCrashReports = false
     
     var appVersion: String {
@@ -40,6 +46,7 @@ final class AboutPresenter {
     }
     
     func onSendLogs() {
+        destination = .viewLogs
     }
 }
 

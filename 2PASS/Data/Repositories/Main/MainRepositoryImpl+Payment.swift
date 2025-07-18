@@ -23,7 +23,7 @@ extension MainRepositoryImpl {
             Purchases.logLevel = .info
         }
         Purchases.logHandler = { level, message in
-            Log("[RevenueCat] \(message)", severity: level.severity)
+            Log("[RevenueCat] \(message, privacy: .public)", severity: level.severity)
         }
         Purchases.configure(withAPIKey: apiKey)
         Purchases.shared.delegate = revenueCatDelegate

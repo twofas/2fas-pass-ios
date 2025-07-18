@@ -49,7 +49,7 @@ extension ConfigInteractor: ConfigInteracting {
     }
     
     func setDefaultProtectionLevel(_ value: PasswordProtectionLevel) {
-        Log("ConfigInteractor: Setting default protection level: \(value)", module: .interactor)
+        Log("ConfigInteractor: Setting default protection level: \(value.rawValue, privacy: .public)", module: .interactor)
         mainRepository.setDefaultProtectionLevel(value)
     }
     

@@ -11,7 +11,7 @@ import CommonUI
 import UIKit
 
 final class RootPresenter {
-    private enum State {
+    fileprivate enum State {
         case initial
         case login
         case vaultRecovery
@@ -256,5 +256,12 @@ final class RootPresenter {
                 flowController.toAppNotification(newestNotification)
             }
         }
+    }
+}
+
+extension LogMessage.Interpolation {
+    
+    fileprivate mutating func appendInterpolation(_ value: @autoclosure () -> RootPresenter.State, privacy: LogPrivacy = .auto) {
+        appendInterpolation("\(value())", privacy: privacy == .auto ? .public : privacy)
     }
 }

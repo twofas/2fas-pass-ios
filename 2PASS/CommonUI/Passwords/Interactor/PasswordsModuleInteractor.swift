@@ -144,7 +144,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
     
     func moveToTrash(_ passwordID: PasswordID) {
-        Log("PasswordsModuleInteractor: Move to trash: \(passwordID)", module: .moduleInteractor, obfuscate: true)
+        Log("PasswordsModuleInteractor: Move to trash: \(passwordID)", module: .moduleInteractor)
         let deletedPassword = passwordInteractor.getPassword(for: passwordID, checkInTrash: false)
         passwordInteractor.markAsTrashed(for: passwordID)
         passwordInteractor.saveStorage()

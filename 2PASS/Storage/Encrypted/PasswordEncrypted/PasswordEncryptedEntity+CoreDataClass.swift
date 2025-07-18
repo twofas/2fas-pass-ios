@@ -246,7 +246,7 @@ final class PasswordEncryptedEntity: NSManagedObject {
     }
     
     @nonobjc static func delete(on context: NSManagedObjectContext, entity: PasswordEncryptedEntity) {
-        Log("PasswordEncryptedEntity: Deleting entity of type: \(entity)", module: .storage, obfuscate: true)
+        Log("PasswordEncryptedEntity: Deleting entity of type: \(entity)", module: .storage)
         context.delete(entity)
     }
 }
