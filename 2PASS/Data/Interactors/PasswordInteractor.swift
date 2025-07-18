@@ -422,8 +422,7 @@ extension PasswordInteractor: PasswordInteracting {
     func deletePassword(for passwordID: PasswordID) {
         Log(
             "PasswordInteractor: Deleting password for passwordID: \(passwordID)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.deletePassword(passwordID: passwordID)
         mainRepository.deleteEncryptedPassword(passwordID: passwordID)
@@ -434,8 +433,7 @@ extension PasswordInteractor: PasswordInteracting {
         
         Log(
             "PasswordInteractor: Marking as trashed for passwordID: \(passwordID)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         guard let entity = getPassword(for: passwordID, checkInTrash: false),
               let encryptedEntity = mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)
@@ -450,8 +448,7 @@ extension PasswordInteractor: PasswordInteracting {
     func externalMarkAsTrashed(for passwordID: PasswordID) {
         Log(
             "PasswordInteractor: External marking as trashed for passwordID: \(passwordID)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         guard let entity = getPassword(for: passwordID, checkInTrash: false),
               let encryptedEntity = mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)
@@ -466,8 +463,7 @@ extension PasswordInteractor: PasswordInteracting {
     func markAsNotTrashed(for passwordID: PasswordID) {
         Log(
             "PasswordInteractor: Marking as not trashed for passwordID: \(passwordID)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         guard let entity = getPassword(for: passwordID, checkInTrash: true),
               let encryptedEntity = mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)

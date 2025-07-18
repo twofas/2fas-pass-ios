@@ -19,9 +19,7 @@ struct AboutView: View {
             general
             share
             connect
-            #if DEBUG
             crashReporting
-            #endif
         } header: {
             SettingsHeaderView(
                 icon: .app,
@@ -30,6 +28,7 @@ struct AboutView: View {
             )
             .settingsIconStyle(.border)
         }
+        .router(router: AboutRouter(), destination: $presenter.destination)
     }
     
     private var general: some View {

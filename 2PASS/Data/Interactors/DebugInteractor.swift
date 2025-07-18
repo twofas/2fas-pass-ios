@@ -57,6 +57,7 @@ public protocol DebugInteracting: AnyObject {
     // MARK: - Logs
     func listAllLogEntries() -> [LogEntry]
     func clearAllLogs()
+    func generateLogs() -> String
     
     // MARK: - Passwords
     var passwordCount: Int { get }
@@ -252,6 +253,48 @@ extension DebugInteractor: DebugInteracting {
     
     func clearAllLogs() {
         mainRepository.removeAllLogs()
+    }
+    
+    func generateLogs() -> String {
+        var output = """
+        Bundle: \(mainRepository.appBundleIdentifier ?? "")
+        Version: \(mainRepository.currentAppVersion) (\(mainRepository.currentBuildVersion))
+        OS: \(mainRepository.systemVersion)
+        Device: \(mainRepository.deviceModelName)
+        
+        DeviceID: \(hasDeviceID)
+        SelectedVault: \(hasSelectedVault)
+        InMemoryStorageActive: \(isInMemoryStorageActive)
+        StoredMasterKey: \(hasStoredMasterKey)
+        BiometryKey: \(hasBiometryKey)
+        Seed: \(hasSeed)
+        InMemoryEntropy: \(hasInMemoryEntropy)
+        Words: \(hasWords)
+        Salt: \(hasSalt)
+        MasterPassword: \(hasMasterPassword)
+        InMemoryMasterKey: \(hasInMemoryMasterKey)
+        EncryptionReference: \(hasEncryptionReference)
+        StoredEntropy: \(hasStoredEntropy)
+        TrustedKey: \(hasTrustedKey)
+        SecureKey: \(hasSecureKey)
+        ExternalKey: \(hasExternalKey)
+        """
+        
+        output += "\n\n"
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let logs = mainRepository.listAllLogs().map {
+            var entry = "\(dateFormatter.string(from: $0.timestamp)) \($0.module): "
+            if $0.severity != .unknown {
+                entry.append("[\($0.severity)] ")
+            }
+            entry.append($0.content)
+            return entry
+        }
+        .joined(separator: "\n")
+        
+        return output + logs
     }
     
     // MARK: - Passwords

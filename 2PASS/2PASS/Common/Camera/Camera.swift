@@ -16,7 +16,7 @@ public final class Camera {
     public weak var delegate: CameraDelegate?
     
     public init(previewView: UIView, scanningRegion: CGRect) {
-        Log("Camera - init with previewView: \(previewView), scanningRegion: \(scanningRegion)", module: .camera)
+        Log("Camera - init with previewView: \(previewView.description), scanningRegion: \(scanningRegion.debugDescription, privacy: .public)", module: .camera)
         camera.delegate = self
         scanner.didFoundCode = { [weak self] in self?.delegate?.didFoundCode($0) }
         scanner.initialize(with: previewView)
@@ -26,7 +26,7 @@ public final class Camera {
     }
     
     public func updateScanningRegion(_ scanningRegion: CGRect) {
-        Log("Camera - updateScanningRegion \(scanningRegion)", module: .camera)
+        Log("Camera - updateScanningRegion \(scanningRegion.debugDescription, privacy: .public)", module: .camera)
         scanner.setScanningRect(scanningRegion)
     }
     

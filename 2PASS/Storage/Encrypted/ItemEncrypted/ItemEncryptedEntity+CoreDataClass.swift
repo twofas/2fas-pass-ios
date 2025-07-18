@@ -205,7 +205,7 @@ final class ItemEncryptedEntity: NSManagedObject {
     }
     
     @nonobjc static func delete(on context: NSManagedObjectContext, entity: ItemEncryptedEntity) {
-        Log("ItemEncryptedEntity: Deleting entity of type: \(entity)", module: .storage, obfuscate: true)
+        Log("PasswordEncryptedEntity: Deleting entity of type: \(entity)", module: .storage)
         context.delete(entity)
     }
 }
