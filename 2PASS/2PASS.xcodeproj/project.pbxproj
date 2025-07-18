@@ -53,7 +53,6 @@
 		54878E5B2D7F15870073BFC8 /* ConnectLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54878E5A2D7F15820073BFC8 /* ConnectLogin.swift */; };
 		549200602DD4D83100C2431E /* ios-secret-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 5492005F2DD4D83100C2431E /* ios-secret-key.json */; };
 		549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */; };
-		549B139B2E291D5100A0A076 /* security_public.asc in Resources */ = {isa = PBXBuildFile; fileRef = 549B139A2E291D5100A0A076 /* security_public.asc */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
 		549BF4A62D7B57B500E0C297 /* ConnectIdenticonInteractor+Content.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549BF4A52D7B57A800E0C297 /* ConnectIdenticonInteractor+Content.swift */; };
 		549BF8F92D7C81D000E0C297 /* ColorScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549BF8F82D7C81CC00E0C297 /* ColorScheme.swift */; };
@@ -522,7 +521,6 @@
 		54878E5A2D7F15820073BFC8 /* ConnectLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectLogin.swift; sourceTree = "<group>"; };
 		5492005F2DD4D83100C2431E /* ios-secret-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ios-secret-key.json"; sourceTree = "<group>"; };
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
-		549B139A2E291D5100A0A076 /* security_public.asc */ = {isa = PBXFileReference; lastKnownFileType = text; path = security_public.asc; sourceTree = "<group>"; };
 		549BF4A52D7B57A800E0C297 /* ConnectIdenticonInteractor+Content.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConnectIdenticonInteractor+Content.swift"; sourceTree = "<group>"; };
 		549BF8F62D7C812B00E0C297 /* WebBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBrowser.swift; sourceTree = "<group>"; };
 		549BF8F82D7C81CC00E0C297 /* ColorScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorScheme.swift; sourceTree = "<group>"; };
@@ -1224,7 +1222,6 @@
 				5402A7572D63A2390092765B /* ios-tick-dark.json */,
 				5402A7582D63A2390092765B /* ios-tick-light.json */,
 				5492005F2DD4D83100C2431E /* ios-secret-key.json */,
-				549B139A2E291D5100A0A076 /* security_public.asc */,
 				549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */,
 				C27D99F72BD596630008203F /* Assets.xcassets */,
 				54820F4E2DA594B900E29C73 /* Localizable.xcstrings */,
@@ -2173,7 +2170,6 @@
 				5402A75C2D63A2390092765B /* ios-onboarding-02-light.json in Resources */,
 				5402A75E2D63A2390092765B /* ios-onboarding-03-light.json in Resources */,
 				5402A75F2D63A2390092765B /* ios-tick-light.json in Resources */,
-				549B139B2E291D5100A0A076 /* security_public.asc in Resources */,
 				54FBB7A52E0D70CC0026E87B /* Settings.bundle in Resources */,
 				54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */,
 				549200602DD4D83100C2431E /* ios-secret-key.json in Resources */,
