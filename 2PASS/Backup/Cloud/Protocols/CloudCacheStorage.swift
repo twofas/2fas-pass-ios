@@ -19,16 +19,16 @@ public protocol CloudCacheStorage: AnyObject {
     func listDeleteItemsIDs() -> [DeletedItemID]
     func listTagsItemsIDs() -> [ItemTagID]
     
-    func listAllPasswords() -> [PasswordID: (password: PasswordEncryptedData, metadata: Data)]
+    func listAllPasswords() -> [PasswordID: (password: ItemEncryptedData, metadata: Data)]
     func listAllDeletedItems() -> [CloudDataDeletedItem]
     func listAllTags() -> [CloudDataTagItem]
     
-    func listAllPasswordsInCurrentVault() -> [(password: PasswordEncryptedData, metadata: Data)]
+    func listAllPasswordsInCurrentVault() -> [(password: ItemEncryptedData, metadata: Data)]
     func listAllDeletedItemsInCurrentVault() -> [CloudDataDeletedItem]
     func listAllTagsInCurrentVault() -> [CloudDataTagItem]
     
-    func createPassword(password: PasswordEncryptedData, metadata: Data)
-    func updatePassword(password: PasswordEncryptedData, metadata: Data)
+    func createPassword(password: ItemEncryptedData, metadata: Data)
+    func updatePassword(password: ItemEncryptedData, metadata: Data)
     
     func createDeletedItem(_ deletedItem: CloudDataDeletedItem)
     func updateDeletedItem(_ deletedItem: CloudDataDeletedItem)

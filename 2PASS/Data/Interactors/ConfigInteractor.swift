@@ -8,8 +8,8 @@ import Foundation
 import Common
 
 public protocol ConfigInteracting: AnyObject {
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel)
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
     
     var passwordGeneratorConfig: PasswordGenerateConfig? { get }
     func savePasswordGeneratorConfig(_ config: PasswordGenerateConfig)
@@ -44,11 +44,11 @@ extension ConfigInteractor: ConfigInteracting {
         mainRepository.setDefaultPassswordListAction(action)
     }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         mainRepository.currentDefaultProtectionLevel
     }
     
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel) {
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
         Log("ConfigInteractor: Setting default protection level: \(value.rawValue, privacy: .public)", module: .interactor)
         mainRepository.setDefaultProtectionLevel(value)
     }

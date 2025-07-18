@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-public extension PasswordProtectionLevel {
+public extension ItemProtectionLevel {
     var title: String {
         switch self {
         case .normal: T.settingsEntryProtectionLevel2

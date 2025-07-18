@@ -10,6 +10,7 @@ import CryptoKit
 import LocalAuthentication
 
 public protocol StorageInteracting: AnyObject {
+    func loadStore()
     func initialize(completion: @escaping () -> Void)
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
     func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
@@ -26,21 +27,33 @@ extension StorageInteracting {
 final class StorageInteractor {
     private let mainRepository: MainRepository
     private let autoFillInteractor: AutoFillCredentialsInteracting
+    private let migrationInteractor: MigrationInteracting
     private let queue: DispatchQueue
     
-    init(mainRepository: MainRepository, autoFillInteractor: AutoFillCredentialsInteracting) {
+    init(mainRepository: MainRepository, autoFillInteractor: AutoFillCredentialsInteracting, migrationInteractor: MigrationInteracting) {
         self.mainRepository = mainRepository
         self.autoFillInteractor = autoFillInteractor
+        self.migrationInteractor = migrationInteractor
         self.queue = DispatchQueue(label: "InitializeStorageQueue", qos: .userInteractive, attributes: .concurrent)
     }
 }
 
 extension StorageInteractor: StorageInteracting {
+    
+    func loadStore() {
+        mainRepository.loadEncryptedStore()
+    }
+    
     func initialize(completion: @escaping () -> Void) {
         Log(
             "StorageInteractor - initialize",
             module: .interactor
         )
+        
+        if migrationInteractor.shouldMigrate() {
+            migrationInteractor.migrate()
+        }
+        
         let vaults = mainRepository.listEncrypteVaults()
         guard let masterKey = mainRepository.empheralMasterKey else {
             Log(
@@ -58,24 +71,6 @@ extension StorageInteractor: StorageInteracting {
             )
             return
         }
-        guard let secureKeyData = mainRepository.secureKey else {
-            Log(
-                "StorageInteractor - initialize. Can't continue without Secure Key!",
-                module: .interactor,
-                severity: .error
-            )
-            return
-        }
-        guard let trustedKeyData = mainRepository.trustedKey else {
-            Log(
-                "StorageInteractor - initialize. Can't continue without Trusted Key!",
-                module: .interactor,
-                severity: .error
-            )
-            return
-        }
-        let secureKey = mainRepository.createSymmetricKey(from: secureKeyData)
-        let trustedKey = mainRepository.createSymmetricKey(from: trustedKeyData)
         
         var vaultID: VaultID
         if let vault = vaults.first {
@@ -92,6 +87,7 @@ extension StorageInteractor: StorageInteracting {
             vaultID = createdVaultID
         }
         mainRepository.selectVault(vaultID)
+        
         mainRepository.createInMemoryStorage()
         let passwords = mainRepository.listEncryptedPasswords(
             in: vaultID,
@@ -110,48 +106,26 @@ extension StorageInteractor: StorageInteracting {
                     return
                 }
                 let protectionLevel = encryptedData.protectionLevel
-                let name = decryptData(
-                    encryptedData.name,
+                guard let contentData = decryptContentData(
+                    encryptedData.content,
                     protectionLevel: protectionLevel
-                )
-                let username = decryptData(
-                    encryptedData.username,
-                    protectionLevel: protectionLevel
-                )
-                let iconType: PasswordIconType = {
-                    switch encryptedData.iconType {
-                    case .domainIcon(let domain):
-                        return .domainIcon(self.decryptData(domain, protectionLevel: protectionLevel))
-                    case .customIcon(let iconURI):
-                        if let urlString = self.decryptData(iconURI, protectionLevel: protectionLevel),
-                           let url = URL(string: urlString) {
-                            return .customIcon(url)
-                        } else {
-                            return .domainIcon(nil)
-                        }
-                    case .label(let labelTitle, let labelColor):
-                        let labelTitle = self.decryptData(
-                            labelTitle,
-                            protectionLevel: protectionLevel
-                        )
-                        return .label(labelTitle: labelTitle ?? Config.defaultIconLabel, labelColor: labelColor)
-                    }
-                }()
-                let notes = decryptData(encryptedData.notes, protectionLevel: protectionLevel)
-                let uris = parseURIs(from: encryptedData, trustedKey: trustedKey, secureKey: secureKey)
+                ) else {
+                    group.leave()
+                    return
+                }
                 DispatchQueue.main.async {
                     self.mainRepository.createPassword(
-                        passwordID: encryptedData.passwordID,
-                        name: name,
-                        username: username,
-                        password: encryptedData.password,
-                        notes: notes,
+                        passwordID: encryptedData.itemID,
+                        name: contentData.name,
+                        username: contentData.username,
+                        password: contentData.password,
+                        notes: contentData.notes,
                         creationDate: encryptedData.creationDate,
                         modificationDate: encryptedData.modificationDate,
-                        iconType: iconType,
+                        iconType: contentData.iconType,
                         trashedStatus: encryptedData.trashedStatus,
                         protectionLevel: protectionLevel,
-                        uris: uris,
+                        uris: contentData.uris,
                         tagIds: encryptedData.tagIds
                     )
                     
@@ -187,7 +161,7 @@ extension StorageInteractor: StorageInteracting {
             
             self?.mainRepository.saveStorage()
             completion()
-        }
+            }
     }
     
     func clear() {
@@ -199,7 +173,7 @@ extension StorageInteractor: StorageInteracting {
     
     func decryptData(
         _ data: Data?,
-        protectionLevel: PasswordProtectionLevel) -> String? {
+        protectionLevel: ItemProtectionLevel) -> String? {
             guard let data else { return nil }
             guard let key = mainRepository.getKey(
                 isPassword: false,
@@ -214,6 +188,25 @@ extension StorageInteractor: StorageInteracting {
                 return nil
             }
             return String(data: value, encoding: .utf8)
+        }
+    
+    func decryptContentData(
+        _ data: Data?,
+        protectionLevel: ItemProtectionLevel) -> PasswordItemContent? {
+            guard let data else { return nil }
+            guard let key = mainRepository.getKey(
+                isPassword: false,
+                protectionLevel: protectionLevel
+            ) else {
+                Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
+                return nil
+            }
+            
+            guard let value = mainRepository.decrypt(data, key: key) else {
+                Log("StorageInteractor - can't decrypt data", module: .interactor, severity: .error)
+                return nil
+            }
+            return try? mainRepository.jsonDecoder.decode(PasswordItemContent.self, from: value)
         }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {
@@ -321,45 +314,5 @@ extension StorageInteractor: StorageInteracting {
         Log("StorageInteractor - selected vault update!", module: .interactor)
         
         return true
-    }
-}
-
-private extension StorageInteractor {
-    func parseURIs(
-        from encryptedData: PasswordEncryptedData,
-        trustedKey: SymmetricKey,
-        secureKey: SymmetricKey
-    ) -> [PasswordURI]? {
-        guard let passEncryptedUris = encryptedData.uris else { return nil }
-        let protectionLevel = encryptedData.protectionLevel
-        let urisData = passEncryptedUris.uris
-        let matchList = passEncryptedUris.match
-        
-        guard
-            let decryptedUris = decryptData(
-                urisData,
-                protectionLevel: protectionLevel
-            ),
-            let decryptedUrisData = decryptedUris.data(using: .utf8)
-        else {
-            return nil
-        }
-        
-        guard
-            let uris = try? mainRepository.jsonDecoder.decode(
-                [String].self,
-                from: decryptedUrisData
-            )
-        else { return nil }
-        
-        guard uris.count == matchList.count else {
-            return nil
-        }
-        return uris.enumerated().compactMap { index, uri in
-            guard let match = matchList[safe: index] else {
-                return nil
-            }
-            return PasswordURI(uri: uri, match: match)
-        }
     }
 }

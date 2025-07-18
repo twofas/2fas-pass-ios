@@ -265,7 +265,7 @@ private extension SyncInteractor {
         removedDeleted = []
     }
     
-    func decrypt(_ data: Data?, protectionLevel: PasswordProtectionLevel) -> String? {
+    func decrypt(_ data: Data?, protectionLevel: ItemProtectionLevel) -> String? {
         guard let data else { return nil }
         return passwordInteractor.decrypt(data, isPassword: true, protectionLevel: protectionLevel)
     }

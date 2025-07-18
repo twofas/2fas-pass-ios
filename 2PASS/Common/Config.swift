@@ -55,7 +55,7 @@ public enum Config {
     public static let maximumExternalImportFileSize = 1024 * 1024 * 20
     
     // AutoFill
-    public static let autoFillExcludeProtectionLevels: Set<PasswordProtectionLevel> = [.topSecret]
+    public static let autoFillExcludeProtectionLevels: Set<ItemProtectionLevel> = [.topSecret]
     public static let allowsMatchRulesForSuggestions: Set<PasswordURI.Match> = [.domain]
     
     public static func iconURL(forDomain domain: String) -> URL? {

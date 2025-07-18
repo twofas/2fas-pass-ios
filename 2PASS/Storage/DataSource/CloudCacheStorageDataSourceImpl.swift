@@ -26,6 +26,7 @@ public final class CloudCacheStorageDataSourceImpl {
         )
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
+        coreDataStack.loadStore()
     }
 }
 
@@ -41,8 +42,8 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
         uris: PasswordEncryptedURIs?,
         metadata: Data
@@ -74,8 +75,8 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: PasswordEncryptedURIs?,
         metadata: Data
     ) {

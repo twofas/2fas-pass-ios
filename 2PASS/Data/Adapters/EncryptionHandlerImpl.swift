@@ -58,7 +58,8 @@ extension EncryptionHandlerImpl: EncryptionHandler {
         return cloudData.seedHash == seedHash && kdfSpec == KDFSpec.default
     }
     
-    func passwordDataToPasswordEncryptedData(_ passwordData: PasswordData) -> PasswordEncryptedData? {
+    // FIXME: Verify
+    func passwordDataToPasswordEncryptedData(_ passwordData: PasswordData) -> ItemEncryptedData? {
         guard let vaultID = mainRepository.selectedVault?.vaultID else {
             Log("EncryptionHandlerImpl: can't get vaultID", module: .interactor, severity: .error)
             return nil
@@ -88,108 +89,47 @@ extension EncryptionHandlerImpl: EncryptionHandler {
             }
             encryptedPassword = encrypted
         }
-        
-        var encryptedName: Data?
-        let name = passwordData.name.nilIfEmpty
-        if let name {
-            guard let encrypted = encrypt(name, using: key) else {
-                Log("EncryptionHandlerImpl: Create password. Can't encrypt name", module: .interactor, severity: .error)
-                return nil
-            }
-            encryptedName = encrypted
-        }
-        
-        var encryptedUsername: Data?
-        let username = passwordData.username.nilIfEmpty
-        if let username {
-            guard let encrypted = encrypt(username, using: key) else {
-                Log(
-                    "EncryptionHandlerImpl: Create password. Can't encrypt username",
-                    module: .interactor,
-                    severity: .error
-                )
-                return nil
-            }
-            encryptedUsername = encrypted
-        }
-        
-        guard let encryptedIconType = createEncryptedIconType(
+
+        let content = PasswordItemContent(
+            name: passwordData.name.nilIfEmpty,
+            username: passwordData.username.nilIfEmpty,
+            password: encryptedPassword,
+            notes: passwordData.notes,
             iconType: passwordData.iconType,
-            key: key
-        ) else {
-            Log("EncryptionHandlerImpl: Create password. Can't encrypt icon type", module: .interactor, severity: .error)
+            uris: passwordData.uris
+        )
+        guard let contentData = try? mainRepository.jsonEncoder.encode(content), let contentDataEnc = encryptData(contentData, using: key) else {
             return nil
         }
         
-        var encryptedURIs: PasswordEncryptedURIs?
-        if let uris = passwordData.uris, !uris.isEmpty {
-            guard let encrypted = createEncryptedURIs(from: uris, key: key) else {
-                Log("EncryptionHandlerImpl: Create password. Can't encrypt uris", module: .interactor, severity: .error)
-                return nil
-            }
-            encryptedURIs = encrypted
-        }
-        
-        var encryptedNotes: Data?
-        if let notes = passwordData.notes {
-            guard let encrypted = encrypt(notes, using: key) else {
-                Log(
-                    "EncryptionHandlerImpl: Create password. Can't encrypt notes",
-                    module: .interactor,
-                    severity: .error
-                )
-                return nil
-            }
-            encryptedNotes = encrypted
-        }
-        
-        return PasswordEncryptedData(
-            passwordID: passwordData.passwordID,
-            name: encryptedName,
-            username: encryptedUsername,
-            password: encryptedPassword,
-            notes: encryptedNotes,
+        return ItemEncryptedData(
+            itemID: passwordData.passwordID,
             creationDate: passwordData.creationDate,
             modificationDate: passwordData.modificationDate,
-            iconType: encryptedIconType,
             trashedStatus: passwordData.trashedStatus,
             protectionLevel: passwordData.protectionLevel,
+            contentType: .login,
+            contentVersion: 1,
+            content: contentDataEnc,
             vaultID: vaultID,
-            uris: encryptedURIs,
             tagIds: passwordData.tagIds
         )
     }
     
-    func passwordEncyptedToPasswordData(_ passwordEncrypted: PasswordEncryptedData) -> PasswordData? {
+    // FIXME: Verify
+    func passwordEncyptedToPasswordData(_ passwordEncrypted: ItemEncryptedData) -> PasswordData? {
         guard let key = mainRepository.cachedExternalKey else {
             Log("EncryptionHandlerImpl - can't get external key", module: .interactor, severity: .error)
             return nil
         }
         
-        let name: String?
-        if let nameData = passwordEncrypted.name {
-            guard let decrypted = decryptString(nameData, using: key) else {
-                Log("EncryptionHandlerImpl - can't decrypt nameData", module: .interactor, severity: .error)
-                return nil
-            }
-            name = decrypted
-        } else {
-            name = nil
-        }
-        
-        let username: String?
-        if let usernameData = passwordEncrypted.username {
-            guard let decrypted = decryptString(usernameData, using: key) else {
-                Log("EncryptionHandlerImpl - can't decrypt usernameData", module: .interactor, severity: .error)
-                return nil
-            }
-            username = decrypted
-        } else {
-            username = nil
+        guard let contentData = decryptData(passwordEncrypted.content, using: key),
+              let content = try? mainRepository.jsonDecoder.decode(PasswordItemContent.self, from: contentData) else {
+            return nil
         }
         
         let password: Data?
-        if let passwordData = passwordEncrypted.password {
+        if let passwordData = content.password {
             guard let decrypted = decryptString(passwordData, using: key) else {
                 Log("EncryptionHandlerImpl - can't decrypt passwordData", module: .interactor, severity: .error)
                 return nil
@@ -207,46 +147,19 @@ extension EncryptionHandlerImpl: EncryptionHandler {
         } else {
             password = nil
         }
-        
-        let notes: String?
-        if let notesData = passwordEncrypted.notes {
-            guard let decrypted = decryptString(notesData, using: key) else {
-                Log("EncryptionHandlerImpl - can't decrypt notesData", module: .interactor, severity: .error)
-                return nil
-            }
-            notes = decrypted
-        } else {
-            notes = nil
-        }
-        
-        guard let iconType = decryptEncryptedIconType(iconType: passwordEncrypted.iconType, key: key) else {
-            Log("EncryptionHandlerImpl - can't decrypt iconType", module: .interactor, severity: .error)
-            return nil
-        }
-        
-        let uris: [PasswordURI]?
-        if let encryptedUris = passwordEncrypted.uris {
-            guard let urisDecrypted = decryptURIs(from: encryptedUris, key: key) else {
-            Log("EncryptionHandlerImpl - can't decrypt URIs", module: .interactor, severity: .error)
-            return nil
-        }
-        uris = urisDecrypted
-        } else {
-            uris = nil
-        }
-        
+
         return PasswordData(
-            passwordID: passwordEncrypted.passwordID,
-            name: name,
-            username: username,
+            passwordID: passwordEncrypted.itemID,
+            name: content.name,
+            username: content.username,
             password: password,
-            notes: notes,
+            notes: content.notes,
             creationDate: passwordEncrypted.creationDate,
             modificationDate: passwordEncrypted.modificationDate,
-            iconType: iconType,
+            iconType: content.iconType,
             trashedStatus: passwordEncrypted.trashedStatus,
             protectionLevel: passwordEncrypted.protectionLevel,
-            uris: uris,
+            uris: content.uris,
             tagIds: passwordEncrypted.tagIds
         )
     }

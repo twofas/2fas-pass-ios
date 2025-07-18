@@ -8,10 +8,10 @@ import Foundation
 import Common
 
 public struct RecordDataPassword {
-    public let password: PasswordEncryptedData
+    public let password: ItemEncryptedData
     public let metadata: Data
     
-    public init(password: PasswordEncryptedData, metadata: Data) {
+    public init(password: ItemEncryptedData, metadata: Data) {
         self.password = password
         self.metadata = metadata
     }

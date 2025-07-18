@@ -9,7 +9,7 @@ public struct PasswordDataChangeRequest: Hashable {
     public let username: String?
     public let password: Password?
     public let notes: String?
-    public let protectionLevel: PasswordProtectionLevel?
+    public let protectionLevel: ItemProtectionLevel?
     public let uris: [PasswordURI]?
     
     public enum Password: Hashable {
@@ -26,7 +26,7 @@ public struct PasswordDataChangeRequest: Hashable {
         }
     }
     
-    public init(name: String? = nil, username: String? = nil, password: Password? = nil, notes: String? = nil, protectionLevel: PasswordProtectionLevel? = nil, uris: [PasswordURI]? = nil) {
+    public init(name: String? = nil, username: String? = nil, password: Password? = nil, notes: String? = nil, protectionLevel: ItemProtectionLevel? = nil, uris: [PasswordURI]? = nil) {
         self.name = name
         self.username = username
         self.password = password

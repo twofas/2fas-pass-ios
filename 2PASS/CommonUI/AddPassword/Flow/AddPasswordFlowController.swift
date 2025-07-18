@@ -10,8 +10,8 @@ import Common
 protocol AddPasswordFlowControllerParent: AnyObject {
     func closeAddPassword(with result: SavePasswordResult)
     func addPasswordChangeProtectionLevel(
-        current: PasswordProtectionLevel,
-        completion: @escaping (PasswordProtectionLevel) -> Void
+        current: ItemProtectionLevel,
+        completion: @escaping (ItemProtectionLevel) -> Void
     )
     func addPasswordToCustomizeIcon(
         data: CustomizeIconData,
@@ -21,7 +21,7 @@ protocol AddPasswordFlowControllerParent: AnyObject {
 
 protocol AddPasswordFlowControlling: AnyObject {
     func close(with result: SavePasswordResult)
-    func toChangeProtectionLevel(current: PasswordProtectionLevel)
+    func toChangeProtectionLevel(current: ItemProtectionLevel)
     func toCustomizeIcon(data: CustomizeIconData)
 }
 
@@ -59,7 +59,7 @@ extension AddPasswordFlowController: AddPasswordFlowControlling {
     }
     
     func toChangeProtectionLevel(
-        current: PasswordProtectionLevel
+        current: ItemProtectionLevel
     ) {
         parent?.addPasswordChangeProtectionLevel(current: current) { [weak viewController] newValue in
             viewController?.presenter.handleChangeProtectionLevel(newValue)

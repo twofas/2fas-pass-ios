@@ -3714,6 +3714,17 @@
         }
       }
     },
+    "migration_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migration failed"
+          }
+        }
+      }
+    },
     "onboarding_create_master_password_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4182,7 +4193,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opening a 2FAS Pass backup file is not supported in Files. Go to 2FAS Pass Settings to import it."
+            "value" : "Opening a 2FAS Pass backup file is not supported. Go to 2FAS Pass Settings to import it."
           }
         }
       }
@@ -6415,7 +6426,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set the duration after which the autofill service will require the Master Password again. This is only relevant for Tier 3 services."
+            "value" : "Set the duration after which the autofill service will require the Master Password again. This is only relevant for services assigned to the Secret Tier."
           }
         }
       }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum PasswordProtectionLevel: String, CaseIterable, Identifiable, Hashable, Codable {
+public enum ItemProtectionLevel: String, CaseIterable, Identifiable, Hashable, Codable {
     public var id: Self {
         self
     }
@@ -30,7 +30,7 @@ public enum PasswordProtectionLevel: String, CaseIterable, Identifiable, Hashabl
     }
 }
 
-extension PasswordProtectionLevel {
+extension ItemProtectionLevel {
     
     public init?(intValue: Int) {
         switch intValue {

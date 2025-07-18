@@ -10,8 +10,8 @@ import Common
 public protocol EncryptionHandler: AnyObject {
     var currentCloudSchemaVersion: Int { get }
     func verifyEncryption(_ cloudData: VaultCloudData) -> Bool
-    func passwordDataToPasswordEncryptedData(_ passwordData: PasswordData) -> PasswordEncryptedData?
-    func passwordEncyptedToPasswordData(_ passwordEncrypted: PasswordEncryptedData) -> PasswordData?
+    func passwordDataToPasswordEncryptedData(_ passwordData: PasswordData) -> ItemEncryptedData?
+    func passwordEncyptedToPasswordData(_ passwordEncrypted: ItemEncryptedData) -> PasswordData?
     func tagToTagEncrypted(_ tag: ItemTagData) -> ItemTagEncryptedData?
     func tagEncyptedToTag(_ tagEncrypted: ItemTagEncryptedData) -> ItemTagData?
     func vaultEncryptedDataToVaultRawData(_ vault: VaultEncryptedData) -> VaultRawData?

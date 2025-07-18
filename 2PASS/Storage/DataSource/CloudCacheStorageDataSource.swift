@@ -22,8 +22,8 @@ public protocol CloudCacheStorageDataSource: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
         uris: PasswordEncryptedURIs?,
         metadata: Data
@@ -38,8 +38,8 @@ public protocol CloudCacheStorageDataSource: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: PasswordEncryptedURIs?,
         metadata: Data
     )

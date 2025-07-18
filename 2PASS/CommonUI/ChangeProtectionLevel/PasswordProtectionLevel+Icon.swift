@@ -7,7 +7,7 @@
 import Common
 import SwiftUI
 
-extension PasswordProtectionLevel {
+extension ItemProtectionLevel {
     
     public var icon: Image {
         switch self {

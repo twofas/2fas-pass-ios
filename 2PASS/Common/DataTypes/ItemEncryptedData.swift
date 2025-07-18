@@ -6,52 +6,47 @@
 
 import Foundation
 
-public struct PasswordEncryptedData: Hashable, Identifiable {
+public enum ItemContentType: String {
+    case login
+}
+
+public struct ItemEncryptedData: Hashable, Identifiable {
     public var id: UUID {
-        passwordID
+        itemID
     }
     
-    public let passwordID: PasswordID
-    public let name: Data?
-    public let username: Data?
-    public let password: Data?
-    public let notes: Data?
+    public let itemID: PasswordID
     public let creationDate: Date
     public let modificationDate: Date
-    public let iconType: PasswordEncryptedIconType
     public let trashedStatus: ItemTrashedStatus
     public let protectionLevel: ItemProtectionLevel
+    public let contentType: ItemContentType
+    public let content: Data
+    public let contentVersion: Int
     public let vaultID: VaultID
-    public let uris: PasswordEncryptedURIs?
     public let tagIds: [ItemTagID]?
     
     public init(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        itemID: PasswordID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     ) {
-        self.passwordID = passwordID
-        self.name = name
-        self.username = username
-        self.password = password
-        self.notes = notes
+        self.itemID = itemID
         self.creationDate = creationDate
         self.modificationDate = modificationDate
-        self.iconType = iconType
         self.trashedStatus = trashedStatus
         self.protectionLevel = protectionLevel
+        self.content = content
+        self.contentVersion = contentVersion
+        self.contentType = contentType
         self.vaultID = vaultID
-        self.uris = uris
         self.tagIds = tagIds
     }
 }

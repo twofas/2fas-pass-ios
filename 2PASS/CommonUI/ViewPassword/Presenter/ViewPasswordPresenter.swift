@@ -36,7 +36,7 @@ final class ViewPasswordPresenter {
     var username: String?
     var password: AttributedString?
     var notes: String?
-    var protectionLevel: PasswordProtectionLevel = .topSecret
+    var protectionLevel: ItemProtectionLevel = .topSecret
     var icon: PasswordIconType = .default
     var iconContent: IconContent?
     var createdAt: String = ""

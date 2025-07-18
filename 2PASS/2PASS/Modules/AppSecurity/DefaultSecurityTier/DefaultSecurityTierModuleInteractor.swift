@@ -8,12 +8,12 @@ import Data
 import Common
 
 protocol DefaultSecurityTierModuleInteracting: AnyObject {
-    var defaultSecurityTier: PasswordProtectionLevel { get set }
+    var defaultSecurityTier: ItemProtectionLevel { get set }
 }
 
 final class DefaultSecurityTierModuleInteractor: DefaultSecurityTierModuleInteracting {
     
-    var defaultSecurityTier: PasswordProtectionLevel {
+    var defaultSecurityTier: ItemProtectionLevel {
         get {
             configInteractor.currentDefaultProtectionLevel
         }

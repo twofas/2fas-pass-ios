@@ -24,8 +24,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
         guard let passwordID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? ""),
-              let encrypted = passwordInteractor.getEncryptedPasswordEntity(passwordID: passwordID),
-              let encryptedPassword = encrypted.password else {
+              let encrypted = passwordInteractor.getEncryptedPasswordEntity(passwordID: passwordID) else {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }
@@ -38,19 +37,17 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return nil
         }
         
-        let username: String? = {
-            guard let encryptedUsername = encrypted.username else {
-                return nil
-            }
-            return passwordInteractor.decrypt(encryptedUsername, isPassword: false, protectionLevel: encrypted.protectionLevel)
-        }()
-        guard let password = passwordInteractor.decrypt(encryptedPassword, isPassword: true, protectionLevel: encrypted.protectionLevel) else {
+        guard let content = passwordInteractor.decryptContent(PasswordItemContent.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel) else {
+            return nil
+        }
+        
+        guard let passwordEnc = content.password, let password = passwordInteractor.decrypt(passwordEnc, isPassword: true, protectionLevel: encrypted.protectionLevel) else {
             Log("AutoFill - Error while decrypting password", module: .autofill)
             return nil
         }
         
         Log("AutoFill - Complete get credential without user interaction", module: .autofill)
-        return ASPasswordCredential(user: username ?? "", password: password)
+        return ASPasswordCredential(user: content.username ?? "", password: password)
     }
     
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {

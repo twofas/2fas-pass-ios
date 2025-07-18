@@ -8,7 +8,7 @@ import CryptoKit
 import Common
 
 protocol ConnectExportInteracting: AnyObject {
-    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (PasswordProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
+    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
     func preparePasswordsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data
     func prepareTagsForConnectExport() async throws(ExportError) -> Data
 }
@@ -53,7 +53,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
     }
     
-    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (PasswordProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
+    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
         let password = Task { @MainActor in
             mainRepository.getPasswordEntity(passwordID: id, checkInTrash: false)
         }
@@ -89,7 +89,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     private func passwordToConnectLogin(
         _ password: PasswordData,
         deviceId: UUID,
-        excludePasswordsValueProtectionLevels: Set<PasswordProtectionLevel> = [],
+        excludePasswordsValueProtectionLevels: Set<ItemProtectionLevel> = [],
         encryptPasswordKey: SymmetricKey? = nil
     ) -> ConnectLogin {
         let passwordExported: String? = {

@@ -70,7 +70,8 @@ public final class InteractorFactory {
     func storageInteractor() -> StorageInteracting {
         StorageInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            autoFillInteractor: autoFillCredentialsInteractor()
+            autoFillInteractor: autoFillCredentialsInteractor(),
+            migrationInteractor: migrationInteractor()
         )
     }
     
@@ -79,7 +80,8 @@ public final class InteractorFactory {
             protectionInteractor: protectionInteractor(),
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
-            onboardingInteractor: onboardingInteractor()
+            onboardingInteractor: onboardingInteractor(),
+            migrationInteractor: migrationInteractor()
         )
     }
     
@@ -306,6 +308,10 @@ public final class InteractorFactory {
             deletedItemsInteractor: deletedItemsInteractor(),
             mainRepository: MainRepositoryImpl.shared
         )
+    }
+    
+    public func migrationInteractor() -> MigrationInteracting {
+        MigrationInteractor(mainRepository: MainRepositoryImpl.shared)
     }
 }
 

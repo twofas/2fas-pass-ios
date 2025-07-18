@@ -8,46 +8,28 @@ import Foundation
 import CoreData
 import Common
 
-final class PasswordEncryptedEntity: NSManagedObject {
-    @nonobjc private static let entityName = "PasswordEncryptedEntity"
+final class ItemEncryptedEntity: NSManagedObject {
+    @nonobjc private static let entityName = "ItemEncryptedEntity"
     
     @nonobjc static func create(
         on context: NSManagedObjectContext,
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        itemID: PasswordID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         tagIds: [ItemTagID]?
-    ) -> PasswordEncryptedEntity {
+    ) -> ItemEncryptedEntity {
         context.performAndWait {
-            let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! PasswordEncryptedEntity
+            let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! ItemEncryptedEntity
             
-            entity.passwordID = passwordID
-            entity.name = name
-            entity.username = username
-            entity.password = password
-            entity.notes = notes
+            entity.itemID = itemID
             
             entity.creationDate = creationDate
             entity.modificationDate = modificationDate
-            
-            entity.iconType = iconType.value
-            switch iconType {
-            case .domainIcon(let domain):
-                entity.iconDomain = domain
-            case .customIcon(let url):
-                entity.iconCustomURL = url
-            case .label(let labelTitle, let labelColor):
-                entity.labelTitle = labelTitle
-                entity.labelColor = labelColor?.hexString
-            }
             
             switch trashedStatus {
             case .no:
@@ -58,10 +40,11 @@ final class PasswordEncryptedEntity: NSManagedObject {
             }
             
             entity.level = protectionLevel.rawValue
-            
-            entity.uris = uris?.uris
-            entity.urisMatching = uris?.match.map({ $0.rawValue })
             entity.tagIds = tagIds
+            
+            entity.contentType = contentType.rawValue
+            entity.contentVersion = Int16(contentVersion)
+            entity.content = content
             
             return entity
         }
@@ -70,36 +53,30 @@ final class PasswordEncryptedEntity: NSManagedObject {
     @discardableResult
     @nonobjc static func update(
         on context: NSManagedObjectContext,
-        for passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        for itemID: PasswordID,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         tagIds: [ItemTagID]?
-    ) -> PasswordEncryptedEntity? {
+    ) -> ItemEncryptedEntity? {
         context.performAndWait {
-            guard let entity = getEntity(on: context, passwordID: passwordID) else {
-                Log("Can't find encrypted entity for passwordID: \(passwordID)", module: .storage)
+            guard let entity = getEntity(on: context, itemID: itemID) else {
+                Log("Can't find encrypted entity for itemID: \(itemID)", module: .storage)
                 return nil
             }
             
             update(
                 on: context,
                 entity: entity,
-                name: name,
-                username: username,
-                password: password,
-                notes: notes,
                 modificationDate: modificationDate,
-                iconType: iconType,
                 trashedStatus: trashedStatus,
                 protectionLevel: protectionLevel,
-                uris: uris,
+                contentType: contentType,
+                contentVersion: contentVersion,
+                content: content,
                 tagIds: tagIds
             )
             
@@ -109,35 +86,16 @@ final class PasswordEncryptedEntity: NSManagedObject {
     
     @nonobjc static func update(
         on context: NSManagedObjectContext,
-        entity: PasswordEncryptedEntity,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        entity: ItemEncryptedEntity,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         tagIds: [ItemTagID]?
     ) {
-        entity.name = name
-        entity.username = username
-        entity.password = password
-        entity.notes = notes
-        
         entity.modificationDate = modificationDate
-        
-        entity.iconType = iconType.value
-        switch iconType {
-        case .domainIcon(let domain):
-            entity.iconDomain = domain
-        case .customIcon(let url):
-            entity.iconCustomURL = url
-        case .label(let labelTitle, let labelColor):
-            entity.labelTitle = labelTitle
-            entity.labelColor = labelColor?.hexString
-        }
         
         switch trashedStatus {
         case .no:
@@ -148,35 +106,36 @@ final class PasswordEncryptedEntity: NSManagedObject {
         }
         
         entity.level = protectionLevel.rawValue
-        
-        entity.uris = uris?.uris
-        entity.urisMatching = uris?.match.map({ $0.rawValue })
         entity.tagIds = tagIds
+        
+        entity.contentType = contentType.rawValue
+        entity.contentVersion = Int16(contentVersion)
+        entity.content = content
     }
     
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
-        passwordID: PasswordID
-    ) -> PasswordEncryptedEntity? {
-        let fetchRequest = PasswordEncryptedEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "passwordID == %@", passwordID as CVarArg)
+        itemID: PasswordID
+    ) -> ItemEncryptedEntity? {
+        let fetchRequest = ItemEncryptedEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "itemID == %@", itemID as CVarArg)
         fetchRequest.includesPendingChanges = true
         
-        var list: [PasswordEncryptedEntity] = []
+        var list: [ItemEncryptedEntity] = []
         
         do {
             list = try context.fetch(fetchRequest)
         } catch {
             let err = error as NSError
             // swiftlint:disable line_length
-            Log("PasswordEncryptedEntity in Storage listItems: \(err.localizedDescription)", module: .storage)
+            Log("ItemEncryptedEntity in Storage listItems: \(err.localizedDescription)", module: .storage)
             // swiftlint:enable line_length
             return nil
         }
         
         // If something went wrong (wrong migration, some bugs) -> remove duplicated entries instead of:
         if list.count > 1 {
-            Log("PasswordEncryptedEntity: Error while fetching entity with PasswordID: \(passwordID). There's more than one. Correcting!", severity: .error)
+            Log("ItemEncryptedEntity: Error while fetching entity with PasswordID: \(itemID). There's more than one. Correcting!", severity: .error)
             let itemsForDeletition = list[1...]
             for item in itemsForDeletition {
                 delete(on: context, entity: item)
@@ -204,8 +163,8 @@ final class PasswordEncryptedEntity: NSManagedObject {
         predicate: NSPredicate? = nil,
         includesPropertyValues: Bool = true,
         vaultID: VaultID? = nil
-    ) -> [PasswordEncryptedEntity] {
-        let fetchRequest = PasswordEncryptedEntity.fetchRequest()
+    ) -> [ItemEncryptedEntity] {
+        let fetchRequest = ItemEncryptedEntity.fetchRequest()
         fetchRequest.includesPropertyValues = includesPropertyValues
         if let predicate {
             if let vaultID {
@@ -218,7 +177,7 @@ final class PasswordEncryptedEntity: NSManagedObject {
             }
         }
         
-        var list: [PasswordEncryptedEntity] = []
+        var list: [ItemEncryptedEntity] = []
         
         do {
             list = try context.fetch(fetchRequest)
@@ -235,9 +194,9 @@ final class PasswordEncryptedEntity: NSManagedObject {
     
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
-        excludeProtectionLevels: Set<PasswordProtectionLevel>,
+        excludeProtectionLevels: Set<ItemProtectionLevel>,
         vaultID: VaultID? = nil
-    ) -> [PasswordEncryptedEntity] {
+    ) -> [ItemEncryptedEntity] {
         listItems(
             on: context,
             predicate:  NSPredicate(format: "NOT (level IN %@)", excludeProtectionLevels.map({ $0.rawValue })),
@@ -245,7 +204,7 @@ final class PasswordEncryptedEntity: NSManagedObject {
         )
     }
     
-    @nonobjc static func delete(on context: NSManagedObjectContext, entity: PasswordEncryptedEntity) {
+    @nonobjc static func delete(on context: NSManagedObjectContext, entity: ItemEncryptedEntity) {
         Log("PasswordEncryptedEntity: Deleting entity of type: \(entity)", module: .storage)
         context.delete(entity)
     }

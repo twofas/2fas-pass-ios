@@ -8,10 +8,10 @@ import Common
 import AuthenticationServices
 
 public protocol AutoFillCredentialsInteracting: AnyObject {
-    func canAddSuggestionForPassword(with level: PasswordProtectionLevel) -> Bool
+    func canAddSuggestionForPassword(with level: ItemProtectionLevel) -> Bool
     
-    func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: PasswordProtectionLevel) async throws
-    func replaceSuggestions(from passwordData: PasswordData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: PasswordProtectionLevel) async throws
+    func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
+    func replaceSuggestions(from passwordData: PasswordData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
     func removeSuggestions(for passwordData: PasswordData) async throws
     
     func syncSuggestions() async throws
@@ -28,11 +28,11 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         self.uriInteractor = uriInteractor
     }
     
-    func canAddSuggestionForPassword(with protectionLevel: PasswordProtectionLevel) -> Bool {
+    func canAddSuggestionForPassword(with protectionLevel: ItemProtectionLevel) -> Bool {
         Config.autoFillExcludeProtectionLevels.contains(protectionLevel) == false
     }
     
-    func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: PasswordProtectionLevel) async throws {
+    func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         let isEnabled = await mainRepository.refreshAutoFillStatus()
         guard isEnabled else {
             return
@@ -60,7 +60,7 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         }
     }
     
-    func replaceSuggestions(from oldPasswordData: PasswordData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: PasswordProtectionLevel) async throws {
+    func replaceSuggestions(from oldPasswordData: PasswordData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         try await removeSuggestions(for: oldPasswordData)
         try await addSuggestions(passwordID: passwordID, username: username, uris: uris, protectionLevel: protectionLevel)
     }

@@ -44,42 +44,45 @@ extension PasswordCachedEntity {
 
 extension PasswordCachedEntity: Identifiable {}
 
+// FIXME: Migrate to Items
 extension PasswordCachedEntity {
-    func toData() -> PasswordEncryptedData {
-        PasswordEncryptedData(
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
-            creationDate: creationDate,
-            modificationDate: modificationDate,
-            iconType: PasswordEncryptedIconType(
-                iconType: iconType,
-                iconDomain: iconDomain,
-                iconCustomURL: iconCustomURL,
-                labelTitle: labelTitle,
-                labelColor: UIColor(hexString: labelColor)
-            ),
-            trashedStatus: {
-                if isTrashed, let trashingDate {
-                    return PasswordTrashedStatus.yes(trashingDate: trashingDate)
-                }
-                return .no
-            }(),
-            protectionLevel: PasswordProtectionLevel(level: level),
-            vaultID: vaultID,
-            uris: { () -> PasswordEncryptedURIs? in
-                guard let uris, let urisMatching else { return nil }
-                let match: [PasswordURI.Match] = urisMatching.map({ value in
-                    if let match = PasswordURI.Match(rawValue: value) {
-                        return match
-                    }
-                    return .domain
-                })
-                return .init(uris: uris, match: match)
-            }(),
-            tagIds: nil
-        )
+    func toData() -> ItemEncryptedData {
+        fatalError("Not yet implemented")
+        
+//        PasswordEncryptedData(
+//            passwordID: passwordID,
+//            name: name,
+//            username: username,
+//            password: password,
+//            notes: notes,
+//            creationDate: creationDate,
+//            modificationDate: modificationDate,
+//            iconType: PasswordEncryptedIconType(
+//                iconType: iconType,
+//                iconDomain: iconDomain,
+//                iconCustomURL: iconCustomURL,
+//                labelTitle: labelTitle,
+//                labelColor: UIColor(hexString: labelColor)
+//            ),
+//            trashedStatus: {
+//                if isTrashed, let trashingDate {
+//                    return PasswordTrashedStatus.yes(trashingDate: trashingDate)
+//                }
+//                return .no
+//            }(),
+//            protectionLevel: PasswordProtectionLevel(level: level),
+//            vaultID: vaultID,
+//            uris: { () -> PasswordEncryptedURIs? in
+//                guard let uris, let urisMatching else { return nil }
+//                let match: [PasswordURI.Match] = urisMatching.map({ value in
+//                    if let match = PasswordURI.Match(rawValue: value) {
+//                        return match
+//                    }
+//                    return .domain
+//                })
+//                return .init(uris: uris, match: match)
+//            }(),
+//            tagIds: nil
+//        )
     }
 }

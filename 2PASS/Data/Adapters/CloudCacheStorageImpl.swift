@@ -52,14 +52,14 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
     func listPasswordIDs() -> [PasswordID] {
         let list = mainRepository.cloudCacheListAllPasswords()
         return list.map { pass in
-            pass.password.passwordID
+            pass.password.itemID
         }
     }
     
     func listPasswordIDsModificationDate() -> [(PasswordID, Date)] {
         let list = mainRepository.cloudCacheListAllPasswords()
         return list.map { pass in
-            (pass.password.passwordID, pass.password.modificationDate)
+            (pass.password.itemID, pass.password.modificationDate)
         }
     }
     
@@ -91,7 +91,7 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
         }
     }
 
-    func listAllPasswordsInCurrentVault() -> [(password: PasswordEncryptedData, metadata: Data)] {
+    func listAllPasswordsInCurrentVault() -> [(password: ItemEncryptedData, metadata: Data)] {
         guard let currentVaultID = currentVault?.vaultID else {
             Log("CloudCacheStorageImpl: can't get vaultID while listing all Passwords", module: .interactor, severity: .error)
             return []
@@ -102,11 +102,11 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
         }
     }
     
-    func listAllPasswords() -> [PasswordID: (password: PasswordEncryptedData, metadata: Data)] {
-        var result: [PasswordID: (password: PasswordEncryptedData, metadata: Data)] = [:]
+    func listAllPasswords() -> [PasswordID: (password: ItemEncryptedData, metadata: Data)] {
+        var result: [PasswordID: (password: ItemEncryptedData, metadata: Data)] = [:]
         let list = mainRepository.cloudCacheListAllPasswords()
         for pass in list {
-            result[pass.password.passwordID] = (password: pass.password, metadata: pass.metadata)
+            result[pass.password.itemID] = (password: pass.password, metadata: pass.metadata)
         }
         return result
     }
@@ -135,41 +135,47 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
         return mainRepository.cloudCacheListTags(in: currentVaultID, limit: nil)
     }
     
-    func createPassword(password: PasswordEncryptedData, metadata: Data) {
-        Log("CloudCacheStorageImpl: creating Password", module: .interactor, save: false)
-        mainRepository.cloudCacheCreatePassword(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            password: password.password,
-            notes: password.notes,
-            creationDate: password.creationDate,
-            modificationDate: password.modificationDate,
-            iconType: password.iconType,
-            trashedStatus: password.trashedStatus,
-            protectionLevel: password.protectionLevel,
-            vaultID: password.vaultID,
-            uris: password.uris,
-            metadata: metadata
-        )
+    // FIXME: Migrate to Items
+    func createPassword(password: ItemEncryptedData, metadata: Data) {
+        fatalError("Not yet implemented")
+        
+//        Log("CloudCacheStorageImpl: creating Password", module: .interactor, save: false)
+//        mainRepository.cloudCacheCreatePassword(
+//            passwordID: password.passwordID,
+//            name: password.name,
+//            username: password.username,
+//            password: password.password,
+//            notes: password.notes,
+//            creationDate: password.creationDate,
+//            modificationDate: password.modificationDate,
+//            iconType: password.iconType,
+//            trashedStatus: password.trashedStatus,
+//            protectionLevel: password.protectionLevel,
+//            vaultID: password.vaultID,
+//            uris: password.uris,
+//            metadata: metadata
+//        )
     }
     
-    func updatePassword(password: PasswordEncryptedData, metadata: Data) {
-        Log("CloudCacheStorageImpl: updating Password", module: .interactor, save: false)
-        mainRepository.cloudCacheUpdatePassword(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            password: password.password,
-            notes: password.notes,
-            creationDate: password.creationDate,
-            modificationDate: password.modificationDate,
-            iconType: password.iconType,
-            trashedStatus: password.trashedStatus,
-            protectionLevel: password.protectionLevel,
-            uris: password.uris,
-            metadata: metadata
-        )
+    // FIXME: Migrate to Items
+    func updatePassword(password: ItemEncryptedData, metadata: Data) {
+        fatalError("Not yet implemented")
+        
+//        Log("CloudCacheStorageImpl: updating Password", module: .interactor, save: false)
+//        mainRepository.cloudCacheUpdatePassword(
+//            passwordID: password.passwordID,
+//            name: password.name,
+//            username: password.username,
+//            password: password.password,
+//            notes: password.notes,
+//            creationDate: password.creationDate,
+//            modificationDate: password.modificationDate,
+//            iconType: password.iconType,
+//            trashedStatus: password.trashedStatus,
+//            protectionLevel: password.protectionLevel,
+//            uris: password.uris,
+//            metadata: metadata
+//        )
     }
     
     func createDeletedItem(_ deletedItem: CloudDataDeletedItem) {

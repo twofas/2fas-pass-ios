@@ -31,7 +31,8 @@ public final class LoginPresenter {
     private(set) var lockTimeRemaining: Duration?
     private(set) var isBiometryScanning: Bool = false
     private(set) var hasAppReset = false
-
+    
+    var showMigrationFailed = false
     var hideKeyboard: Callback?
     
     var showBiometryButton: Bool {
@@ -107,9 +108,8 @@ extension LoginPresenter {
             switch result {
             case .success:
                 self?.hideKeyboard?()
-
+                
                 self?.loginInput = ""
-                self?.loginSuccessful()
                 
                 if self?.isBiometryAllowed == true
                     && self?.interactor.shouldRequestForBiometryToLogin == true {
@@ -117,12 +117,14 @@ extension LoginPresenter {
                         self?.interactor.setMasterKey(for: loginInput)
                     }
                 }
+                
+                self?.loginSuccessful()
             case .appLocked:
                 self?.loginInput = ""
                 self?.refreshStatus()
             case .invalidPassword:
                 self?.refreshStatus()
-
+                
                 Task { @MainActor in
                     self?.errorDescription = T.lockScreenUnlockInvalidPassword
                     self?.inputError = true
@@ -158,6 +160,10 @@ extension LoginPresenter {
     func onAppReset() {
         interactor.resetApp()
         appReset?()
+    }
+    
+    func onMigrationFailedClose() {
+        loginSuccessful()
     }
 }
 

@@ -56,8 +56,8 @@ final class MergeHandler {
     // cloud storage
     private var cloudStorageDeletedItemAdd: [(deletedItem: DeletedItemData, metadata: Data)] = []
     private var cloudStorageDeletedItemUpdate: [(deletedItem: DeletedItemData, metadata: Data)] = []
-    private var cloudStoragePasswordsAdd: [(password: PasswordEncryptedData, metadata: Data)] = []
-    private var cloudStoragePasswordsUpdate: [(password: PasswordEncryptedData, metadata: Data)] = []
+    private var cloudStoragePasswordsAdd: [(password: ItemEncryptedData, metadata: Data)] = []
+    private var cloudStoragePasswordsUpdate: [(password: ItemEncryptedData, metadata: Data)] = []
     private var cloudStorageTagAdd: [(tag: ItemTagEncryptedData, metadata: Data)] = []
     private var cloudStorageTagUpdate: [(tag: ItemTagEncryptedData, metadata: Data)] = []
     private var cloudStorageVaultAdd: VaultCloudData?
@@ -292,7 +292,7 @@ extension MergeHandler {
         }
         
         cloudPasswords.values.filter({ $0.password.vaultID == localVault.vaultID }).forEach { cloudPass, metadata in
-            let passwordID = cloudPass.passwordID
+            let passwordID = cloudPass.itemID
             if let local = passwords[passwordID] {
                 if local.modificationDate.isSame(as: cloudPass.modificationDate) {
                     passwords[passwordID] = nil
@@ -446,7 +446,7 @@ extension MergeHandler {
             switch pass {
             case .local(let passwordEncryptedData):
                 var record: CKRecord?
-                if let cloudPass = cloudPasswords[passwordEncryptedData.passwordID] {
+                if let cloudPass = cloudPasswords[passwordEncryptedData.itemID] {
                     record = PasswordRecord.recreate(jsonEncoder: jsonEncoder, metadata: cloudPass.metadata, data: passwordEncryptedData)
                     cloudStoragePasswordsUpdate.append((password: passwordEncryptedData, metadata: cloudPass.metadata))
                 } else {
@@ -494,8 +494,8 @@ extension MergeHandler {
             case .local(let passwordData):
                 passwordIDsForDeletition.append(passwordData.passwordID)
             case .cloud(let password, _):
-                cloudStoragePasswordIDsForDeletition.append(password.passwordID)
-                recordIDsForRemoval.append(CKRecord.ID(recordName: PasswordRecord.createRecordName(for: password.passwordID), zoneID: zoneID))
+                cloudStoragePasswordIDsForDeletition.append(password.itemID)
+                recordIDsForRemoval.append(CKRecord.ID(recordName: PasswordRecord.createRecordName(for: password.itemID), zoneID: zoneID))
             }
         }
         
@@ -545,7 +545,7 @@ private extension MergeHandler {
         return TagRecord(record: record)
     }
     
-    private func passwordEncryptedToPasswordData(_ passwordEncryptedData: PasswordEncryptedData) -> PasswordData? {
+    private func passwordEncryptedToPasswordData(_ passwordEncryptedData: ItemEncryptedData) -> PasswordData? {
         encryptionHandler.passwordEncyptedToPasswordData(passwordEncryptedData)
     }
     
@@ -607,14 +607,14 @@ private extension MergeHandler {
     
     enum Password: Hashable {
         case local(PasswordData)
-        case cloud(password: PasswordEncryptedData, metadata: Data)
+        case cloud(password: ItemEncryptedData, metadata: Data)
         
         func hash(into hasher: inout Hasher) {
             switch self {
             case .local(let password):
                 hasher.combine(password.passwordID)
             case .cloud(let password, _):
-                hasher.combine(password.passwordID)
+                hasher.combine(password.itemID)
             }
         }
         
@@ -649,7 +649,7 @@ private extension MergeHandler {
     
     enum PasswordEncryptionProcessed: Equatable {
         case empty
-        case local(PasswordEncryptedData)
+        case local(ItemEncryptedData)
         case cloud(PasswordData, VaultID)
     }
 }

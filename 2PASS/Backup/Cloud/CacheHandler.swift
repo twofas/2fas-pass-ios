@@ -150,7 +150,7 @@ extension CacheHandler {
     }
     
     func listAllItemsRecordIDs() -> [CKRecord.ID] {
-        let passwordIDList: [PasswordID] = cloudCacheStorage.listAllPasswordsInCurrentVault().map({ $0.password.passwordID })
+        let passwordIDList: [PasswordID] = cloudCacheStorage.listAllPasswordsInCurrentVault().map({ $0.password.itemID })
         let deletedItemIDList: [DeletedItemID] = cloudCacheStorage.listAllDeletedItemsInCurrentVault().map({ $0.deletedItem.itemID })
         let tagItemIDList: [ItemTagID] = cloudCacheStorage.listAllTagsInCurrentVault().map({ $0.tagItem.tagID })
         
