@@ -40,6 +40,7 @@ final class UserDefaultsDataSourceImpl {
         case debugSubscriptionPlan
         case debugSubscriptionPlanExpireDate
         case webDAVAwaitsVaultOverrideAfterPasswordChange
+        case lastKnownAppVersion
     }
     
     private let userDefaults = UserDefaults()
@@ -386,5 +387,14 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearDebugSubscriptionPlan() {
         userDefaults.set(nil, forKey: Keys.debugSubscriptionPlan.rawValue)
         userDefaults.set(nil, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
+    }
+    
+    var lastKnownAppVersion: String? {
+        userDefaults.string(forKey: Keys.lastKnownAppVersion.rawValue)
+    }
+    
+    func setLastKnownAppVersion(_ version: String) {
+        userDefaults.set(version, forKey: Keys.lastKnownAppVersion.rawValue)
+        userDefaults.synchronize()
     }
 }

@@ -5,8 +5,10 @@
 // See LICENSE file for full terms
 
 public protocol MigrationInteracting {
-    func shouldMigrate() -> Bool
-    func migrate()
+    func migrateIfNeeded()
+    
+    func requiresReencryptionMigration() -> Bool
+    func performReencryptionMigration()
 }
 
 final class MigrationInteractor: MigrationInteracting {
@@ -17,11 +19,20 @@ final class MigrationInteractor: MigrationInteracting {
         self.mainRepository = mainRepository
     }
     
-    func shouldMigrate() -> Bool {
+    func requiresReencryptionMigration() -> Bool {
         mainRepository.requiresReencryptionMigration()
     }
     
-    func migrate() {
+    func performReencryptionMigration() {
         mainRepository.loadEncryptedStoreWithReencryptionMigration()
+    }
+    
+    func migrateIfNeeded() {
+        let appVersion = mainRepository.currentAppVersion
+        
+        if mainRepository.lastKnownAppVersion == nil { // Below 1.1.0 or first app run
+            mainRepository.removeAllLogs()
+        }
+        mainRepository.setLastKnownAppVersion(appVersion)
     }
 }

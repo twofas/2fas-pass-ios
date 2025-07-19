@@ -22,6 +22,14 @@ extension MainRepositoryImpl {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
     }
     
+    var lastKnownAppVersion: String? {
+        userDefaultsDataSource.lastKnownAppVersion
+    }
+    
+    func setLastKnownAppVersion(_ version: String) {
+        userDefaultsDataSource.setLastKnownAppVersion(version)
+    }
+    
     func setIntroductionAsShown() {
         userDefaultsDataSource.setIntroductionAsShown()
     }

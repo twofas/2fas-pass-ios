@@ -103,4 +103,7 @@ protocol UserDefaultsDataSource: AnyObject {
     var debugSubscriptionPlan: SubscriptionPlan? { get }
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan)
     func clearDebugSubscriptionPlan()
+    
+    var lastKnownAppVersion: String? { get }
+    func setLastKnownAppVersion(_ version: String)
 }
