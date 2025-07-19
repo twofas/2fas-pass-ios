@@ -7,6 +7,7 @@
 import UIKit
 import DeviceKit
 import Common
+import FirebaseCrashlytics
 
 extension MainRepositoryImpl {
     
@@ -30,12 +31,13 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.wasIntroductionShown
     }
     
-    func setCrashlyticsDisabled(_ disabled: Bool) {
-        userDefaultsDataSource.setCrashlyticsDisabled(disabled)
+    func setCrashlyticsEnabled(_ enabled: Bool) {
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
+        userDefaultsDataSource.setCrashlyticsDisabled(enabled == false)
     }
     
-    var isCrashlyticsDisabled: Bool {
-        userDefaultsDataSource.isCrashlyticsDisabled
+    var isCrashlyticsEnabled: Bool {
+        Crashlytics.crashlytics().isCrashlyticsCollectionEnabled()
     }
     
     func initialPermissionStateSetChildren(_ children: [PermissionsStateChildDataControllerProtocol]) {

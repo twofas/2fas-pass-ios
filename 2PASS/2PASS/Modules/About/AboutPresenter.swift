@@ -16,7 +16,15 @@ enum AboutDestination: RouterDestination {
 final class AboutPresenter {
     
     var destination: AboutDestination?
-    var anonymousCrashReports = false
+    
+    var anonymousCrashReports: Bool {
+        get {
+            interactor.isCrashReportsEnabled
+        }
+        set {
+            interactor.setCrashReportsEnabled(newValue)
+        }
+    }
     
     var appVersion: String {
         interactor.appVersion

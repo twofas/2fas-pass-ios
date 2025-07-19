@@ -20,6 +20,9 @@
 		5402A7612D63A2390092765B /* ios-tick-dark.json in Resources */ = {isa = PBXBuildFile; fileRef = 5402A7572D63A2390092765B /* ios-tick-dark.json */; };
 		5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A76B2D63A2EA0092765B /* ShieldProgressStyle.swift */; };
 		5402A8CE2D6452DF0092765B /* InteractiveProgressAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */; };
+		5415C9362E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9352E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		5415C9382E2AC4FA00FBEE71 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9372E2AC4FA00FBEE71 /* FirebaseCrashlytics */; };
+		5415C93A2E2AC4FA00FBEE71 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9392E2AC4FA00FBEE71 /* FirebaseMessaging */; };
 		543A57E42DAFB5C6001A8FF9 /* ScanQRCodeCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543A57E22DAFB58D001A8FF9 /* ScanQRCodeCameraView.swift */; };
 		544617862D413B4B003A14E1 /* OnboardingPagesRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544617852D413B49003A14E1 /* OnboardingPagesRouter.swift */; };
 		544617882D413C51003A14E1 /* SetupVaultRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544617872D413C4C003A14E1 /* SetupVaultRouter.swift */; };
@@ -39,8 +42,6 @@
 		549200602DD4D83100C2431E /* ios-secret-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 5492005F2DD4D83100C2431E /* ios-secret-key.json */; };
 		549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
-		54BB9E3A2DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 54BB9E392DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport */; };
-		54BB9E3C2DC89D5900BDD13F /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 54BB9E3B2DC89D5900BDD13F /* FirebaseMessaging */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
 		54BB9E5E2DC8AC4800BDD13F /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54BB9E572DC8AC4800BDD13F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		54BB9E642DC8ACF500BDD13F /* T.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D62BF94F4200F95A55 /* T.generated.swift */; };
@@ -571,6 +572,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5415C93A2E2AC4FA00FBEE71 /* FirebaseMessaging in Frameworks */,
+				5415C9362E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				5415C9382E2AC4FA00FBEE71 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -580,13 +584,11 @@
 			files = (
 				549BF4962D7B091E00E0C297 /* SVGView in Frameworks */,
 				54C7B8112D708DAE0004FD1D /* SwiftUIIntrospect in Frameworks */,
-				54BB9E3C2DC89D5900BDD13F /* FirebaseMessaging in Frameworks */,
 				8F1D89FF2D2DEE6400960ABF /* Lottie in Frameworks */,
 				C2F81EC82BE42858008FD374 /* Data.framework in Frameworks */,
 				54C090102D6E658300954E76 /* CommonUI.framework in Frameworks */,
 				C267F9372BE2DDFF005F7B89 /* Common.framework in Frameworks */,
 				C2B0FC212CE91C4D005CFADD /* Backup.framework in Frameworks */,
-				54BB9E3A2DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				C249E77C2BF10B23003464D5 /* Storage.framework in Frameworks */,
 				C26D2BE42DD91DDA00B16D73 /* StoreKit.framework in Frameworks */,
 			);
@@ -1313,6 +1315,7 @@
 				C27D99E92BD596620008203F /* Resources */,
 				C267F93C2BE2DDFF005F7B89 /* Embed Frameworks */,
 				54571D802D688AC200FC2DB3 /* Embed Foundation Extensions */,
+				5415C9322E2A8CB300FBEE71 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1352,8 +1355,6 @@
 				8F1D89FE2D2DEE6400960ABF /* Lottie */,
 				54C7B8102D708DAE0004FD1D /* SwiftUIIntrospect */,
 				549BF4952D7B091E00E0C297 /* SVGView */,
-				54BB9E392DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport */,
-				54BB9E3B2DC89D5900BDD13F /* FirebaseMessaging */,
 			);
 			productName = 2PASS;
 			productReference = C27D99EB2BD596620008203F /* 2FAS Pass.app */;
@@ -1606,6 +1607,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "FIREBASE_CONFIG_DIR=\"${SRCROOT}/2PASS\"\nDESTINATION=\"$FIREBASE_CONFIG_DIR/GoogleService-Info.plist\"\n\nif [ \"$CONFIGURATION\" = \"Prod\" ]; then\n    cp \"${FIREBASE_CONFIG_DIR}/GoogleService-Info-Prod.plist\" \"$DESTINATION\"\nelse\n    cp \"${FIREBASE_CONFIG_DIR}/GoogleService-Info-Dev.plist\" \"$DESTINATION\"\nfi\n";
+		};
+		5415C9322E2A8CB300FBEE71 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}.debug.dylib",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${ACTION}\" != \"install\" ]; then # Send dSYM only during the Archive action\n  exit 0\nfi\n\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3186,6 +3210,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5415C9352E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 54BB9E382DC89D5900BDD13F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		5415C9372E2AC4FA00FBEE71 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 54BB9E382DC89D5900BDD13F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		5415C9392E2AC4FA00FBEE71 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 54BB9E382DC89D5900BDD13F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		545B19422D78BBBB00BE2B14 /* Gzip */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 545B19412D78BBBB00BE2B14 /* XCRemoteSwiftPackageReference "GzipSwift" */;
@@ -3200,16 +3239,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 549BF4942D7B091E00E0C297 /* XCRemoteSwiftPackageReference "SVGView" */;
 			productName = SVGView;
-		};
-		54BB9E392DC89D5900BDD13F /* FirebaseAnalyticsWithoutAdIdSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 54BB9E382DC89D5900BDD13F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalyticsWithoutAdIdSupport;
-		};
-		54BB9E3B2DC89D5900BDD13F /* FirebaseMessaging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 54BB9E382DC89D5900BDD13F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
 		};
 		54C7B8102D708DAE0004FD1D /* SwiftUIIntrospect */ = {
 			isa = XCSwiftPackageProductDependency;

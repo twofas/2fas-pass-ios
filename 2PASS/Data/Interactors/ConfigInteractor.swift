@@ -20,6 +20,9 @@ public protocol ConfigInteracting: AnyObject {
     
     var appLockAttempts: AppLockAttempts { get }
     func setAppLockAttempts(_ attempts: AppLockAttempts)
+    
+    var isCrashReportsEnabled: Bool { get }
+    func setCrashReportsEnabled(_ enabled: Bool)
 }
 
 final class ConfigInteractor {
@@ -78,5 +81,13 @@ extension ConfigInteractor: ConfigInteracting {
     
     func setAppLockAttempts(_ attempts: AppLockAttempts) {
         mainRepository.setAppLockAttempts(attempts)
+    }
+    
+    var isCrashReportsEnabled: Bool {
+        mainRepository.isCrashlyticsEnabled
+    }
+    
+    func setCrashReportsEnabled(_ enabled: Bool) {
+        mainRepository.setCrashlyticsEnabled(enabled)
     }
 }
