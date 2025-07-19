@@ -9,26 +9,26 @@ import Common
 public protocol CloudCacheStorage: AnyObject {
     func purge()
     
-    func deletePassword(passwordID: PasswordID)
+    func deleteItem(itemID: ItemID)
     func deleteDeletedItem(deletedItemID: DeletedItemID)
     func deleteTag(tagID: ItemTagID)
     
     func save()
     
-    func listPasswordIDs() -> [PasswordID]
+    func listItemIDs() -> [ItemID]
     func listDeleteItemsIDs() -> [DeletedItemID]
     func listTagsItemsIDs() -> [ItemTagID]
     
-    func listAllPasswords() -> [PasswordID: (password: ItemEncryptedData, metadata: Data)]
+    func listAllItems() -> [ItemID: (item: ItemEncryptedData, metadata: Data)]
     func listAllDeletedItems() -> [CloudDataDeletedItem]
     func listAllTags() -> [CloudDataTagItem]
     
-    func listAllPasswordsInCurrentVault() -> [(password: ItemEncryptedData, metadata: Data)]
+    func listAllItemsInCurrentVault() -> [(item: ItemEncryptedData, metadata: Data)]
     func listAllDeletedItemsInCurrentVault() -> [CloudDataDeletedItem]
     func listAllTagsInCurrentVault() -> [CloudDataTagItem]
     
-    func createPassword(password: ItemEncryptedData, metadata: Data)
-    func updatePassword(password: ItemEncryptedData, metadata: Data)
+    func createItem(item: ItemEncryptedData, metadata: Data)
+    func updateItem(item: ItemEncryptedData, metadata: Data)
     
     func createDeletedItem(_ deletedItem: CloudDataDeletedItem)
     func updateDeletedItem(_ deletedItem: CloudDataDeletedItem)
@@ -36,7 +36,7 @@ public protocol CloudCacheStorage: AnyObject {
     func createTagItem(_ tag: CloudDataTagItem)
     func updateTagItem(_ tag: CloudDataTagItem)
     
-    func listPasswordIDsModificationDate() -> [(PasswordID, Date)]
+    func listItemIDsModificationDate() -> [(ItemID, Date)]
     func listDeletedItemsIDsDeletitionDate() -> [(DeletedItemID, Date)]
     func listTagsItemsIDsModificationDate() -> [(DeletedItemID, Date)]
     

@@ -11,6 +11,7 @@ public final class CoreDataStack {
     private let migrator: CoreDataMigratorProtocol?
     
     public var logError: ((LogMessage) -> Void)?
+    public var initilizingNewStore: (() -> Void)?
     public var presentErrorToUser: ((String) -> Void)?
     
     private let readOnly: Bool
@@ -19,7 +20,7 @@ public final class CoreDataStack {
     private let storeInGroup: Bool
     private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
-
+    
     private var isLoaded: Bool = false
     
     public init(
@@ -50,8 +51,13 @@ public final class CoreDataStack {
     
     private func configurePersistentContainer(_ container: NSPersistentContainer) {
         let name = self.name
+        if !FileManager.default.fileExists(atPath: storeUrl.path()) {
+            DispatchQueue.main.async {
+                self.initilizingNewStore?()
+            }
+        }
         container.persistentStoreDescriptions = [storeDescription]
-
+        
         migrateStoreIfNeeded {
             container.loadPersistentStores { [weak self] _, error in
                 if let error = error as NSError? {
@@ -68,15 +74,6 @@ public final class CoreDataStack {
     }
     
     private lazy var storeDescription: NSPersistentStoreDescription = {
-        let storeUrl: URL = {
-            if storeInGroup {
-                FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
-                    .appendingPathComponent("\(name).sqlite")
-            } else {
-                getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
-            }
-        }()
-        
         let description = NSPersistentStoreDescription()
         description.shouldInferMappingModelAutomatically = false
         description.shouldMigrateStoreAutomatically = false
@@ -92,6 +89,15 @@ public final class CoreDataStack {
         }
         
         return description
+    }()
+    
+    private lazy var storeUrl: URL = {
+        if storeInGroup {
+            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
+                .appendingPathComponent("\(name).sqlite")
+        } else {
+            getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
+        }
     }()
     
     private func getDocumentsDirectory() -> URL {
@@ -181,11 +187,11 @@ public extension NSPersistentContainer {
     @nonobjc convenience init(name: String, bundle: Bundle) {
         
         guard let modelURL = bundle.url(forResource: name, withExtension: "momd"),
-            let mom = NSManagedObjectModel(contentsOf: modelURL)
-            else {
-                Log("Unable to located Core Data model", module: .storage)
-                fatalError("Unable to located Core Data model")
-            }
+              let mom = NSManagedObjectModel(contentsOf: modelURL)
+        else {
+            Log("Unable to located Core Data model", module: .storage)
+            fatalError("Unable to located Core Data model")
+        }
         
         self.init(name: name, managedObjectModel: mom)
     }
@@ -196,4 +202,3 @@ public extension NSManagedObject {
         managedObjectContext?.delete(self)
     }
 }
-

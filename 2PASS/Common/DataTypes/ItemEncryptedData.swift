@@ -15,7 +15,7 @@ public struct ItemEncryptedData: Hashable, Identifiable {
         itemID
     }
     
-    public let itemID: PasswordID
+    public let itemID: ItemID
     public let creationDate: Date
     public let modificationDate: Date
     public let trashedStatus: ItemTrashedStatus
@@ -27,7 +27,7 @@ public struct ItemEncryptedData: Hashable, Identifiable {
     public let tagIds: [ItemTagID]?
     
     public init(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,

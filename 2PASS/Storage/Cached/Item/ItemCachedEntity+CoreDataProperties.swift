@@ -1,0 +1,57 @@
+//
+//  ItemCachedEntity+CoreDataProperties.swift
+//  Backup
+//
+//  Created by Zbigniew Cisiński on 19/07/2025.
+//  Copyright © 2025 Two Factor Authentication Service, Inc. All rights reserved.
+//
+//
+
+import Foundation
+import CoreData
+import Common
+
+extension ItemCachedEntity {
+    @nonobjc static let entityName = "ItemCachedEntity"
+
+    @nonobjc static func fetchRequest() -> NSFetchRequest<ItemCachedEntity> {
+        return NSFetchRequest<ItemCachedEntity>(entityName: entityName)
+    }
+
+    @NSManaged var itemID: UUID
+    @NSManaged var content: Data
+    @NSManaged var contentType: String
+    @NSManaged var contentVersion: Int16
+    @NSManaged var creationDate: Date
+    @NSManaged var modificationDate: Date
+    @NSManaged var isTrashed: Bool
+    @NSManaged var trashingDate: Date?
+    @NSManaged var protectionLevel: String
+    @NSManaged var tagIds: [ItemTagID]?
+    @NSManaged var metadata: Data
+    @NSManaged var vaultID: UUID
+}
+
+extension ItemCachedEntity : Identifiable {}
+
+extension ItemCachedEntity {
+    func toData() -> ItemEncryptedData {
+        .init(
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: {
+                if isTrashed, let trashingDate {
+                    return ItemTrashedStatus.yes(trashingDate: trashingDate)
+                }
+                return .no
+            }(),
+            protectionLevel: ItemProtectionLevel(level: protectionLevel),
+            contentType: ItemContentType(rawValue: contentType) ?? .login,
+            contentVersion: Int(contentVersion),
+            content: content,
+            vaultID: vaultID,
+            tagIds: tagIds
+        )
+    }
+}

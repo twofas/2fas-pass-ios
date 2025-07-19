@@ -432,40 +432,37 @@ protocol MainRepository: AnyObject {
     func clearLastSuccessCloudSyncDate()
     
     // MARK: - Cloud Cache
-    func cloudCacheCreatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheCreateItem(
+        itemID: ItemID,
+        content: Data?,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         metadata: Data
     )
-    func cloudCacheUpdatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheUpdateItem(
+        itemID: ItemID,
+        content: Data?,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        vaultID: VaultID,
         metadata: Data
     )
-    func cloudCacheGetPasswordEntity(passwordID: PasswordID) -> CloudDataPassword?
-    func cloudCacheListPasswords(in vaultID: VaultID) -> [CloudDataPassword]
-    func cloudCacheListAllPasswords() -> [CloudDataPassword]
-    func cloudCacheDeletePassword(passwordID: PasswordID)
-    func cloudCacheDeleteAllPasswords()
+    func cloudCacheGetItemEntity(itemID: ItemID) -> CloudDataItem?
+    func cloudCacheListItems(in vaultID: VaultID) -> [CloudDataItem]
+    func cloudCacheListAllItems() -> [CloudDataItem]
+    func cloudCacheDeleteItem(itemID: ItemID)
+    func cloudCacheDeleteAllItems()
     func cloudCacheListVaults() -> [VaultCloudData]
     func cloudCacheGetVault(for vaultID: VaultID) -> VaultCloudData?
     func cloudCacheCreateVault(
