@@ -6,6 +6,7 @@
 
 import Foundation
 import OSLog
+import FirebaseCrashlytics
 
 public enum LogModule: Int, CaseIterable {
     case unknown = 0
@@ -51,6 +52,7 @@ public func Log(
     
     if save {
         LogStorage.store(content: content.description, timestamp: date, module: module, severity: severity)
+        Crashlytics.crashlytics().log(content.description)
     }
     
 #if DEBUG
