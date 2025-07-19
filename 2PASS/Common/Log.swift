@@ -22,6 +22,7 @@ public enum LogModule: Int, CaseIterable {
     case backup = 11
     case autofill = 12
     case connect = 13
+    case migration = 14
 }
 
 public enum LogSeverity: Int, CaseIterable {
@@ -85,6 +86,7 @@ private extension LogModule {
         case .backup: "🗄️"
         case .autofill: "📝"
         case .connect: "🔗"
+        case .migration: "🔄"
         }
     }
 }
