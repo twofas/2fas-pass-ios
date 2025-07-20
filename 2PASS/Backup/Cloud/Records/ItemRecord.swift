@@ -86,8 +86,8 @@ final class ItemRecord {
         return record
     }
     
-    static func createRecordName(for passwordID: PasswordID) -> String {
-        "\(RecordType.password.rawValue)_\(passwordID.uuidString)"
+    static func createRecordName(for itemID: ItemID) -> String {
+        "\(RecordType.item.rawValue)_\(itemID.uuidString)"
     }
     
     static func create(
@@ -103,7 +103,7 @@ final class ItemRecord {
         vaultID: VaultID
     ) -> CKRecord? {
         let record = CKRecord(
-            recordType: RecordType.password.rawValue,
+            recordType: RecordType.item.rawValue,
             recordID: CKRecord.ID(recordName: createRecordName(for: itemID), zoneID: zoneID)
         )
         

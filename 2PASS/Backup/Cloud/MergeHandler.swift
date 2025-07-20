@@ -228,6 +228,7 @@ extension MergeHandler {
                 }
                 // migration
                 cloudVault.update(schemaVersion: encryptionHandler.currentCloudSchemaVersion, updatedAt: date)
+                vaultAddIfDataModifed = cloudVault
             }
             
             if !ConstStorage.passwordWasChanged && !encryptionHandler.verifyEncryption(cloudVault) {
@@ -239,14 +240,13 @@ extension MergeHandler {
             if cloudVault.deviceID != deviceID {
                 if isMultiDeviceSyncEnabled {
                     cloudVault.update(deviceID: deviceID, updatedAt: date)
+                    vaultAddIfDataModifed = cloudVault
                 } else {
                     syncNotAllowed?()
                     completion(.failure(.syncNotAllowed))
                     return
                 }
             }
-            
-            vaultAddIfDataModifed = cloudVault
         } else {
             if let vaultToAdd = createVaultToAdd(
                 from: localVault,
