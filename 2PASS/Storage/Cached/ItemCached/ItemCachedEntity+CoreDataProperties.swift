@@ -18,7 +18,7 @@ extension ItemCachedEntity {
         return NSFetchRequest<ItemCachedEntity>(entityName: entityName)
     }
 
-    @NSManaged var itemID: UUID
+    @NSManaged var itemID: ItemID
     @NSManaged var content: Data
     @NSManaged var contentType: String
     @NSManaged var contentVersion: Int16
@@ -28,8 +28,8 @@ extension ItemCachedEntity {
     @NSManaged var trashingDate: Date?
     @NSManaged var protectionLevel: String
     @NSManaged var tagIds: [ItemTagID]?
-    @NSManaged var metadata: Data
     @NSManaged var vaultID: UUID
+    @NSManaged var metadata: Data
 }
 
 extension ItemCachedEntity : Identifiable {}

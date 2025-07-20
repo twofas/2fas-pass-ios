@@ -31,10 +31,10 @@ final class MergeHandler {
     private var isMultiDeviceSyncEnabled: Bool = false
     
     private var deleted: [DeletedItemID: Deleted] = [:]
-    private var passwords: [PasswordID: Password] = [:]
+    private var items: [ItemID: Item] = [:]
     private var tags: [ItemTagID: Tag] = [:]
     private var deletedForRemoval: [Deleted] = []
-    private var passwordsForRemoval: [Password] = []
+    private var itemsForRemoval: [Item] = []
     private var tagForRemoval: [Tag] = []
     
     // cloud
@@ -44,25 +44,25 @@ final class MergeHandler {
     // local storage
     private var deletedItemAdd: [DeletedItemData] = []
     private var deletedItemUpdate: [DeletedItemData] = []
-    private var passwordsAdd: [PasswordData] = []
-    private var passwordsUpdate: [PasswordData] = []
+    private var itemsAdd: [ItemEncryptedData] = []
+    private var itemsUpdate: [ItemEncryptedData] = []
     private var tagAdd: [ItemTagData] = []
     private var tagUpdate: [ItemTagData] = []
     
     private var deletedIDsForDeletition: [DeletedItemID] = []
-    private var passwordIDsForDeletition: [PasswordID] = [] // move to trash
+    private var itemIDsForDeletition: [ItemID] = [] // move to trash
     private var tagIDsForDeletition: [ItemTagID] = [] // move to trash
     
     // cloud storage
     private var cloudStorageDeletedItemAdd: [(deletedItem: DeletedItemData, metadata: Data)] = []
     private var cloudStorageDeletedItemUpdate: [(deletedItem: DeletedItemData, metadata: Data)] = []
-    private var cloudStoragePasswordsAdd: [(password: ItemEncryptedData, metadata: Data)] = []
-    private var cloudStoragePasswordsUpdate: [(password: ItemEncryptedData, metadata: Data)] = []
+    private var cloudStorageItemAdd: [(item: ItemEncryptedData, metadata: Data)] = []
+    private var cloudStorageItemUpdate: [(item: ItemEncryptedData, metadata: Data)] = []
     private var cloudStorageTagAdd: [(tag: ItemTagEncryptedData, metadata: Data)] = []
     private var cloudStorageTagUpdate: [(tag: ItemTagEncryptedData, metadata: Data)] = []
     private var cloudStorageVaultAdd: VaultCloudData?
     private var cloudStorageDeletedIDsForDeletition: [DeletedItemID] = []
-    private var cloudStoragePasswordIDsForDeletition: [PasswordID] = []
+    private var cloudStorageItemIDsForDeletition: [ItemID] = []
     private var cloudStorageTagIDsForDeletition: [ItemTagID] = []
     
     init(
@@ -88,7 +88,7 @@ extension MergeHandler {
     }
     
     var hasChanges: Bool {
-        !deleted.isEmpty || !passwords.isEmpty || !deletedForRemoval.isEmpty || !passwordsForRemoval.isEmpty || (cloudStorageVaultAdd != nil)
+        !deleted.isEmpty || !items.isEmpty || !deletedForRemoval.isEmpty || !itemsForRemoval.isEmpty || (cloudStorageVaultAdd != nil)
     }
     
     func changesForCloud() -> (createUpdate: [CKRecord], delete: [CKRecord.ID]) {
@@ -101,31 +101,31 @@ extension MergeHandler {
         deletedItemUpdate.forEach(localStorage.updateDeletedItem)
         
         var moveFromTrash: [PasswordID] = []
-        let trashedPasswords = localStorage.listTrashedPasswords()
-        passwordsAdd.forEach { pass in
-            if trashedPasswords.contains(where: { $0.passwordID == pass.passwordID }) {
-                passwordsUpdate.append(pass)
-                moveFromTrash.append(pass.passwordID)
+        let trashedItems = localStorage.listTrashedItemsIDs()
+        itemsAdd.forEach { item in
+            if trashedItems.contains(where: { $0 == item.itemID }) {
+                itemsUpdate.append(item)
+                moveFromTrash.append(item.itemID)
             } else {
-                localStorage.createPassword(pass)
+                localStorage.createItem(item)
             }
         }
-        passwordsUpdate.forEach(localStorage.updatePassword)
+        itemsUpdate.forEach(localStorage.updateItem)
         moveFromTrash.forEach(localStorage.moveFromTrash)
         
         tagAdd.forEach(localStorage.createTag)
         tagUpdate.forEach(localStorage.updateTag)
         
         deletedIDsForDeletition.forEach(localStorage.removeDeletedItem)
-        passwordIDsForDeletition.forEach(localStorage.removePassword)
+        itemIDsForDeletition.forEach(localStorage.removeItem)
         tagIDsForDeletition.forEach(localStorage.removeTag)
         
-        let shouldRefreshLocalData = !passwordsAdd.isEmpty ||
-        !passwordsUpdate.isEmpty ||
+        let shouldRefreshLocalData = !itemsAdd.isEmpty ||
+        !itemsUpdate.isEmpty ||
         !tagAdd.isEmpty ||
         !tagUpdate.isEmpty ||
-        !deletedIDsForDeletition.isEmpty || // Password removed from trash, recovered tag
-        !passwordIDsForDeletition.isEmpty ||// Password moved to trash
+        !deletedIDsForDeletition.isEmpty || // Item removed from trash, recovered tag
+        !itemIDsForDeletition.isEmpty ||// Item moved to trash
         !tagIDsForDeletition.isEmpty
         
         // cloud storage
@@ -144,14 +144,14 @@ extension MergeHandler {
                     .updateDeletedItem(.init(deletedItem: $0.deletedItem, metadata: $0.metadata))
             }
         
-        cloudStoragePasswordsAdd.forEach { cloudCacheStorage.createPassword(password: $0.password, metadata: $0.metadata) }
-        cloudStoragePasswordsUpdate.forEach { cloudCacheStorage.updatePassword(password: $0.password, metadata: $0.metadata) }
+        cloudStorageItemAdd.forEach { cloudCacheStorage.createItem(item: $0.item, metadata: $0.metadata) }
+        cloudStorageItemUpdate.forEach { cloudCacheStorage.updateItem(item: $0.item, metadata: $0.metadata) }
         
         cloudStorageTagAdd.forEach { cloudCacheStorage.createTagItem(.init(tagItem: $0.tag, metadata: $0.metadata)) }
         cloudStorageTagUpdate.forEach { cloudCacheStorage.updateTagItem(.init(tagItem: $0.tag, metadata: $0.metadata)) }
         
         cloudStorageDeletedIDsForDeletition.forEach(cloudCacheStorage.deleteDeletedItem)
-        cloudStoragePasswordIDsForDeletition.forEach(cloudCacheStorage.deletePassword)
+        cloudStorageItemIDsForDeletition.forEach(cloudCacheStorage.deleteItem)
         cloudStorageTagIDsForDeletition.forEach(cloudCacheStorage.deleteTag)
         
         localStorage.save()
@@ -164,28 +164,28 @@ extension MergeHandler {
     
     func clear() {
         deleted = [:]
-        passwords = [:]
+        items = [:]
         deletedForRemoval = []
-        passwordsForRemoval = []
+        itemsForRemoval = []
         recordsToCreateUpdate = []
         recordIDsForRemoval = []
         deletedItemAdd = []
         deletedItemUpdate = []
-        passwordsAdd = []
-        passwordsUpdate = []
+        itemsAdd = []
+        itemsUpdate = []
         tagAdd = []
         tagUpdate = []
         deletedIDsForDeletition = []
-        passwordIDsForDeletition = []
+        itemIDsForDeletition = []
         tagIDsForDeletition = []
         cloudStorageDeletedItemAdd = []
         cloudStorageDeletedItemUpdate = []
-        cloudStoragePasswordsAdd = []
-        cloudStoragePasswordsUpdate = []
+        cloudStorageItemAdd = []
+        cloudStorageItemUpdate = []
         cloudStorageTagAdd = []
         cloudStorageTagUpdate = []
         cloudStorageDeletedIDsForDeletition = []
-        cloudStoragePasswordIDsForDeletition = []
+        cloudStorageItemIDsForDeletition = []
         cloudStorageTagIDsForDeletition = []
         cloudStorageVaultAdd = nil
     }
@@ -196,13 +196,13 @@ extension MergeHandler {
         
         // cloud
         let cloudDeletedItems = cloudCacheStorage.listAllDeletedItems()
-        let cloudPasswords = cloudCacheStorage.listAllPasswords()
+        let cloudItems = cloudCacheStorage.listAllItems()
         let cloudTags = cloudCacheStorage.listAllTags()
         let cloudVaults = cloudCacheStorage.listAllVaults()
         
         // local storage
         let localDeletedItems = localStorage.listAllDeletedItems()
-        let localPasswords = localStorage.listPasswords()
+        let localItems = localStorage.listItems()
         let localTag = localStorage.listAllTags()
         guard let localVault = localStorage.currentVault() else {
             completion(.failure(MergeHandlerError.noLocalVault))
@@ -236,7 +236,6 @@ extension MergeHandler {
             }
             
             vaultAddIfDataModifed = cloudVault
-            
         } else {
             if let vaultToAdd = createVaultToAdd(
                 from: localVault,
@@ -251,8 +250,8 @@ extension MergeHandler {
         }
         
         // merge Deleted Items
-        deleted = localDeletedItems.reduce(into: [DeletedItemID: Deleted]()) { result, deletedPassword in
-            result[deletedPassword.itemID] = Deleted.local(deletedPassword)
+        deleted = localDeletedItems.reduce(into: [DeletedItemID: Deleted]()) { result, deletedItem in
+            result[deletedItem.itemID] = Deleted.local(deletedItem)
         }
         
         cloudDeletedItems.filter({ $0.deletedItem.vaultID == localVault.vaultID }).forEach { cloud in
@@ -286,35 +285,35 @@ extension MergeHandler {
             }
         }
         
-        // merge Passwords
-        passwords = localPasswords.reduce(into: [PasswordID: Password]()) { result, localPass in
-            result[localPass.passwordID] = Password.local(localPass)
+        // merge Items
+        items = localItems.reduce(into: [ItemID: Item]()) { result, localItem in
+            result[localItem.itemID] = Item.local(item: localItem)
         }
         
-        cloudPasswords.values.filter({ $0.password.vaultID == localVault.vaultID }).forEach { cloudPass, metadata in
-            let passwordID = cloudPass.itemID
-            if let local = passwords[passwordID] {
-                if local.modificationDate.isSame(as: cloudPass.modificationDate) {
-                    passwords[passwordID] = nil
-                } else if local.modificationDate.isBefore(cloudPass.modificationDate) {
-                    passwords[passwordID] = .cloud(password: cloudPass, metadata: metadata)
+        cloudItems.values.filter({ $0.item.vaultID == localVault.vaultID }).forEach { cloudItem, metadata in
+            let itemID = cloudItem.itemID
+            if let local = items[itemID] {
+                if local.modificationDate.isSame(as: cloudItem.modificationDate) {
+                    items[itemID] = nil
+                } else if local.modificationDate.isBefore(cloudItem.modificationDate) {
+                    items[itemID] = .cloud(item: cloudItem, metadata: metadata)
                 }
             } else {
-                passwords[passwordID] = .cloud(password: cloudPass, metadata: metadata)
+                items[itemID] = .cloud(item: cloudItem, metadata: metadata)
             }
         }
         
-        // merge changes with Deleted Passwords
-        for deletedPassword in deleted where deletedPassword.value.isDeletedPassword {
-            let passwordID = deletedPassword.key
-            if let pass = passwords[passwordID] {
+        // merge changes with Deleted ITems
+        for deletedItems in deleted where deletedItems.value.isDeletedItem {
+            let itemID = deletedItems.key
+            if let item = items[itemID] {
                 // password was removed to trash
-                if deletedPassword.value.deletedAt.isAfter(pass.modificationDate) {
-                    passwordsForRemoval.append(pass)
-                    passwords[passwordID] = nil
+                if deletedItems.value.deletedAt.isAfter(item.modificationDate) {
+                    itemsForRemoval.append(item)
+                    items[itemID] = nil
                 } else { // password was restored from trash
-                    deletedForRemoval.append(deletedPassword.value)
-                    deleted[passwordID] = nil
+                    deletedForRemoval.append(deletedItems.value)
+                    deleted[itemID] = nil
                 }
             }
         }
@@ -401,29 +400,29 @@ extension MergeHandler {
         
         //
         
-        let localPasswordIDs = localPasswords.map { $0.passwordID }
+        let localItemIDs = localItems.map { $0.itemID }
         
         Log("Merge Handler: preparing to parse password concurrently", module: .cloudSync)
         
-        var passwordsProcessed: [PasswordEncryptionProcessed] = [PasswordEncryptionProcessed](
+        var itemsProcessed: [ItemEncryptionProcessed] = [ItemEncryptionProcessed](
             repeating: .empty,
-            count: passwords.count
+            count: items.count
         )
         
-        let passwordsArray: [Password] = passwords.map { $0.value }
+        let itemArray: [Item] = items.map { $0.value }
         
-        passwordsProcessed.withUnsafeMutableBufferPointer { buffer in
+        itemsProcessed.withUnsafeMutableBufferPointer { buffer in
             DispatchQueue.concurrentPerform(iterations: buffer.count) { i in
                 buffer[i] = {
-                    switch passwordsArray[i] {
-                    case .local(let passwordData):
-                        if let val = self.encryptionHandler.passwordDataToPasswordEncryptedData(passwordData) {
-                            return PasswordEncryptionProcessed.local(val)
+                    switch itemArray[i] {
+                    case .local(let localEncryptedItem):
+                        if let val = self.encryptionHandler.localEncryptedItemToCloudEncryptedData(localEncryptedItem) {
+                            return ItemEncryptionProcessed.local(val)
                         }
                         return .empty
-                    case .cloud(let password, _):
-                        if let val = self.passwordEncryptedToPasswordData(password) {
-                            return PasswordEncryptionProcessed.cloud(val, password.vaultID)
+                    case .cloud(let cloudEncryptedItem, _):
+                        if let val = self.cloudEncryptedItemToLocalEncryptedItem(cloudEncryptedItem) {
+                            return ItemEncryptionProcessed.cloud(val, cloudEncryptedItem.vaultID)
                         }
                         return .empty
                     }
@@ -431,28 +430,28 @@ extension MergeHandler {
             }
         }
         
-        let countProcessed = passwordsProcessed.count
+        let countProcessed = itemsProcessed.count
         
-        passwordsProcessed.removeAll(where: { $0 == .empty })
+        itemsProcessed.removeAll(where: { $0 == .empty })
         
-        guard passwordsProcessed.count == countProcessed else {
+        guard itemsProcessed.count == countProcessed else {
             completion(.failure(.mergeError))
             return
         }
         
-        Log("Merge Handler: passwords parsed concurrently", module: .cloudSync)
+        Log("Merge Handler: items parsed concurrently", module: .cloudSync)
         
-        passwordsProcessed.forEach { pass in
+        itemsProcessed.forEach { pass in
             switch pass {
-            case .local(let passwordEncryptedData):
+            case .local(let itemEncryptedData):
                 var record: CKRecord?
-                if let cloudPass = cloudPasswords[passwordEncryptedData.itemID] {
-                    record = PasswordRecord.recreate(jsonEncoder: jsonEncoder, metadata: cloudPass.metadata, data: passwordEncryptedData)
-                    cloudStoragePasswordsUpdate.append((password: passwordEncryptedData, metadata: cloudPass.metadata))
+                if let cloudItem = cloudItems[itemEncryptedData.itemID] {
+                    record = ItemRecord.recreate(jsonEncoder: jsonEncoder, metadata: cloudItem.metadata, data: itemEncryptedData)
+                    cloudStorageItemUpdate.append((item: itemEncryptedData, metadata: cloudItem.metadata))
                 } else {
-                    if let ckRecord = PasswordRecord.create(passwordEncryptedData: passwordEncryptedData, jsonEncoder: jsonEncoder) {
+                    if let ckRecord = ItemRecord.create(itemEncryptedData: itemEncryptedData, jsonEncoder: jsonEncoder) {
                         record = ckRecord
-                        cloudStoragePasswordsAdd.append((password: passwordEncryptedData, metadata: ckRecord.encodeSystemFields()))
+                        cloudStorageItemAdd.append((item: itemEncryptedData, metadata: ckRecord.encodeSystemFields()))
                     }
                 }
                 if let record {
@@ -461,19 +460,19 @@ extension MergeHandler {
                     completion(.failure(MergeHandlerError.mergeError))
                     return
                 }
-            case .cloud(let passwordData, let vaultID):
+            case .cloud(let itemData, let vaultID):
                 if vaultID == localVault.vaultID {
-                    if localPasswordIDs.contains(where: { $0 == passwordData.passwordID }) {
-                        passwordsUpdate.append(passwordData)
+                    if localItemIDs.contains(where: { $0 == itemData.itemID }) {
+                        itemsUpdate.append(itemData)
                     } else {
-                        passwordsAdd.append(passwordData)
+                        itemsAdd.append(itemData)
                     }
                 }
             default: break
             }
         }
         
-        Log("Merge Handler: passwords prepared for cloud and storage", module: .cloudSync)
+        Log("Merge Handler: items prepared for cloud and storage", module: .cloudSync)
         let zoneID = CKRecordZone.ID.from(vaultID: localVault.vaultID)
         deletedForRemoval.forEach { del in
             switch del {
@@ -489,13 +488,13 @@ extension MergeHandler {
             }
         }
         
-        passwordsForRemoval.forEach { pass in
+        itemsForRemoval.forEach { pass in
             switch pass {
-            case .local(let passwordData):
-                passwordIDsForDeletition.append(passwordData.passwordID)
-            case .cloud(let password, _):
-                cloudStoragePasswordIDsForDeletition.append(password.itemID)
-                recordIDsForRemoval.append(CKRecord.ID(recordName: PasswordRecord.createRecordName(for: password.itemID), zoneID: zoneID))
+            case .local(let itemData):
+                itemIDsForDeletition.append(itemData.itemID)
+            case .cloud(let item, _):
+                cloudStorageItemIDsForDeletition.append(item.itemID)
+                recordIDsForRemoval.append(CKRecord.ID(recordName: ItemRecord.createRecordName(for: item.itemID), zoneID: zoneID))
             }
         }
         
@@ -529,12 +528,11 @@ private extension MergeHandler {
         return DeletedItemRecord(record: record)
     }
     
-    private func createPasswordRecord(from passwordData: PasswordData) -> PasswordRecord? {
-        guard let passwordEncrypted = encryptionHandler.passwordDataToPasswordEncryptedData(passwordData),
-              let record = PasswordRecord.create(passwordEncryptedData: passwordEncrypted, jsonEncoder: jsonEncoder) else {
+    private func createItemRecord(from itemData: ItemEncryptedData) -> ItemRecord? {
+        guard let record = ItemRecord.create(itemEncryptedData: itemData, jsonEncoder: jsonEncoder) else {
             return nil
         }
-        return PasswordRecord(record: record)
+        return ItemRecord(record: record)
     }
     
     private func createTagRecord(from tagData: ItemTagData) -> TagRecord? {
@@ -545,8 +543,8 @@ private extension MergeHandler {
         return TagRecord(record: record)
     }
     
-    private func passwordEncryptedToPasswordData(_ passwordEncryptedData: ItemEncryptedData) -> PasswordData? {
-        encryptionHandler.passwordEncyptedToPasswordData(passwordEncryptedData)
+    private func cloudEncryptedItemToLocalEncryptedItem(_ cloudEncryptedData: ItemEncryptedData) -> ItemEncryptedData? {
+        encryptionHandler.cloudEncryptedItemToLocalEncryptedItem(cloudEncryptedData)
     }
     
     private func createVaultToAdd(
@@ -597,7 +595,7 @@ private extension MergeHandler {
             }
         }
         
-        var isDeletedPassword: Bool {
+        var isDeletedItem: Bool {
             switch self {
             case .local(let deletedItemData): deletedItemData.kind == .login
             case .cloud(let deletedItemData, _): deletedItemData.kind == .login
@@ -605,23 +603,23 @@ private extension MergeHandler {
         }
     }
     
-    enum Password: Hashable {
-        case local(PasswordData)
-        case cloud(password: ItemEncryptedData, metadata: Data)
+    enum Item: Hashable {
+        case local(item: ItemEncryptedData)
+        case cloud(item: ItemEncryptedData, metadata: Data)
         
         func hash(into hasher: inout Hasher) {
             switch self {
-            case .local(let password):
-                hasher.combine(password.passwordID)
-            case .cloud(let password, _):
-                hasher.combine(password.itemID)
+            case .local(let item):
+                hasher.combine(item.itemID)
+            case .cloud(let item, _):
+                hasher.combine(item.itemID)
             }
         }
         
         var modificationDate: Date {
             switch self {
-            case .local(let password): password.modificationDate
-            case .cloud(let password, _): password.modificationDate
+            case .local(let item): item.modificationDate
+            case .cloud(let item, _): item.modificationDate
             }
         }
     }
@@ -647,9 +645,9 @@ private extension MergeHandler {
         }
     }
     
-    enum PasswordEncryptionProcessed: Equatable {
+    enum ItemEncryptionProcessed: Equatable {
         case empty
         case local(ItemEncryptedData)
-        case cloud(PasswordData, VaultID)
+        case cloud(ItemEncryptedData, VaultID)
     }
 }

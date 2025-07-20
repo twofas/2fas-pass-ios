@@ -7,7 +7,8 @@
 import Foundation
 
 enum RecordType: String {
-    case password = "Password"
+    case password = "Password" // deprecated
+    case item = "Item"
     case deletedItem = "DeletedItem"
     case tag = "Tag"
     case vault = "Vault"

@@ -37,12 +37,12 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
     
     public func createCloudCachedItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        tagIds: [ItemTagID],
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
@@ -51,7 +51,7 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
         ItemCachedEntity.create(
             on: context,
             itemID: itemID,
-            content: content ?? Data(),
+            content: content,
             contentType: contentType,
             contentVersion: contentVersion,
             creationDate: creationDate,
@@ -66,12 +66,12 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
     
     public func updateCloudCachedItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        tagIds: [ItemTagID],
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
@@ -80,7 +80,7 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
         ItemCachedEntity.update(
             on: context,
             for: itemID,
-            content: content ?? Data(),
+            content: content,
             contentType: contentType,
             contentVersion: contentVersion,
             creationDate: creationDate,

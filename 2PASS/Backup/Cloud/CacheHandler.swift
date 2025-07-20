@@ -32,7 +32,8 @@ extension CacheHandler {
             let entries = entryID.split(separator: "_")
             if entries.count == 2, let entryIDParsed = entries[safe: 1], let recordID = UUID(uuidString: String(entryIDParsed)) {
                 switch type {
-                case .password: cloudCacheStorage.deletePassword(passwordID: recordID)
+                case .password: break // deprecated - no action taken
+                case .item: cloudCacheStorage.deleteItem(itemID: recordID)
                 case .deletedItem: cloudCacheStorage.deleteDeletedItem(deletedItemID: recordID)
                 case .tag: cloudCacheStorage.deleteTag(tagID: recordID)
                 case .vault: cloudCacheStorage.deleteVault(vaultID: recordID)
@@ -42,23 +43,24 @@ extension CacheHandler {
     }
     
     func updateOrCreate(with entries: [CKRecord]) {
-        let passwords = cloudCacheStorage.listPasswordIDsModificationDate()
+        let items = cloudCacheStorage.listItemIDsModificationDate()
         let deletedItems = cloudCacheStorage.listDeletedItemsIDsDeletitionDate()
         let tags = cloudCacheStorage.listTagsItemsIDsModificationDate()
         let vaults = cloudCacheStorage.listAllVaultIDs()
         entries.forEach { record in
             if let recordType = RecordType(rawValue: record.recordType) {
                 switch recordType {
-                case .password:
-                    let passwordRecord = PasswordRecord(record: record)
-                    let id = passwordRecord.passwordID
-                        if let pass = passwords.first(where: { $0.0 == id }) {
-                            if pass.1 != passwordRecord.modificationDate, let password = passwordRecord.toRecordData(jsonDecoder: jsonDecoder) {
-                                cloudCacheStorage.updatePassword(password: password.password, metadata: password.metadata)
+                case .password: break // deprecated - no action taken
+                case .item:
+                    let itemRecord = ItemRecord(record: record)
+                    let id = itemRecord.itemID
+                        if let item = items.first(where: { $0.0 == id }) {
+                            if item.1 != itemRecord.modificationDate, let item = itemRecord.toRecordData(jsonDecoder: jsonDecoder) {
+                                cloudCacheStorage.updateItem(item: item.item, metadata: item.metadata)
                             }
                         } else {
-                            if let password = passwordRecord.toRecordData(jsonDecoder: jsonDecoder) {
-                                cloudCacheStorage.createPassword(password: password.password, metadata: password.metadata)
+                            if let item = itemRecord.toRecordData(jsonDecoder: jsonDecoder) {
+                                cloudCacheStorage.createItem(item: item.item, metadata: item.metadata)
                             }
                         }
                 case .deletedItem:
@@ -150,7 +152,7 @@ extension CacheHandler {
     }
     
     func listAllItemsRecordIDs() -> [CKRecord.ID] {
-        let passwordIDList: [PasswordID] = cloudCacheStorage.listAllPasswordsInCurrentVault().map({ $0.password.itemID })
+        let itemIDList: [ItemID] = cloudCacheStorage.listAllItemsInCurrentVault().map({ $0.item.itemID })
         let deletedItemIDList: [DeletedItemID] = cloudCacheStorage.listAllDeletedItemsInCurrentVault().map({ $0.deletedItem.itemID })
         let tagItemIDList: [ItemTagID] = cloudCacheStorage.listAllTagsInCurrentVault().map({ $0.tagItem.tagID })
         
@@ -161,7 +163,7 @@ extension CacheHandler {
         vaultIDList.append(vaultID)
         let zoneID: CKRecordZone.ID = .from(vaultID: vaultID)
 
-        var allRecords: [CKRecord.ID] = passwordIDList.map({ CKRecord.ID(recordName: PasswordRecord.createRecordName(for: $0), zoneID: zoneID) })
+        var allRecords: [CKRecord.ID] = itemIDList.map({ CKRecord.ID(recordName: ItemRecord.createRecordName(for: $0), zoneID: zoneID) })
         allRecords += deletedItemIDList.map({ CKRecord.ID(recordName: DeletedItemRecord.createRecordName(for: $0), zoneID: zoneID) })
         allRecords += tagItemIDList
             .map({ CKRecord.ID(recordName: TagRecord.createRecordName(for: $0), zoneID: zoneID)})

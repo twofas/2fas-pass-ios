@@ -101,7 +101,10 @@ public protocol PasswordInteracting: AnyObject {
         checkInTrash: Bool
     ) -> Result<String?, PasswordInteractorGetError>
     func getPassword(for passwordID: PasswordID, checkInTrash: Bool) -> PasswordData?
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> ItemEncryptedData?
+    func listEncryptedItems() -> [ItemEncryptedData]
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
+    func createEncryptedItem(_ item: ItemEncryptedData)
+    func updateEncryptedItem(_ item: ItemEncryptedData)
     
     func deletePassword(for passwordID: PasswordID)
     func markAsTrashed(for passwordID: PasswordID)
@@ -288,8 +291,8 @@ extension PasswordInteractor: PasswordInteracting {
             return .failure(.encryptionError)
         }
                 
-        mainRepository.createEncryptedPassword(
-            passwordID: passwordID,
+        mainRepository.createEncryptedItem(
+            itemID: passwordID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -349,8 +352,8 @@ extension PasswordInteractor: PasswordInteracting {
             return .failure(.encryptionError)
         }
         
-        mainRepository.updateEncryptedPassword(
-            passwordID: passwordID,
+        mainRepository.updateEncryptedItem(
+            itemID: passwordID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -415,8 +418,58 @@ extension PasswordInteractor: PasswordInteracting {
         mainRepository.getPasswordEntity(passwordID: passwordID, checkInTrash: checkInTrash)
     }
     
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> ItemEncryptedData? {
-        mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
+        mainRepository.getEncryptedItemEntity(itemID: itemID)
+    }
+    
+    func listEncryptedItems() -> [ItemEncryptedData] {
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("Password interactor: listEncryptedItems. No vault", module: .interactor, severity: .error)
+            return []
+        }
+        return mainRepository.listEncryptedItems(in: selectedVault.vaultID)
+            .filter({ $0.trashedStatus == .no })
+    }
+    
+    func createEncryptedItem(_ item: ItemEncryptedData) {
+        guard let decryptedContent = decryptContent(PasswordItemContent.self, from: item.content, protectionLevel: item.protectionLevel) else {
+            Log("Password interactor: createEncryptedItem. Error decrypting content", module: .interactor, severity: .error)
+            return
+        }
+        _ = createPasswordWithEncryptedPassword(
+            passwordID: item.itemID,
+            name: decryptedContent.name,
+            username: decryptedContent.username,
+            encryptedPassword: decryptedContent.password,
+            notes: decryptedContent.notes,
+            creationDate: item.creationDate,
+            modificationDate: item.modificationDate,
+            iconType: decryptedContent.iconType,
+            trashedStatus: item.trashedStatus,
+            protectionLevel: item.protectionLevel,
+            uris: decryptedContent.uris,
+            tagIds: item.tagIds
+        )
+    }
+    
+    func updateEncryptedItem(_ item: ItemEncryptedData) {
+        guard let decryptedContent = decryptContent(PasswordItemContent.self, from: item.content, protectionLevel: item.protectionLevel) else {
+            Log("Password interactor: updateEncryptedItem. Error decrypting content", module: .interactor, severity: .error)
+            return
+        }
+        _ = updatePasswordWithEncryptedPassword(
+            for: item.itemID,
+            name: decryptedContent.name,
+            username: decryptedContent.username,
+            encryptedPassword: decryptedContent.password,
+            notes: decryptedContent.notes,
+            modificationDate: item.modificationDate,
+            iconType: decryptedContent.iconType,
+            trashedStatus: item.trashedStatus,
+            protectionLevel: item.protectionLevel,
+            uris: decryptedContent.uris,
+            tagIds: item.tagIds
+        )
     }
     
     func deletePassword(for passwordID: PasswordID) {
@@ -425,7 +478,7 @@ extension PasswordInteractor: PasswordInteracting {
             module: .interactor
         )
         mainRepository.deletePassword(passwordID: passwordID)
-        mainRepository.deleteEncryptedPassword(passwordID: passwordID)
+        mainRepository.deleteEncryptedItem(itemID: passwordID)
     }
     
     func markAsTrashed(for passwordID: PasswordID) {
@@ -436,7 +489,7 @@ extension PasswordInteractor: PasswordInteracting {
             module: .interactor
         )
         guard let entity = getPassword(for: passwordID, checkInTrash: false),
-              let encryptedEntity = mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)
+              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: passwordID)
         else {
             return
         }
@@ -451,7 +504,7 @@ extension PasswordInteractor: PasswordInteracting {
             module: .interactor
         )
         guard let entity = getPassword(for: passwordID, checkInTrash: false),
-              let encryptedEntity = mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)
+              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: passwordID)
         else {
             return
         }
@@ -466,7 +519,7 @@ extension PasswordInteractor: PasswordInteracting {
             module: .interactor
         )
         guard let entity = getPassword(for: passwordID, checkInTrash: true),
-              let encryptedEntity = mainRepository.getEncryptedPasswordEntity(passwordID: passwordID)
+              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: passwordID)
         else {
             return
         }
@@ -484,8 +537,8 @@ extension PasswordInteractor: PasswordInteracting {
             uris: entity.uris,
             tagIds: entity.tagIds
         )
-        mainRepository.updateEncryptedPassword(
-            passwordID: passwordID,
+        mainRepository.updateEncryptedItem(
+            itemID: passwordID,
             modificationDate: date,
             trashedStatus: .no,
             protectionLevel: encryptedEntity.protectionLevel,
@@ -673,7 +726,7 @@ extension PasswordInteractor: PasswordInteracting {
         
         mainRepository.passwordsBatchUpdate(passwordsEncrypted)
         Log("Password interactor - Password entries updated", module: .interactor)
-        mainRepository.encryptedPasswordsBatchUpdate(fullyEncrypted)
+        mainRepository.encryptedItemsBatchUpdate(fullyEncrypted)
         Log("Password interactor - Password encrypted entries updated", module: .interactor)
         
         tagInteractor.batchUpdateTagsForNewEncryption(tags)
@@ -709,8 +762,8 @@ private extension PasswordInteractor {
             uris: entity.uris,
             tagIds: entity.tagIds
         )
-        mainRepository.updateEncryptedPassword(
-            passwordID: entity.passwordID,
+        mainRepository.updateEncryptedItem(
+            itemID: entity.passwordID,
             modificationDate: date,
             trashedStatus: .yes(trashingDate: date),
             protectionLevel: encryptedEntity.protectionLevel,

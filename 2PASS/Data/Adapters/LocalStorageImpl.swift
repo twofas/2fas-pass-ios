@@ -32,8 +32,8 @@ extension LocalStorageImpl: LocalStorage {
         passwordInteractor.saveStorage()
     }
     
-    func listPasswords() -> [PasswordData] {
-        passwordInteractor.listPasswords(searchPhrase: nil, sortBy: .newestFirst, trashed: .no)
+    func listItems() -> [ItemEncryptedData] {
+        passwordInteractor.listEncryptedItems()
     }
     
     func listAllDeletedItems() -> [DeletedItemData] {
@@ -44,8 +44,8 @@ extension LocalStorageImpl: LocalStorage {
         tagInteractor.listAllTags()
     }
     
-    func listTrashedPasswords() -> [PasswordData] {
-        passwordInteractor.listTrashedPasswords()
+    func listTrashedItemsIDs() -> [ItemID] {
+        passwordInteractor.listTrashedPasswords().map({ $0.passwordID })
     }
     
     func createDeletedItem(_ deletedItem: DeletedItemData) {
@@ -56,8 +56,8 @@ extension LocalStorageImpl: LocalStorage {
         )
     }
     
-    func moveFromTrash(_ passwordID: PasswordID) {
-        passwordInteractor.markAsNotTrashed(for: passwordID)
+    func moveFromTrash(_ itemID: ItemID) {
+        passwordInteractor.markAsNotTrashed(for: itemID)
     }
     
     func updateDeletedItem(_ deletedItem: DeletedItemData) {
@@ -68,37 +68,12 @@ extension LocalStorageImpl: LocalStorage {
         )
     }
     
-    func createPassword(_ password: PasswordData) {
-        _ = passwordInteractor.createPasswordWithEncryptedPassword(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            encryptedPassword: password.password,
-            notes: password.notes,
-            creationDate: password.creationDate,
-            modificationDate: password.modificationDate,
-            iconType: password.iconType,
-            trashedStatus: password.trashedStatus,
-            protectionLevel: password.protectionLevel,
-            uris: password.uris,
-            tagIds: password.tagIds
-        )
+    func createItem(_ item: ItemEncryptedData) {
+        passwordInteractor.createEncryptedItem(item)
     }
     
-    func updatePassword(_ password: PasswordData) {
-        _ = passwordInteractor.updatePasswordWithEncryptedPassword(
-            for: password.passwordID,
-            name: password.name,
-            username: password.username,
-            encryptedPassword: password.password,
-            notes: password.notes,
-            modificationDate: password.modificationDate,
-            iconType: password.iconType,
-            trashedStatus: password.trashedStatus,
-            protectionLevel: password.protectionLevel,
-            uris: password.uris,
-            tagIds: password.tagIds
-        )
+    func updateItem(_ item: ItemEncryptedData) {
+        passwordInteractor.updateEncryptedItem(item)
     }
     
     func removeDeletedItem(_ deletedItem: DeletedItemID) {
@@ -117,8 +92,8 @@ extension LocalStorageImpl: LocalStorage {
         tagInteractor.deleteTag(tagID: tagID)
     }
     
-    func removePassword(_ passwordID: PasswordID) {
-        passwordInteractor.markAsTrashed(for: passwordID)
+    func removeItem(_ itemID: ItemID) {
+        passwordInteractor.markAsTrashed(for: itemID)
     }
     
     func currentVault() -> VaultEncryptedData? {

@@ -269,6 +269,7 @@ protocol MainRepository: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: - In Memory
+    // MARK: Password
     
     func createPassword(
         passwordID: PasswordID,
@@ -330,8 +331,8 @@ protocol MainRepository: AnyObject {
     
     // MARK: Encrypted Items
     
-    func createEncryptedPassword(
-        passwordID: PasswordID,
+    func createEncryptedItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -342,8 +343,8 @@ protocol MainRepository: AnyObject {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     )
-    func updateEncryptedPassword(
-        passwordID: PasswordID,
+    func updateEncryptedItem(
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -353,13 +354,13 @@ protocol MainRepository: AnyObject {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     )
-    func encryptedPasswordsBatchUpdate(_ passwords: [ItemEncryptedData])
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> ItemEncryptedData?
-    func listEncryptedPasswords(in vaultID: VaultID) -> [ItemEncryptedData]
-    func listEncryptedPasswords(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
-    func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID)
-    func deleteEncryptedPassword(passwordID: PasswordID)
-    func deleteAllEncryptedPasswords()
+    func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData])
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
+    func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
+    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
+    func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
+    func deleteEncryptedItem(itemID: ItemID)
+    func deleteAllEncryptedItems()
     
     func requiresReencryptionMigration() -> Bool
     func loadEncryptedStore()
@@ -434,7 +435,7 @@ protocol MainRepository: AnyObject {
     // MARK: - Cloud Cache
     func cloudCacheCreateItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
@@ -447,7 +448,7 @@ protocol MainRepository: AnyObject {
     )
     func cloudCacheUpdateItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,

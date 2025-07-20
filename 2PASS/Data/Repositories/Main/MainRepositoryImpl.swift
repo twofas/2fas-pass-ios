@@ -14,7 +14,6 @@ import CryptoKit
 import RevenueCat
 
 final class MainRepositoryImpl: MainRepository {
-    
     private static var _shared: MainRepositoryImpl!
     
     // MARK: State

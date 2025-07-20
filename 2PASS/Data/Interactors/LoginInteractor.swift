@@ -211,7 +211,7 @@ extension LoginInteractor: LoginInteracting {
             return
         }
         guard let trustedContent = mainRepository
-            .listEncryptedPasswords(in: vault.vaultID)
+            .listEncryptedItems(in: vault.vaultID)
             .filter({ $0.protectionLevel != .topSecret }).first?.content else {
             Log("LoginInteractor: Can't get Trusted Password", module: .interactor, severity: .error)
             completion(.invalidPassword)

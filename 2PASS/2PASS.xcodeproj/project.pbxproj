@@ -996,7 +996,7 @@
 			isa = PBXGroup;
 			children = (
 				C2F489502D3C761C00F3761B /* CloudCached.swift */,
-				C2D8995E2E2C4A6D008521D1 /* Item */,
+				C2D8995E2E2C4A6D008521D1 /* ItemCached */,
 				C26A236B2E1082E400C43CD7 /* TagCached */,
 				C298FD282D39C1DA00CFFB3D /* VaultCached */,
 				C298FD232D39BC0A00CFFB3D /* DeletedItemCached */,
@@ -1091,13 +1091,13 @@
 			path = Camera;
 			sourceTree = "<group>";
 		};
-		C2D8995E2E2C4A6D008521D1 /* Item */ = {
+		C2D8995E2E2C4A6D008521D1 /* ItemCached */ = {
 			isa = PBXGroup;
 			children = (
 				C2D899582E2C49DC008521D1 /* ItemCachedEntity+CoreDataClass.swift */,
 				C2D899592E2C49DC008521D1 /* ItemCachedEntity+CoreDataProperties.swift */,
 			);
-			path = Item;
+			path = ItemCached;
 			sourceTree = "<group>";
 		};
 		C2F81EBA2BE4230C008FD374 /* Interactor */ = {

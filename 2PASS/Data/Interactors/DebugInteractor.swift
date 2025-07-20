@@ -305,7 +305,7 @@ extension DebugInteractor: DebugInteracting {
     
     func deleteAllPasswords() {
         mainRepository.deleteAllPasswords()
-        mainRepository.deleteAllEncryptedPasswords()
+        mainRepository.deleteAllEncryptedItems()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
         mainRepository.webDAVSetHasLocalChanges()

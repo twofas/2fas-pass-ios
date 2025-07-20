@@ -16,12 +16,12 @@ public protocol CloudCacheStorageDataSource: AnyObject {
     
     func createCloudCachedItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        tagIds: [ItemTagID],
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
@@ -30,12 +30,12 @@ public protocol CloudCacheStorageDataSource: AnyObject {
     
     func updateCloudCachedItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        tagIds: [ItemTagID],
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,

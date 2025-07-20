@@ -11,12 +11,12 @@ import Storage
 extension MainRepositoryImpl {
     func cloudCacheCreateItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        tagIds: [ItemTagID],
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
@@ -39,12 +39,12 @@ extension MainRepositoryImpl {
     
     func cloudCacheUpdateItem(
         itemID: ItemID,
-        content: Data?,
+        content: Data,
         contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        tagIds: [ItemTagID],
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,

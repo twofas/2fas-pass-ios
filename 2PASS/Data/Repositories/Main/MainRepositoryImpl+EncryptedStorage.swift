@@ -16,8 +16,8 @@ extension MainRepositoryImpl {
     
     // MARK: Passwords
     
-    func createEncryptedPassword(
-        passwordID: PasswordID,
+    func createEncryptedItem(
+        itemID: PasswordID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -29,7 +29,7 @@ extension MainRepositoryImpl {
         tagIds: [ItemTagID]?
     ) {
         encryptedStorage.createEncryptedPassword(
-            itemID: passwordID,
+            itemID: itemID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -42,8 +42,8 @@ extension MainRepositoryImpl {
         )
     }
     
-    func updateEncryptedPassword(
-        passwordID: PasswordID,
+    func updateEncryptedItem(
+        itemID: PasswordID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -54,7 +54,7 @@ extension MainRepositoryImpl {
         tagIds: [ItemTagID]?
     ) {
         encryptedStorage.updateEncryptedPassword(
-            itemID: passwordID,
+            itemID: itemID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -66,31 +66,31 @@ extension MainRepositoryImpl {
         )
     }
     
-    func encryptedPasswordsBatchUpdate(_ passwords: [ItemEncryptedData]) {
+    func encryptedItemsBatchUpdate(_ passwords: [ItemEncryptedData]) {
         encryptedStorage.batchUpdateRencryptedPasswords(passwords, date: currentDate)
     }
     
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> ItemEncryptedData? {
-        encryptedStorage.getEncryptedPasswordEntity(itemID: passwordID)
+    func getEncryptedItemEntity(itemID: PasswordID) -> ItemEncryptedData? {
+        encryptedStorage.getEncryptedPasswordEntity(itemID: itemID)
     }
     
-    func listEncryptedPasswords(in vaultID: VaultID) -> [ItemEncryptedData] {
+    func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
         encryptedStorage.listEncryptedItems(in: vaultID)
     }
     
-    func listEncryptedPasswords(in vaultID: Common.VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData] {
+    func listEncryptedItems(in vaultID: Common.VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData] {
         encryptedStorage.listEncryptedItems(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
     }
     
-    func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID) {
+    func addEncryptedItem(_ passwordID: PasswordID, to vaultID: VaultID) {
         encryptedStorage.addEncryptedPassword(passwordID, to: vaultID)
     }
     
-    func deleteEncryptedPassword(passwordID: PasswordID) {
-        encryptedStorage.deleteEncryptedPassword(itemID: passwordID)
+    func deleteEncryptedItem(itemID: PasswordID) {
+        encryptedStorage.deleteEncryptedPassword(itemID: itemID)
     }
     
-    func deleteAllEncryptedPasswords() {
+    func deleteAllEncryptedItems() {
         encryptedStorage.deleteAllEncryptedPasswords(in: selectedVault?.vaultID)
     }
     

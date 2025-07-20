@@ -64,17 +64,12 @@ public final class CloudRecovery: CloudRecovering {
     func queryResultBlock(_ result: Result<CKQueryOperation.Cursor?, any Error>) -> Void {
         switch result {
         case .success(let cursor):
-            if let cursor = cursor {
+            if let cursor {
                 self.fetchMoreRecords(cursor: cursor)
             } else {
                 Log("CloudRecovery - Query completed!")
-                // TODO: Remove some time after release
-                // Filtering the pre-zone Vault
-                let vaults = self.vaults
-                let oldZone = CKRecordZone.ID(zoneName: "TwoPassZone", ownerName: CKCurrentUserDefaultName)
-                let filteredVaults = vaults.filter({ $0.zoneID != oldZone })
                 
-                let sortedVaults = filteredVaults.sorted(by: { $0.updatedAt > $1.updatedAt })
+                let sortedVaults = vaults.sorted(by: { $0.updatedAt > $1.updatedAt })
                 
                 DispatchQueue.main.async {
                     self.completion?(.success(sortedVaults))

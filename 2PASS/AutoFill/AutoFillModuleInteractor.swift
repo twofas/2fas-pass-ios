@@ -24,7 +24,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
         guard let passwordID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? ""),
-              let encrypted = passwordInteractor.getEncryptedPasswordEntity(passwordID: passwordID) else {
+              let encrypted = passwordInteractor.getEncryptedItemEntity(itemID: passwordID) else {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }

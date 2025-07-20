@@ -123,7 +123,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         guard !vault.isEmpty else {
             return false
         }
-        return !mainRepository.listEncryptedPasswords(in: vault.vaultID)
+        return !mainRepository.listEncryptedItems(in: vault.vaultID)
             .filter({ $0.protectionLevel != .topSecret }).isEmpty
     }
     
