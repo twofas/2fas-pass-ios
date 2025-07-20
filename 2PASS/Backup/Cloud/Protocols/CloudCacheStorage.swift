@@ -7,6 +7,9 @@
 import Common
 
 public protocol CloudCacheStorage: AnyObject {
+    var isInitializingNewStore: Bool { get }
+    func markInitializingNewStoreAsHandled()
+    
     func purge()
     
     func deleteItem(itemID: ItemID)

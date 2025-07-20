@@ -38,6 +38,7 @@ final class MainRepositoryImpl: MainRepository {
     var _syncHasError = false
     var _startPurchaseBlock: StartPurchaseBlock?
     var _subscriptionPlan: SubscriptionPlan = .free
+    var _cloudCacheInitilizingNewStore = false
     
     // Cached values for higher pefrormance
     var cachedSortType: SortType?
@@ -122,6 +123,7 @@ final class MainRepositoryImpl: MainRepository {
         encryptedStorage.storageError = { [weak self] in self?.storageError?($0) }
         logDataSource.storageError = { [weak self] in self?.storageError?($0) }
         cloudCache.storageError = { [weak self] in self?.storageError?($0) }
+        cloudCache.initilizingNewStore = { [weak self] in self?._cloudCacheInitilizingNewStore = true }
 
         LogStorage.setStorage(logDataSource)
         

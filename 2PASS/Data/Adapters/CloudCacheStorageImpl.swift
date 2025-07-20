@@ -17,6 +17,12 @@ final class CloudCacheStorageImpl {
 }
 
 extension CloudCacheStorageImpl: CloudCacheStorage {
+    var isInitializingNewStore: Bool { mainRepository.cloudCacheIsInitializingNewStore }
+    
+    func markInitializingNewStoreAsHandled() {
+        mainRepository.cloudCacheMarkInitializingNewStoreAsHandled()
+    }
+    
     var currentVault: VaultCloudData? {
         guard let currentVaultID = mainRepository.selectedVault?.vaultID else {
             Log("CloudCacheStorageImpl: can't get vaultID while getting current Vault", module: .interactor, severity: .error)

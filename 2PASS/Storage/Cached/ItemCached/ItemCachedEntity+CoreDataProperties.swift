@@ -1,11 +1,8 @@
+// SPDX-License-Identifier: BUSL-1.1
 //
-//  ItemCachedEntity+CoreDataProperties.swift
-//  Backup
-//
-//  Created by Zbigniew Cisiński on 19/07/2025.
-//  Copyright © 2025 Two Factor Authentication Service, Inc. All rights reserved.
-//
-//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
 
 import Foundation
 import CoreData

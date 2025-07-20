@@ -65,6 +65,9 @@ final class MergeHandler {
     private var cloudStorageItemIDsForDeletition: [ItemID] = []
     private var cloudStorageTagIDsForDeletition: [ItemTagID] = []
     
+    // cloud migration
+    private var passwordIDsForDeletition: [CKRecord.ID] = []
+    
     init(
         localStorage: LocalStorage,
         cloudCacheStorage: CloudCacheStorage,
@@ -87,6 +90,10 @@ extension MergeHandler {
         isMultiDeviceSyncEnabled = enabled
     }
     
+    func setPasswordIDsForDeletition(_ passwordIDsForDeletition: [CKRecord.ID]) {
+        self.passwordIDsForDeletition = passwordIDsForDeletition
+    }
+    
     var hasChanges: Bool {
         !deleted.isEmpty || !items.isEmpty || !deletedForRemoval.isEmpty || !itemsForRemoval.isEmpty || (cloudStorageVaultAdd != nil)
     }
@@ -100,7 +107,7 @@ extension MergeHandler {
         deletedItemAdd.forEach(localStorage.createDeletedItem)
         deletedItemUpdate.forEach(localStorage.updateDeletedItem)
         
-        var moveFromTrash: [PasswordID] = []
+        var moveFromTrash: [ItemID] = []
         let trashedItems = localStorage.listTrashedItemsIDs()
         itemsAdd.forEach { item in
             if trashedItems.contains(where: { $0 == item.itemID }) {
@@ -213,10 +220,14 @@ extension MergeHandler {
         
         // merge Vaults - create one in Cloud if missing
         if var cloudVault = cloudVaults.first(where: { $0.id == localVault.vaultID }) {
-            if cloudVault.schemaVersion > encryptionHandler.currentCloudSchemaVersion {
-                newerVersion?()
-                completion(.failure(.newerVersion))
-                return
+            if cloudVault.schemaVersion != encryptionHandler.currentCloudSchemaVersion {
+                if cloudVault.schemaVersion > encryptionHandler.currentCloudSchemaVersion {
+                    newerVersion?()
+                    completion(.failure(.newerVersion))
+                    return
+                }
+                // migration
+                cloudVault.update(schemaVersion: encryptionHandler.currentCloudSchemaVersion, updatedAt: date)
             }
             
             if !ConstStorage.passwordWasChanged && !encryptionHandler.verifyEncryption(cloudVault) {
@@ -307,11 +318,11 @@ extension MergeHandler {
         for deletedItems in deleted where deletedItems.value.isDeletedItem {
             let itemID = deletedItems.key
             if let item = items[itemID] {
-                // password was removed to trash
+                // item was removed to trash
                 if deletedItems.value.deletedAt.isAfter(item.modificationDate) {
                     itemsForRemoval.append(item)
                     items[itemID] = nil
-                } else { // password was restored from trash
+                } else { // item was restored from trash
                     deletedForRemoval.append(deletedItems.value)
                     deleted[itemID] = nil
                 }
@@ -402,7 +413,7 @@ extension MergeHandler {
         
         let localItemIDs = localItems.map { $0.itemID }
         
-        Log("Merge Handler: preparing to parse password concurrently", module: .cloudSync)
+        Log("Merge Handler: preparing to parse items concurrently", module: .cloudSync)
         
         var itemsProcessed: [ItemEncryptionProcessed] = [ItemEncryptionProcessed](
             repeating: .empty,
@@ -441,8 +452,8 @@ extension MergeHandler {
         
         Log("Merge Handler: items parsed concurrently", module: .cloudSync)
         
-        itemsProcessed.forEach { pass in
-            switch pass {
+        itemsProcessed.forEach { item in
+            switch item {
             case .local(let itemEncryptedData):
                 var record: CKRecord?
                 if let cloudItem = cloudItems[itemEncryptedData.itemID] {
@@ -488,8 +499,8 @@ extension MergeHandler {
             }
         }
         
-        itemsForRemoval.forEach { pass in
-            switch pass {
+        itemsForRemoval.forEach { item in
+            switch item {
             case .local(let itemData):
                 itemIDsForDeletition.append(itemData.itemID)
             case .cloud(let item, _):
@@ -509,6 +520,9 @@ extension MergeHandler {
             }
         }
         
+        // Deleting unused Password records if found
+        recordIDsForRemoval.append(contentsOf: passwordIDsForDeletition)
+    
         LogZoneEnd()
         completion(.success(()))
     }

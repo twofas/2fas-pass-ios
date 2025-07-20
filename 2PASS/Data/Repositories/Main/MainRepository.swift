@@ -514,6 +514,8 @@ protocol MainRepository: AnyObject {
     func cloudCacheDeleteAllDeletedItems()
     
     // MARK: - Cloud Cached Tags
+    var cloudCacheIsInitializingNewStore: Bool { get }
+    func cloudCacheMarkInitializingNewStoreAsHandled()
     func cloudCacheCreateTag(
         metadata: Data,
         tagID: ItemTagID,

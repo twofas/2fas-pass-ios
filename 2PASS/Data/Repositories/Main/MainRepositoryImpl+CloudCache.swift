@@ -9,6 +9,14 @@ import Common
 import Storage
 
 extension MainRepositoryImpl {
+    var cloudCacheIsInitializingNewStore: Bool {
+        _cloudCacheInitilizingNewStore
+    }
+    
+    func cloudCacheMarkInitializingNewStoreAsHandled() {
+        _cloudCacheInitilizingNewStore = false
+    }
+    
     func cloudCacheCreateItem(
         itemID: ItemID,
         content: Data,

@@ -69,4 +69,9 @@ public struct VaultCloudData: Hashable, Identifiable {
         self.deviceID = deviceID
         self.updatedAt = updatedAt
     }
+    
+    public mutating func update(schemaVersion: Int, updatedAt: Date) {
+        self.schemaVersion = schemaVersion
+        self.updatedAt = updatedAt
+    }
 }

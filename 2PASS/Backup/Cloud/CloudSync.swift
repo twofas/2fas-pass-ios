@@ -88,6 +88,7 @@ public final class CloudSync {
             mergeHandler: mergeHandler,
             cacheHandler: cacheHandler
         )
+        checkForMigration(cloudCacheStorage: cloudCacheStorage)
     }
     
     public func setMultiDeviceSyncEnabled(_ enabled: Bool) {
@@ -120,5 +121,14 @@ public final class CloudSync {
     
     public func setCurrentDate(_ date: Date) {
         syncHandler?.setCurrentDate(date)
+    }
+}
+
+private extension CloudSync {
+    func checkForMigration(cloudCacheStorage: CloudCacheStorage) {
+        if cloudCacheStorage.isInitializingNewStore {
+            cloudHandler?.resetBeforeMigration()
+            cloudCacheStorage.markInitializingNewStoreAsHandled()
+        }
     }
 }

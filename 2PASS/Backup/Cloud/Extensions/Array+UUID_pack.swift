@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: BUSL-1.1
 //
-//  Array+UUID_transformation.swift
-//  2PASS
-//
-//  Created by Zbigniew Cisiński on 20/07/2025.
-//  Copyright © 2025 Two Factor Authentication Service, Inc. All rights reserved.
-//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
 
 import Foundation
 
