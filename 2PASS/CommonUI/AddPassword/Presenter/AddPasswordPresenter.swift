@@ -343,6 +343,13 @@ final class AddPasswordPresenter {
         password = interactor.generatePassword()
     }
     
+    func onDelete() {
+        guard let passwordID = interactor.moveToTrash() else {
+            return
+        }
+        flowController.close(with: .success(.deleted(passwordID)))
+    }
+    
     deinit {
         notificationCenter.removeObserver(self)
     }

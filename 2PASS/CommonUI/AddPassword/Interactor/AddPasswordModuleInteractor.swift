@@ -8,7 +8,21 @@ import Foundation
 import Data
 import Common
 
-public typealias SavePasswordResult = Result<PasswordID, SavePasswordError>
+public typealias SavePasswordResult = Result<SavePasswordSuccess, SavePasswordError>
+
+public enum SavePasswordSuccess {
+    case saved(PasswordID)
+    case deleted(PasswordID)
+    
+    public var passwordID: PasswordID {
+        switch self {
+        case .saved(let passwordID):
+            return passwordID
+        case .deleted(let passwordID):
+            return passwordID
+        }
+    }
+}
 
 public enum SavePasswordError: Error {
     case userCancelled
@@ -46,6 +60,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
     func generatePassword() -> String
     func fetchIconImage(from url: URL) async throws -> Data
     func checkCurrentPasswordState() -> AddPasswordModuleInteractorCheckState
+    func moveToTrash() -> PasswordID?
 }
 
 final class AddPasswordModuleInteractor {
@@ -157,7 +172,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                     )
                 }
                 
-                return .success(current.passwordID)
+                return .success(.saved(current.passwordID))
             case .failure(let error): return .failure(.interactorError(error))
             }
         } else {
@@ -190,7 +205,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                     )
                 }
                 
-                return .success(passwordID)
+                return .success(.saved(passwordID))
             case .failure(let error): return .failure(.interactorError(error))
             }
         }
@@ -226,5 +241,15 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
             return .edited
         }
         return .noChange
+    }
+    
+    func moveToTrash() -> PasswordID? {
+        guard let editPasswordID else {
+            return nil
+        }
+        passwordInteractor.markAsTrashed(for: editPasswordID)
+        passwordInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
+        return editPasswordID
     }
 }

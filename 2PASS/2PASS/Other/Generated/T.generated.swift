@@ -575,6 +575,8 @@ internal enum T {
   internal static let loginDeleteConfirmBody = T.tr("Localizable", "login_delete_confirm_body", fallback: "Are you sure you want to remove this Item? You can restore it later.")
   /// Remove Item?
   internal static let loginDeleteConfirmTitle = T.tr("Localizable", "login_delete_confirm_title", fallback: "Remove Item?")
+  /// Remove this Item from 2FAS Pass
+  internal static let loginDeleteCta = T.tr("Localizable", "login_delete_cta", fallback: "Remove this Item from 2FAS Pass")
   /// Edit icon
   internal static let loginEditIconCta = T.tr("Localizable", "login_edit_icon_cta", fallback: "Edit icon")
   /// Edit Item
@@ -713,6 +715,8 @@ internal enum T {
   }
   /// The passwords don't match
   internal static let masterPasswordNotMatch = T.tr("Localizable", "master_password_not_match", fallback: "The passwords don't match")
+  /// Please restart the app and try again
+  internal static let migrationErrorBody = T.tr("Localizable", "migration_error_body", fallback: "Please restart the app and try again")
   /// Migration failed
   internal static let migrationErrorTitle = T.tr("Localizable", "migration_error_title", fallback: "Migration failed")
   /// It is used to unlock the app and recover your 2FAS Pass Vault.

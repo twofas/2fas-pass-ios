@@ -2988,6 +2988,17 @@
         }
       }
     },
+    "login_delete_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this Item from 2FAS Pass"
+          }
+        }
+      }
+    },
     "login_edit_icon_cta" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3710,6 +3721,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The passwords don't match"
+          }
+        }
+      }
+    },
+    "migration_error_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please restart the app and try again"
           }
         }
       }
