@@ -210,7 +210,7 @@ extension MergeHandler {
         // local storage
         let localDeletedItems = localStorage.listAllDeletedItems()
         let localItems = localStorage.listItems()
-        let localTag = localStorage.listAllTags()
+        let localTags = localStorage.listAllTags()
         guard let localVault = localStorage.currentVault() else {
             completion(.failure(MergeHandlerError.noLocalVault))
             return
@@ -260,12 +260,63 @@ extension MergeHandler {
             }
         }
         
-        // merge Deleted Items
+        mergeDeletedItems(local: localDeletedItems, cloud: cloudDeletedItems, vaultID: localVault.vaultID)
+        mergeTags(local: localTags, cloud: cloudTags, vaultID: localVault.vaultID)
+        mergeItems(local: localItems, cloud: cloudItems, vaultID: localVault.vaultID)
+        
+        handleItemsWhichAreDeleted()
+        
+        guard prepareChangesInDeletedItems(
+            local: localDeletedItems,
+            cloud: cloudDeletedItems,
+            vaultID: localVault.vaultID
+        ), prepareChangesInTags(
+            local: localTags,
+            cloud: cloudTags,
+            vaultID: localVault.vaultID
+        ), prepareChangesInItems(
+            local: localItems,
+            cloud: cloudItems,
+            vaultID: localVault.vaultID
+        ) else {
+            completion(.failure(.mergeError))
+            return
+        }
+                
+        let zoneID = CKRecordZone.ID.from(vaultID: localVault.vaultID)
+        deletedRecordsForRemoval(zoneID: zoneID)
+        itemsForRemoval(zoneID: zoneID)
+        
+        if let vaultAddIfDataModifed {
+            Log("Merge Handler: appending Vault with new modification date", module: .cloudSync)
+            if let cloudVault = updateExistingCloudVault(vaultAddIfDataModifed),
+               let record = VaultRecord.recreate(from: cloudVault) {
+                cloudStorageVaultAdd = cloudVault
+                recordsToCreateUpdate.append(record)
+            } else {
+                Log("Merge Handler: error appending Vault with new modification date", module: .cloudSync, severity: .error)
+            }
+        }
+        
+        // Deleting unused Password records if found
+        recordIDsForRemoval.append(contentsOf: passwordIDsForDeletition)
+    
+        LogZoneEnd()
+        completion(.success(()))
+    }
+}
+
+private extension MergeHandler {
+    func mergeDeletedItems(
+        local localDeletedItems: [DeletedItemData],
+        cloud cloudDeletedItems: [CloudDataDeletedItem],
+        vaultID: VaultID
+    ) {
         deleted = localDeletedItems.reduce(into: [DeletedItemID: Deleted]()) { result, deletedItem in
             result[deletedItem.itemID] = Deleted.local(deletedItem)
         }
         
-        cloudDeletedItems.filter({ $0.deletedItem.vaultID == localVault.vaultID }).forEach { cloud in
+        cloudDeletedItems.filter({ $0.deletedItem.vaultID == vaultID }).forEach { cloud in
             let itemID = cloud.deletedItem.itemID
             if let local = deleted[itemID] {
                 if local.deletedAt.isSame(as: cloud.deletedItem.deletedAt) {
@@ -277,13 +328,14 @@ extension MergeHandler {
                 deleted[itemID] = .cloud(deletedItem: cloud.deletedItem, metadata: cloud.metadata)
             }
         }
-        
-        // merge Tags
-        tags = localTag.reduce(into: [ItemTagID: Tag]()) { result, itemTag in
+    }
+    
+    func mergeTags(local localTags: [ItemTagData], cloud cloudTags: [CloudDataTagItem], vaultID: VaultID) {
+        tags = localTags.reduce(into: [ItemTagID: Tag]()) { result, itemTag in
             result[itemTag.tagID] = Tag.local(itemTag)
         }
         
-        cloudTags.filter({ $0.tagItem.vaultID == localVault.vaultID }).forEach { cloud in
+        cloudTags.filter({ $0.tagItem.vaultID == vaultID }).forEach { cloud in
             let tagID = cloud.tagItem.tagID
             if let local = tags[tagID] {
                 if local.modificationDate.isSame(as: cloud.tagItem.modificationDate) {
@@ -295,13 +347,18 @@ extension MergeHandler {
                 tags[tagID] = .cloud(tag: cloud.tagItem, metadata: cloud.metadata)
             }
         }
-        
-        // merge Items
+    }
+    
+    func mergeItems(
+        local localItems: [ItemEncryptedData],
+        cloud cloudItems: [ItemID : (item: ItemEncryptedData, metadata: Data)],
+        vaultID: VaultID
+    ) {
         items = localItems.reduce(into: [ItemID: Item]()) { result, localItem in
             result[localItem.itemID] = Item.local(item: localItem)
         }
         
-        cloudItems.values.filter({ $0.item.vaultID == localVault.vaultID }).forEach { cloudItem, metadata in
+        cloudItems.values.filter({ $0.item.vaultID == vaultID }).forEach { cloudItem, metadata in
             let itemID = cloudItem.itemID
             if let local = items[itemID] {
                 if local.modificationDate.isSame(as: cloudItem.modificationDate) {
@@ -313,8 +370,9 @@ extension MergeHandler {
                 items[itemID] = .cloud(item: cloudItem, metadata: metadata)
             }
         }
-        
-        // merge changes with Deleted ITems
+    }
+    
+    func handleItemsWhichAreDeleted() {
         for deletedItems in deleted where deletedItems.value.isDeletedItem {
             let itemID = deletedItems.key
             if let item = items[itemID] {
@@ -328,12 +386,16 @@ extension MergeHandler {
                 }
             }
         }
-        
-        // prepare changes for local and cloud
-        // deleted items
+    }
+    
+    func prepareChangesInDeletedItems(
+        local localDeletedItems: [DeletedItemData],
+        cloud cloudDeletedItems: [CloudDataDeletedItem],
+        vaultID: VaultID
+    ) -> Bool {
         let localDeletedItemsIDs = localDeletedItems.map { $0.itemID }
         
-        deleted.forEach { _, item in
+        for (_, item) in deleted {
             switch item {
             case .local(let deletedItem):
                 var record: CKRecord?
@@ -350,11 +412,10 @@ extension MergeHandler {
                 if let record {
                     recordsToCreateUpdate.append(record)
                 } else {
-                    completion(.failure(MergeHandlerError.mergeError))
-                    return
+                    return false
                 }
             case .cloud(let deletedItem, _):
-                if deletedItem.vaultID == localVault.vaultID {
+                if deletedItem.vaultID == vaultID {
                     if localDeletedItemsIDs.contains(where: { $0 == deletedItem.itemID }) {
                         deletedItemUpdate.append(deletedItem)
                     } else {
@@ -364,22 +425,28 @@ extension MergeHandler {
             }
         }
         
-        // tags
-        let localTagIDs = localTag.map { $0.tagID }
-        
-        tags.forEach { _, tagEntry in
+        return true
+    }
+    
+    func prepareChangesInTags(
+        local localTags: [ItemTagData],
+        cloud cloudTags: [CloudDataTagItem],
+        vaultID: VaultID
+    ) -> Bool {
+        let localTagIDs = localTags.map { $0.tagID }
+
+        for (_, tagEntry) in tags {
             switch tagEntry {
             case .local(let tag):
                 var record: CKRecord?
                 guard let encryptedTag = encryptionHandler.tagToTagEncrypted(tag) else {
                     Log("MergeHandler: Error encrypting tag", module: .backup, severity: .error)
-                    completion(.failure(MergeHandlerError.mergeError))
-                    return
+                    return false
                 }
                 if let tagItem = cloudTags.first(where: { $0.tagItem.tagID == tag.tagID }) {
-                        record = TagRecord
-                            .recreate(with: tagItem.metadata, data: encryptedTag)
-                        cloudStorageTagUpdate.append((tag: encryptedTag, metadata: tagItem.metadata))
+                    record = TagRecord
+                        .recreate(with: tagItem.metadata, data: encryptedTag)
+                    cloudStorageTagUpdate.append((tag: encryptedTag, metadata: tagItem.metadata))
                 } else {
                     if let ckRecord = TagRecord.create(data: encryptedTag) {
                         cloudStorageTagAdd
@@ -390,16 +457,15 @@ extension MergeHandler {
                 if let record {
                     recordsToCreateUpdate.append(record)
                 } else {
-                    completion(.failure(MergeHandlerError.mergeError))
-                    return
+                    Log("MergeHandler: No Tag record", module: .backup, severity: .error)
+                    return false
                 }
             case .cloud(let tagItem, _):
                 guard let decryptedTag = encryptionHandler.tagEncyptedToTag(tagItem) else {
                     Log("MergeHandler: Error decrypting tag", module: .backup, severity: .error)
-                    completion(.failure(MergeHandlerError.mergeError))
-                    return
+                    return false
                 }
-                if tagItem.vaultID == localVault.vaultID {
+                if tagItem.vaultID == vaultID {
                     if localTagIDs.contains(where: { $0 == tagItem.tagID }) {
                         tagUpdate.append(decryptedTag)
                     } else {
@@ -409,8 +475,14 @@ extension MergeHandler {
             }
         }
         
-        //
-        
+        return true
+    }
+    
+    func prepareChangesInItems(
+        local localItems: [ItemEncryptedData],
+        cloud cloudItems: [ItemID : (item: ItemEncryptedData, metadata: Data)],
+        vaultID localVaultID: VaultID
+    ) -> Bool {
         let localItemIDs = localItems.map { $0.itemID }
         
         Log("Merge Handler: preparing to parse items concurrently", module: .cloudSync)
@@ -446,13 +518,12 @@ extension MergeHandler {
         itemsProcessed.removeAll(where: { $0 == .empty })
         
         guard itemsProcessed.count == countProcessed else {
-            completion(.failure(.mergeError))
-            return
+            return false
         }
         
         Log("Merge Handler: items parsed concurrently", module: .cloudSync)
         
-        itemsProcessed.forEach { item in
+        for item in itemsProcessed {
             switch item {
             case .local(let itemEncryptedData):
                 var record: CKRecord?
@@ -468,11 +539,10 @@ extension MergeHandler {
                 if let record {
                     recordsToCreateUpdate.append(record)
                 } else {
-                    completion(.failure(MergeHandlerError.mergeError))
-                    return
+                    return false
                 }
             case .cloud(let itemData, let vaultID):
-                if vaultID == localVault.vaultID {
+                if vaultID == localVaultID {
                     if localItemIDs.contains(where: { $0 == itemData.itemID }) {
                         itemsUpdate.append(itemData)
                     } else {
@@ -484,7 +554,11 @@ extension MergeHandler {
         }
         
         Log("Merge Handler: items prepared for cloud and storage", module: .cloudSync)
-        let zoneID = CKRecordZone.ID.from(vaultID: localVault.vaultID)
+        
+        return true
+    }
+    
+    func deletedRecordsForRemoval(zoneID: CKRecordZone.ID) {
         deletedForRemoval.forEach { del in
             switch del {
             case .local(let deletedItem):
@@ -498,7 +572,9 @@ extension MergeHandler {
                     )
             }
         }
-        
+    }
+    
+    func itemsForRemoval(zoneID: CKRecordZone.ID) {
         itemsForRemoval.forEach { item in
             switch item {
             case .local(let itemData):
@@ -508,23 +584,6 @@ extension MergeHandler {
                 recordIDsForRemoval.append(CKRecord.ID(recordName: ItemRecord.createRecordName(for: item.itemID), zoneID: zoneID))
             }
         }
-        
-        if let vaultAddIfDataModifed {
-            Log("Merge Handler: appending Vault with new modification date", module: .cloudSync)
-            if let cloudVault = updateExistingCloudVault(vaultAddIfDataModifed),
-               let record = VaultRecord.recreate(from: cloudVault) {
-                cloudStorageVaultAdd = cloudVault
-                recordsToCreateUpdate.append(record)
-            } else {
-                Log("Merge Handler: error appending Vault with new modification date", module: .cloudSync, severity: .error)
-            }
-        }
-        
-        // Deleting unused Password records if found
-        recordIDsForRemoval.append(contentsOf: passwordIDsForDeletition)
-    
-        LogZoneEnd()
-        completion(.success(()))
     }
 }
 
