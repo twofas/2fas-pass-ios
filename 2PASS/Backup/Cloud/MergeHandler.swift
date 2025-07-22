@@ -237,14 +237,18 @@ extension MergeHandler {
                 return
             }
             
-            if cloudVault.deviceID != deviceID {
-                if isMultiDeviceSyncEnabled {
-                    cloudVault.update(deviceID: deviceID, updatedAt: date)
-                    vaultAddIfDataModifed = cloudVault
+            if ConstStorage.passwordWasChanged || cloudVault.deviceID != deviceID {
+                if cloudVault.deviceID != deviceID {
+                    if isMultiDeviceSyncEnabled {
+                        cloudVault.update(deviceID: deviceID, updatedAt: date)
+                        vaultAddIfDataModifed = cloudVault
+                    } else {
+                        syncNotAllowed?()
+                        completion(.failure(.syncNotAllowed))
+                        return
+                    }
                 } else {
-                    syncNotAllowed?()
-                    completion(.failure(.syncNotAllowed))
-                    return
+                    vaultAddIfDataModifed = cloudVault
                 }
             }
         } else {
