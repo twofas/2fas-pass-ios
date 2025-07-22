@@ -269,6 +269,7 @@ protocol MainRepository: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: - In Memory
+    // MARK: Password
     
     func createPassword(
         passwordID: PasswordID,
@@ -330,8 +331,8 @@ protocol MainRepository: AnyObject {
     
     // MARK: Encrypted Items
     
-    func createEncryptedPassword(
-        passwordID: PasswordID,
+    func createEncryptedItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -342,8 +343,8 @@ protocol MainRepository: AnyObject {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     )
-    func updateEncryptedPassword(
-        passwordID: PasswordID,
+    func updateEncryptedItem(
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -353,13 +354,13 @@ protocol MainRepository: AnyObject {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     )
-    func encryptedPasswordsBatchUpdate(_ passwords: [ItemEncryptedData])
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> ItemEncryptedData?
-    func listEncryptedPasswords(in vaultID: VaultID) -> [ItemEncryptedData]
-    func listEncryptedPasswords(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
-    func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID)
-    func deleteEncryptedPassword(passwordID: PasswordID)
-    func deleteAllEncryptedPasswords()
+    func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData])
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
+    func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
+    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
+    func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
+    func deleteEncryptedItem(itemID: ItemID)
+    func deleteAllEncryptedItems()
     
     func requiresReencryptionMigration() -> Bool
     func loadEncryptedStore()
@@ -432,40 +433,37 @@ protocol MainRepository: AnyObject {
     func clearLastSuccessCloudSyncDate()
     
     // MARK: - Cloud Cache
-    func cloudCacheCreatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheCreateItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         metadata: Data
     )
-    func cloudCacheUpdatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheUpdateItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
+        tagIds: [ItemTagID]?,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        vaultID: VaultID,
         metadata: Data
     )
-    func cloudCacheGetPasswordEntity(passwordID: PasswordID) -> CloudDataPassword?
-    func cloudCacheListPasswords(in vaultID: VaultID) -> [CloudDataPassword]
-    func cloudCacheListAllPasswords() -> [CloudDataPassword]
-    func cloudCacheDeletePassword(passwordID: PasswordID)
-    func cloudCacheDeleteAllPasswords()
+    func cloudCacheGetItemEntity(itemID: ItemID) -> CloudDataItem?
+    func cloudCacheListItems(in vaultID: VaultID) -> [CloudDataItem]
+    func cloudCacheListAllItems() -> [CloudDataItem]
+    func cloudCacheDeleteItem(itemID: ItemID)
+    func cloudCacheDeleteAllItems()
     func cloudCacheListVaults() -> [VaultCloudData]
     func cloudCacheGetVault(for vaultID: VaultID) -> VaultCloudData?
     func cloudCacheCreateVault(
@@ -516,6 +514,8 @@ protocol MainRepository: AnyObject {
     func cloudCacheDeleteAllDeletedItems()
     
     // MARK: - Cloud Cached Tags
+    var cloudCacheIsInitializingNewStore: Bool { get }
+    func cloudCacheMarkInitializingNewStoreAsHandled()
     func cloudCacheCreateTag(
         metadata: Data,
         tagID: ItemTagID,

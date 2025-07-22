@@ -89,7 +89,7 @@ extension StorageInteractor: StorageInteracting {
         mainRepository.selectVault(vaultID)
         
         mainRepository.createInMemoryStorage()
-        let passwords = mainRepository.listEncryptedPasswords(
+        let passwords = mainRepository.listEncryptedItems(
             in: vaultID,
             excludeProtectionLevels: mainRepository.isMainAppProcess ? [] : Config.autoFillExcludeProtectionLevels
         )

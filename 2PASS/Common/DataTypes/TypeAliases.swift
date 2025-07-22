@@ -12,3 +12,4 @@ public typealias DeletedItemID = UUID
 public typealias VaultID = UUID
 public typealias DeviceID = UUID
 public typealias ItemTagID = UUID
+public typealias ItemID = UUID

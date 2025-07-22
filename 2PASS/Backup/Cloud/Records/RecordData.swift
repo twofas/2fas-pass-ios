@@ -7,12 +7,12 @@
 import Foundation
 import Common
 
-public struct RecordDataPassword {
-    public let password: ItemEncryptedData
+public struct RecordDataItem {
+    public let item: ItemEncryptedData
     public let metadata: Data
     
-    public init(password: ItemEncryptedData, metadata: Data) {
-        self.password = password
+    public init(item: ItemEncryptedData, metadata: Data) {
+        self.item = item
         self.metadata = metadata
     }
 }

@@ -8,64 +8,45 @@ import Foundation
 import CoreData
 import Common
 
-final class PasswordCachedEntity: NSManagedObject {
-    @nonobjc private static let entityName = "PasswordCachedEntity"
-    
+final class ItemCachedEntity: NSManagedObject {
     @discardableResult
     @nonobjc static func create(
         on context: NSManagedObjectContext,
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: PasswordEncryptedURIs?,
-        vaultID: VaultID,
-        metadata: Data
-    ) -> PasswordCachedEntity {
+        tagIds: [ItemTagID]?,
+        metadata: Data,
+        vaultID: VaultID
+    ) -> ItemCachedEntity {
         context.performAndWait {
-            let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! PasswordCachedEntity
+            let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! ItemCachedEntity
             
-            entity.passwordID = passwordID
-            entity.name = name
-            entity.username = username
-            entity.password = password
-            entity.notes = notes
-            
+            entity.itemID = itemID
+            entity.content = content
+            entity.contentType = contentType.rawValue
+            entity.contentVersion = Int16(contentVersion)
             entity.creationDate = creationDate
             entity.modificationDate = modificationDate
-            
-            entity.iconType = iconType.value
-            switch iconType {
-            case .domainIcon(let domain):
-                entity.iconDomain = domain
-            case .label(let labelTitle, let labelColor):
-                entity.labelTitle = labelTitle
-                entity.labelColor = labelColor?.hexString
-            case .customIcon(let url):
-                entity.iconCustomURL = url
-            }
             
             switch trashedStatus {
             case .no:
                 entity.isTrashed = false
+                entity.trashingDate = nil
             case .yes(let trashingDate):
                 entity.isTrashed = true
                 entity.trashingDate = trashingDate
             }
             
-            entity.level = protectionLevel.rawValue
-            
-            entity.uris = uris?.uris
-            entity.urisMatching = uris?.match.map({ $0.rawValue })
-            entity.vaultID = vaultID
-            
+            entity.protectionLevel = protectionLevel.rawValue
+            entity.tagIds = tagIds
             entity.metadata = metadata
+            entity.vaultID = vaultID
             
             return entity
         }
@@ -74,57 +55,40 @@ final class PasswordCachedEntity: NSManagedObject {
     @discardableResult
     @nonobjc static func update(
         on context: NSManagedObjectContext,
-        for passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        for itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        tagIds: [ItemTagID]?,
         metadata: Data
-    ) -> PasswordCachedEntity? {
+    ) -> ItemCachedEntity? {
         context.performAndWait {
-            guard let entity = getEntity(on: context, passwordID: passwordID) else {
-                Log("PaswordCachedEntity: Can't find encrypted entity for passwordID: \(passwordID)", module: .storage)
+            guard let entity = getEntity(on: context, itemID: itemID) else {
+                Log("ItemCachedEntity: Can't find cached entity for itemID: \(itemID)", module: .storage)
                 return nil
             }
             
-            entity.name = name
-            entity.username = username
-            entity.password = password
-            entity.notes = notes
-            
+            entity.content = content
+            entity.contentType = contentType.rawValue
+            entity.contentVersion = Int16(contentVersion)
             entity.creationDate = creationDate
             entity.modificationDate = modificationDate
-            
-            entity.iconType = iconType.value
-            switch iconType {
-            case .domainIcon(let domain):
-                entity.iconDomain = domain
-            case .customIcon(let url):
-                entity.iconCustomURL = url
-            case .label(let labelTitle, let labelColor):
-                entity.labelTitle = labelTitle
-                entity.labelColor = labelColor?.hexString
-            }
             
             switch trashedStatus {
             case .no:
                 entity.isTrashed = false
+                entity.trashingDate = nil
             case .yes(let trashingDate):
                 entity.isTrashed = true
                 entity.trashingDate = trashingDate
             }
             
-            entity.level = protectionLevel.rawValue
-            
-            entity.uris = uris?.uris
-            entity.urisMatching = uris?.match.map({ $0.rawValue })
-                        
+            entity.protectionLevel = protectionLevel.rawValue
+            entity.tagIds = tagIds
             entity.metadata = metadata
             
             return entity
@@ -133,20 +97,20 @@ final class PasswordCachedEntity: NSManagedObject {
     
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
-        passwordID: PasswordID
-    ) -> PasswordCachedEntity? {
-        let fetchRequest = PasswordCachedEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "passwordID == %@", passwordID as CVarArg)
+        itemID: ItemID
+    ) -> ItemCachedEntity? {
+        let fetchRequest = ItemCachedEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "itemID == %@", itemID as CVarArg)
         fetchRequest.includesPendingChanges = true
 
-        var list: [PasswordCachedEntity] = []
+        var list: [ItemCachedEntity] = []
 
         do {
             list = try context.fetch(fetchRequest)
         } catch {
             let err = error as NSError
             // swiftlint:disable line_length
-            Log("PasswordCachedEntity in Storage listItems: \(err.localizedDescription)", module: .storage, severity: .error)
+            Log("ItemCachedEntity in Storage getEntity: \(err.localizedDescription)", module: .storage, severity: .error)
             // swiftlint:enable line_length
             return nil
         }
@@ -162,7 +126,7 @@ final class PasswordCachedEntity: NSManagedObject {
         return list.first
     }
     
-    @nonobjc static func deleteAllEncryptedPasswords(on context: NSManagedObjectContext) {
+    @nonobjc static func deleteAllCachedItems(on context: NSManagedObjectContext) {
         let items = listItems(
             on: context,
             predicate: NSPredicate(format: "isTrashed == FALSE"),
@@ -177,7 +141,7 @@ final class PasswordCachedEntity: NSManagedObject {
     @nonobjc static func listItemsInVault(
         on context: NSManagedObjectContext,
         vaultID: VaultID
-    ) -> [PasswordCachedEntity] {
+    ) -> [ItemCachedEntity] {
         listItems(on: context, predicate: NSPredicate(format: "vaultID == %@", vaultID as CVarArg))
     }
 
@@ -185,21 +149,21 @@ final class PasswordCachedEntity: NSManagedObject {
         on context: NSManagedObjectContext,
         predicate: NSPredicate? = nil,
         includesPropertyValues: Bool = true
-    ) -> [PasswordCachedEntity] {
-        let fetchRequest = PasswordCachedEntity.fetchRequest()
+    ) -> [ItemCachedEntity] {
+        let fetchRequest = ItemCachedEntity.fetchRequest()
         fetchRequest.includesPropertyValues = includesPropertyValues
         if let predicate {
             fetchRequest.predicate = predicate
         }
 
-        var list: [PasswordCachedEntity] = []
+        var list: [ItemCachedEntity] = []
 
         do {
             list = try context.fetch(fetchRequest)
         } catch {
             let err = error as NSError
             // swiftlint:disable line_length
-            Log("PasswordCachedEntity in Storage listItems: \(err.localizedDescription)", module: .storage, severity: .error)
+            Log("ItemCachedEntity in Storage listItems: \(err.localizedDescription)", module: .storage, severity: .error)
             // swiftlint:enable line_length
             return []
         }
@@ -207,8 +171,8 @@ final class PasswordCachedEntity: NSManagedObject {
         return list
     }
 
-    @nonobjc static func delete(on context: NSManagedObjectContext, entity: PasswordCachedEntity) {
-        Log("PasswordCachedEntity: Deleting entity of type: PasswordCachedEntity", module: .storage, save: false)
+    @nonobjc static func delete(on context: NSManagedObjectContext, entity: ItemCachedEntity) {
+        Log("ItemCachedEntity: Deleting entity of type: ItemCachedEntity", module: .storage, save: false)
         context.delete(entity)
     }
 }

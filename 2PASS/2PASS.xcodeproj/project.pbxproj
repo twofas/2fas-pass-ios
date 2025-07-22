@@ -124,11 +124,9 @@
 		C28E9E2E2C1CE5EE008B99F8 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28E9E2D2C1CE5EE008B99F8 /* MainViewController.swift */; };
 		C298AEB32C6923ED0009BAA2 /* EncryptedStorageDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEB22C6923ED0009BAA2 /* EncryptedStorageDataSource.swift */; };
 		C298AEB52C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298AEB42C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift */; };
-		C298FD222D39B3ED00CFFB3D /* CloudCache.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = C298FD202D39B3ED00CFFB3D /* CloudCache.xcdatamodeld */; };
+		C298FD222D39B3ED00CFFB3D /* CloudCache2.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = C298FD202D39B3ED00CFFB3D /* CloudCache2.xcdatamodeld */; };
 		C298FD262D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD242D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift */; };
 		C298FD272D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD252D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataProperties.swift */; };
-		C298FD302D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD2E2D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataClass.swift */; };
-		C298FD312D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD2F2D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataProperties.swift */; };
 		C298FD3A2D39C48D00CFFB3D /* VaultCachedEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD382D39C48D00CFFB3D /* VaultCachedEntity+CoreDataClass.swift */; };
 		C298FD3B2D39C48D00CFFB3D /* VaultCachedEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD392D39C48D00CFFB3D /* VaultCachedEntity+CoreDataProperties.swift */; };
 		C298FD3E2D39C56200CFFB3D /* CloudCacheStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C298FD3D2D39C56200CFFB3D /* CloudCacheStorageDataSourceImpl.swift */; };
@@ -148,6 +146,8 @@
 		C2CD740C2C7FBCA200B8E9FE /* CameraDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74042C7FBCA200B8E9FE /* CameraDelegate.swift */; };
 		C2CD74172C7FBF9900B8E9FE /* EnterWordsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74162C7FBF9900B8E9FE /* EnterWordsPresenter.swift */; };
 		C2CD74192C7FC5B700B8E9FE /* EnterWordsModuleInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74182C7FC5B700B8E9FE /* EnterWordsModuleInteractor.swift */; };
+		C2D8995C2E2C4A69008521D1 /* ItemCachedEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D899592E2C49DC008521D1 /* ItemCachedEntity+CoreDataProperties.swift */; };
+		C2D8995D2E2C4A69008521D1 /* ItemCachedEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D899582E2C49DC008521D1 /* ItemCachedEntity+CoreDataClass.swift */; };
 		C2DCD9172DC6C96300CBF641 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = C2DCD9162DC6C96300CBF641 /* ZIPFoundation */; };
 		C2E119DF2CA18CD0008928E6 /* SignalArgon2 in Frameworks */ = {isa = PBXBuildFile; productRef = C2E119DE2CA18CD0008928E6 /* SignalArgon2 */; };
 		C2F489512D3C761E00F3761B /* CloudCached.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F489502D3C761C00F3761B /* CloudCached.swift */; };
@@ -398,11 +398,9 @@
 		C28E9E2D2C1CE5EE008B99F8 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		C298AEB22C6923ED0009BAA2 /* EncryptedStorageDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedStorageDataSource.swift; sourceTree = "<group>"; };
 		C298AEB42C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedStorageDataSourceImpl.swift; sourceTree = "<group>"; };
-		C298FD212D39B3ED00CFFB3D /* CloudCache.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CloudCache.xcdatamodel; sourceTree = "<group>"; };
+		C298FD212D39B3ED00CFFB3D /* CloudCache2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CloudCache2.xcdatamodel; sourceTree = "<group>"; };
 		C298FD242D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeletedItemCachedEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		C298FD252D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeletedItemCachedEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		C298FD2E2D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PasswordCachedEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		C298FD2F2D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PasswordCachedEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C298FD382D39C48D00CFFB3D /* VaultCachedEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultCachedEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		C298FD392D39C48D00CFFB3D /* VaultCachedEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultCachedEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C298FD3C2D39C56200CFFB3D /* CloudCacheStorageDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCacheStorageDataSource.swift; sourceTree = "<group>"; };
@@ -418,6 +416,8 @@
 		C2CD74042C7FBCA200B8E9FE /* CameraDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraDelegate.swift; sourceTree = "<group>"; };
 		C2CD74162C7FBF9900B8E9FE /* EnterWordsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsPresenter.swift; sourceTree = "<group>"; };
 		C2CD74182C7FC5B700B8E9FE /* EnterWordsModuleInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsModuleInteractor.swift; sourceTree = "<group>"; };
+		C2D899582E2C49DC008521D1 /* ItemCachedEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemCachedEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		C2D899592E2C49DC008521D1 /* ItemCachedEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemCachedEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C2F489502D3C761C00F3761B /* CloudCached.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCached.swift; sourceTree = "<group>"; };
 		C2F81EBB2BE42325008FD374 /* RootModuleInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootModuleInteractor.swift; sourceTree = "<group>"; };
 		C2F81EC22BE42858008FD374 /* Data.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Data.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -992,24 +992,15 @@
 			path = VaultCached;
 			sourceTree = "<group>";
 		};
-		C298FD2D2D39C2EF00CFFB3D /* PasswordCached */ = {
-			isa = PBXGroup;
-			children = (
-				C298FD2E2D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataClass.swift */,
-				C298FD2F2D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataProperties.swift */,
-			);
-			path = PasswordCached;
-			sourceTree = "<group>";
-		};
 		C298FD332D39C37F00CFFB3D /* Cached */ = {
 			isa = PBXGroup;
 			children = (
 				C2F489502D3C761C00F3761B /* CloudCached.swift */,
+				C2D8995E2E2C4A6D008521D1 /* ItemCached */,
 				C26A236B2E1082E400C43CD7 /* TagCached */,
-				C298FD2D2D39C2EF00CFFB3D /* PasswordCached */,
 				C298FD282D39C1DA00CFFB3D /* VaultCached */,
 				C298FD232D39BC0A00CFFB3D /* DeletedItemCached */,
-				C298FD202D39B3ED00CFFB3D /* CloudCache.xcdatamodeld */,
+				C298FD202D39B3ED00CFFB3D /* CloudCache2.xcdatamodeld */,
 			);
 			path = Cached;
 			sourceTree = "<group>";
@@ -1098,6 +1089,15 @@
 				C2CD74042C7FBCA200B8E9FE /* CameraDelegate.swift */,
 			);
 			path = Camera;
+			sourceTree = "<group>";
+		};
+		C2D8995E2E2C4A6D008521D1 /* ItemCached */ = {
+			isa = PBXGroup;
+			children = (
+				C2D899582E2C49DC008521D1 /* ItemCachedEntity+CoreDataClass.swift */,
+				C2D899592E2C49DC008521D1 /* ItemCachedEntity+CoreDataProperties.swift */,
+			);
+			path = ItemCached;
 			sourceTree = "<group>";
 		};
 		C2F81EBA2BE4230C008FD374 /* Interactor */ = {
@@ -1647,7 +1647,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C21422CC2C8E429D00C978F9 /* LogEntryEntity+CoreDataProperties.swift in Sources */,
-				C298FD222D39B3ED00CFFB3D /* CloudCache.xcdatamodeld in Sources */,
+				C298FD222D39B3ED00CFFB3D /* CloudCache2.xcdatamodeld in Sources */,
 				C298FD262D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift in Sources */,
 				C298FD3A2D39C48D00CFFB3D /* VaultCachedEntity+CoreDataClass.swift in Sources */,
 				C26A236C2E1082E400C43CD7 /* TagCachedEntity+CoreDataProperties.swift in Sources */,
@@ -1669,8 +1669,8 @@
 				C249E7882BF130E8003464D5 /* PasswordEntity+CoreDataProperties.swift in Sources */,
 				C21422C42C8E422400C978F9 /* LogHandler.swift in Sources */,
 				C21422D02C8E432700C978F9 /* LogStorageDataSource.swift in Sources */,
-				C298FD302D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataClass.swift in Sources */,
-				C298FD312D39C2FC00CFFB3D /* PasswordCachedEntity+CoreDataProperties.swift in Sources */,
+				C2D8995C2E2C4A69008521D1 /* ItemCachedEntity+CoreDataProperties.swift in Sources */,
+				C2D8995D2E2C4A69008521D1 /* ItemCachedEntity+CoreDataClass.swift in Sources */,
 				C21422D22C8E439F00C978F9 /* LogStorageDataSourceImpl.swift in Sources */,
 				8FD25CFD2CC30BDE001DC8EB /* TwoPass.xcdatamodeld in Sources */,
 				C2145B5D2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift in Sources */,
@@ -3289,13 +3289,13 @@
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
-		C298FD202D39B3ED00CFFB3D /* CloudCache.xcdatamodeld */ = {
+		C298FD202D39B3ED00CFFB3D /* CloudCache2.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				C298FD212D39B3ED00CFFB3D /* CloudCache.xcdatamodel */,
+				C298FD212D39B3ED00CFFB3D /* CloudCache2.xcdatamodel */,
 			);
-			currentVersion = C298FD212D39B3ED00CFFB3D /* CloudCache.xcdatamodel */;
-			path = CloudCache.xcdatamodeld;
+			currentVersion = C298FD212D39B3ED00CFFB3D /* CloudCache2.xcdatamodel */;
+			path = CloudCache2.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

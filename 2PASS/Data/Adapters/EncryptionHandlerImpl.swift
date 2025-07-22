@@ -58,110 +58,86 @@ extension EncryptionHandlerImpl: EncryptionHandler {
         return cloudData.seedHash == seedHash && kdfSpec == KDFSpec.default
     }
     
-    // FIXME: Verify
-    func passwordDataToPasswordEncryptedData(_ passwordData: PasswordData) -> ItemEncryptedData? {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("EncryptionHandlerImpl: can't get vaultID", module: .interactor, severity: .error)
-            return nil
-        }
-        
-        let passwordDecrypted: String?
-        if let pass = passwordData.password {
-            guard let decrypted = passwordInteractor.decrypt(pass, isPassword: true, protectionLevel: passwordData.protectionLevel) else {
-                Log("EncryptionHandlerImpl: can't decrypt password from data", module: .interactor, severity: .error)
-                return nil
-            }
-            passwordDecrypted = decrypted
-        } else {
-            passwordDecrypted = nil
-        }
-        
-        guard let key = mainRepository.cachedExternalKey else {
+    func localEncryptedItemToCloudEncryptedData(_ localEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {
+        guard let externalKey = mainRepository.cachedExternalKey else {
             Log("EncryptionHandlerImpl: can't get external key", module: .interactor, severity: .error)
             return nil
         }
-        
-        var encryptedPassword: Data?
-        if let passwordDecrypted {
-            guard let encrypted = encrypt(passwordDecrypted, using: key) else {
-                Log("EncryptionHandlerImpl: Create password. Can't encrypt password", module: .interactor, severity: .error)
-                return nil
-            }
-            encryptedPassword = encrypted
-        }
-
-        let content = PasswordItemContent(
-            name: passwordData.name.nilIfEmpty,
-            username: passwordData.username.nilIfEmpty,
-            password: encryptedPassword,
-            notes: passwordData.notes,
-            iconType: passwordData.iconType,
-            uris: passwordData.uris
-        )
-        guard let contentData = try? mainRepository.jsonEncoder.encode(content), let contentDataEnc = encryptData(contentData, using: key) else {
+        guard let localKey = mainRepository.getKey(
+            isPassword: false,
+            protectionLevel: localEncryptedItem.protectionLevel
+        ) else {
+            Log(
+                "EncryptionHandlerImpl: can't get key for local encryption with level: \(localEncryptedItem.protectionLevel.rawValue)",
+                module: .interactor,
+                severity: .error
+            )
             return nil
         }
         
-        return ItemEncryptedData(
-            itemID: passwordData.passwordID,
-            creationDate: passwordData.creationDate,
-            modificationDate: passwordData.modificationDate,
-            trashedStatus: passwordData.trashedStatus,
-            protectionLevel: passwordData.protectionLevel,
-            contentType: .login,
-            contentVersion: 1,
-            content: contentDataEnc,
-            vaultID: vaultID,
-            tagIds: passwordData.tagIds
-        )
+        let content = localEncryptedItem.content
+        guard let decryptedContent = decryptData(content, using: localKey) else {
+            Log(
+                "EncryptionHandlerImpl: can't decrypt item using local key",
+                module: .interactor,
+                severity: .error
+            )
+            return nil
+        }
+        
+        guard let cloudEncrypted = encryptData(decryptedContent, using: externalKey) else {
+            Log(
+                "EncryptionHandlerImpl: can't encrypt item using external key",
+                module: .interactor,
+                severity: .error
+            )
+            return nil
+        }
+        
+        var result = localEncryptedItem
+        result.updateContent(cloudEncrypted)
+        return result
     }
     
-    // FIXME: Verify
-    func passwordEncyptedToPasswordData(_ passwordEncrypted: ItemEncryptedData) -> PasswordData? {
-        guard let key = mainRepository.cachedExternalKey else {
-            Log("EncryptionHandlerImpl - can't get external key", module: .interactor, severity: .error)
+    func cloudEncryptedItemToLocalEncryptedItem(_ cloudEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {
+        guard let externalKey = mainRepository.cachedExternalKey else {
+            Log("EncryptionHandlerImpl: can't get external key", module: .interactor, severity: .error)
+            return nil
+        }
+        guard let localKey = mainRepository.getKey(
+            isPassword: false,
+            protectionLevel: cloudEncryptedItem.protectionLevel
+        ) else {
+            Log(
+                "EncryptionHandlerImpl: can't get key for local encryption with level: \(cloudEncryptedItem.protectionLevel.rawValue)",
+                module: .interactor,
+                severity: .error
+            )
             return nil
         }
         
-        guard let contentData = decryptData(passwordEncrypted.content, using: key),
-              let content = try? mainRepository.jsonDecoder.decode(PasswordItemContent.self, from: contentData) else {
+        let content = cloudEncryptedItem.content
+        guard let decryptedContent = decryptData(content, using: externalKey) else {
+            Log(
+                "EncryptionHandlerImpl: can't decrypt item using external key",
+                module: .interactor,
+                severity: .error
+            )
             return nil
         }
         
-        let password: Data?
-        if let passwordData = content.password {
-            guard let decrypted = decryptString(passwordData, using: key) else {
-                Log("EncryptionHandlerImpl - can't decrypt passwordData", module: .interactor, severity: .error)
-                return nil
-            }
-            guard let passKey = mainRepository.getKey(isPassword: true, protectionLevel: passwordEncrypted.protectionLevel) else {
-                Log("EncryptionHandlerImpl - can't get pass key for encryption", module: .interactor, severity: .error)
-                return nil
-            }
-            
-            guard let encryptedPassword = encrypt(decrypted, using: passKey) else {
-                Log("EncryptionHandlerImpl - can't encrypt password", module: .interactor, severity: .error)
-                return nil
-            }
-            password = encryptedPassword
-        } else {
-            password = nil
+        guard let cloudEncrypted = encryptData(decryptedContent, using: localKey) else {
+            Log(
+                "EncryptionHandlerImpl: can't encrypt item using local key",
+                module: .interactor,
+                severity: .error
+            )
+            return nil
         }
-
-        return PasswordData(
-            passwordID: passwordEncrypted.itemID,
-            name: content.name,
-            username: content.username,
-            password: password,
-            notes: content.notes,
-            creationDate: passwordEncrypted.creationDate,
-            modificationDate: passwordEncrypted.modificationDate,
-            iconType: content.iconType,
-            trashedStatus: passwordEncrypted.trashedStatus,
-            protectionLevel: passwordEncrypted.protectionLevel,
-            uris: content.uris,
-            tagIds: passwordEncrypted.tagIds
-        )
+        
+        var result = cloudEncryptedItem
+        result.updateContent(cloudEncrypted)
+        return result
     }
     
     func tagToTagEncrypted(_ tag: ItemTagData) -> ItemTagEncryptedData? {
@@ -215,7 +191,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
             updatedAt: vault.updatedAt,
             deviceNames: deviceNames,
             deviceID: deviceID,
-            schemaVersion: Config.cloudSchemaVersion,
+            schemaVersion: currentCloudSchemaVersion,
             seedHash: seedHashHex,
             reference: reference,
             kdfSpec: kdfSpec,
@@ -242,7 +218,8 @@ extension EncryptionHandlerImpl: EncryptionHandler {
                 seedHash: seedHashHex,
                 reference: reference,
                 kdfSpec: kdfSpec,
-                updatedAt: mainRepository.currentDate
+                updatedAt: mainRepository.currentDate,
+                schemaVersion: currentCloudSchemaVersion
             )
         return cloudVault
     }

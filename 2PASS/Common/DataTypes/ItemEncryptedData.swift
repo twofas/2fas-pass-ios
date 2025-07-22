@@ -15,19 +15,19 @@ public struct ItemEncryptedData: Hashable, Identifiable {
         itemID
     }
     
-    public let itemID: PasswordID
+    public let itemID: ItemID
     public let creationDate: Date
     public let modificationDate: Date
     public let trashedStatus: ItemTrashedStatus
     public let protectionLevel: ItemProtectionLevel
     public let contentType: ItemContentType
-    public let content: Data
+    public private(set) var content: Data
     public let contentVersion: Int
     public let vaultID: VaultID
     public let tagIds: [ItemTagID]?
     
     public init(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -48,5 +48,9 @@ public struct ItemEncryptedData: Hashable, Identifiable {
         self.contentType = contentType
         self.vaultID = vaultID
         self.tagIds = tagIds
+    }
+    
+    public mutating func updateContent(_ content: Data) {
+        self.content = content
     }
 }
