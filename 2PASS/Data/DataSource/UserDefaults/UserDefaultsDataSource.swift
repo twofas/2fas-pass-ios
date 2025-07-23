@@ -106,4 +106,7 @@ protocol UserDefaultsDataSource: AnyObject {
     
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
+    
+    var lastKnownSubscriptionPlan: SubscriptionPlan? { get }
+    func setLastKnownSubscriptionPlan(_ plan: SubscriptionPlan)
 }
