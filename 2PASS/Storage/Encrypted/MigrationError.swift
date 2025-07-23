@@ -6,5 +6,6 @@
 
 enum MigrationError: Error {
     case missingDestinationInstance
+    case missingMigrationController
     case missingSourceValue(key: String)
 }

@@ -10,7 +10,7 @@ import Common
 @objc
 final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigrationPolicy {
     
-    let migrationController = MigrationController.current!
+    let migrationController = MigrationController.current
     
     enum PasswordKeys: String {
         case vault
@@ -49,6 +49,10 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
 
         guard let protectionLevelValue = sInstance.primitiveValue(forKey: PasswordKeys.level.rawValue) as? String else {
             throw MigrationError.missingSourceValue(key: PasswordKeys.level.rawValue)
+        }
+        
+        guard let migrationController else {
+            throw MigrationError.missingMigrationController
         }
         
         if let vault = sInstance.value(forKey: PasswordKeys.vault.rawValue) as? NSManagedObject,
