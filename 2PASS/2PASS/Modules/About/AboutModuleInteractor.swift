@@ -5,9 +5,13 @@
 // See LICENSE file for full terms
 
 import Data
+import FirebaseCrashlytics
 
 protocol AboutModuleInteracting: AnyObject {
     var appVersion: String { get }
+    
+    var isCrashReportsEnabled: Bool { get }
+    func setCrashReportsEnabled(_ enabled: Bool)
 }
 
 final class AboutModuleInteractor: AboutModuleInteracting {
@@ -20,5 +24,13 @@ final class AboutModuleInteractor: AboutModuleInteracting {
     
     var appVersion: String {
         systemInteractor.appVersion
+    }
+    
+    var isCrashReportsEnabled: Bool {
+        Crashlytics.crashlytics().isCrashlyticsCollectionEnabled()
+    }
+    
+    func setCrashReportsEnabled(_ enabled: Bool) {
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
     }
 }

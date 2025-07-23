@@ -103,8 +103,8 @@ protocol MainRepository: AnyObject {
     var currentBuildVersion: String { get }
     func setIntroductionAsShown()
     func wasIntroductionShown() -> Bool
-    func setCrashlyticsDisabled(_ disabled: Bool)
-    var isCrashlyticsDisabled: Bool { get }
+    func setCrashlyticsEnabled(_ enabled: Bool)
+    var isCrashlyticsEnabled: Bool { get }
     
     func initialPermissionStateSetChildren(_ children: [PermissionsStateChildDataControllerProtocol])
     func initialPermissionStateInitialize()
