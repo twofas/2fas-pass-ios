@@ -77,4 +77,8 @@ public final class ModuleInteractorFactory {
             loginInteractor: InteractorFactory.shared.loginInteractor()
         )
     }
+    
+    func premiumPromptModuleInteractor() -> PremiumPromptModuleInteracting {
+        PremiumPromptModuleInteractor(systemInteractor: InteractorFactory.shared.systemInteractor())
+    }
 }

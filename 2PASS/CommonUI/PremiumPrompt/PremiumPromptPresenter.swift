@@ -7,6 +7,16 @@
 @Observable
 final class PremiumPromptPresenter {
     
+    var allowsUpgrade: Bool {
+        interactor.allowsUpgrade
+    }
+    
+    private let interactor: PremiumPromptModuleInteracting
+    
+    init(interactor: PremiumPromptModuleInteracting) {
+        self.interactor = interactor
+    }
+    
     @MainActor
     func onUpgrade() {
         NotificationCenter.default.post(name: .presentPaymentScreen, object: nil)
