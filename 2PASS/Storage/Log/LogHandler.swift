@@ -93,7 +93,9 @@ final class LogHandler: LogStorageHandling {
     
     func removeAll() {
         queue.sync {
-            LogEntryEntity.removeAll(on: context)
+            context.performAndWait {
+                LogEntryEntity.removeAll(on: context)
+            }
         }
     }
     

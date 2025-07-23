@@ -101,6 +101,8 @@ protocol MainRepository: AnyObject {
     // MARK: - General
     var currentAppVersion: String { get }
     var currentBuildVersion: String { get }
+    var lastKnownAppVersion: String? { get }
+    func setLastKnownAppVersion(_ version: String)
     func setIntroductionAsShown()
     func wasIntroductionShown() -> Bool
     func setCrashlyticsEnabled(_ enabled: Bool)

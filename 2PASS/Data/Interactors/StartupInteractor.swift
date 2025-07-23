@@ -97,13 +97,16 @@ extension StartupInteractor: StartupInteracting {
         protectionInteractor.hasAppKey
         && protectionInteractor.hasEncryptedEntropy
         && protectionInteractor.hasEncryptionReference
-        && (migrationInteractor.shouldMigrate() || protectionInteractor.hasVault)
+        && (migrationInteractor.requiresReencryptionMigration() || protectionInteractor.hasVault)
         && onboardingInteractor.isOnboardingCompleted
     }
     
     /// Run once on app startup
     func initialize() {
         Log("StartupInteractor: Initializing", module: .interactor)
+        
+        migrationInteractor.migrateIfNeeded()
+        
         if !protectionInteractor.hasDeviceID {
             Log(
                 "StartupInteractor: No Device ID. Clearing all encryption elements and setting new Device ID",
@@ -127,7 +130,7 @@ extension StartupInteractor: StartupInteracting {
     func start() -> StartupInteractorStartResult {
         Log("StartupInteractor: Start", module: .interactor)
         
-        if migrationInteractor.shouldMigrate() {
+        if migrationInteractor.requiresReencryptionMigration() {
             return .login
         } else {
             storageInteractor.loadStore()

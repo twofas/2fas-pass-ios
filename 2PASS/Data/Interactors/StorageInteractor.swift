@@ -50,8 +50,8 @@ extension StorageInteractor: StorageInteracting {
             module: .interactor
         )
         
-        if migrationInteractor.shouldMigrate() {
-            migrationInteractor.migrate()
+        if migrationInteractor.requiresReencryptionMigration() {
+            migrationInteractor.performReencryptionMigration()
         }
         
         let vaults = mainRepository.listEncrypteVaults()
