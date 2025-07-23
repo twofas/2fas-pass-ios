@@ -200,12 +200,12 @@ final class ConnectPullReqestCommunicationPresenter {
         destination = nil
         
         switch result {
-        case .success(let passwordID):
+        case .success(let saveResult):
             if state.isFailure {
                 state = .finish(.failure(ConnectPullReqestCommunicationError.sendPasswordDataFailure))
             } else {
                 state = .connecting
-                actionContinuation?.resume(returning: (true, passwordID))
+                actionContinuation?.resume(returning: (true, saveResult.passwordID))
                 actionContinuation = nil
             }
             
