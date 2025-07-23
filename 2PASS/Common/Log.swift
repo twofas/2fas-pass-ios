@@ -71,6 +71,10 @@ public func LogZoneEnd() {
     LogStorage.markZoneEnd()
 }
 
+public func LogSave() {
+    LogStorage.save()
+}
+
 private extension LogModule {
     var suffix: String {
         switch self {
@@ -110,6 +114,7 @@ public protocol LogStorageHandling: AnyObject {
     func markZoneStart()
     func markZoneEnd()
     func removeAll()
+    func save()
 }
 
 public enum LogPrinter {
@@ -148,6 +153,10 @@ public enum LogStorage {
         storage?.markZoneEnd()
     }
     
+    public static func save() {
+        storage?.save()
+    }
+
     static func store(content: String, timestamp: Date, module: LogModule, severity: LogSeverity) {
         storage?.store(content: content, timestamp: timestamp, module: module.rawValue, severity: severity.rawValue)
     }
