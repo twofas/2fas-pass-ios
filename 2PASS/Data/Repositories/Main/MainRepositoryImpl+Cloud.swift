@@ -38,6 +38,10 @@ extension MainRepositoryImpl {
         cloudRecovery.listVaultsToRecover(completion: completion)
     }
     
+    func cloudDeleteVault(id: VaultID) async throws {
+        try await cloudRecovery.deleteVault(id: id)
+    }
+    
     var lastSuccessCloudSyncDate: Date? {
         userDefaultsDataSource.lastSuccessCloudSyncDate
     }

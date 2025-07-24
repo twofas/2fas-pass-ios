@@ -10,6 +10,7 @@ import Common
 
 protocol VaultRecoveryiCloudVaultSelectionModuleInteracting: AnyObject {
     func listVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func deleteVault(id: VaultID) async throws
 }
 
 final class VaultRecoveryiCloudVaultSelectionModuleInteractor {
@@ -23,5 +24,9 @@ final class VaultRecoveryiCloudVaultSelectionModuleInteractor {
 extension VaultRecoveryiCloudVaultSelectionModuleInteractor: VaultRecoveryiCloudVaultSelectionModuleInteracting {
     func listVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {
         cloudRecoveryInteractor.listVaultsToRecover(completion: completion)
+    }
+    
+    func deleteVault(id: VaultID) async throws {
+        try await cloudRecoveryInteractor.deleteVault(id: id)
     }
 }

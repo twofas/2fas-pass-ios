@@ -9,6 +9,7 @@ import Common
 
 public protocol CloudRecoveryInteracting: AnyObject {
     func listVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func deleteVault(id: VaultID) async throws
 }
 
 final class CloudRecoveryInteractor {
@@ -22,5 +23,9 @@ final class CloudRecoveryInteractor {
 extension CloudRecoveryInteractor: CloudRecoveryInteracting {
     func listVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {
         mainRepository.cloudListVaultsToRecover(completion: completion)
+    }
+    
+    func deleteVault(id: VaultID) async throws {
+        try await mainRepository.cloudDeleteVault(id: id)
     }
 }

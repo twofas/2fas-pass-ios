@@ -52,4 +52,7 @@ final class VaultRecoveryiCloudVaultSelectionModuleInteractorPreview: VaultRecov
             completion(.success([]))
         }
     }
+    
+    func deleteVault(id: VaultID) async throws {
+    }
 }

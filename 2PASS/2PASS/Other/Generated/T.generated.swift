@@ -191,6 +191,12 @@ internal enum T {
   internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app uses the camera. If closing other apps don't help, then reboot the device.")
   /// Error while scanning QR Code
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning QR Code")
+  /// Are you sure you want to remove this backup? You can't restore it later.
+  internal static let cloudVaultDeleteConfirmBody = T.tr("Localizable", "cloud_vault_delete_confirm_body", fallback: "Are you sure you want to remove this backup? You can't restore it later.")
+  /// Remove backup?
+  internal static let cloudVaultDeleteConfirmTitle = T.tr("Localizable", "cloud_vault_delete_confirm_title", fallback: "Remove backup?")
+  /// Vault remove failed
+  internal static let cloudVaultRemovingFailure = T.tr("Localizable", "cloud_vault_removing_failure", fallback: "Vault remove failed")
   /// Add
   internal static let commonAdd = T.tr("Localizable", "common_add", fallback: "Add")
   /// Cancel
@@ -213,8 +219,10 @@ internal enum T {
   internal static let commonDelete = T.tr("Localizable", "common_delete", fallback: "Delete")
   /// Disabled
   internal static let commonDisabled = T.tr("Localizable", "common_disabled", fallback: "Disabled")
-  /// Edit Item
-  internal static let commonEdit = T.tr("Localizable", "common_edit", fallback: "Edit Item")
+  /// Done
+  internal static let commonDone = T.tr("Localizable", "common_done", fallback: "Done")
+  /// Edit
+  internal static let commonEdit = T.tr("Localizable", "common_edit", fallback: "Edit")
   /// Enabled
   internal static let commonEnabled = T.tr("Localizable", "common_enabled", fallback: "Enabled")
   /// Error
@@ -577,6 +585,8 @@ internal enum T {
   internal static let loginDeleteConfirmTitle = T.tr("Localizable", "login_delete_confirm_title", fallback: "Remove Item?")
   /// Remove this Item from 2FAS Pass
   internal static let loginDeleteCta = T.tr("Localizable", "login_delete_cta", fallback: "Remove this Item from 2FAS Pass")
+  /// Edit item
+  internal static let loginEdit = T.tr("Localizable", "login_edit", fallback: "Edit item")
   /// Edit icon
   internal static let loginEditIconCta = T.tr("Localizable", "login_edit_icon_cta", fallback: "Edit icon")
   /// Edit Item
