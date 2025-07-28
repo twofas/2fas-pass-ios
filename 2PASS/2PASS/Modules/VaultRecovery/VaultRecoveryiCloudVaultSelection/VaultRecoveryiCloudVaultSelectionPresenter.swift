@@ -6,12 +6,31 @@
 
 import Foundation
 import Common
+import CommonUI
 
 enum VaultRecoveryiCloudVaultSelectionState: Hashable {
     case loading
     case error(String)
     case list([VaultRecoveryiCloudVaultSelectionEntry])
     case empty
+    
+    var hasVaults: Bool {
+        switch self {
+        case .list(let items):
+            return items.isEmpty == false
+        default:
+            return false
+        }
+    }
+    
+    var vaults: [VaultRecoveryiCloudVaultSelectionEntry]? {
+        switch self {
+        case .list(let items):
+            return items
+        default:
+            return nil
+        }
+    }
 }
 
 struct VaultRecoveryiCloudVaultSelectionEntry: Hashable {
@@ -23,8 +42,22 @@ struct VaultRecoveryiCloudVaultSelectionEntry: Hashable {
     let vaultRawData: VaultRawData
 }
 
+enum VaultRecoveryiCloudVaultSelectionDestination: RouterDestination {
+    case confirmDeletion(onConfirm: Callback)
+    
+    var id: String {
+        switch self {
+        case .confirmDeletion:
+            "confirmDeletion"
+        }
+    }
+}
+
 @Observable
 final class VaultRecoveryiCloudVaultSelectionPresenter {
+    
+    var destination: VaultRecoveryiCloudVaultSelectionDestination?
+    
     private let interactor: VaultRecoveryiCloudVaultSelectionModuleInteracting
     private let jsonDecoder: JSONDecoder
     private let dateFormatter: DateFormatter
@@ -53,6 +86,12 @@ final class VaultRecoveryiCloudVaultSelectionPresenter {
     
     func onSelect(vault: VaultRawData) {
         onSelect(.cloud(vault))
+    }
+    
+    func onDelete(at index: Int) {
+        destination = .confirmDeletion(onConfirm: { [weak self] in
+            self?.deleteVault(at: index)
+        })
     }
 }
 
@@ -89,6 +128,30 @@ private extension VaultRecoveryiCloudVaultSelectionPresenter {
                 canBeUsed: vault.schemaVersion <= Config.cloudSchemaVersion,
                 vaultRawData: vault
             )
+        }
+    }
+    
+    func deleteVault(at index: Int) {
+        guard var vaults = self.state.vaults else {
+            return
+        }
+        
+        let vaultId = vaults[index].id
+        vaults.remove(at: index)
+        
+        if vaults.isEmpty {
+            self.state = .empty
+        } else {
+            self.state = .list(vaults)
+        }
+        
+        Task { @MainActor in
+            do {
+                try await self.interactor.deleteVault(id: vaultId)
+            } catch {
+                ToastPresenter.shared.present(T.cloudVaultRemovingFailure, style: .failure)
+                self.fetchList()
+            }
         }
     }
 }

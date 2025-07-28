@@ -14,7 +14,7 @@ struct PasswordListActionFormatStyle: FormatStyle {
         case .copyPassword:
             T.loginViewActionCopyPassword
         case .edit:
-            T.commonEdit
+            T.loginEdit
         case .viewDetails:
             T.loginViewActionViewDetails
         case .goToURI:

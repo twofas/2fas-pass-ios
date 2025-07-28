@@ -10,6 +10,7 @@ import Common
 
 public protocol CloudRecovering: AnyObject {
     func listVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func deleteVault(id: VaultID) async throws
 }
 
 public final class CloudRecovery: CloudRecovering {
@@ -47,7 +48,17 @@ public final class CloudRecovery: CloudRecovering {
         queryOperation.queryResultBlock = queryResultBlock
 
         database.add(queryOperation)
-
+    }
+    
+    public func deleteVault(id: VaultID) async throws {
+        Log("CloudKit - deleting zone", module: .cloudSync)
+        do {
+            try await database.deleteRecordZone(withID: .from(vaultID: id))
+            Log("CloudKit - deleting zone - success", module: .cloudSync)
+        } catch {
+            Log("CloudKit - deleting zone - handling error: \(error)", module: .cloudSync)
+            throw error
+        }
     }
     
     func recordMatchedBlock(_ recordID: CKRecord.ID, _ result: Result<CKRecord, any Error>) -> Void {

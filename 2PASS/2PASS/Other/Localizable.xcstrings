@@ -953,6 +953,39 @@
         }
       }
     },
+    "cloud_vault_delete_confirm_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to remove this backup? You can't restore it later."
+          }
+        }
+      }
+    },
+    "cloud_vault_delete_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove backup?"
+          }
+        }
+      }
+    },
+    "cloud_vault_removing_failure" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault remove failed"
+          }
+        }
+      }
+    },
     "common_add" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1074,13 +1107,24 @@
         }
       }
     },
+    "common_done" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
     "common_edit" : {
       "extractionState" : "manual",
       "localizations" : {
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Item"
+            "value" : "Edit"
           }
         }
       }
@@ -2995,6 +3039,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove this Item from 2FAS Pass"
+          }
+        }
+      }
+    },
+    "login_edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit item"
           }
         }
       }

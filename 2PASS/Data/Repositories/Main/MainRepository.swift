@@ -430,6 +430,7 @@ protocol MainRepository: AnyObject {
     func clearBackup()
     func synchronizeBackup()
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func cloudDeleteVault(id: VaultID) async throws
     var lastSuccessCloudSyncDate: Date? { get }
     func setLastSuccessCloudSyncDate(_ date: Date)
     func clearLastSuccessCloudSyncDate()
