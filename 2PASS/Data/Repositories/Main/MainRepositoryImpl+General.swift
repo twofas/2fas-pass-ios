@@ -188,4 +188,8 @@ extension MainRepositoryImpl {
             return copyFile()
         }
     }
+    
+    var is2FASAuthInstalled: Bool {
+        UIApplication.shared.canOpenURL(Config.twofasAuthCheckLink)
+    }
 }

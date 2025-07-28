@@ -6,6 +6,7 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 struct SettingsView: View {
     
@@ -113,6 +114,22 @@ struct SettingsView: View {
                         SettingsRowView(
                             icon: .transferPasswords,
                             title: T.settingsEntryTransferFromOtherApps.localizedKey
+                        )
+                    }
+                }
+                
+                Section(T.settingsManageTokensTitle) {
+                    Button {
+                        if presenter.is2FASAuthInstalled {
+                            openURL(Config.twofasAuthOpenLink)
+                        } else {
+                            openURL(Config.twofasAuthAppStoreLink)
+                        }
+                    } label: {
+                        SettingsRowView(
+                            icon: .twoFASAuth,
+                            title: presenter.is2FASAuthInstalled ? T.settings2fasOpen.localizedKey : T.settings2fasGet.localizedKey,
+                            actionIcon: .link
                         )
                     }
                 }

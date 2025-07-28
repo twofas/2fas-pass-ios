@@ -959,7 +959,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Are you sure you want to remove this backup? You can't restore it later."
+            "value" : "Are you sure you want to delete this backup? You cannot restore it later."
           }
         }
       }
@@ -970,7 +970,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove backup?"
+            "value" : "Delete backup?"
           }
         }
       }
@@ -981,7 +981,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vault remove failed"
+            "value" : "Vault deletion failed"
           }
         }
       }
@@ -6233,6 +6233,28 @@
         }
       }
     },
+    "settings_2fas_get" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get 2FAS Auth"
+          }
+        }
+      }
+    },
+    "settings_2fas_open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open 2FAS Auth"
+          }
+        }
+      }
+    },
     "settings_about" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7252,6 +7274,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose Security Tier"
+          }
+        }
+      }
+    },
+    "settings_manage_tokens_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage 2FA Tokens"
           }
         }
       }

@@ -132,6 +132,8 @@ protocol MainRepository: AnyObject {
     func fileExists(at url: URL) -> Bool
     func copyFileToLocalIfNeeded(from url: URL) -> URL?
     
+    var is2FASAuthInstalled: Bool { get }
+    
     // MARK: - Encryption
     var deviceID: UUID? { get }
     func saveDeviceID(_ deviceID: UUID)
