@@ -39,22 +39,30 @@ struct PremiumPromptView: View {
             
             Spacer(minLength: 0)
             
-            VStack(spacing: Spacing.s) {
-                Button(T.paywallNoticeCta.localizedKey) {
-                    dismiss()
-                    
-                    Task {
-                        presenter.onUpgrade()
+            if presenter.allowsUpgrade {
+                VStack(spacing: Spacing.s) {
+                    Button(T.paywallNoticeCta.localizedKey) {
+                        dismiss()
+                        
+                        Task {
+                            presenter.onUpgrade()
+                        }
                     }
+                    .buttonStyle(.filled)
+                    
+                    Button(T.commonCancel.localizedKey) {
+                        dismiss()
+                    }
+                    .buttonStyle(.twofasBorderless)
+                }
+                .controlSize(.large)
+            } else {
+                Button(T.commonClose.localizedKey) {
+                    dismiss()
                 }
                 .buttonStyle(.filled)
-                
-                Button(T.commonCancel.localizedKey) {
-                    dismiss()
-                }
-                .buttonStyle(.twofasBorderless)
+                .controlSize(.large)
             }
-            .controlSize(.large)
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal, Spacing.xl)
@@ -68,9 +76,9 @@ struct PremiumPromptView: View {
     Color.white
         .sheet(isPresented: .constant(true)) {
             PremiumPromptView(
-                title: Text("Can't Transfer Items"),
-                description: Text("You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached"),
-                presenter: .init()
+                title: Text(T.paywallNoticeBrowsersLimitTitle.localizedKey),
+                description: Text(T.paywallNoticeBrowsersLimitMsg.localizedKey),
+                presenter: .init(interactor: ModuleInteractorFactory.shared.premiumPromptModuleInteractor())
             )
             .presentationDetents([.height(PremiumPromptViewConstants.sheetHeight)])
         }
