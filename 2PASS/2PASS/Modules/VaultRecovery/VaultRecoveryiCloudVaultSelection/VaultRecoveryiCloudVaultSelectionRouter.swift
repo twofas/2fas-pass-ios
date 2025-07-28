@@ -7,7 +7,7 @@
 import SwiftUI
 import CommonUI
 
-struct VaultRecoveryiCloudVaultSelectionRouter {
+struct VaultRecoveryiCloudVaultSelectionRouter: Router {
     
     @ViewBuilder
     static func buildView(onSelect: @escaping (VaultRecoveryData) -> Void) -> some View {
@@ -18,6 +18,23 @@ struct VaultRecoveryiCloudVaultSelectionRouter {
         
         NavigationStack {
             VaultRecoveryiCloudVaultSelectionView(presenter: presenter)
+        }
+    }
+    
+    func routingType(for destination: VaultRecoveryiCloudVaultSelectionDestination?) -> RoutingType? {
+        switch destination {
+        case .confirmDeletion:
+            return .alert(title: T.cloudVaultDeleteConfirmTitle, message: T.cloudVaultDeleteConfirmBody)
+        case nil:
+            return nil
+        }
+    }
+    
+    func view(for destination: VaultRecoveryiCloudVaultSelectionDestination) -> some View {
+        switch destination {
+        case .confirmDeletion(let onConfirm):
+            Button(T.knownBrowserDeleteButton.localizedKey, role: .destructive, action: onConfirm)
+            Button(T.commonCancel.localizedKey, role: .cancel, action: {})
         }
     }
 }

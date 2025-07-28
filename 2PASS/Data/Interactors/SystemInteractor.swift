@@ -10,6 +10,8 @@ public protocol SystemInteracting: AnyObject {
     var appVersion: String { get }
     var buildVersion: String { get }
     
+    var isMainAppProcess: Bool { get }
+    
     func copyToClipboard(_ str: String)
     
     var syncHasError: Bool { get }
@@ -37,6 +39,10 @@ extension SystemInteractor: SystemInteracting {
     
     var buildVersion: String {
         mainRepository.currentBuildVersion
+    }
+    
+    var isMainAppProcess: Bool {
+        mainRepository.isMainAppProcess
     }
     
     func copyToClipboard(_ str: String) {

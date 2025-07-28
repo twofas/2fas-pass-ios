@@ -92,19 +92,8 @@ public final class CoreDataStack {
     }()
     
     private lazy var storeUrl: URL = {
-        if storeInGroup {
-            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
-                .appendingPathComponent("\(name).sqlite")
-        } else {
-            getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
-        }
+        CoreDataStack.storeUrl(forName: name, storeInGroup: storeInGroup)
     }()
-    
-    private func getDocumentsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let documentsDirectory = paths[0]
-        return documentsDirectory
-    }
     
     public var context: NSManagedObjectContext { persistentContainer.viewContext }
     
@@ -180,6 +169,45 @@ public final class CoreDataStack {
         // swiftlint:disable line_length
         presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past")
         // swiftlint:enable line_length
+    }
+}
+
+extension CoreDataStack {
+    
+    public static func removeStore(name: String, storeInGroup: Bool = false) throws {
+        let storeURL = storeUrl(forName: name, storeInGroup: storeInGroup)
+        
+        let fileManager = FileManager.default
+
+        if fileManager.fileExists(atPath: storeURL.path()) {
+            try fileManager.removeItem(at: storeURL)
+        }
+        
+        let shmURL = storeURL.deletingPathExtension().appendingPathExtension("sqlite-shm")
+        let walURL = storeURL.deletingPathExtension().appendingPathExtension("sqlite-wal")
+        
+        if fileManager.fileExists(atPath: shmURL.path) {
+            try fileManager.removeItem(at: shmURL)
+        }
+        
+        if fileManager.fileExists(atPath: walURL.path) {
+            try fileManager.removeItem(at: walURL)
+        }
+    }
+    
+    fileprivate static func storeUrl(forName name: String, storeInGroup: Bool) -> URL {
+        if storeInGroup {
+            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
+                .appendingPathComponent("\(name).sqlite")
+        } else {
+            getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
+        }
+    }
+    
+    private static func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        return documentsDirectory
     }
 }
 

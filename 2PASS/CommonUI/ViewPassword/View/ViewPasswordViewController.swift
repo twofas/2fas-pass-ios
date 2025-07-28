@@ -15,7 +15,7 @@ final class ViewPasswordViewController: UIViewController {
         
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: T.commonEdit,
+            title: T.loginEdit,
             style: .plain,
             target: self,
             action: #selector(editAction)

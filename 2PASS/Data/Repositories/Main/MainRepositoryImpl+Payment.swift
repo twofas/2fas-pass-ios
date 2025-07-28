@@ -9,7 +9,11 @@ import RevenueCat
 
 extension MainRepositoryImpl {
     var paymentSubscriptionPlan: SubscriptionPlan {
-        userDefaultsDataSource.debugSubscriptionPlan ?? _subscriptionPlan
+        if isMainAppProcess {
+            userDefaultsDataSource.debugSubscriptionPlan ?? _subscriptionPlan
+        } else {
+            userDefaultsDataSource.lastKnownSubscriptionPlan ?? .free
+        }
     }
     
     var paymentUserId: String? {
@@ -131,6 +135,7 @@ private extension MainRepositoryImpl {
             _subscriptionPlan = .free
         }
         
+        userDefaultsDataSource.setLastKnownSubscriptionPlan(_subscriptionPlan)
         notificationCenter.post(name: .paymentStatusChanged, object: nil)
     }
     

@@ -17,6 +17,9 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
     @Environment(\.dismiss)
     private var dismiss
     
+    @State
+    private var editMode: EditMode = .inactive
+    
     var body: some View {
         ZStack {
             switch presenter.state {
@@ -56,40 +59,93 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
                     dismiss()
                 }
             }
+            
+            if presenter.state.hasVaults {
+                ToolbarItem(placement: .primaryAction) {
+                    switch editMode {
+                    case .inactive:
+                        Button(T.commonEdit.localizedKey) {
+                            withAnimation {
+                                editMode = .active
+                            }
+                        }
+                    case .active:
+                        Button(T.commonDone.localizedKey) {
+                            withAnimation {
+                                editMode = .inactive
+                            }
+                        }
+                    default:
+                        EmptyView()
+                    }
+                }
+            }
         }
         .onAppear {
             presenter.onAppear()
         }
+        .router(router: VaultRecoveryiCloudVaultSelectionRouter(), destination: $presenter.destination)
     }
         
     @ViewBuilder
     private func list(for vaults: [VaultRecoveryiCloudVaultSelectionEntry]) -> some View {
         List {
-            ForEach(Array(vaults.enumerated()), id: \.1) { index, vault in
-                Section {
+            VaultListContentView(vaults: vaults, presenter: presenter)
+        }
+        .environment(\.editMode, $editMode)
+        .listSectionSpacing(Spacing.s)
+        .listStyle(.insetGrouped)
+    }
+}
+
+private struct VaultListContentView: View {
+    
+    let vaults: [VaultRecoveryiCloudVaultSelectionEntry]
+    
+    let presenter: VaultRecoveryiCloudVaultSelectionPresenter
+    
+    @Environment(\.editMode)
+    private var editMode
+    
+    @State
+    private var showDeleteConfirmation = false
+    
+    var body: some View {
+        ForEach(Array(vaults.enumerated()), id: \.1) { index, vault in
+            Section {
+                Button {
+                    presenter.onSelect(vault: vault.vaultRawData)
+                } label: {
+                    VaultRecoveryCell(
+                        vaultID: vault.id.uuidString,
+                        deviceName: vault.deviceName,
+                        updatedAt: vault.updatedAt,
+                        canBeUsed: vault.canBeUsed
+                    )
+                }
+                .frame(maxWidth: .infinity)
+                .disabled(!vault.canBeUsed || editMode?.wrappedValue.isEditing == true)
+                .swipeActions(edge: .trailing) {
                     Button {
-                        presenter.onSelect(vault: vault.vaultRawData)
+                        presenter.onDelete(at: index)
                     } label: {
-                        VaultRecoveryCell(
-                            vaultID: vault.id.uuidString,
-                            deviceName: vault.deviceName,
-                            updatedAt: vault.updatedAt,
-                            canBeUsed: vault.canBeUsed
-                        )
+                        Label(T.knownBrowserDeleteButton.localizedKey, systemImage: "trash")
                     }
-                    .frame(maxWidth: .infinity)
-                    .disabled(!vault.canBeUsed)
-                    
-                } header: {
-                    if index == 0 {
-                        Text(T.restoreCloudFilesHeader.localizedKey)
-                            .padding(.top, Spacing.s)
-                    }
+                    .tint(.danger500)
+                }
+                
+            } header: {
+                if index == 0 {
+                    Text(T.restoreCloudFilesHeader.localizedKey)
+                        .padding(.top, Spacing.s)
                 }
             }
         }
-        .listSectionSpacing(Spacing.s)
-        .listStyle(.insetGrouped)
+        .onDelete { indicies in
+            if let index = indicies.first {
+                presenter.onDelete(at: index)
+            }
+        }
     }
 }
 

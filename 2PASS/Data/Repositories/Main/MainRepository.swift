@@ -432,6 +432,7 @@ protocol MainRepository: AnyObject {
     func clearBackup()
     func synchronizeBackup()
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func cloudDeleteVault(id: VaultID) async throws
     var lastSuccessCloudSyncDate: Date? { get }
     func setLastSuccessCloudSyncDate(_ date: Date)
     func clearLastSuccessCloudSyncDate()
@@ -575,6 +576,7 @@ protocol MainRepository: AnyObject {
     // MARK: - Logs
     func listAllLogs() -> [LogEntry]
     func removeAllLogs()
+    func removeOldStoreLogs()
     
     // MARK: - WebDAV Backup
     func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)

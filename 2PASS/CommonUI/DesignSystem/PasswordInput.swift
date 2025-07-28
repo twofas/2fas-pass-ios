@@ -120,8 +120,6 @@ public struct PasswordContentInput: View {
                 RevealedPasswordTextField(text: $password, isColorized: isColorized)
                     .focused($focusedField, equals: .unsecure)
                     .fontDesign(password.isEmpty ? .default : .monospaced)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
                     .introspect(.textField, on: .iOS(.v17, .v18)) { textField in
                         introspectTextField(textField)
                     }
@@ -163,8 +161,13 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
         textField.autocapitalizationType = .none
-        textField.delegate = context.coordinator
+        textField.autocorrectionType = .no
+        textField.spellCheckingType = .no
+        textField.smartQuotesType = .no
+        textField.smartDashesType = .no
+        textField.smartInsertDeleteType = .no
         
+        textField.delegate = context.coordinator
         textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)

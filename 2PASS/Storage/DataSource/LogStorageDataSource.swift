@@ -11,4 +11,6 @@ public protocol LogStorageDataSource: LogStorageHandling {
     var storageError: ((String) -> Void)? { get set }
     
     func listAll() -> [LogEntry]
+    func removeOldStoreLogs()
+    func save()
 }
