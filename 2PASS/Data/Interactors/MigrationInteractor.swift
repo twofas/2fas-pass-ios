@@ -35,9 +35,11 @@ final class MigrationInteractor: MigrationInteracting {
         let appVersion = mainRepository.currentAppVersion
         
         if mainRepository.lastKnownAppVersion == nil { // Below 1.1.0 or first app run
-            Log("Start app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
-            mainRepository.removeAllLogs()
-            Log("Finish app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
+            if mainRepository.isMainAppProcess {
+                Log("Start app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
+                mainRepository.removeOldStoreLogs()
+                Log("Finish app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
+            }
         } else {
             Log("Already migrated for \(appVersion, privacy: .public) version", module: .migration, severity: .info)
         }

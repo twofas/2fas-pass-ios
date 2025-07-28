@@ -573,6 +573,7 @@ protocol MainRepository: AnyObject {
     // MARK: - Logs
     func listAllLogs() -> [LogEntry]
     func removeAllLogs()
+    func removeOldStoreLogs()
     
     // MARK: - WebDAV Backup
     func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)

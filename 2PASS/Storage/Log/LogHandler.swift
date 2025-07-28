@@ -122,7 +122,7 @@ final class LogHandler: LogStorageHandling {
     }
     
     @objc(save)
-    private func save() {
+    func save() {
         queue.async(flags: .barrier) { [weak self] in
             self?.saveCounter = 0
             self?.zoneSaveCounter = 0
