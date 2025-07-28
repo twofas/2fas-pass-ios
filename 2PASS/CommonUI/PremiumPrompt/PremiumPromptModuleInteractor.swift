@@ -6,11 +6,11 @@
 
 import Data
 
-protocol PremiumPromptModuleInteracting {
+protocol PremiumPromptModuleInteracting: AnyObject {
     var allowsUpgrade: Bool { get }
 }
 
-class PremiumPromptModuleInteractor: PremiumPromptModuleInteracting {
+final class PremiumPromptModuleInteractor: PremiumPromptModuleInteracting {
     
     let systemInteractor: SystemInteracting
     

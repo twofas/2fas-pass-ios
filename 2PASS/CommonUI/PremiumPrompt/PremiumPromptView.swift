@@ -76,8 +76,8 @@ struct PremiumPromptView: View {
     Color.white
         .sheet(isPresented: .constant(true)) {
             PremiumPromptView(
-                title: Text("Can't Transfer Items"),
-                description: Text("You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached You have reached"),
+                title: Text(T.paywallNoticeBrowsersLimitTitle.localizedKey),
+                description: Text(T.paywallNoticeBrowsersLimitMsg.localizedKey),
                 presenter: .init(interactor: ModuleInteractorFactory.shared.premiumPromptModuleInteractor())
             )
             .presentationDetents([.height(PremiumPromptViewConstants.sheetHeight)])
