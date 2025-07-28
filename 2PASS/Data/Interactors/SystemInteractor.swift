@@ -18,6 +18,8 @@ public protocol SystemInteracting: AnyObject {
     func positiveFeedback()
     func negativeFeedback()
     func warningFeedback()
+    
+    var is2FASAuthInstalled: Bool { get }
 }
 
 final class SystemInteractor {
@@ -59,5 +61,9 @@ extension SystemInteractor: SystemInteracting {
     
     func warningFeedback() {
         mainRepository.warningFeedback()
+    }
+    
+    var is2FASAuthInstalled: Bool {
+        mainRepository.is2FASAuthInstalled
     }
 }

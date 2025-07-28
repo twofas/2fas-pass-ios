@@ -18,6 +18,7 @@ protocol SettingsModuleInteracting: AnyObject {
     var isPushNotificationsEnabled: Bool { get }
     var didAutoFillStatusChanged: NotificationCenter.Notifications { get }
     var didPushNotificationsStatusChanged: NotificationCenter.Notifications { get }
+    var is2FASAuthInstalled: Bool { get }
 }
 
 final class SettingsModuleInteractor {
@@ -103,6 +104,10 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
     
     var didPushNotificationsStatusChanged: NotificationCenter.Notifications {
         pushNotificationsInteractor.didStatusChanged
+    }
+    
+    var is2FASAuthInstalled: Bool {
+        systemInteractor.is2FASAuthInstalled
     }
     
     @objc

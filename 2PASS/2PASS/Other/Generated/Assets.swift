@@ -99,6 +99,7 @@ internal enum Asset {
   internal static let tiersHelpHeader = ImageAsset(name: "tiers.help.header")
   internal static let topSecretTierFigure = ImageAsset(name: "top.secret.tier.figure")
   internal static let transferIcon = ImageAsset(name: "transfer.icon")
+  internal static let twoFASAuth = ImageAsset(name: "twoFASAuth")
   internal static let vaultDecryptionKitArrow = ImageAsset(name: "vault.decryption.kit.arrow")
   internal static let vaultDecryptionKitDocumentSeed = ImageAsset(name: "vault.decryption.kit.document.seed")
   internal static let vaultDecryptionKitDocumentSeedMasterkey = ImageAsset(name: "vault.decryption.kit.document.seed.masterkey")

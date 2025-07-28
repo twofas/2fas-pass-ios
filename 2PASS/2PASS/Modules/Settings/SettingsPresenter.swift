@@ -37,6 +37,10 @@ final class SettingsPresenter {
     private(set) var hasSyncError: Bool = false
     private(set) var isPaidUser = false
     
+    var is2FASAuthInstalled: Bool {
+        interactor.is2FASAuthInstalled
+    }
+    
     var version: String {
         interactor.appVersion
     }

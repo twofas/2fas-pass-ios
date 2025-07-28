@@ -116,6 +116,7 @@
 		C27F0BE92CC437FF00F5688F /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = C27F0BE82CC437FF00F5688F /* DeviceKit */; };
 		C28231132C84A6D100AAE7A0 /* EnterWordsFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231122C84A6D100AAE7A0 /* EnterWordsFlowController.swift */; };
 		C282311A2C84F29B00AAE7A0 /* EnterWordsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28231192C84F29B00AAE7A0 /* EnterWordsViewController.swift */; };
+		C286E9A82E3778050019CF79 /* icon_64.png in Resources */ = {isa = PBXBuildFile; fileRef = C286E9A72E3778050019CF79 /* icon_64.png */; };
 		C288423F2CFCF89B00FCFF2D /* Backup.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2B0FC1B2CE91C4D005CFADD /* Backup.framework */; };
 		C288424C2CFD239200FCFF2D /* MainModuleInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C288424B2CFD238E00FCFF2D /* MainModuleInteractor.swift */; };
 		C28A00FE2BF409A000BAF976 /* Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C267F9312BE2DDFF005F7B89 /* Common.framework */; platformFilter = ios; };
@@ -392,6 +393,7 @@
 		C27D99FC2BD596630008203F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C28231122C84A6D100AAE7A0 /* EnterWordsFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsFlowController.swift; sourceTree = "<group>"; };
 		C28231192C84F29B00AAE7A0 /* EnterWordsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsViewController.swift; sourceTree = "<group>"; };
+		C286E9A72E3778050019CF79 /* icon_64.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_64.png; sourceTree = "<group>"; };
 		C288424B2CFD238E00FCFF2D /* MainModuleInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainModuleInteractor.swift; sourceTree = "<group>"; };
 		C28A01062BF417C900BAF976 /* InMemoryStorageDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryStorageDataSource.swift; sourceTree = "<group>"; };
 		C28E9E292C1CE436008B99F8 /* MainFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainFlowController.swift; sourceTree = "<group>"; };
@@ -814,6 +816,7 @@
 		C25D38D02BF94E5F00F95A55 /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				C286E9A62E3776EE0019CF79 /* FileIcons */,
 				5402A74F2D63A2390092765B /* ios-onboarding-01-dark.json */,
 				5402A7502D63A2390092765B /* ios-onboarding-01-light.json */,
 				5402A7512D63A2390092765B /* ios-onboarding-02-dark.json */,
@@ -951,6 +954,14 @@
 				540D6A8E2E15C64D000834DE /* Prod.entitlements */,
 			);
 			path = 2PASS;
+			sourceTree = "<group>";
+		};
+		C286E9A62E3776EE0019CF79 /* FileIcons */ = {
+			isa = PBXGroup;
+			children = (
+				C286E9A72E3778050019CF79 /* icon_64.png */,
+			);
+			path = FileIcons;
 			sourceTree = "<group>";
 		};
 		C288424A2CFD237E00FCFF2D /* Interactor */ = {
@@ -1557,6 +1568,7 @@
 				5402A7592D63A2390092765B /* ios-onboarding-01-light.json in Resources */,
 				5402A75A2D63A2390092765B /* ios-onboarding-02-dark.json in Resources */,
 				5402A75B2D63A2390092765B /* ios-onboarding-03-dark.json in Resources */,
+				C286E9A82E3778050019CF79 /* icon_64.png in Resources */,
 				5402A75C2D63A2390092765B /* ios-onboarding-02-light.json in Resources */,
 				5402A75E2D63A2390092765B /* ios-onboarding-03-light.json in Resources */,
 				5402A75F2D63A2390092765B /* ios-tick-light.json in Resources */,

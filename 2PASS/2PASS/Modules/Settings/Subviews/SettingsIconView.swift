@@ -51,6 +51,7 @@ enum SettingsIcon {
     case lastPass
     case proton
     case applePasswords
+    case twoFASAuth
 }
 
 enum SettingIconStyle {
@@ -158,7 +159,7 @@ struct SettingsIconView: View {
         case .generate:
             Image(systemName: "plus.square.on.square")
         case .discord:
-            Image("discord.icon")
+            Image(.discordIcon)
         case .invite:
             Image(systemName: "plus.circle.fill")
         case .privacyPolicy:
@@ -199,6 +200,8 @@ struct SettingsIconView: View {
             Image(.protonIcon)
         case .applePasswords:
             Image(.applePasswordsIcon)
+        case .twoFASAuth:
+            Image(.twoFASAuth)
         }
     }
     
