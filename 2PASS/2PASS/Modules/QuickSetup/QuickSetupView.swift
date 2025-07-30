@@ -97,16 +97,7 @@ struct QuickSetupView: View {
         .sensoryFeedback(.selection, trigger: appearFeedback)
         .toast(Text(T.quickSetupIcloudSyncFailure.localizedKey), isPresented: $presenter.showVaultSyncFailure, style: .failure)
         .task {
-            await presenter.observeAutoFillStatusChanged()
-        }
-        .task {
-            await presenter.observeCloudStatusChanged()
-        }
-        .task {
-            await presenter.observePremiumPlanPrompt()
-        }
-        .onAppear {
-            presenter.onAppear()
+            await presenter.onAppear()
         }
         .onAppear {
             Task {

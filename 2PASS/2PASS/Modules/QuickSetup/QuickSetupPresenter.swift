@@ -62,8 +62,20 @@ final class QuickSetupPresenter {
         self.defaultSecurityTier = interactor.defaultSecurityTier
     }
     
-    func onAppear() {
+    func onAppear() async {
         defaultSecurityTier = interactor.defaultSecurityTier
+
+        await withTaskGroup() { group in
+            group.addTask {
+                await self.observePremiumPlanPrompt()
+            }
+            group.addTask {
+                await self.observeAutoFillStatusChanged()
+            }
+            group.addTask {
+                await self.observeCloudStatusChanged()
+            }
+        }
     }
     
     func onChangeDefaultSecurityTier() {
@@ -82,19 +94,19 @@ final class QuickSetupPresenter {
         interactor.finishQuickSetup()
     }
     
-    func observeAutoFillStatusChanged() async {
+    private func observeAutoFillStatusChanged() async {
         for await _ in interactor.didAutoFillStatusChanged {
             _autofillIsEnabled = interactor.isAutoFillEnabled
         }
     }
     
-    func observePremiumPlanPrompt() async {
-        for await _ in NotificationCenter.default.notifications(named: .presentSyncPremiumNeededScreen) {
+    private func observePremiumPlanPrompt() async {
+        for await _ in interactor.syncPremiumNeededScreen {
             destination = .syncNotAllowed
         }
     }
     
-    func observeCloudStatusChanged() async {
+    private func observeCloudStatusChanged() async {
         for await _ in interactor.didCloudStatusChanged {
             switch interactor.cloudState {
             case .disabledNotAvailable:

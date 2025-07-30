@@ -29,6 +29,7 @@ protocol QuickSetupModuleInteracting: AnyObject {
     func turnOffCloud()
     
     var didCloudStatusChanged: NotificationCenter.Notifications { get }
+    var syncPremiumNeededScreen: NotificationCenter.Notifications { get }
     
     // MARK: Security Tier
     
@@ -93,6 +94,10 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
     
     var didCloudStatusChanged: NotificationCenter.Notifications {
         NotificationCenter.default.notifications(named: .cloudStateChanged, object: nil)
+    }
+    
+    var syncPremiumNeededScreen: NotificationCenter.Notifications {
+        NotificationCenter.default.notifications(named: .presentSyncPremiumNeededScreen)
     }
     
     var defaultSecurityTier: ItemProtectionLevel {
