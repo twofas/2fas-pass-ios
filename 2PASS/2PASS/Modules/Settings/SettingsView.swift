@@ -189,7 +189,8 @@ struct SettingsView: View {
                     }
                 }
                 
-                #if DEBUG
+                #if PROD
+                #else
                 Section {
                     Button {
                         presenter.onDebug()
