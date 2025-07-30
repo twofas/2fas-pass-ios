@@ -14,6 +14,14 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.isConnectOnboardingCompleted
     }
     
+    var shouldShowQuickSetup: Bool {
+        userDefaultsDataSource.shouldShowQuickSetup
+    }
+    
+    func setShouldShowQuickSetup(_ value: Bool) {
+        userDefaultsDataSource.setShouldShowQuickSetup(value)
+    }
+    
     func finishOnboarding() {
         userDefaultsDataSource.onboardingCompleted(true)
     }

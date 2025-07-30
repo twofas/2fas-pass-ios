@@ -11,6 +11,7 @@ import Common
 protocol MainModuleInteracting: AnyObject {
     var updateBadge: ((Bool) -> Void)? { get set }
     var paymentScreen: Callback? { get set }
+    var shouldShowQuickSetup: Bool { get }
     func viewIsVisible()
 }
 
@@ -23,6 +24,7 @@ final class MainModuleInteractor {
     private let webDAVStateInteractor: WebDAVStateInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
     private let systemInteractor: SystemInteracting
+    private let quickSetupInteractor: QuickSetupInteracting
     private let notificationCenter: NotificationCenter
     
     private var syncErroredLately = false
@@ -34,13 +36,15 @@ final class MainModuleInteractor {
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
         webDAVStateInteractor: WebDAVStateInteracting,
         cloudSyncInteractor: CloudSyncInteracting,
-        systemInteractor: SystemInteracting
+        systemInteractor: SystemInteracting,
+        quickSetupInteractor: QuickSetupInteracting
     ) {
         self.webDAVBackupInteractor = webDAVBackupInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
         self.webDAVStateInteractor = webDAVStateInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
         self.systemInteractor = systemInteractor
+        self.quickSetupInteractor = quickSetupInteractor
         self.notificationCenter = NotificationCenter.default
         
         cloudSyncInteractor.setup(takeoverVault: false)
@@ -88,6 +92,11 @@ final class MainModuleInteractor {
 }
 
 extension MainModuleInteractor: MainModuleInteracting {
+    
+    var shouldShowQuickSetup: Bool {
+        quickSetupInteractor.shouldShowQuickSetup
+    }
+    
     func viewIsVisible() {
         Log("MainModuleInteractor - Main is visible", module: .moduleInteractor)
         sync()

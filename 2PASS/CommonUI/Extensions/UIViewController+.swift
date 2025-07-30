@@ -7,6 +7,15 @@
 import UIKit
 
 public extension UIViewController {
+    
+    var topViewController: UIViewController {
+        var top = self
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
+    }
+    
     func configureAsModal() {
         modalPresentationStyle = .formSheet
         isModalInPresentation = true

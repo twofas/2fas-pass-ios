@@ -457,18 +457,10 @@ internal enum T {
   internal static func generalServerErrorDetails(_ p1: Any) -> String {
     return T.tr("Localizable", "general_server_error_details", String(describing: p1), fallback: "Server error: %@")
   }
-  /// Open Settings
-  internal static let homeEmptyImportCta = T.tr("Localizable", "home_empty_import_cta", fallback: "Open Settings")
-  /// Do you want to import a backup file or transfer data from another password manager?
-  internal static let homeEmptyImportDescription = T.tr("Localizable", "home_empty_import_description", fallback: "Do you want to import a backup file or transfer data from another password manager?")
-  /// Tap the + button to begin
-  internal static let homeEmptyMsg = T.tr("Localizable", "home_empty_msg", fallback: "Tap the + button to begin")
-  /// Tap %@ to begin
-  internal static func homeEmptyMsgIos(_ p1: Any) -> String {
-    return T.tr("Localizable", "home_empty_msg_ios %@", String(describing: p1), fallback: "Tap %@ to begin")
-  }
-  /// Add first Item
-  internal static let homeEmptyTitle = T.tr("Localizable", "home_empty_title", fallback: "Add first Item")
+  /// Start with quick setup
+  internal static let homeEmptyImportCta = T.tr("Localizable", "home_empty_import_cta", fallback: "Start with quick setup")
+  /// No items yet
+  internal static let homeEmptyTitle = T.tr("Localizable", "home_empty_title", fallback: "No items yet")
   /// Items
   internal static let homeTitle = T.tr("Localizable", "home_title", fallback: "Items")
   /// Master Password
@@ -875,6 +867,32 @@ internal enum T {
   }
   /// 2FAS Pass request
   internal static let pushBrowserRequestTitle = T.tr("Localizable", "push_browser_request_title", fallback: "2FAS Pass request")
+  /// Select 2FAS Pass to automatically fill in Item details in other apps.
+  internal static let quickSetupAutofillDescription = T.tr("Localizable", "quick_setup_autofill_description", fallback: "Select 2FAS Pass to automatically fill in Item details in other apps.")
+  /// AutoFill
+  internal static let quickSetupAutofillTitle = T.tr("Localizable", "quick_setup_autofill_title", fallback: "AutoFill")
+  /// Securely sync your data using iCloud in case this device gets lost or damaged.
+  internal static let quickSetupIcloudSyncDescription = T.tr("Localizable", "quick_setup_icloud_sync_description", fallback: "Securely sync your data using iCloud in case this device gets lost or damaged.")
+  /// Failed to enable vault sync
+  internal static let quickSetupIcloudSyncFailure = T.tr("Localizable", "quick_setup_icloud_sync_failure", fallback: "Failed to enable vault sync")
+  /// Vault Sync
+  internal static let quickSetupIcloudSyncTitle = T.tr("Localizable", "quick_setup_icloud_sync_title", fallback: "Vault Sync")
+  /// Import Items from 2FAS Pass Backup
+  internal static let quickSetupImportItemsCta = T.tr("Localizable", "quick_setup_import_items_cta", fallback: "Import Items from 2FAS Pass Backup")
+  /// Recommended
+  internal static let quickSetupRecommended = T.tr("Localizable", "quick_setup_recommended", fallback: "Recommended")
+  /// Default
+  internal static let quickSetupSecurityTierDefaultLabel = T.tr("Localizable", "quick_setup_security_tier_default_label", fallback: "Default")
+  /// Decide how to use individual Items with Autofill and share them with the Browser Extension.
+  internal static let quickSetupSecurityTierDescription = T.tr("Localizable", "quick_setup_security_tier_description", fallback: "Decide how to use individual Items with Autofill and share them with the Browser Extension.")
+  /// Security Tier
+  internal static let quickSetupSecurityTierTitle = T.tr("Localizable", "quick_setup_security_tier_title", fallback: "Security Tier")
+  /// Personlize your security and usability preferences.
+  internal static let quickSetupSubtitle = T.tr("Localizable", "quick_setup_subtitle", fallback: "Personlize your security and usability preferences.")
+  /// Quick setup
+  internal static let quickSetupTitle = T.tr("Localizable", "quick_setup_title", fallback: "Quick setup")
+  /// Transfer passwords from other apps
+  internal static let quickSetupTransferItemsCta = T.tr("Localizable", "quick_setup_transfer_items_cta", fallback: "Transfer passwords from other apps")
   /// User is forbidden to access this path.
   internal static let recoveryErrorForbidden = T.tr("Localizable", "recovery_error_forbidden", fallback: "User is forbidden to access this path.")
   /// Index file is damaged.

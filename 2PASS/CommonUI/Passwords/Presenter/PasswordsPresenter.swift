@@ -71,8 +71,8 @@ extension PasswordsPresenter {
         reload()
     }
     
-    func onImport() {
-        flowController.toImportSettings()
+    func onQuickSetup() {
+        flowController.toQuickSetup()
     }
     
     func onAdd() {

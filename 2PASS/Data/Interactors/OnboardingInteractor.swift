@@ -25,6 +25,7 @@ extension OnboardingInteractor: OnboardingInteracting {
     }
     
     func finish() {
+        mainrepository.setShouldShowQuickSetup(true)
         mainrepository.finishOnboarding()
     }
 }
