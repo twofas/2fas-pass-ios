@@ -7,6 +7,14 @@
 import SwiftUI
 import CommonUI
 
+private struct Constants {
+    static let firstStepAppearDelay: TimeInterval = 0.3
+    static let secondStepAppearDelay: TimeInterval = 0.45
+    static let thirdStepAppearDelay: TimeInterval = 0.6
+    static let buttonsAppearDelay: Duration = .milliseconds(900)
+    static let buttonsAppearFeedbackDelay: Duration = .milliseconds(150)
+}
+
 struct QuickSetupView: View {
     
     @State
@@ -47,7 +55,7 @@ struct QuickSetupView: View {
                                     .layoutPriority(-1)
                             }
                         )
-                        .stepAppearAnimation(appearAnimation, delay: 0.3)
+                        .stepAppearAnimation(appearAnimation, delay: Constants.firstStepAppearDelay)
                         
                         StepView(
                             title: {
@@ -62,10 +70,10 @@ struct QuickSetupView: View {
                                     .layoutPriority(-1)
                             }
                         )
-                        .stepAppearAnimation(appearAnimation, delay: 0.45)
+                        .stepAppearAnimation(appearAnimation, delay: Constants.secondStepAppearDelay)
                         
                         securityTierStep
-                            .stepAppearAnimation(appearAnimation, delay: 0.6)
+                            .stepAppearAnimation(appearAnimation, delay: Constants.thirdStepAppearDelay)
                     }
                     .padding(.top, Spacing.m)
                     .padding(.horizontal, Spacing.xll)
@@ -102,10 +110,10 @@ struct QuickSetupView: View {
         .onAppear {
             Task {
                 appearAnimation = true
-                try await Task.sleep(for: .milliseconds(900))
+                try await Task.sleep(for: Constants.buttonsAppearDelay)
                 appearButtons = true
                 appearCloseButton = true
-                try await Task.sleep(for: .milliseconds(150))
+                try await Task.sleep(for: Constants.buttonsAppearFeedbackDelay)
                 appearFeedback = true
             }
         }
@@ -207,7 +215,7 @@ private struct RecommendedLabel: View {
         }
         .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(.white)
-        .padding(4)
+        .padding(Spacing.xs)
         .background {
             RoundedRectangle(cornerRadius: 6)
                 .fill(.brand500)

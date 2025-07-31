@@ -12,8 +12,8 @@ struct BackupRouter: Router {
     
     static func buildView(flowContext: BackupFlowContext) -> some View {
         BackupView(presenter: .init(
-            flowContext: flowContext,
-            interactor: ModuleInteractorFactory.shared.backupModuleInteractor()
+            interactor: ModuleInteractorFactory.shared.backupModuleInteractor(),
+            flowContext: flowContext
         ))
     }
     

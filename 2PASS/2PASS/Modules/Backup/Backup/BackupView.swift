@@ -62,6 +62,9 @@ struct BackupView: View {
 
 #Preview {
     NavigationStack {
-        BackupView(presenter: .init(flowContext: .settings, interactor: ModuleInteractorFactory.shared.backupModuleInteractor()))
+        BackupView(presenter: .init(
+            interactor: ModuleInteractorFactory.shared.backupModuleInteractor(),
+            flowContext: .settings
+        ))
     }
 }

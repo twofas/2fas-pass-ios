@@ -68,7 +68,7 @@ final class BackupPresenter {
     let flowContext: BackupFlowContext
     private let interactor: BackupModuleInteracting
 
-    init(flowContext: BackupFlowContext, interactor: BackupModuleInteracting) {
+    init(interactor: BackupModuleInteracting, flowContext: BackupFlowContext) {
         self.flowContext = flowContext
         self.interactor = interactor
         
