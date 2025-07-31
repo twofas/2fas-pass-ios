@@ -6,11 +6,15 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 struct BackupRouter: Router {
     
-    static func buildView() -> some View {
-        BackupView(presenter: .init(interactor: ModuleInteractorFactory.shared.backupModuleInteractor()))
+    static func buildView(flowContext: BackupFlowContext) -> some View {
+        BackupView(presenter: .init(
+            flowContext: flowContext,
+            interactor: ModuleInteractorFactory.shared.backupModuleInteractor()
+        ))
     }
     
     func routingType(for destination: BackupDestination?) -> RoutingType? {

@@ -10,9 +10,22 @@ import CommonUI
 
 enum QuickSetupDestination: RouterDestination {
     case defaultSecurityTier
-    case importExport
-    case transferItems
+    case importExport(onClose: Callback)
+    case transferItems(onClose: Callback)
     case syncNotAllowed
+    
+    var id: String {
+        switch self {
+        case .defaultSecurityTier:
+            "defaultSecurityTier"
+        case .importExport:
+            "importExport"
+        case .transferItems:
+            "transferItems"
+        case .syncNotAllowed:
+            "syncNotAllowed"
+        }
+    }
 }
 
 @Observable
@@ -83,11 +96,15 @@ final class QuickSetupPresenter {
     }
     
     func onImportItems() {
-        destination = .importExport
+        destination = .importExport(onClose: { [weak self] in
+            self?.destination = nil
+        })
     }
     
     func onTransferItems() {
-        destination = .transferItems
+        destination = .transferItems(onClose: { [weak self] in
+            self?.destination = nil
+        })
     }
     
     func onClose() {

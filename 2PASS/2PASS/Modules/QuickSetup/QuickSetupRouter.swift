@@ -30,14 +30,16 @@ struct QuickSetupRouter: Router {
         switch destination {
         case .defaultSecurityTier:
             DefaultSecurityTierRouter.buildView()
-        case .importExport:
+        case .importExport(let onClose):
             NavigationStack {
-                BackupRouter.buildView()
+                BackupRouter.buildView(flowContext: .quickSetup(onClose: onClose))
             }
-        case .transferItems:
+            .tint(.accentColor)
+        case .transferItems(let onClose):
             NavigationStack {
-                TransferItemsServicesListRouter.buildView()
+                TransferItemsServicesListRouter.buildView(flowContext: .quickSetup(onClose: onClose))
             }
+            .tint(.accentColor)
         case .syncNotAllowed:
             PremiumPromptRouter.buildView(
                 title: Text(T.syncErrorIcloudSyncNotAllowedTitle.localizedKey),
