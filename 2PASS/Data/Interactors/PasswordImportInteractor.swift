@@ -167,6 +167,9 @@ private extension PasswordImportInteractor {
         Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         passwordInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
+
+        NotificationCenter.default.post(name: .didImportItems, object: nil)
+        
         return imported
     }
     
