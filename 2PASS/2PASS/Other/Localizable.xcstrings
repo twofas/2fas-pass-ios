@@ -2378,7 +2378,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No items yet"
+            "value" : "No Items available"
           }
         }
       }
@@ -4589,7 +4589,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to enable vault sync"
+            "value" : "Failed to enable Vault Sync"
           }
         }
       }
@@ -7768,7 +7768,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Master Password was changed. To access this vault use Restore and Recovery Kit."
+            "value" : "Master Password was changed. To access this Vault use Restore and Recovery Kit."
           }
         }
       }

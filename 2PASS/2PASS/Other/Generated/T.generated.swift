@@ -459,8 +459,8 @@ internal enum T {
   }
   /// Start with quick setup
   internal static let homeEmptyImportCta = T.tr("Localizable", "home_empty_import_cta", fallback: "Start with quick setup")
-  /// No items yet
-  internal static let homeEmptyTitle = T.tr("Localizable", "home_empty_title", fallback: "No items yet")
+  /// No Items available
+  internal static let homeEmptyTitle = T.tr("Localizable", "home_empty_title", fallback: "No Items available")
   /// Items
   internal static let homeTitle = T.tr("Localizable", "home_title", fallback: "Items")
   /// Master Password
@@ -873,8 +873,8 @@ internal enum T {
   internal static let quickSetupAutofillTitle = T.tr("Localizable", "quick_setup_autofill_title", fallback: "AutoFill")
   /// Securely sync your data using iCloud in case this device gets lost or damaged.
   internal static let quickSetupIcloudSyncDescription = T.tr("Localizable", "quick_setup_icloud_sync_description", fallback: "Securely sync your data using iCloud in case this device gets lost or damaged.")
-  /// Failed to enable vault sync
-  internal static let quickSetupIcloudSyncFailure = T.tr("Localizable", "quick_setup_icloud_sync_failure", fallback: "Failed to enable vault sync")
+  /// Failed to enable Vault Sync
+  internal static let quickSetupIcloudSyncFailure = T.tr("Localizable", "quick_setup_icloud_sync_failure", fallback: "Failed to enable Vault Sync")
   /// Vault Sync
   internal static let quickSetupIcloudSyncTitle = T.tr("Localizable", "quick_setup_icloud_sync_title", fallback: "Vault Sync")
   /// Import Items from 2FAS Pass Backup
@@ -1475,8 +1475,8 @@ internal enum T {
   internal static let syncStatusErrorNotAuthorized = T.tr("Localizable", "sync_status_error_not_authorized", fallback: "User is not authorized to access this path")
   /// Not configured
   internal static let syncStatusErrorNotConfigured = T.tr("Localizable", "sync_status_error_not_configured", fallback: "Not configured")
-  /// Master Password was changed. To access this vault use Restore and Recovery Kit.
-  internal static let syncStatusErrorPasswordChanged = T.tr("Localizable", "sync_status_error_password_changed", fallback: "Master Password was changed. To access this vault use Restore and Recovery Kit.")
+  /// Master Password was changed. To access this Vault use Restore and Recovery Kit.
+  internal static let syncStatusErrorPasswordChanged = T.tr("Localizable", "sync_status_error_password_changed", fallback: "Master Password was changed. To access this Vault use Restore and Recovery Kit.")
   /// SSL error
   internal static let syncStatusErrorSslError = T.tr("Localizable", "sync_status_error_ssl_error", fallback: "SSL error")
   /// TLS certificate validation failed
