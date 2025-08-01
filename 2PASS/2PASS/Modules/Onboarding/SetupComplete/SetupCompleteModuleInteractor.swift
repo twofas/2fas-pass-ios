@@ -19,6 +19,6 @@ final class SetupCompleteModuleInteractor: SetupCompleteModuleInteracting {
     }
     
     func finish() {
-        interactor.finish()
+        interactor.finishVaultCreation()
     }
 }

@@ -6,7 +6,9 @@
 
 public protocol OnboardingInteracting: AnyObject {
     var isOnboardingCompleted: Bool { get }
-    func finish()
+    
+    func finishVaultCreation()
+    func finishVaultRecovery()
 }
 
 final class OnboardingInteractor {
@@ -24,7 +26,11 @@ extension OnboardingInteractor: OnboardingInteracting {
         mainrepository.isOnboardingCompleted
     }
     
-    func finish() {
+    func finishVaultRecovery() {
+        mainrepository.finishOnboarding()
+    }
+    
+    func finishVaultCreation() {
         mainrepository.setShouldShowQuickSetup(true)
         mainrepository.finishOnboarding()
     }
