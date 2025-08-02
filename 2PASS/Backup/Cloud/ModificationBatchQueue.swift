@@ -9,7 +9,7 @@ import CloudKit
 import Common
 
 final class ModificationBatchQueue {
-    private let batchElementLimit = 399
+    private let batchElementLimit = 400
     
     private var batchModify: [[CKRecord]] = []
     private var batchDelete: [[CKRecord.ID]] = []
@@ -29,16 +29,20 @@ final class ModificationBatchQueue {
             batchDelete = deleteIDs.grouped(by: batchElementLimit)
         }
         
-        let maxBatchCount = max(batchModify.count, batchDelete.count)
+        let maxBatchCount = batchModify.count + batchDelete.count
         batchCount = maxBatchCount - 1
         
         Log("ModificationBatchQueue - spliting into \(maxBatchCount) batches", module: .cloudSync)
     }
     
     func currentBatch() -> (modify: [CKRecord]?, delete: [CKRecord.ID]?) {
-        let modify = batchModify[safe: batchCount]
-        let delete = batchDelete[safe: batchCount]
-        return (modify: modify, delete: delete)
+        if let delete = batchDelete.popLast() {
+            return (modify: nil, delete: delete)
+        }
+        if let modify = batchModify.popLast() {
+            return (modify: modify, delete: nil)
+        }
+        return (modify: nil, delete: nil)
     }
     
     func prevBatchProcessed() {
