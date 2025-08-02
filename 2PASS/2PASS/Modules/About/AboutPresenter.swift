@@ -7,6 +7,7 @@
 import Foundation
 import SwiftUI
 import CommonUI
+import Common
 
 enum AboutDestination: RouterDestination {
     case viewLogs
@@ -69,10 +70,10 @@ extension AboutPresenter {
 }
 
 extension AboutPresenter.LinkItem {
-    static let rate = AboutPresenter.LinkItem(icon: .rate, title: T.aboutRateUsAppStore.localizedKey, url: URL(string: "https://apps.apple.com/us/app/2fas-pass-password-manager/id6504464955")!)
-    static let privacyPolicy = AboutPresenter.LinkItem(icon: .privacyPolicy, title: T.aboutPrivacyPolicy.localizedKey, url: URL(string: "https://2fas.com/pass/privacy-policy")!)
-    static let termsOfUse = AboutPresenter.LinkItem(icon: .termsOfUse, title: T.aboutTermsOfUse.localizedKey, url: URL(string: "https://2fas.com/pass/terms-of-service")!)
-    static let libraries = AboutPresenter.LinkItem(icon: .libraries, title: T.aboutLibrariesWeUse.localizedKey, url: URL(string: "https://2fas.com/pass/open-source-licenses")!)
+    static let rate = AboutPresenter.LinkItem(icon: .rate, title: T.aboutRateUsAppStore.localizedKey, url: Config.rateAppURL)
+    static let privacyPolicy = AboutPresenter.LinkItem(icon: .privacyPolicy, title: T.aboutPrivacyPolicy.localizedKey, url: Config.privacyPolicyURL)
+    static let termsOfUse = AboutPresenter.LinkItem(icon: .termsOfUse, title: T.aboutTermsOfUse.localizedKey, url: Config.tosURL)
+    static let libraries = AboutPresenter.LinkItem(icon: .libraries, title: T.aboutLibrariesWeUse.localizedKey, url: Config.openSourceLicencesURL)
 
     static let discord = AboutPresenter.LinkItem(icon: .discord, title: T.aboutDiscord.localizedKey, url: URL(string: "https://2fas.com/discord/")!)
     static let github = AboutPresenter.LinkItem(icon: .github, title: T.aboutGithub.localizedKey, url: URL(string: "https://2fas.com")!)
