@@ -2367,40 +2367,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Settings"
-          }
-        }
-      }
-    },
-    "home_empty_import_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Do you want to import a backup file or transfer data from another password manager?"
-          }
-        }
-      }
-    },
-    "home_empty_msg" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap the + button to begin"
-          }
-        }
-      }
-    },
-    "home_empty_msg_ios %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap %@ to begin"
+            "value" : "Start with quick setup"
           }
         }
       }
@@ -2411,7 +2378,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add first Item"
+            "value" : "No Items available"
           }
         }
       }
@@ -4579,6 +4546,149 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "2FAS Pass request"
+          }
+        }
+      }
+    },
+    "quick_setup_autofill_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select 2FAS Pass to automatically fill in Item details in other apps."
+          }
+        }
+      }
+    },
+    "quick_setup_autofill_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AutoFill"
+          }
+        }
+      }
+    },
+    "quick_setup_icloud_sync_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Securely sync your data using iCloud in case this device gets lost or damaged."
+          }
+        }
+      }
+    },
+    "quick_setup_icloud_sync_failure" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to enable Vault Sync"
+          }
+        }
+      }
+    },
+    "quick_setup_icloud_sync_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault Sync"
+          }
+        }
+      }
+    },
+    "quick_setup_import_items_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Items from 2FAS Pass Backup"
+          }
+        }
+      }
+    },
+    "quick_setup_recommended" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended"
+          }
+        }
+      }
+    },
+    "quick_setup_security_tier_default_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "quick_setup_security_tier_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decide how to use individual Items with Autofill and share them with the Browser Extension."
+          }
+        }
+      }
+    },
+    "quick_setup_security_tier_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security Tier"
+          }
+        }
+      }
+    },
+    "quick_setup_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personlize your security and usability preferences."
+          }
+        }
+      }
+    },
+    "quick_setup_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick setup"
+          }
+        }
+      }
+    },
+    "quick_setup_transfer_items_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer passwords from other apps"
           }
         }
       }
@@ -7658,7 +7768,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Master Password was changed. To access this vault use Restore and Recovery Kit."
+            "value" : "Master Password was changed. To access this Vault use Restore and Recovery Kit."
           }
         }
       }
@@ -8011,6 +8121,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this ZIP file to this device and tap **Upload ZIP file** below."
+          }
+        }
+      }
+    },
+    "transfer_instructions_firefox" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placeholder Step 1\n\nPlaceholder Step 2\n\nPlaceholder Step 3"
           }
         }
       }

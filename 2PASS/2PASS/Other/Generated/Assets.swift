@@ -73,6 +73,7 @@ internal enum Asset {
   internal static let dashlaneIcon = ImageAsset(name: "dashlane.icon")
   internal static let discordIcon = ImageAsset(name: "discord.icon")
   internal static let facebookIcon = ImageAsset(name: "facebook.icon")
+  internal static let firefoxIcon = ImageAsset(name: "firefox.icon")
   internal static let generateIcon = ImageAsset(name: "generate.icon")
   internal static let githubIcon = ImageAsset(name: "github.icon")
   internal static let highlySecretTierFigure = ImageAsset(name: "highly.secret.tier.figure")
