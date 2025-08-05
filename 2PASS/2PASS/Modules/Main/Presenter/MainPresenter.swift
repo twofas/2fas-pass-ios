@@ -36,5 +36,12 @@ final class MainPresenter {
         guard !didAppear else { return }
         didAppear = true
         interactor.viewIsVisible()
+        
+        if interactor.shouldShowQuickSetup {
+            Task { @MainActor in
+                try await Task.sleep(for: .milliseconds(800))
+                flowController.toQuickSetup()
+            }
+        }
     }
 }

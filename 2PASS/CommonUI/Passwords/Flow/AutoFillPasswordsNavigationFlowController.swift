@@ -71,7 +71,7 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
         parent?.cancel()
     }
     
-    public func toImportSettings() {
+    public func toQuickSetup() {
     }
     
     public func toPremiumPlanPrompt(itemsLimit: Int) {

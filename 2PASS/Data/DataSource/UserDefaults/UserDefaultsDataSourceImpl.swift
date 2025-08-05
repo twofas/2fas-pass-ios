@@ -43,6 +43,7 @@ final class UserDefaultsDataSourceImpl {
         case lastKnownSubscriptionPlanExpireDate
         case webDAVAwaitsVaultOverrideAfterPasswordChange
         case lastKnownAppVersion
+        case shouldShowQuickSetup
     }
     
     private let userDefaults = UserDefaults()
@@ -419,5 +420,13 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func setLastKnownSubscriptionPlan(_ plan: SubscriptionPlan) {
         sharedDefaults.set(plan.planType.rawValue, forKey: Keys.lastKnownSubscriptionPlan.rawValue)
         sharedDefaults.set(plan.expirationDate?.timeIntervalSinceReferenceDate, forKey: Keys.lastKnownSubscriptionPlanExpireDate.rawValue)
+    }
+    
+    var shouldShowQuickSetup: Bool {
+        userDefaults.bool(forKey: Keys.shouldShowQuickSetup.rawValue)
+    }
+    
+    func setShouldShowQuickSetup(_ value: Bool) {
+        userDefaults.set(value, forKey: Keys.shouldShowQuickSetup.rawValue)
     }
 }

@@ -45,6 +45,7 @@ struct PremiumPromptView: View {
                         dismiss()
                         
                         Task {
+                            try await Task.sleep(for: .milliseconds(700))
                             presenter.onUpgrade()
                         }
                     }

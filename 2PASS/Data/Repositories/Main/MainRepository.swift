@@ -53,6 +53,9 @@ protocol MainRepository: AnyObject {
     var isConnectOnboardingCompleted: Bool { get }
     func finishConnectOnboarding()
     
+    var shouldShowQuickSetup: Bool { get }
+    func setShouldShowQuickSetup(_ value: Bool)
+    
     // MARK: - Biometry
     var biometryType: BiometryType { get }
     var isBiometryEnabled: Bool { get }

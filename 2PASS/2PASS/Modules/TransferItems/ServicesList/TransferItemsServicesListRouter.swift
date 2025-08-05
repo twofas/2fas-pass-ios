@@ -6,11 +6,15 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 struct TransferItemsServicesListRouter: Router {
     
-    static func buildView() -> some View {
-        TransferItemsServicesListView(presenter: .init(interactor: ModuleInteractorFactory.shared.transferItemsServicesListInteractor()))
+    static func buildView(flowContext: TransferItemsFlowContext) -> some View {
+        TransferItemsServicesListView(presenter: .init(
+            interactor: ModuleInteractorFactory.shared.transferItemsServicesListInteractor(),
+            flowContext: flowContext
+        ))
     }
     
     func routingType(for destination: TransferItemsServicesListDestination?) -> RoutingType? {

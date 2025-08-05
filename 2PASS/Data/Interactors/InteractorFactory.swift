@@ -313,6 +313,10 @@ public final class InteractorFactory {
     public func migrationInteractor() -> MigrationInteracting {
         MigrationInteractor(mainRepository: MainRepositoryImpl.shared)
     }
+    
+    public func quickSetupInteractor() -> QuickSetupInteracting {
+        QuickSetupInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
 }
 
 private extension InteractorFactory {

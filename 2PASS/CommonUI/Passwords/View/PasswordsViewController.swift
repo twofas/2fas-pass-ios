@@ -86,7 +86,7 @@ private extension PasswordsViewController {
         
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(
-                image: UIImage(systemName: "plus.circle"),
+                image: UIImage(systemName: "plus.circle.fill"),
                 style: .plain,
                 target: self,
                 action: #selector(addAction)
@@ -113,9 +113,12 @@ private extension PasswordsViewController {
         emptySearchList = emptySearchViewController.view
         emptySearchList?.isHidden = true
         
-        let emptyListViewController = UIHostingController(rootView: EmptyPasswordListView(onImport: { [weak self] in
-            self?.presenter.onImport()
-        }))
+        let emptyListViewController = UIHostingController(
+            rootView: EmptyPasswordListView(onQuickSetup: { [weak self] in
+                self?.presenter.onQuickSetup()
+            })
+            .quickSetupHidden(presenter.isAutoFillExtension)
+        )
         placeChild(emptyListViewController, container: container)
         emptyList = emptyListViewController.view
         emptyList?.isHidden = true

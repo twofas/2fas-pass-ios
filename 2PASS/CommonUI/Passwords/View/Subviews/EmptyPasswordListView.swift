@@ -8,53 +8,59 @@ import SwiftUI
 import Common
 
 struct EmptyPasswordListView: View {
-    let onImport: Callback
+    
+    let onQuickSetup: Callback
+    
+    private var showQuickSetup: Bool = true
+    
+    init(onQuickSetup: @escaping Callback) {
+        self.onQuickSetup = onQuickSetup
+    }
     
     var body: some View {
         VStack {
             VStack {
                 Spacer()
                 
-                VStack(spacing: 20) {
+                VStack(spacing: Spacing.xll) {
                     Image(systemName: "lock.rectangle.stack")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 85, height: 85)
-                        .foregroundStyle(Asset.inactiveColor.swiftUIColor)
+                        .foregroundStyle(.brand500)
                     
-                    VStack(spacing: 8) {
-                        Text(T.homeEmptyTitle.localizedKey)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                        
-                        Text("home_empty_msg_ios \(Text(Image(systemName: "plus.circle.fill")))")
-                            .font(.subheadline)
-                            .foregroundStyle(Asset.inactiveColor.swiftUIColor)
-                    }
+                    Text(T.homeEmptyTitle.localizedKey)
+                        .font(.title2Emphasized)
                 }
                 
                 Spacer()
             }
             
             Spacer()
-            
-            VStack(spacing: 0) {
-                Text(T.homeEmptyImportDescription.localizedKey)
-                    .foregroundStyle(Asset.inactiveColor.swiftUIColor)
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                
-                Button(T.homeEmptyImportCta.localizedKey)  {
-                    onImport()
+
+            if showQuickSetup {
+                Button {
+                    onQuickSetup()
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Text(T.homeEmptyImportCta.localizedKey)
+                        Image(.quickSetupSmallIcon)
+                            .renderingMode(.template)
+                    }
                 }
-                .buttonStyle(.twofasBorderless)
+                .buttonStyle(.bezeledGray(fillSpace: false))
+                .padding(.bottom, Spacing.xxl4)
             }
-            .frame(height: 112)
-            .padding(.horizontal, Spacing.xll)
         }
+    }
+    
+    func quickSetupHidden(_ hidden: Bool) -> some View {
+        var instance = self
+        instance.showQuickSetup = hidden == false
+        return instance
     }
 }
 
 #Preview {
-    EmptyPasswordListView(onImport: {})
+    EmptyPasswordListView(onQuickSetup: {})
 }

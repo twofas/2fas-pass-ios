@@ -109,4 +109,7 @@ protocol UserDefaultsDataSource: AnyObject {
     
     var lastKnownSubscriptionPlan: SubscriptionPlan? { get }
     func setLastKnownSubscriptionPlan(_ plan: SubscriptionPlan)
+    
+    var shouldShowQuickSetup: Bool { get }
+    func setShouldShowQuickSetup(_ value: Bool)
 }
