@@ -190,16 +190,25 @@ extension PasswordInteractor: PasswordInteracting {
         tagIds: [ItemTagID]?
     ) -> Result<Void, PasswordInteractorSaveError> {
         var encryptedPassword: Data?
-        if let password = password?.trim(), !password.isEmpty {
-            guard let encrypted = encrypt(password, isPassword: true, protectionLevel: protectionLevel) else {
-                Log(
-                    "Password interactor: Create password. Can't encrypt password",
-                    module: .interactor,
-                    severity: .error
-                )
-                return .failure(.encryptionError)
+        if var sanitizedPassword = password?.trim() {
+            // Sanitize password input
+            sanitizedPassword = CryptographicSecurity.sanitizeStringInput(sanitizedPassword)
+            defer {
+                // Securely clear password from memory
+                sanitizedPassword.secureClear()
             }
-            encryptedPassword = encrypted
+            
+            if !sanitizedPassword.isEmpty {
+                guard let encrypted = encrypt(sanitizedPassword, isPassword: true, protectionLevel: protectionLevel) else {
+                    Log(
+                        "Password interactor: Create password. Can't encrypt password",
+                        module: .interactor,
+                        severity: .error
+                    )
+                    return .failure(.encryptionError)
+                }
+                encryptedPassword = encrypted
+            }
         }
         
         return createPasswordWithEncryptedPassword(
@@ -468,13 +477,19 @@ extension PasswordInteractor: PasswordInteracting {
         guard let password = entity.password else {
             return .failure(.noPassword)
         }
-        guard let decryptedPassword = decrypt(
+        guard var decryptedPassword = decrypt(
             password,
             isPassword: true,
             protectionLevel: entity.protectionLevel
         ) else {
             return .failure(.decryptionError)
         }
+        
+        // Return password but ensure it gets cleared from memory when done
+        defer {
+            decryptedPassword.secureClear()
+        }
+        
         return .success(decryptedPassword)
     }
     

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Add your API endpoints and their certificate names here -->
+    <key>api.2fas.com</key>
+    <array>
+        <string>2fas-api-cert</string>
+        <string>2fas-api-backup-cert</string>
+    </array>
+    <key>sync.2fas.com</key>
+    <array>
+        <string>2fas-sync-cert</string>
+        <string>2fas-sync-backup-cert</string>
+    </array>
+    <!-- Example for other endpoints -->
+    <key>auth.2fas.com</key>
+    <array>
+        <string>2fas-auth-cert</string>
+    </array>
+</dict>
+</plist>

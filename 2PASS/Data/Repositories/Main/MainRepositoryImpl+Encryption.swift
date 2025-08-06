@@ -36,16 +36,14 @@ extension MainRepositoryImpl {
     
     func generateEntropy() -> Data? {
         let byteCount = 160 / 8
-        var randomBytes = [UInt8](repeating: 0, count: byteCount)
         
-        let status = SecRandomCopyBytes(kSecRandomDefault, byteCount, &randomBytes)
-        
-        guard status == errSecSuccess else {
+        // Use enhanced secure random generation
+        guard let entropy = CryptographicSecurity.generateSecureRandomBytes(length: byteCount) else {
             Log("Error while generating random data for Entropy!", module: .mainRepository, severity: .error)
             return nil
         }
         
-        return Data(randomBytes)
+        return entropy
     }
     
     func createSeed(from entropy: Data) -> Data {
@@ -175,7 +173,20 @@ extension MainRepositoryImpl {
         salt: Data,
         kdfSpec: KDFSpec
     ) -> Data? {
-        guard let hexPassword = normalizeStringIntoHEXData(masterPassword) else {
+        // Validate KDF security parameters
+        guard CryptographicSecurity.validateKDFSecurity(kdfSpec) else {
+            Log("KDF parameters do not meet security requirements", module: .mainRepository, severity: .error)
+            return nil
+        }
+        
+        // Create sanitized copy of master password
+        var sanitizedPassword = CryptographicSecurity.sanitizeStringInput(masterPassword)
+        defer {
+            // Securely clear password from memory
+            sanitizedPassword.secureClear()
+        }
+        
+        guard let hexPassword = normalizeStringIntoHEXData(sanitizedPassword) else {
             Log("Can't create HEX from Master Password", module: .mainRepository, severity: .error)
             return nil
         }
@@ -185,6 +196,8 @@ extension MainRepositoryImpl {
             Log("Can't create HEX from Key", module: .mainRepository, severity: .error)
             return nil
         }
+        
+        // Ensure we're using the most secure Argon2 variant
         let variant: Argon2.Variant = {
             switch kdfSpec.kdfType {
             case .argon2d: .d
@@ -192,6 +205,7 @@ extension MainRepositoryImpl {
             case .argon2id: .id
             }
         }()
+        
         let partOfSalt = salt[0...Config.wordsCount]
         do  {
             let (rawHash, _) = try Argon2.hash(
@@ -204,6 +218,11 @@ extension MainRepositoryImpl {
                 variant: variant,
                 version: .v13
             )
+            
+            // Securely clear intermediate data
+            var mutablePasswordData = passwordData
+            mutablePasswordData.secureClear()
+            
             return rawHash
         } catch {
             Log("Can't create key, error: \(error)", module: .mainRepository, severity: .error)
@@ -326,12 +345,8 @@ extension MainRepositoryImpl {
     }
     
     func generateRandom(byteCount: Int) -> Data? {
-        var randomBytes = [UInt8](repeating: 0, count: byteCount)
-        let status = SecRandomCopyBytes(kSecRandomDefault, byteCount, &randomBytes)
-        guard status == errSecSuccess else {
-            return nil
-        }
-        return Data(randomBytes)
+        // Use enhanced secure random generation
+        return CryptographicSecurity.generateSecureRandomBytes(length: byteCount)
     }
     
     var isMasterKeyStored: Bool {

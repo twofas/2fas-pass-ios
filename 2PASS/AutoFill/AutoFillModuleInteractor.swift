@@ -23,6 +23,32 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     }
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
+        // Enhanced security validation for AutoFill request
+        let validationResult = AutoFillSecurity.validateCredentialRequest(credentialRequest)
+        
+        switch validationResult {
+        case .valid:
+            break
+        case .suspicious:
+            Log("AutoFill - Suspicious credential request detected", module: .autofill, severity: .warning)
+            // Continue but with extra caution
+        case .rateLimited:
+            Log("AutoFill - Request rate limited", module: .autofill, severity: .error)
+            return nil
+        case .invalidRequest, .invalidDomain:
+            Log("AutoFill - Invalid credential request", module: .autofill, severity: .error)
+            return nil
+        case .suspiciousActivity:
+            Log("AutoFill - Suspicious activity detected, blocking request", module: .autofill, severity: .error)
+            return nil
+        case .sessionExpired:
+            Log("AutoFill - Session expired", module: .autofill, severity: .error)
+            return nil
+        case .invalid:
+            Log("AutoFill - Invalid request", module: .autofill, severity: .error)
+            return nil
+        }
+        
         guard let passwordID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? ""),
               let encrypted = passwordInteractor.getEncryptedPasswordEntity(passwordID: passwordID),
               let encryptedPassword = encrypted.password else {
@@ -30,27 +56,57 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return nil
         }
         
+        // Only allow normal protection level for automatic access
         guard encrypted.protectionLevel == .normal else {
+            Log("AutoFill - Password requires user interaction due to protection level", module: .autofill)
             return nil
         }
         
         guard passwordInteractor.loadTrustedKey() else {
+            Log("AutoFill - Failed to load trusted key", module: .autofill, severity: .error)
             return nil
         }
         
-        let username: String? = {
-            guard let encryptedUsername = encrypted.username else {
-                return nil
-            }
-            return passwordInteractor.decrypt(encryptedUsername, isPassword: false, protectionLevel: encrypted.protectionLevel)
-        }()
-        guard let password = passwordInteractor.decrypt(encryptedPassword, isPassword: true, protectionLevel: encrypted.protectionLevel) else {
-            Log("AutoFill - Error while decrypting password", module: .autofill)
+        var username: String? = nil
+        var password: String? = nil
+        
+        // Securely decrypt username
+        if let encryptedUsername = encrypted.username {
+            username = passwordInteractor.decrypt(
+                encryptedUsername, 
+                isPassword: false, 
+                protectionLevel: encrypted.protectionLevel
+            )
+        }
+        
+        // Securely decrypt password
+        password = passwordInteractor.decrypt(
+            encryptedPassword, 
+            isPassword: true, 
+            protectionLevel: encrypted.protectionLevel
+        )
+        
+        guard let decryptedPassword = password else {
+            Log("AutoFill - Error while decrypting password", module: .autofill, severity: .error)
             return nil
         }
         
-        Log("AutoFill - Complete get credential without user interaction", module: .autofill)
-        return ASPasswordCredential(user: username ?? "", password: password)
+        // Create secure credential
+        guard let secureCredential = AutoFillSecurity.createSecureCredential(
+            user: username ?? "",
+            password: decryptedPassword,
+            for: credentialRequest
+        ) else {
+            Log("AutoFill - Failed to create secure credential", module: .autofill, severity: .error)
+            return nil
+        }
+        
+        // Clear sensitive data from memory
+        password?.secureClear()
+        username?.secureClear()
+        
+        Log("AutoFill - Completed secure credential without user interaction", module: .autofill)
+        return secureCredential
     }
     
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
@@ -62,16 +118,31 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     
     func credential(for passwordID: PasswordID) -> ASPasswordCredential? {
         guard let password = passwordInteractor.getPassword(for: passwordID, checkInTrash: false) else {
-            Log("AutoFill - Missing password", module: .autofill)
+            Log("AutoFill - Missing password", module: .autofill, severity: .error)
             return nil
         }
-        let result = passwordInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
+        
+        var result = passwordInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
         switch result {
-        case .success(let value):
-            Log("AutoFill - Complete get credential", module: .autofill)
-            return ASPasswordCredential(user: password.username ?? "", password: value ?? "")
+        case .success(var value):
+            // Ensure we have a password value
+            guard let passwordValue = value else {
+                Log("AutoFill - No password value found", module: .autofill, severity: .error)
+                return nil
+            }
+            
+            // Create secure credential  
+            let sanitizedUsername = CryptographicSecurity.sanitizeStringInput(password.username ?? "")
+            let credential = ASPasswordCredential(user: sanitizedUsername, password: passwordValue)
+            
+            // Securely clear sensitive data from memory
+            value?.secureClear()
+            
+            Log("AutoFill - Completed secure get credential", module: .autofill)
+            return credential
+            
         case .failure(let failure):
-            Log("AutoFill - Failed get credential: \(failure)", module: .autofill)
+            Log("AutoFill - Failed get credential: \(failure)", module: .autofill, severity: .error)
             return nil
         }
     }

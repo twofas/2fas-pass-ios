@@ -57,52 +57,78 @@ extension MainRepositoryImpl {
         reason: String,
         completion: @escaping (BiometricAuthResult) -> Void
     ) {
-        var error: NSError?
-        Log("Authenticating using bio")
+        Log("Authenticating using enhanced biometric security", module: .mainRepository)
         
-        guard authContext.canEvaluatePolicy(LAPolicy.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            if let err = error {
-                Log("Error - can't use bio authenticating: \(err.localizedDescription)", module: .mainRepository)
-            }
-            
+        // Check for security lockout first
+        if BiometricSecurity.isLockedOut() {
+            Log("Biometric authentication is locked out due to multiple failed attempts", module: .mainRepository)
             DispatchQueue.main.async {
                 completion(.failure)
             }
-            
             return
         }
         
-        authContext.evaluatePolicy(
-            LAPolicy.deviceOwnerAuthenticationWithBiometrics,
-            localizedReason: reason,
-            reply: { [weak self] (success: Bool, evalPolicyError: Error?) -> Void in
+        // Use enhanced biometric security
+        BiometricSecurity.authenticateWithEnhancedSecurity(
+            reason: reason,
+            context: authContext
+        ) { [weak self] result in
+            guard let self else { return }
+            
+            switch result {
+            case .success(let domainState):
+                Log("Enhanced BioAuthSuccess", module: .mainRepository)
+                BiometricSecurity.resetAuthenticationState()
+                completion(.success(fingerprint: domainState))
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    
-                    if success {
-                        let newFingerprint = self.authContext.evaluatedPolicyDomainState
-                        
-                        Log("BioAuthSuccess", module: .mainRepository)
-                        completion(.success(fingerprint: newFingerprint))
-                    } else if let code = (evalPolicyError as? LAError)?.code,
-                              code == LAError.userCancel
-                                || code == LAError.appCancel
-                                || code == LAError.systemCancel
-                                || code == LAError.userFallback {
-                        Log("BioAuthCancelled", module: .mainRepository)
-                        completion(.cancelled)
-                    } else {
-                        guard let err = evalPolicyError as NSError? else {
-                            assertionFailure("Unsupported conversion")
-                            return
-                        }
-                        Log("Error while authenticating - \(err.localizedDescription)", module: .mainRepository)
-                        
-                        completion(.failure)
-                    }
-                }
-            })
+            case .cancelled:
+                Log("Enhanced BioAuthCancelled", module: .mainRepository)
+                completion(.cancelled)
+                
+            case .fallbackRequested:
+                Log("Biometric fallback requested", module: .mainRepository)
+                self.handleBiometricFallback(completion: completion)
+                
+            case .timeout:
+                Log("Biometric authentication timed out", module: .mainRepository)
+                BiometricSecurity.recordFailedAttempt()
+                completion(.failure)
+                
+            case .securityCompromised:
+                Log("Biometric security compromised - blocking authentication", module: .mainRepository, severity: .error)
+                BiometricSecurity.recordFailedAttempt()
+                completion(.failure)
+                
+            case .failure(let error):
+                Log("Enhanced biometric authentication failed: \(error)", module: .mainRepository)
+                BiometricSecurity.recordFailedAttempt()
+                completion(.failure)
+            }
+        }
+    }
+    
+    private func handleBiometricFallback(completion: @escaping (BiometricAuthResult) -> Void) {
+        Log("Handling biometric fallback authentication", module: .mainRepository)
+        
+        BiometricSecurity.handleSecureFallback { fallbackResult in
+            switch fallbackResult {
+            case .success:
+                Log("Fallback authentication successful", module: .mainRepository)
+                BiometricSecurity.resetAuthenticationState()
+                // Create a synthetic domain state for fallback success
+                let fallbackState = Data("fallback_auth_success".utf8)
+                completion(.success(fingerprint: fallbackState))
+                
+            case .cancelled:
+                Log("Fallback authentication cancelled", module: .mainRepository)
+                completion(.cancelled)
+                
+            case .failed, .unavailable:
+                Log("Fallback authentication failed", module: .mainRepository)
+                BiometricSecurity.recordFailedAttempt()
+                completion(.failure)
+            }
+        }
     }
     
     var biometryFingerpring: Data? {
