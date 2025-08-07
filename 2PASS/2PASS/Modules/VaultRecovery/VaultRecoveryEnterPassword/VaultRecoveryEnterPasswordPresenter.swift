@@ -79,7 +79,7 @@ extension VaultRecoveryEnterPasswordPresenter {
             case .importVault:
                 switch interactor.recoveryData {
                 case .file(let vault):
-                    destination = .importVault(entropy: interactor.entropy, masterKey: masterKey, vault: vault, onClose: flowContext.onClose ?? {})
+                    destination = .importVault(entropy: interactor.entropy, masterKey: masterKey, vault: vault, onClose: flowContext.onClose)
                 case .cloud:
                     fatalError("Unsupported import vault from cloud")
                 }

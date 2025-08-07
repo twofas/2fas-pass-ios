@@ -21,14 +21,14 @@ struct VaultRecoveryRouter: Router {
     @ViewBuilder
     func view(for destination: VaultRecoveryDestination) -> some View {
         switch destination {
-        case .restoreFromFile(let url):
-            VaultRecoveryURLLoadingRouter.buildView(url: url)
+        case .restoreFromFile(let url, let onClose):
+            VaultRecoveryURLLoadingRouter.buildView(url: url, onClose: onClose)
         case .restoreFromWebDAV:
             VaultRecoveryWebDAVRouter.buildView()
         case .selectiCloudVault(let onSelect):
             VaultRecoveryiCloudVaultSelectionRouter.buildView(onSelect: onSelect)
-        case .restore(let recoveryData):
-            VaultRecoverySelectRouter.buildView(flowContext: .onboarding, recoveryData: recoveryData)
+        case .restore(let recoveryData, let onClose):
+            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: recoveryData)
         case .selectFile:
             EmptyView()
         case .errorReadingFile:
