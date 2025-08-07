@@ -14,6 +14,7 @@ protocol MainFlowControllerParent: AnyObject {
 }
 
 protocol MainFlowControlling: AnyObject {
+    func toQuickSetup()
     func toPayment()
 }
 
@@ -52,8 +53,7 @@ extension MainFlowController: MainFlowControlling {
         let controller = PaywallViewController(displayCloseButton: true) { [weak viewController] controller in
             viewController?.dismiss(animated: true)
         }
-        
-        viewController.present(controller, animated: true, completion: nil)
+        viewController.topViewController.present(controller, animated: true, completion: nil)
     }
 }
 
@@ -63,8 +63,9 @@ extension MainFlowController {
 
 extension MainFlowController: PasswordsNavigationFlowControllerParent {
     
-    func toImportSettings() {
-        viewController.selectedIndex = 2
+    func toQuickSetup() {
+        let quickSetupViewController = UIHostingController(rootView: QuickSetupRouter.buildView())
+        viewController.present(quickSetupViewController, animated: true)
     }
     
     func toPremiumPlanPrompt(itemsLimit: Int) {

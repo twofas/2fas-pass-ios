@@ -153,7 +153,7 @@ public struct TwoFASButtonStyle: ButtonStyle {
         case .bezeled:
             return isEnabled ? Color.brand100 : Color.neutral100
         case .bezeledGray:
-            return isEnabled ? Color.neutral100 : Color.neutral100
+            return isEnabled ? Color.neutral50 : Color.neutral50
         case .borderless:
             return .clear
         }

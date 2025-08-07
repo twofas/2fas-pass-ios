@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: BUSL-1.1
 //
-//  Riple.metal
-//  2PASS
-//
-//  Created by Zbigniew Cisiński on 14/09/2024.
-//  Copyright © 2024 Two Factor Authentication Service, Inc. All rights reserved.
-//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
 
 #include <metal_stdlib>
 #include <SwiftUI/SwiftUI.h>

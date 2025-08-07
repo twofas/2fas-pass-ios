@@ -10,47 +10,45 @@ import Common
 
 public protocol CloudCacheStorageDataSource: AnyObject {
     var storageError: ((String) -> Void)? { get set }
+    var initilizingNewStore: (() -> Void)? { get set }
     
     // MARK: Cloud Cached Passwords
     
-    func createCloudCachedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func createCloudCachedItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         metadata: Data
     )
     
-    func updateCloudCachedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func updateCloudCachedItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         metadata: Data
     )
     
-    func getCloudCachedPasswordEntity(passwordID: PasswordID) -> CloudDataPassword?
+    func getCloudCachedItemEntity(passwordID: ItemID) -> CloudDataItem?
     
-    func listCloudCachedPasswords(in vaultID: VaultID) -> [CloudDataPassword]
-    func listAllCloudCachedPasswords() -> [CloudDataPassword]
+    func listCloudCachedItems(in vaultID: VaultID) -> [CloudDataItem]
+    func listAllCloudCachedItems() -> [CloudDataItem]
         
-    func deleteCloudCachedPassword(passwordID: PasswordID)
-    func deleteAllCloudCachedPasswords()
+    func deleteCloudCachedItem(itemID: ItemID)
+    func deleteAllCloudCachedItems()
     
     // MARK: Cloud Cached Vaults
     

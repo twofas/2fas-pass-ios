@@ -11,18 +11,18 @@ import Common
 final class ChangeProtectionLevelPresenter {
     private let flowController: ChangeProtectionLevelFlowControlling
     
-    var currentProtectionLevel: PasswordProtectionLevel {
+    var currentProtectionLevel: ItemProtectionLevel {
         didSet {
             didSelectProtectionLevel(value: currentProtectionLevel)
         }
     }
     
-    init(flowController: ChangeProtectionLevelFlowControlling, currentProtectionLevel: PasswordProtectionLevel) {
+    init(flowController: ChangeProtectionLevelFlowControlling, currentProtectionLevel: ItemProtectionLevel) {
         self.flowController = flowController
         self.currentProtectionLevel = currentProtectionLevel
     }
     
-    private func didSelectProtectionLevel(value: PasswordProtectionLevel) {
+    private func didSelectProtectionLevel(value: ItemProtectionLevel) {
         flowController.toSelectedProtectionLevel(value: value)
         flowController.close()
     }

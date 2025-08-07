@@ -12,6 +12,7 @@ public final class CloudCacheStorageDataSourceImpl {
     private let coreDataStack: CoreDataStack
     
     public var storageError: ((String) -> Void)?
+    public var initilizingNewStore: (() -> Void)?
     
     var context: NSManagedObjectContext {
         coreDataStack.context
@@ -20,107 +21,102 @@ public final class CloudCacheStorageDataSourceImpl {
     public init() {
         self.coreDataStack = CoreDataStack(
             readOnly: false,
-            name: "CloudCache",
+            name: "CloudCache2",
             bundle: Bundle(for: CloudCacheStorageDataSourceImpl.self),
             isPersistent: true
         )
         coreDataStack.logError = { Log($0, module: .storage) }
+        coreDataStack.initilizingNewStore = { [weak self] in self?.initilizingNewStore?() }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
+        coreDataStack.loadStore()
     }
 }
 
 extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
-    // MARK: Encrypted Passwords
+    // MARK: Cloud Cached Items
     
-    public func createCloudCachedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    public func createCloudCachedItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         metadata: Data
     ) {
-        PasswordCachedEntity.create(
+        ItemCachedEntity.create(
             on: context,
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+            itemID: itemID,
+            content: content,
+            contentType: contentType,
+            contentVersion: contentVersion,
             creationDate: creationDate,
             modificationDate: modificationDate,
-            iconType: iconType,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
-            uris: uris,
-            vaultID: vaultID,
-            metadata: metadata
+            tagIds: tagIds,
+            metadata: metadata,
+            vaultID: vaultID
         )
     }
     
-    public func updateCloudCachedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    public func updateCloudCachedItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         metadata: Data
     ) {
-        PasswordCachedEntity.update(
+        ItemCachedEntity.update(
             on: context,
-            for: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+            for: itemID,
+            content: content,
+            contentType: contentType,
+            contentVersion: contentVersion,
             creationDate: creationDate,
             modificationDate: modificationDate,
-            iconType: iconType,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
-            uris: uris,
+            tagIds: tagIds,
             metadata: metadata
         )
     }
     
-    public func getCloudCachedPasswordEntity(passwordID: PasswordID) -> CloudDataPassword? {
-        guard let entity = PasswordCachedEntity.getEntity(on: context, passwordID: passwordID) else {
+    public func getCloudCachedItemEntity(passwordID: ItemID) -> CloudDataItem? {
+        guard let entity = ItemCachedEntity.getEntity(on: context, itemID: passwordID) else {
             return nil
         }
-        return .init(password: entity.toData(), metadata: entity.metadata)
+        return .init(item: entity.toData(), metadata: entity.metadata)
     }
     
-    public func listCloudCachedPasswords(in vaultID: VaultID) -> [CloudDataPassword] {
-        PasswordCachedEntity.listItemsInVault(on: context, vaultID: vaultID)
-            .map { .init(password: $0.toData(), metadata: $0.metadata) }
+    public func listCloudCachedItems(in vaultID: VaultID) -> [CloudDataItem] {
+        ItemCachedEntity.listItemsInVault(on: context, vaultID: vaultID)
+            .map { .init(item: $0.toData(), metadata: $0.metadata) }
     }
     
-    public func listAllCloudCachedPasswords() -> [CloudDataPassword] {
-        PasswordCachedEntity.listItems(on: context)
-            .map { .init(password: $0.toData(), metadata: $0.metadata) }
+    public func listAllCloudCachedItems() -> [CloudDataItem] {
+        ItemCachedEntity.listItems(on: context)
+            .map { .init(item: $0.toData(), metadata: $0.metadata) }
     }
     
-    public func deleteCloudCachedPassword(passwordID: PasswordID) {
-        guard let entity = PasswordCachedEntity.getEntity(on: context, passwordID: passwordID) else { return }
-        PasswordCachedEntity.delete(on: context, entity: entity)
+    public func deleteCloudCachedItem(itemID: ItemID) {
+        guard let entity = ItemCachedEntity.getEntity(on: context, itemID: itemID) else { return }
+        ItemCachedEntity.delete(on: context, entity: entity)
     }
     
-    public func deleteAllCloudCachedPasswords() {
-        let passwords = PasswordCachedEntity.listItems(on: context)
-        passwords.forEach { entity in
+    public func deleteAllCloudCachedItems() {
+        let items = ItemCachedEntity.listItems(on: context)
+        items.forEach { entity in
             context.delete(entity)
         }
     }

@@ -9,7 +9,11 @@ import RevenueCat
 
 extension MainRepositoryImpl {
     var paymentSubscriptionPlan: SubscriptionPlan {
-        userDefaultsDataSource.debugSubscriptionPlan ?? _subscriptionPlan
+        if isMainAppProcess {
+            userDefaultsDataSource.debugSubscriptionPlan ?? _subscriptionPlan
+        } else {
+            userDefaultsDataSource.lastKnownSubscriptionPlan ?? .free
+        }
     }
     
     var paymentUserId: String? {
@@ -23,7 +27,7 @@ extension MainRepositoryImpl {
             Purchases.logLevel = .info
         }
         Purchases.logHandler = { level, message in
-            Log("[RevenueCat] \(message)", severity: level.severity)
+            Log("[RevenueCat] \(message, privacy: .public)", severity: level.severity)
         }
         Purchases.configure(withAPIKey: apiKey)
         Purchases.shared.delegate = revenueCatDelegate
@@ -131,6 +135,7 @@ private extension MainRepositoryImpl {
             _subscriptionPlan = .free
         }
         
+        userDefaultsDataSource.setLastKnownSubscriptionPlan(_subscriptionPlan)
         notificationCenter.post(name: .paymentStatusChanged, object: nil)
     }
     

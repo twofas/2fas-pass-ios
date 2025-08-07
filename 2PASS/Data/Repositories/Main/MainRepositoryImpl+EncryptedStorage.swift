@@ -6,95 +6,91 @@
 
 import Foundation
 import Common
+import Storage
+
+public enum MigrationError: Error {
+    case verificationFailed
+}
 
 extension MainRepositoryImpl {
-    func createEncryptedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    
+    // MARK: Passwords
+    
+    func createEncryptedItem(
+        itemID: PasswordID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     ) {
         encryptedStorage.createEncryptedPassword(
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+            itemID: itemID,
             creationDate: creationDate,
             modificationDate: modificationDate,
-            iconType: iconType,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content,
             vaultID: vaultID,
-            uris: uris,
             tagIds: tagIds
         )
     }
     
-    func updateEncryptedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func updateEncryptedItem(
+        itemID: PasswordID,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     ) {
         encryptedStorage.updateEncryptedPassword(
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+            itemID: itemID,
             modificationDate: modificationDate,
-            iconType: iconType,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content,
             vaultID: vaultID,
-            uris: uris,
             tagIds: tagIds
         )
     }
     
-    func encryptedPasswordsBatchUpdate(_ passwords: [PasswordEncryptedData]) {
+    func encryptedItemsBatchUpdate(_ passwords: [ItemEncryptedData]) {
         encryptedStorage.batchUpdateRencryptedPasswords(passwords, date: currentDate)
     }
     
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> PasswordEncryptedData? {
-        encryptedStorage.getEncryptedPasswordEntity(passwordID: passwordID)
+    func getEncryptedItemEntity(itemID: PasswordID) -> ItemEncryptedData? {
+        encryptedStorage.getEncryptedPasswordEntity(itemID: itemID)
     }
     
-    func listEncryptedPasswords(in vaultID: VaultID) -> [PasswordEncryptedData] {
-        encryptedStorage.listEncryptedPasswords(in: vaultID)
+    func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
+        encryptedStorage.listEncryptedItems(in: vaultID)
     }
     
-    func listEncryptedPasswords(in vaultID: Common.VaultID, excludeProtectionLevels: Set<PasswordProtectionLevel>) -> [PasswordEncryptedData] {
-        encryptedStorage.listEncryptedPasswords(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
+    func listEncryptedItems(in vaultID: Common.VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData] {
+        encryptedStorage.listEncryptedItems(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
     }
     
-    func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID) {
+    func addEncryptedItem(_ passwordID: PasswordID, to vaultID: VaultID) {
         encryptedStorage.addEncryptedPassword(passwordID, to: vaultID)
     }
     
-    func deleteEncryptedPassword(passwordID: PasswordID) {
-        encryptedStorage.deleteEncryptedPassword(passwordID: passwordID)
+    func deleteEncryptedItem(itemID: PasswordID) {
+        encryptedStorage.deleteEncryptedPassword(itemID: itemID)
     }
     
-    func deleteAllEncryptedPasswords() {
+    func deleteAllEncryptedItems() {
         encryptedStorage.deleteAllEncryptedPasswords(in: selectedVault?.vaultID)
     }
     
@@ -168,7 +164,68 @@ extension MainRepositoryImpl {
         _selectedVault = nil
     }
     
+    func requiresReencryptionMigration() -> Bool {
+        hasEncryptionReference && encryptedStorage.migrationRequired
+    }
+    
+    func loadEncryptedStore() {
+        encryptedStorage.loadStore()
+        encryptedStorage.warmUp()
+    }
+    
+    func loadEncryptedStoreWithReencryptionMigration() {
+        MigrationController.current = .init(
+            setupKeys: { vaultID in
+                guard self.hasCachedKeys() == false else {
+                    return
+                }
+                
+                guard let masterKey = self.empheralMasterKey else {
+                    Log("Error while getting Master Key - it's missing", severity: .error)
+                    return
+                }
+                
+                guard let trustedKey = self.generateTrustedKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                    let trustedKeyData = Data(hexString: trustedKey) else {
+                    return
+                }
+                self.setTrustedKey(trustedKeyData)
+                
+                guard let secureKey = self.generateSecureKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                    let secureKeyData = Data(hexString: secureKey) else {
+                    return
+                }
+                self.setSecureKey(secureKeyData)
+                
+                guard let externalKey = self.generateExternalKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                    let externalKeyData = Data(hexString: externalKey) else {
+                    return
+                }
+                self.setExternalKey(externalKeyData)
+                
+                self.preparedCachedKeys()
+            },
+            encrypt: { data, protectionLevel in
+                if let key = self.getKey(isPassword: false, protectionLevel: protectionLevel) {
+                    return self.encrypt(data, key: key)
+                }
+                return nil
+            },
+            decrypt: { data, protectionLevel in
+                if let key = self.getKey(isPassword: false, protectionLevel: protectionLevel) {
+                    return self.decrypt(data, key: key)
+                }
+                return nil
+            }
+        )
+        
+        encryptedStorage.loadStore()
+        
+        MigrationController.current = nil
+    }
+    
     // MARK: Deleted Items
+    
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID) {
         Log("Creating Deleted Item for ItemID: \(id)", module: .mainRepository)
         encryptedStorage.createDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
@@ -188,6 +245,8 @@ extension MainRepositoryImpl {
         encryptedStorage.deleteDeletedItem(id: id)
     }
     
+    // MARK: Tags
+    
     func createEncryptedTag(_ tag: ItemTagEncryptedData) {
         encryptedStorage.createEncryptedTag(tag)
     }
@@ -196,13 +255,23 @@ extension MainRepositoryImpl {
         encryptedStorage.updateEncryptedTag(tag)
     }
     
-    func deleteEncryptedTag(id: ItemTagID) -> Bool {
-        encryptedStorage.deleteEncryptedTag(id: id)
+    func deleteEncryptedTag(tagID: ItemTagID) {
+        encryptedStorage.deleteEncryptedTag(tagID: tagID)
     }
     
     func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData] {
         encryptedStorage.listEncryptedTags(in: vaultID)
     }
+    
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID) {
+        encryptedStorage.encryptedTagBatchUpdate(tags, in: vault)
+    }
+    
+    func deleteAllEncryptedTags(in vault: VaultID) {
+        encryptedStorage.deleteAllEncryptedTags(in: vault)
+    }
+    
+    // MARK: Web Browser Extension
     
     func createEncryptedWebBrowser(_ data: WebBrowserEncryptedData) {
         encryptedStorage.createEncryptedWebBrowser(data)

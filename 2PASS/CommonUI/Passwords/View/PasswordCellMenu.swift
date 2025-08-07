@@ -17,7 +17,7 @@ enum PasswordCellMenu: CaseIterable {
     var label: String {
         switch self {
         case .view: T.loginViewActionViewDetails
-        case .edit: T.commonEdit
+        case .edit: T.loginEdit
         case .copyUsername: T.loginViewActionCopyUsername
         case .copyPassword: T.loginViewActionCopyPassword
         case .goToURI: T.loginViewActionOpenUri

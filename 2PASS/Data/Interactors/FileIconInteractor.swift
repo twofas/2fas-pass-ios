@@ -60,7 +60,7 @@ extension FileIconInteractor: FileIconInteracting {
     func fetchImage(from url: URL) async throws -> Data {
         do {
             let data = try await mainRepository.fetchIconImage(from: url)
-            Log("FileIconInteractor: image fetched \(url)", module: .interactor)
+            Log("FileIconInteractor: image fetched \(url)", module: .interactor, severity: .info, save: false)
             return data
             
         } catch {

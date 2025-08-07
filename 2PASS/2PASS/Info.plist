@@ -15,6 +15,25 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLIconFile</key>
+			<string>icon_64</string>
+			<key>CFBundleURLName</key>
+			<string>2FAS Pass</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>twofaspass</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>twofasauth</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

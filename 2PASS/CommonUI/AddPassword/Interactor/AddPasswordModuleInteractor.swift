@@ -8,7 +8,21 @@ import Foundation
 import Data
 import Common
 
-public typealias SavePasswordResult = Result<PasswordID, SavePasswordError>
+public typealias SavePasswordResult = Result<SavePasswordSuccess, SavePasswordError>
+
+public enum SavePasswordSuccess {
+    case saved(PasswordID)
+    case deleted(PasswordID)
+    
+    public var passwordID: PasswordID {
+        switch self {
+        case .saved(let passwordID):
+            return passwordID
+        case .deleted(let passwordID):
+            return passwordID
+        }
+    }
+}
 
 public enum SavePasswordError: Error {
     case userCancelled
@@ -25,7 +39,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
     var hasPasswords: Bool { get }
     var changeRequest: PasswordDataChangeRequest? { get }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
     
     func getEditPassword() -> PasswordData?
     func getDecryptedPassword() -> String?
@@ -36,7 +50,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
         password: String?,
         notes: String?,
         iconType: PasswordIconType,
-        protectionLevel: PasswordProtectionLevel,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?
     ) -> SavePasswordResult
     
@@ -46,6 +60,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
     func generatePassword() -> String
     func fetchIconImage(from url: URL) async throws -> Data
     func checkCurrentPasswordState() -> AddPasswordModuleInteractorCheckState
+    func moveToTrash() -> PasswordID?
 }
 
 final class AddPasswordModuleInteractor {
@@ -59,6 +74,7 @@ final class AddPasswordModuleInteractor {
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let fileIconInteractor: FileIconInteracting
     private let currentDateInteractor: CurrentDateInteracting
+    private let passwordListInteractor: PasswordListInteracting
     private let editPasswordID: PasswordID?
     
     private var modificationDate: Date?
@@ -72,6 +88,7 @@ final class AddPasswordModuleInteractor {
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         fileIconInteractor: FileIconInteracting,
         currentDateInteractor: CurrentDateInteracting,
+        passwordListInteractor: PasswordListInteracting,
         editPasswordID: PasswordID?,
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
@@ -83,6 +100,7 @@ final class AddPasswordModuleInteractor {
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.fileIconInteractor = fileIconInteractor
         self.currentDateInteractor = currentDateInteractor
+        self.passwordListInteractor = passwordListInteractor
         self.editPasswordID = editPasswordID
         self.changeRequest = changeRequest
     }
@@ -94,7 +112,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         passwordInteractor.hasPasswords
     }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
     }
     
@@ -121,7 +139,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         password: String?,
         notes: String?,
         iconType: PasswordIconType,
-        protectionLevel: PasswordProtectionLevel,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?
     ) -> SavePasswordResult {
         let date = currentDateInteractor.currentDate
@@ -154,7 +172,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                     )
                 }
                 
-                return .success(current.passwordID)
+                return .success(.saved(current.passwordID))
             case .failure(let error): return .failure(.interactorError(error))
             }
         } else {
@@ -187,14 +205,14 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                     )
                 }
                 
-                return .success(passwordID)
+                return .success(.saved(passwordID))
             case .failure(let error): return .failure(.interactorError(error))
             }
         }
     }
     
     func mostUsedUsernames() -> [String] {
-        passwordInteractor.mostUsedUsernames()
+        passwordListInteractor.mostUsedUsernames()
     }
     
     func normalizeURLString(_ str: String) -> String? {
@@ -223,5 +241,15 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
             return .edited
         }
         return .noChange
+    }
+    
+    func moveToTrash() -> PasswordID? {
+        guard let editPasswordID else {
+            return nil
+        }
+        passwordInteractor.markAsTrashed(for: editPasswordID)
+        passwordInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
+        return editPasswordID
     }
 }

@@ -9,12 +9,12 @@ import Common
 
 public struct SecurityTierPickerView: View {
     
-    public init(selected: Binding<PasswordProtectionLevel>) {
+    public init(selected: Binding<ItemProtectionLevel>) {
         self._selected = selected
     }
     
     @Binding
-    var selected: PasswordProtectionLevel
+    var selected: ItemProtectionLevel
     
     @State
     private var showHelp: Bool = false
@@ -22,7 +22,7 @@ public struct SecurityTierPickerView: View {
     public var body: some View {
         Section {
             Picker(selection: $selected) {
-                ForEach(PasswordProtectionLevel.allCases, id: \.self) { option in
+                ForEach(ItemProtectionLevel.allCases, id: \.self) { option in
                     HStack(spacing: Spacing.m) {
                         option.icon
                             .renderingMode(.template)

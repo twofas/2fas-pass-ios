@@ -953,6 +953,39 @@
         }
       }
     },
+    "cloud_vault_delete_confirm_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete this backup? You cannot restore it later."
+          }
+        }
+      }
+    },
+    "cloud_vault_delete_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete backup?"
+          }
+        }
+      }
+    },
+    "cloud_vault_removing_failure" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault deletion failed"
+          }
+        }
+      }
+    },
     "common_add" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1074,13 +1107,24 @@
         }
       }
     },
+    "common_done" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
     "common_edit" : {
       "extractionState" : "manual",
       "localizations" : {
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Item"
+            "value" : "Edit"
           }
         }
       }
@@ -2323,40 +2367,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Settings"
-          }
-        }
-      }
-    },
-    "home_empty_import_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Do you want to import a backup file or transfer data from another password manager?"
-          }
-        }
-      }
-    },
-    "home_empty_msg" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap the + button to begin"
-          }
-        }
-      }
-    },
-    "home_empty_msg_ios %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap %@ to begin"
+            "value" : "Start with quick setup"
           }
         }
       }
@@ -2367,7 +2378,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add first Item"
+            "value" : "No Items available"
           }
         }
       }
@@ -2984,6 +2995,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove Item?"
+          }
+        }
+      }
+    },
+    "login_delete_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this Item from 2FAS Pass"
+          }
+        }
+      }
+    },
+    "login_edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit item"
           }
         }
       }
@@ -3714,6 +3747,28 @@
         }
       }
     },
+    "migration_error_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please restart the app and try again"
+          }
+        }
+      }
+    },
+    "migration_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migration failed"
+          }
+        }
+      }
+    },
     "onboarding_create_master_password_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4182,7 +4237,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opening a 2FAS Pass backup file is not supported in Files. Go to 2FAS Pass Settings to import it."
+            "value" : "Opening a 2FAS Pass backup file is not supported. Go to 2FAS Pass Settings to import it."
           }
         }
       }
@@ -4491,6 +4546,149 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "2FAS Pass request"
+          }
+        }
+      }
+    },
+    "quick_setup_autofill_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select 2FAS Pass to automatically fill in Item details in other apps."
+          }
+        }
+      }
+    },
+    "quick_setup_autofill_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AutoFill"
+          }
+        }
+      }
+    },
+    "quick_setup_icloud_sync_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Securely sync your data using iCloud in case this device gets lost or damaged."
+          }
+        }
+      }
+    },
+    "quick_setup_icloud_sync_failure" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to enable Vault Sync"
+          }
+        }
+      }
+    },
+    "quick_setup_icloud_sync_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault Sync"
+          }
+        }
+      }
+    },
+    "quick_setup_import_items_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Items from 2FAS Pass Backup"
+          }
+        }
+      }
+    },
+    "quick_setup_recommended" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended"
+          }
+        }
+      }
+    },
+    "quick_setup_security_tier_default_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "quick_setup_security_tier_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decide how to use individual Items with Autofill and share them with the Browser Extension."
+          }
+        }
+      }
+    },
+    "quick_setup_security_tier_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security Tier"
+          }
+        }
+      }
+    },
+    "quick_setup_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personlize your security and usability preferences."
+          }
+        }
+      }
+    },
+    "quick_setup_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick setup"
+          }
+        }
+      }
+    },
+    "quick_setup_transfer_items_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer passwords from other apps"
           }
         }
       }
@@ -6145,6 +6343,28 @@
         }
       }
     },
+    "settings_2fas_get" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get 2FAS Auth"
+          }
+        }
+      }
+    },
+    "settings_2fas_open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open 2FAS Auth"
+          }
+        }
+      }
+    },
     "settings_about" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6415,7 +6635,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set the duration after which the autofill service will require the Master Password again. This is only relevant for Tier 3 services."
+            "value" : "Set the duration after which the autofill service will require the Master Password again. This is only relevant for services assigned to the Secret Tier."
           }
         }
       }
@@ -7168,6 +7388,17 @@
         }
       }
     },
+    "settings_manage_tokens_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage 2FA Tokens"
+          }
+        }
+      }
+    },
     "settings_protection_level_help" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7537,7 +7768,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Master Password was changed. To access this vault use Restore and Recovery Kit."
+            "value" : "Master Password was changed. To access this Vault use Restore and Recovery Kit."
           }
         }
       }

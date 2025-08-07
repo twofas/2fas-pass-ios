@@ -8,11 +8,11 @@ import Foundation
 import Common
 
 extension MainRepositoryImpl {
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         userDefaultsDataSource.currentDefaultProtectionLevel
     }
     
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel) {
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
         userDefaultsDataSource.setDefaultProtectionLevel(value)
     }
     

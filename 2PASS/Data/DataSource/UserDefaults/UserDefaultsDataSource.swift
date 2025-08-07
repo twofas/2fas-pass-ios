@@ -47,8 +47,8 @@ protocol UserDefaultsDataSource: AnyObject {
     func setIncorrectBiometryCountAttempt(_ count: Int)
     func clearIncorrectBiometryCountAttempt()
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel)
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
     
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
@@ -103,4 +103,13 @@ protocol UserDefaultsDataSource: AnyObject {
     var debugSubscriptionPlan: SubscriptionPlan? { get }
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan)
     func clearDebugSubscriptionPlan()
+    
+    var lastKnownAppVersion: String? { get }
+    func setLastKnownAppVersion(_ version: String)
+    
+    var lastKnownSubscriptionPlan: SubscriptionPlan? { get }
+    func setLastKnownSubscriptionPlan(_ plan: SubscriptionPlan)
+    
+    var shouldShowQuickSetup: Bool { get }
+    func setShouldShowQuickSetup(_ value: Bool)
 }

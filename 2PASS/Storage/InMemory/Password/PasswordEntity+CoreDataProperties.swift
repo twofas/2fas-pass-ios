@@ -65,7 +65,7 @@ extension PasswordEntity {
                 }
                 return .no
             }(),
-            protectionLevel: PasswordProtectionLevel(level: level),
+            protectionLevel: ItemProtectionLevel(level: level),
             uris: { () -> [PasswordURI]? in
                 guard let uris else { return nil }
                 return uris.enumerated().map { index, uri in

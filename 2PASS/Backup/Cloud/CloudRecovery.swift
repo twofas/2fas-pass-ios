@@ -10,6 +10,7 @@ import Common
 
 public protocol CloudRecovering: AnyObject {
     func listVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func deleteVault(id: VaultID) async throws
 }
 
 public final class CloudRecovery: CloudRecovering {
@@ -47,7 +48,17 @@ public final class CloudRecovery: CloudRecovering {
         queryOperation.queryResultBlock = queryResultBlock
 
         database.add(queryOperation)
-
+    }
+    
+    public func deleteVault(id: VaultID) async throws {
+        Log("CloudKit - deleting zone", module: .cloudSync)
+        do {
+            try await database.deleteRecordZone(withID: .from(vaultID: id))
+            Log("CloudKit - deleting zone - success", module: .cloudSync)
+        } catch {
+            Log("CloudKit - deleting zone - handling error: \(error)", module: .cloudSync)
+            throw error
+        }
     }
     
     func recordMatchedBlock(_ recordID: CKRecord.ID, _ result: Result<CKRecord, any Error>) -> Void {
@@ -64,17 +75,12 @@ public final class CloudRecovery: CloudRecovering {
     func queryResultBlock(_ result: Result<CKQueryOperation.Cursor?, any Error>) -> Void {
         switch result {
         case .success(let cursor):
-            if let cursor = cursor {
+            if let cursor {
                 self.fetchMoreRecords(cursor: cursor)
             } else {
                 Log("CloudRecovery - Query completed!")
-                // TODO: Remove some time after release
-                // Filtering the pre-zone Vault
-                let vaults = self.vaults
-                let oldZone = CKRecordZone.ID(zoneName: "TwoPassZone", ownerName: CKCurrentUserDefaultName)
-                let filteredVaults = vaults.filter({ $0.zoneID != oldZone })
                 
-                let sortedVaults = filteredVaults.sorted(by: { $0.updatedAt > $1.updatedAt })
+                let sortedVaults = vaults.sorted(by: { $0.updatedAt > $1.updatedAt })
                 
                 DispatchQueue.main.async {
                     self.completion?(.success(sortedVaults))

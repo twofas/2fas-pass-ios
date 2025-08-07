@@ -8,6 +8,7 @@ import AuthenticationServices
 import SwiftUI
 import Data
 import CommonUI
+import Common
 
 final class CredentialProviderViewController: ASCredentialProviderViewController {
 
@@ -28,6 +29,11 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
         super.viewWillAppear(animated)
         
         presenter.startBiometryIfAvailable()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)        
+        LogSave()
     }
 
     override func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {

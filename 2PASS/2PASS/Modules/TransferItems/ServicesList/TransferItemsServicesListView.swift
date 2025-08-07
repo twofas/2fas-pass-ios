@@ -30,12 +30,24 @@ struct TransferItemsServicesListView: View {
                     .settingsFooter()
             }
         }
+        .toolbar {
+            if presenter.flowContext.kind == .quickSetup {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(T.commonCancel.localizedKey) {
+                        presenter.flowContext.onClose?()
+                    }
+                }
+            }
+        }
         .router(router: TransferItemsServicesListRouter(), destination: $presenter.destination)
     }
 }
 
 #Preview {
     NavigationStack {
-        TransferItemsServicesListView(presenter: .init(interactor: ModuleInteractorFactory.shared.transferItemsServicesListInteractor()))
+        TransferItemsServicesListView(presenter: .init(
+            interactor: ModuleInteractorFactory.shared.transferItemsServicesListInteractor(),
+            flowContext: .settings
+        ))
     }
 }

@@ -210,9 +210,9 @@ extension LoginInteractor: LoginInteracting {
             completion(.invalidPassword)
             return
         }
-        guard let trustedPasswordName = mainRepository
-            .listEncryptedPasswords(in: vault.vaultID)
-            .filter({ $0.protectionLevel != .topSecret }).first?.name else {
+        guard let trustedContent = mainRepository
+            .listEncryptedItems(in: vault.vaultID)
+            .filter({ $0.protectionLevel != .topSecret }).first?.content else {
             Log("LoginInteractor: Can't get Trusted Password", module: .interactor, severity: .error)
             completion(.invalidPassword)
             return
@@ -226,7 +226,7 @@ extension LoginInteractor: LoginInteracting {
             
         }
         if mainRepository.decrypt(
-            trustedPasswordName,
+            trustedContent,
             key: mainRepository.createSymmetricKey(from: trustedKey)
         ) != nil {
             securityInteractor.markCorrectLogin()

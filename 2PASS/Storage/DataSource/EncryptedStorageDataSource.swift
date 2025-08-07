@@ -9,50 +9,47 @@ import CoreData
 import Common
 
 public protocol EncryptedStorageDataSource: AnyObject {
+    func loadStore()
+    var migrationRequired: Bool { get }
+    
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: Encrypted Passwords
     
     func createEncryptedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        itemID: PasswordID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     )
     
     func updateEncryptedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+        itemID: PasswordID,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     )
-    func batchUpdateRencryptedPasswords(_ passwords: [PasswordEncryptedData], date: Date)
+    func batchUpdateRencryptedPasswords(_ passwords: [ItemEncryptedData], date: Date)
     
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> PasswordEncryptedData?
+    func getEncryptedPasswordEntity(itemID: PasswordID) -> ItemEncryptedData?
     
-    func listEncryptedPasswords(in vaultID: VaultID) -> [PasswordEncryptedData]
-    func listEncryptedPasswords(in vaultID: VaultID, excludeProtectionLevels: Set<PasswordProtectionLevel>) -> [PasswordEncryptedData]
+    func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
+    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
     
-    func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID)
+    func addEncryptedPassword(_ itemID: PasswordID, to vaultID: VaultID)
     
-    func deleteEncryptedPassword(passwordID: PasswordID)
+    func deleteEncryptedPassword(itemID: PasswordID)
     func deleteAllEncryptedPasswords(in vault: VaultID?)
     
     // MARK: Encrypted Vaults
@@ -90,8 +87,10 @@ public protocol EncryptedStorageDataSource: AnyObject {
     // MARK: Tags
     func createEncryptedTag(_ tag: ItemTagEncryptedData)
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
-    func deleteEncryptedTag(id: ItemTagID) -> Bool
+    func deleteEncryptedTag(tagID: ItemTagID)
     func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData]
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
+    func deleteAllEncryptedTags(in vault: VaultID)
     
     // MARK: Storage
     

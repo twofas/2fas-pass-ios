@@ -15,18 +15,24 @@ public protocol PasswordImportInteracting: AnyObject {
 final class PasswordImportInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let passwordInteractor: PasswordInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
     
     init(
         fileIconInteractor: FileIconInteracting,
         passwordInteractor: PasswordInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
+        tagInteractor: TagInteracting,
         mainRepository: MainRepository
     ) {
         self.fileIconInteractor = fileIconInteractor
         self.passwordInteractor = passwordInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
     }
 }
@@ -38,10 +44,10 @@ extension PasswordImportInteractor: PasswordImportInteracting {
     }
     
     func importDeleted(_ deleted: [DeletedItemData]) {
-        let current = Set(passwordInteractor.listDeletedItems())
+        let current = Set(deletedItemsInteractor.listDeletedItems())
         let toAdd = Set(deleted).subtracting(current)
         toAdd.forEach {
-            passwordInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
+            deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
         }
         Log("PasswordImportInteractor - deleted passwords to add: \(toAdd.count)", module: .interactor)
         passwordInteractor.saveStorage()
@@ -57,7 +63,7 @@ private extension PasswordImportInteractor {
         var new = 0
         var failure = 0
         
-        let localTags = passwordInteractor.listAllTags()
+        let localTags = tagInteractor.listAllTags()
         let localPasswords = passwordInteractor.listAllPasswords()
         
         let decryptedLocalPasswordValues: [PasswordID: String] = localPasswords.reduce(into: [:]) { result, password in
@@ -87,9 +93,9 @@ private extension PasswordImportInteractor {
         
         for tag in tags {
             if localTags.contains(where: { $0.id == tag.id }) {
-                passwordInteractor.updateTag(data: tag)
+                tagInteractor.updateTag(data: tag)
             } else {
-                passwordInteractor.createTag(data: tag)
+                tagInteractor.createTag(data: tag)
             }
         }
         
@@ -161,6 +167,9 @@ private extension PasswordImportInteractor {
         Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         passwordInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
+
+        NotificationCenter.default.post(name: .didImportItems, object: nil)
+        
         return imported
     }
     

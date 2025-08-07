@@ -19,8 +19,8 @@ public struct PasswordEncryptedData: Hashable, Identifiable {
     public let creationDate: Date
     public let modificationDate: Date
     public let iconType: PasswordEncryptedIconType
-    public let trashedStatus: PasswordTrashedStatus
-    public let protectionLevel: PasswordProtectionLevel
+    public let trashedStatus: ItemTrashedStatus
+    public let protectionLevel: ItemProtectionLevel
     public let vaultID: VaultID
     public let uris: PasswordEncryptedURIs?
     public let tagIds: [ItemTagID]?
@@ -34,8 +34,8 @@ public struct PasswordEncryptedData: Hashable, Identifiable {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
         uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?

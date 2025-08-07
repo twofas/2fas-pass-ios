@@ -16,7 +16,7 @@ final class LogHandler: LogStorageHandling {
         let severity: Int
     }
     
-    private let maxEntries: Int = 10000
+    private let maxEntries: Int = 5000
     private let checkEvery: Int = 300
     private let saveEvery: Int = 10
     private var checkCounter: Int = 0
@@ -93,21 +93,25 @@ final class LogHandler: LogStorageHandling {
     
     func removeAll() {
         queue.sync {
-            LogEntryEntity.removeAll(on: context)
+            context.performAndWait {
+                LogEntryEntity.removeAll(on: context)
+            }
         }
     }
     
     func listAll() -> [LogEntry] {
         queue.sync {
-            LogEntryEntity.listAll(on: context, ascending: false)
-                .map { entity in
-                    LogEntry(
-                        content: entity.content,
-                        timestamp: entity.timestamp,
-                        module: LogModule(rawValue: Int(entity.module)) ?? .unknown,
-                        severity: LogSeverity(rawValue: Int(entity.severity)) ?? .unknown
-                    )
-                }
+            context.performAndWait {
+                LogEntryEntity.listAll(on: context, ascending: false)
+                    .map { entity in
+                        LogEntry(
+                            content: entity.content,
+                            timestamp: entity.timestamp,
+                            module: LogModule(rawValue: Int(entity.module)) ?? .unknown,
+                            severity: LogSeverity(rawValue: Int(entity.severity)) ?? .unknown
+                        )
+                    }
+            }
         }
     }
     
@@ -118,7 +122,7 @@ final class LogHandler: LogStorageHandling {
     }
     
     @objc(save)
-    private func save() {
+    func save() {
         queue.async(flags: .barrier) { [weak self] in
             self?.saveCounter = 0
             self?.zoneSaveCounter = 0

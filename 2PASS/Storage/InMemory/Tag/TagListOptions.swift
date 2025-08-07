@@ -8,25 +8,25 @@ import Common
 
 public enum TagListOptions {
     case tag(ItemTagID)
-    case all(VaultID)
+    case all
     case tags([ItemTagID])
-    case byName(String, VaultID)
+    case byName(String)
 }
 
 extension TagListOptions {
-    var predicate: NSPredicate {
+    var predicate: NSPredicate? {
         switch self {
         case .tag(let itemTagID): TagPredicate.findByItemTagID(itemTagID)
-        case .all(let vaultID): TagPredicate.allTagsFromVault(vaultID)
+        case .all: nil
         case .tags(let list): TagPredicate.tagsIdentifiedByItemTagIDs(list)
-        case .byName(let phrase, let vaultID): TagPredicate.findByName(phrase, in: vaultID)
+        case .byName(let phrase): TagPredicate.findByName(phrase)
         }
     }
     
     var sortDescriptors: [NSSortDescriptor]? {
         switch self {
         case .tag: nil
-        case .all: nil
+        case .all: [TagSortDescriptor.sortByNameAscending]
         case .tags: [TagSortDescriptor.position]
         case .byName: [TagSortDescriptor.sortByNameAscending]
         }
@@ -48,15 +48,11 @@ enum TagPredicate {
         NSPredicate(format: "tagID == %@", itemTagID as CVarArg)
     }
     
-    static func allTagsFromVault(_ vaultID: VaultID) -> NSPredicate {
-        NSPredicate(format: "vaultID == %@", vaultID as CVarArg)
-    }
-    
     static func tagsIdentifiedByItemTagIDs(_ itemTagIDs: [ItemTagID]) -> NSPredicate {
         NSPredicate(format: "tagID IN %@", itemTagIDs)
     }
     
-    static func findByName(_ phrase: String, in vaultID: VaultID) -> NSPredicate {
-        NSPredicate(format: "(name contains[c] %@) AND (vaultID == %@)", phrase, vaultID as CVarArg)
+    static func findByName(_ phrase: String) -> NSPredicate {
+        NSPredicate(format: "name contains[c] %@", phrase)
     }
 }

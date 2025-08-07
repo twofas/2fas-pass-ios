@@ -49,7 +49,7 @@ extension PasswordsViewController: PasswordsViewControlling {
     
     func showEmptyScreen() {
         passwordsList?.isScrollEnabled = false
-        VoiceOver.say(T.homeEmptyMsg)
+        VoiceOver.say(T.homeEmptyTitle)
         guard emptyList?.isHidden == true else { return }
         emptyList?.alpha = 0
         emptyList?.isHidden = false

@@ -23,12 +23,14 @@ public final class LogStorageDataSourceImpl {
             readOnly: false,
             name: "LogStorage",
             bundle: Bundle(for: LogStorageDataSourceImpl.self),
+            storeInGroup: true,	
             isPersistent: true
         )
         handler = LogHandler(coreDataStack: coreDataStack)
         
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
+        coreDataStack.loadStore()
     }
 }
 
@@ -51,5 +53,17 @@ extension LogStorageDataSourceImpl: LogStorageDataSource {
     
     public func removeAll() {
         handler.removeAll()
+    }
+    
+    public func save() {
+        handler.save()
+    }
+    
+    public func removeOldStoreLogs() {
+        do {
+            try CoreDataStack.removeStore(name: "LogStorage")
+        } catch {
+            Log("Failed to remove old store logs: \(error)", module: .storage, severity: .error)
+        }
     }
 }

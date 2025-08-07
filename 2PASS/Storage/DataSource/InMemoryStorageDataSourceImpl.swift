@@ -26,6 +26,7 @@ public final class InMemoryStorageDataSourceImpl {
         )
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
+        coreDataStack.loadStore()
     }
 }
 
@@ -39,8 +40,8 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) {
@@ -69,8 +70,8 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         notes: String?,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) {
@@ -187,8 +188,8 @@ extension InMemoryStorageDataSourceImpl {
             )
     }
     
-    public func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date, vaultID: VaultID) {
-        let listAll = TagEntity.listItems(on: context, options: .all(vaultID))
+    public func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date) {
+        let listAll = TagEntity.listItems(on: context, options: .all)
         for tag in tags {
             if let entity = listAll.first(where: { $0.tagID == tag.id }) {
                 TagEntity
@@ -228,8 +229,8 @@ extension InMemoryStorageDataSourceImpl {
         TagEntity.delete(on: context, entity: entity)
     }
     
-    public func deleteAllTagEntities(for vaultID: VaultID) {
-        TagEntity.deleteAllTagEntities(on: context, vaultID: vaultID)
+    public func deleteAllTagEntities() {
+        TagEntity.deleteAllTagEntities(on: context)
     }
 }
 

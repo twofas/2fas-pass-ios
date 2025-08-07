@@ -8,6 +8,32 @@ import Common
 import CommonUI
 import Data
 
+struct BackupFlowContext {
+    
+    typealias ResultCallback = Callback
+    
+    enum Kind {
+        case quickSetup
+        case settings
+    }
+    
+    let kind: Kind
+    var onClose: ResultCallback?
+    
+    static var settings: Self {
+        .init(kind: .settings)
+    }
+    
+    static func quickSetup(onClose: @escaping ResultCallback) -> Self {
+        .init(kind: .quickSetup, onClose: onClose)
+    }
+    
+    private init(kind: Kind, onClose: ResultCallback? = nil) {
+        self.kind = kind
+        self.onClose = onClose
+    }
+}
+
 enum BackupDestination: RouterDestination {
     case currentPassword(config: LoginModuleInteractorConfig, onSuccess: Callback)
     case export(onClose: Callback)
@@ -39,9 +65,11 @@ final class BackupPresenter {
     
     private(set) var isExportDisabled: Bool
     
+    let flowContext: BackupFlowContext
     private let interactor: BackupModuleInteracting
 
-    init(interactor: BackupModuleInteracting) {
+    init(interactor: BackupModuleInteracting, flowContext: BackupFlowContext) {
+        self.flowContext = flowContext
         self.interactor = interactor
         
         isExportDisabled = !interactor.hasPasswords
@@ -90,34 +118,34 @@ extension BackupPresenter {
                                 destination = .importing(
                                     .decrypted(passwords, tags: tags, deleted: deleted),
                                     onClose: { [weak self] in
-                                        self?.destination = nil
+                                        self?.close()
                                     }
                                 )
                             } else {
                                 destination = .importingFailure(onClose: { [weak self] in
-                                    self?.destination = nil
+                                    self?.close()
                                 })
                             }
                         case .encrypted(let vault, let entropy):
                             if let entropy {
                                 destination = .recoveryEnterPassword(vault, entropy: entropy, onClose: { [weak self] in
-                                    self?.destination = nil
+                                    self?.close()
                                 })
                             } else {
                                 destination = .recovery(vault, onClose: { [weak self] in
-                                    self?.destination = nil
+                                    self?.close()
                                 })
                             }
                         }
                     case .failure:
                         destination = .importingFailure(onClose: { [weak self] in
-                            self?.destination = nil
+                            self?.close()
                         })
                     }
                 })
             case .failure:
                 self?.destination = .importingFailure(onClose: { [weak self] in
-                    self?.destination = nil
+                    self?.close()
                 })
             }
         }
@@ -127,7 +155,7 @@ extension BackupPresenter {
         Task { @MainActor in
             if await interactor.loginUsingBiometryIfAvailable() {
                 destination = .export(onClose: { [weak self] in
-                    self?.destination = nil
+                    self?.close()
                 })
                 
             } else {
@@ -138,11 +166,20 @@ extension BackupPresenter {
                         try await Task.sleep(for: .milliseconds(700))
                         
                         self?.destination = .export(onClose: { [weak self] in
-                            self?.destination = nil
+                            self?.close()
                         })
                     }
                 })
             }
+        }
+    }
+    
+    private func close() {
+        switch flowContext.kind {
+        case .quickSetup:
+            flowContext.onClose?()
+        case .settings:
+            destination = nil
         }
     }
 }

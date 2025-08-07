@@ -13,7 +13,7 @@ protocol AppSecurityModuleInteracting: AnyObject {
     var isBiometryEnabled: Bool { get }
     var isBiometryAvailable: Bool { get }
     var limitOfFailedAttempts: AppLockAttempts { get set }
-    var defaultSecurityTier: PasswordProtectionLevel { get }
+    var defaultSecurityTier: ItemProtectionLevel { get }
     
     func loginUsingBiometryIfAvailable() async -> Bool
     func verifyUsingBiometryIfAvailable() async -> Bool
@@ -52,7 +52,7 @@ extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
     var isBiometryEnabled: Bool { biometryInteractor.isBiometryEnabled }
     var isBiometryAvailable: Bool { biometryInteractor.isBiometryAvailable }
     
-    var defaultSecurityTier: PasswordProtectionLevel {
+    var defaultSecurityTier: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
     }
     

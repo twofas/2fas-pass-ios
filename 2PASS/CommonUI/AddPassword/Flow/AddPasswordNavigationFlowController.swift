@@ -67,8 +67,8 @@ extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
     }
     
     func addPasswordChangeProtectionLevel(
-        current: PasswordProtectionLevel,
-        completion: @escaping (PasswordProtectionLevel) -> Void
+        current: ItemProtectionLevel,
+        completion: @escaping (ItemProtectionLevel) -> Void
     ) {
         ChangeProtectionLevelFlowController.push(
             on: navigationController,

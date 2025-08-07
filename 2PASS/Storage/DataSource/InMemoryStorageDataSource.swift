@@ -22,8 +22,8 @@ public protocol InMemoryStorageDataSource: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     )
@@ -36,8 +36,8 @@ public protocol InMemoryStorageDataSource: AnyObject {
         notes: String?,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     )
@@ -76,7 +76,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         color: UIColor?
     )
     
-    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date, vaultID: VaultID)
+    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
     
     func getTagEntity(
         tagID: ItemTagID
@@ -87,7 +87,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     ) -> [ItemTagData]
     
     func deleteTag(tagID: ItemTagID)
-    func deleteAllTagEntities(for vaultID: VaultID)
+    func deleteAllTagEntities()
     
     // MARK: - Other
     

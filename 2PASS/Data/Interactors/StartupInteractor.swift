@@ -58,17 +58,20 @@ final class StartupInteractor {
     private let storageInteractor: StorageInteracting
     private let biometryInteractor: BiometryInteracting
     private let onboardingInteractor: OnboardingInteracting
+    private let migrationInteractor: MigrationInteracting
     
     init(
         protectionInteractor: ProtectionInteracting,
         storageInteractor: StorageInteracting,
         biometryInteractor: BiometryInteracting,
-        onboardingInteractor: OnboardingInteracting
+        onboardingInteractor: OnboardingInteracting,
+        migrationInteractor: MigrationInteracting
     ) {
         self.protectionInteractor = protectionInteractor
         self.storageInteractor = storageInteractor
         self.biometryInteractor = biometryInteractor
         self.onboardingInteractor = onboardingInteractor
+        self.migrationInteractor = migrationInteractor
     }
 }
 
@@ -94,13 +97,16 @@ extension StartupInteractor: StartupInteracting {
         protectionInteractor.hasAppKey
         && protectionInteractor.hasEncryptedEntropy
         && protectionInteractor.hasEncryptionReference
-        && protectionInteractor.hasVault
+        && (migrationInteractor.requiresReencryptionMigration() || protectionInteractor.hasVault)
         && onboardingInteractor.isOnboardingCompleted
     }
     
     /// Run once on app startup
     func initialize() {
         Log("StartupInteractor: Initializing", module: .interactor)
+        
+        migrationInteractor.migrateIfNeeded()
+        
         if !protectionInteractor.hasDeviceID {
             Log(
                 "StartupInteractor: No Device ID. Clearing all encryption elements and setting new Device ID",
@@ -123,6 +129,13 @@ extension StartupInteractor: StartupInteracting {
     /// Run every time user is in logged out state
     func start() -> StartupInteractorStartResult {
         Log("StartupInteractor: Start", module: .interactor)
+        
+        if migrationInteractor.requiresReencryptionMigration() {
+            return .login
+        } else {
+            storageInteractor.loadStore()
+        }
+        
         guard protectionInteractor.hasVault, onboardingInteractor.isOnboardingCompleted else {
             Log("StartupInteractor: Select Vault", module: .interactor)
             return .selectVault
@@ -174,7 +187,9 @@ extension StartupInteractor: StartupInteracting {
             self?.protectionInteractor.selectVault()
             self?.protectionInteractor.setupKeys()
             self?.protectionInteractor.saveEntropy()
-            self?.storageInteractor.initialize(completion: completion)
+            self?.storageInteractor.initialize {
+                completion()
+            }
         }
     }
     

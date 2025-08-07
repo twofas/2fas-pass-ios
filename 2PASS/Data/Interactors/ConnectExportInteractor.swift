@@ -8,7 +8,7 @@ import CryptoKit
 import Common
 
 protocol ConnectExportInteracting: AnyObject {
-    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (PasswordProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
+    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
     func preparePasswordsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data
     func prepareTagsForConnectExport() async throws(ExportError) -> Data
 }
@@ -17,11 +17,18 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     
     private let mainRepository: MainRepository
     private let passwordInteractor: PasswordInteracting
+    private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting, uriInteractor: URIInteracting) {
+    init(
+        mainRepository: MainRepository,
+        passwordInteractor: PasswordInteracting,
+        tagInteractor: TagInteracting,
+        uriInteractor: URIInteracting
+    ) {
         self.mainRepository = mainRepository
         self.passwordInteractor = passwordInteractor
+        self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
     }
     
@@ -46,7 +53,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
     }
     
-    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (PasswordProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
+    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
         let password = Task { @MainActor in
             mainRepository.getPasswordEntity(passwordID: id, checkInTrash: false)
         }
@@ -61,7 +68,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     }
     
     func prepareTagsForConnectExport() async throws(ExportError) -> Data {
-        let tags = passwordInteractor.listAllTags()
+        let tags = tagInteractor.listAllTags()
             .map {
                 ConnectTag(
                     id: $0.id.uuidString,
@@ -82,7 +89,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     private func passwordToConnectLogin(
         _ password: PasswordData,
         deviceId: UUID,
-        excludePasswordsValueProtectionLevels: Set<PasswordProtectionLevel> = [],
+        excludePasswordsValueProtectionLevels: Set<ItemProtectionLevel> = [],
         encryptPasswordKey: SymmetricKey? = nil
     ) -> ConnectLogin {
         let passwordExported: String? = {

@@ -101,28 +101,28 @@ final class VaultEncryptedEntity: NSManagedObject {
     
     // MARK: - Passwords
     
-    @nonobjc static func deletePassword(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, password: PasswordEncryptedEntity) {
+    @nonobjc static func deletePassword(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, password: ItemEncryptedEntity) {
         Log("VaultEncryptedEntity: Deleting entity of type: \(password) in vault: \(vault)", module: .storage)
-        vault.removeFromPasswords(password)
+        vault.removeFromItems(password)
     }
     
-    @nonobjc static func deletePasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, passwords: [PasswordEncryptedEntity]) {
+    @nonobjc static func deletePasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, passwords: [ItemEncryptedEntity]) {
         Log("VaultEncryptedEntity: Deleting entity of type: \(passwords) in vault: \(vault)", module: .storage)
-        vault.removeFromPasswords(Set(passwords))
+        vault.removeFromItems(Set(passwords))
     }
     
-    @nonobjc static func addPassword(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, password: PasswordEncryptedEntity) {
+    @nonobjc static func addPassword(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, password: ItemEncryptedEntity) {
         Log("VaultEncryptedEntity: Adding entity of type: \(password) in vault: \(vault)", module: .storage)
-        vault.addToPasswords(password)
+        vault.addToItems(password)
     }
 
-    @nonobjc static func addPasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, passwords: [PasswordEncryptedEntity]) {
+    @nonobjc static func addPasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, passwords: [ItemEncryptedEntity]) {
         Log("VaultEncryptedEntity: Adding entity of type: \(passwords) in vault: \(vault)", module: .storage)
-        vault.addToPasswords(Set(passwords))
+        vault.addToItems(Set(passwords))
     }
     
-    @nonobjc static func listPasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity) -> [PasswordEncryptedEntity] {
-        guard let passwords = vault.passwords else {
+    @nonobjc static func listPasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity) -> [ItemEncryptedEntity] {
+        guard let passwords = vault.items else {
             return []
         }
         return Array(passwords)

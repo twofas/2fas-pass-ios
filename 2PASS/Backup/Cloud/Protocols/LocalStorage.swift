@@ -8,19 +8,19 @@ import Common
 
 public protocol LocalStorage: AnyObject {
     func save()
-    func listPasswords() -> [PasswordData]
+    func listItems() -> [ItemEncryptedData]
     func listAllDeletedItems() -> [DeletedItemData]
     func listAllTags() -> [ItemTagData]
-    func moveFromTrash(_ passwordID: PasswordID)
-    func listTrashedPasswords() -> [PasswordData]
+    func moveFromTrash(_ itemID: ItemID)
+    func listTrashedItemsIDs() -> [ItemID]
     func createDeletedItem(_ deletedItem: DeletedItemData)
     func updateDeletedItem(_ deletedItem: DeletedItemData)
-    func createPassword(_ password: PasswordData)
-    func updatePassword(_ password: PasswordData)
+    func createItem(_ item: ItemEncryptedData)
+    func updateItem(_ item: ItemEncryptedData)
     func createTag(_ tag: ItemTagData)
     func updateTag(_ tag: ItemTagData)
     func removeDeletedItem(_ deletedItemID: DeletedItemID)
     func removeTag(_ tagID: ItemTagID)
-    func removePassword(_ passwordID: PasswordID)
+    func removeItem(_ itemID: ItemID)
     func currentVault() -> VaultEncryptedData?
 }

@@ -10,6 +10,7 @@ import Security
 import CryptoKit
 import LocalAuthentication
 import Backup
+import Storage
 
 enum HMACStringReturnType {
     case hex
@@ -51,6 +52,9 @@ protocol MainRepository: AnyObject {
     
     var isConnectOnboardingCompleted: Bool { get }
     func finishConnectOnboarding()
+    
+    var shouldShowQuickSetup: Bool { get }
+    func setShouldShowQuickSetup(_ value: Bool)
     
     // MARK: - Biometry
     var biometryType: BiometryType { get }
@@ -100,10 +104,12 @@ protocol MainRepository: AnyObject {
     // MARK: - General
     var currentAppVersion: String { get }
     var currentBuildVersion: String { get }
+    var lastKnownAppVersion: String? { get }
+    func setLastKnownAppVersion(_ version: String)
     func setIntroductionAsShown()
     func wasIntroductionShown() -> Bool
-    func setCrashlyticsDisabled(_ disabled: Bool)
-    var isCrashlyticsDisabled: Bool { get }
+    func setCrashlyticsEnabled(_ enabled: Bool)
+    var isCrashlyticsEnabled: Bool { get }
     
     func initialPermissionStateSetChildren(_ children: [PermissionsStateChildDataControllerProtocol])
     func initialPermissionStateInitialize()
@@ -121,11 +127,15 @@ protocol MainRepository: AnyObject {
     var cloudSync: CloudSync { get }
     
     var deviceName: String { get }
+    var deviceModelName: String { get }
+    var systemVersion: String { get }
     
     func checkFileSize(for url: URL) -> Int?
     func readFileData(from url: URL) async -> Data?
     func fileExists(at url: URL) -> Bool
     func copyFileToLocalIfNeeded(from url: URL) -> URL?
+    
+    var is2FASAuthInstalled: Bool { get }
     
     // MARK: - Encryption
     var deviceID: UUID? { get }
@@ -158,7 +168,7 @@ protocol MainRepository: AnyObject {
     )
     func createSymmetricKeyFromSecureEnclave(from key: Data) -> SymmetricKey?
     func createSymmetricKey(from key: Data) -> SymmetricKey
-    func getKey(isPassword: Bool, protectionLevel: PasswordProtectionLevel) -> SymmetricKey?
+    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey?
     
     func encrypt(
         _ data: Data,
@@ -237,6 +247,7 @@ protocol MainRepository: AnyObject {
     
     func clearAllEmphemeral()
     
+    func hasCachedKeys() -> Bool
     func preparedCachedKeys()
     
     /// Used for veryfiying the Master Key
@@ -265,6 +276,7 @@ protocol MainRepository: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: - In Memory
+    // MARK: Password
     
     func createPassword(
         passwordID: PasswordID,
@@ -275,8 +287,8 @@ protocol MainRepository: AnyObject {
         creationDate: Date,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     )
@@ -288,8 +300,8 @@ protocol MainRepository: AnyObject {
         notes: String?,
         modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     )
@@ -313,48 +325,53 @@ protocol MainRepository: AnyObject {
     func createInMemoryStorage()
     func destroyInMemoryStorage()
     
+    // MARK: Tags
+    func createTag(_ tag: ItemTagData)
+    func updateTag(_ tag: ItemTagData)
+    func deleteTag(tagID: ItemTagID)
+    func listTags(options: TagListOptions) -> [ItemTagData]
+    func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
+    
     // MARK: - Encrypted Storage
     
     func saveEncryptedStorage()
     
-    // MARK: Passwords
+    // MARK: Encrypted Items
     
-    func createEncryptedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func createEncryptedItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     )
-    func updateEncryptedPassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func updateEncryptedItem(
+        itemID: ItemID,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         tagIds: [ItemTagID]?
     )
-    func encryptedPasswordsBatchUpdate(_ passwords: [PasswordEncryptedData])
-    func getEncryptedPasswordEntity(passwordID: PasswordID) -> PasswordEncryptedData?
-    func listEncryptedPasswords(in vaultID: VaultID) -> [PasswordEncryptedData]
-    func listEncryptedPasswords(in vaultID: VaultID, excludeProtectionLevels: Set<PasswordProtectionLevel>) -> [PasswordEncryptedData]
-    func addEncryptedPassword(_ passwordID: PasswordID, to vaultID: VaultID)
-    func deleteEncryptedPassword(passwordID: PasswordID)
-    func deleteAllEncryptedPasswords()
+    func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData])
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
+    func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
+    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
+    func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
+    func deleteEncryptedItem(itemID: ItemID)
+    func deleteAllEncryptedItems()
+    
+    func requiresReencryptionMigration() -> Bool
+    func loadEncryptedStore()
+    func loadEncryptedStoreWithReencryptionMigration()
     
     // MARK: Encrypted Vaults
     
@@ -392,11 +409,13 @@ protocol MainRepository: AnyObject {
     func deleteEncryptedWebBrowser(id: UUID)
     func listEncryptedWebBrowsers() -> [WebBrowserEncryptedData]
     
-    // MARK: - Tags
+    // MARK: - Encrypted Tags
     func createEncryptedTag(_ tag: ItemTagEncryptedData)
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
-    @discardableResult func deleteEncryptedTag(id: ItemTagID) -> Bool
+    func deleteEncryptedTag(tagID: ItemTagID)
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
+    func deleteAllEncryptedTags(in vault: VaultID)
     
     // MARK: - Sort
     var sortType: SortType? { get }
@@ -416,45 +435,43 @@ protocol MainRepository: AnyObject {
     func clearBackup()
     func synchronizeBackup()
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
+    func cloudDeleteVault(id: VaultID) async throws
     var lastSuccessCloudSyncDate: Date? { get }
     func setLastSuccessCloudSyncDate(_ date: Date)
     func clearLastSuccessCloudSyncDate()
     
     // MARK: - Cloud Cache
-    func cloudCacheCreatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheCreateItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         metadata: Data
     )
-    func cloudCacheUpdatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheUpdateItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         metadata: Data
     )
-    func cloudCacheGetPasswordEntity(passwordID: PasswordID) -> CloudDataPassword?
-    func cloudCacheListPasswords(in vaultID: VaultID) -> [CloudDataPassword]
-    func cloudCacheListAllPasswords() -> [CloudDataPassword]
-    func cloudCacheDeletePassword(passwordID: PasswordID)
-    func cloudCacheDeleteAllPasswords()
+    func cloudCacheGetItemEntity(itemID: ItemID) -> CloudDataItem?
+    func cloudCacheListItems(in vaultID: VaultID) -> [CloudDataItem]
+    func cloudCacheListAllItems() -> [CloudDataItem]
+    func cloudCacheDeleteItem(itemID: ItemID)
+    func cloudCacheDeleteAllItems()
     func cloudCacheListVaults() -> [VaultCloudData]
     func cloudCacheGetVault(for vaultID: VaultID) -> VaultCloudData?
     func cloudCacheCreateVault(
@@ -505,6 +522,8 @@ protocol MainRepository: AnyObject {
     func cloudCacheDeleteAllDeletedItems()
     
     // MARK: - Cloud Cached Tags
+    var cloudCacheIsInitializingNewStore: Bool { get }
+    func cloudCacheMarkInitializingNewStoreAsHandled()
     func cloudCacheCreateTag(
         metadata: Data,
         tagID: ItemTagID,
@@ -541,8 +560,8 @@ protocol MainRepository: AnyObject {
     func warningFeedback()
     
     // MARK: - Config
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel)
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
     var defaultPassswordListAction: PasswordListAction { get }
@@ -560,6 +579,7 @@ protocol MainRepository: AnyObject {
     // MARK: - Logs
     func listAllLogs() -> [LogEntry]
     func removeAllLogs()
+    func removeOldStoreLogs()
     
     // MARK: - WebDAV Backup
     func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)

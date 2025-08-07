@@ -5,6 +5,8 @@
 // See LICENSE file for full terms
 
 import Foundation
+import OSLog
+import FirebaseCrashlytics
 
 public enum LogModule: Int, CaseIterable {
     case unknown = 0
@@ -21,6 +23,7 @@ public enum LogModule: Int, CaseIterable {
     case backup = 11
     case autofill = 12
     case connect = 13
+    case migration = 14
 }
 
 public enum LogSeverity: Int, CaseIterable {
@@ -33,23 +36,30 @@ public enum LogSeverity: Int, CaseIterable {
 
 var focusOn: [LogModule]?
 
-// TODO: Add obfuscation
 public func Log(
-    _ content: String,
+    _ content: LogMessage,
     module: LogModule = .unknown,
     severity: LogSeverity = .unknown,
     save: Bool = true,
-    obfuscate: Bool = false
+    file: String = #file,
+    function: String = #function,
+    line: UInt = #line,
+    column: UInt = #column
 ) {
     if let focusOn {
         guard focusOn.contains(module) else { return }
     }
     let date = Date()
+    
     if save {
-        LogStorage.store(content: content, timestamp: date, module: module, severity: severity)
+        LogStorage.store(content: content.description, timestamp: date, module: module, severity: severity)
+        Crashlytics.crashlytics().log(content.description)
     }
+    
 #if DEBUG
-    LogPrinter.printLog(content: content, timestamp: date, module: module, severity: severity)
+    let filename = URL(string: file)?.lastPathComponent ?? ""
+    let formattedContent = "\(content.description) | \(function) + \(line) (\(filename)) "
+    LogPrinter.printLog(content: formattedContent, timestamp: date, module: module, severity: severity)
 #endif
 }
 
@@ -59,6 +69,10 @@ public func LogZoneStart() {
 
 public func LogZoneEnd() {
     LogStorage.markZoneEnd()
+}
+
+public func LogSave() {
+    LogStorage.save()
 }
 
 private extension LogModule {
@@ -78,6 +92,7 @@ private extension LogModule {
         case .backup: "🗄️"
         case .autofill: "📝"
         case .connect: "🔗"
+        case .migration: "🔄"
         }
     }
 }
@@ -99,6 +114,7 @@ public protocol LogStorageHandling: AnyObject {
     func markZoneStart()
     func markZoneEnd()
     func removeAll()
+    func save()
 }
 
 public enum LogPrinter {
@@ -137,7 +153,98 @@ public enum LogStorage {
         storage?.markZoneEnd()
     }
     
+    public static func save() {
+        storage?.save()
+    }
+
     static func store(content: String, timestamp: Date, module: LogModule, severity: LogSeverity) {
         storage?.store(content: content, timestamp: timestamp, module: module.rawValue, severity: severity.rawValue)
+    }
+}
+
+public enum LogPrivacy {
+    case auto
+    case `public`
+    case `private`
+}
+
+public struct LogMessage: ExpressibleByStringInterpolation, CustomStringConvertible {
+    public typealias Interpolation = LogInterpolation
+    
+    private let value: String
+    
+    public var description: String {
+        value
+    }
+    
+    public init(stringLiteral value: String) {
+        self.value = value
+    }
+
+    public init(stringInterpolation: Interpolation) {
+        self.value = stringInterpolation.description
+    }
+}
+
+public struct LogInterpolation: StringInterpolationProtocol {
+    
+    public typealias StringLiteralType = String
+
+    private var _interpolation: String.StringInterpolation
+    
+    var description: String {
+        _interpolation.description
+    }
+    
+    public init(literalCapacity: Int, interpolationCount: Int) {
+        _interpolation = String.StringInterpolation(literalCapacity: literalCapacity, interpolationCount: interpolationCount)
+    }
+    
+    public mutating func appendLiteral(_ literal: String) {
+        _interpolation.appendLiteral(literal)
+    }
+    
+    public mutating func appendInterpolation(_ value: @autoclosure () -> String, privacy: LogPrivacy = .auto) {
+        #if DEBUG
+        let interpolation = "\(value())"
+        #else
+        let shouldHide: Bool = {
+            switch privacy {
+            case .auto, .private: return true
+            case .public: return false
+            }
+        }()
+        
+        let interpolation = shouldHide ? "<private>" : "\(value())"
+        #endif
+        
+        _interpolation.appendInterpolation(interpolation)
+    }
+}
+
+extension LogInterpolation {
+    
+    public mutating func appendInterpolation<T>(_ value: @autoclosure () -> T, privacy: LogPrivacy = .auto) where T: CustomStringConvertible {
+        appendInterpolation("\(value())", privacy: privacy)
+    }
+}
+
+extension LogInterpolation {
+    
+    public mutating func appendInterpolation(_ value: @autoclosure () -> Int, privacy: LogPrivacy = .auto) {
+        appendInterpolation("\(value())", privacy: privacy == .auto ? .public : privacy)
+    }
+    
+    public mutating func appendInterpolation(_ value: @autoclosure () -> Double, privacy: LogPrivacy = .auto) {
+        appendInterpolation("\(value())", privacy: privacy == .auto ? .public : privacy)
+    }
+    
+    public mutating func appendInterpolation(_ value: @autoclosure () -> Bool, privacy: LogPrivacy = .auto) {
+        appendInterpolation("\(value())", privacy: privacy == .auto ? .public : privacy)
+    }
+    
+    public mutating func appendInterpolation(_ value: @autoclosure () -> any Error, privacy: LogPrivacy = .auto) {
+        let value = value()
+        appendInterpolation("\(type(of: value)).\(value)", privacy: privacy == .auto ? .public : privacy)
     }
 }

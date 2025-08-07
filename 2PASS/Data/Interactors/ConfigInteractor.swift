@@ -8,8 +8,8 @@ import Foundation
 import Common
 
 public protocol ConfigInteracting: AnyObject {
-    var currentDefaultProtectionLevel: PasswordProtectionLevel { get }
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel)
+    var currentDefaultProtectionLevel: ItemProtectionLevel { get }
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
     
     var passwordGeneratorConfig: PasswordGenerateConfig? { get }
     func savePasswordGeneratorConfig(_ config: PasswordGenerateConfig)
@@ -20,6 +20,9 @@ public protocol ConfigInteracting: AnyObject {
     
     var appLockAttempts: AppLockAttempts { get }
     func setAppLockAttempts(_ attempts: AppLockAttempts)
+    
+    var isCrashReportsEnabled: Bool { get }
+    func setCrashReportsEnabled(_ enabled: Bool)
 }
 
 final class ConfigInteractor {
@@ -44,12 +47,12 @@ extension ConfigInteractor: ConfigInteracting {
         mainRepository.setDefaultPassswordListAction(action)
     }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         mainRepository.currentDefaultProtectionLevel
     }
     
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel) {
-        Log("ConfigInteractor: Setting default protection level: \(value)", module: .interactor)
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
+        Log("ConfigInteractor: Setting default protection level: \(value.rawValue, privacy: .public)", module: .interactor)
         mainRepository.setDefaultProtectionLevel(value)
     }
     
@@ -78,5 +81,13 @@ extension ConfigInteractor: ConfigInteracting {
     
     func setAppLockAttempts(_ attempts: AppLockAttempts) {
         mainRepository.setAppLockAttempts(attempts)
+    }
+    
+    var isCrashReportsEnabled: Bool {
+        mainRepository.isCrashlyticsEnabled
+    }
+    
+    func setCrashReportsEnabled(_ enabled: Bool) {
+        mainRepository.setCrashlyticsEnabled(enabled)
     }
 }

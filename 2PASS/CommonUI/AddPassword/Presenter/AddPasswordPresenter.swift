@@ -52,7 +52,7 @@ final class AddPasswordPresenter {
     }
     var uriError: String?
     
-    var protectionLevel: PasswordProtectionLevel = .normal{
+    var protectionLevel: ItemProtectionLevel = .normal{
         didSet {
             updateSaveState()
         }
@@ -223,7 +223,7 @@ final class AddPasswordPresenter {
         flowController.toChangeProtectionLevel(current: protectionLevel)
     }
     
-    func handleChangeProtectionLevel(_ value: PasswordProtectionLevel) {
+    func handleChangeProtectionLevel(_ value: ItemProtectionLevel) {
         protectionLevel = value
     }
     
@@ -341,6 +341,13 @@ final class AddPasswordPresenter {
     
     func randomPassword() {
         password = interactor.generatePassword()
+    }
+    
+    func onDelete() {
+        guard let passwordID = interactor.moveToTrash() else {
+            return
+        }
+        flowController.close(with: .success(.deleted(passwordID)))
     }
     
     deinit {

@@ -39,9 +39,9 @@ struct SettingsRouter: Router {
         case .debug:
             SettingsDebugRouter.buildView()
         case .importExport:
-            BackupRouter.buildView()
+            BackupRouter.buildView(flowContext: .settings)
         case .transferItems:
-            TransferItemsServicesListRouter.buildView()
+            TransferItemsServicesListRouter.buildView(flowContext: .settings)
         case .manageSubscription:
             ManageSubscriptionRouter.buildView()
         default:

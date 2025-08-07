@@ -9,86 +9,88 @@ import Common
 import Storage
 
 extension MainRepositoryImpl {
-    func cloudCacheCreatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    var cloudCacheIsInitializingNewStore: Bool {
+        _cloudCacheInitilizingNewStore
+    }
+    
+    func cloudCacheMarkInitializingNewStoreAsHandled() {
+        _cloudCacheInitilizingNewStore = false
+    }
+    
+    func cloudCacheCreateItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
         vaultID: VaultID,
-        uris: PasswordEncryptedURIs?,
         metadata: Data
     ) {
-        cloudCache.createCloudCachedPassword(
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+        cloudCache.createCloudCachedItem(
+            itemID: itemID,
+            content: content,
+            contentType: contentType,
+            contentVersion: contentVersion,
             creationDate: creationDate,
             modificationDate: modificationDate,
-            iconType: iconType,
+            tagIds: tagIds,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
             vaultID: vaultID,
-            uris: uris,
             metadata: metadata
         )
     }
     
-    func cloudCacheUpdatePassword(
-        passwordID: PasswordID,
-        name: Data?,
-        username: Data?,
-        password: Data?,
-        notes: Data?,
+    func cloudCacheUpdateItem(
+        itemID: ItemID,
+        content: Data,
+        contentType: ItemContentType,
+        contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordEncryptedIconType,
-        trashedStatus: PasswordTrashedStatus,
-        protectionLevel: PasswordProtectionLevel,
-        uris: PasswordEncryptedURIs?,
+        tagIds: [ItemTagID]?,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         metadata: Data
     ) {
-        cloudCache.updateCloudCachedPassword(
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+        cloudCache.updateCloudCachedItem(
+            itemID: itemID,
+            content: content,
+            contentType: contentType,
+            contentVersion: contentVersion,
             creationDate: creationDate,
             modificationDate: modificationDate,
-            iconType: iconType,
+            tagIds: tagIds,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
-            uris: uris,
+            vaultID: vaultID,
             metadata: metadata
         )
     }
     
-    func cloudCacheGetPasswordEntity(passwordID: PasswordID) -> CloudDataPassword? {
-        cloudCache.getCloudCachedPasswordEntity(passwordID: passwordID)
+    func cloudCacheGetItemEntity(itemID: ItemID) -> CloudDataItem? {
+        cloudCache.getCloudCachedItemEntity(passwordID: itemID)
     }
     
-    func cloudCacheListPasswords(in vaultID: VaultID) -> [CloudDataPassword] {
-        cloudCache.listCloudCachedPasswords(in: vaultID)
+    func cloudCacheListItems(in vaultID: VaultID) -> [CloudDataItem] {
+        cloudCache.listCloudCachedItems(in: vaultID)
     }
     
-    func cloudCacheListAllPasswords() -> [CloudDataPassword] {
-        cloudCache.listAllCloudCachedPasswords()
+    func cloudCacheListAllItems() -> [CloudDataItem] {
+        cloudCache.listAllCloudCachedItems()
     }
     
-    func cloudCacheDeletePassword(passwordID: PasswordID) {
-        cloudCache.deleteCloudCachedPassword(passwordID: passwordID)
+    func cloudCacheDeleteItem(itemID: ItemID) {
+        cloudCache.deleteCloudCachedItem(itemID: itemID)
     }
     
-    func cloudCacheDeleteAllPasswords() {
-        cloudCache.deleteAllCloudCachedPasswords()
+    func cloudCacheDeleteAllItems() {
+        cloudCache.deleteAllCloudCachedItems()
     }
     
     // MARK: - Cloud Cached Vaults

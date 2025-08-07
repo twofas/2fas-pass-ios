@@ -10,6 +10,8 @@ public protocol SystemInteracting: AnyObject {
     var appVersion: String { get }
     var buildVersion: String { get }
     
+    var isMainAppProcess: Bool { get }
+    
     func copyToClipboard(_ str: String)
     
     var syncHasError: Bool { get }
@@ -18,6 +20,8 @@ public protocol SystemInteracting: AnyObject {
     func positiveFeedback()
     func negativeFeedback()
     func warningFeedback()
+    
+    var is2FASAuthInstalled: Bool { get }
 }
 
 final class SystemInteractor {
@@ -35,6 +39,10 @@ extension SystemInteractor: SystemInteracting {
     
     var buildVersion: String {
         mainRepository.currentBuildVersion
+    }
+    
+    var isMainAppProcess: Bool {
+        mainRepository.isMainAppProcess
     }
     
     func copyToClipboard(_ str: String) {
@@ -59,5 +67,9 @@ extension SystemInteractor: SystemInteracting {
     
     func warningFeedback() {
         mainRepository.warningFeedback()
+    }
+    
+    var is2FASAuthInstalled: Bool {
+        mainRepository.is2FASAuthInstalled
     }
 }

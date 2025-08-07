@@ -6,12 +6,12 @@
 
 import Foundation
 
-public struct CloudDataPassword {
-    public let password: PasswordEncryptedData
+public struct CloudDataItem {
+    public let item: ItemEncryptedData
     public let metadata: Data
     
-    public init(password: PasswordEncryptedData, metadata: Data) {
-        self.password = password
+    public init(item: ItemEncryptedData, metadata: Data) {
+        self.item = item
         self.metadata = metadata
     }
 }

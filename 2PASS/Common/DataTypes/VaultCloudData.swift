@@ -16,7 +16,7 @@ public struct VaultCloudData: Hashable, Identifiable {
     public let metadata: Data
     public private(set) var deviceNames: Data
     public private(set) var deviceID: DeviceID
-    public let schemaVersion: Int
+    public private(set) var schemaVersion: Int
     public private(set) var seedHash: String
     public private(set) var reference: String
     public private(set) var kdfSpec: Data
@@ -53,7 +53,8 @@ public struct VaultCloudData: Hashable, Identifiable {
         seedHash: String,
         reference: String,
         kdfSpec: Data,
-        updatedAt: Date
+        updatedAt: Date,
+        schemaVersion: Int
     ) {
         self.updatedAt = updatedAt
         self.deviceNames = deviceNames
@@ -61,10 +62,16 @@ public struct VaultCloudData: Hashable, Identifiable {
         self.seedHash = seedHash
         self.reference = reference
         self.kdfSpec = kdfSpec
+        self.schemaVersion = schemaVersion
     }
     
     public mutating func update(deviceID: DeviceID, updatedAt: Date) {
         self.deviceID = deviceID
+        self.updatedAt = updatedAt
+    }
+    
+    public mutating func update(schemaVersion: Int, updatedAt: Date) {
+        self.schemaVersion = schemaVersion
         self.updatedAt = updatedAt
     }
 }

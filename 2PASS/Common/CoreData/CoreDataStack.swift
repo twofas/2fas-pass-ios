@@ -10,16 +10,18 @@ import CoreData
 public final class CoreDataStack {
     private let migrator: CoreDataMigratorProtocol?
     
-    public var logError: ((String) -> Void)?
+    public var logError: ((LogMessage) -> Void)?
+    public var initilizingNewStore: (() -> Void)?
     public var presentErrorToUser: ((String) -> Void)?
     
-    private var readOnly = false
-    private var name: String
-    private var bundle: Bundle
-    private var storeInGroup: Bool
-    private var isPersistent: Bool
-    
+    private let readOnly: Bool
+    private let name: String
+    private let bundle: Bundle
+    private let storeInGroup: Bool
+    private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
+    
+    private var isLoaded: Bool = false
     
     public init(
         readOnly: Bool,
@@ -39,22 +41,32 @@ public final class CoreDataStack {
         
         let container = NSPersistentContainer(name: name, bundle: bundle)
         self.persistentContainer = container
-        configurePersistentContainer(container)
+    }
+    
+    public func loadStore() {
+        guard isLoaded == false else { return }
+        isLoaded = true
+        configurePersistentContainer(persistentContainer)
     }
     
     private func configurePersistentContainer(_ container: NSPersistentContainer) {
         let name = self.name
+        if !FileManager.default.fileExists(atPath: storeUrl.path()) {
+            DispatchQueue.main.async {
+                self.initilizingNewStore?()
+            }
+        }
         container.persistentStoreDescriptions = [storeDescription]
-
+        
         migrateStoreIfNeeded {
             container.loadPersistentStores { [weak self] _, error in
                 if let error = error as NSError? {
                     // swiftlint:disable line_length
-                    let err = "Unresolved error while loadPersistentStores: \(error), \(error.userInfo), for stack: \(name)"
+                    let err: LogMessage = "Unresolved error while loadPersistentStores: \(error), \(error.userInfo), for stack: \(name)"
                     // swiftlint:enable line_length
                     self?.logError?(err)
                     self?.parseError(with: error.userInfo)
-                    fatalError(err)
+                    fatalError(err.description)
                 }
             }
         }
@@ -62,15 +74,6 @@ public final class CoreDataStack {
     }
     
     private lazy var storeDescription: NSPersistentStoreDescription = {
-        let storeUrl: URL = {
-            if storeInGroup {
-                FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
-                    .appendingPathComponent("\(name).sqlite")
-            } else {
-                getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
-            }
-        }()
-        
         let description = NSPersistentStoreDescription()
         description.shouldInferMappingModelAutomatically = false
         description.shouldMigrateStoreAutomatically = false
@@ -88,11 +91,9 @@ public final class CoreDataStack {
         return description
     }()
     
-    private func getDocumentsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let documentsDirectory = paths[0]
-        return documentsDirectory
-    }
+    private lazy var storeUrl: URL = {
+        CoreDataStack.storeUrl(forName: name, storeInGroup: storeInGroup)
+    }()
     
     public var context: NSManagedObjectContext { persistentContainer.viewContext }
     
@@ -131,11 +132,21 @@ public final class CoreDataStack {
         } catch {
             let nserror = error as NSError
             // swiftlint:disable line_length
-            let err = "Unresolved error while saving data: \(nserror), \(nserror.userInfo), for stack: \(String(describing: name))"
+            let err: LogMessage = "Unresolved error while saving data: \(nserror), \(nserror.userInfo), for stack: \(String(describing: name), privacy: .public)"
             // swiftlint:enable line_length
             logError?(err)
-            assertionFailure(err)
+            assertionFailure(err.description)
         }
+    }
+    
+    public var migrationRequired: Bool {
+        guard let migrator, isPersistent else {
+            return false
+        }
+        guard let storeURL = storeDescription.url else {
+            fatalError("persistentContainer was not set up properly")
+        }
+        return migrator.requiresMigrationToCurrentVersion(at: storeURL)
     }
     
     private func migrateStoreIfNeeded(completion: @escaping () -> Void) {
@@ -156,8 +167,47 @@ public final class CoreDataStack {
     private func parseError(with dict: [String: Any]) {
         guard let value = dict["NSSQLiteErrorDomain"] as? Int, value == 13 else { return }
         // swiftlint:disable line_length
-        presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past") // TODO: Add translation!
+        presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past")
         // swiftlint:enable line_length
+    }
+}
+
+extension CoreDataStack {
+    
+    public static func removeStore(name: String, storeInGroup: Bool = false) throws {
+        let storeURL = storeUrl(forName: name, storeInGroup: storeInGroup)
+        
+        let fileManager = FileManager.default
+
+        if fileManager.fileExists(atPath: storeURL.path()) {
+            try fileManager.removeItem(at: storeURL)
+        }
+        
+        let shmURL = storeURL.deletingPathExtension().appendingPathExtension("sqlite-shm")
+        let walURL = storeURL.deletingPathExtension().appendingPathExtension("sqlite-wal")
+        
+        if fileManager.fileExists(atPath: shmURL.path) {
+            try fileManager.removeItem(at: shmURL)
+        }
+        
+        if fileManager.fileExists(atPath: walURL.path) {
+            try fileManager.removeItem(at: walURL)
+        }
+    }
+    
+    fileprivate static func storeUrl(forName name: String, storeInGroup: Bool) -> URL {
+        if storeInGroup {
+            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Config.suiteName)!
+                .appendingPathComponent("\(name).sqlite")
+        } else {
+            getDocumentsDirectory().appendingPathComponent("\(name).sqlite")
+        }
+    }
+    
+    private static func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        return documentsDirectory
     }
 }
 
@@ -165,11 +215,11 @@ public extension NSPersistentContainer {
     @nonobjc convenience init(name: String, bundle: Bundle) {
         
         guard let modelURL = bundle.url(forResource: name, withExtension: "momd"),
-            let mom = NSManagedObjectModel(contentsOf: modelURL)
-            else {
-                Log("Unable to located Core Data model", module: .storage)
-                fatalError("Unable to located Core Data model")
-            }
+              let mom = NSManagedObjectModel(contentsOf: modelURL)
+        else {
+            Log("Unable to located Core Data model", module: .storage)
+            fatalError("Unable to located Core Data model")
+        }
         
         self.init(name: name, managedObjectModel: mom)
     }
@@ -180,4 +230,3 @@ public extension NSManagedObject {
         managedObjectContext?.delete(self)
     }
 }
-

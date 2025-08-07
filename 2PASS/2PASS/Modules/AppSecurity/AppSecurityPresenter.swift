@@ -68,7 +68,7 @@ final class AppSecurityPresenter {
             interactor.limitOfFailedAttempts = limitOfFailedAttempts
         }
     }
-    private(set) var defaultSecurityTier: PasswordProtectionLevel
+    private(set) var defaultSecurityTier: ItemProtectionLevel
     
     private let interactor: AppSecurityModuleInteracting
     
@@ -114,20 +114,7 @@ extension AppSecurityPresenter {
         guard !lockInteraction else { return }
         lockInteraction = true
         
-        Task { @MainActor in
-            if await interactor.verifyUsingBiometryIfAvailable() {
-                destination = .defaultSecurityTier
-            } else {
-                destination = .currentPassword(config: .init(allowBiometrics: true, loginType: .verify(savePassword: false)), onSuccess: { [weak self] in
-                    self?.destination = nil
-
-                    Task { @MainActor in
-                        try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
-                        self?.destination = .defaultSecurityTier
-                    }
-                })
-            }
-        }
+        destination = .defaultSecurityTier
     }
     
     func onChangePassword() {

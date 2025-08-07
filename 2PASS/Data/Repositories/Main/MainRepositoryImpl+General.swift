@@ -7,6 +7,7 @@
 import UIKit
 import DeviceKit
 import Common
+import FirebaseCrashlytics
 
 extension MainRepositoryImpl {
     
@@ -22,6 +23,14 @@ extension MainRepositoryImpl {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
     }
     
+    var lastKnownAppVersion: String? {
+        userDefaultsDataSource.lastKnownAppVersion
+    }
+    
+    func setLastKnownAppVersion(_ version: String) {
+        userDefaultsDataSource.setLastKnownAppVersion(version)
+    }
+    
     func setIntroductionAsShown() {
         userDefaultsDataSource.setIntroductionAsShown()
     }
@@ -30,12 +39,13 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.wasIntroductionShown
     }
     
-    func setCrashlyticsDisabled(_ disabled: Bool) {
-        userDefaultsDataSource.setCrashlyticsDisabled(disabled)
+    func setCrashlyticsEnabled(_ enabled: Bool) {
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
+        userDefaultsDataSource.setCrashlyticsDisabled(enabled == false)
     }
     
-    var isCrashlyticsDisabled: Bool {
-        userDefaultsDataSource.isCrashlyticsDisabled
+    var isCrashlyticsEnabled: Bool {
+        Crashlytics.crashlytics().isCrashlyticsCollectionEnabled()
     }
     
     func initialPermissionStateSetChildren(_ children: [PermissionsStateChildDataControllerProtocol]) {
@@ -66,6 +76,10 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.isActiveSearchEnabled
     }
     
+    var deviceModelName: String {
+        Device.current.description
+    }
+    
     var deviceName: String {
         let name = UIDevice.current.name
         
@@ -75,6 +89,10 @@ extension MainRepositoryImpl {
         } else {
             return "\(device) (\(name))"
         }
+    }
+    
+    var systemVersion: String {
+        "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
     }
     
     func readFileData(from url: URL) async -> Data? {
@@ -169,5 +187,9 @@ extension MainRepositoryImpl {
             
             return copyFile()
         }
+    }
+    
+    var is2FASAuthInstalled: Bool {
+        UIApplication.shared.canOpenURL(Config.twofasAuthCheckLink)
     }
 }

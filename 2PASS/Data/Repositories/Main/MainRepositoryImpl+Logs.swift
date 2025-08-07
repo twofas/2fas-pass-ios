@@ -15,4 +15,8 @@ extension MainRepositoryImpl {
     func removeAllLogs() {
         logDataSource.removeAll()
     }
+    
+    func removeOldStoreLogs() {
+        logDataSource.removeOldStoreLogs()
+    }
 }

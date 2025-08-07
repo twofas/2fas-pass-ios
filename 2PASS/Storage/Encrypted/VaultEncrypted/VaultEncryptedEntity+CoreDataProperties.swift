@@ -18,22 +18,22 @@ extension VaultEncryptedEntity {
     @NSManaged var trustedKey: Data
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
-    @NSManaged var passwords: Set<PasswordEncryptedEntity>?
+    @NSManaged var items: Set<ItemEncryptedEntity>?
 }
 
 // MARK: Generated accessors for passwords
-extension VaultEncryptedEntity {
-    @objc(addPasswordsObject:)
-    @NSManaged func addToPasswords(_ value: PasswordEncryptedEntity)
+extension VaultEncryptedEntity {    
+    @objc(addItemsObject:)
+    @NSManaged func addToItems(_ value: ItemEncryptedEntity)
 
-    @objc(removePasswordsObject:)
-    @NSManaged func removeFromPasswords(_ value: PasswordEncryptedEntity)
+    @objc(removeItemsObject:)
+    @NSManaged func removeFromItems(_ value: ItemEncryptedEntity)
 
-    @objc(addPasswords:)
-    @NSManaged func addToPasswords(_ values: Set<PasswordEncryptedEntity>)
+    @objc(addItems:)
+    @NSManaged func addToItems(_ values: Set<ItemEncryptedEntity>)
 
-    @objc(removePasswords:)
-    @NSManaged func removeFromPasswords(_ values: Set<PasswordEncryptedEntity>)
+    @objc(removeItems:)
+    @NSManaged func removeFromItems(_ values: Set<ItemEncryptedEntity>)
 }
 
 extension VaultEncryptedEntity: Identifiable {}
@@ -46,7 +46,7 @@ extension VaultEncryptedEntity {
             trustedKey: trustedKey,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            isEmpty: passwords?.isEmpty ?? true
+            isEmpty: items?.isEmpty ?? true
         )
     }
 }

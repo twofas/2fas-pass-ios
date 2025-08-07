@@ -17,6 +17,12 @@ final class CloudCacheStorageImpl {
 }
 
 extension CloudCacheStorageImpl: CloudCacheStorage {
+    var isInitializingNewStore: Bool { mainRepository.cloudCacheIsInitializingNewStore }
+    
+    func markInitializingNewStoreAsHandled() {
+        mainRepository.cloudCacheMarkInitializingNewStoreAsHandled()
+    }
+    
     var currentVault: VaultCloudData? {
         guard let currentVaultID = mainRepository.selectedVault?.vaultID else {
             Log("CloudCacheStorageImpl: can't get vaultID while getting current Vault", module: .interactor, severity: .error)
@@ -27,13 +33,13 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
     
     func purge() {
         mainRepository.cloudCacheDeleteAllVaults()
-        mainRepository.cloudCacheDeleteAllPasswords()
+        mainRepository.cloudCacheDeleteAllItems()
         mainRepository.cloudCacheDeleteAllDeletedItems()
         mainRepository.cloudCacheDeleteAllTags()
     }
     
-    func deletePassword(passwordID: PasswordID) {
-        mainRepository.cloudCacheDeletePassword(passwordID: passwordID)
+    func deleteItem(itemID: ItemID) {
+        mainRepository.cloudCacheDeleteItem(itemID: itemID)
     }
     
     func deleteDeletedItem(deletedItemID: DeletedItemID) {
@@ -49,17 +55,17 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
         mainRepository.cloudCacheSave()
     }
     
-    func listPasswordIDs() -> [PasswordID] {
-        let list = mainRepository.cloudCacheListAllPasswords()
-        return list.map { pass in
-            pass.password.passwordID
+    func listItemIDs() -> [ItemID] {
+        let list = mainRepository.cloudCacheListAllItems()
+        return list.map { item in
+            item.item.itemID
         }
     }
     
-    func listPasswordIDsModificationDate() -> [(PasswordID, Date)] {
-        let list = mainRepository.cloudCacheListAllPasswords()
-        return list.map { pass in
-            (pass.password.passwordID, pass.password.modificationDate)
+    func listItemIDsModificationDate() -> [(ItemID, Date)] {
+        let list = mainRepository.cloudCacheListAllItems()
+        return list.map { item in
+            (item.item.itemID, item.item.modificationDate)
         }
     }
     
@@ -91,22 +97,22 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
         }
     }
 
-    func listAllPasswordsInCurrentVault() -> [(password: PasswordEncryptedData, metadata: Data)] {
+    func listAllItemsInCurrentVault() -> [(item: ItemEncryptedData, metadata: Data)] {
         guard let currentVaultID = currentVault?.vaultID else {
-            Log("CloudCacheStorageImpl: can't get vaultID while listing all Passwords", module: .interactor, severity: .error)
+            Log("CloudCacheStorageImpl: can't get vaultID while listing all Items", module: .interactor, severity: .error)
             return []
         }
-        let list = mainRepository.cloudCacheListPasswords(in: currentVaultID)
+        let list = mainRepository.cloudCacheListItems(in: currentVaultID)
         return list.map {
-            (password: $0.password, metadata: $0.metadata)
+            (item: $0.item, metadata: $0.metadata)
         }
     }
     
-    func listAllPasswords() -> [PasswordID: (password: PasswordEncryptedData, metadata: Data)] {
-        var result: [PasswordID: (password: PasswordEncryptedData, metadata: Data)] = [:]
-        let list = mainRepository.cloudCacheListAllPasswords()
-        for pass in list {
-            result[pass.password.passwordID] = (password: pass.password, metadata: pass.metadata)
+    func listAllItems() -> [ItemID: (item: ItemEncryptedData, metadata: Data)] {
+        var result: [ItemID: (item: ItemEncryptedData, metadata: Data)] = [:]
+        let list = mainRepository.cloudCacheListAllItems()
+        for item in list {
+            result[item.item.itemID] = (item: item.item, metadata: item.metadata)
         }
         return result
     }
@@ -135,39 +141,36 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
         return mainRepository.cloudCacheListTags(in: currentVaultID, limit: nil)
     }
     
-    func createPassword(password: PasswordEncryptedData, metadata: Data) {
-        Log("CloudCacheStorageImpl: creating Password", module: .interactor, save: false)
-        mainRepository.cloudCacheCreatePassword(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            password: password.password,
-            notes: password.notes,
-            creationDate: password.creationDate,
-            modificationDate: password.modificationDate,
-            iconType: password.iconType,
-            trashedStatus: password.trashedStatus,
-            protectionLevel: password.protectionLevel,
-            vaultID: password.vaultID,
-            uris: password.uris,
+    func createItem(item: ItemEncryptedData, metadata: Data) {
+        Log("CloudCacheStorageImpl: creating Item", module: .interactor, save: false)
+        mainRepository.cloudCacheCreateItem(
+            itemID: item.itemID,
+            content: item.content,
+            contentType: item.contentType,
+            contentVersion: item.contentVersion,
+            creationDate: item.creationDate,
+            modificationDate: item.modificationDate,
+            tagIds: item.tagIds,
+            trashedStatus: item.trashedStatus,
+            protectionLevel: item.protectionLevel,
+            vaultID: item.vaultID,
             metadata: metadata
         )
     }
     
-    func updatePassword(password: PasswordEncryptedData, metadata: Data) {
-        Log("CloudCacheStorageImpl: updating Password", module: .interactor, save: false)
-        mainRepository.cloudCacheUpdatePassword(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            password: password.password,
-            notes: password.notes,
-            creationDate: password.creationDate,
-            modificationDate: password.modificationDate,
-            iconType: password.iconType,
-            trashedStatus: password.trashedStatus,
-            protectionLevel: password.protectionLevel,
-            uris: password.uris,
+    func updateItem(item: ItemEncryptedData, metadata: Data) {
+        Log("CloudCacheStorageImpl: updating Item", module: .interactor, save: false)
+        mainRepository.cloudCacheUpdateItem(
+            itemID: item.itemID,
+            content: item.content,
+            contentType: item.contentType,
+            contentVersion: item.contentVersion,
+            creationDate: item.creationDate,
+            modificationDate: item.modificationDate,
+            tagIds: item.tagIds,
+            trashedStatus: item.trashedStatus,
+            protectionLevel: item.protectionLevel,
+            vaultID: item.vaultID,
             metadata: metadata
         )
     }

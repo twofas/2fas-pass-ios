@@ -127,6 +127,7 @@ final class SyncHandler {
         Log("SyncHandler - method: fetch finished successfuly", module: .cloudSync)
         guard isSyncing else { return }
         Log("SyncHandler -  merging now with local database", module: .cloudSync)
+        mergeHandler.setPasswordIDsForDeletition(cacheHandler.passwordIDsForDeletition) // used for migration to Items
         mergeHandler.merge(date: currentDate) { [weak self] result in
             switch result {
             case .success:

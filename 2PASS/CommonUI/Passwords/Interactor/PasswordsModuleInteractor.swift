@@ -41,6 +41,7 @@ final class PasswordsModuleInteractor {
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     private let configInteractor: ConfigInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
+    private let passwordListInteractor: PasswordListInteracting
     
     private var searchPhrase: String?
     
@@ -52,7 +53,8 @@ final class PasswordsModuleInteractor {
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting,
         configInteractor: ConfigInteracting,
-        paymentStatusInteractor: PaymentStatusInteracting
+        paymentStatusInteractor: PaymentStatusInteracting,
+        passwordListInteractor: PasswordListInteracting,
     ) {
         self.passwordInteractor = passwordInteractor
         self.fileIconInteractor = fileIconInteractor
@@ -62,6 +64,7 @@ final class PasswordsModuleInteractor {
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.configInteractor = configInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
+        self.passwordListInteractor = passwordListInteractor
     }
 }
 
@@ -133,15 +136,15 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
     
     var currentSortType: SortType {
-        passwordInteractor.currentSortType
+        passwordListInteractor.currentSortType
     }
     
     func setSortType(_ sortType: SortType) {
-        passwordInteractor.setSortType(sortType)
+        passwordListInteractor.setSortType(sortType)
     }
     
     func moveToTrash(_ passwordID: PasswordID) {
-        Log("PasswordsModuleInteractor: Move to trash: \(passwordID)", module: .moduleInteractor, obfuscate: true)
+        Log("PasswordsModuleInteractor: Move to trash: \(passwordID)", module: .moduleInteractor)
         let deletedPassword = passwordInteractor.getPassword(for: passwordID, checkInTrash: false)
         passwordInteractor.markAsTrashed(for: passwordID)
         passwordInteractor.saveStorage()

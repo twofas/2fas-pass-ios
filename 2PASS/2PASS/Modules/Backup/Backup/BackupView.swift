@@ -47,12 +47,24 @@ struct BackupView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .toolbar {
+            if presenter.flowContext.kind == .quickSetup {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(T.commonCancel.localizedKey) {
+                        presenter.flowContext.onClose?()
+                    }
+                }
+            }
+        }
         .router(router: BackupRouter(), destination: $presenter.destination)
     }
 }
 
 #Preview {
     NavigationStack {
-        BackupView(presenter: .init(interactor: ModuleInteractorFactory.shared.backupModuleInteractor()))
+        BackupView(presenter: .init(
+            interactor: ModuleInteractorFactory.shared.backupModuleInteractor(),
+            flowContext: .settings
+        ))
     }
 }

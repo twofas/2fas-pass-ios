@@ -375,31 +375,28 @@ private extension ImportInteractor {
     ) -> MasterKey? {
         Log(
             "ImportInteractor: Creating Master Key using Master Password: \(masterPassword) and Words: \(words)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         Log("ImportInteractor: Creating Salt from Words", module: .interactor)
         guard let salt = mainRepository.createSalt(from: words) else {
             Log("ImportInteractor: Error while creating Salt", module: .interactor, severity: .error)
             return nil
         }
-        Log("ImportInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ImportInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         guard let (entropy, oldCRC) = mainRepository.convertWordsTo4BitPacksAndCRC(words) else {
             Log("ImportInteractor: Error while creating Entropy and CRC", module: .interactor, severity: .error)
             return nil
         }
         
         Log(
-            "ImportInteractor: Entropy: \(entropy.hexEncodedString()), CRC: \(oldCRC)",
-            module: .interactor,
-            obfuscate: true
+            "ImportInteractor: Entropy: \(entropy.hexEncodedString()), CRC: \(oldCRC, privacy: .private)",
+            module: .interactor
         )
         
         let seed = mainRepository.createSeed(from: entropy)
         Log(
             "ImportInteractor: Seed: \(seed.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
                 
         Log("ImportInteractor: Generating Master Key", module: .interactor)
@@ -407,7 +404,7 @@ private extension ImportInteractor {
             Log("ImportInteractor: Error while generating Master Key", module: .interactor, severity: .error)
             return nil
         }
-        Log("ImportInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ImportInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
         return masterKey
     }
     
@@ -606,7 +603,7 @@ private extension ImportInteractor {
         else {
             return nil
         }
-        let protectionLevel: PasswordProtectionLevel = {
+        let protectionLevel: ItemProtectionLevel = {
             switch exchangeLogin.securityType {
             case 0: .topSecret
             case 1: .confirm

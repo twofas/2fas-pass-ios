@@ -123,7 +123,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         guard !vault.isEmpty else {
             return false
         }
-        return !mainRepository.listEncryptedPasswords(in: vault.vaultID)
+        return !mainRepository.listEncryptedItems(in: vault.vaultID)
             .filter({ $0.protectionLevel != .topSecret }).isEmpty
     }
     
@@ -196,8 +196,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log(
             "ProtectionInteractor: Restored Entropy: \(entropy.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.setEntropy(entropy)
     }
@@ -215,8 +214,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         
         Log(
             "ProtectionInteractor: Saving Entropy: \(entropy.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.saveMasterKeyEntropy(entropy)
     }
@@ -229,8 +227,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log(
             "ProtectionInteractor: Generated Entropy: \(entropy.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.setEntropy(entropy)
     }
@@ -269,17 +266,16 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log(
             "ProtectionInteractor: Entropy: \(entropy.hexEncodedString()), Seed: \(seed.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         let groups = mainRepository.create11BitPacks(from: entropy, seed: seed)
-        Log("ProtectionInteractor: 11Bit packs from Entropy and Seed: \(groups)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: 11Bit packs from Entropy and Seed: \(groups)", module: .interactor)
         
         guard let words = mainRepository.createWords(from: groups) else {
             Log("ProtectionInteractor: Error while getting Words", module: .interactor, severity: .error)
             return
         }
-        Log("ProtectionInteractor: Words: \(words)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Words: \(words)", module: .interactor)
         mainRepository.setWords(words)
         
         Log("ProtectionInteractor: Creating Salt", module: .interactor)
@@ -288,7 +284,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             return
         }
         
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         mainRepository.setSalt(salt)
     }
     
@@ -303,7 +299,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             return
         }
         
-        Log("ProtectionInteractor: DeviceID: \(deviceID)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: DeviceID: \(deviceID)", module: .interactor)
         Log("ProtectionInteractor: Getting Master Key", module: .interactor)
         
         guard let masterKey = mainRepository.empheralMasterKey else {
@@ -316,8 +312,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log(
             "ProtectionInteractor: Saving Encryption Reference using DeviceID: \(deviceID) and Master Key: \(masterKey.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.saveEncryptionReference(deviceID, masterKey: masterKey)
     }
@@ -326,7 +321,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         restoreEntropy()
         createSeed()
         createSalt()
-        Log("ProtectionInteractor: Verifying Master Password: \(masterPassword)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Verifying Master Password: \(masterPassword)", module: .interactor)
         
         guard let deviceID = mainRepository.deviceID else {
             Log(
@@ -336,7 +331,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             )
             return false
         }
-        Log("ProtectionInteractor: DeviceID: \(deviceID)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: DeviceID: \(deviceID)", module: .interactor)
         Log("ProtectionInteractor: Creating Master Key", module: .interactor)
         
         guard let masterKey = createMasterKey(using: masterPassword) else {
@@ -349,19 +344,17 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log(
             "ProtectionInteractor: Veryfing Encryption Reference using Master Key \(masterKey.hexEncodedString()) and DeviceID: \(deviceID)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         let value = mainRepository.verifyEncryptionReference(using: masterKey, with: deviceID)
-        Log("ProtectionInteractor: Verification: \(value)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Verification: \(value, privacy: .private)", module: .interactor)
         return value
     }
     
     func setMasterKey(_ masterKey: MasterKey) {
         Log(
             "ProtectionInteractor: Setting Master Key: \(masterKey.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.setEmpheralMasterKey(masterKey)
     }
@@ -369,8 +362,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     func setMasterKey(for masterPassword: String) {
         Log(
             "ProtectionInteractor: Setting Master Key for Master Password: \(masterPassword)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         guard let masterKey = createMasterKey(using: masterPassword) else {
             Log("ProtectionInteractor: Error while setting Master Key", module: .interactor, severity: .error)
@@ -378,8 +370,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log(
             "ProtectionInteractor: Setting Master Key for Master Password: \(masterKey.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.setEmpheralMasterKey(masterKey)
     }
@@ -397,7 +388,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     }
     
     func setMasterPassword(_ masterPassword: MasterPassword) {
-        Log("ProtectionInteractor: Set Master Password: \(masterPassword)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Set Master Password: \(masterPassword)", module: .interactor)
         mainRepository.setMasterPassword(masterPassword)
     }
     
@@ -407,14 +398,14 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("Error while getting Master Key - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Getting selected Vault", module: .interactor)
         
         guard let vault = mainRepository.selectedVault else {
             Log("Error while getting selected Vault - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Vault: \(vault.vaultID). Creating Keys", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Vault: \(vault.vaultID). Creating Keys", module: .interactor)
         
         Log("ProtectionInteractor: Getting Trusted Key", module: .interactor)
         guard let trustedKey = mainRepository.generateTrustedKeyForVaultID(
@@ -425,7 +416,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("Error while generating Trusted Key", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Trusted Key: \(trustedKey)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Trusted Key: \(trustedKey)", module: .interactor)
         mainRepository.setTrustedKey(trustedKeyData)
         
         guard let secureKey = mainRepository.generateSecureKeyForVaultID(
@@ -436,7 +427,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("Error while generating Secure Key", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Secure Key: \(secureKey)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Secure Key: \(secureKey)", module: .interactor)
         mainRepository.setSecureKey(secureKeyData)
         
         Log("ProtectionInteractor: Getting External Key", module: .interactor)
@@ -448,7 +439,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Error while generating External Key", module: .interactor, severity: .error)
             return
         }
-        Log("ProtectionInteractor: External Key: \(externalKey)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: External Key: \(externalKey)", module: .interactor)
         mainRepository.setExternalKey(externalKeyData)
         
         // Caching keys - Keychain access is expensive
@@ -461,7 +452,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Can't find any Vault", module: .interactor, severity: .error)
             return
         }
-        Log("ProtectionInteractor: Found Vault: \(vault.vaultID)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Found Vault: \(vault.vaultID)", module: .interactor)
         mainRepository.selectVault(vault.vaultID)
     }
     
@@ -486,7 +477,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Error while getting Master Key - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Getting App Key", module: .interactor)
         
         guard let appKey = mainRepository.appKey else {
@@ -510,7 +501,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Error while getting Master Key - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Getting App Key", module: .interactor)
         
         guard let appKey = mainRepository.appKey else {
@@ -538,15 +529,13 @@ extension ProtectionInteractor: ProtectionInteracting {
     func setEntropy(_ entropy: Entropy, masterKey: MasterKey?) -> Bool {
         Log(
             "ProtectionInteractor: Setting Entropy: \(entropy.base64EncodedString()) with Master Password: \(masterPassword ?? "<none>")",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         
         let seed = mainRepository.createSeed(from: entropy)
         Log(
             "ProtectionInteractor: Seed: \(seed.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         
         let bitPacks = mainRepository.create11BitPacks(from: entropy, seed: seed)
@@ -561,7 +550,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Error while creating Salt", module: .interactor, severity: .error)
             return false
         }
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         
         if let masterKey {
             mainRepository.setEmpheralMasterKey(masterKey)
@@ -579,8 +568,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     func setWords(_ words: [String], masterPassword: MasterPassword?) -> Result<Void, SetWordsError> {
         Log(
             "ProtectionInteractor: Setting words: \(words) with Master Password: \(masterPassword ?? "<none>")",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         mainRepository.setWords(words)
         if let masterPassword {
@@ -591,7 +579,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Error while creating Salt", module: .interactor, severity: .error)
             return .failure(.general)
         }
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         mainRepository.setSalt(salt)
         
         guard let (entropy, oldCRC) = mainRepository.convertWordsTo4BitPacksAndCRC(words) else {
@@ -600,22 +588,19 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         
         Log(
-            "ProtectionInteractor: Entropy: \(entropy.hexEncodedString()), CRC: \(oldCRC)",
-            module: .interactor,
-            obfuscate: true
+            "ProtectionInteractor: Entropy: \(entropy.hexEncodedString()), CRC: \(oldCRC, privacy: .private)",
+            module: .interactor
         )
         
         let seed = mainRepository.createSeed(from: entropy)
         Log(
             "ProtectionInteractor: Seed: \(seed.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         let newCRC = mainRepository.createCRC(from: seed)
         Log(
-            "ProtectionInteractor: New CRC: \(newCRC)",
-            module: .interactor,
-            obfuscate: true
+            "ProtectionInteractor: New CRC: \(newCRC, privacy: .private)",
+            module: .interactor
         )
         
         guard newCRC == oldCRC else {
@@ -659,17 +644,16 @@ extension ProtectionInteractor: ProtectionInteracting {
         )
         Log(
             "ProtectionInteractor: Entropy: \(entropy.hexEncodedString()), Seed: \(seed.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         let groups = mainRepository.create11BitPacks(from: entropy, seed: seed)
-        Log("ProtectionInteractor: 11Bit packs from Entropy and Seed: \(groups)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: 11Bit packs from Entropy and Seed: \(groups)", module: .interactor)
         
         guard let words = mainRepository.createWords(from: groups) else {
             Log("ProtectionInteractor: Error while getting Words", module: .interactor, severity: .error)
             return false
         }
-        Log("ProtectionInteractor: Words: \(words)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Words: \(words)", module: .interactor)
         
         Log("ProtectionInteractor: Creating Salt", module: .interactor)
         guard let salt = mainRepository.createSalt(from: words) else {
@@ -677,7 +661,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             return false
         }
         
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         
         mainRepository.setWords(words)
         mainRepository.setSeed(seed)
@@ -717,7 +701,7 @@ private extension ProtectionInteractor {
             Log("ProtectionInteractor: Error - can't find Seed", module: .interactor, severity: .error)
             return nil
         }
-        Log("ProtectionInteractor: Seed: \(seed.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Seed: \(seed.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Getting Salt", module: .interactor)
         if mainRepository.salt == nil {
             Log("ProtectionInteractor: Can't find Salt. Recreating", module: .interactor)
@@ -729,7 +713,7 @@ private extension ProtectionInteractor {
             return nil
         }
         
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         
         let masterKey = createMasterKey(using: masterPassword, seed: seed, salt: salt)
         
@@ -744,17 +728,16 @@ private extension ProtectionInteractor {
         )
         Log(
             "ProtectionInteractor: Entropy: \(entropy.hexEncodedString()), Seed: \(seed.hexEncodedString())",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         let groups = mainRepository.create11BitPacks(from: entropy, seed: seed)
-        Log("ProtectionInteractor: 11Bit packs from Entropy and Seed: \(groups)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: 11Bit packs from Entropy and Seed: \(groups)", module: .interactor)
         
         guard let words = mainRepository.createWords(from: groups) else {
             Log("ProtectionInteractor: Error while getting Words", module: .interactor, severity: .error)
             return nil
         }
-        Log("ProtectionInteractor: Words: \(words)", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Words: \(words)", module: .interactor)
         
         Log("ProtectionInteractor: Creating Salt", module: .interactor)
         guard let salt = mainRepository.createSalt(from: words) else {
@@ -762,7 +745,7 @@ private extension ProtectionInteractor {
             return nil
         }
         
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         
         return createMasterKey(using: masterPassword, seed: seed, salt: salt, kdfSpec: kdfSpec)
     }
@@ -770,14 +753,13 @@ private extension ProtectionInteractor {
     func createMasterKey(using masterPassword: MasterPassword, seed: Seed, salt: Salt, kdfSpec: KDFSpec = .default) -> MasterKey? {
         Log(
             "ProtectionInteractor: Creating Master Key using Master Password: \(masterPassword)",
-            module: .interactor,
-            obfuscate: true
+            module: .interactor
         )
         Log("ProtectionInteractor: Getting Seed", module: .interactor)
-        Log("ProtectionInteractor: Seed: \(seed.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Seed: \(seed.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Getting Salt", module: .interactor)
 
-        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Salt: \(salt.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Generating Master Key", module: .interactor)
         guard let masterKey = mainRepository.generateMasterKey(
             with: masterPassword,
@@ -788,7 +770,7 @@ private extension ProtectionInteractor {
             Log("ProtectionInteractor: Error while generating Master Key", module: .interactor, severity: .error)
             return nil
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor, obfuscate: true)
+        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
         return masterKey
     }
 }

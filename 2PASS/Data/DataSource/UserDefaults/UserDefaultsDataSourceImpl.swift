@@ -39,7 +39,11 @@ final class UserDefaultsDataSourceImpl {
         case requestedForBiometryToLogin
         case debugSubscriptionPlan
         case debugSubscriptionPlanExpireDate
+        case lastKnownSubscriptionPlan
+        case lastKnownSubscriptionPlanExpireDate
         case webDAVAwaitsVaultOverrideAfterPasswordChange
+        case lastKnownAppVersion
+        case shouldShowQuickSetup
     }
     
     private let userDefaults = UserDefaults()
@@ -183,16 +187,16 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.synchronize()
     }
     
-    var currentDefaultProtectionLevel: PasswordProtectionLevel {
+    var currentDefaultProtectionLevel: ItemProtectionLevel {
         guard let string = userDefaults.string(forKey: Keys.defaultProtectionLevel.rawValue),
-              let value = PasswordProtectionLevel(rawValue: string)
+              let value = ItemProtectionLevel(rawValue: string)
         else {
-            return PasswordProtectionLevel.default
+            return ItemProtectionLevel.default
         }
         return value
     }
     
-    func setDefaultProtectionLevel(_ value: PasswordProtectionLevel) {
+    func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
         userDefaults.setValue(value.rawValue, forKey: Keys.defaultProtectionLevel.rawValue)
         userDefaults.synchronize()
     }
@@ -386,5 +390,43 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearDebugSubscriptionPlan() {
         userDefaults.set(nil, forKey: Keys.debugSubscriptionPlan.rawValue)
         userDefaults.set(nil, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
+    }
+    
+    var lastKnownAppVersion: String? {
+        userDefaults.string(forKey: Keys.lastKnownAppVersion.rawValue)
+    }
+    
+    func setLastKnownAppVersion(_ version: String) {
+        userDefaults.set(version, forKey: Keys.lastKnownAppVersion.rawValue)
+        userDefaults.synchronize()
+    }
+    
+    var lastKnownSubscriptionPlan: SubscriptionPlan? {
+        guard let value = sharedDefaults.string(forKey: Keys.lastKnownSubscriptionPlan.rawValue) else {
+            return nil
+        }
+        
+        switch SubscriptionPlanType(rawValue: value) {
+        case .free:
+            return SubscriptionPlan.free
+        case .premium:
+            let expireDate = Date(timeIntervalSinceReferenceDate: sharedDefaults.double(forKey: Keys.lastKnownSubscriptionPlanExpireDate.rawValue))
+            return SubscriptionPlan(planType: .premium, paymentInfo: .init(expirationDate: expireDate, willRenew: true))
+        default:
+            return nil
+        }
+    }
+    
+    func setLastKnownSubscriptionPlan(_ plan: SubscriptionPlan) {
+        sharedDefaults.set(plan.planType.rawValue, forKey: Keys.lastKnownSubscriptionPlan.rawValue)
+        sharedDefaults.set(plan.expirationDate?.timeIntervalSinceReferenceDate, forKey: Keys.lastKnownSubscriptionPlanExpireDate.rawValue)
+    }
+    
+    var shouldShowQuickSetup: Bool {
+        userDefaults.bool(forKey: Keys.shouldShowQuickSetup.rawValue)
+    }
+    
+    func setShouldShowQuickSetup(_ value: Bool) {
+        userDefaults.set(value, forKey: Keys.shouldShowQuickSetup.rawValue)
     }
 }

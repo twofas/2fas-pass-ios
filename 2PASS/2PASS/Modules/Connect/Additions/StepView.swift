@@ -17,43 +17,49 @@ private struct Constants {
     static let backgroundCompletedOpacity = 16.0
 }
 
-struct StepView<Accesssory>: View where Accesssory: View {
+struct StepView<Title, Accesssory, Footer>: View where Title: View, Accesssory: View, Footer: View {
     
-    let title: Text
+    let title: Title
     let subtitle: Text
     let accessory: Accesssory
+    let footer: Footer
     
     private var completed: Bool
     
-    init(title: Text, subtitle: Text, @ViewBuilder accessory: () -> Accesssory) {
-        self.title = title
+    init(@ViewBuilder title: () -> Title, subtitle: Text, @ViewBuilder accessory: () -> Accesssory, @ViewBuilder footer: () -> Footer) {
+        self.title = title()
         self.subtitle = subtitle
         self.accessory = accessory()
+        self.footer = footer()
         self.completed = false
     }
 
     var body: some View {
-        HStack(spacing: Spacing.s) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                title
-                    .font(.calloutEmphasized)
-                    .overlay(alignment: .leading) {
-                        Rectangle()
-                            .frame(height: 1)
-                            .frame(maxWidth: completed ? .infinity : 0)
-                            .animation(.linear(duration: Constants.strikeThrougCompletedAnimationDuration), value: completed)
-                    }
-                    .foregroundStyle(completed ? .neutral300 : .neutral950)
+        VStack(spacing: Spacing.s) {
+            HStack(spacing: Spacing.s) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    title
+                        .font(.calloutEmphasized)
+                        .overlay(alignment: .leading) {
+                            Rectangle()
+                                .frame(height: 1)
+                                .frame(maxWidth: completed ? .infinity : 0)
+                                .animation(.linear(duration: Constants.strikeThrougCompletedAnimationDuration), value: completed)
+                        }
+                        .foregroundStyle(completed ? .neutral300 : .neutral950)
+                    
+                    subtitle
+                        .foregroundStyle(completed ? .neutral300 : .neutral500)
+                        .font(.footnote)
+                }
                 
-                subtitle
-                    .foregroundStyle(completed ? .neutral300 : .neutral500)
-                    .font(.footnote)
+                Spacer(minLength: 0)
+                
+                accessory
+                    .animation(.easeInOut(duration: Constants.accessoryCompletedAnimationDuration).delay(Constants.accessoryCompletedAnimationDelay), value: completed)
             }
             
-            Spacer(minLength: 0)
-            
-            accessory
-                .animation(.easeInOut(duration: Constants.accessoryCompletedAnimationDuration).delay(Constants.accessoryCompletedAnimationDelay), value: completed)
+            footer
         }
         .padding(Spacing.l)
         .background {
@@ -71,10 +77,35 @@ struct StepView<Accesssory>: View where Accesssory: View {
     }
 }
 
-extension StepView where Accesssory == EmptyView {
+extension StepView where Title == Text {
+    
+    init(title: Text, subtitle: Text, @ViewBuilder accessory: () -> Accesssory, @ViewBuilder footer: () -> Footer) {
+        self.title = title
+        self.subtitle = subtitle
+        self.accessory = accessory()
+        self.footer = footer()
+        self.completed = false
+    }
+}
+
+extension StepView where Footer == EmptyView {
+    
+    init(title: () -> Title, subtitle: Text, @ViewBuilder accessory: () -> Accesssory) {
+        self.init(title: title, subtitle: subtitle, accessory: accessory, footer: { EmptyView() })
+    }
+}
+
+extension StepView where Title == Text, Footer == EmptyView {
+    
+    init(title: Text, subtitle: Text, @ViewBuilder accessory: () -> Accesssory) {
+        self.init(title: { title }, subtitle: subtitle, accessory: accessory, footer: { EmptyView() })
+    }
+}
+
+extension StepView where Title == Text, Accesssory == EmptyView, Footer == EmptyView {
     
     init(title: Text, subtitle: Text) {
-        self.init(title: title, subtitle: subtitle, accessory: { EmptyView() })
+        self.init(title: title, subtitle: subtitle, accessory: { EmptyView() }, footer: { EmptyView() })
     }
 }
 

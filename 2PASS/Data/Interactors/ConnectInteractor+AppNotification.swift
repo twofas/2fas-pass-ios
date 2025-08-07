@@ -329,7 +329,7 @@ extension ConnectInteractor {
             throw ConnectError.badData
         }
         
-        let encryptionPasswordKey: (PasswordProtectionLevel) -> SymmetricKey? = { protectionLevel in
+        let encryptionPasswordKey: (ItemProtectionLevel) -> SymmetricKey? = { protectionLevel in
             let infoData: Data? = {
                 switch protectionLevel {
                 case .normal:
@@ -364,8 +364,8 @@ extension ConnectInteractor {
         )
         let actionData = ConnectActionItemData(
             type: .newLogin,
-            status: connectLogin.securityType == PasswordProtectionLevel.topSecret.intValue ? .addedInT1 : .added,
-            login: connectLogin.securityType == PasswordProtectionLevel.topSecret.intValue ? nil : connectLogin
+            status: connectLogin.securityType == ItemProtectionLevel.topSecret.intValue ? .addedInT1 : .added,
+            login: connectLogin.securityType == ItemProtectionLevel.topSecret.intValue ? nil : connectLogin
         )
         return actionData
     }
@@ -420,7 +420,7 @@ extension ConnectInteractor {
             throw ConnectError.missingItem
         }
         
-        let encryptionPasswordKey: (PasswordProtectionLevel) -> SymmetricKey? = { protectionLevel in
+        let encryptionPasswordKey: (ItemProtectionLevel) -> SymmetricKey? = { protectionLevel in
             let infoData: Data? = {
                 switch protectionLevel {
                 case .normal:
@@ -444,7 +444,7 @@ extension ConnectInteractor {
             )
         }
         
-        guard let protectionLevel = PasswordProtectionLevel(intValue: actionRequestData.data.securityType) else {
+        guard let protectionLevel = ItemProtectionLevel(intValue: actionRequestData.data.securityType) else {
             throw ConnectError.badData
         }
         
@@ -482,7 +482,7 @@ extension ConnectInteractor {
         let connectLogin = try await connectExportInteractor.preparePasswordForConnectExport(id: passwordID, encryptPasswordKey: encryptionPasswordKey, deviceId: deviceID)
         let actionData = ConnectActionItemData(
             type: .updateLogin,
-            status: connectLogin.securityType == PasswordProtectionLevel.topSecret.intValue ? .addedInT1 : .updated,
+            status: connectLogin.securityType == ItemProtectionLevel.topSecret.intValue ? .addedInT1 : .updated,
             login: connectLogin
         )
         return actionData

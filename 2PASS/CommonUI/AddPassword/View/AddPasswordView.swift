@@ -44,6 +44,9 @@ struct AddPasswordView: View {
     @State
     private var showGeneratePassword = false
     
+    @State
+    private var showDeleteConfirmation = false
+    
     @FocusState
     private var focusField: Field?
     
@@ -208,6 +211,16 @@ struct AddPasswordView: View {
                 focusField = .notes
             }
             .listSectionSpacing(Spacing.l)
+            
+            if presenter.isEdit {
+                Section {
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Text(T.loginDeleteCta.localizedKey)
+                    }
+                }
+            }
         }
         .environment(\.editMode, .constant(EditMode.active))
         .contentMargins(.top, Spacing.s)
@@ -251,6 +264,19 @@ struct AddPasswordView: View {
                 }
             }
         }
+        .alert(T.loginDeleteConfirmTitle.localizedKey, isPresented: $showDeleteConfirmation, actions: {
+            Button(role: .destructive) {
+                presenter.onDelete()
+            } label: {
+                Text(T.commonYes.localizedKey)
+            }
+            
+            Button(role: .cancel) {} label: {
+                Text(T.commonNo.localizedKey)
+            }
+        }, message: {
+            Text(T.loginDeleteConfirmBody.localizedKey)
+        })
         .onChange(of: showURIMatchSettings) { _, current in
             if !current {
                 currentURI = nil

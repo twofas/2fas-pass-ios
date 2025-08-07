@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "quick.setup.small.icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

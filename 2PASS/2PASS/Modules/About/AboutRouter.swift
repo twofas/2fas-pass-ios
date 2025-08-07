@@ -7,10 +7,26 @@
 import CommonUI
 import SwiftUI
 
-struct AboutRouter {
+struct AboutRouter: Router {
     
     @MainActor
     static func buildView() -> some View {
         AboutView(presenter: .init(interactor: ModuleInteractorFactory.shared.aboutModuleInteractor()))
+    }
+    
+    func routingType(for destination: AboutDestination?) -> RoutingType? {
+        switch destination {
+        case .viewLogs:
+            return .fullScreenCover
+        case nil:
+            return nil
+        }
+    }
+    
+    func view(for destination: AboutDestination) -> some View {
+        switch destination {
+        case .viewLogs:
+            return ViewLogsRouter.buildView()
+        }
     }
 }

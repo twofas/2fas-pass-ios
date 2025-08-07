@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24F74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="DeletedItemCachedEntity" representedClassName=".DeletedItemCachedEntity" syncable="YES">
+        <attribute name="deletedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="itemID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="kind" attributeType="String"/>
+        <attribute name="metadata" attributeType="Binary"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="ItemCachedEntity" representedClassName=".ItemCachedEntity" syncable="YES">
+        <attribute name="content" attributeType="Binary"/>
+        <attribute name="contentType" attributeType="String"/>
+        <attribute name="contentVersion" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="isTrashed" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="itemID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="metadata" attributeType="Binary"/>
+        <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="protectionLevel" attributeType="String"/>
+        <attribute name="tagIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
+        <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="TagCachedEntity" representedClassName=".TagEncryptedEntity" syncable="YES">
+        <attribute name="color" optional="YES" attributeType="String"/>
+        <attribute name="metadata" attributeType="Binary"/>
+        <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="Binary"/>
+        <attribute name="position" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="tagID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="VaultCachedEntity" representedClassName=".VaultCachedEntity" syncable="YES">
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="deviceID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="deviceNames" attributeType="Binary"/>
+        <attribute name="kdfSpec" attributeType="Binary"/>
+        <attribute name="metadata" attributeType="Binary"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="reference" attributeType="String"/>
+        <attribute name="schemaVersion" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="seedHash" attributeType="String"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+</model>

@@ -6,6 +6,7 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 struct SettingsView: View {
     
@@ -117,6 +118,22 @@ struct SettingsView: View {
                     }
                 }
                 
+                Section(T.settingsManageTokensTitle) {
+                    Button {
+                        if presenter.is2FASAuthInstalled {
+                            openURL(Config.twofasAuthOpenLink)
+                        } else {
+                            openURL(Config.twofasAuthAppStoreLink)
+                        }
+                    } label: {
+                        SettingsRowView(
+                            icon: .twoFASAuth,
+                            title: presenter.is2FASAuthInstalled ? T.settings2fasOpen.localizedKey : T.settings2fasGet.localizedKey,
+                            actionIcon: .link
+                        )
+                    }
+                }
+                
                 Section(T.settingsHeaderAbout.localizedKey) {
                     if presenter.isPaidUser {
                         Button {
@@ -172,7 +189,8 @@ struct SettingsView: View {
                     }
                 }
                 
-                #if DEBUG
+                #if PROD
+                #else
                 Section {
                     Button {
                         presenter.onDebug()
