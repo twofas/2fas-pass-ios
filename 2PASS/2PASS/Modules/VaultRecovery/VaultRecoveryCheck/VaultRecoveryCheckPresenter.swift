@@ -6,6 +6,7 @@
 
 import UIKit
 import Data
+import Common
 
 enum VaultRecoveryCheckDestination: Identifiable {
     var id: String {
@@ -28,13 +29,16 @@ final class VaultRecoveryCheckPresenter {
     private let interactor: VaultRecoveryCheckModuleInteracting
     
     var state: State = .checking
+    let onClose: Callback
     
     var destination: VaultRecoveryCheckDestination?
     
     init(
-        interactor: VaultRecoveryCheckModuleInteracting
+        interactor: VaultRecoveryCheckModuleInteracting,
+        onClose: @escaping Callback
     ) {
         self.interactor = interactor
+        self.onClose = onClose
     }
 }
 

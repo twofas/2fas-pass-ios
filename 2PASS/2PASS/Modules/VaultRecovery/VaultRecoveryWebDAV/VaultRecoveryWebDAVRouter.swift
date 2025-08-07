@@ -34,8 +34,8 @@ struct VaultRecoveryWebDAVRouter: Router {
                 password: password,
                 onSelect: onSelect
             )
-        case .select(let data):
-            VaultRecoverySelectRouter.buildView(flowContext: .onboarding, recoveryData: data)
+        case .select(let data, let onClose):
+            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: data)
         }
     }
     

@@ -38,13 +38,15 @@ struct VaultRecoverySelectRouter: Router {
             BackupImportImportingRouter.buildView(input: input, onClose: onClose)
         case .enterMasterPassword(let flowContext, let entropy, let recoveryData):
             VaultRecoveryEnterPasswordRouter.buildView(flowContext: flowContext, entropy: entropy, recoveryData: recoveryData)
+        case .importFailed(let onSelectVault, let onSelectDecryptionKit):
+            VaultRecoveryWrongDecryptionKitRouter.buildView(onSelectVault: onSelectVault, onSelectDecryptionKit: onSelectDecryptionKit)
         }
     }
     
     func routingType(for destination: VaultRecoverySelectDestination?) -> RoutingType? {
         switch destination {
         case .manually: .sheet
-        case .camera, .enterMasterPassword, .vaultRecovery, .importVault: .push
+        case .camera, .enterMasterPassword, .vaultRecovery, .importVault, .importFailed: .push
         case .errorOpeningFile(let message, _): .alert(title: T.commonError, message: message)
         case nil: nil
         }
