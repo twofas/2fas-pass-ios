@@ -17,6 +17,7 @@ extension ExternalService {
         case .lastPass: .lastPass
         case .protonPass: .proton
         case .applePasswordsDesktop, .applePasswordsMobile: .applePasswords
+        case .firefox: .firefox
         }
     }
 }

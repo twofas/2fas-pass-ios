@@ -1593,6 +1593,16 @@ internal enum T {
   /// 
   /// Copy this ZIP file to this device and tap **Upload ZIP file** below.
   internal static let transferInstructionsDashlanePc = T.tr("Localizable", "transfer_instructions_dashlane_pc", fallback: "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this ZIP file to this device and tap **Upload ZIP file** below.")
+  /// Open Firefox on your PC
+  /// 
+  /// Select the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.
+  /// 
+  /// Select **Firefox menu** (3 dots) and **Export Passwords**.
+  /// 
+  /// Select **Continue with export** and choose the file name and location.
+  /// 
+  /// Copy the exported file to this device and tap **Upload CSV file** below. 
+  internal static let transferInstructionsFirefox = T.tr("Localizable", "transfer_instructions_firefox", fallback: "Open Firefox on your PC\n\nSelect the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.\n\nSelect **Firefox menu** (3 dots) and **Export Passwords**.\n\nSelect **Continue with export** and choose the file name and location.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
   /// Transfer from %@
   internal static func transferInstructionsHeader(_ p1: Any) -> String {
     return T.tr("Localizable", "transfer_instructions_header %@", String(describing: p1), fallback: "Transfer from %@")
