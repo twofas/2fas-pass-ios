@@ -524,6 +524,7 @@
 		54D6B3282D91EBE80013185C /* VaultDecryptionKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultDecryptionKit; sourceTree = "<group>"; };
 		54D768E82DFAA4DF000CB649 /* ManageSubscription */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ManageSubscription; sourceTree = "<group>"; };
 		54EABA602DD252760018189F /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
+		54FD31A22E45644E00DFAC70 /* Tags */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tags; sourceTree = "<group>"; };
 		C2B0FC1C2CE91C4D005CFADD /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C2B0FC232CE91C4D005CFADD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -1057,6 +1058,7 @@
 		C2B0B8222C1E050500D26D11 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				54FD31A22E45644E00DFAC70 /* Tags */,
 				548E54142E326EDB00DA22A7 /* QuickSetup */,
 				5415B8402E2A796000FBEE71 /* Logs */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
@@ -1363,6 +1365,7 @@
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				54EABA602DD252760018189F /* Backup */,
+				54FD31A22E45644E00DFAC70 /* Tags */,
 			);
 			name = 2PASS;
 			packageProductDependencies = (

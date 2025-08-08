@@ -11,10 +11,10 @@ public struct ItemTagData: Identifiable, Hashable {
     
     public let tagID: ItemTagID
     public let vaultID: VaultID
-    public let name: String
+    public var name: String
     public let color: UIColor?
     public let position: Int
-    public let modificationDate: Date
+    public var modificationDate: Date
     
     public init(tagID: ItemTagID, vaultID: VaultID, name: String, color: UIColor?, position: Int, modificationDate: Date) {
         self.tagID = tagID

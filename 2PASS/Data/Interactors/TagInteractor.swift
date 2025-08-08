@@ -23,6 +23,8 @@ public protocol TagInteracting: AnyObject {
     func listTagWith(_ phrase: String) -> [ItemTagData]
     
     func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData])
+    
+    func saveStorage()
 }
 
 final class TagInteractor {
@@ -160,6 +162,11 @@ extension TagInteractor: TagInteracting {
         
         mainRepository.batchUpdateRencryptedTags(tags, date: date)
         mainRepository.encryptedTagBatchUpdate(encryptedTags, in: vaultID)
+    }
+    
+    func saveStorage() {
+        mainRepository.saveStorage()
+        mainRepository.saveEncryptedStorage()
     }
 }
 
