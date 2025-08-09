@@ -391,10 +391,4 @@ extension ModuleInteractorFactory {
             passwordInteractor: InteractorFactory.shared.passwordInteractor()
         )
     }
-    
-    func editTagModuleInteractor() -> EditTagModuleInteracting {
-        EditTagModuleInteractor(
-            tagInteractor: InteractorFactory.shared.tagInteractor()
-        )
-    }
 }

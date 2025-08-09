@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import UIKit
+import SwiftUI
 import Common
 
 protocol AddPasswordNavigationFlowControllerParent: AnyObject {
@@ -88,6 +89,20 @@ extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
             data: data,
             completion: completion
         )
+    }
+    
+    func addPasswordToSelectTags(
+        selectedTags: [ItemTagData],
+        onChange: @escaping ([ItemTagData]) -> Void
+    ) {
+        let selectTagsView = SelectTagsRouter.buildView(
+            selectedTags: selectedTags,
+            onChanged: onChange
+        )
+        
+        let hostingController = UIHostingController(rootView: selectTagsView)
+        hostingController.title = "Manage Tags"
+        navigationController.pushViewController(hostingController, animated: true)
     }
 }
 

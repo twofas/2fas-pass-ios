@@ -1,5 +1,4 @@
 import Foundation
-import CommonUI
 import Common
 
 @Observable @MainActor

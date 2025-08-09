@@ -1,5 +1,4 @@
 import SwiftUI
-import CommonUI
 import Common
 
 struct EditTagView: View {

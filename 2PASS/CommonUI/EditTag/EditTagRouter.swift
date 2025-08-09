@@ -1,11 +1,10 @@
 import SwiftUI
-import CommonUI
 import Common
 
-struct EditTagRouter {
+public struct EditTagRouter {
     
     @MainActor
-    static func buildView(tagID: ItemTagID? = nil, onClose: @escaping Callback) -> some View {
+    public static func buildView(tagID: ItemTagID? = nil, onClose: @escaping Callback) -> some View {
         EditTagView(
             presenter: EditTagPresenter(
                 interactor: ModuleInteractorFactory.shared.editTagModuleInteractor(),
