@@ -92,8 +92,8 @@ private extension PasswordsViewController {
                 action: #selector(addAction)
             ),
             UIBarButtonItem(
-                image: UIImage(systemName: "list.bullet"),
-                menu: sortMenu()
+                image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+                menu: tagFilterMenu()
             )
         ]
         
@@ -152,6 +152,85 @@ private extension PasswordsViewController {
                 break
             }
         }
+    }
+    
+    func tagFilterMenu() -> UIMenu {
+        UIMenu(
+            children: [UIDeferredMenuElement.uncached { [weak self] completion in
+                completion(self?.tagFilterMenuItems() ?? [])
+            }]
+        )
+    }
+    
+    func tagFilterMenuItems() -> [UIMenuElement] {
+        // Get all available tags
+        let tags = presenter.listAllTags()
+        
+        var menuItems: [UIMenuElement] = []
+        
+        // Add Sort submenu first
+        let sortActions = SortType.allCases.map { sortType in
+            UIAction(
+                title: sortType.label,
+                image: sortType.icon,
+                state: presenter.selectedSort == sortType ? .on : .off
+            ) { [weak self] _ in
+                self?.presenter.onSelectSort(sortType)
+            }
+        }
+        
+        let sortSubmenu = UIMenu(
+            title: "Sort by",
+            image: UIImage(systemName: "arrow.up.arrow.down"),
+            children: sortActions
+        )
+        menuItems.append(sortSubmenu)
+        
+        // Add "All" option for tags
+        let allAction = UIAction(
+            title: "All (\(presenter.itemsCount))",
+            state: presenter.selectedFilterTag == nil ? .on : .off
+        ) { [weak self] _ in
+            self?.presenter.onClearFilterTag()
+        }
+        
+        // If there are tags, create a submenu for them
+        if !tags.isEmpty {
+            // Create tag actions
+            let tagActions = tags.sorted(by: { $0.name < $1.name }).map { tag in
+                let count = presenter.countPasswordsForTag(tag.tagID)
+                let title = "\(tag.name) (\(count))"
+                return UIAction(
+                    title: title,
+                    state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
+                ) { [weak self] _ in
+                    self?.presenter.onSelectFilterTag(tag)
+                }
+            }
+            
+            // Create a submenu that contains all tags
+            let tagsSubmenu = UIMenu(
+                title: "Filter",
+                image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+                children: [allAction] + tagActions
+            )
+            menuItems.append(tagsSubmenu)
+        } else {
+            menuItems.append(allAction)
+        }
+        
+        // If a tag is selected, add a clear filter option at the end
+        if presenter.selectedFilterTag != nil {
+            let clearFilterAction = UIAction(
+                title: "Clear filters",
+                attributes: .destructive
+            ) { [weak self] _ in
+                self?.presenter.onClearFilterTag()
+            }
+            menuItems.append(clearFilterAction)
+        }
+        
+        return menuItems
     }
     
     func sortMenu() -> UIMenu {

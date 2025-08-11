@@ -51,7 +51,8 @@ public final class ModuleInteractorFactory {
             autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
-            passwordListInteractor: InteractorFactory.shared.passwordListInteractor()
+            passwordListInteractor: InteractorFactory.shared.passwordListInteractor(),
+            tagInteractor: InteractorFactory.shared.tagInteractor()
         )
     }
     

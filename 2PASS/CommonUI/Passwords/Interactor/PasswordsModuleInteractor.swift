@@ -30,6 +30,8 @@ protocol PasswordsModuleInteracting: AnyObject {
     func fetchIconImage(from url: URL) async throws -> Data
     
     func normalizedURL(for uri: String) -> URL?
+    func listAllTags() -> [ItemTagData]
+    func countPasswordsForTag(_ tagID: ItemTagID) -> Int
 }
 
 final class PasswordsModuleInteractor {
@@ -42,6 +44,7 @@ final class PasswordsModuleInteractor {
     private let configInteractor: ConfigInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     private let passwordListInteractor: PasswordListInteracting
+    private let tagInteractor: TagInteracting
     
     private var searchPhrase: String?
     
@@ -55,6 +58,7 @@ final class PasswordsModuleInteractor {
         configInteractor: ConfigInteracting,
         paymentStatusInteractor: PaymentStatusInteracting,
         passwordListInteractor: PasswordListInteracting,
+        tagInteractor: TagInteracting
     ) {
         self.passwordInteractor = passwordInteractor
         self.fileIconInteractor = fileIconInteractor
@@ -65,6 +69,7 @@ final class PasswordsModuleInteractor {
         self.configInteractor = configInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
         self.passwordListInteractor = passwordListInteractor
+        self.tagInteractor = tagInteractor
     }
 }
 
@@ -195,5 +200,16 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             return nil
         }
         return url
+    }
+    
+    func listAllTags() -> [ItemTagData] {
+        tagInteractor.listAllTags()
+    }
+    
+    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
+        let allPasswords = passwordInteractor.listPasswords(searchPhrase: nil, sortBy: currentSortType, trashed: .no)
+        return allPasswords.filter { password in
+            password.tagIds?.contains(tagID) ?? false
+        }.count
     }
 }

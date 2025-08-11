@@ -36,6 +36,14 @@ final class PasswordsPresenter {
         autoFillEnvironment != nil
     }
     
+    var selectedFilterTag: ItemTagData? {
+        didSet {
+            reload()
+        }
+    }
+    
+    private(set) var itemsCount: Int = 0
+    
     private let autoFillEnvironment: AutoFillEnvironment?
     private let iconsDataSource: RemoteImageCollectionDataSource<PasswordCellData>
     private let flowController: PasswordsFlowControlling
@@ -103,6 +111,14 @@ extension PasswordsPresenter {
         reload()
     }
     
+    func onSelectFilterTag(_ tag: ItemTagData?) {
+        selectedFilterTag = tag
+    }
+    
+    func onClearFilterTag() {
+        selectedFilterTag = nil
+    }
+    
     func onCellMenuAction(_ action: PasswordCellMenu, passwordID: PasswordID, selectedURI: URL?) {
         switch action {
         case .view: flowController.toViewPassword(passwordID: passwordID)
@@ -153,6 +169,14 @@ extension PasswordsPresenter {
     
     func handleRefresh() {
         reload()
+    }
+    
+    func listAllTags() -> [ItemTagData] {
+        interactor.listAllTags()
+    }
+
+    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
+        interactor.countPasswordsForTag(tagID)
     }
 }
 
@@ -221,7 +245,15 @@ private extension PasswordsPresenter {
             cellsCount = suggestedCells.count + restCells.count
             
         } else {
-            let list = interactor.loadList()
+            var list = interactor.loadList()
+            
+            // Filter by selected tag if one is selected
+            if let selectedTag = selectedFilterTag {
+                list = list.filter { password in
+                    password.tagIds?.contains(selectedTag.tagID) ?? false
+                }
+            }
+            
             listData[0] = list
             let cells = list.map(makeCellData(for:))
             let section = PasswordSectionData()
@@ -234,8 +266,10 @@ private extension PasswordsPresenter {
             cellsCount = cells.count
         }
         
+        itemsCount = cellsCount
+        
         if cellsCount == 0 {
-            if interactor.isSearching {
+            if interactor.isSearching || selectedFilterTag != nil {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()
