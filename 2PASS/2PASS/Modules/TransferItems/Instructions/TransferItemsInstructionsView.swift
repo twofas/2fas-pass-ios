@@ -90,6 +90,8 @@ struct TransferItemsInstructionsView: View {
                 T.transferInstructionsApplePasswordsPc
             case .applePasswordsMobile:
                 T.transferInstructionsApplePasswordsMobile
+            case .firefox:
+                T.transferInstructionsFirefox
             }
         }()
         return input.components(separatedBy: "\n\n")
