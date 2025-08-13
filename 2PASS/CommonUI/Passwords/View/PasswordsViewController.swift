@@ -133,12 +133,31 @@ private extension PasswordsViewController {
             })
         
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier, for: indexPath) as? AutoFillPasswordsSectionView
+            if kind == SelectedTagBannerView.elementKind {
+                let bannerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: SelectedTagBannerView.reuseIdentifier,
+                    for: indexPath
+                ) as? SelectedTagBannerView
+                
+                if let selectedTag = self?.presenter.selectedFilterTag {
+                    let itemCount = self?.presenter.countPasswordsForTag(selectedTag.tagID) ?? 0
+                    bannerView?.configure(tagName: selectedTag.name, itemCount: itemCount)
+                    bannerView?.onClear = { [weak self] in
+                        self?.presenter.onClearFilterTag()
+                        self?.updateLayoutWithTagFilter()
+                    }
+                }
+                
+                return bannerView
+            } else {
+                let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier, for: indexPath) as? AutoFillPasswordsSectionView
+                
+                let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
+                headerView?.titleLabel.text = passwordSection?.title
             
-            let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
-            headerView?.titleLabel.text = passwordSection?.title
-        
-            return headerView
+                return headerView
+            }
         }
         
         presenter.onImageFetchResult = { [weak self] password, url, result in
@@ -192,6 +211,7 @@ private extension PasswordsViewController {
             state: presenter.selectedFilterTag == nil ? .on : .off
         ) { [weak self] _ in
             self?.presenter.onClearFilterTag()
+            self?.updateLayoutWithTagFilter()
         }
         
         // If there are tags, create a submenu for them
@@ -205,6 +225,7 @@ private extension PasswordsViewController {
                     state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
                 ) { [weak self] _ in
                     self?.presenter.onSelectFilterTag(tag)
+                    self?.updateLayoutWithTagFilter()
                 }
             }
             
@@ -252,6 +273,15 @@ private extension PasswordsViewController {
                 self?.presenter.onSelectSort(sortType)
             }
         }
+    }
+    
+    func updateLayoutWithTagFilter() {
+        // Update the layout to show/hide the banner
+        layout = makeLayout()
+        passwordsList?.setCollectionViewLayout(layout, animated: true)
+        
+        // Reload the data to apply the filter
+        presenter.viewWillAppear()
     }
 }
 

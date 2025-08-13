@@ -20,9 +20,30 @@ extension PasswordsViewController {
             configuration.showsSeparators = false
             return UICollectionViewCompositionalLayout.list(using: configuration)
         } else {
-            return UICollectionViewCompositionalLayout { [weak self] sectionOffset, enviroment in
+            let layout = UICollectionViewCompositionalLayout { [weak self] sectionOffset, enviroment in
                 self?.getLayout(sectionOffset: sectionOffset, enviroment: enviroment)
             }
+            
+            // Add global header for tag banner when a tag is selected
+            if presenter.selectedFilterTag != nil {
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(52)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: SelectedTagBannerView.elementKind,
+                    alignment: .top
+                )
+                header.pinToVisibleBounds = true
+                header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
+                
+                let configuration = UICollectionViewCompositionalLayoutConfiguration()
+                configuration.boundarySupplementaryItems = [header]
+                layout.configuration = configuration
+            }
+            
+            return layout
         }
     }
     
