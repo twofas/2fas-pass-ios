@@ -19,22 +19,12 @@ final class PasswordsViewController: UIViewController {
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
     
-    let container = UIView()
-    
-    override func loadView() {
-        layout = makeLayout()
-        passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
-        
-        self.view = passwordsList
-        passwordsList?.configure(isAutoFillExtension: presenter.isAutoFillExtension)
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = Asset.mainBackgroundColor.color
-        
-        setupContainer()
+
+        setupPasswordsList()
         setupNavigationItems()
         setupDelegates()
         setupEmptyLists()
@@ -58,7 +48,7 @@ final class PasswordsViewController: UIViewController {
 
 private extension PasswordsViewController {
     @objc
-    func addAction() {
+    func addAction() {  
         presenter.onAdd()
     }
     
@@ -67,22 +57,32 @@ private extension PasswordsViewController {
         presenter.onCancel()
     }
     
-    func setupContainer() {
-        view.addSubview(container, with: [
-            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            container.safeTopAnchor.constraint(equalTo: view.safeTopAnchor),
-            container.safeBottomAnchor.constraint(equalTo: view.safeBottomAnchor),
-            container.widthAnchor.constraint(equalTo: view.widthAnchor)
-        ])
-        container.isUserInteractionEnabled = false
+    func setupPasswordsList() {
+        layout = makeLayout()
+        let passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
+        self.passwordsList = passwordsList
+        view.addSubview(passwordsList)
+        passwordsList.pinToParent()
+        passwordsList.configure(isAutoFillExtension: presenter.isAutoFillExtension)
     }
-    
+
     func setupNavigationItems() {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .always
         title = T.homeTitle
+        
+        updateNavigationBarButtons()
+        
+        if presenter.isAutoFillExtension {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
+        }
+    }
+    
+    func updateNavigationBarButtons() {
+        let filterIconName = presenter.selectedFilterTag != nil 
+            ? "line.3.horizontal.decrease.circle.fill" 
+            : "line.3.horizontal.decrease.circle"
         
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(
@@ -92,14 +92,10 @@ private extension PasswordsViewController {
                 action: #selector(addAction)
             ),
             UIBarButtonItem(
-                image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+                image: UIImage(systemName: filterIconName),
                 menu: tagFilterMenu()
             )
         ]
-        
-        if presenter.isAutoFillExtension {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
-        }
     }
     
     func setupDelegates() {
@@ -109,7 +105,11 @@ private extension PasswordsViewController {
     
     func setupEmptyLists() {
         let emptySearchViewController = UIHostingController(rootView: EmptySearchView())
-        placeChild(emptySearchViewController, container: container)
+        addChild(emptySearchViewController)
+        view.addSubview(emptySearchViewController.view)
+        emptySearchViewController.view?.pinToSafeAreaParentCenter()
+        emptySearchViewController.didMove(toParent: self)
+        
         emptySearchList = emptySearchViewController.view
         emptySearchList?.isHidden = true
         
@@ -119,7 +119,11 @@ private extension PasswordsViewController {
             })
             .quickSetupHidden(presenter.isAutoFillExtension)
         )
-        placeChild(emptyListViewController, container: container)
+        addChild(emptyListViewController)
+        view.addSubview(emptyListViewController.view)
+        emptyListViewController.view?.pinToSafeAreaParentCenter()
+        emptyListViewController.didMove(toParent: self)
+        
         emptyList = emptyListViewController.view
         emptyList?.isHidden = true
     }
@@ -133,31 +137,39 @@ private extension PasswordsViewController {
             })
         
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            if kind == SelectedTagBannerView.elementKind {
-                let bannerView = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: SelectedTagBannerView.reuseIdentifier,
-                    for: indexPath
-                ) as? SelectedTagBannerView
-                
-                if let selectedTag = self?.presenter.selectedFilterTag {
-                    let itemCount = self?.presenter.countPasswordsForTag(selectedTag.tagID) ?? 0
-                    bannerView?.configure(tagName: selectedTag.name, itemCount: itemCount)
-                    bannerView?.onClear = { [weak self] in
-                        self?.presenter.onClearFilterTag()
-                        self?.updateLayoutWithTagFilter()
+            if kind == UICollectionView.elementKindSectionHeader {
+                // Check if we should show tag banner for the first section
+                if indexPath.section == 0 && self?.presenter.selectedFilterTag != nil {
+                    let bannerView = collectionView.dequeueReusableSupplementaryView(
+                        ofKind: kind,
+                        withReuseIdentifier: SelectedTagBannerView.reuseIdentifier,
+                        for: indexPath
+                    ) as? SelectedTagBannerView
+                    
+                    if let selectedTag = self?.presenter.selectedFilterTag {
+                        let itemCount = self?.presenter.countPasswordsForTag(selectedTag.tagID) ?? 0
+                        bannerView?.configure(tagName: selectedTag.name, itemCount: itemCount)
+                        bannerView?.onClear = { [weak self] in
+                            self?.presenter.onClearFilterTag()
+                            self?.updateLayoutWithTagFilter()
+                        }
                     }
+                    
+                    return bannerView
+                } else {
+                    let headerView = collectionView.dequeueReusableSupplementaryView(
+                        ofKind: kind,
+                        withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier,
+                        for: indexPath
+                    ) as? AutoFillPasswordsSectionView
+                    
+                    let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
+                    headerView?.titleLabel.text = passwordSection?.title
+                    
+                    return headerView
                 }
-                
-                return bannerView
-            } else {
-                let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier, for: indexPath) as? AutoFillPasswordsSectionView
-                
-                let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
-                headerView?.titleLabel.text = passwordSection?.title
-            
-                return headerView
             }
+            return nil
         }
         
         presenter.onImageFetchResult = { [weak self] password, url, result in
@@ -247,6 +259,7 @@ private extension PasswordsViewController {
                 attributes: .destructive
             ) { [weak self] _ in
                 self?.presenter.onClearFilterTag()
+                self?.updateLayoutWithTagFilter()
             }
             menuItems.append(clearFilterAction)
         }
@@ -276,6 +289,9 @@ private extension PasswordsViewController {
     }
     
     func updateLayoutWithTagFilter() {
+        // Update navigation bar filter icon
+        updateNavigationBarButtons()
+        
         // Update the layout to show/hide the banner
         layout = makeLayout()
         passwordsList?.setCollectionViewLayout(layout, animated: true)

@@ -9,7 +9,6 @@ import Common
 
 final class SelectedTagBannerView: UICollectionReusableView {
     static let reuseIdentifier = "SelectedTagBannerView"
-    static let elementKind = "selected-tag-banner"
     
     private let containerView = UIView()
     private let filterIconImageView = UIImageView()
@@ -49,6 +48,8 @@ final class SelectedTagBannerView: UICollectionReusableView {
         // Setup message label with attributed text
         messageLabel.font = .systemFont(ofSize: 15, weight: .regular)
         messageLabel.textColor = Asset.mainTextColor.color
+        messageLabel.numberOfLines = 2
+        messageLabel.lineBreakMode = .byWordWrapping
         
         // Setup clear button
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
