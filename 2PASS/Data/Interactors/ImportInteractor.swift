@@ -90,6 +90,7 @@ public protocol ImportInteracting: AnyObject {
     ) -> Result<SymmetricKey, ImportExtractMasterPasswordReferenceVerificationError>
     func isVaultReadyForImport() -> Bool
     func scan(image: UIImage, completion: @escaping VisionScanCompletion)
+    func generateSeedHash(from entropy: Entropy, vaultID: VaultID) -> String?
 }
 
 final class ImportInteractor {
@@ -364,6 +365,11 @@ extension ImportInteractor: ImportInteracting {
     
     func scan(image: UIImage, completion: @escaping VisionScanCompletion) {
         mainRepository.scan(image: image, completion: completion)
+    }
+    
+    func generateSeedHash(from entropy: Entropy, vaultID: VaultID) -> String? {
+        let seed = mainRepository.createSeed(from: entropy)
+        return mainRepository.generateExchangeSeedHash(vaultID, using: seed)
     }
 }
 
