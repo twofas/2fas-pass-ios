@@ -31,7 +31,7 @@ enum PasswordCellMenu: CaseIterable {
         case .edit: UIImage(systemName: "square.and.pencil")
         case .copyUsername: UIImage(systemName: "person")
         case .copyPassword: UIImage(systemName: "ellipsis.rectangle")
-        case .goToURI: UIImage(systemName: "safari")
+        case .goToURI: UIImage(systemName: "arrow.up.right")
         case .moveToTrash: UIImage(systemName: "trash")
         }
     }
