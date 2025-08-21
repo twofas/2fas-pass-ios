@@ -125,6 +125,8 @@ public protocol PasswordInteracting: AnyObject {
         tags: [ItemTagData],
         completion: @escaping (Result<Void, PasswordInteractorReencryptError>) -> Void
     )
+    
+    func getItemCountForTag(tagID: ItemTagID) -> Int
 }
 
 final class PasswordInteractor {
@@ -743,6 +745,14 @@ extension PasswordInteractor: PasswordInteracting {
         }
         mainRepository.setTrustedKey(trustedKey)
         return true
+    }
+    
+    func getItemCountForTag(tagID: ItemTagID) -> Int {
+        mainRepository.listPasswords(options: .allNotTrashed)
+            .filter {
+                $0.tagIds?.contains(tagID) ?? false
+            }
+            .count
     }
 }
 

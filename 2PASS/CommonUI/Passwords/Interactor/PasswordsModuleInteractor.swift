@@ -207,9 +207,6 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
     
     func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
-        let allPasswords = passwordInteractor.listPasswords(searchPhrase: nil, sortBy: currentSortType, trashed: .no)
-        return allPasswords.filter { password in
-            password.tagIds?.contains(tagID) ?? false
-        }.count
+        passwordInteractor.getItemCountForTag(tagID: tagID)
     }
 }

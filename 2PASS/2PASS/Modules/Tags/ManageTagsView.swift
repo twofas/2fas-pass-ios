@@ -5,9 +5,6 @@ struct ManageTagsView: View {
     
     @State
     var presenter: ManageTagsPresenter
-
-    @Environment(\.dismiss)
-    private var dismiss
     
     var body: some View {
         List {

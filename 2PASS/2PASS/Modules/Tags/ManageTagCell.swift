@@ -1,16 +1,17 @@
 import SwiftUI
 import Common
+import CommonUI
 
 struct ManageTagCell: View {
     
-    let tag: TagItem
+    let tag: TagViewItem
     
     let onEdit: Callback
     let onDelete: Callback
     
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(tag.name)
                     .foregroundStyle(.neutral950)
                 
