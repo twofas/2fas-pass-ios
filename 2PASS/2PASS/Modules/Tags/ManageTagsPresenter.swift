@@ -16,7 +16,7 @@ enum ManageTagsDestination: RouterDestination {
     }
 }
 
-struct TagItem: Equatable {
+struct TagViewItem: Equatable {
     let tag: ItemTagData
     let itemCount: Int
     
@@ -29,7 +29,7 @@ final class ManageTagsPresenter {
 
     private let interactor: ManageTagsModuleInteracting
 
-    private(set) var tags: [TagItem] = []
+    private(set) var tags: [TagViewItem] = []
     var destination: ManageTagsDestination?
     
     init(interactor: ManageTagsModuleInteracting) {
@@ -75,7 +75,7 @@ final class ManageTagsPresenter {
     private func reload() {
         let allTags = interactor.listAllTags()
         tags = allTags.map { tag in
-            TagItem(
+            TagViewItem(
                 tag: tag,
                 itemCount: interactor.getItemCountForTag(tagID: tag.tagID)
             )

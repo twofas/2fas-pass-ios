@@ -34,10 +34,7 @@ final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     }
     
     func getItemCountForTag(tagID: ItemTagID) -> Int {
-        let allPasswords = passwordInteractor.listAllPasswords()
-        return allPasswords.filter { password in
-            password.tagIds?.contains(tagID) ?? false
-        }.count
+        passwordInteractor.getItemCountForTag(tagID: tagID)
     }
 }
 
