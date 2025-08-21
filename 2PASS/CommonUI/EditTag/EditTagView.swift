@@ -53,7 +53,7 @@ struct EditTagView: View {
             }
             .padding(Spacing.l)
         }
-        .presentationDetents([.height(250)])
+        .presentationDetents([.height(270)])
         .presentationDragIndicator(.visible)
         .background(Color.base0)
         .onAppear {
