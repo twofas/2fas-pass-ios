@@ -634,7 +634,9 @@ internal enum T {
   /// Highly Secret
   internal static let loginSecurityTypeUltraSecureTitle = T.tr("Localizable", "login_security_type_ultra_secure_title", fallback: "Highly Secret")
   /// Selected tags
-  internal static let loginTags = T.tr("Localizable", "login_tags", fallback: "Selected tags")
+  internal static let loginSelectedTags = T.tr("Localizable", "login_selected_tags", fallback: "Selected tags")
+  /// Tags
+  internal static let loginTags = T.tr("Localizable", "login_tags", fallback: "Tags")
   /// Assign Tags to improve the findability of this item.
   internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to improve the findability of this item.")
   /// Tags

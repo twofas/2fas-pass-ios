@@ -198,7 +198,7 @@ struct AddPasswordView: View {
                     presenter.onSelectTags()
                 } label: {
                     HStack {
-                        Text(T.loginTags.localizedKey)
+                        Text(T.loginSelectedTags.localizedKey)
                             .foregroundStyle(Asset.mainTextColor.swiftUIColor)
                         
                         Spacer()

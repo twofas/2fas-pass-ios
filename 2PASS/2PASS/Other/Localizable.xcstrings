@@ -3318,13 +3318,24 @@
         }
       }
     },
-    "login_tags" : {
+    "login_selected_tags" : {
       "extractionState" : "manual",
       "localizations" : {
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selected tags"
+          }
+        }
+      }
+    },
+    "login_tags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
           }
         }
       }

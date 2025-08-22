@@ -69,7 +69,8 @@ public final class ModuleInteractorFactory {
             passwordInteractor: InteractorFactory.shared.passwordInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
-            uriInteractor: InteractorFactory.shared.uriInteractor()
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
+            tagInteractor: InteractorFactory.shared.tagInteractor()
         )
     }
     
