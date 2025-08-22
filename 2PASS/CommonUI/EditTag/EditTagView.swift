@@ -20,12 +20,12 @@ struct EditTagView: View {
                         .font(.title1Emphasized)
                         .foregroundStyle(.neutral950)
                     
-                    Text("Enter the name of the new tag and confirm")
+                    Text(T.tagEditorDescription.localizedKey)
                         .font(.subheadline)
                         .foregroundStyle(.neutral600)
                 }
                 
-                TextField("Tag Name", text: $presenter.name)
+                TextField(T.tagEditorPlaceholder.localizedKey, text: $presenter.name)
                     .focused($isFocused)
                     .padding(.horizontal, Spacing.l)
                     .frame(height: 44.0)

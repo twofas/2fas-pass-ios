@@ -101,7 +101,7 @@ extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
         )
         
         let hostingController = UIHostingController(rootView: selectTagsView)
-        hostingController.title = "Manage Tags"
+        hostingController.title = T.selectTagsTitle
         navigationController.pushViewController(hostingController, animated: true)
     }
 }

@@ -19,23 +19,28 @@ struct ManageTagsView: View {
                     }
                 )
             }
+            
+            Button {
+                presenter.addTag()
+            } label: {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "plus")
+                    
+                    Text(T.tagsAddNewCta.localizedKey)
+                        .font(.body)
+                    
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
         }
         .overlay {
             if presenter.tags.isEmpty {
-                EmptyListView(
-                    Text("You don't have any tags yet"),
-                )
+                EmptyListView(Text(T.tagsEmptyList.localizedKey))
             }
         }
-        .navigationTitle("Manage Tags")
+        .navigationTitle(T.tagsTitle.localizedKey)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(T.commonAdd.localizedKey) {
-                    presenter.addTag()
-                }
-            }
-        }
         .onAppear {
             presenter.onAppear()
         }

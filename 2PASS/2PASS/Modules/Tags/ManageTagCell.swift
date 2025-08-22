@@ -15,7 +15,7 @@ struct ManageTagCell: View {
                 Text(tag.name)
                     .foregroundStyle(.neutral950)
                 
-                Text("Items assigned: \(tag.itemCount)")
+                Text(T.tagDescription(tag.itemCount).localizedKey)
                     .foregroundStyle(.neutral500)
             }
             .font(.body)
@@ -28,7 +28,7 @@ struct ManageTagCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "pencil")
-                        Text("Edit")
+                        Text(T.commonEdit.localizedKey)
                     }
                 }
                 
@@ -37,7 +37,7 @@ struct ManageTagCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash")
-                        Text("Remove permanently")
+                        Text(T.tagDeleteCta.localizedKey)
                     }
                 }
             } label: {

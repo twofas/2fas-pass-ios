@@ -198,7 +198,7 @@ struct AddPasswordView: View {
                     presenter.onSelectTags()
                 } label: {
                     HStack {
-                        Text("Selected tags")
+                        Text(T.loginTags.localizedKey)
                             .foregroundStyle(Asset.mainTextColor.swiftUIColor)
                         
                         Spacer()
@@ -218,9 +218,9 @@ struct AddPasswordView: View {
                 }
                 .buttonStyle(.plain)
             } header: {
-                Text("Tags")
+                Text(T.loginTagsHeader.localizedKey)
             } footer: {
-                Text("Assign Tags to improve the findability of this item.")
+                Text(T.loginTagsDescription.localizedKey)
             }
             .listSectionSpacing(Spacing.l)
             

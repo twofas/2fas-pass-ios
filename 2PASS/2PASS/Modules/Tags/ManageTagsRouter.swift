@@ -15,8 +15,8 @@ struct ManageTagsRouter: Router {
         case .addTag, .editTag: .sheet
         case .deleteConfirmation(let tagName, _): 
             .alert(
-                title: "Delete Tag",
-                message: "Are you sure you want to delete \"\(tagName)\"? This action cannot be undone."
+                title: T.tagDeleteConfirmTitle.localized,
+                message: T.tagDeleteConfirmDescription(tagName)
             )
         case nil: nil
         }
@@ -30,12 +30,8 @@ struct ManageTagsRouter: Router {
         case .editTag(let tagID, let onClose):
             EditTagRouter.buildView(tagID: tagID, onClose: onClose)
         case .deleteConfirmation(_, let onConfirm):
-            Group {
-                Button("Delete", role: .destructive) {
-                    onConfirm()
-                }
-                Button("Cancel", role: .cancel) {}
-            }
+            Button(T.commonDelete.localizedKey, role: .destructive, action: onConfirm)
+            Button(T.commonCancel.localizedKey, role: .cancel) {}
         }
     }
 }

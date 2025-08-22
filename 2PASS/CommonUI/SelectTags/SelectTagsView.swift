@@ -45,7 +45,7 @@ struct SelectTagsView: View {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "plus")
                     
-                    Text("Add new tag")
+                    Text(T.tagsAddNewCta.localizedKey)
                         .font(.body)
                     
                     Spacer()

@@ -30,10 +30,10 @@ struct CustomizationView: View {
                 Button {
                     presenter.onManageTags()
                 } label: {
-                    SettingsRowView(title: "Manage Tags")
+                    SettingsRowView(title: T.settingsEntryManageTags.localizedKey)
                 }
             } footer: {
-                Text("Manage the Tags that enable filtering of the list of Items.")
+                Text(T.settingsEntryManageTagsDescription.localizedKey)
                     .settingsFooter()
             }
         }
