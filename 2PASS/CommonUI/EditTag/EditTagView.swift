@@ -32,6 +32,9 @@ struct EditTagView: View {
                     .background(Color.neutral50)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .padding(.horizontal, Spacing.l)
+                    .onSubmit {
+                        presenter.onSave()
+                    }
                 
                 Button {
                     presenter.onSave()
