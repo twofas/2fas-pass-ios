@@ -25,7 +25,7 @@ enum VaultRecoveryWebDAVDestination: Identifiable {
         password: String?,
         onSelect: (ExchangeVault) -> Void
     )
-    case select(VaultRecoveryData)
+    case select(VaultRecoveryData, onClose: Callback)
     case error(message: String, onClose: Callback)
 }
 
@@ -93,7 +93,9 @@ extension VaultRecoveryWebDAVPresenter {
                             try await Task.sleep(for: .milliseconds(700))
                             guard let self else { return }
                             
-                            self.destination = .select(.file(vault))
+                            self.destination = .select(.file(vault), onClose: { [weak self] in
+                                self?.destination = nil
+                            })
                         }
                     }
                 )

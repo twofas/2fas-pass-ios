@@ -6,14 +6,16 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 struct VaultRecoveryCheckRouter {
     
     @ViewBuilder
-    static func buildView(url: URL)
+    static func buildView(url: URL, onClose: @escaping Callback)
     -> some View {
         let presenter = VaultRecoveryCheckPresenter(
-            interactor: ModuleInteractorFactory.shared.vaultRecoveryCheckModuleInteractor(url: url)
+            interactor: ModuleInteractorFactory.shared.vaultRecoveryCheckModuleInteractor(url: url),
+            onClose: onClose
         )
         VaultRecoveryCheckView(presenter: presenter)
     }
