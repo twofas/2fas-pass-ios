@@ -31,7 +31,10 @@ final class TagInteractor {
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let mainRepository: MainRepository
     
-    init(deletedItemsInteractor: DeletedItemsInteracting, mainRepository: MainRepository) {
+    init(
+        deletedItemsInteractor: DeletedItemsInteracting,
+        mainRepository: MainRepository,
+    ) {
         self.deletedItemsInteractor = deletedItemsInteractor
         self.mainRepository = mainRepository
     }
@@ -108,10 +111,55 @@ extension TagInteractor: TagInteracting {
     }
     
     func deleteTag(tagID: ItemTagID) {
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("Tag interactor: Delete tag. No vault", module: .interactor, severity: .error)
+            return
+        }
+        
+        let currentDate = mainRepository.currentDate
+        
+        for password in mainRepository.listPasswords(options: .all) {
+            if let tagIds = password.tagIds, tagIds.contains(tagID) {
+                let updatedTagIds = tagIds.filter { $0 != tagID }
+                
+                mainRepository.updatePassword(
+                    passwordID: password.passwordID,
+                    name: password.name,
+                    username: password.username,
+                    password: password.password,
+                    notes: password.notes,
+                    modificationDate: currentDate,
+                    iconType: password.iconType,
+                    trashedStatus: password.trashedStatus,
+                    protectionLevel: password.protectionLevel,
+                    uris: password.uris,
+                    tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds
+                )
+            }
+        }
+    
+        for item in mainRepository.listEncryptedItems(in: selectedVault.vaultID) {
+            if let tagIds = item.tagIds, tagIds.contains(tagID) {
+                let updatedTagIds = tagIds.filter { $0 != tagID }
+                
+                mainRepository.updateEncryptedItem(
+                    itemID: item.itemID,
+                    modificationDate: currentDate,
+                    trashedStatus: item.trashedStatus,
+                    protectionLevel: item.protectionLevel,
+                    contentType: item.contentType,
+                    contentVersion: item.contentVersion,
+                    content: item.content,
+                    vaultID: item.vaultID,
+                    tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds
+                )
+            }
+        }
+        
         mainRepository.deleteTag(tagID: tagID)
         mainRepository.deleteEncryptedTag(tagID: tagID)
         
-        deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: mainRepository.currentDate)
+        deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: currentDate)
     }
     
     func externalDeleteTag(tagID: ItemTagID) {
