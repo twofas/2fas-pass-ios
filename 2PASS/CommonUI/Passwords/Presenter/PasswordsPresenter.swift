@@ -227,7 +227,7 @@ private extension PasswordsPresenter {
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers)
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
             listData[0] = list.suggested
             listData[1] = list.rest
             let suggestedCells = list.suggested.map(makeCellData(for:))
@@ -245,15 +245,7 @@ private extension PasswordsPresenter {
             cellsCount = suggestedCells.count + restCells.count
             
         } else {
-            var list = interactor.loadList()
-            
-            // Filter by selected tag if one is selected
-            if let selectedTag = selectedFilterTag {
-                list = list.filter { password in
-                    password.tagIds?.contains(selectedTag.tagID) ?? false
-                }
-            }
-            
+            let list = interactor.loadList(tag: selectedFilterTag)            
             listData[0] = list
             let cells = list.map(makeCellData(for:))
             let section = PasswordSectionData()
