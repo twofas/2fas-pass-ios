@@ -53,7 +53,13 @@ struct SelectTagsView: View {
                 .contentShape(Rectangle())
             }
         }
+        .overlay {
+            if presenter.tags.isEmpty {
+                EmptyListView(Text(T.tagsEmptyList.localizedKey))
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
+        .scrollBounceBehavior(.basedOnSize)
         .onAppear {
             presenter.onAppear()
         }

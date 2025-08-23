@@ -388,7 +388,8 @@ extension ModuleInteractorFactory {
     func manageTagsModuleInteractor() -> ManageTagsModuleInteracting {
         ManageTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor()
+            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }
 }

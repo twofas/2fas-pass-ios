@@ -41,6 +41,7 @@ struct ManageTagsView: View {
         }
         .navigationTitle(T.tagsTitle.localizedKey)
         .navigationBarTitleDisplayMode(.inline)
+        .scrollBounceBehavior(.basedOnSize)
         .onAppear {
             presenter.onAppear()
         }

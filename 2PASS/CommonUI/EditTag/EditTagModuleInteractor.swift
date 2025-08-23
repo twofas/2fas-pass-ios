@@ -11,14 +11,20 @@ protocol EditTagModuleInteracting {
 final class EditTagModuleInteractor: EditTagModuleInteracting {
     
     private let tagInteractor: TagInteracting
+    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     
-    init(tagInteractor: TagInteracting) {
+    init(
+        tagInteractor: TagInteracting,
+        syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    ) {
         self.tagInteractor = tagInteractor
+        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
     
     func createTag(name: String) {
         tagInteractor.createTag(name: name, color: .black)
         tagInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
     }
     
     func updateTag(tagID: ItemTagID, name: String) {
@@ -27,6 +33,7 @@ final class EditTagModuleInteractor: EditTagModuleInteracting {
         tag.modificationDate = Date()
         tagInteractor.updateTag(data: tag)
         tagInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
     }
     
     func getTag(tagID: ItemTagID) -> ItemTagData? {

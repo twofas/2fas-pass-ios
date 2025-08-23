@@ -93,7 +93,8 @@ public final class ModuleInteractorFactory {
     
     func editTagModuleInteractor() -> EditTagModuleInteracting {
         EditTagModuleInteractor(
-            tagInteractor: InteractorFactory.shared.tagInteractor()
+            tagInteractor: InteractorFactory.shared.tagInteractor(),
+            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }
 }
