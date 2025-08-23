@@ -80,6 +80,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importApplePasswordsMobile(content: content)
         case .applePasswordsDesktop:
             return await importApplePasswordsDesktop(content: content)
+        case .firefox:
+            return await importFirefox(content: content)
         }
     }
 }
@@ -553,6 +555,69 @@ private extension ExternalServiceImportInteractor {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
         return await importApplePasswords(csvContent: csvString)
+    }
+    
+    func importFirefox(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [PasswordData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["url", "username", "password", "httpRealm", "formActionOrigin", "guid", "timeCreated", "timeLastUsed", "timePasswordChanged"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            
+            var offset = 0
+            try csv.enumerateAsDict { [weak self] dict in
+                defer {
+                    offset += 1
+                }
+                guard offset > 0 else { // ignore first line with firefox accont configuration
+                    return
+                }
+                
+                let name = dict["url"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["username"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let timeCreated = dict["timeCreated"]?.nilIfEmpty as? String
+                let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty as? String
+
+                passwords.append(
+                    PasswordData(
+                        passwordID: .init(),
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: nil,
+                        creationDate: timeCreated.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
+                        modificationDate: timePasswordChanged.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
+                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                        trashedStatus: .no,
+                        protectionLevel: protectionLevel,
+                        uris: uris,
+                        tagIds: nil
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
     }
     
     private func importApplePasswords(csvContent: String) async -> Result<[PasswordData], ExternalServiceImportError> {

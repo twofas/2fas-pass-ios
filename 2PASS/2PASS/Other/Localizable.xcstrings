@@ -8125,6 +8125,17 @@
         }
       }
     },
+    "transfer_instructions_firefox" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Firefox on your PC\n\nSelect the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.\n\nSelect **Firefox menu** (3 dots) and **Export Passwords**.\n\nSelect **Continue with export** and choose the file name and location.\n\nCopy the exported file to this device and tap **Upload CSV file** below. "
+          }
+        }
+      }
+    },
     "transfer_instructions_header %@" : {
       "extractionState" : "manual",
       "localizations" : {
