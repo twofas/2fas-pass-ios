@@ -41,8 +41,8 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
         switch destination {
         case .error(_, let onClose):
             Button(T.commonOk.localizedKey, action: onClose)
-        case .selectRecoveryKey(let vault):
-            VaultRecoverySelectRouter.buildView(flowContext: .onboarding, recoveryData: .file(vault))
+        case .selectRecoveryKey(let vault, let onClose):
+            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: .file(vault))
         }
     }
     
