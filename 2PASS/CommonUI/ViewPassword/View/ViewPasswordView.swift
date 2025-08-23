@@ -85,6 +85,11 @@ struct ViewPasswordView: View {
                     LabeledContent(T.loginSecurityLevelLabel.localizedKey, value: presenter.protectionLevel.title)
                         .labeledContentStyle(.listCell)
                     
+                    if let tags = presenter.tags {
+                        LabeledContent(T.loginTags.localizedKey, value: tags)
+                            .labeledContentStyle(.listCell(lineLimit: nil))
+                    }
+                    
                     if let notes = presenter.notes, !notes.isEmpty {
                         Text(notes)
                             .multilineTextAlignment(.leading)
@@ -180,6 +185,10 @@ private class ViewPasswordModulePreviewInteractor: ViewPasswordModuleInteracting
     
     func normalizedURL(for uri: PasswordURI) -> URL? {
         nil
+    }
+    
+    func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
+        []
     }
 }
 

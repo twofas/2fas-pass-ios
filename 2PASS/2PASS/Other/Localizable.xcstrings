@@ -2317,6 +2317,17 @@
         }
       }
     },
+    "filter_tag_banner_ios" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Showing %d items tagged: **%@**"
+          }
+        }
+      }
+    },
     "general_error_no_local_vault" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2379,6 +2390,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Items available"
+          }
+        }
+      }
+    },
+    "home_list_options_modal_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List Options"
           }
         }
       }
@@ -3005,7 +3027,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove this Item from 2FAS Pass"
+            "value" : "Remove Item"
           }
         }
       }
@@ -3314,6 +3336,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Highly Secret"
+          }
+        }
+      }
+    },
+    "login_selected_tags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected Tags"
+          }
+        }
+      }
+    },
+    "login_tags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        }
+      }
+    },
+    "login_tags_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign Tags to find your Items more easily."
+          }
+        }
+      }
+    },
+    "login_tags_header" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
           }
         }
       }
@@ -4568,6 +4634,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AutoFill"
+          }
+        }
+      }
+    },
+    "quick_setup_drive_sync_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Securely sync your data using Google Drive in case this device gets lost or damaged."
+          }
+        }
+      }
+    },
+    "quick_setup_drive_sync_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault Sync"
           }
         }
       }
@@ -6222,6 +6310,17 @@
         }
       }
     },
+    "select_tags_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Tags"
+          }
+        }
+      }
+    },
     "set_new_password_confirm_body_part1" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7031,7 +7130,29 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select what action to perform when you tap an Item."
+            "value" : "Select the action that happens when you tap an Item."
+          }
+        }
+      }
+    },
+    "settings_entry_manage_tags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Tags"
+          }
+        }
+      }
+    },
+    "settings_entry_manage_tags_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags enable you to assign and filter your Items."
           }
         }
       }
@@ -7901,6 +8022,127 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Syncing..."
+          }
+        }
+      }
+    },
+    "tag_delete_confirm_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete \"%@\"? This action cannot be undone."
+          }
+        }
+      }
+    },
+    "tag_delete_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Tag"
+          }
+        }
+      }
+    },
+    "tag_delete_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove permanently"
+          }
+        }
+      }
+    },
+    "tag_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Items assigned: %@"
+          }
+        }
+      }
+    },
+    "tag_editor_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the name of the new Tag and confirm"
+          }
+        }
+      }
+    },
+    "tag_editor_edit_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Tag"
+          }
+        }
+      }
+    },
+    "tag_editor_new_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Tag"
+          }
+        }
+      }
+    },
+    "tag_editor_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag Name"
+          }
+        }
+      }
+    },
+    "tags_add_new_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new Tag"
+          }
+        }
+      }
+    },
+    "tags_empty_list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don't have any Tags yet"
+          }
+        }
+      }
+    },
+    "tags_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Tags"
           }
         }
       }

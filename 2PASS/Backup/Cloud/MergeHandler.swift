@@ -95,7 +95,7 @@ extension MergeHandler {
     }
     
     var hasChanges: Bool {
-        !deleted.isEmpty || !items.isEmpty || !deletedForRemoval.isEmpty || !itemsForRemoval.isEmpty || (cloudStorageVaultAdd != nil)
+        !deleted.isEmpty || !items.isEmpty || !deletedForRemoval.isEmpty || !itemsForRemoval.isEmpty || (cloudStorageVaultAdd != nil) || !tags.isEmpty || !tagForRemoval.isEmpty
     }
     
     func changesForCloud() -> (createUpdate: [CKRecord], delete: [CKRecord.ID]) {
@@ -269,6 +269,7 @@ extension MergeHandler {
         mergeItems(local: localItems, cloud: cloudItems, vaultID: localVault.vaultID)
         
         handleItemsWhichAreDeleted()
+        handleTagsWhichAreDeleted()
         
         guard prepareChangesInDeletedItems(
             local: localDeletedItems,
@@ -290,6 +291,7 @@ extension MergeHandler {
         let zoneID = CKRecordZone.ID.from(vaultID: localVault.vaultID)
         deletedRecordsForRemoval(zoneID: zoneID)
         itemsForRemoval(zoneID: zoneID)
+        tagForRemoval(zoneID: zoneID)
         
         if let vaultAddIfDataModifed {
             Log("Merge Handler: appending Vault with new modification date", module: .cloudSync)
@@ -387,6 +389,18 @@ private extension MergeHandler {
                 } else { // item was restored from trash
                     deletedForRemoval.append(deletedItems.value)
                     deleted[itemID] = nil
+                }
+            }
+        }
+    }
+    
+    func handleTagsWhichAreDeleted() {
+        for deletedItems in deleted where deletedItems.value.isDeletedTag {
+            let itemID = deletedItems.key
+            if let tag = tags[itemID] {
+                if deletedItems.value.deletedAt.isAfter(tag.modificationDate) {
+                    tagForRemoval.append(tag)
+                    tags[itemID] = nil
                 }
             }
         }
@@ -589,6 +603,18 @@ private extension MergeHandler {
             }
         }
     }
+    
+    func tagForRemoval(zoneID: CKRecordZone.ID) {
+        tagForRemoval.forEach { tag in
+            switch tag {
+            case .local(let tagData):
+                tagIDsForDeletition.append(tagData.tagID)
+            case .cloud(let tag, _):
+                cloudStorageTagIDsForDeletition.append(tag.tagID)
+                recordIDsForRemoval.append(CKRecord.ID(recordName: TagRecord.createRecordName(for: tag.tagID), zoneID: zoneID))
+            }
+        }
+    }
 }
 
 private extension MergeHandler {
@@ -676,6 +702,13 @@ private extension MergeHandler {
             switch self {
             case .local(let deletedItemData): deletedItemData.kind == .login
             case .cloud(let deletedItemData, _): deletedItemData.kind == .login
+            }
+        }
+        
+        var isDeletedTag: Bool {
+            switch self {
+            case .local(let deletedItemData): deletedItemData.kind == .tag
+            case .cloud(let deletedItemData, _): deletedItemData.kind == .tag
             }
         }
     }
