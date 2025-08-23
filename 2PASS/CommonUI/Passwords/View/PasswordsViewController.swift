@@ -137,39 +137,40 @@ private extension PasswordsViewController {
             })
         
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            if kind == UICollectionView.elementKindSectionHeader {
-                // Check if we should show tag banner for the first section
-                if indexPath.section == 0 && self?.presenter.selectedFilterTag != nil {
-                    let bannerView = collectionView.dequeueReusableSupplementaryView(
-                        ofKind: kind,
-                        withReuseIdentifier: SelectedTagBannerView.reuseIdentifier,
-                        for: indexPath
-                    ) as? SelectedTagBannerView
-                    
-                    if let selectedTag = self?.presenter.selectedFilterTag {
-                        let itemCount = self?.presenter.countPasswordsForTag(selectedTag.tagID) ?? 0
-                        bannerView?.configure(tagName: selectedTag.name, itemCount: itemCount)
-                        bannerView?.onClear = { [weak self] in
-                            self?.presenter.onClearFilterTag()
-                            self?.updateLayoutWithTagFilter()
-                        }
+            switch kind {
+            case SelectedTagBannerView.elementKind:
+                let bannerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: SelectedTagBannerView.reuseIdentifier,
+                    for: indexPath
+                ) as? SelectedTagBannerView
+                
+                if let selectedTag = self?.presenter.selectedFilterTag {
+                    let itemCount = self?.presenter.countPasswordsForTag(selectedTag.tagID) ?? 0
+                    bannerView?.configure(tagName: selectedTag.name, itemCount: itemCount)
+                    bannerView?.onClear = { [weak self] in
+                        self?.presenter.onClearFilterTag()
+                        self?.updateLayoutWithTagFilter()
                     }
-                    
-                    return bannerView
-                } else {
-                    let headerView = collectionView.dequeueReusableSupplementaryView(
-                        ofKind: kind,
-                        withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier,
-                        for: indexPath
-                    ) as? AutoFillPasswordsSectionView
-                    
-                    let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
-                    headerView?.titleLabel.text = passwordSection?.title
-                    
-                    return headerView
                 }
+                
+                return bannerView
+                
+            case UICollectionView.elementKindSectionHeader:
+                let headerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier,
+                    for: indexPath
+                ) as? AutoFillPasswordsSectionView
+                
+                let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
+                headerView?.titleLabel.text = passwordSection?.title
+                
+                return headerView
+            
+            default:
+                return nil
             }
-            return nil
         }
         
         presenter.onImageFetchResult = { [weak self] password, url, result in
@@ -295,9 +296,6 @@ private extension PasswordsViewController {
         // Update the layout to show/hide the banner
         layout = makeLayout()
         passwordsList?.setCollectionViewLayout(layout, animated: true)
-        
-        // Reload the data to apply the filter
-        presenter.viewWillAppear()
     }
 }
 

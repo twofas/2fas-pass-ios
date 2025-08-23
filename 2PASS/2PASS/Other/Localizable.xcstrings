@@ -2317,6 +2317,17 @@
         }
       }
     },
+    "filter_tag_banner_ios" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Showing %d items tagged: **%@**"
+          }
+        }
+      }
+    },
     "general_error_no_local_vault" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2379,6 +2390,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Items available"
+          }
+        }
+      }
+    },
+    "home_list_options_modal_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List Options"
           }
         }
       }
@@ -3324,7 +3346,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selected tags"
+            "value" : "Selected Tags"
           }
         }
       }
@@ -3346,7 +3368,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Assign Tags to improve the findability of this item."
+            "value" : "Assign Tags to find your Items more easily."
           }
         }
       }
@@ -4612,6 +4634,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AutoFill"
+          }
+        }
+      }
+    },
+    "quick_setup_drive_sync_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Securely sync your data using Google Drive in case this device gets lost or damaged."
+          }
+        }
+      }
+    },
+    "quick_setup_drive_sync_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault Sync"
           }
         }
       }
@@ -7086,7 +7130,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select what action to perform when you tap an Item."
+            "value" : "Select the action that happens when you tap an Item."
           }
         }
       }
@@ -7108,7 +7152,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manage the Tags that enable filtering of the list of Items."
+            "value" : "Tags enable you to assign and filter your Items."
           }
         }
       }
@@ -8032,7 +8076,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the name of the new tag and confirm"
+            "value" : "Enter the name of the new Tag and confirm"
           }
         }
       }
@@ -8076,7 +8120,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add new tag"
+            "value" : "Add new Tag"
           }
         }
       }
@@ -8087,7 +8131,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You don't have any tags yet"
+            "value" : "You don't have any Tags yet"
           }
         }
       }

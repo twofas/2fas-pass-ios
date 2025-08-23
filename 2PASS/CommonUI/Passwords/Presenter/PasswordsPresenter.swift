@@ -43,7 +43,8 @@ final class PasswordsPresenter {
     }
     
     private(set) var itemsCount: Int = 0
-    
+    private(set) var hasSuggestedItems = false
+
     private let autoFillEnvironment: AutoFillEnvironment?
     private let iconsDataSource: RemoteImageCollectionDataSource<PasswordCellData>
     private let flowController: PasswordsFlowControlling
@@ -113,10 +114,12 @@ extension PasswordsPresenter {
     
     func onSelectFilterTag(_ tag: ItemTagData?) {
         selectedFilterTag = tag
+        reload()
     }
     
     func onClearFilterTag() {
         selectedFilterTag = nil
+        reload()
     }
     
     func onCellMenuAction(_ action: PasswordCellMenu, passwordID: PasswordID, selectedURI: URL?) {
@@ -223,6 +226,7 @@ private extension PasswordsPresenter {
     
     func reload() {
         listData.removeAll()
+        hasSuggestedItems = false
         
         let cellsCount: Int
         
@@ -230,14 +234,19 @@ private extension PasswordsPresenter {
             let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
             listData[0] = list.suggested
             listData[1] = list.rest
-            let suggestedCells = list.suggested.map(makeCellData(for:))
-            let restCells = list.rest.map(makeCellData(for:))
+            let suggestedCells = listData[0]?.map(makeCellData(for:)) ?? []
+            let restCells = listData[1]?.map(makeCellData(for:)) ?? []
             let suggestedSection = PasswordSectionData(title: T.commonSuggested)
-            let section = PasswordSectionData(title: T.commonOther)
+            let section = PasswordSectionData(title: listData[0]?.isEmpty == true ? nil : T.commonOther)
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             
-            snapshot.appendSections([suggestedSection, section])
-            snapshot.appendItems(suggestedCells, toSection: suggestedSection)
+            if listData[0]?.isEmpty == false {
+                snapshot.appendSections([suggestedSection])
+                snapshot.appendItems(suggestedCells, toSection: suggestedSection)
+                hasSuggestedItems = true
+            }
+            
+            snapshot.appendSections([section])
             snapshot.appendItems(restCells, toSection: section)
             
             view?.reloadData(newSnapshot: snapshot)
@@ -245,7 +254,7 @@ private extension PasswordsPresenter {
             cellsCount = suggestedCells.count + restCells.count
             
         } else {
-            let list = interactor.loadList(tag: selectedFilterTag)            
+            let list = interactor.loadList(tag: selectedFilterTag)
             listData[0] = list
             let cells = list.map(makeCellData(for:))
             let section = PasswordSectionData()

@@ -445,6 +445,10 @@ internal enum T {
   internal static let exportBackupModalTitle = T.tr("Localizable", "export_backup_modal_title", fallback: "Export your backup")
   /// Save the exported Vault in a safe place
   internal static let exportVaultTitle = T.tr("Localizable", "export_vault_title", fallback: "Save the exported Vault in a safe place")
+  /// Showing %d items tagged: **%@**
+  internal static func filterTagBannerIos(_ p1: Int, _ p2: Any) -> String {
+    return T.tr("Localizable", "filter_tag_banner_ios", p1, String(describing: p2), fallback: "Showing %d items tagged: **%@**")
+  }
   /// No local Vault found. Please reinstall the app
   internal static let generalErrorNoLocalVault = T.tr("Localizable", "general_error_no_local_vault", fallback: "No local Vault found. Please reinstall the app")
   /// Network error: %@
@@ -461,6 +465,8 @@ internal enum T {
   internal static let homeEmptyImportCta = T.tr("Localizable", "home_empty_import_cta", fallback: "Start with quick setup")
   /// No Items available
   internal static let homeEmptyTitle = T.tr("Localizable", "home_empty_title", fallback: "No Items available")
+  /// List Options
+  internal static let homeListOptionsModalTitle = T.tr("Localizable", "home_list_options_modal_title", fallback: "List Options")
   /// Items
   internal static let homeTitle = T.tr("Localizable", "home_title", fallback: "Items")
   /// Master Password
@@ -633,12 +639,12 @@ internal enum T {
   internal static let loginSecurityTypeUltraSecureDescription = T.tr("Localizable", "login_security_type_ultra_secure_description", fallback: "Share the password with the 2FAS Pass Browser Extension once after confirmation in the 2FAS Pass mobile app.")
   /// Highly Secret
   internal static let loginSecurityTypeUltraSecureTitle = T.tr("Localizable", "login_security_type_ultra_secure_title", fallback: "Highly Secret")
-  /// Selected tags
-  internal static let loginSelectedTags = T.tr("Localizable", "login_selected_tags", fallback: "Selected tags")
+  /// Selected Tags
+  internal static let loginSelectedTags = T.tr("Localizable", "login_selected_tags", fallback: "Selected Tags")
   /// Tags
   internal static let loginTags = T.tr("Localizable", "login_tags", fallback: "Tags")
-  /// Assign Tags to improve the findability of this item.
-  internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to improve the findability of this item.")
+  /// Assign Tags to find your Items more easily.
+  internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to find your Items more easily.")
   /// Tags
   internal static let loginTagsHeader = T.tr("Localizable", "login_tags_header", fallback: "Tags")
   /// Do you want to discard your changes?
@@ -879,6 +885,10 @@ internal enum T {
   internal static let quickSetupAutofillDescription = T.tr("Localizable", "quick_setup_autofill_description", fallback: "Select 2FAS Pass to automatically fill in Item details in other apps.")
   /// AutoFill
   internal static let quickSetupAutofillTitle = T.tr("Localizable", "quick_setup_autofill_title", fallback: "AutoFill")
+  /// Securely sync your data using Google Drive in case this device gets lost or damaged.
+  internal static let quickSetupDriveSyncDescription = T.tr("Localizable", "quick_setup_drive_sync_description", fallback: "Securely sync your data using Google Drive in case this device gets lost or damaged.")
+  /// Vault Sync
+  internal static let quickSetupDriveSyncTitle = T.tr("Localizable", "quick_setup_drive_sync_title", fallback: "Vault Sync")
   /// Securely sync your data using iCloud in case this device gets lost or damaged.
   internal static let quickSetupIcloudSyncDescription = T.tr("Localizable", "quick_setup_icloud_sync_description", fallback: "Securely sync your data using iCloud in case this device gets lost or damaged.")
   /// Failed to enable Vault Sync
@@ -1341,12 +1351,12 @@ internal enum T {
   internal static let settingsEntryLockoutSettingsDescription = T.tr("Localizable", "settings_entry_lockout_settings_description", fallback: "Manage the app's lockouts settings.")
   /// Default action on tap
   internal static let settingsEntryLoginClickAction = T.tr("Localizable", "settings_entry_login_click_action", fallback: "Default action on tap")
-  /// Select what action to perform when you tap an Item.
-  internal static let settingsEntryLoginClickActionDescription = T.tr("Localizable", "settings_entry_login_click_action_description", fallback: "Select what action to perform when you tap an Item.")
+  /// Select the action that happens when you tap an Item.
+  internal static let settingsEntryLoginClickActionDescription = T.tr("Localizable", "settings_entry_login_click_action_description", fallback: "Select the action that happens when you tap an Item.")
   /// Manage Tags
   internal static let settingsEntryManageTags = T.tr("Localizable", "settings_entry_manage_tags", fallback: "Manage Tags")
-  /// Manage the Tags that enable filtering of the list of Items.
-  internal static let settingsEntryManageTagsDescription = T.tr("Localizable", "settings_entry_manage_tags_description", fallback: "Manage the Tags that enable filtering of the list of Items.")
+  /// Tags enable you to assign and filter your Items.
+  internal static let settingsEntryManageTagsDescription = T.tr("Localizable", "settings_entry_manage_tags_description", fallback: "Tags enable you to assign and filter your Items.")
   /// Security Tier
   internal static let settingsEntryProtectionLevel = T.tr("Localizable", "settings_entry_protection_level", fallback: "Security Tier")
   /// Top Secret
@@ -1529,18 +1539,18 @@ internal enum T {
   internal static func tagDescription(_ p1: Any) -> String {
     return T.tr("Localizable", "tag_description", String(describing: p1), fallback: "Items assigned: %@")
   }
-  /// Enter the name of the new tag and confirm
-  internal static let tagEditorDescription = T.tr("Localizable", "tag_editor_description", fallback: "Enter the name of the new tag and confirm")
+  /// Enter the name of the new Tag and confirm
+  internal static let tagEditorDescription = T.tr("Localizable", "tag_editor_description", fallback: "Enter the name of the new Tag and confirm")
   /// Edit Tag
   internal static let tagEditorEditTitle = T.tr("Localizable", "tag_editor_edit_title", fallback: "Edit Tag")
   /// New Tag
   internal static let tagEditorNewTitle = T.tr("Localizable", "tag_editor_new_title", fallback: "New Tag")
   /// Tag Name
   internal static let tagEditorPlaceholder = T.tr("Localizable", "tag_editor_placeholder", fallback: "Tag Name")
-  /// Add new tag
-  internal static let tagsAddNewCta = T.tr("Localizable", "tags_add_new_cta", fallback: "Add new tag")
-  /// You don't have any tags yet
-  internal static let tagsEmptyList = T.tr("Localizable", "tags_empty_list", fallback: "You don't have any tags yet")
+  /// Add new Tag
+  internal static let tagsAddNewCta = T.tr("Localizable", "tags_add_new_cta", fallback: "Add new Tag")
+  /// You don't have any Tags yet
+  internal static let tagsEmptyList = T.tr("Localizable", "tags_empty_list", fallback: "You don't have any Tags yet")
   /// Manage Tags
   internal static let tagsTitle = T.tr("Localizable", "tags_title", fallback: "Manage Tags")
   /// Password copied

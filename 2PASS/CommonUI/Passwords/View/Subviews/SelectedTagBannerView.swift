@@ -9,6 +9,7 @@ import Common
 
 final class SelectedTagBannerView: UICollectionReusableView {
     static let reuseIdentifier = "SelectedTagBannerView"
+    static let elementKind = "SelectedTagBanner"
     
     private let containerView = UIView()
     private let filterIconImageView = UIImageView()
@@ -45,11 +46,8 @@ final class SelectedTagBannerView: UICollectionReusableView {
         filterIconImageView.tintColor = Asset.mainTextColor.color
         filterIconImageView.contentMode = .scaleAspectFit
         
-        // Setup message label with attributed text
-        messageLabel.font = .systemFont(ofSize: 15, weight: .regular)
         messageLabel.textColor = Asset.mainTextColor.color
         messageLabel.numberOfLines = 2
-        messageLabel.lineBreakMode = .byWordWrapping
         
         // Setup clear button
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
@@ -89,16 +87,15 @@ final class SelectedTagBannerView: UICollectionReusableView {
     }
     
     func configure(tagName: String, itemCount: Int) {
-        let text = NSMutableAttributedString()
-        text.append(NSAttributedString(string: "Showing \(itemCount) items tagged: ", attributes: [
-            .font: UIFont.systemFont(ofSize: 15, weight: .regular),
-            .foregroundColor: Asset.mainTextColor.color
-        ]))
-        text.append(NSAttributedString(string: tagName, attributes: [
-            .font: UIFont.systemFont(ofSize: 15, weight: .semibold),
-            .foregroundColor: Asset.mainTextColor.color
-        ]))
-        messageLabel.attributedText = text
+        do {
+            var attributedString = try AttributedString(markdown: T.filterTagBannerIos(itemCount, tagName))
+            attributedString.font = .preferredFont(forTextStyle: .subheadline)
+            attributedString.foregroundColor = Asset.mainTextColor.color
+            messageLabel.attributedText = NSAttributedString(attributedString)
+        } catch {
+            messageLabel.text = T.filterTagBannerIos(itemCount, tagName)
+            messageLabel.font = .preferredFont(forTextStyle: .subheadline)
+        }
     }
     
     @objc private func clearButtonTapped() {

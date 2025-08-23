@@ -8,25 +8,40 @@ import UIKit
 
 private struct Constants {
     static let cellHeight: CGFloat = 82
+    static let tagBannerHeight: CGFloat = 52
+    static let headerHeight: CGFloat = 28
 }
 
 extension PasswordsViewController {
-    
+
     func makeLayout() -> UICollectionViewCompositionalLayout {
-        if presenter.isAutoFillExtension {
-            var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
-            configuration.headerMode = .supplementary
-            configuration.backgroundColor = Asset.mainBackgroundColor.color
-            configuration.showsSeparators = false
-            return UICollectionViewCompositionalLayout.list(using: configuration)
-        } else {
-            let layout = UICollectionViewCompositionalLayout { [weak self] sectionOffset, enviroment in
-                self?.getLayout(sectionOffset: sectionOffset, enviroment: enviroment)
-            }
-            return layout
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+
+        if presenter.selectedFilterTag != nil {
+            let bannerSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .absolute(Constants.tagBannerHeight)
+            )
+            
+            let banner = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: bannerSize,
+                elementKind: SelectedTagBannerView.elementKind,
+                alignment: .top
+            )
+            banner.pinToVisibleBounds = true
+            banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
+            banner.zIndex = 2
+            
+            config.boundarySupplementaryItems = [banner]
         }
+        
+        let layout = UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionOffset, enviroment in
+            self?.getLayout(sectionOffset: sectionOffset, enviroment: enviroment)
+        }, configuration: config)
+                
+        return layout
     }
-    
+
     func getCell(
         for collectionView: UICollectionView,
         indexPath: IndexPath,
@@ -37,7 +52,7 @@ extension PasswordsViewController {
             for: indexPath
         ) as? PasswordsCellView
         cell?.update(cellData: item)
-        
+
         if let url = item.iconType.iconURL, let cachedData = presenter.cachedImage(from: url) {
             cell?.updateIcon(wirh: cachedData)
         }
@@ -47,7 +62,7 @@ extension PasswordsViewController {
         }
         return cell
     }
-        
+
     func getLayout(sectionOffset: Int, enviroment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? {
         let minimumCellWidth: CGFloat = 310
         let itemsInRow: Int = {
@@ -73,35 +88,39 @@ extension PasswordsViewController {
             widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
             heightDimension: cellHeight()
         )
-        
+
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,
             repeatingSubitem: item,
             count: itemsInRow
         )
-        
+
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = .zero
-        
-        // Add header for tag banner when filter is selected and this is the first section
-        if sectionOffset == 0 && presenter.selectedFilterTag != nil {
+
+        if presenter.hasSuggestedItems {
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .estimated(52)
+                heightDimension: .absolute(Constants.headerHeight),
             )
+            
+            let topPadding: CGFloat = sectionOffset == 0 ? (presenter.selectedFilterTag != nil ? 48 : 36) : 0
+            
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
-                alignment: .top
+                alignment: .top,
+                absoluteOffset: .init(x: 0, y: topPadding)
             )
-            header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
             header.pinToVisibleBounds = true
+            section.contentInsets.top = topPadding
             section.boundarySupplementaryItems = [header]
+            return section
         }
         
         return section
     }
-    
+
     func cellHeight() -> NSCollectionLayoutDimension {
         .absolute(Constants.cellHeight)
     }

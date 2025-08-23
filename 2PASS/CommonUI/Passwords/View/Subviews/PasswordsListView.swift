@@ -15,7 +15,8 @@ final class PasswordsListView: UICollectionView {
             register(AutoFillPasswordsSectionView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier)
         } else {
             register(MainAppPasswordsCellView.self, forCellWithReuseIdentifier: MainAppPasswordsCellView.reuseIdentifier)
-            register(SelectedTagBannerView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
         }
+        
+        register(SelectedTagBannerView.self, forSupplementaryViewOfKind: SelectedTagBannerView.elementKind, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
     }
 }
