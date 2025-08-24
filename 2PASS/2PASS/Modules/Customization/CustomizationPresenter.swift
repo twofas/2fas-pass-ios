@@ -10,10 +10,12 @@ import SwiftUI
 
 enum CustomizationDestination: RouterDestination {
     case defaultPasswordsListAction(picker: SettingsPicker<PasswordListAction>)
+    case manageTags
     
     var id: String {
         switch self {
         case .defaultPasswordsListAction: "defaultPasswordsListAction"
+        case .manageTags: "manageTags"
         }
     }
 }
@@ -54,5 +56,9 @@ final class CustomizationPresenter {
                 PasswordListActionFormatStyle().format($0)
             })
         )
+    }
+    
+    func onManageTags() {
+        destination = .manageTags
     }
 }

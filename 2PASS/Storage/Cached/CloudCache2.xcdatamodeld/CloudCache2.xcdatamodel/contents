@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24F74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24G84" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="DeletedItemCachedEntity" representedClassName=".DeletedItemCachedEntity" syncable="YES">
         <attribute name="deletedAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="itemID" attributeType="UUID" usesScalarValueType="NO"/>
@@ -21,7 +21,7 @@
         <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
-    <entity name="TagCachedEntity" representedClassName=".TagEncryptedEntity" syncable="YES">
+    <entity name="TagCachedEntity" representedClassName=".TagCachedEntity" syncable="YES">
         <attribute name="color" optional="YES" attributeType="String"/>
         <attribute name="metadata" attributeType="Binary"/>
         <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>

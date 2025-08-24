@@ -10,6 +10,7 @@ import Common
 
 protocol ViewPasswordModuleInteracting: AnyObject {
     func fetchPassword(for passwordID: PasswordID) -> PasswordData?
+    func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
     func decryptPassword(for passwordID: PasswordID) -> String?
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
@@ -21,12 +22,20 @@ final class ViewPasswordModuleInteractor {
     private let systemInteractor: SystemInteracting
     private let fileIconInteractor: FileIconInteracting
     private let uriInteractor: URIInteracting
+    private let tagInteractor: TagInteracting
     
-    init(passwordInteractor: PasswordInteracting, systemInteractor: SystemInteracting, fileIconInteractor: FileIconInteracting, uriInteractor: URIInteracting) {
+    init(
+        passwordInteractor: PasswordInteracting,
+        systemInteractor: SystemInteracting,
+        fileIconInteractor: FileIconInteracting,
+        uriInteractor: URIInteracting,
+        tagInteractor: TagInteracting
+    ) {
         self.passwordInteractor = passwordInteractor
         self.systemInteractor = systemInteractor
         self.fileIconInteractor = fileIconInteractor
         self.uriInteractor = uriInteractor
+        self.tagInteractor = tagInteractor
     }
 }
 
@@ -55,5 +64,9 @@ extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
             return nil
         }
         return url
+    }
+    
+    func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
+        tagInteractor.getTags(by: tagIDs)
     }
 }

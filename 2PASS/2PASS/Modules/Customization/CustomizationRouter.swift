@@ -14,7 +14,14 @@ struct CustomizationRouter: Router {
     }
     
     func routingType(for destination: CustomizationDestination?) -> RoutingType? {
-        .push
+        switch destination {
+        case .defaultPasswordsListAction:
+            return .push
+        case .manageTags:
+            return .push
+        case nil:
+            return nil
+        }
     }
     
     @ViewBuilder
@@ -26,6 +33,9 @@ struct CustomizationRouter: Router {
                 footer: Text(T.settingsEntryLoginClickActionDescription.localizedKey),
                 picker: picker
             )
+            
+        case .manageTags:
+            ManageTagsRouter.buildView()
         }
     }
 }

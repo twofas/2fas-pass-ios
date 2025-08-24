@@ -58,6 +58,12 @@ final class AddPasswordPresenter {
         }
     }
     
+    var selectedTags: [ItemTagData] = [] {
+        didSet {
+            updateSaveState()
+        }
+    }
+    
     var showUsernameSheetIcon: Bool {
         interactor.hasPasswords
     }
@@ -164,6 +170,13 @@ final class AddPasswordPresenter {
             protectionLevel = interactor.changeRequest?.protectionLevel ?? passwordData.protectionLevel
             iconType = passwordData.iconType
             
+            if let tagIds = passwordData.tagIds, !tagIds.isEmpty {
+                let tags = interactor.getTags(for: tagIds).sorted(by: { $0.name < $1.name })
+                selectedTags = tags
+            } else {
+                selectedTags = []
+            }
+            
             if case .domainIcon(let domain) = passwordData.iconType, let domain {
                 selectedURIIconIndex = passwordData.uris?.firstIndex(where: {
                     interactor.extractDomain(from: $0.uri) == domain
@@ -221,6 +234,12 @@ final class AddPasswordPresenter {
     
     func onChangeProtectionLevel() {
         flowController.toChangeProtectionLevel(current: protectionLevel)
+    }
+    
+    func onSelectTags() {
+        flowController.toSelectTags(selectedTags: selectedTags, onChange: { [weak self] tags in
+            self?.selectedTags = tags
+        })
     }
     
     func handleChangeProtectionLevel(_ value: ItemProtectionLevel) {
@@ -293,7 +312,8 @@ final class AddPasswordPresenter {
             protectionLevel: protectionLevel,
             uris: checkedURIs.map { content in
                 PasswordURI(uri: content.original, match: content.match)
-            }
+            },
+            tagIds: selectedTags.isEmpty ? nil : Array(selectedTags.map { $0.tagID })
         )
         if result.isSuccess {
             flowController.close(with: result)

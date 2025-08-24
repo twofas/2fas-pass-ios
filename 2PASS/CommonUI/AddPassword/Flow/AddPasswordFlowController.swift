@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import UIKit
+import SwiftUI
 import Common
 
 protocol AddPasswordFlowControllerParent: AnyObject {
@@ -17,12 +18,17 @@ protocol AddPasswordFlowControllerParent: AnyObject {
         data: CustomizeIconData,
         completion: @escaping (PasswordIconType) -> Void
     )
+    func addPasswordToSelectTags(
+        selectedTags: [ItemTagData],
+        onChange: @escaping ([ItemTagData]) -> Void
+    )
 }
 
 protocol AddPasswordFlowControlling: AnyObject {
     func close(with result: SavePasswordResult)
     func toChangeProtectionLevel(current: ItemProtectionLevel)
     func toCustomizeIcon(data: CustomizeIconData)
+    func toSelectTags(selectedTags: [ItemTagData], onChange: @escaping ([ItemTagData]) -> Void)
 }
 
 final class AddPasswordFlowController: FlowController {
@@ -70,6 +76,10 @@ extension AddPasswordFlowController: AddPasswordFlowControlling {
         parent?.addPasswordToCustomizeIcon(data: data, completion: { [weak viewController] icon in
             viewController?.presenter.handleIconChange(icon)
         })
+    }
+    
+    func toSelectTags(selectedTags: [ItemTagData], onChange: @escaping ([ItemTagData]) -> Void) {
+        parent?.addPasswordToSelectTags(selectedTags: selectedTags, onChange: onChange)
     }
 }
 

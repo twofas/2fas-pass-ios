@@ -16,5 +16,7 @@ final class PasswordsListView: UICollectionView {
         } else {
             register(MainAppPasswordsCellView.self, forCellWithReuseIdentifier: MainAppPasswordsCellView.reuseIdentifier)
         }
+        
+        register(SelectedTagBannerView.self, forSupplementaryViewOfKind: SelectedTagBannerView.elementKind, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
     }
 }

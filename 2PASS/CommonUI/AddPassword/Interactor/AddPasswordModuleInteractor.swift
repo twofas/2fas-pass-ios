@@ -43,6 +43,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
     
     func getEditPassword() -> PasswordData?
     func getDecryptedPassword() -> String?
+    func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
     
     func savePassword(
         name: String?,
@@ -51,7 +52,8 @@ protocol AddPasswordModuleInteracting: AnyObject {
         notes: String?,
         iconType: PasswordIconType,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?
+        uris: [PasswordURI]?,
+        tagIds: [ItemTagID]?
     ) -> SavePasswordResult
     
     func mostUsedUsernames() -> [String]
@@ -75,6 +77,7 @@ final class AddPasswordModuleInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let currentDateInteractor: CurrentDateInteracting
     private let passwordListInteractor: PasswordListInteracting
+    private let tagInteractor: TagInteracting
     private let editPasswordID: PasswordID?
     
     private var modificationDate: Date?
@@ -89,6 +92,7 @@ final class AddPasswordModuleInteractor {
         fileIconInteractor: FileIconInteracting,
         currentDateInteractor: CurrentDateInteracting,
         passwordListInteractor: PasswordListInteracting,
+        tagInteractor: TagInteracting,
         editPasswordID: PasswordID?,
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
@@ -101,6 +105,7 @@ final class AddPasswordModuleInteractor {
         self.fileIconInteractor = fileIconInteractor
         self.currentDateInteractor = currentDateInteractor
         self.passwordListInteractor = passwordListInteractor
+        self.tagInteractor = tagInteractor
         self.editPasswordID = editPasswordID
         self.changeRequest = changeRequest
     }
@@ -133,6 +138,10 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
             .unpack() ?? nil
     }
     
+    func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {
+        tagInteractor.getTags(by: tagIds)
+    }
+    
     func savePassword(
         name: String?,
         username: String?,
@@ -140,7 +149,8 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         notes: String?,
         iconType: PasswordIconType,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?
+        uris: [PasswordURI]?,
+        tagIds: [ItemTagID]?
     ) -> SavePasswordResult {
         let date = currentDateInteractor.currentDate
         if let current = getEditPassword() {
@@ -155,7 +165,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                 trashedStatus: .no,
                 protectionLevel: protectionLevel,
                 uris: uris,
-                tagIds: current.tagIds
+                tagIds: tagIds ?? current.tagIds
             ) {
             case .success:
                 Log("AddPasswordModuleInteractor - success while updating password. Saving storage")
@@ -189,7 +199,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                 trashedStatus: .no,
                 protectionLevel: protectionLevel,
                 uris: uris,
-                tagIds: nil
+                tagIds: tagIds
             ) {
             case .success:
                 Log("AddPasswordModuleInteractor - success while adding password. Saving storage")

@@ -41,6 +41,7 @@ final class ViewPasswordPresenter {
     var iconContent: IconContent?
     var createdAt: String = ""
     var modifiedAt: String = ""
+    var tags: String?
     
     private var fetchingIconTask: Task<Void, Error>?
     
@@ -190,6 +191,12 @@ private extension ViewPasswordPresenter {
         }
         createdAt = dateFormatter.string(from: passwordData.creationDate)
         modifiedAt = dateFormatter.string(from: passwordData.modificationDate)
+        
+        if let tagIds = passwordData.tagIds, tagIds.isEmpty == false {
+            tags = interactor.fetchTags(for: tagIds).map(\.name).joined(separator: ", ")
+        } else {
+            tags = nil
+        }
     }
     
     @objc
