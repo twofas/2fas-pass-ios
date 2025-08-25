@@ -404,7 +404,7 @@ private extension ExportInteractor {
     
     func tagsToExchangeTags(_ tag: ItemTagData) -> ExchangeVault.ExchangeVaultItem.ExchangeTag {
         .init(
-            id: tag.id.uuidString,
+            id: tag.id.exportString(),
             name: tag.name,
             color: tag.color?.hexString,
             position: tag.position,
