@@ -232,26 +232,39 @@ private extension PasswordsPresenter {
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
             let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
-            listData[0] = list.suggested
-            listData[1] = list.rest
-            let suggestedCells = listData[0]?.map(makeCellData(for:)) ?? []
-            let restCells = listData[1]?.map(makeCellData(for:)) ?? []
-            let suggestedSection = PasswordSectionData(title: T.commonSuggested)
-            let section = PasswordSectionData(title: listData[0]?.isEmpty == true ? nil : T.commonOther)
+            
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             
-            if listData[0]?.isEmpty == false {
+            if list.suggested.isEmpty {
+                listData[0] = list.rest
+                
+                let restCells = list.rest.map(makeCellData(for:))
+                let section = PasswordSectionData()
+                
+                snapshot.appendSections([section])
+                snapshot.appendItems(restCells, toSection: section)
+                
+                cellsCount = list.rest.count
+
+            } else {
+                listData[0] = list.suggested
+                listData[1] = list.rest
+                hasSuggestedItems = true
+
+                let suggestedCells = list.suggested.map(makeCellData(for:))
+                let restCells = list.rest.map(makeCellData(for:))
+                let suggestedSection = PasswordSectionData(title: T.commonSuggested)
+                let section = PasswordSectionData(title: T.commonOther)
+                
                 snapshot.appendSections([suggestedSection])
                 snapshot.appendItems(suggestedCells, toSection: suggestedSection)
-                hasSuggestedItems = true
+                snapshot.appendSections([section])
+                snapshot.appendItems(restCells, toSection: section)
+                
+                cellsCount = suggestedCells.count + restCells.count
             }
             
-            snapshot.appendSections([section])
-            snapshot.appendItems(restCells, toSection: section)
-            
             view?.reloadData(newSnapshot: snapshot)
-            
-            cellsCount = suggestedCells.count + restCells.count
             
         } else {
             let list = interactor.loadList(tag: selectedFilterTag)
