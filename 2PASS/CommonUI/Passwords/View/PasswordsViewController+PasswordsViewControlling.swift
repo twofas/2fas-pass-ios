@@ -31,7 +31,6 @@ extension PasswordsViewController: PasswordsViewControlling {
     // MARK: - Empty screen or list
     func showList() {
         passwordsList?.isScrollEnabled = true
-        container.isUserInteractionEnabled = false
         UIView.animate(
             withDuration: Animation.duration,
             delay: 0,
@@ -55,7 +54,6 @@ extension PasswordsViewController: PasswordsViewControlling {
         emptyList?.isHidden = false
         UIView.animate(withDuration: Animation.duration, animations: {
             self.emptyList?.alpha = 1
-            self.container.isUserInteractionEnabled = true
         })
     }
     
@@ -70,7 +68,6 @@ extension PasswordsViewController: PasswordsViewControlling {
             options: [.beginFromCurrentState, .curveEaseInOut]
         ) {
             self.emptySearchList?.alpha = 1
-            self.container.isUserInteractionEnabled = true
         }
     }
 }

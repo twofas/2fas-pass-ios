@@ -35,6 +35,7 @@ public final class ModuleInteractorFactory {
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             currentDateInteractor: InteractorFactory.shared.currentDateInteractor(),
             passwordListInteractor: InteractorFactory.shared.passwordListInteractor(),
+            tagInteractor: InteractorFactory.shared.tagInteractor(),
             editPasswordID: editPasswordID,
             changeRequest: changeRequest
         )
@@ -50,7 +51,8 @@ public final class ModuleInteractorFactory {
             autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
-            passwordListInteractor: InteractorFactory.shared.passwordListInteractor()
+            passwordListInteractor: InteractorFactory.shared.passwordListInteractor(),
+            tagInteractor: InteractorFactory.shared.tagInteractor()
         )
     }
     
@@ -67,7 +69,8 @@ public final class ModuleInteractorFactory {
             passwordInteractor: InteractorFactory.shared.passwordInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
-            uriInteractor: InteractorFactory.shared.uriInteractor()
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
+            tagInteractor: InteractorFactory.shared.tagInteractor()
         )
     }
     
@@ -80,5 +83,18 @@ public final class ModuleInteractorFactory {
     
     func premiumPromptModuleInteractor() -> PremiumPromptModuleInteracting {
         PremiumPromptModuleInteractor(systemInteractor: InteractorFactory.shared.systemInteractor())
+    }
+    
+    func selectTagsModuleInteractor() -> SelectTagsModuleInteracting {
+        SelectTagsModuleInteractor(
+            tagInteractor: InteractorFactory.shared.tagInteractor()
+        )
+    }
+    
+    func editTagModuleInteractor() -> EditTagModuleInteracting {
+        EditTagModuleInteractor(
+            tagInteractor: InteractorFactory.shared.tagInteractor(),
+            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+        )
     }
 }

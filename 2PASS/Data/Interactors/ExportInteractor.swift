@@ -386,7 +386,7 @@ private extension ExportInteractor {
             createdAt: password.creationDate.exportTimestamp,
             updatedAt: password.modificationDate.exportTimestamp,
             uris: password.uris?.map({ uriToExchangeURI(uri: $0) }) ?? [],
-            tags: password.tagIds?.map { $0.uuidString }
+            tags: password.tagIds?.map { $0.exportString() }
         )
     }
     
@@ -404,7 +404,7 @@ private extension ExportInteractor {
     
     func tagsToExchangeTags(_ tag: ItemTagData) -> ExchangeVault.ExchangeVaultItem.ExchangeTag {
         .init(
-            id: tag.id.uuidString,
+            id: tag.id.exportString(),
             name: tag.name,
             color: tag.color?.hexString,
             position: tag.position,

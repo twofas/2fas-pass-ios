@@ -90,6 +90,7 @@ public protocol PasswordInteracting: AnyObject {
     
     func listPasswords(
         searchPhrase: String?,
+        tagId: ItemTagID?,
         sortBy: SortType,
         trashed: PasswordListOptions.TrashOptions
     ) -> [PasswordData]
@@ -125,6 +126,8 @@ public protocol PasswordInteracting: AnyObject {
         tags: [ItemTagData],
         completion: @escaping (Result<Void, PasswordInteractorReencryptError>) -> Void
     )
+    
+    func getItemCountForTag(tagID: ItemTagID) -> Int
 }
 
 final class PasswordInteractor {
@@ -374,6 +377,7 @@ extension PasswordInteractor: PasswordInteracting {
     
     func listPasswords(
         searchPhrase: String?,
+        tagId: ItemTagID? = nil,
         sortBy: SortType = .newestFirst,
         trashed: PasswordListOptions.TrashOptions = .no
     ) -> [PasswordData] {
@@ -386,7 +390,15 @@ extension PasswordInteractor: PasswordInteracting {
             }
             return nil
         }()
-        return mainRepository.listPasswords(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
+        let passwords = mainRepository.listPasswords(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
+        
+        if let tagId {
+            return passwords.filter { password in
+                password.tagIds?.contains(tagId) ?? false
+            }
+        } else {
+            return passwords
+        }
     }
     
     func listTrashedPasswords() -> [PasswordData] {
@@ -743,6 +755,14 @@ extension PasswordInteractor: PasswordInteracting {
         }
         mainRepository.setTrustedKey(trustedKey)
         return true
+    }
+    
+    func getItemCountForTag(tagID: ItemTagID) -> Int {
+        mainRepository.listPasswords(options: .allNotTrashed)
+            .filter {
+                $0.tagIds?.contains(tagID) ?? false
+            }
+            .count
     }
 }
 

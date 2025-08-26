@@ -384,4 +384,12 @@ extension ModuleInteractorFactory {
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
         )
     }
+    
+    func manageTagsModuleInteractor() -> ManageTagsModuleInteracting {
+        ManageTagsModuleInteractor(
+            tagInteractor: InteractorFactory.shared.tagInteractor(),
+            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+        )
+    }
 }
