@@ -12,10 +12,10 @@ struct ManageTagsView: View {
                 ManageTagCell(
                     tag: tagItem,
                     onEdit: {
-                        presenter.editTag(tagID: tagItem.tagID)
+                        presenter.editTag(tag: tagItem)
                     },
                     onDelete: {
-                        presenter.deleteTag(tagID: tagItem.tagID)
+                        presenter.deleteTag(tag: tagItem)
                     }
                 )
             }

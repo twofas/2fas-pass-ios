@@ -14,11 +14,12 @@ struct ManageTagCell: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(tag.name)
                     .foregroundStyle(.neutral950)
+                    .font(.body)
                 
                 Text(T.tagDescription(tag.itemCount).localizedKey)
                     .foregroundStyle(.neutral500)
+                    .font(.footnote)
             }
-            .font(.body)
             
             Spacer()
             

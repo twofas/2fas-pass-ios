@@ -50,8 +50,8 @@ final class ManageTagsPresenter {
         })
     }
     
-    func editTag(tagID: ItemTagID) {
-        destination = .editTag(tagID: tagID, onClose: { [weak self] in
+    func editTag(tag: TagViewItem) {
+        destination = .editTag(tagID: tag.tagID, onClose: { [weak self] in
             self?.destination = nil
             
             withAnimation {
@@ -60,10 +60,9 @@ final class ManageTagsPresenter {
         })
     }
     
-    func deleteTag(tagID: ItemTagID) {
-        guard let tag = tags.first(where: { $0.tagID == tagID }) else { return }
+    func deleteTag(tag: TagViewItem) {
         destination = .deleteConfirmation(tagName: tag.name, onConfirm: { [weak self] in
-            self?.interactor.deleteTag(tagID: tagID)
+            self?.interactor.deleteTag(tagID: tag.tagID)
             self?.destination = nil
             
             withAnimation {

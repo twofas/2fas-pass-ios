@@ -1,7 +1,7 @@
 import Data
 import Common
 
-protocol SelectTagsModuleInteracting {
+protocol SelectTagsModuleInteracting: AnyObject {
     func listAllTags() -> [ItemTagData]
 }
 

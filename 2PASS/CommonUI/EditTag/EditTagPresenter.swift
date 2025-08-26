@@ -10,7 +10,7 @@ final class EditTagPresenter {
     
     var name: String = ""
     var isEditMode: Bool { tagID != nil }
-    var navigationTitle: String { isEditMode ? "Edit Tag" : "New Tag" }
+    var navigationTitle: String { isEditMode ? T.tagEditorEditTitle : T.tagEditorNewTitle }
     
     init(interactor: EditTagModuleInteracting, tagID: ItemTagID? = nil, onClose: @escaping Callback) {
         self.interactor = interactor
