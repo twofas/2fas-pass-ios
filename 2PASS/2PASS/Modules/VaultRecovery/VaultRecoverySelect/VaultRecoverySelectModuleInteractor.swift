@@ -15,6 +15,7 @@ protocol VaultRecoverySelectModuleInteracting: AnyObject {
     func parseQRCodeContents(_ str: String) -> (entropy: Entropy, masterKey: MasterKey?)?
     func isPDF(fileURL: URL) -> Bool
     func pdfToImage(url: URL) -> UIImage?
+    func validateEntropy(_ entropy: Entropy, for data: VaultRecoveryData) -> Bool
 }
 
 final class VaultRecoverySelectModuleInteractor {
@@ -102,5 +103,35 @@ extension VaultRecoverySelectModuleInteractor: VaultRecoverySelectModuleInteract
             ctx.cgContext.drawPDFPage(page)
         }
         return img
+    }
+    
+    func validateEntropy(_ entropy: Entropy, for data: VaultRecoveryData) -> Bool {
+        let vaultSeedHash: String? = {
+            switch data {
+            case .file(let vault):
+                vault.encryption?.seedHash
+            case .cloud(let vaultData):
+                vaultData.seedHash
+            }
+        }()
+        
+        let vaultID: UUID? = {
+            switch data {
+            case .file(let vault):
+                UUID(uuidString: vault.vault.id)
+            case .cloud(let vaultData):
+                vaultData.vaultID
+            }
+        }()
+        
+        guard let vaultSeedHash, let vaultID else {
+            return false
+        }
+        guard let seedHash = importInteractor.generateSeedHash(from: entropy, vaultID: vaultID) else {
+            return false
+        }
+        
+        let seedHashBase64 = Data(hexString: seedHash)?.base64EncodedString()
+        return seedHashBase64 == vaultSeedHash
     }
 }

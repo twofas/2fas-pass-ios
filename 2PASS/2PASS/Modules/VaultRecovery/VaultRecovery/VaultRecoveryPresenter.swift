@@ -6,12 +6,13 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 enum VaultRecoveryDestination: Identifiable {
     var id: String {
         switch self {
         case .selectFile: "selectFile"
-        case .restoreFromFile(let url): "restoreFromFile\(url.absoluteString)"
+        case .restoreFromFile(let url, _): "restoreFromFile\(url.absoluteString)"
         case .selectiCloudVault: "restoreFromiCloud"
         case .restoreFromWebDAV: "restoreFromWebDAV"
         case .restore: "select"
@@ -20,10 +21,10 @@ enum VaultRecoveryDestination: Identifiable {
     }
     
     case selectFile(onClose: (FileImportResult) -> Void)
-    case restoreFromFile(url: URL)
+    case restoreFromFile(url: URL, onClose: Callback)
     case selectiCloudVault(onSelect: (VaultRecoveryData) -> Void)
     case restoreFromWebDAV
-    case restore(VaultRecoveryData)
+    case restore(VaultRecoveryData, onClose: Callback)
     case errorReadingFile
 }
 
@@ -46,7 +47,9 @@ extension VaultRecoveryPresenter {
             switch result {
             case .cantReadFile: self?.destination = .errorReadingFile
             case .fileOpen(let url):
-                self?.destination = .restoreFromFile(url: url)
+                self?.destination = .restoreFromFile(url: url, onClose: { [weak self] in
+                    self?.destination = nil
+                })
             case .cancelled: self?.destination = nil
             }
         })
@@ -64,7 +67,9 @@ extension VaultRecoveryPresenter {
                 try await Task.sleep(for: .milliseconds(700))
                 
                 guard let self else { return }
-                self.destination = .restore(selected)
+                self.destination = .restore(selected, onClose: { [weak self] in
+                    self?.destination = nil
+                })
             }
         })
     }
