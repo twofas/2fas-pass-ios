@@ -172,6 +172,6 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     }
     
     func finish() {
-        onboardingInteractor.finish()
+        onboardingInteractor.finishVaultRecovery()
     }
 }

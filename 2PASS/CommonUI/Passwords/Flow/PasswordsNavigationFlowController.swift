@@ -8,7 +8,7 @@ import UIKit
 import Common
 
 public protocol PasswordsNavigationFlowControllerParent: AnyObject {
-    func toImportSettings()
+    func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
 
     @MainActor
@@ -56,8 +56,8 @@ extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
         passwordsToViewPassword(passwordID: passwordID)
     }
     
-    public func toImportSettings() {
-        parent?.toImportSettings()
+    public func toQuickSetup() {
+        parent?.toQuickSetup()
     }
     
     @MainActor

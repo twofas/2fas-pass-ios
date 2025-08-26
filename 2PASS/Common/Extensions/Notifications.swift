@@ -19,4 +19,5 @@ public extension Notification.Name {
     static let paymentStatusChanged = Notification.Name("paymentStatusChanged")
     static let presentPaymentScreen = Notification.Name("presentPaymentScreen")
     static let presentSyncPremiumNeededScreen = Notification.Name("presentSyncPremiumNeededScreen")
+    static let didImportItems = Notification.Name("didImportItems")
 }

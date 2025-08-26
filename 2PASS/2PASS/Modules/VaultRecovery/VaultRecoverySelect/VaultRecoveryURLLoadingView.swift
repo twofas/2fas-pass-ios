@@ -14,7 +14,7 @@ struct VaultRecoveryURLLoadingView: View {
     var body: some View {
         switch presenter.destination {
         case .encrypted(let fileData):
-            VaultRecoverySelectRouter.buildView(flowContext: .onboarding, recoveryData: .file(fileData))
+            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: presenter.onClose), recoveryData: .file(fileData))
         default:
             VaultRecoveryCheckView(presenter: presenter)
         }

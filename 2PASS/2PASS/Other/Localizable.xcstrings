@@ -21,7 +21,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can't initialize camera in Split View mode. Open app in full screen and try again."
+            "value" : "Can't initialize the camera in Split View mode. Open the app in full screen and try again."
           }
         }
       }
@@ -32,7 +32,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The camera is unavailable because of system overload. Try rebooting the device."
+            "value" : "The camera is unavailable because the system is overloaded. Please reboot the device."
           }
         }
       }
@@ -131,7 +131,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "There was a merge error. Try switching Sync on and off or Restore from iCloud"
+            "value" : "iCloud Vault Sync had a merge error. Try switching the Sync on and off, or restoring the backup from iCloud"
           }
         }
       }
@@ -142,7 +142,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To sync with multiple devices you need to upgrade to Premium plan"
+            "value" : "To sync your Vault on multiple devices, you need to upgrade to the Unlimited plan"
           }
         }
       }
@@ -153,7 +153,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can't enable sync"
+            "value" : "Can't enable Vault Sync"
           }
         }
       }
@@ -164,7 +164,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Incorrect directory URL!"
+            "value" : "Incorrect URL"
           }
         }
       }
@@ -882,7 +882,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verify Master Password"
+            "value" : "Verify the Master Password"
           }
         }
       }
@@ -937,7 +937,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Another app uses the camera. If closing other apps don't help, then reboot the device."
+            "value" : "Another app is using the camera. If closing other apps doesn't help, please reboot the device."
           }
         }
       }
@@ -948,7 +948,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error while scanning QR Code"
+            "value" : "Error while scanning the QR Code"
           }
         }
       }
@@ -1971,7 +1971,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save Recovery Kit in a safe place"
+            "value" : "Save the Decryption Kit in a safe place"
           }
         }
       }
@@ -2312,7 +2312,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save exported Vault in a safe place"
+            "value" : "Save the exported Vault in a safe place"
           }
         }
       }
@@ -2323,7 +2323,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No local Vault was found. Reinstall the app"
+            "value" : "No local Vault found. Please reinstall the app"
           }
         }
       }
@@ -2642,7 +2642,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Are you sure? All content will be lost!"
+            "value" : "Are you sure? All Items will be lost!"
           }
         }
       }
@@ -4248,7 +4248,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error while copying password"
+            "value" : "Error while copying the password"
           }
         }
       }
@@ -4259,7 +4259,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error while copying username"
+            "value" : "Error while copying the username"
           }
         }
       }
@@ -4732,7 +4732,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Existing backup was created using newer version. Update the app."
+            "value" : "The existing backup was created using a newer version. Update the app."
           }
         }
       }
@@ -4743,7 +4743,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nothing to import. Backup file has no passwords."
+            "value" : "Nothing to import. Backup file has no Items."
           }
         }
       }
@@ -4809,7 +4809,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "2FAS Pass Recovery Kit"
+            "value" : "2FAS Pass Decryption Kit"
           }
         }
       }
@@ -4820,7 +4820,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "2FAS Pass Recovery Kit"
+            "value" : "2FAS Pass Decryption Kit"
           }
         }
       }
@@ -5370,7 +5370,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter words manually"
+            "value" : "Enter Secret Words manually"
           }
         }
       }
@@ -5381,7 +5381,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error. Something went wrong. Try again."
+            "value" : "Error. Something went wrong. Please try again."
           }
         }
       }
@@ -5403,7 +5403,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error. Incorrect Words."
+            "value" : "Error. Incorrect Secret Words."
           }
         }
       }
@@ -5480,7 +5480,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Incorrect words"
+            "value" : "Incorrect Secret Words"
           }
         }
       }
@@ -5711,7 +5711,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan the QR code on Recovery Key or enter Words manually."
+            "value" : "Scan the QR code on the Recovery Kit or enter the Secret Words manually."
           }
         }
       }
@@ -5722,7 +5722,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use Recovery Kit"
+            "value" : "Use the Decryption Kit"
           }
         }
       }
@@ -7504,7 +7504,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checking ..."
+            "value" : "Checking..."
           }
         }
       }
@@ -7526,7 +7526,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloud account is disabled. Check app settings in system Settings"
+            "value" : "iCloud account is disabled. Check app settings in System Settings"
           }
         }
       }
@@ -7570,7 +7570,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloud Vault was created with diffrent encryption. Delete the app and restore using Recover Kit"
+            "value" : "iCloud Vault was created with different encryption. Reinstall the app to recover your data."
           }
         }
       }
@@ -7581,7 +7581,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloud Vault is in newer version. Update the app"
+            "value" : "iCloud Vault was created on a newer version. Please update the app"
           }
         }
       }
@@ -7592,7 +7592,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No iCloud account was setup"
+            "value" : "No iCloud account"
           }
         }
       }
@@ -7636,7 +7636,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vault in iCloud has diffrent password or encryption. Restore from iCloud to use this Vault"
+            "value" : "Vault in iCloud has a different password or encryption. Restore the backup from your iCloud to use this Vault"
           }
         }
       }
@@ -7713,7 +7713,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A newer version of the app is requried to access the backup file"
+            "value" : "A newer version of the app is required to access the backup file"
           }
         }
       }
@@ -7746,7 +7746,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "User is not authorized to access this path"
+            "value" : "Not authorized to access this path"
           }
         }
       }
@@ -7768,7 +7768,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Master Password was changed. To access this Vault use Restore and Recovery Kit."
+            "value" : "Master Password was changed. To access this Vault, use the Decryption Kit."
           }
         }
       }
@@ -7845,7 +7845,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Retrying the connection"
+            "value" : "Reconnecting"
           }
         }
       }
@@ -7856,7 +7856,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Retrying the connection: %@"
+            "value" : "Reconnecting: %@"
           }
         }
       }
@@ -7900,7 +7900,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Syncing ..."
+            "value" : "Syncing..."
           }
         }
       }
@@ -8307,7 +8307,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Decrypting ..."
+            "value" : "Decrypting..."
           }
         }
       }
@@ -8329,7 +8329,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "There was an error while accessing the file from Gallery. Ensure you have an internet connection and try again."
+            "value" : "There was an error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again."
           }
         }
       }
@@ -8373,7 +8373,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error scanning file. Check if the QR code is visible and that there's only one in the image."
+            "value" : "Error while scanning the file. Make sure the QR code is visible and that there's only one in the image."
           }
         }
       }
@@ -8384,7 +8384,51 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wrong Master Password or Words. Try again."
+            "value" : "Wrong Master Password or Secret Words. Try again."
+          }
+        }
+      }
+    },
+    "vault_recovery_wrong_decryption_kit_another_backup_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use another backup file"
+          }
+        }
+      }
+    },
+    "vault_recovery_wrong_decryption_kit_another_decryption_kit_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use another Decryption Kit"
+          }
+        }
+      }
+    },
+    "vault_recovery_wrong_decryption_kit_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please use the correct Decryption Kit for this Vault, or use another backup file"
+          }
+        }
+      }
+    },
+    "vault_recovery_wrong_decryption_kit_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incorrect Decryption Kit"
           }
         }
       }

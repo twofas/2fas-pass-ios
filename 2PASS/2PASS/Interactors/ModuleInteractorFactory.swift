@@ -178,7 +178,8 @@ extension ModuleInteractorFactory {
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: true),
             webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
-            systemInteractor: InteractorFactory.shared.systemInteractor()
+            systemInteractor: InteractorFactory.shared.systemInteractor(),
+            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
         )
     }
     
@@ -372,6 +373,15 @@ extension ModuleInteractorFactory {
     func viewLogsModuleInteractor() -> ViewLogsModuleInteracting {
         ViewLogsModuleInteractor(
             debugInteractor: InteractorFactory.shared.debugInteractor()
+        )
+    }
+    
+    func quickSetupModuleInteractor() -> QuickSetupModuleInteracting {
+        QuickSetupModuleInteractor(
+            autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
+            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
+            configInteractor: InteractorFactory.shared.configInteractor(),
+            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
         )
     }
 }

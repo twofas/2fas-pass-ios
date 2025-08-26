@@ -11,7 +11,7 @@ public protocol PasswordsFlowControllerParent: AnyObject {
     func passwordsToViewPassword(passwordID: PasswordID)
     func selectPassword(passwordID: PasswordID)
     func cancel()
-    func toImportSettings()
+    func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
     
     @MainActor
@@ -27,7 +27,7 @@ protocol PasswordsFlowControlling: AnyObject {
     func selectPassword(passwordID: PasswordID)
     func cancel()
     
-    func toImportSettings()
+    func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
 
     @MainActor
@@ -103,8 +103,8 @@ extension PasswordsFlowController: PasswordsFlowControlling {
         parent?.cancel()
     }
     
-    func toImportSettings() {
-        parent?.toImportSettings()
+    func toQuickSetup() {
+        parent?.toQuickSetup()
     }
     
     @MainActor

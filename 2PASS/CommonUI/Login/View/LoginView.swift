@@ -196,7 +196,7 @@ public struct LoginView: View {
             .bold()
             .monospacedDigit()
         
-        Text(T.lockScreenTryAgain(time).localizedKey)
+        Text("lock_screen_try_again \(time)")
             .padding(.horizontal, 10)
             .frame(height: Constants.appLockInfoHeight)
             .background(Color.neutral50)

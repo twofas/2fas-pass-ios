@@ -103,7 +103,7 @@ public enum Config {
         public static let subscriptionId = "unlimited" // entitlement_id
         #endif
         
-        public static let freeEntitlements = SubscriptionPlan.Entitlements(itemsLimit: 50, connectedBrowsersLimit: 1, multiDeviceSync: false)
+        public static let freeEntitlements = SubscriptionPlan.Entitlements(itemsLimit: 200, connectedBrowsersLimit: 1, multiDeviceSync: false)
         public static let premiumEntitlements = SubscriptionPlan.Entitlements(itemsLimit: nil, connectedBrowsersLimit: nil, multiDeviceSync: true)
     }
     

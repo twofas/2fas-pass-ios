@@ -55,6 +55,7 @@ final class PasswordsPresenter {
         notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudStateChanged, object: nil)
         notificationCenter.addObserver(self, selector: #selector(userLoggedIn), name: .userLoggedIn, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(didImportItems), name: .didImportItems, object: nil)
         
         notificationCenter.addObserver(forName: .connectPullReqestDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
             self?.reload()
@@ -71,8 +72,8 @@ extension PasswordsPresenter {
         reload()
     }
     
-    func onImport() {
-        flowController.toImportSettings()
+    func onQuickSetup() {
+        flowController.toQuickSetup()
     }
     
     func onAdd() {
@@ -279,6 +280,11 @@ private extension PasswordsPresenter {
     
     @objc
     func userLoggedIn() {
+        reload()
+    }
+    
+    @objc
+    func didImportItems() {
         reload()
     }
 }
