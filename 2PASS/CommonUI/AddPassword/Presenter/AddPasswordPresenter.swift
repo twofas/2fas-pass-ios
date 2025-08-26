@@ -171,7 +171,7 @@ final class AddPasswordPresenter {
             iconType = passwordData.iconType
             
             if let tagIds = passwordData.tagIds, !tagIds.isEmpty {
-                let tags = interactor.getTags(for: tagIds).sorted(by: { $0.name < $1.name })
+                let tags = interactor.getTags(for: tagIds)
                 selectedTags = tags
             } else {
                 selectedTags = []
