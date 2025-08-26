@@ -595,6 +595,8 @@ internal enum T {
   internal static let loginErrorEditedOtherDevice = T.tr("Localizable", "login_error_edited_other_device", fallback: "Item was edited on another device")
   /// Error while trying to save Item
   internal static let loginErrorSave = T.tr("Localizable", "login_error_save", fallback: "Error while trying to save Item")
+  /// Clear filters
+  internal static let loginFilterModalClear = T.tr("Localizable", "login_filter_modal_clear", fallback: "Clear filters")
   /// From oldest
   internal static let loginFilterModalSortCreationDateAsc = T.tr("Localizable", "login_filter_modal_sort_creation_date_asc", fallback: "From oldest")
   /// From newest
@@ -603,14 +605,18 @@ internal enum T {
   internal static let loginFilterModalSortNameAsc = T.tr("Localizable", "login_filter_modal_sort_name_asc", fallback: "Name (A-Z)")
   /// Name (Z-A)
   internal static let loginFilterModalSortNameDesc = T.tr("Localizable", "login_filter_modal_sort_name_desc", fallback: "Name (Z-A)")
+  /// Filter
+  internal static let loginFilterModalTag = T.tr("Localizable", "login_filter_modal_tag", fallback: "Filter")
+  /// All
+  internal static let loginFilterModalTagAll = T.tr("Localizable", "login_filter_modal_tag_all", fallback: "All")
   /// Sort
   internal static let loginFilterModalTitle = T.tr("Localizable", "login_filter_modal_title", fallback: "Sort")
   /// Name
   internal static let loginNameLabel = T.tr("Localizable", "login_name_label", fallback: "Name")
   /// No Item Name
   internal static let loginNoItemName = T.tr("Localizable", "login_no_item_name", fallback: "No Item Name")
-  /// Secure Notes
-  internal static let loginNotesLabel = T.tr("Localizable", "login_notes_label", fallback: "Secure Notes")
+  /// Notes
+  internal static let loginNotesLabel = T.tr("Localizable", "login_notes_label", fallback: "Notes")
   /// Auto-Generate
   internal static let loginPasswordAutogenerateCta = T.tr("Localizable", "login_password_autogenerate_cta", fallback: "Auto-Generate")
   /// Generator
@@ -619,8 +625,8 @@ internal enum T {
   internal static let loginPasswordLabel = T.tr("Localizable", "login_password_label", fallback: "Password")
   /// Enter password
   internal static let loginPasswordPlaceholder = T.tr("Localizable", "login_password_placeholder", fallback: "Enter password")
-  /// Take another try with a different search term
-  internal static let loginSearchNoResultsDescription = T.tr("Localizable", "login_search_no_results_description", fallback: "Take another try with a different search term")
+  /// Take another try with a different filter
+  internal static let loginSearchNoResultsDescription = T.tr("Localizable", "login_search_no_results_description", fallback: "Take another try with a different filter")
   /// Item not found
   internal static let loginSearchNoResultsTitle = T.tr("Localizable", "login_search_no_results_title", fallback: "Item not found")
   /// Security

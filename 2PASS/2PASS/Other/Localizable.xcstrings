@@ -3098,6 +3098,17 @@
         }
       }
     },
+    "login_filter_modal_clear" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear filters"
+          }
+        }
+      }
+    },
     "login_filter_modal_sort_creation_date_asc" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3142,6 +3153,28 @@
         }
       }
     },
+    "login_filter_modal_tag" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        }
+      }
+    },
+    "login_filter_modal_tag_all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
     "login_filter_modal_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3181,7 +3214,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Secure Notes"
+            "value" : "Notes"
           }
         }
       }
@@ -3236,7 +3269,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take another try with a different search term"
+            "value" : "Take another try with a different filter"
           }
         }
       }

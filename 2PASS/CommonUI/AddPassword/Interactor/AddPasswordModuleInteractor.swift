@@ -139,7 +139,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
     }
     
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {
-        tagInteractor.getTags(by: tagIds)
+        tagInteractor.getTags(by: tagIds).sorted(by: { $0.name < $1.name })
     }
     
     func savePassword(

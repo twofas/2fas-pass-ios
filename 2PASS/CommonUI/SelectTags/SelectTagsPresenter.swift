@@ -44,6 +44,7 @@ final class SelectTagsPresenter {
             selectedTags.append(tag)
         }
         
+        selectedTags.sort { $0.name < $1.name }
         _onChange(selectedTags)
     }
     

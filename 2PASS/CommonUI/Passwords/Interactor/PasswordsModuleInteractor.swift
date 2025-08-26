@@ -205,6 +205,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     
     func listAllTags() -> [ItemTagData] {
         tagInteractor.listAllTags()
+            .sorted(by: { $0.name < $1.name })
     }
     
     func countPasswordsForTag(_ tagID: ItemTagID) -> Int {

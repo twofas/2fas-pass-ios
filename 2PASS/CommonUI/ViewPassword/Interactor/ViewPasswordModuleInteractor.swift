@@ -68,5 +68,6 @@ extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
     
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         tagInteractor.getTags(by: tagIDs)
+            .sorted { $0.name < $1.name }
     }
 }
