@@ -4,6 +4,8 @@ import Common
 @Observable @MainActor
 final class EditTagPresenter {
     
+    let limitNameLength: Int = 64
+    
     private let interactor: EditTagModuleInteracting
     private let onClose: Callback
     private let tagID: ItemTagID?

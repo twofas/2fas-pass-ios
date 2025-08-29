@@ -32,6 +32,11 @@ struct EditTagView: View {
                     .background(Color.neutral50)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .padding(.horizontal, Spacing.l)
+                    .onChange(of: presenter.name) { _, newValue in
+                        if newValue.count > presenter.limitNameLength {
+                            presenter.name = String(newValue.prefix(presenter.limitNameLength))
+                        }
+                    }
                     .onSubmit {
                         presenter.onSave()
                     }
