@@ -217,15 +217,6 @@ private extension PasswordsViewController {
     func tagMenu() -> UIMenu {
         let tags = presenter.listAllTags()
         
-        // Add "All" option for tags
-        let allAction = UIAction(
-            title: "\(T.loginFilterModalTagAll) (\(presenter.itemsCount))",
-            state: presenter.selectedFilterTag == nil ? .on : .off
-        ) { [weak self] _ in
-            self?.presenter.onClearFilterTag()
-            self?.updateLayoutWithTagFilter()
-        }
-        
         // Create tag actions
         let tagActions = tags.map { tag in
             let count = presenter.countPasswordsForTag(tag.tagID)
@@ -239,11 +230,11 @@ private extension PasswordsViewController {
             }
         }
         
-        // Create a submenu that contains all tags
+        // Create a submenu that contains only tags (without "All" option)
         return UIMenu(
             title: T.loginFilterModalTag,
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
-            children: [allAction] + tagActions
+            children: tagActions
         )
     }
     
