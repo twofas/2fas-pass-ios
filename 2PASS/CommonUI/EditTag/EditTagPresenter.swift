@@ -21,7 +21,11 @@ final class EditTagPresenter {
         
         if let tagID, let tag = interactor.getTag(tagID: tagID) {
             self.name = tag.name
-        }
+        }        
+    }
+    
+    var canSave: Bool {
+        name.isEmpty == false && name.count <= limitNameLength
     }
 
     func onSave() {

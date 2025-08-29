@@ -46,7 +46,7 @@ struct EditTagView: View {
                 } label: {
                     Text(T.commonSave.localizedKey)
                 }
-                .disabled(presenter.name.isEmpty)
+                .disabled(presenter.canSave == false)
                 .padding(.horizontal, Spacing.l)
                 .buttonStyle(.filled)
                 .controlSize(.large)
