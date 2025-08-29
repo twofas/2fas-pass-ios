@@ -25,6 +25,34 @@ private class IconFetcherProxy: RemoteImageCollectionFetcher {
     }
 }
 
+enum ItemContentTypeFilter: Equatable {
+    case all
+    case contentType(ItemContentType)
+    
+    var title: String {
+        switch self {
+        case .all:
+            return "All Items"
+        case .contentType(let type):
+            switch type {
+            case .login:
+                return "Logins"
+            case .notes:
+                return "Notes"
+            }
+        }
+    }
+    
+    var contentType: ItemContentType? {
+        switch self {
+        case .all:
+            return nil
+        case .contentType(let contentType):
+            return contentType
+        }
+    }
+}
+
 final class PasswordsPresenter {
     weak var view: PasswordsViewControlling?
     
@@ -41,6 +69,8 @@ final class PasswordsPresenter {
             reload()
         }
     }
+    
+    private(set) var contentTypeFilter: ItemContentTypeFilter = .all
     
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
@@ -109,6 +139,11 @@ extension PasswordsPresenter {
 
     func onClearSearchPhrase() {
         interactor.setSearchPhrase(nil)
+        reload()
+    }
+    
+    func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
+        contentTypeFilter = filter
         reload()
     }
     
@@ -229,7 +264,7 @@ private extension PasswordsPresenter {
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
             
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             
@@ -265,7 +300,7 @@ private extension PasswordsPresenter {
             view?.reloadData(newSnapshot: snapshot)
             
         } else {
-            let list = interactor.loadList(tag: selectedFilterTag)
+            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
             listData[0] = list
             let cells = list.map(makeCellData(for:))
             let section = PasswordSectionData()
@@ -281,7 +316,7 @@ private extension PasswordsPresenter {
         itemsCount = cellsCount
         
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil {
+            if interactor.isSearching || selectedFilterTag != nil || contentTypeFilter.contentType != nil {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()

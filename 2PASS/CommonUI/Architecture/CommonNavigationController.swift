@@ -23,8 +23,6 @@ open class CommonNavigationController: UINavigationController {
         standardAppearance.shadowImage = shadowLine
         standardAppearance.shadowColor = Asset.dividerColor.color
         navigationBar.standardAppearance = standardAppearance
-        
-        navigationBar.prefersLargeTitles = true
     }
 }
 

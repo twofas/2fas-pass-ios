@@ -91,6 +91,7 @@ public protocol PasswordInteracting: AnyObject {
     func listPasswords(
         searchPhrase: String?,
         tagId: ItemTagID?,
+        contentType: ItemContentType?,
         sortBy: SortType,
         trashed: PasswordListOptions.TrashOptions
     ) -> [PasswordData]
@@ -378,6 +379,7 @@ extension PasswordInteractor: PasswordInteracting {
     func listPasswords(
         searchPhrase: String?,
         tagId: ItemTagID? = nil,
+        contentType: ItemContentType? = nil,
         sortBy: SortType = .newestFirst,
         trashed: PasswordListOptions.TrashOptions = .no
     ) -> [PasswordData] {
@@ -390,15 +392,22 @@ extension PasswordInteractor: PasswordInteracting {
             }
             return nil
         }()
-        let passwords = mainRepository.listPasswords(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
+        var passwords = mainRepository.listPasswords(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
         
         if let tagId {
-            return passwords.filter { password in
+            passwords = passwords.filter { password in
                 password.tagIds?.contains(tagId) ?? false
             }
-        } else {
-            return passwords
         }
+        
+        // FIXME: Temporary implementation
+        if let contentType {
+            if contentType != .login {
+                passwords = []
+            }
+        }
+        
+        return passwords
     }
     
     func listTrashedPasswords() -> [PasswordData] {

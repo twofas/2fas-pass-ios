@@ -16,8 +16,8 @@ protocol PasswordsModuleInteracting: AnyObject {
     var currentSortType: SortType { get }
     func setSortType(_ sortType: SortType)
     
-    func loadList(tag: ItemTagData?) -> [PasswordData]
-    func loadList(forServiceIdentifiers serviceURIs: [String], tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData])
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [PasswordData]
+    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData])
 
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
@@ -90,17 +90,18 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         configInteractor.defaultPassswordListAction
     }
     
-    func loadList(tag: ItemTagData?) -> [PasswordData] {
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [PasswordData] {
         passwordInteractor.listPasswords(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
+            contentType: contentType,
             sortBy: currentSortType,
             trashed: .no
         )
     }
     
-    func loadList(forServiceIdentifiers serviceIdentifiers: [String], tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData]) {
-        let allPasswords = passwordInteractor.listPasswords(searchPhrase: nil, tagId: tag?.tagID, sortBy: currentSortType, trashed: .no)
+    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData]) {
+        let allPasswords = passwordInteractor.listPasswords(searchPhrase: nil, tagId: tag?.tagID, contentType: contentType, sortBy: currentSortType, trashed: .no)
         
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)

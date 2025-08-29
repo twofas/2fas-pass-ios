@@ -7,6 +7,20 @@
 import UIKit
 
 extension PasswordsViewController: UICollectionViewDelegate {
+        
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        
+        let height = floor(max(minNavigationBarHeight, largeTitleNavigationBarHeight - offset))
+        navigationBarHeight?.constant = height
+        
+        if height == minNavigationBarHeight {
+            navigationBar.titleDisplayMode = .inline
+        } else {
+            navigationBar.titleDisplayMode = .large
+        }
+    }
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         presenter.onDidSelectAt(indexPath)

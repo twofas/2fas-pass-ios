@@ -6,8 +6,9 @@
 
 import Foundation
 
-public enum ItemContentType: String {
+public enum ItemContentType: String, CaseIterable, Equatable {
     case login
+    case notes
 }
 
 public struct ItemEncryptedData: Hashable, Identifiable {

@@ -19,6 +19,15 @@ final class PasswordsViewController: UIViewController {
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
     
+    let navigationBar = ItemsListNavigationBar()
+    let contentNavigtionItem = UINavigationItem()
+    private(set) var navigationBarHeight: NSLayoutConstraint?
+    
+    let minNavigationBarHeight = 100.0
+    var largeTitleNavigationBarHeight: CGFloat {
+        navigationBar.largeDisplayModeHeight
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -26,9 +35,10 @@ final class PasswordsViewController: UIViewController {
 
         setupPasswordsList()
         setupNavigationItems()
+        setupCustomNavigationBar()
         setupDelegates()
-        setupEmptyLists()
         setupDataSource()
+        setupEmptyLists()
     }
     
     // MARK: - App events
@@ -36,13 +46,28 @@ final class PasswordsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        
         presenter.viewWillAppear()
-        startSafeAreaKeyboardAdjustment()        
+        startSafeAreaKeyboardAdjustment()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
+        navigationController?.setNavigationBarHidden(false, animated: animated)
         stopSafeAreaKeyboardAdjustment()
+    }
+    
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        
+        navigationBar.backgroundInsets = UIEdgeInsets(
+            top: -view.safeAreaInsets.top,
+            left: -view.safeAreaInsets.left,
+            bottom: 0,
+            right: -view.safeAreaInsets.right
+        )
     }
 }
 
@@ -57,43 +82,73 @@ private extension PasswordsViewController {
         presenter.onCancel()
     }
     
+    func setupCustomNavigationBar() {
+        navigationBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(navigationBar)
+        
+        let navHeight = navigationBar.heightAnchor.constraint(equalToConstant: largeTitleNavigationBarHeight)
+        NSLayoutConstraint.activate([
+            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            navHeight
+        ])
+        navigationBarHeight = navHeight
+        
+        navigationBar.pushItem(contentNavigtionItem, animated: false)
+        
+        navigationBar.searchBar.filterMenu = filterMenu()
+        navigationBar.searchBar.isFilterActive = presenter.selectedFilterTag != nil
+        navigationBar.searchBar.searchBar.dataSource = self
+        
+        navigationBar.selectedContentTypeFilter = presenter.contentTypeFilter
+        navigationBar.contentTypePickerOptions = { [weak self] in
+            guard let self else { return [] }
+            
+            return [
+                .init(contentType: .all, count: presenter.itemsCount),
+                .init(contentType: .contentType(.login), count: presenter.itemsCount),
+            ]
+        }
+        navigationBar.onContentTypeFilterChanged = { [weak self] filter in
+            self?.presenter.onSetContentTypeFilter(filter)
+        }
+        
+        passwordsList?.contentInset.top = largeTitleNavigationBarHeight
+                
+        if #available(iOS 26.0, *) {
+//            let interaction = UIScrollEdgeElementContainerInteraction()
+//            interaction.scrollView = passwordsList
+//            interaction.edge = .top
+//            customNavigationBar.addInteraction(interaction)
+        }
+    }
+    
     func setupPasswordsList() {
         layout = makeLayout()
         let passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
         self.passwordsList = passwordsList
+        passwordsList.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(passwordsList)
         passwordsList.pinToParent()
         passwordsList.configure(isAutoFillExtension: presenter.isAutoFillExtension)
     }
 
     func setupNavigationItems() {
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        navigationItem.largeTitleDisplayMode = .always
-        title = T.homeTitle
-        
         updateNavigationBarButtons()
         
         if presenter.isAutoFillExtension {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
+            contentNavigtionItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
         }
     }
     
     func updateNavigationBarButtons() {
-        let filterIconName = presenter.selectedFilterTag != nil 
-            ? "line.3.horizontal.decrease.circle.fill" 
-            : "line.3.horizontal.decrease.circle"
-        
-        navigationItem.rightBarButtonItems = [
+        contentNavigtionItem.rightBarButtonItems = [
             UIBarButtonItem(
                 image: UIImage(systemName: "plus.circle.fill"),
                 style: .plain,
                 target: self,
                 action: #selector(addAction)
-            ),
-            UIBarButtonItem(
-                image: UIImage(systemName: filterIconName),
-                menu: filterMenu()
             )
         ]
     }
@@ -107,9 +162,16 @@ private extension PasswordsViewController {
         let emptySearchViewController = UIHostingController(rootView: EmptySearchView())
         addChild(emptySearchViewController)
         view.addSubview(emptySearchViewController.view)
-        emptySearchViewController.view?.pinToSafeAreaParentCenter()
-        emptySearchViewController.didMove(toParent: self)
         
+        emptySearchViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            emptySearchViewController.view.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
+            emptySearchViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            emptySearchViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            emptySearchViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        emptySearchViewController.didMove(toParent: self)
         emptySearchList = emptySearchViewController.view
         emptySearchList?.isHidden = true
         
@@ -121,9 +183,16 @@ private extension PasswordsViewController {
         )
         addChild(emptyListViewController)
         view.addSubview(emptyListViewController.view)
-        emptyListViewController.view?.pinToSafeAreaParentCenter()
-        emptyListViewController.didMove(toParent: self)
         
+        emptyListViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            emptyListViewController.view.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
+            emptyListViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            emptyListViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            emptyListViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        emptyListViewController.didMove(toParent: self)
         emptyList = emptyListViewController.view
         emptyList?.isHidden = true
     }
