@@ -143,6 +143,8 @@ private extension PasswordsViewController {
     }
     
     func updateNavigationBarButtons() {
+        navigationBar.searchBar.isFilterActive = presenter.selectedFilterTag != nil
+        
         contentNavigtionItem.rightBarButtonItems = [
             UIBarButtonItem(
                 image: UIImage(systemName: "plus.circle.fill"),
