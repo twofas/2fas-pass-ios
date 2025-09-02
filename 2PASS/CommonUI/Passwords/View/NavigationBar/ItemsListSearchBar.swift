@@ -9,7 +9,10 @@ import UIKit
 class ItemsListSearchBar: UIView {
     
     let searchBar = CommonSearchBar()
+    
     private let filterButton = UIButton(type: .custom)
+    private let cancelButton = UIButton(type: .system)
+    private let stackView = UIStackView()
     
      var filterMenu: UIMenu? {
         didSet {
@@ -29,38 +32,78 @@ class ItemsListSearchBar: UIView {
         setupViews()
     }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private func setupViews() {
-        // Setup filter button with Figma design
-        filterButton.translatesAutoresizingMaskIntoConstraints = false
-        filterButton.layer.cornerRadius = 10
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        stackView.spacing = Spacing.s
+        stackView.clipsToBounds = false
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Configure button image
+        filterButton.layer.cornerRadius = 10
+        filterButton.setContentHuggingPriority(.required, for: .horizontal)
+        filterButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        
         let filterIcon = UIImage(resource: .listConfigurationIcon).withRenderingMode(.alwaysTemplate)
         filterButton.setImage(filterIcon, for: .normal)
         
-        // Setup search bar
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.automaticallyShowCancel = false
+        searchBar.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        searchBar.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
-        // Add subviews
-        addSubview(searchBar)
-        addSubview(filterButton)
+        cancelButton.setTitle(T.commonCancel, for: .normal)
+        cancelButton.setContentHuggingPriority(.required, for: .horizontal)
+        cancelButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+        cancelButton.isHidden = true
         
-        // Setup constraints
+        stackView.addArrangedSubview(searchBar)
+        stackView.addArrangedSubview(filterButton)
+        stackView.addArrangedSubview(cancelButton)
+        
+        addSubview(stackView)
+        
         NSLayoutConstraint.activate([
-            // Filter button on the right with Figma sizing
-            filterButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Spacing.l),
-            filterButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-            filterButton.widthAnchor.constraint(equalToConstant: 36),
-            filterButton.heightAnchor.constraint(equalToConstant: 36),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Spacing.l),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Spacing.l),
+            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
-            // Search bar takes remaining space
-            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Spacing.l),
-            searchBar.trailingAnchor.constraint(equalTo: filterButton.leadingAnchor, constant: -Spacing.s),
-            searchBar.topAnchor.constraint(equalTo: topAnchor),
-            searchBar.bottomAnchor.constraint(equalTo: bottomAnchor)
+            filterButton.widthAnchor.constraint(equalToConstant: 36),
+            filterButton.heightAnchor.constraint(equalToConstant: 36)
         ])
         
         updateFilterButtonAppearance()
+    }
+    
+    @objc private func cancelButtonTapped() {
+        searchBar.text = ""
+        searchBar.dismiss()
+        searchBar.dataSource?.clearSearchPhrase()
+    }
+    
+    func setShowsCancelButton(_ showsCancelButton: Bool, animated: Bool) {
+        if showsCancelButton {
+            self.cancelButton.alpha = 1
+        }
+        
+        if animated {
+            UIView.animate(springDuration: 0.3) {
+                self.cancelButton.isHidden = !showsCancelButton
+            
+                if showsCancelButton == false {
+                    self.cancelButton.alpha = 0
+                }
+                
+                self.stackView.layoutIfNeeded()
+            }
+        } else {
+            cancelButton.isHidden = !showsCancelButton
+        }
     }
     
     private func updateFilterButtonAppearance() {
@@ -71,9 +114,5 @@ class ItemsListSearchBar: UIView {
             filterButton.backgroundColor = UIColor.tertiarySystemFill
             filterButton.tintColor = UIColor.neutral900
         }
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }

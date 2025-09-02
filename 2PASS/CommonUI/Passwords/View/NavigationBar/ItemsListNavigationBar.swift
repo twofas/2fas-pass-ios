@@ -12,7 +12,7 @@ private struct Constants {
     static let searchBarHeight: CGFloat = 56
     static let largeTitleHeight: CGFloat = 52
     
-    static let inlineTitleAnimationDuration = 0.2
+    static let inlineTitleAnimationDuration = 0.15
 }
 
 final class ItemsListNavigationBar: UINavigationBar {
@@ -117,11 +117,11 @@ final class ItemsListNavigationBar: UINavigationBar {
         ])
         
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        supplementaryContainerView.addSubview(searchBar)
+        addSubview(searchBar)
         NSLayoutConstraint.activate([
-            searchBar.leadingAnchor.constraint(equalTo: supplementaryContainerView.leadingAnchor),
-            searchBar.trailingAnchor.constraint(equalTo: supplementaryContainerView.trailingAnchor),
-            searchBar.bottomAnchor.constraint(equalTo: supplementaryContainerView.bottomAnchor),
+            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor),
+            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor),
+            searchBar.bottomAnchor.constraint(equalTo: bottomAnchor),
             searchBar.heightAnchor.constraint(equalToConstant: Constants.searchBarHeight)
         ])
         
@@ -130,7 +130,7 @@ final class ItemsListNavigationBar: UINavigationBar {
         NSLayoutConstraint.activate([
             largeContentTypePickerView.leadingAnchor.constraint(equalTo: supplementaryContainerView.leadingAnchor, constant: Spacing.l),
             largeContentTypePickerView.trailingAnchor.constraint(lessThanOrEqualTo: supplementaryContainerView.trailingAnchor, constant: -Spacing.l),
-            largeContentTypePickerView.bottomAnchor.constraint(equalTo: searchBar.topAnchor),
+            largeContentTypePickerView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Constants.searchBarHeight),
             largeContentTypePickerView.heightAnchor.constraint(equalToConstant: Constants.largeTitleHeight)
         ])
         
@@ -160,6 +160,53 @@ final class ItemsListNavigationBar: UINavigationBar {
 
             if className.contains("_UIBarBackground") || className.contains("UIBarBackground") {
                 subview.frame = subview.frame.inset(by: backgroundInsets)
+            }
+        }
+    }
+    
+    func willStartSearching() {
+        UIView.performWithoutAnimation {
+            hideInlineTitle = true
+            hideButtons = true
+        }
+        
+        searchBar.setShowsCancelButton(true, animated: true)
+        
+        largeContentTypePickerView.alpha = 0
+        supplementaryContainerView.clipsToBounds = false
+    }
+    
+    func willEndSearching() {
+        hideInlineTitle = false
+        searchBar.setShowsCancelButton(false, animated: true)
+    }
+    
+    func didEndSearching() {
+        supplementaryContainerView.clipsToBounds = true
+        
+        searchBar.setShowsCancelButton(false, animated: true)
+    }
+    
+    var hideLargeTitle: Bool = false {
+        didSet {
+            largeContentTypePickerView.alpha = hideLargeTitle ? 0 : 1
+        }
+    }
+    
+    var hideInlineTitle: Bool = false {
+        didSet {
+            inlineContentTypePickerView?.alpha = hideInlineTitle ? 0 : 1
+        }
+    }
+    
+    var hideButtons: Bool = false {
+        didSet {
+            for subview in subviews {
+                let className = NSStringFromClass(type(of: subview))
+
+                if className.contains("_UINavigationBarContentView") || className.contains("NavigationBarContentView") {
+                    subview.alpha = hideButtons ? 0 : 1
+                }
             }
         }
     }

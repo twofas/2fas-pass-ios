@@ -22,11 +22,13 @@ final class PasswordsViewController: UIViewController {
     let navigationBar = ItemsListNavigationBar()
     let contentNavigtionItem = UINavigationItem()
     private(set) var navigationBarHeight: NSLayoutConstraint?
+    private(set) var isSearching: Bool = false
     
     let minNavigationBarHeight = 100.0
     var largeTitleNavigationBarHeight: CGFloat {
         navigationBar.largeDisplayModeHeight
     }
+    private(set) var preventHideSearching = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,7 +47,8 @@ final class PasswordsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+     
+        preventHideSearching = false
         navigationController?.setNavigationBarHidden(true, animated: animated)
         
         presenter.viewWillAppear()
@@ -55,6 +58,7 @@ final class PasswordsViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
+        preventHideSearching = true
         navigationController?.setNavigationBarHidden(false, animated: animated)
         stopSafeAreaKeyboardAdjustment()
     }
@@ -101,13 +105,74 @@ private extension PasswordsViewController {
         navigationBar.searchBar.isFilterActive = presenter.selectedFilterTag != nil
         navigationBar.searchBar.searchBar.dataSource = self
         
+        var titleDisplayModeBeforeSearching: ItemsListNavigationBar.TitleDisplayMode = .large
+        var diffHeight: CGFloat = 0.0
+        
+        navigationBar.searchBar.searchBar.onBeginEditing = { [weak self] in
+            guard let self else { return }
+            
+            isSearching = true
+            titleDisplayModeBeforeSearching = self.navigationBar.titleDisplayMode
+            
+            self.navigationBar.willStartSearching()
+
+            diffHeight = (self.navigationBarHeight?.constant ?? 0.0) - 56
+            
+            let animator = UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1.0) {
+                self.navigationBar.hideLargeTitle = true
+
+                self.passwordsList?.contentInset.top = 56
+                self.navigationBarHeight?.constant = 56
+                
+                self.view.setNeedsLayout()
+                self.view.layoutIfNeeded()
+            }
+            animator.startAnimation()
+        }
+        
+        navigationBar.searchBar.searchBar.onEndEditing = { [weak self] in
+            guard let self else { return }
+            guard self.preventHideSearching == false else { return }
+
+            self.navigationBar.willEndSearching()
+            
+            let animator = UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1.0) {
+                self.navigationBar.hideButtons = false
+                
+                self.passwordsList?.contentInset.top = self.largeTitleNavigationBarHeight
+                
+                var currentContentOffset = self.passwordsList?.contentOffset ?? .zero
+                currentContentOffset.y -= diffHeight
+                self.passwordsList?.setContentOffset(currentContentOffset, animated: false)
+                
+                switch titleDisplayModeBeforeSearching {
+                case .inline:
+                    self.navigationBarHeight?.constant = self.minNavigationBarHeight
+                case .large:
+                    self.navigationBar.hideLargeTitle = false
+                    self.navigationBarHeight?.constant = self.largeTitleNavigationBarHeight
+                }
+                
+                self.view.setNeedsLayout()
+                self.view.layoutIfNeeded()
+            }
+            animator.addCompletion { _ in
+                self.isSearching = false
+
+                self.navigationBar.didEndSearching()
+                self.navigationBar.hideLargeTitle = false
+            }
+            animator.startAnimation()
+        }
+        
         navigationBar.selectedContentTypeFilter = presenter.contentTypeFilter
         navigationBar.contentTypePickerOptions = { [weak self] in
             guard let self else { return [] }
-            
+
             return [
-                .init(contentType: .all, count: presenter.itemsCount),
-                .init(contentType: .contentType(.login), count: presenter.itemsCount),
+                .init(contentType: .all, count: self.presenter.itemsCount),
+                .init(contentType: .contentType(.login), count: self.presenter.itemsCount),
+                .init(contentType: .contentType(.notes), count: 0)
             ]
         }
         navigationBar.onContentTypeFilterChanged = { [weak self] filter in
@@ -117,10 +182,10 @@ private extension PasswordsViewController {
         passwordsList?.contentInset.top = largeTitleNavigationBarHeight
                 
         if #available(iOS 26.0, *) {
-//            let interaction = UIScrollEdgeElementContainerInteraction()
-//            interaction.scrollView = passwordsList
-//            interaction.edge = .top
-//            customNavigationBar.addInteraction(interaction)
+            let interaction = UIScrollEdgeElementContainerInteraction()
+            interaction.scrollView = passwordsList
+            interaction.edge = .top
+            navigationBar.addInteraction(interaction)
         }
     }
     
@@ -145,9 +210,16 @@ private extension PasswordsViewController {
     func updateNavigationBarButtons() {
         navigationBar.searchBar.isFilterActive = presenter.selectedFilterTag != nil
         
+        let plusIcon: String
+        if #available(iOS 26.0, *) {
+            plusIcon = "plus"
+        } else {
+            plusIcon = "plus.circle.fill"
+        }
+        
         contentNavigtionItem.rightBarButtonItems = [
             UIBarButtonItem(
-                image: UIImage(systemName: "plus.circle.fill"),
+                image: UIImage(systemName: plusIcon),
                 style: .plain,
                 target: self,
                 action: #selector(addAction)
@@ -167,10 +239,9 @@ private extension PasswordsViewController {
         
         emptySearchViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            emptySearchViewController.view.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
             emptySearchViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             emptySearchViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            emptySearchViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            emptySearchViewController.view.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: (navigationBarHeight?.constant ?? 0) / 2)
         ])
         
         emptySearchViewController.didMove(toParent: self)

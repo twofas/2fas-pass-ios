@@ -6,10 +6,15 @@
 
 import UIKit
 
+
 final class CommonSearchBar: UISearchBar {
     private var shouldEndEditing = true
     
     var dataSource: CommonSearchDataSourceSearchable?
+
+    var automaticallyShowCancel = true
+    var onBeginEditing: (() -> Void)?
+    var onEndEditing: (() -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -50,13 +55,23 @@ final class CommonSearchBar: UISearchBar {
 
 extension CommonSearchBar: UISearchBarDelegate {
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        onEndEditing?()
+        
         guard !UIDevice.isiPad else { return }
-        searchBar.setShowsCancelButton(false, animated: true)
+        
+        if automaticallyShowCancel {
+            searchBar.setShowsCancelButton(false, animated: true)
+        }
     }
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        onBeginEditing?()
+        
         guard !UIDevice.isiPad else { return }
-        searchBar.setShowsCancelButton(true, animated: true)
+        
+        if automaticallyShowCancel {
+            searchBar.setShowsCancelButton(true, animated: true)
+        }
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
