@@ -14,6 +14,8 @@ public enum ConnectWebSocketError: Error {
     case missingExpectedPayload
     case closeWithError
     case webSocketClosed
+    case appUpdateRequired
+    case browserExtensionUpdateRequired
 }
 
 final class ConnectWebSocketSession: NSObject {
@@ -149,6 +151,12 @@ final class ConnectWebSocketSession: NSObject {
                 let responseMessage = try jsonDecoder.decode(GenericConnectMessage.self, from: jsonData)
                 
                 let expectedResponseId = await expectedResponseStorage.id
+
+                if responseMessage.scheme > Config.connectSchemaVersion {
+                    await expectedResponseStorage.finish(with: ConnectWebSocketError.appUpdateRequired)
+                } else if responseMessage.scheme < Config.connectSchemaVersion - 1 {
+                    await expectedResponseStorage.finish(with: ConnectWebSocketError.browserExtensionUpdateRequired)
+                }
                 
                 if expectedResponseId == UUID(uuidString: responseMessage.id) {
                     await expectedResponseStorage.finish(with: jsonData)

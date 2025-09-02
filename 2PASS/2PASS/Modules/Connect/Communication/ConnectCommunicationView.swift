@@ -108,6 +108,42 @@ struct ConnectCommunicationView: View {
                 }
                 .progressViewStyle(.circle)
                 .frame(maxWidth: .infinity)
+
+            case .finish(.failure(ConnectWebSocketError.browserExtensionUpdateRequired)):
+                ConnectCommunicationContentView(
+                    iconColor: .danger500,
+                    title: Label(T.connectModalErrorBrowserExtensionUpdateRequiredTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(T.connectModalErrorBrowserExtensionUpdateRequiredSubtitle.localizedKey),
+                    actions: {
+                        Button(T.commonClose.localizedKey) {
+                            dismiss()
+                            presenter.onScanAgain()
+                        }
+                        .buttonStyle(.filled)
+                    }
+                )
+                
+            case .finish(.failure(ConnectWebSocketError.appUpdateRequired)):
+                ConnectCommunicationContentView(
+                    iconColor: .danger500,
+                    title: Label(T.connectModalErrorAppUpdateRequiredTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(T.connectModalErrorAppUpdateRequiredSubtitle.localizedKey),
+                    actions: {
+                        HStack(spacing: Spacing.m) {
+                            Button(T.commonClose.localizedKey) {
+                                dismiss()
+                                presenter.onScanAgain()
+                            }
+                            .buttonStyle(.bezeledGray)
+                            
+                            Button(T.connectModalErrorAppUpdateRequiredCta.localizedKey) {
+                                dismiss()
+                                presenter.onUpdateApp()
+                            }
+                            .buttonStyle(.filled)
+                        }
+                    }
+                )
                 
             case .finish(.failure):
                 ConnectCommunicationContentView(

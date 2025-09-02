@@ -295,6 +295,16 @@ internal enum T {
   internal static let connectInvalidSignatureMessage = T.tr("Localizable", "connect_invalid_signature_message", fallback: "Signature could not be verified.")
   /// Error
   internal static let connectInvalidSignatureTitle = T.tr("Localizable", "connect_invalid_signature_title", fallback: "Error")
+  /// Go to App Store
+  internal static let connectModalErrorAppUpdateRequiredCta = T.tr("Localizable", "connect_modal_error_app_update_required_cta", fallback: "Go to App Store")
+  /// Update application in App Store
+  internal static let connectModalErrorAppUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_app_update_required_subtitle", fallback: "Update application in App Store")
+  /// New app version required
+  internal static let connectModalErrorAppUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_app_update_required_title", fallback: "New app version required")
+  /// Update browser extension
+  internal static let connectModalErrorBrowserExtensionUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_browser_extension_update_required_subtitle", fallback: "Update browser extension")
+  /// New browser extension version required
+  internal static let connectModalErrorBrowserExtensionUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_browser_extension_update_required_title", fallback: "New browser extension version required")
   /// Upgrade plan
   internal static let connectModalErrorExtensionsLimitCta = T.tr("Localizable", "connect_modal_error_extensions_limit_cta", fallback: "Upgrade plan")
   /// You’ve reached the limit of connected browsers. Disconnect one to continue, or consider upgrading your plan for more flexibility.
