@@ -135,7 +135,7 @@ final class AddPasswordPresenter {
     private let flowController: AddPasswordFlowControlling
     private let interactor: AddPasswordModuleInteracting
     private let notificationCenter: NotificationCenter
-    private let initialPasswordData: PasswordData?
+    private let initialPasswordData: LoginItemData?
     private let initialDecryptedPassword: String?
     
     init(flowController: AddPasswordFlowControlling, interactor: AddPasswordModuleInteracting) {

@@ -12,7 +12,7 @@ public enum BackupImportFileError: Error {
 }
 
 public enum BackupImportResult {
-    case decrypted([PasswordData], tags: [ItemTagData], deleted: [DeletedItemData], date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
+    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData], date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
     case needsPassword(ExchangeVault, currentSeed: Bool, date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
 }
 
@@ -32,7 +32,7 @@ public enum BackupImportParseError: Error {
 
 public protocol BackupImportInteracting: AnyObject {
     func openFile(url: URL, completion: @escaping (Result<Data, BackupImportFileError>) -> Void)
-    func extractPasswords(from vault: ExchangeVault) -> [PasswordData]?
+    func extractPasswords(from vault: ExchangeVault) -> [ItemData]?
     func extractDeletedItems(from vault: ExchangeVault) -> [DeletedItemData]?
     func extractTags(from vault: ExchangeVault) -> [ItemTagData]?
     func parseContents(
@@ -123,7 +123,7 @@ extension BackupImportInteractor: BackupImportInteracting {
         }
     }
     
-    func extractPasswords(from vault: ExchangeVault) -> [PasswordData]? {
+    func extractPasswords(from vault: ExchangeVault) -> [ItemData]? {
         importInteractor.extractUnencryptedPasswords(from: vault)
     }
     

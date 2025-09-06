@@ -20,7 +20,7 @@ extension MainRepositoryImpl {
     func cloudCacheCreateItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -48,7 +48,7 @@ extension MainRepositoryImpl {
     func cloudCacheUpdateItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,

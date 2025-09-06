@@ -9,7 +9,7 @@ import CommonUI
 
 enum TransferItemsInstructionsDestination: RouterDestination {
     case uploadFile(ExternalService, onClose: (FileImportResult) -> Void)
-    case summary(ExternalService, passwords: [PasswordData], onClose: Callback)
+    case summary(ExternalService, passwords: [ItemData], onClose: Callback)
     case importFailure(onClose: Callback)
     
     var id: String {

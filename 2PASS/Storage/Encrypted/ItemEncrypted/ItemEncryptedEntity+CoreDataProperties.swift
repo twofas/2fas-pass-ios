@@ -46,7 +46,7 @@ extension ItemEncryptedEntity {
                 return .no
             }(),
             protectionLevel: ItemProtectionLevel(level: level),
-            contentType: ItemContentType(rawValue: contentType)!,
+            contentType: contentType,
             contentVersion: Int(contentVersion),
             content: content,
             vaultID: vault.vaultID,

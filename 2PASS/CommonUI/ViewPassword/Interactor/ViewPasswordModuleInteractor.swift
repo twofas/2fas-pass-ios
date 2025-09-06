@@ -9,7 +9,7 @@ import Data
 import Common
 
 protocol ViewPasswordModuleInteracting: AnyObject {
-    func fetchPassword(for passwordID: PasswordID) -> PasswordData?
+    func fetchPassword(for passwordID: PasswordID) -> LoginItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
     func decryptPassword(for passwordID: PasswordID) -> String?
     func copy(_ str: String)
@@ -40,8 +40,8 @@ final class ViewPasswordModuleInteractor {
 }
 
 extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
-    func fetchPassword(for passwordID: PasswordID) -> PasswordData? {
-        passwordInteractor.getPassword(for: passwordID, checkInTrash: false)
+    func fetchPassword(for passwordID: PasswordID) -> LoginItemData? {
+        passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem
     }
     
     func decryptPassword(for passwordID: PasswordID) -> String? {

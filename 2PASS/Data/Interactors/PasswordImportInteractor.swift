@@ -8,7 +8,7 @@ import Foundation
 import Common
 
 public protocol PasswordImportInteracting: AnyObject {
-    func importPasswords(_ passwords: [PasswordData], tags: [ItemTagData], completion: @escaping (Int) -> Void)
+    func importPasswords(_ passwords: [ItemData], tags: [ItemTagData], completion: @escaping (Int) -> Void)
     func importDeleted(_ deleted: [DeletedItemData])
 }
 
@@ -38,7 +38,7 @@ final class PasswordImportInteractor {
 }
 
 extension PasswordImportInteractor: PasswordImportInteracting {
-    func importPasswords(_ passwords: [PasswordData], tags: [ItemTagData], completion: @escaping (Int) -> Void) {
+    func importPasswords(_ passwords: [ItemData], tags: [ItemTagData], completion: @escaping (Int) -> Void) {
         let imported = importAllPasswords(passwords, tags: tags)
         completion(imported)
     }
@@ -56,7 +56,7 @@ extension PasswordImportInteractor: PasswordImportInteracting {
 
 private extension PasswordImportInteractor {
 
-    func importAllPasswords(_ passwords: [PasswordData], tags: [ItemTagData]) -> Int {
+    func importAllPasswords(_ passwords: [ItemData], tags: [ItemTagData]) -> Int {
         Log("PasswordImportInteractor - passwords: \(passwords.count)", module: .interactor)
         var imported = 0
         var exists = 0
@@ -64,31 +64,37 @@ private extension PasswordImportInteractor {
         var failure = 0
         
         let localTags = tagInteractor.listAllTags()
-        let localPasswords = passwordInteractor.listAllPasswords()
+        let localPasswords = passwordInteractor.listAllItems()
         
-        let decryptedLocalPasswordValues: [PasswordID: String] = localPasswords.reduce(into: [:]) { result, password in
-            if let passwordValueEnc = password.password, let passwordValue = passwordInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: password.protectionLevel) {
-                result[password.passwordID] = passwordValue
+        let decryptedLocalPasswordValues: [ItemID: String] = localPasswords.reduce(into: [:]) { result, item in
+            if let loginItem = item.asLoginItem,
+               let passwordValueEnc = loginItem.password,
+               let passwordValue = passwordInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: item.protectionLevel) {
+                result[item.id] = passwordValue
             }
         }
-        let decryptedImportingPasswordValues: [PasswordID: String] = passwords.reduce(into: [:]) { result, password in
-            if let passwordValueEnc = password.password, let passwordValue = passwordInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: password.protectionLevel) {
-                result[password.passwordID] = passwordValue
+        let decryptedImportingPasswordValues: [ItemID: String] = passwords.reduce(into: [:]) { result, item in
+            if let loginItem = item.asLoginItem,
+               let passwordValueEnc = loginItem.password,
+               let passwordValue = passwordInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: loginItem.protectionLevel) {
+                result[loginItem.id] = passwordValue
             }
         }
         
-        let localPasswordByIds: [PasswordID: PasswordData] = localPasswords.reduce(into: [:]) { result, password in
-            result[password.passwordID] = password
+        let localPasswordByIds: [ItemID: ItemData] = localPasswords.reduce(into: [:]) { result, item in
+            result[item.id] = item
         }
         
-        let localPasswordByEqualContent: [PasswordContentEqualItem: PasswordID] = localPasswords.reduce(into: [:]) { result, password in
-            let localContentItem = PasswordContentEqualItem(
-                name: password.name,
-                username: password.username,
-                password: decryptedLocalPasswordValues[password.passwordID],
-                uris: password.uris
-            )
-            result[localContentItem] = password.passwordID
+        let localPasswordByEqualContent: [PasswordContentEqualItem: PasswordID] = localPasswords.reduce(into: [:]) { result, item in
+            if let loginItem = item.asLoginItem {
+                let localContentItem = PasswordContentEqualItem(
+                    name: loginItem.name,
+                    username: loginItem.username,
+                    password: decryptedLocalPasswordValues[loginItem.id],
+                    uris: loginItem.uris
+                )
+                result[localContentItem] = loginItem.id
+            }
         }
         
         for tag in tags {
@@ -100,22 +106,25 @@ private extension PasswordImportInteractor {
         }
         
         for password in passwords {
-            func findByContent() -> PasswordData? {
-                let content = PasswordContentEqualItem(
-                    name: password.name,
-                    username: password.username,
-                    password: decryptedImportingPasswordValues[password.id],
-                    uris: password.uris
-                )
-                
-                guard let localId = localPasswordByEqualContent[content] else {
-                    return nil
+            func findByContent() -> (ItemData)? {
+                if let loginItem = password.asLoginItem {
+                    let content = PasswordContentEqualItem(
+                        name: loginItem.name,
+                        username: loginItem.username,
+                        password: decryptedImportingPasswordValues[loginItem.id],
+                        uris: loginItem.uris
+                    )
+                    
+                    guard let localId = localPasswordByEqualContent[content] else {
+                        return nil
+                    }
+                    
+                    return localPasswordByIds[localId]
                 }
-                
-                return localPasswordByIds[localId]
+                return nil
             }
             
-            let current = localPasswordByIds[password.passwordID] ?? findByContent()
+            let current = localPasswordByIds[password.id] ?? findByContent()
          
             if let current {
                 exists += 1
@@ -123,43 +132,22 @@ private extension PasswordImportInteractor {
                     imported += 1
                     switch current.trashedStatus {
                     case .no: break
-                    case .yes: passwordInteractor.markAsNotTrashed(for: current.passwordID)
+                    case .yes: passwordInteractor.markAsNotTrashed(for: current.id)
                     }
                 } else {
-                    switch passwordInteractor.updatePassword(
-                        for: current.passwordID,
-                        name: password.name,
-                        username: password.username,
-                        password: decryptedImportingPasswordValues[password.id],
-                        notes: password.notes?.sanitizeNotes(),
-                        modificationDate: password.modificationDate,
-                        iconType: password.iconType,
-                        trashedStatus: .no,
-                        protectionLevel: password.protectionLevel,
-                        uris: password.uris,
-                        tagIds: password.tagIds
-                    ) {
-                    case .success: imported += 1
-                    case .failure: failure += 1; break
+                    do {
+                        try passwordInteractor.updateItem(password)
+                        imported += 1
+                    } catch {
+                        failure += 1
                     }
                 }
             } else {
-                switch passwordInteractor.createPassword(
-                    passwordID: password.passwordID,
-                    name: password.name,
-                    username: password.username,
-                    password: decryptedImportingPasswordValues[password.id],
-                    notes: password.notes?.sanitizeNotes(),
-                    creationDate: adjustDateIfNeeded(password.creationDate),
-                    modificationDate: adjustDateIfNeeded(password.modificationDate),
-                    iconType: password.iconType,
-                    trashedStatus: .no,
-                    protectionLevel: password.protectionLevel,
-                    uris: password.uris,
-                    tagIds: password.tagIds
-                ) {
-                case .success: imported += 1; new += 1
-                case .failure: failure += 1; break
+                do {
+                    try passwordInteractor.createItem(password)
+                    imported += 1; new += 1
+                } catch {
+                    failure += 1
                 }
             }
             Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)

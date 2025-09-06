@@ -22,7 +22,7 @@ public protocol ExternalServiceImportInteracting: AnyObject {
     func importService(
         _ service: ExternalService,
         content: Data
-    ) async -> Result<[PasswordData], ExternalServiceImportError>
+    ) async -> Result<[ItemData], ExternalServiceImportError>
 }
 
 final class ExternalServiceImportInteractor {
@@ -60,7 +60,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
     func importService(
         _ service: ExternalService,
         content: Data
-    ) async -> Result<[PasswordData], ExternalServiceImportError> {
+    ) async -> Result<[ItemData], ExternalServiceImportError> {
         switch service {
         case .onePassword:
             return await importOnePassword(content: content)
@@ -98,11 +98,11 @@ private extension ExternalServiceImportInteractor {
 }
 
 private extension ExternalServiceImportInteractor {
-    func importOnePassword(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importOnePassword(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -128,20 +128,25 @@ private extension ExternalServiceImportInteractor {
                 let notes = dict["Notes"]?.nilIfEmpty
                 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: .importPasswordPlaceholder,
+                            modificationDate: .importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: notes,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
         } catch {
@@ -151,13 +156,13 @@ private extension ExternalServiceImportInteractor {
         return .success(passwords)
     }
     
-    func importBitWarden(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importBitWarden(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let parsedJSON = try? mainRepository.jsonDecoder.decode(BitWarden.self, from: content),
               parsedJSON.encrypted == false
         else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         parsedJSON.items?.forEach { item in
@@ -186,32 +191,38 @@ private extension ExternalServiceImportInteractor {
                 }
                 return urisList
             }()
+            
             passwords.append(
-                PasswordData(
-                    passwordID: .init(),
+                .login(.init(
+                    id: .init(),
+                    metadata: .init(
+                        creationDate: Date.importPasswordPlaceholder,
+                        modificationDate: Date.importPasswordPlaceholder,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
                     name: name,
-                    username: username,
-                    password: password,
-                    notes: notes,
-                    creationDate: Date.importPasswordPlaceholder,
-                    modificationDate: Date.importPasswordPlaceholder,
-                    iconType: makeIconType(uri: uris?.first?.uri),
-                    trashedStatus: .no,
-                    protectionLevel: protectionLevel,
-                    uris: uris,
-                    tagIds: nil
-                )
+                    content: .init(
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: notes,
+                        iconType: makeIconType(uri: uris?.first?.uri),
+                        uris: uris
+                    )
+                ))
             )
         }
         
         return .success(passwords)
     }
     
-    func importChrome(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importChrome(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -237,20 +248,25 @@ private extension ExternalServiceImportInteractor {
                 let notes = dict["note"]?.nilIfEmpty
                 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: notes,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
         } catch {
@@ -260,11 +276,11 @@ private extension ExternalServiceImportInteractor {
         return .success(passwords)
     }
     
-    func importDashlaneMobile(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importDashlaneMobile(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -291,20 +307,25 @@ private extension ExternalServiceImportInteractor {
                 let notes = dict["note"]?.nilIfEmpty
                 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: notes,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
             
@@ -315,11 +336,11 @@ private extension ExternalServiceImportInteractor {
         }
     }
     
-    func importDashlaneDesktop(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importDashlaneDesktop(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
             return .failure(.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         if let entry = archive.first(where: { $0.path.hasSuffix("credentials.csv")}) {
@@ -355,20 +376,25 @@ private extension ExternalServiceImportInteractor {
                     let notes = dict["note"]?.nilIfEmpty
                     
                     passwords.append(
-                        PasswordData(
-                            passwordID: .init(),
+                        .login(.init(
+                            id: .init(),
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
                             name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            trashedStatus: .no,
-                            protectionLevel: protectionLevel,
-                            uris: uris,
-                            tagIds: nil
-                        )
+                            content: .init(
+                                name: name,
+                                username: username,
+                                password: password,
+                                notes: notes,
+                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                                uris: uris
+                            )
+                        ))
                     )
                 }
                 
@@ -397,20 +423,25 @@ private extension ExternalServiceImportInteractor {
                     let notes = dict["note"]?.nilIfEmpty
                     
                     passwords.append(
-                        PasswordData(
-                            passwordID: .init(),
+                        .login(.init(
+                            id: .init(),
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
                             name: name,
-                            username: nil,
-                            password: nil,
-                            notes: notes,
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            iconType: .default,
-                            trashedStatus: .no,
-                            protectionLevel: protectionLevel,
-                            uris: nil,
-                            tagIds: nil
-                        )
+                            content: .init(
+                                name: name,
+                                username: nil,
+                                password: nil,
+                                notes: notes,
+                                iconType: .default,
+                                uris: nil
+                            )
+                        ))
                     )
                 }
             } catch {
@@ -421,11 +452,11 @@ private extension ExternalServiceImportInteractor {
         return .success(passwords)
     }
     
-    func importLastPass(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importLastPass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -451,20 +482,25 @@ private extension ExternalServiceImportInteractor {
                 let notes = dict["extra"]?.nilIfEmpty
                 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: notes,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
         } catch {
@@ -474,11 +510,11 @@ private extension ExternalServiceImportInteractor {
         return .success(passwords)
     }
     
-    func importProtonPass(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importProtonPass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -504,20 +540,25 @@ private extension ExternalServiceImportInteractor {
                 let notes = dict["note"]?.nilIfEmpty
                 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: notes,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
         } catch {
@@ -527,7 +568,7 @@ private extension ExternalServiceImportInteractor {
         return .success(passwords)
     }
     
-    func importApplePasswordsMobile(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importApplePasswordsMobile(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
             return .failure(.wrongFormat)
         }
@@ -550,18 +591,18 @@ private extension ExternalServiceImportInteractor {
         }
     }
     
-    func importApplePasswordsDesktop(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importApplePasswordsDesktop(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
         return await importApplePasswords(csvContent: csvString)
     }
     
-    func importFirefox(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+    func importFirefox(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [PasswordData] = []
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -597,20 +638,25 @@ private extension ExternalServiceImportInteractor {
                 let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty as? String
 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: timeCreated.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
+                            modificationDate: timePasswordChanged.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: nil,
-                        creationDate: timeCreated.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
-                        modificationDate: timePasswordChanged.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: nil,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
         } catch {
@@ -620,8 +666,8 @@ private extension ExternalServiceImportInteractor {
         return .success(passwords)
     }
     
-    private func importApplePasswords(csvContent: String) async -> Result<[PasswordData], ExternalServiceImportError> {
-        var passwords: [PasswordData] = []
+    private func importApplePasswords(csvContent: String) async -> Result<[ItemData], ExternalServiceImportError> {
+        var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -656,20 +702,25 @@ private extension ExternalServiceImportInteractor {
                 let notes = dict["Notes"]?.nilIfEmpty
                 
                 passwords.append(
-                    PasswordData(
-                        passwordID: .init(),
+                    .login(.init(
+                        id: .init(),
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
                         name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                        trashedStatus: .no,
-                        protectionLevel: protectionLevel,
-                        uris: uris,
-                        tagIds: nil
-                    )
+                        content: .init(
+                            name: name,
+                            username: username,
+                            password: password,
+                            notes: notes,
+                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                            uris: uris
+                        )
+                    ))
                 )
             }
         } catch {

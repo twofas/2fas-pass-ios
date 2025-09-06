@@ -41,7 +41,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
     
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
     
-    func getEditPassword() -> PasswordData?
+    func getEditPassword() -> LoginItemData?
     func getDecryptedPassword() -> String?
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
     
@@ -114,18 +114,18 @@ final class AddPasswordModuleInteractor {
 extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         
     var hasPasswords: Bool {
-        passwordInteractor.hasPasswords
+        passwordInteractor.hasItems
     }
     
     var currentDefaultProtectionLevel: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
     }
     
-    func getEditPassword() -> PasswordData? {
+    func getEditPassword() -> LoginItemData? {
         guard let editPasswordID else {
             return nil
         }
-        let pass = passwordInteractor.getPassword(for: editPasswordID, checkInTrash: false)
+        let pass = passwordInteractor.getItem(for: editPasswordID, checkInTrash: false)?.asLoginItem
         modificationDate = pass?.modificationDate
         return pass
     }
@@ -155,7 +155,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         let date = currentDateInteractor.currentDate
         if let current = getEditPassword() {
             switch passwordInteractor.updatePassword(
-                for: current.passwordID,
+                for: current.id,
                 name: name,
                 username: username,
                 password: password,
@@ -175,14 +175,14 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                 Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                     try await autoFillCredentialsInteractor.replaceSuggestions(
                         from: current,
-                        passwordID: current.passwordID,
+                        passwordID: current.id,
                         username: username,
                         uris: uris,
                         protectionLevel: protectionLevel
                     )
                 }
                 
-                return .success(.saved(current.passwordID))
+                return .success(.saved(current.id))
             case .failure(let error): return .failure(.interactorError(error))
             }
         } else {
@@ -244,7 +244,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
     
     func checkCurrentPasswordState() -> AddPasswordModuleInteractorCheckState {
         guard let editPasswordID, let modificationDate else { return .noChange }
-        guard let pass = passwordInteractor.getPassword(for: editPasswordID, checkInTrash: false) else {
+        guard let pass = passwordInteractor.getItem(for: editPasswordID, checkInTrash: false) else {
             return .deleted
         }
         if pass.modificationDate.isAfter(modificationDate) {

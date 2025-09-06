@@ -276,46 +276,45 @@ protocol MainRepository: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: - In Memory
-    // MARK: Password
+    // MARK: Item
     
-    func createPassword(
-        passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+    func createItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
-    )
-    func updatePassword(
-        passwordID: PasswordID,
+        tagIds: [ItemTagID]?,
         name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+        contentType: String,
+        contentVersion: Int,
+        content: Data
+    )
+    
+    func updateItem(
+        itemID: ItemID,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: String,
+        contentVersion: Int,
+        content: Data
     )
-    func updatePasswords(_ passwords: [PasswordData])
-    func passwordsBatchUpdate(_ passwords: [PasswordData])
+    
+    func updatePasswords(_ passwords: [RawItemData])
+    func passwordsBatchUpdate(_ passwords: [RawItemData])
     func getPasswordEntity(
         passwordID: PasswordID,
         checkInTrash: Bool
-    ) -> PasswordData?
+    ) -> RawItemData?
     
     func listPasswords(
         options: PasswordListOptions
-    ) -> [PasswordData]
-    func listTrashedPasswords() -> [PasswordData]
+    ) -> [RawItemData]
+    
+    func listTrashedPasswords() -> [RawItemData]
     func deletePassword(passwordID: PasswordID)
     func deleteAllPasswords()
     func saveStorage()
@@ -344,7 +343,7 @@ protocol MainRepository: AnyObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         content: Data,
         vaultID: VaultID,
@@ -355,7 +354,7 @@ protocol MainRepository: AnyObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         content: Data,
         vaultID: VaultID,
@@ -444,7 +443,7 @@ protocol MainRepository: AnyObject {
     func cloudCacheCreateItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -457,7 +456,7 @@ protocol MainRepository: AnyObject {
     func cloudCacheUpdateItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,

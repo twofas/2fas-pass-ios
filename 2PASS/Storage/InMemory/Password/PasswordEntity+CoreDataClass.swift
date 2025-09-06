@@ -14,40 +14,26 @@ final class PasswordEntity: NSManagedObject {
     
     @nonobjc static func create(
         on context: NSManagedObjectContext,
-        passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+        itemID: PasswordID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: String,
+        contentVersion: Int,
+        content: Data
     ) {
         let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! PasswordEntity
         
-        entity.passwordID = passwordID
+        entity.itemID = itemID
         entity.name = name
-        entity.username = username
-        entity.password = password
-        entity.notes = notes
-        
         entity.creationDate = creationDate
         entity.modificationDate = modificationDate
-        
-        entity.iconType = iconType.value
-        switch iconType {
-        case .domainIcon(let domain):
-            entity.iconDomain = domain
-        case .customIcon(let url):
-            entity.iconCustomURL = url
-        case .label(let labelTitle, let labelColor):
-            entity.labelTitle = labelTitle
-            entity.labelColor = labelColor?.hexString
-        }
+        entity.contentData = content
+        entity.contentType = contentType
+        entity.contentVersion = Int16(contentVersion)
         
         switch trashedStatus {
         case .no:
@@ -58,20 +44,6 @@ final class PasswordEntity: NSManagedObject {
         }
         
         entity.level = protectionLevel.rawValue
-        
-        if let uris, !uris.isEmpty {
-            var urisList: [String] = []
-            var urisMatchingList: [String] = []
-            for uri in uris {
-                urisList.append(uri.uri)
-                urisMatchingList.append(uri.match.rawValue)
-            }
-            entity.uris = urisList
-            entity.urisMatching = urisMatchingList
-        } else {
-            entity.uris = nil
-            entity.urisMatching = nil
-        }
         
         if let tagIds, tagIds.isEmpty == false {
             entity.tagIds = tagIds
@@ -82,71 +54,53 @@ final class PasswordEntity: NSManagedObject {
     
     @nonobjc static func update(
         on context: NSManagedObjectContext,
-        for passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+        for itemID: ItemID,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: String,
+        contentVersion: Int,
+        content: Data
     ) {
-        guard let entity = getEntity(on: context, passwordID: passwordID, checkInTrash: true) else {
-            Log("Can't find entity for passwordID: \(passwordID)", module: .storage)
+        guard let entity = getEntity(on: context, passwordID: itemID, checkInTrash: true) else {
+            Log("Can't find entity for itemID: \(itemID)", module: .storage)
             return
         }
         
         update(
             on: context,
             entity: entity,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
             modificationDate: modificationDate,
-            iconType: iconType,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
-            uris: uris,
-            tagIds: tagIds
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
         )
     }
     
     @nonobjc static func update(
         on context: NSManagedObjectContext,
         entity: PasswordEntity,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: String,
+        contentVersion: Int,
+        content: Data
     ) {
-        entity.name = name
-        entity.username = username
-        entity.password = password
-        entity.notes = notes
-        
         entity.modificationDate = modificationDate
+        entity.name = name
+        entity.contentData = content
+        entity.contentType = contentType
+        entity.contentVersion = Int16(contentVersion)
         
-        entity.iconType = iconType.value
-        
-        switch iconType {
-        case .customIcon(let iconURI):
-            entity.iconCustomURL = iconURI
-        case .domainIcon(let domain):
-            entity.iconDomain = domain
-        case .label(let labelTitle, let labelColor):
-            entity.labelTitle = labelTitle
-            entity.labelColor = labelColor?.hexString
-        }
         
         switch trashedStatus {
         case .no:
@@ -157,20 +111,6 @@ final class PasswordEntity: NSManagedObject {
         }
         
         entity.level = protectionLevel.rawValue
-        
-        if let uris, !uris.isEmpty {
-            var urisList: [String] = []
-            var urisMatchingList: [String] = []
-            for uri in uris {
-                urisList.append(uri.uri)
-                urisMatchingList.append(uri.match.rawValue)
-            }
-            entity.uris = urisList
-            entity.urisMatching = urisMatchingList
-        } else {
-            entity.uris = nil
-            entity.urisMatching = nil
-        }
         
         if let tagIds, tagIds.isEmpty == false {
             entity.tagIds = tagIds

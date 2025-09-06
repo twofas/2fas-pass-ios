@@ -65,21 +65,21 @@ public protocol ImportInteracting: AnyObject {
     func checkEncryptionWithoutParsing(in vault: ExchangeVault) -> ImportEncryptionTypeNoParsing
     func extractPasswordsUsingCurrentEncryption(
         from vault: ExchangeVault,
-        completion: @escaping (Result<([PasswordData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
+        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     )
-    func extractUnencryptedPasswords(from file: ExchangeVault) -> [PasswordData]
+    func extractUnencryptedPasswords(from file: ExchangeVault) -> [ItemData]
     func extractUnencryptedTags(from file: ExchangeVault) -> [ItemTagData]
     
     func extractPasswordsUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
         vault: ExchangeVault,
-        completion: @escaping (Result<([PasswordData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
+        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     )
     func extractPasswordsUsingMasterKey(
         _ masterKey: MasterKey,
         exchangeVault: ExchangeVault,
-        completion: @escaping (Result<([PasswordData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
+        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     )
     func extractUnencryptedDeletedItems(from file: ExchangeVault) -> [DeletedItemData]
     func validateWords(_ words: [String], using seedHash: String, vaultID: VaultID) -> Bool
@@ -200,7 +200,7 @@ extension ImportInteractor: ImportInteracting {
         return .currentEncryption
     }
     
-    func extractUnencryptedPasswords(from file: ExchangeVault) -> [PasswordData] {
+    func extractUnencryptedPasswords(from file: ExchangeVault) -> [ItemData] {
         guard let logins = file.vault.logins else {
             return []
         }
@@ -230,7 +230,7 @@ extension ImportInteractor: ImportInteracting {
     
     func extractPasswordsUsingCurrentEncryption(
         from vault: ExchangeVault,
-        completion: @escaping (Result<([PasswordData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
+        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     ) {
         guard let passwords = vault.vault.loginsEncrypted else {
             completion(.failure(.noPasswordsField))
@@ -258,7 +258,7 @@ extension ImportInteractor: ImportInteracting {
         _ masterPassword: MasterPassword,
         words: [String],
         vault: ExchangeVault,
-        completion: @escaping (Result<([PasswordData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
+        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     ) {
         let kdfSpec: KDFSpec = {
             guard let spec = vault.encryption?.kdfSpec else {
@@ -276,7 +276,7 @@ extension ImportInteractor: ImportInteracting {
     func extractPasswordsUsingMasterKey(
         _ masterKey: MasterKey,
         exchangeVault: ExchangeVault,
-        completion: @escaping (Result<([PasswordData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
+        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     ) {
         guard let vaultID = UUID(uuidString: exchangeVault.vault.id) else {
             completion(.failure(.incorrectVaultID))
@@ -420,9 +420,9 @@ private extension ImportInteractor {
         deletedPasswords: [String],
         vaultID: VaultID,
         using key: SymmetricKey,
-        completion: @escaping ([PasswordData], [ItemTagData], [DeletedItemData]) -> Void
+        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
     ) {
-        func parse(_ string: String) -> PasswordData? {
+        func parse(_ string: String) -> ItemData? {
             let jsonDecoder = mainRepository.jsonDecoder
             guard let data = Data(base64Encoded: string) else {
                 Log("Import Interactor - Error creating Data from base64 encoded string for Password", severity: .error)
@@ -467,7 +467,7 @@ private extension ImportInteractor {
         DispatchQueue.global(qos: .userInitiated).async {
             let group = DispatchGroup()
             
-            var results: [PasswordData] = []
+            var results: [ItemData] = []
             
             for string in passwords {
                 group.enter()
@@ -497,12 +497,12 @@ private extension ImportInteractor {
     }
 
     func continueExtractionOfPasswordsTags(
-        passwords: [PasswordData],
+        passwords: [ItemData],
         tags: [String],
         deletedPasswords: [String],
         vaultID: VaultID,
         using key: SymmetricKey,
-        completion: @escaping ([PasswordData], [ItemTagData], [DeletedItemData]) -> Void
+        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
     ) {
         func parse(_ string: String) -> ItemTagData? {
             let jsonDecoder = mainRepository.jsonDecoder
@@ -536,12 +536,12 @@ private extension ImportInteractor {
     }
     
     func continueExtractionOfDeletedPasswords(
-        passwords: [PasswordData],
+        passwords: [ItemData],
         tags: [ItemTagData],
         deletedPasswords: [String],
         vaultID: VaultID,
         using key: SymmetricKey,
-        completion: @escaping ([PasswordData], [ItemTagData], [DeletedItemData]) -> Void
+        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
     ) {
         func parse(_ string: String, vaultID: VaultID) -> DeletedItemData? {
             let jsonDecoder = mainRepository.jsonDecoder
@@ -604,11 +604,11 @@ private extension ImportInteractor {
         }
     }
     
-    func exchangeLoginToPasswordData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeLogin) -> PasswordData? {
-        guard let passwordID = UUID(uuidString: exchangeLogin.id)
-        else {
+    func exchangeLoginToPasswordData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeLogin) -> ItemData? {
+        guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
         }
+        
         let protectionLevel: ItemProtectionLevel = {
             switch exchangeLogin.securityType {
             case 0: .topSecret
@@ -673,20 +673,27 @@ private extension ImportInteractor {
                 }())
             }
         }()
-        
-        return PasswordData(
-            passwordID: passwordID,
-            name: exchangeLogin.name.formattedName,
-            username: exchangeLogin.username,
-            password: password,
-            notes: exchangeLogin.notes?.sanitizeNotes(),
-            creationDate: Date(exportTimestamp: exchangeLogin.createdAt),
-            modificationDate: Date(exportTimestamp: exchangeLogin.updatedAt),
-            iconType: iconType,
-            trashedStatus: .no,
-            protectionLevel: protectionLevel,
-            uris: uris,
-            tagIds: exchangeLogin.tags?.compactMap { UUID(uuidString: $0) }
+                
+        return .login(
+            LoginItemData(
+                id: itemID,
+                metadata: .init(
+                    creationDate: Date(exportTimestamp: exchangeLogin.createdAt),
+                    modificationDate: Date(exportTimestamp: exchangeLogin.updatedAt),
+                    protectionLevel: protectionLevel,
+                    trashedStatus: .no,
+                    tagIds: exchangeLogin.tags?.compactMap { UUID(uuidString: $0) }
+                ),
+                name: exchangeLogin.name.formattedName,
+                content: .init(
+                    name: exchangeLogin.name.formattedName,
+                    username: exchangeLogin.username,
+                    password: password,
+                    notes: exchangeLogin.notes?.sanitizeNotes(),
+                    iconType: iconType,
+                    uris: uris
+                )
+            )
         )
     }
     

@@ -106,27 +106,28 @@ extension StorageInteractor: StorageInteracting {
                     return
                 }
                 let protectionLevel = encryptedData.protectionLevel
-                guard let contentData = decryptContentData(
+                
+                let (name, contentData) = decryptContentData(
                     encryptedData.content,
                     protectionLevel: protectionLevel
-                ) else {
+                )
+                
+                guard let contentData else {
                     group.leave()
                     return
                 }
                 DispatchQueue.main.async {
-                    self.mainRepository.createPassword(
-                        passwordID: encryptedData.itemID,
-                        name: contentData.name,
-                        username: contentData.username,
-                        password: contentData.password,
-                        notes: contentData.notes,
+                    self.mainRepository.createItem(
+                        itemID: encryptedData.itemID,
                         creationDate: encryptedData.creationDate,
                         modificationDate: encryptedData.modificationDate,
-                        iconType: contentData.iconType,
                         trashedStatus: encryptedData.trashedStatus,
-                        protectionLevel: protectionLevel,
-                        uris: contentData.uris,
-                        tagIds: encryptedData.tagIds
+                        protectionLevel: encryptedData.protectionLevel,
+                        tagIds: encryptedData.tagIds,
+                        name: name,
+                        contentType: encryptedData.contentType,
+                        contentVersion: encryptedData.contentVersion,
+                        content: contentData
                     )
                     
                     group.leave()
@@ -192,21 +193,27 @@ extension StorageInteractor: StorageInteracting {
     
     func decryptContentData(
         _ data: Data?,
-        protectionLevel: ItemProtectionLevel) -> PasswordItemContent? {
-            guard let data else { return nil }
+        protectionLevel: ItemProtectionLevel) -> (name: String?, content: Data?) {
+            guard let data else { return (nil, nil) }
             guard let key = mainRepository.getKey(
                 isPassword: false,
                 protectionLevel: protectionLevel
             ) else {
                 Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
-                return nil
+                return (nil, nil)
             }
             
             guard let value = mainRepository.decrypt(data, key: key) else {
                 Log("StorageInteractor - can't decrypt data", module: .interactor, severity: .error)
-                return nil
+                return (nil, nil)
             }
-            return try? mainRepository.jsonDecoder.decode(PasswordItemContent.self, from: value)
+            
+            guard let content = try? JSONSerialization.jsonObject(with: value) as? [String: Any] else {
+                Log("StorageInteractor - can't decode data", module: .interactor, severity: .error)
+                return (nil, value)
+            }
+            
+            return (content["name"] as? String, value)
         }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {

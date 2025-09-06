@@ -11,7 +11,7 @@ import Common
 struct TransferItemsImportingRouter {
     
     @MainActor
-    static func buildView(service: ExternalService, passwords: [PasswordData], onClose: @escaping Callback) -> some View {
+    static func buildView(service: ExternalService, passwords: [ItemData], onClose: @escaping Callback) -> some View {
         TransferItemsImportingView(presenter: .init(
             interactor: ModuleInteractorFactory.shared.transferItemsImportingModuleInteractor(
                 service: service,

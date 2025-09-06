@@ -58,7 +58,9 @@ extension ExportInteractor: ExportInteracting {
             }
             
             DispatchQueue.main.async {
-                let passwords = self.mainRepository.listPasswords(options: .allNotTrashed)
+                let passwords = self.mainRepository.listPasswords(options: .allNotTrashed).compactMap {
+                    ItemData($0, decoder: self.mainRepository.jsonDecoder)?.asLoginItem
+                }
                 let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []
                 
@@ -328,7 +330,7 @@ private extension ExportInteractor {
         )
     }
     
-    func passwordToExchangeLogin(_ password: PasswordData) -> ExchangeVault.ExchangeVaultItem.ExchangeLogin {
+    func passwordToExchangeLogin(_ password: LoginItemData) -> ExchangeVault.ExchangeVaultItem.ExchangeLogin {
         let passwordDecrypted: String? = {
             guard let pass = password.password else {
                 return nil
@@ -372,7 +374,7 @@ private extension ExportInteractor {
         }()
         
         return .init(
-            id: password.passwordID.exportString(),
+            id: password.id.exportString(),
             name: password.name,
             username: password.username,
             password: passwordDecrypted,

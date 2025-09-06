@@ -20,37 +20,8 @@ final class PreviewTrashModuleInteractor: TrashModuleInteracting {
         0
     }
     
-    func list() -> [PasswordData] {
-        [
-            PasswordData(
-                passwordID: PasswordID(),
-                name: "Name",
-                username: "Username",
-                password: nil,
-                notes: nil,
-                creationDate: Date(),
-                modificationDate: Date(),
-                iconType: .label(labelTitle: "AB", labelColor: nil),
-                trashedStatus: .yes(trashingDate: Date()),
-                protectionLevel: .normal,
-                uris: nil,
-                tagIds: nil
-            ),
-            PasswordData(
-                passwordID: PasswordID(),
-                name: "Name",
-                username: "Username",
-                password: nil,
-                notes: nil,
-                creationDate: Date(),
-                modificationDate: Date(),
-                iconType: .label(labelTitle: "AB", labelColor: nil),
-                trashedStatus: .yes(trashingDate: Date()),
-                protectionLevel: .normal,
-                uris: nil,
-                tagIds: nil
-            )
-        ]
+    func list() -> [ItemData] {
+        []
     }
     
     func delete(with passwordID: PasswordID) {}

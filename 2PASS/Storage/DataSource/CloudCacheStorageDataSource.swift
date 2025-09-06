@@ -17,7 +17,7 @@ public protocol CloudCacheStorageDataSource: AnyObject {
     func createCloudCachedItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -31,7 +31,7 @@ public protocol CloudCacheStorageDataSource: AnyObject {
     func updateCloudCachedItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,

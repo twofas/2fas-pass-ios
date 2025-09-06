@@ -336,7 +336,7 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, passwords: [PasswordData]) -> TransferItemsImportingModuleInteracting {
+    func transferItemsImportingModuleInteractor(service: ExternalService, passwords: [ItemData]) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
             passwords: passwords,

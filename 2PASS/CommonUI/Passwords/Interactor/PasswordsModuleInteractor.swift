@@ -16,8 +16,8 @@ protocol PasswordsModuleInteracting: AnyObject {
     var currentSortType: SortType { get }
     func setSortType(_ sortType: SortType)
     
-    func loadList(tag: ItemTagData?) -> [PasswordData]
-    func loadList(forServiceIdentifiers serviceURIs: [String], tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData])
+    func loadList(tag: ItemTagData?) -> [ItemData]
+    func loadList(forServiceIdentifiers serviceURIs: [String], tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData])
 
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
@@ -79,7 +79,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return passwordInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {
@@ -90,39 +90,42 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         configInteractor.defaultPassswordListAction
     }
     
-    func loadList(tag: ItemTagData?) -> [PasswordData] {
-        passwordInteractor.listPasswords(
+    func loadList(tag: ItemTagData?) -> [ItemData] {
+        passwordInteractor.listItems(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
             sortBy: currentSortType,
             trashed: .no
         )
+        .filter { $0.asLoginItem != nil }
     }
     
-    func loadList(forServiceIdentifiers serviceIdentifiers: [String], tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData]) {
-        let allPasswords = passwordInteractor.listPasswords(searchPhrase: nil, tagId: tag?.tagID, sortBy: currentSortType, trashed: .no)
+    func loadList(forServiceIdentifiers serviceIdentifiers: [String], tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {
+        let allPasswords = passwordInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, sortBy: currentSortType, trashed: .no)
         
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)
         }
         
-        var suggested: [PasswordData] = []
-        var rest: [PasswordData] = []
+        var suggested: [ItemData] = []
+        var rest: [ItemData] = []
         
         for autofillService in serviceIdentifiers {
             for element in allPasswords where Config.autoFillExcludeProtectionLevels.contains(element.protectionLevel) == false {
-                if let uris = element.uris {
-                    let isMatch = uris.contains(where: { uri in
-                        uriInteractor.isMatch(uri.uri, to: autofillService, rule: uri.match)
-                    })
-                    
-                    if isMatch {
-                        suggested.append(element)
+                if case let .login(loginItem) = element {
+                    if let uris = loginItem.content.uris {
+                        let isMatch = uris.contains(where: { uri in
+                            uriInteractor.isMatch(uri.uri, to: autofillService, rule: uri.match)
+                        })
+                        
+                        if isMatch {
+                            suggested.append(element)
+                        } else {
+                            rest.append(element)
+                        }
                     } else {
                         rest.append(element)
                     }
-                } else {
-                    rest.append(element)
                 }
             }
         }
@@ -149,22 +152,22 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         passwordListInteractor.setSortType(sortType)
     }
     
-    func moveToTrash(_ passwordID: PasswordID) {
-        Log("PasswordsModuleInteractor: Move to trash: \(passwordID)", module: .moduleInteractor)
-        let deletedPassword = passwordInteractor.getPassword(for: passwordID, checkInTrash: false)
-        passwordInteractor.markAsTrashed(for: passwordID)
+    func moveToTrash(_ itemID: ItemID) {
+        Log("PasswordsModuleInteractor: Move to trash: \(itemID)", module: .moduleInteractor)
+        let deletedPassword = passwordInteractor.getItem(for: itemID, checkInTrash: false)
+        passwordInteractor.markAsTrashed(for: itemID)
         passwordInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
-        if let deletedPassword {
+        if let loginItem = deletedPassword?.asLoginItem {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
-                try await autoFillCredentialsInteractor.removeSuggestions(for: deletedPassword)
+                try await autoFillCredentialsInteractor.removeSuggestions(for: loginItem)
             }
         }
     }
     
     func copyUsername(_ passwordID: PasswordID) -> Bool {
-        guard let password = passwordInteractor.getPassword(for: passwordID, checkInTrash: false),
-              let username = password.username
+        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem,
+              let username = loginItem.username
         else {
             return false
         }

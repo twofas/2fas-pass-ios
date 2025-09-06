@@ -15,7 +15,7 @@ enum ConnectPullReqestCommunicationError: Error {
 
 enum ConnectPullReqestCommunicationDestination: RouterDestination {
     case addItem(changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
-    case editItem(PasswordData, changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
+    case editItem(LoginItemData, changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
     
     var id: String {
         switch self {
@@ -116,7 +116,7 @@ final class ConnectPullReqestCommunicationPresenter {
             })
             
         case .action(.delete(let passwordData)):
-            interactor.deletePassword(for: passwordData.passwordID)
+            interactor.deletePassword(for: passwordData.id)
             
             state = .connecting
             actionContinuation?.resume(returning: (true, nil))
@@ -250,7 +250,7 @@ extension ConnectPullReqestCommunicationPresenter {
             }
         }
         
-        var passwordData: PasswordData? {
+        var passwordData: LoginItemData? {
             switch self {
             case .action(let action):
                 switch action {

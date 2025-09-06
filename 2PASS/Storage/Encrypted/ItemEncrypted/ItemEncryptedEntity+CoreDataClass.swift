@@ -18,7 +18,7 @@ final class ItemEncryptedEntity: NSManagedObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         content: Data,
         tagIds: [ItemTagID]?
@@ -42,7 +42,7 @@ final class ItemEncryptedEntity: NSManagedObject {
             entity.level = protectionLevel.rawValue
             entity.tagIds = tagIds
             
-            entity.contentType = contentType.rawValue
+            entity.contentType = contentType
             entity.contentVersion = Int16(contentVersion)
             entity.content = content
             
@@ -57,7 +57,7 @@ final class ItemEncryptedEntity: NSManagedObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         content: Data,
         tagIds: [ItemTagID]?
@@ -90,7 +90,7 @@ final class ItemEncryptedEntity: NSManagedObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         content: Data,
         tagIds: [ItemTagID]?
@@ -108,7 +108,7 @@ final class ItemEncryptedEntity: NSManagedObject {
         entity.level = protectionLevel.rawValue
         entity.tagIds = tagIds
         
-        entity.contentType = contentType.rawValue
+        entity.contentType = contentType
         entity.contentVersion = Int16(contentVersion)
         entity.content = content
     }

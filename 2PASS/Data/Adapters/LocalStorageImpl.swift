@@ -45,7 +45,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listTrashedItemsIDs() -> [ItemID] {
-        passwordInteractor.listTrashedPasswords().map({ $0.passwordID })
+        passwordInteractor.listTrashedItems().map({ $0.id })
     }
     
     func createDeletedItem(_ deletedItem: DeletedItemData) {

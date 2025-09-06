@@ -8,13 +8,13 @@ import Foundation
 import Common
 
 public protocol SyncInteracting: AnyObject {
-    func syncAndApplyChanges(from external: [PasswordData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData])
+    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData])
 }
 
 final class SyncInteractor {
-    private var addedPasswords: [PasswordData] = []
-    private var modifiedPasswords: [PasswordData] = []
-    private var deletedPasswords: [PasswordData] = [] // moved to trash
+    private var addedPasswords: [ItemData] = []
+    private var modifiedPasswords: [ItemData] = []
+    private var deletedPasswords: [ItemData] = [] // moved to trash
     
     private var addedTags: [ItemTagData] = []
     private var modifiedTags: [ItemTagData] = []
@@ -46,48 +46,23 @@ final class SyncInteractor {
 }
 
 extension SyncInteractor: SyncInteracting {
-    func syncAndApplyChanges(from external: [PasswordData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
-        let local = passwordInteractor.listAllPasswords()
+    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
+        let local = passwordInteractor.listAllItems()
         let localTags = tagInteractor.listAllTags()
         let localDeleted = deletedItemsInteractor.listDeletedItems()
         
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
         
-        addedPasswords.forEach { pass in
-            _ = passwordInteractor.createPassword(
-                passwordID: pass.passwordID,
-                name: pass.name,
-                username: pass.username,
-                password: decrypt(pass.password, protectionLevel: pass.protectionLevel),
-                notes: pass.notes?.sanitizeNotes(),
-                creationDate: pass.creationDate,
-                modificationDate: pass.modificationDate,
-                iconType: pass.iconType,
-                trashedStatus: pass.trashedStatus,
-                protectionLevel: pass.protectionLevel,
-                uris: pass.uris,
-                tagIds: pass.tagIds
-            )
+        addedPasswords.forEach { item in
+            try? passwordInteractor.createItem(item)
         }
         
-        modifiedPasswords.forEach { pass in
-            _ = passwordInteractor.updatePassword(
-                for: pass.passwordID,
-                name: pass.name,
-                username: pass.username,
-                password: decrypt(pass.password, protectionLevel: pass.protectionLevel),
-                notes: pass.notes?.sanitizeNotes(),
-                modificationDate: pass.modificationDate,
-                iconType: pass.iconType,
-                trashedStatus: pass.trashedStatus,
-                protectionLevel: pass.protectionLevel,
-                uris: pass.uris,
-                tagIds: pass.tagIds
-            )
+        modifiedPasswords.forEach { item in
+            try? passwordInteractor.updateItem(item)
         }
         
         deletedPasswords.forEach { pass in
-            passwordInteractor.externalMarkAsTrashed(for: pass.passwordID)
+            passwordInteractor.externalMarkAsTrashed(for: pass.id)
         }
         
         addedTags.forEach({
@@ -129,13 +104,13 @@ extension SyncInteractor: SyncInteracting {
     
     @discardableResult
     func sync(
-        local: [PasswordData],
-        external: [PasswordData],
+        local: [ItemData],
+        external: [ItemData],
         localTags: [ItemTagData],
         externalTags: [ItemTagData],
         localDeleted: [DeletedItemData],
         externalDeleted: [DeletedItemData]
-    ) -> (passwords: [PasswordData], tags: [ItemTagData], deleted: [DeletedItemData]) {
+    ) -> (passwords: [ItemData], tags: [ItemTagData], deleted: [DeletedItemData]) {
         clearChangeList()
         
         let mergedPasswords = mergePasswords(local: local, external: external)
@@ -148,10 +123,10 @@ extension SyncInteractor: SyncInteracting {
 }
 
 private extension SyncInteractor {
-    func mergePasswords(local: [PasswordData], external: [PasswordData]) -> [PasswordData] {
+    func mergePasswords(local: [ItemData], external: [ItemData]) -> [ItemData] {
         var result = local
         for pass in external {
-            if let index = result.firstIndex(where: { $0.passwordID == pass.passwordID }), let localPass = result[safe: index] {
+            if let index = result.firstIndex(where: { $0.id == pass.id }), let localPass = result[safe: index] {
                 if pass != localPass && pass.modificationDate > localPass.modificationDate {
                     result[index] = pass
                     modifiedPasswords.append(pass)
@@ -211,18 +186,18 @@ private extension SyncInteractor {
         return all
     }
     
-    func mergePasswordsAndDeleted(_ passwords: [PasswordData], tags: [ItemTagData], deleted: [DeletedItemData]) -> ([PasswordData], [ItemTagData], [DeletedItemData]) {
+    func mergePasswordsAndDeleted(_ passwords: [ItemData], tags: [ItemTagData], deleted: [DeletedItemData]) -> ([ItemData], [ItemTagData], [DeletedItemData]) {
         var passwords = passwords
         var tags = tags
         var deletedResult: [DeletedItemData] = []
         
         for del in deleted {
-            if let index = passwords.firstIndex(where: { $0.passwordID == del.itemID && !$0.isTrashed }), let pass = passwords[safe: index] {
+            if let index = passwords.firstIndex(where: { $0.id == del.itemID && !$0.isTrashed }), let pass = passwords[safe: index] {
                 if pass.modificationDate < del.deletedAt {
                     passwords.remove(at: index)
                     deletedResult.append(del)
                     
-                    addedPasswords.removeAll(where: { $0.id == pass.passwordID })
+                    addedPasswords.removeAll(where: { $0.id == pass.id })
                     deletedPasswords.append(pass)
                 } else {
                     removedDeleted.append(del)

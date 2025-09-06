@@ -138,7 +138,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
             }
         }()
         
-        let content = PasswordItemContent(
+        let content = LoginItemData.Content(
             name: name,
             username: username,
             password: sInstance.primitiveValue(forKey: PasswordKeys.password.rawValue) as? Data,

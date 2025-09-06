@@ -118,22 +118,20 @@ extension TagInteractor: TagInteracting {
         
         let currentDate = mainRepository.currentDate
         
-        for password in mainRepository.listPasswords(options: .all) {
-            if let tagIds = password.tagIds, tagIds.contains(tagID) {
+        for item in mainRepository.listPasswords(options: .all) {
+            if let tagIds = item.tagIds, tagIds.contains(tagID) {
                 let updatedTagIds = tagIds.filter { $0 != tagID }
-                
-                mainRepository.updatePassword(
-                    passwordID: password.passwordID,
-                    name: password.name,
-                    username: password.username,
-                    password: password.password,
-                    notes: password.notes,
-                    modificationDate: currentDate,
-                    iconType: password.iconType,
-                    trashedStatus: password.trashedStatus,
-                    protectionLevel: password.protectionLevel,
-                    uris: password.uris,
-                    tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds
+ 
+                mainRepository.updateItem(
+                    itemID: item.id,
+                    modificationDate: item.modificationDate,
+                    trashedStatus: item.trashedStatus,
+                    protectionLevel: item.protectionLevel,
+                    tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds,
+                    name: item.name,
+                    contentType: item.contentType.rawValue,
+                    contentVersion: item.contentVersion,
+                    content: item.content
                 )
             }
         }

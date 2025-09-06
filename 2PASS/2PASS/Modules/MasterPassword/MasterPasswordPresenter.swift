@@ -22,7 +22,7 @@ enum MasterPasswordDestination: RouterDestination {
         }
     }
     
-    case restoreVault(passwords: [PasswordData], tags: [ItemTagData])
+    case restoreVault(passwords: [ItemData], tags: [ItemTagData])
     case vaultDecryptionKit(onLogin: Callback)
     case onboardingRecoveryKit
     case confirmChange(onConfirm: Callback)

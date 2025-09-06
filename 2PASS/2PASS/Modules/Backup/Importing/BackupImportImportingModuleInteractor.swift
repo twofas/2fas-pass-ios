@@ -9,7 +9,7 @@ import Data
 import Common
 
 enum BackupImportInput {
-    case decrypted([PasswordData], tags: [ItemTagData], deleted: [DeletedItemData])
+    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData])
     case encrypted(entropy: Entropy, masterKey: MasterKey, vault: ExchangeVault)
 }
 

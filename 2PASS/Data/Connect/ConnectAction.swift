@@ -7,10 +7,10 @@
 import Common
 
 public enum ConnectAction {
-    case passwordRequest(PasswordData)
+    case passwordRequest(LoginItemData)
     case add(PasswordDataChangeRequest)
-    case update(PasswordData, PasswordDataChangeRequest)
-    case delete(PasswordData)
+    case update(LoginItemData, PasswordDataChangeRequest)
+    case delete(LoginItemData)
 }
 
 public enum ConnectActionType: String, Codable {

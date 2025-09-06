@@ -38,7 +38,7 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
     public func createCloudCachedItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -67,7 +67,7 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
     public func updateCloudCachedItem(
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,

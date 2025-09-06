@@ -16,9 +16,9 @@ final class TransferItemsImportingModuleInteractor: TransferItemsImportingModule
     private let passwordImportInteractor: PasswordImportInteracting
     
     let service: ExternalService
-    let passwords: [PasswordData]
+    let passwords: [ItemData]
     
-    init(service: ExternalService, passwords: [PasswordData], passwordImportInteractor: PasswordImportInteracting) {
+    init(service: ExternalService, passwords: [ItemData], passwordImportInteractor: PasswordImportInteracting) {
         self.service = service
         self.passwords = passwords
         self.passwordImportInteractor = passwordImportInteractor

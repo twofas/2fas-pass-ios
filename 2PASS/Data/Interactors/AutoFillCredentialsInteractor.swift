@@ -11,8 +11,8 @@ public protocol AutoFillCredentialsInteracting: AnyObject {
     func canAddSuggestionForPassword(with level: ItemProtectionLevel) -> Bool
     
     func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
-    func replaceSuggestions(from passwordData: PasswordData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
-    func removeSuggestions(for passwordData: PasswordData) async throws
+    func replaceSuggestions(from passwordData: LoginItemData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
+    func removeSuggestions(for passwordData: LoginItemData) async throws
     
     func syncSuggestions() async throws
 }
@@ -60,12 +60,12 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         }
     }
     
-    func replaceSuggestions(from oldPasswordData: PasswordData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
+    func replaceSuggestions(from oldPasswordData: LoginItemData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         try await removeSuggestions(for: oldPasswordData)
         try await addSuggestions(passwordID: passwordID, username: username, uris: uris, protectionLevel: protectionLevel)
     }
     
-    func removeSuggestions(for passwordData: PasswordData) async throws {
+    func removeSuggestions(for passwordData: LoginItemData) async throws {
         if let uris = passwordData.uris {
             Log("Autofill - Start remove suggestions", module: .autofill)
             do {
@@ -95,13 +95,16 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         let startDate = Date()
         Log("Autofill - Start sync suggestions", module: .autofill)
         
-        let passwords = Task { @MainActor in
+        let items = Task { @MainActor in
             mainRepository.listPasswords(options: .allNotTrashed).filter {
                 canAddSuggestionForPassword(with: $0.protectionLevel)
             }
+            .compactMap {
+                ItemData($0, decoder: mainRepository.jsonDecoder)?.asLoginItem
+            }
         }
         
-        let credentials = makeCredentialIdentities(for: await passwords.value)
+        let credentials = makeCredentialIdentities(for: await items.value)
         do {
             try await store.replaceCredentialIdentities(credentials)
             Log("Autofill - Sync suggestions completed", module: .autofill)
@@ -113,16 +116,16 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         Log("Autofill - Sync time: \(time)", module: .autofill)
     }
     
-    private func makeCredentialIdentities(for passwords: [PasswordData]) -> [ASPasswordCredentialIdentity] {
-        passwords.flatMap { password in
-            password.uris?.compactMap { uri in
+    private func makeCredentialIdentities(for items: [LoginItemData]) -> [ASPasswordCredentialIdentity] {
+        items.flatMap { loginItem in
+            loginItem.uris?.compactMap { uri -> ASPasswordCredentialIdentity? in
                 guard Config.allowsMatchRulesForSuggestions.contains(uri.match) else { return nil }
                 guard let uriNormalized = uriInteractor.normalize(uri.uri) else { return nil }
-
+                
                 return ASPasswordCredentialIdentity(
                     serviceIdentifier: .init(identifier: uriNormalized, type: .URL),
-                    user: password.username ?? "",
-                    recordIdentifier: password.id.uuidString
+                    user: loginItem.username ?? "",
+                    recordIdentifier: loginItem.id.uuidString
                 )
             } ?? []
         }

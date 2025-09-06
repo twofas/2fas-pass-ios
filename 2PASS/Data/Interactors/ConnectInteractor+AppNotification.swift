@@ -374,19 +374,19 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionPasswordRequestData>.self, from: data)
         let passwordID = actionRequestData.data.loginId
         
-        guard let passwordData = passwordInteractor.getPassword(for: passwordID, checkInTrash: false) else {
+        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
-        let accepted = await shouldPerfromAction(.passwordRequest(passwordData)).accepted
+        let accepted = await shouldPerfromAction(.passwordRequest(loginItem)).accepted
         
         guard accepted else {
             throw ConnectError.cancelled
         }
         
         let passwordValue = {
-            if let password = passwordData.password {
-                return passwordInteractor.decrypt(password, isPassword: true, protectionLevel: passwordData.protectionLevel)
+            if let password = loginItem.password {
+                return passwordInteractor.decrypt(password, isPassword: true, protectionLevel: loginItem.protectionLevel)
             } else {
                 return ""
             }
@@ -416,7 +416,7 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionUpdateRequestData>.self, from: data)
         let passwordID = actionRequestData.data.id
         
-        guard let passwordData = passwordInteractor.getPassword(for: passwordID, checkInTrash: false) else {
+        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
@@ -469,7 +469,7 @@ extension ConnectInteractor {
             }
         )
         
-        let accepted = await shouldPerfromAction(.update(passwordData, changeRequst)).accepted
+        let accepted = await shouldPerfromAction(.update(loginItem, changeRequst)).accepted
         
         guard accepted else {
             throw ConnectError.cancelled
@@ -492,11 +492,11 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionPasswordRequestData>.self, from: data)
         let passwordID = actionRequestData.data.loginId
         
-        guard let passwordData = passwordInteractor.getPassword(for: passwordID, checkInTrash: false) else {
+        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
-        let accepted = await shouldPerfromAction(.delete(passwordData)).accepted
+        let accepted = await shouldPerfromAction(.delete(loginItem)).accepted
         
         guard accepted else {
             throw ConnectError.cancelled

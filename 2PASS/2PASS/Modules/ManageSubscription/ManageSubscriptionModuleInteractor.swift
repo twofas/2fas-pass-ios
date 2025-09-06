@@ -40,7 +40,7 @@ final class ManageSubscriptionModuleInteractor: ManageSubscriptionModuleInteract
     }
     
     var itemsCount: Int {
-        passwordInteractor.passwordsCount
+        passwordInteractor.itemsCount
     }
     
     @MainActor

@@ -156,20 +156,25 @@ struct ViewPasswordView: View {
 
 private class ViewPasswordModulePreviewInteractor: ViewPasswordModuleInteracting {
     
-    func fetchPassword(for passwordID: PasswordID) -> PasswordData? {
-        PasswordData(
-            passwordID: passwordID,
+    func fetchPassword(for passwordID: PasswordID) -> LoginItemData? {
+        LoginItemData(
+            id: passwordID,
+            metadata: .init(
+                creationDate: Date(),
+                modificationDate: Date(),
+                protectionLevel: .topSecret,
+                trashedStatus: .no,
+                tagIds: nil
+            ),
             name: "Preview Name",
-            username: "Username",
-            password: "Password".data(using: .utf8),
-            notes: "Notes",
-            creationDate: Date(),
-            modificationDate: Date(),
-            iconType: .label(labelTitle: "PR", labelColor: .red),
-            trashedStatus: .no,
-            protectionLevel: .topSecret,
-            uris: nil,
-            tagIds: nil
+            content: .init(
+                name: "Preview Name",
+                username: "Username",
+                password: "Password".data(using: .utf8),
+                notes: "Notes",
+                iconType: .label(labelTitle: "PR", labelColor: .red),
+                uris: nil
+            )
         )
     }
     

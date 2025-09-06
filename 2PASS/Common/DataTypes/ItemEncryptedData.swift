@@ -6,10 +6,6 @@
 
 import Foundation
 
-public enum ItemContentType: String {
-    case login
-}
-
 public struct ItemEncryptedData: Hashable, Identifiable {
     public var id: UUID {
         itemID
@@ -20,7 +16,7 @@ public struct ItemEncryptedData: Hashable, Identifiable {
     public let modificationDate: Date
     public let trashedStatus: ItemTrashedStatus
     public let protectionLevel: ItemProtectionLevel
-    public let contentType: ItemContentType
+    public let contentType: String
     public private(set) var content: Data
     public let contentVersion: Int
     public let vaultID: VaultID
@@ -32,7 +28,7 @@ public struct ItemEncryptedData: Hashable, Identifiable {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         content: Data,
         vaultID: VaultID,

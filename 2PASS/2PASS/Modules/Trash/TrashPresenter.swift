@@ -149,17 +149,22 @@ private extension TrashPresenter {
         isTrashEmpty = interactor.isTrashEmpty
         showMenu?(!isTrashEmpty)
         passwords = interactor.list()
-            .compactMap({ password in
-                switch password.trashedStatus {
-                case .no: nil
+            .compactMap({ item -> TrashPasswordData? in
+                switch item.trashedStatus {
+                case .no: return nil
                 case .yes(let trashingDate):
-                    TrashPasswordData(
-                        passwordID: password.passwordID,
-                        name: password.name,
-                        username: password.username,
-                        deletedDate: trashingDate,
-                        iconType: password.iconType
-                    )
+                    switch item {
+                    case .login(let loginItem):
+                        return TrashPasswordData(
+                            passwordID: loginItem.id,
+                            name: loginItem.name,
+                            username: loginItem.username,
+                            deletedDate: trashingDate,
+                            iconType: loginItem.iconType
+                        )
+                    default:
+                        return nil
+                    }
                 }
             })
     }

@@ -61,7 +61,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return passwordInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {

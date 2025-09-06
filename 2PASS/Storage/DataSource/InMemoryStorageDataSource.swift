@@ -13,45 +13,41 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     // MARK: - Passwords
     
-    func createPassword(
-        passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+    func createItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
-    )
-    
-    func updatePassword(
-        passwordID: PasswordID,
+        tagIds: [ItemTagID]?,
         name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
-        modificationDate: Date,
-        iconType: PasswordIconType,
-        trashedStatus: ItemTrashedStatus,
-        protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        contentType: String,
+        contentVersion: Int,
+        content: Data
     )
     
-    func batchUpdateRencryptedPasswords(_ passwords: [PasswordData], date: Date)
+    func updateItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: String,
+        contentVersion: Int,
+        content: Data
+    )
+    
+    func batchUpdateRencryptedPasswords(_ passwords: [RawItemData], date: Date)
     
     func getPasswordEntity(
         passwordID: PasswordID,
         checkInTrash: Bool
-    ) -> PasswordData?
+    ) -> RawItemData?
     
     func listPasswords(
         options: PasswordListOptions
-    ) -> [PasswordData]
+    ) -> [RawItemData]
     
     func deletePassword(passwordID: PasswordID)
     func deleteAllPasswordEntities()

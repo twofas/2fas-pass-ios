@@ -14,7 +14,7 @@ final class ItemCachedEntity: NSManagedObject {
         on context: NSManagedObjectContext,
         itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -29,7 +29,7 @@ final class ItemCachedEntity: NSManagedObject {
             
             entity.itemID = itemID
             entity.content = content
-            entity.contentType = contentType.rawValue
+            entity.contentType = contentType
             entity.contentVersion = Int16(contentVersion)
             entity.creationDate = creationDate
             entity.modificationDate = modificationDate
@@ -57,7 +57,7 @@ final class ItemCachedEntity: NSManagedObject {
         on context: NSManagedObjectContext,
         for itemID: ItemID,
         content: Data,
-        contentType: ItemContentType,
+        contentType: String,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -73,7 +73,7 @@ final class ItemCachedEntity: NSManagedObject {
             }
             
             entity.content = content
-            entity.contentType = contentType.rawValue
+            entity.contentType = contentType
             entity.contentVersion = Int16(contentVersion)
             entity.creationDate = creationDate
             entity.modificationDate = modificationDate

@@ -51,7 +51,7 @@ final class PasswordsPresenter {
     private let interactor: PasswordsModuleInteracting
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
-    private var listData: [Int: [PasswordData]] = [:]
+    private var listData: [Int: [ItemData]] = [:]
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
@@ -152,21 +152,21 @@ extension PasswordsPresenter {
     }
     
     func onDidSelectAt(_ indexPath: IndexPath) {
-        guard let passwordData = item(at: indexPath) else {
+        guard let itemData = item(at: indexPath) else {
             return
         }
         
         switch interactor.selectAction {
         case .viewDetails:
-            flowController.selectPassword(passwordID: passwordData.passwordID)
+            flowController.selectPassword(passwordID: itemData.id)
         case .copyPassword:
-            copyPassword(id: passwordData.passwordID)
+            copyPassword(id: itemData.id)
         case .goToURI:
-            if let uri = passwordData.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
+            if let uri = itemData.asLoginItem?.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
                 flowController.toURI(normalized)
             }
         case .edit:
-            flowController.toEditPassword(passwordID: passwordData.passwordID)
+            flowController.toEditPassword(passwordID: itemData.id)
         }
     }
     
@@ -220,7 +220,7 @@ private extension PasswordsPresenter {
         }
     }
     
-    func item(at indexPath: IndexPath) -> PasswordData? {
+    func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
     
@@ -238,7 +238,7 @@ private extension PasswordsPresenter {
             if list.suggested.isEmpty {
                 listData[0] = list.rest
                 
-                let restCells = list.rest.map(makeCellData(for:))
+                let restCells = list.rest.compactMap(makeCellData(for:))
                 let section = PasswordSectionData()
                 
                 snapshot.appendSections([section])
@@ -251,8 +251,8 @@ private extension PasswordsPresenter {
                 listData[1] = list.rest
                 hasSuggestedItems = true
 
-                let suggestedCells = list.suggested.map(makeCellData(for:))
-                let restCells = list.rest.map(makeCellData(for:))
+                let suggestedCells = list.suggested.compactMap(makeCellData(for:))
+                let restCells = list.rest.compactMap(makeCellData(for:))
                 let suggestedSection = PasswordSectionData(title: T.commonSuggested)
                 let section = PasswordSectionData(title: T.commonOther)
                 
@@ -269,7 +269,7 @@ private extension PasswordsPresenter {
         } else {
             let list = interactor.loadList(tag: selectedFilterTag)
             listData[0] = list
-            let cells = list.map(makeCellData(for:))
+            let cells = list.compactMap(makeCellData(for:))
             let section = PasswordSectionData()
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             snapshot.appendSections([section])
@@ -293,20 +293,25 @@ private extension PasswordsPresenter {
         }
     }
     
-    func makeCellData(for password: PasswordData) -> PasswordCellData {
-        PasswordCellData(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            iconType: password.iconType,
-            hasUsername: password.username != nil && password.username?.isEmpty == false,
-            hasPassword: password.password != nil,
-            uris: password.uris?.map { $0.uri } ?? [],
-            normalizeURI: { [weak self] uri in
-                guard let interactor = self?.interactor else { return nil }
-                return interactor.normalizedURL(for: uri)
-            }
-        )
+    func makeCellData(for itemData: ItemData) -> PasswordCellData? {
+        switch itemData {
+        case .login(let loginItem):
+            return PasswordCellData(
+                passwordID: loginItem.id,
+                name: loginItem.name,
+                username: loginItem.content.username,
+                iconType: loginItem.content.iconType,
+                hasUsername: loginItem.content.username != nil && loginItem.content.username?.isEmpty == false,
+                hasPassword: loginItem.content.password != nil,
+                uris: loginItem.content.uris?.map { $0.uri } ?? [],
+                normalizeURI: { [weak self] uri in
+                    guard let interactor = self?.interactor else { return nil }
+                    return interactor.normalizedURL(for: uri)
+                }
+            )
+        default:
+            return nil
+        }
     }
     
     @objc

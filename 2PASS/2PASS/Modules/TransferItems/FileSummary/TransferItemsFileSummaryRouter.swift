@@ -10,7 +10,7 @@ import Common
 
 struct TransferItemsFileSummaryRouter: Router {
     
-    static func buildView(service: ExternalService, passwords: [PasswordData], onClose: @escaping Callback) -> some View {
+    static func buildView(service: ExternalService, passwords: [ItemData], onClose: @escaping Callback) -> some View {
         TransferItemsFileSummaryView(presenter: .init(service: service, passwords: passwords, onClose: onClose))
     }
     

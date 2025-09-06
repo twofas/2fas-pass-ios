@@ -13,7 +13,7 @@ protocol TrashModuleInteracting: AnyObject {
     var canRestore: Bool { get }
     var isTrashEmpty: Bool { get }
 
-    func list() -> [PasswordData]
+    func list() -> [ItemData]
     func delete(with passwordID: PasswordID)
     func restore(with passwordID: PasswordID)
     
@@ -44,7 +44,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return passwordInteractor.itemsCount < limit
     }
     
     var currentPlanLimitItems: Int {
@@ -55,13 +55,13 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         list().isEmpty
     }
     
-    func list() -> [PasswordData] {
-        passwordInteractor.listTrashedPasswords()
+    func list() -> [ItemData] {
+        passwordInteractor.listTrashedItems()
     }
     
     func delete(with passwordID: PasswordID) {
         Log("TrashModuleInteractor: Deleting password: \(passwordID)", module: .moduleInteractor)
-        passwordInteractor.deletePassword(for: passwordID)
+        passwordInteractor.deleteItem(for: passwordID)
         passwordInteractor.saveStorage()
     }
     
@@ -75,7 +75,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     func restoreAll() {
         Log("TrashModuleInteractor: Restore all", module: .moduleInteractor)
         list().forEach { password in
-            passwordInteractor.markAsNotTrashed(for: password.passwordID)
+            passwordInteractor.markAsNotTrashed(for: password.id)
         }
         passwordInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
@@ -84,7 +84,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     func emptyTrash() {
         Log("TrashModuleInteractor: Empty trash", module: .moduleInteractor)
         list().forEach { password in
-            passwordInteractor.deletePassword(for: password.passwordID)
+            passwordInteractor.deleteItem(for: password.id)
         }
         passwordInteractor.saveStorage()
     }

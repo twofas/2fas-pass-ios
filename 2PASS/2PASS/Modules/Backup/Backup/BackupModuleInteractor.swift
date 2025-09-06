@@ -9,7 +9,7 @@ import Data
 import Common
 
 enum BackupModuleImportResult {
-    case decrypted([PasswordData], tags: [ItemTagData], deleted: [DeletedItemData])
+    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData])
     case encrypted(ExchangeVault, entropy: Entropy?)
 }
 
@@ -49,14 +49,14 @@ final class BackupModuleInteractor {
 extension BackupModuleInteractor: BackupModuleInteracting {
     
     var hasPasswords: Bool {
-        passwordInteractor.hasPasswords
+        passwordInteractor.hasItems
     }
     
     var canImport: Bool {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return passwordInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {

@@ -1,25 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24E263" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24295.2" systemVersion="25A5351b" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="PasswordEntity" representedClassName=".PasswordEntity" syncable="YES">
+        <attribute name="contentData" attributeType="Binary"/>
+        <attribute name="contentType" attributeType="String"/>
+        <attribute name="contentVersion" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="creationDate" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="iconCustomURL" optional="YES" attributeType="URI"/>
-        <attribute name="iconDomain" optional="YES" attributeType="String"/>
-        <attribute name="iconFile" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
-        <attribute name="iconType" attributeType="String"/>
         <attribute name="isTrashed" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="labelColor" optional="YES" attributeType="String"/>
-        <attribute name="labelTitle" optional="YES" attributeType="String"/>
+        <attribute name="itemID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="level" attributeType="String"/>
         <attribute name="modificationDate" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="notes" optional="YES" attributeType="String"/>
-        <attribute name="password" optional="YES" attributeType="Binary"/>
-        <attribute name="passwordID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="tagIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
         <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="uris" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
-        <attribute name="urisMatching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
-        <attribute name="username" optional="YES" attributeType="String"/>
     </entity>
     <entity name="TagEntity" representedClassName=".TagEntity" syncable="YES">
         <attribute name="color" optional="YES" attributeType="String"/>

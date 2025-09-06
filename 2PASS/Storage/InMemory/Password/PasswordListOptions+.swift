@@ -90,16 +90,6 @@ enum PasswordSortDescriptor {
         ascending: false,
         selector: #selector(NSString.localizedStandardCompare)
     )
-    static let sortByUsernameAscending = NSSortDescriptor(
-        key: #keyPath(PasswordEntity.username),
-        ascending: true,
-        selector: #selector(NSString.localizedStandardCompare)
-    )
-    static let sortByUsernameDescending = NSSortDescriptor(
-        key: #keyPath(PasswordEntity.username),
-        ascending: false,
-        selector: #selector(NSString.localizedStandardCompare)
-    )
 }
 
 enum Predicate {
@@ -107,18 +97,18 @@ enum Predicate {
     static let notTrashedItems = NSPredicate(format: "isTrashed == FALSE")
     
     static func findByPasswordID(_ passwordID: UUID) -> NSPredicate {
-        NSPredicate(format: "passwordID == %@", passwordID as CVarArg)
+        NSPredicate(format: "itemID == %@", passwordID as CVarArg)
     }
     
     static func paswords(_ passwordIDs: [UUID]) -> NSPredicate {
-        NSPredicate(format: "passwordID IN %@", passwordIDs)
+        NSPredicate(format: "itemID IN %@", passwordIDs)
     }
     
     static func excludePasswords(_ passwordIDs: [UUID]) -> NSPredicate {
-        NSPredicate(format: "NOT (passwordID IN %@)", passwordIDs)
+        NSPredicate(format: "NOT (itemID IN %@)", passwordIDs)
     }
     
     static func findByPhrase(_ phrase: String) -> NSPredicate {
-        NSPredicate(format: "(name contains[c] %@) OR (username contains[c] %@)", phrase, phrase)
+        NSPredicate(format: "name contains[c] %@", phrase)
     }
 }
