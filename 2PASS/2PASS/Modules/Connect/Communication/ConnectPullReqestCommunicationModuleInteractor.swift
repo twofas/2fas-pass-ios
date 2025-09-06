@@ -34,7 +34,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     let connectInteractor: ConnectInteracting
     let fileIconInteractor: FileIconInteracting
     let uriInteractor: URIInteracting
-    let passwordInteractor: PasswordInteracting
+    let itemsInteractor: ItemsInteracting
     let appNotificationsInteractor: AppNotificationsInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
     
@@ -43,7 +43,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
          identiconInteractor: ConnectIdenticonInteracting,
          fileIconInteractor: FileIconInteracting,
          uriInteractor: URIInteracting,
-         passwordInteractor: PasswordInteracting,
+         itemsInteractor: ItemsInteracting,
          appNotificationsInteractor: AppNotificationsInteracting,
          paymentStatusInteractor: PaymentStatusInteracting
     ) {
@@ -52,7 +52,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         self.identiconInteractor = identiconInteractor
         self.fileIconInteractor = fileIconInteractor
         self.uriInteractor = uriInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
     }
@@ -61,7 +61,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.itemsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {
@@ -97,8 +97,8 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     }
     
     func deletePassword(for passwordID: PasswordID) {
-        passwordInteractor.markAsTrashed(for: passwordID)
-        passwordInteractor.saveStorage()
+        itemsInteractor.markAsTrashed(for: passwordID)
+        itemsInteractor.saveStorage()
     }
     
     func deleteAppNotification() async throws {

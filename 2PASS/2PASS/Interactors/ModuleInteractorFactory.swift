@@ -52,7 +52,7 @@ extension ModuleInteractorFactory {
     
     func trashInteractor() -> TrashModuleInteracting {
         TrashModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
@@ -114,7 +114,7 @@ extension ModuleInteractorFactory {
     func backupModuleInteractor() -> BackupModuleInteracting {
         BackupModuleInteractor(
             importInteractor: InteractorFactory.shared.backupImportInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             biometryInteractor: InteractorFactory.shared.biometryInteractor(),
             loginInteractor: InteractorFactory.shared.loginInteractor(),
             protectionInteractor: InteractorFactory.shared.protectionInteractor(),
@@ -322,7 +322,7 @@ extension ModuleInteractorFactory {
             identiconInteractor: InteractorFactory.shared.connectSecurityIconInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
@@ -346,7 +346,7 @@ extension ModuleInteractorFactory {
     
     func transferItemsServicesListInteractor() -> TransferItemsServicesListInteracting {
         TransferItemsServicesListInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
     }
@@ -363,7 +363,7 @@ extension ModuleInteractorFactory {
     @MainActor
     func manageSubscriptionInteractor() -> ManageSubscriptionModuleInteracting {
         ManageSubscriptionModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             webBrowsersInteractor: InteractorFactory.shared.webBrowsersInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor()
@@ -388,7 +388,7 @@ extension ModuleInteractorFactory {
     func manageTagsModuleInteractor() -> ManageTagsModuleInteracting {
         ManageTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }

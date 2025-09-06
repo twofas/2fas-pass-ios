@@ -26,7 +26,7 @@ public enum SavePasswordSuccess {
 
 public enum SavePasswordError: Error {
     case userCancelled
-    case interactorError(PasswordInteractorSaveError)
+    case interactorError(ItemsInteractorSaveError)
 }
 
 enum AddPasswordModuleInteractorCheckState {
@@ -68,7 +68,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
 final class AddPasswordModuleInteractor {
     public let changeRequest: PasswordDataChangeRequest?
     
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
@@ -83,7 +83,7 @@ final class AddPasswordModuleInteractor {
     private var modificationDate: Date?
     
     init(
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
@@ -96,7 +96,7 @@ final class AddPasswordModuleInteractor {
         editPasswordID: PasswordID?,
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -114,7 +114,7 @@ final class AddPasswordModuleInteractor {
 extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         
     var hasPasswords: Bool {
-        passwordInteractor.hasItems
+        itemsInteractor.hasItems
     }
     
     var currentDefaultProtectionLevel: ItemProtectionLevel {
@@ -125,7 +125,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         guard let editPasswordID else {
             return nil
         }
-        let pass = passwordInteractor.getItem(for: editPasswordID, checkInTrash: false)?.asLoginItem
+        let pass = itemsInteractor.getItem(for: editPasswordID, checkInTrash: false)?.asLoginItem
         modificationDate = pass?.modificationDate
         return pass
     }
@@ -134,7 +134,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         guard let editPasswordID else {
             return nil
         }
-        return passwordInteractor.getPasswordEncryptedContents(for: editPasswordID, checkInTrash: false)
+        return itemsInteractor.getPasswordEncryptedContents(for: editPasswordID, checkInTrash: false)
             .unpack() ?? nil
     }
     
@@ -155,7 +155,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         let date = currentDateInteractor.currentDate
         if let current = getEditPassword() {
             do {
-                try passwordInteractor.updateLogin(
+                try itemsInteractor.updateLogin(
                     id: current.id,
                     metadata: .init(
                         creationDate: current.creationDate,
@@ -173,7 +173,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                 )
                 
                 Log("AddPasswordModuleInteractor - success while updating password. Saving storage")
-                passwordInteractor.saveStorage()
+                itemsInteractor.saveStorage()
                 syncChangeTriggerInteractor.trigger()
                 
                 Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
@@ -194,7 +194,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         } else {
             let itemID = UUID()
             do {
-                try passwordInteractor.createLogin(
+                try itemsInteractor.createLogin(
                     id: itemID,
                     metadata: .init(
                         creationDate: date,
@@ -213,7 +213,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                 
                 Log("AddPasswordModuleInteractor - success while adding password. Saving storage")
                 
-                passwordInteractor.saveStorage()
+                itemsInteractor.saveStorage()
                 syncChangeTriggerInteractor.trigger()
             
                 Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
@@ -256,7 +256,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
     
     func checkCurrentPasswordState() -> AddPasswordModuleInteractorCheckState {
         guard let editPasswordID, let modificationDate else { return .noChange }
-        guard let pass = passwordInteractor.getItem(for: editPasswordID, checkInTrash: false) else {
+        guard let pass = itemsInteractor.getItem(for: editPasswordID, checkInTrash: false) else {
             return .deleted
         }
         if pass.modificationDate.isAfter(modificationDate) {
@@ -269,8 +269,8 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         guard let editPasswordID else {
             return nil
         }
-        passwordInteractor.markAsTrashed(for: editPasswordID)
-        passwordInteractor.saveStorage()
+        itemsInteractor.markAsTrashed(for: editPasswordID)
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
         return editPasswordID
     }

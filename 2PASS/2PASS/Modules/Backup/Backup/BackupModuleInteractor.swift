@@ -30,15 +30,15 @@ protocol BackupModuleInteracting: AnyObject {
 
 final class BackupModuleInteractor {
     private let importInteractor: BackupImportInteracting
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let biometryInteractor: BiometryInteracting
     private let loginInteractor: LoginInteracting
     private let protectionInteractor: ProtectionInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(importInteractor: BackupImportInteracting, passwordInteractor: PasswordInteracting, biometryInteractor: BiometryInteracting, loginInteractor: LoginInteracting, protectionInteractor: ProtectionInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+    init(importInteractor: BackupImportInteracting, itemsInteractor: ItemsInteracting, biometryInteractor: BiometryInteracting, loginInteractor: LoginInteracting, protectionInteractor: ProtectionInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
         self.importInteractor = importInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.biometryInteractor = biometryInteractor
         self.loginInteractor = loginInteractor
         self.protectionInteractor = protectionInteractor
@@ -49,14 +49,14 @@ final class BackupModuleInteractor {
 extension BackupModuleInteractor: BackupModuleInteracting {
     
     var hasPasswords: Bool {
-        passwordInteractor.hasItems
+        itemsInteractor.hasItems
     }
     
     var canImport: Bool {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.itemsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {

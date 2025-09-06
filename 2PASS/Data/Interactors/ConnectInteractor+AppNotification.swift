@@ -374,7 +374,7 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionPasswordRequestData>.self, from: data)
         let passwordID = actionRequestData.data.loginId
         
-        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
@@ -386,7 +386,7 @@ extension ConnectInteractor {
         
         let passwordValue = {
             if let password = loginItem.password {
-                return passwordInteractor.decrypt(password, isPassword: true, protectionLevel: loginItem.protectionLevel)
+                return itemsInteractor.decrypt(password, isPassword: true, protectionLevel: loginItem.protectionLevel)
             } else {
                 return ""
             }
@@ -416,7 +416,7 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionUpdateRequestData>.self, from: data)
         let passwordID = actionRequestData.data.id
         
-        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
@@ -492,7 +492,7 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionPasswordRequestData>.self, from: data)
         let passwordID = actionRequestData.data.loginId
         
-        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         

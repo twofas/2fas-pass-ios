@@ -16,18 +16,18 @@ protocol ConnectExportInteracting: AnyObject {
 final class ConnectExportInteractor: ConnectExportInteracting {
     
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     
     init(
         mainRepository: MainRepository,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         tagInteractor: TagInteracting,
         uriInteractor: URIInteracting
     ) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
     }
@@ -101,7 +101,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                 return nil
             }
             
-            guard let decryptedPassword = passwordInteractor.decrypt(pass, isPassword: true, protectionLevel: item.protectionLevel) else {
+            guard let decryptedPassword = itemsInteractor.decrypt(pass, isPassword: true, protectionLevel: item.protectionLevel) else {
                 return nil
             }
             

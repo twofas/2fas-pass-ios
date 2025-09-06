@@ -95,7 +95,7 @@ public protocol ImportInteracting: AnyObject {
 
 final class ImportInteractor {
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let uriInteractor: URIInteracting
     private let queue: DispatchQueue
@@ -103,12 +103,12 @@ final class ImportInteractor {
     
     init(
         mainRepository: MainRepository,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         protectionInteractor: ProtectionInteracting,
         uriInteractor: URIInteracting
     ) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.protectionInteractor = protectionInteractor
         self.uriInteractor = uriInteractor
         self.queue = DispatchQueue(label: "ImportQueue", qos: .userInteractive, attributes: .concurrent)

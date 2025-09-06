@@ -77,11 +77,11 @@ public protocol DebugInteracting: AnyObject {
 
 final class DebugInteractor {
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting) {
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
     }
 }
 
@@ -323,7 +323,7 @@ extension DebugInteractor: DebugInteracting {
             let password = words.randomElement() ?? "SomePass123\(i)"
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
-            try? passwordInteractor.createLogin(
+            try? itemsInteractor.createLogin(
                 id: .init(),
                 metadata: .init(
                     creationDate: date,
@@ -348,7 +348,7 @@ extension DebugInteractor: DebugInteracting {
             )
         }
 
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
         mainRepository.webDAVSetHasLocalChanges()
         completion()
     }

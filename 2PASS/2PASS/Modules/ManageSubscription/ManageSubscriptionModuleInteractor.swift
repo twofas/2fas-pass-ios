@@ -19,17 +19,17 @@ protocol ManageSubscriptionModuleInteracting {
 
 final class ManageSubscriptionModuleInteractor: ManageSubscriptionModuleInteracting {
     
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let webBrowsersInteractor: WebBrowsersInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     private let systemInteractor: SystemInteracting
     
-    init(passwordInteractor: PasswordInteracting,
+    init(itemsInteractor: ItemsInteracting,
          webBrowsersInteractor: WebBrowsersInteracting,
          paymentStatusInteractor: PaymentStatusInteracting,
          systemInteractor: SystemInteracting
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.webBrowsersInteractor = webBrowsersInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
         self.systemInteractor = systemInteractor
@@ -40,7 +40,7 @@ final class ManageSubscriptionModuleInteractor: ManageSubscriptionModuleInteract
     }
     
     var itemsCount: Int {
-        passwordInteractor.itemsCount
+        itemsInteractor.itemsCount
     }
     
     @MainActor

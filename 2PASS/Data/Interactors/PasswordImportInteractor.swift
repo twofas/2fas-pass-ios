@@ -14,7 +14,7 @@ public protocol PasswordImportInteracting: AnyObject {
 
 final class PasswordImportInteractor {
     private let fileIconInteractor: FileIconInteracting
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     private let tagInteractor: TagInteracting
@@ -22,14 +22,14 @@ final class PasswordImportInteractor {
     
     init(
         fileIconInteractor: FileIconInteracting,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
         tagInteractor: TagInteracting,
         mainRepository: MainRepository
     ) {
         self.fileIconInteractor = fileIconInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
         self.tagInteractor = tagInteractor
@@ -50,7 +50,7 @@ extension PasswordImportInteractor: PasswordImportInteracting {
             deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
         }
         Log("PasswordImportInteractor - deleted passwords to add: \(toAdd.count)", module: .interactor)
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
     }
 }
 
@@ -64,19 +64,19 @@ private extension PasswordImportInteractor {
         var failure = 0
         
         let localTags = tagInteractor.listAllTags()
-        let localPasswords = passwordInteractor.listAllItems()
+        let localPasswords = itemsInteractor.listAllItems()
         
         let decryptedLocalPasswordValues: [ItemID: String] = localPasswords.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem,
                let passwordValueEnc = loginItem.password,
-               let passwordValue = passwordInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: item.protectionLevel) {
+               let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: item.protectionLevel) {
                 result[item.id] = passwordValue
             }
         }
         let decryptedImportingPasswordValues: [ItemID: String] = passwords.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem,
                let passwordValueEnc = loginItem.password,
-               let passwordValue = passwordInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: loginItem.protectionLevel) {
+               let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: loginItem.protectionLevel) {
                 result[loginItem.id] = passwordValue
             }
         }
@@ -132,11 +132,11 @@ private extension PasswordImportInteractor {
                     imported += 1
                     switch current.trashedStatus {
                     case .no: break
-                    case .yes: passwordInteractor.markAsNotTrashed(for: current.id)
+                    case .yes: itemsInteractor.markAsNotTrashed(for: current.id)
                     }
                 } else {
                     do {
-                        try passwordInteractor.updateItem(password)
+                        try itemsInteractor.updateItem(password)
                         imported += 1
                     } catch {
                         failure += 1
@@ -144,7 +144,7 @@ private extension PasswordImportInteractor {
                 }
             } else {
                 do {
-                    try passwordInteractor.createItem(password)
+                    try itemsInteractor.createItem(password)
                     imported += 1; new += 1
                 } catch {
                     failure += 1
@@ -153,7 +153,7 @@ private extension PasswordImportInteractor {
             Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         }
         Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
 
         NotificationCenter.default.post(name: .didImportItems, object: nil)

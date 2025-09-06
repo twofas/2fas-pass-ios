@@ -26,7 +26,7 @@ public final class ModuleInteractorFactory {
     
     func addPasswordInteractor(editPasswordID: PasswordID?, changeRequest: PasswordDataChangeRequest? = nil) -> AddPasswordModuleInteracting {
         AddPasswordModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
@@ -43,7 +43,7 @@ public final class ModuleInteractorFactory {
     
     func passwordInteractor() -> PasswordsModuleInteracting {
         PasswordsModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
@@ -66,7 +66,7 @@ public final class ModuleInteractorFactory {
     
     func viewPasswordInteractor() -> ViewPasswordModuleInteracting {
         ViewPasswordModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),

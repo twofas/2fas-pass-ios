@@ -22,7 +22,7 @@ public protocol ExportInteracting: AnyObject {
 
 final class ExportInteractor {
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     private let queue: DispatchQueue
@@ -30,12 +30,12 @@ final class ExportInteractor {
     
     init(
         mainRepository: MainRepository,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         tagInteractor: TagInteracting,
         uriInteractor: URIInteracting
     ) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
         self.queue = DispatchQueue(label: "ExportQueue", qos: .userInitiated, attributes: .concurrent)
@@ -335,7 +335,7 @@ private extension ExportInteractor {
             guard let pass = password.password else {
                 return nil
             }
-            return passwordInteractor.decrypt(pass, isPassword: true, protectionLevel: password.protectionLevel)
+            return itemsInteractor.decrypt(pass, isPassword: true, protectionLevel: password.protectionLevel)
         }()
         let securityType: Int = {
             switch password.protectionLevel {

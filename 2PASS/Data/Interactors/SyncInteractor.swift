@@ -24,20 +24,20 @@ final class SyncInteractor {
     private var modifiedDeleted: [DeletedItemData] = []
     private var removedDeleted: [DeletedItemData] = []
     
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let passwordImportInteractor: PasswordImportInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let tagInteractor: TagInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     
     init(
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         passwordImportInteractor: PasswordImportInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         tagInteractor: TagInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.passwordImportInteractor = passwordImportInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
         self.tagInteractor = tagInteractor
@@ -47,22 +47,22 @@ final class SyncInteractor {
 
 extension SyncInteractor: SyncInteracting {
     func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
-        let local = passwordInteractor.listAllItems()
+        let local = itemsInteractor.listAllItems()
         let localTags = tagInteractor.listAllTags()
         let localDeleted = deletedItemsInteractor.listDeletedItems()
         
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
         
         addedPasswords.forEach { item in
-            try? passwordInteractor.createItem(item)
+            try? itemsInteractor.createItem(item)
         }
         
         modifiedPasswords.forEach { item in
-            try? passwordInteractor.updateItem(item)
+            try? itemsInteractor.updateItem(item)
         }
         
         deletedPasswords.forEach { pass in
-            passwordInteractor.externalMarkAsTrashed(for: pass.id)
+            itemsInteractor.externalMarkAsTrashed(for: pass.id)
         }
         
         addedTags.forEach({
@@ -91,7 +91,7 @@ extension SyncInteractor: SyncInteracting {
         
         Log("SyncInteractor:\nadded: \(addedPasswords.count)\nmodified: \(modifiedPasswords.count)\ntrashed: \(deletedPasswords.count)\nadded deletitions: \(addedDeleted.count)\nremoved deletitions: \(removedDeleted.count)")
         
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
         
         if addedPasswords.isEmpty == false || modifiedPasswords.isEmpty == false || deletedPasswords.isEmpty == false {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
@@ -242,6 +242,6 @@ private extension SyncInteractor {
     
     func decrypt(_ data: Data?, protectionLevel: ItemProtectionLevel) -> String? {
         guard let data else { return nil }
-        return passwordInteractor.decrypt(data, isPassword: true, protectionLevel: protectionLevel)
+        return itemsInteractor.decrypt(data, isPassword: true, protectionLevel: protectionLevel)
     }
 }

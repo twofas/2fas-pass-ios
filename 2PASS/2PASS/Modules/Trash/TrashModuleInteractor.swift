@@ -25,13 +25,13 @@ protocol TrashModuleInteracting: AnyObject {
 }
 
 final class TrashModuleInteractor {
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(passwordInteractor: PasswordInteracting, fileIconInteractor: FileIconInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
-        self.passwordInteractor = passwordInteractor
+    init(itemsInteractor: ItemsInteracting, fileIconInteractor: FileIconInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+        self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
@@ -44,7 +44,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.itemsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanLimitItems: Int {
@@ -56,37 +56,37 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     }
     
     func list() -> [ItemData] {
-        passwordInteractor.listTrashedItems()
+        itemsInteractor.listTrashedItems()
     }
     
     func delete(with passwordID: PasswordID) {
         Log("TrashModuleInteractor: Deleting password: \(passwordID)", module: .moduleInteractor)
-        passwordInteractor.deleteItem(for: passwordID)
-        passwordInteractor.saveStorage()
+        itemsInteractor.deleteItem(for: passwordID)
+        itemsInteractor.saveStorage()
     }
     
     func restore(with passwordID: PasswordID) {
         Log("TrashModuleInteractor: Restoring password: \(passwordID)", module: .moduleInteractor)
-        passwordInteractor.markAsNotTrashed(for: passwordID)
-        passwordInteractor.saveStorage()
+        itemsInteractor.markAsNotTrashed(for: passwordID)
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }
     
     func restoreAll() {
         Log("TrashModuleInteractor: Restore all", module: .moduleInteractor)
         list().forEach { password in
-            passwordInteractor.markAsNotTrashed(for: password.id)
+            itemsInteractor.markAsNotTrashed(for: password.id)
         }
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }
     
     func emptyTrash() {
         Log("TrashModuleInteractor: Empty trash", module: .moduleInteractor)
         list().forEach { password in
-            passwordInteractor.deleteItem(for: password.id)
+            itemsInteractor.deleteItem(for: password.id)
         }
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
     }
     
     func cachedImage(from url: URL) -> Data? {

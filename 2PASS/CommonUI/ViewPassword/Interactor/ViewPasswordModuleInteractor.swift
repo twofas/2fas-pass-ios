@@ -18,20 +18,20 @@ protocol ViewPasswordModuleInteracting: AnyObject {
 }
 
 final class ViewPasswordModuleInteractor {
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let systemInteractor: SystemInteracting
     private let fileIconInteractor: FileIconInteracting
     private let uriInteractor: URIInteracting
     private let tagInteractor: TagInteracting
     
     init(
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         systemInteractor: SystemInteracting,
         fileIconInteractor: FileIconInteracting,
         uriInteractor: URIInteracting,
         tagInteractor: TagInteracting
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.systemInteractor = systemInteractor
         self.fileIconInteractor = fileIconInteractor
         self.uriInteractor = uriInteractor
@@ -41,11 +41,11 @@ final class ViewPasswordModuleInteractor {
 
 extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
     func fetchPassword(for passwordID: PasswordID) -> LoginItemData? {
-        passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem
+        itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem
     }
     
     func decryptPassword(for passwordID: PasswordID) -> String? {
-        switch passwordInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false) {
+        switch itemsInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false) {
         case .success(let password): return password
         case .failure: return nil
         }

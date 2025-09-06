@@ -16,15 +16,15 @@ protocol AutoFillModuleInteracting: AnyObject {
 
 final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     
-    init(passwordInteractor: PasswordInteracting) {
-        self.passwordInteractor = passwordInteractor
+    init(itemsInteractor: ItemsInteracting) {
+        self.itemsInteractor = itemsInteractor
     }
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
         guard let passwordID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? ""),
-              let encrypted = passwordInteractor.getEncryptedItemEntity(itemID: passwordID) else {
+              let encrypted = itemsInteractor.getEncryptedItemEntity(itemID: passwordID) else {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }
@@ -33,15 +33,15 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return nil
         }
         
-        guard passwordInteractor.loadTrustedKey() else {
+        guard itemsInteractor.loadTrustedKey() else {
             return nil
         }
         
-        guard let content = passwordInteractor.decryptContent(LoginItemData.Content.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel) else {
+        guard let content = itemsInteractor.decryptContent(LoginItemData.Content.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel) else {
             return nil
         }
         
-        guard let passwordEnc = content.password, let password = passwordInteractor.decrypt(passwordEnc, isPassword: true, protectionLevel: encrypted.protectionLevel) else {
+        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isPassword: true, protectionLevel: encrypted.protectionLevel) else {
             Log("AutoFill - Error while decrypting password", module: .autofill)
             return nil
         }
@@ -58,11 +58,11 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     }
     
     func credential(for passwordID: PasswordID) -> ASPasswordCredential? {
-        guard let loginItem = passwordInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }
-        let result = passwordInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
+        let result = itemsInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
         switch result {
         case .success(let value):
             Log("AutoFill - Complete get credential", module: .autofill)

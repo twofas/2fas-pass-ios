@@ -7,24 +7,24 @@
 import UIKit
 import Common
 
-public enum PasswordInteractorSaveError: Error {
+public enum ItemsInteractorSaveError: Error {
     case encryptionError
     case noVault
     case contentEncodingFailure
 }
 
-public enum PasswordInteractorReencryptError: Error {
+public enum ItemsInteractorReencryptError: Error {
     case encryptionError
     case noVault
 }
 
-public enum PasswordInteractorGetError: Error {
+public enum ItemsInteractorGetError: Error {
     case noPassword
     case decryptionError
     case noEntity
 }
 
-public protocol PasswordInteracting: AnyObject {
+public protocol ItemsInteracting: AnyObject {
     var hasItems: Bool { get }
     var itemsCount: Int { get }
     
@@ -37,7 +37,7 @@ public protocol PasswordInteracting: AnyObject {
         notes: String?,
         iconType: PasswordIconType,
         uris: [PasswordURI]?
-    ) throws(PasswordInteractorSaveError)
+    ) throws(ItemsInteractorSaveError)
     
     func updateLogin(
         id: ItemID,
@@ -48,24 +48,24 @@ public protocol PasswordInteracting: AnyObject {
         notes: String?,
         iconType: PasswordIconType,
         uris: [PasswordURI]?
-    ) throws(PasswordInteractorSaveError)
+    ) throws(ItemsInteractorSaveError)
     
     func createSecureNote(
         id: ItemID,
         metadata: ItemMetadata,
         name: String,
         text: String?
-    ) throws(PasswordInteractorSaveError)
+    ) throws(ItemsInteractorSaveError)
     
     func updateSecureNote(
         id: ItemID,
         metadata: ItemMetadata,
         name: String,
         text: String?
-    ) throws(PasswordInteractorSaveError)
+    ) throws(ItemsInteractorSaveError)
     
-    func createItem(_ item: ItemData) throws(PasswordInteractorSaveError)
-    func updateItem(_ item: ItemData) throws(PasswordInteractorSaveError)
+    func createItem(_ item: ItemData) throws(ItemsInteractorSaveError)
+    func updateItem(_ item: ItemData) throws(ItemsInteractorSaveError)
     
     func saveStorage()
     
@@ -81,7 +81,7 @@ public protocol PasswordInteracting: AnyObject {
     func getPasswordEncryptedContents(
         for passwordID: ItemID,
         checkInTrash: Bool
-    ) -> Result<String?, PasswordInteractorGetError>
+    ) -> Result<String?, ItemsInteractorGetError>
     func getItem(for item: ItemID, checkInTrash: Bool) -> ItemData?
     func listEncryptedItems() -> [ItemEncryptedData]
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
@@ -106,13 +106,13 @@ public protocol PasswordInteracting: AnyObject {
     func reencryptDecryptedList(
         _ list: [RawItemData],
         tags: [ItemTagData],
-        completion: @escaping (Result<Void, PasswordInteractorReencryptError>) -> Void
+        completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     )
     
     func getItemCountForTag(tagID: ItemTagID) -> Int    
 }
 
-final class PasswordInteractor {
+final class ItemsInteractor {
     private let mostUsedUsernamesCount = 5
     
     private let mainRepository: MainRepository
@@ -136,7 +136,7 @@ final class PasswordInteractor {
     }
 }
 
-extension PasswordInteractor: PasswordInteracting {
+extension ItemsInteractor: ItemsInteracting {
     
     var hasItems: Bool { !mainRepository.listPasswords(options: .allNotTrashed).isEmpty }
     
@@ -144,39 +144,39 @@ extension PasswordInteractor: PasswordInteracting {
         mainRepository.listPasswords(options: .allNotTrashed).count
     }
     
-    func createSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(PasswordInteractorSaveError) {
+    func createSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) {
         let secureNoteItem = try makeSecureNote(id: id, metadata: metadata, name: name, text: text)
         try createItem(.secureNote(secureNoteItem))
     }
     
-    func updateSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(PasswordInteractorSaveError) {
+    func updateSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) {
         let secureNoteItem = try makeSecureNote(id: id, metadata: metadata, name: name, text: text)
         try updateItem(.secureNote(secureNoteItem))
     }
     
-    func createLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(PasswordInteractorSaveError) {
+    func createLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
         let loginItem = try makeLogin(id: id, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
         try createItem(.login(loginItem))
     }
     
-    func updateLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(PasswordInteractorSaveError) {
+    func updateLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
         let loginItem = try makeLogin(id: id, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
         try updateItem(.login(loginItem))
     }
     
-    func createItem(_ item: ItemData) throws(PasswordInteractorSaveError) {
+    func createItem(_ item: ItemData) throws(ItemsInteractorSaveError) {
         guard let selectedVault = mainRepository.selectedVault else {
-            Log("Password interactor: Create password. No vault", module: .interactor, severity: .error)
+            Log("ItemsInteractor: Create item. No vault", module: .interactor, severity: .error)
             throw .noVault
         }
         
         guard let contentData = try? encodeContent(in: item) else {
-            Log("PasswordInteractor - can't encode content", module: .interactor, severity: .error)
+            Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
         
         guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel) else {
-            Log("Password interactor: Create password. Encryption error", module: .interactor, severity: .error)
+            Log("ItemsInteractor: Create item. Encryption error", module: .interactor, severity: .error)
             return
         }
         
@@ -207,19 +207,19 @@ extension PasswordInteractor: PasswordInteracting {
         )
     }
     
-    func updateItem(_ item: ItemData) throws(PasswordInteractorSaveError) {
+    func updateItem(_ item: ItemData) throws(ItemsInteractorSaveError) {
         guard let selectedVault = mainRepository.selectedVault else {
-            Log("Password interactor: Create password. No vault", module: .interactor, severity: .error)
+            Log("ItemsInteractor: Update item. No vault", module: .interactor, severity: .error)
             throw .noVault
         }
         
         guard let contentData = try? encodeContent(in: item) else {
-            Log("PasswordInteractor - can't encode content", module: .interactor, severity: .error)
+            Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
         
         guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel) else {
-            Log("Password interactor: Create password. Encryption error", module: .interactor, severity: .error)
+            Log("ItemsInteractor: Update item. Encryption error", module: .interactor, severity: .error)
             return
         }
         
@@ -293,7 +293,7 @@ extension PasswordInteractor: PasswordInteracting {
         listItems(searchPhrase: nil, sortBy: .newestFirst, trashed: .all)
     }
     
-    func getPasswordEncryptedContents(for passwordID: PasswordID, checkInTrash: Bool = false) -> Result<String?, PasswordInteractorGetError> {
+    func getPasswordEncryptedContents(for passwordID: PasswordID, checkInTrash: Bool = false) -> Result<String?, ItemsInteractorGetError> {
         guard let rawItem = mainRepository.getPasswordEntity(passwordID: passwordID, checkInTrash: checkInTrash),
               let loginItem = ItemData(rawItem, decoder: mainRepository.jsonDecoder)?.asLoginItem else {
             return .failure(.noEntity)
@@ -324,7 +324,7 @@ extension PasswordInteractor: PasswordInteracting {
     
     func listEncryptedItems() -> [ItemEncryptedData] {
         guard let selectedVault = mainRepository.selectedVault else {
-            Log("Password interactor: listEncryptedItems. No vault", module: .interactor, severity: .error)
+            Log("ItemsInteractor: listEncryptedItems. No vault", module: .interactor, severity: .error)
             return []
         }
         return mainRepository.listEncryptedItems(in: selectedVault.vaultID)
@@ -377,7 +377,7 @@ extension PasswordInteractor: PasswordInteracting {
     
     func deleteItem(for itemID: ItemID) {
         Log(
-            "PasswordInteractor: Deleting password for passwordID: \(itemID)",
+            "ItemsInteractor: Deleting item for itemID: \(itemID)",
             module: .interactor
         )
         mainRepository.deletePassword(passwordID: itemID)
@@ -388,7 +388,7 @@ extension PasswordInteractor: PasswordInteracting {
         let date = mainRepository.currentDate
         
         Log(
-            "PasswordInteractor: Marking as trashed for itemID: \(itemID)",
+            "ItemsInteractor: Marking as trashed for itemID: \(itemID)",
             module: .interactor
         )
         guard let entity = getItem(for: itemID, checkInTrash: false),
@@ -401,13 +401,13 @@ extension PasswordInteractor: PasswordInteracting {
         deletedItemsInteractor.createDeletedItem(id: itemID, kind: .login, deletedAt: date)
     }
     
-    func externalMarkAsTrashed(for passwordID: PasswordID) {
+    func externalMarkAsTrashed(for itemID: ItemID) {
         Log(
-            "PasswordInteractor: External marking as trashed for passwordID: \(passwordID)",
+            "ItemsInteractor: External marking as trashed for itemID: \(itemID)",
             module: .interactor
         )
-        guard let entity = getItem(for: passwordID, checkInTrash: false),
-              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: passwordID)
+        guard let entity = getItem(for: itemID, checkInTrash: false),
+              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: itemID)
         else {
             return
         }
@@ -416,26 +416,26 @@ extension PasswordInteractor: PasswordInteracting {
         markAsTrashed(entity: entity, encryptedEntity: encryptedEntity, date: date)
     }
     
-    func markAsNotTrashed(for passwordID: PasswordID) {
+    func markAsNotTrashed(for itemID: ItemID) {
         Log(
-            "PasswordInteractor: Marking as not trashed for passwordID: \(passwordID)",
+            "ItemsInteractor: Marking as not trashed for itemID: \(itemID)",
             module: .interactor
         )
-        guard let entity = getItem(for: passwordID, checkInTrash: true),
-              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: passwordID)
+        guard let entity = getItem(for: itemID, checkInTrash: true),
+              let encryptedEntity = mainRepository.getEncryptedItemEntity(itemID: itemID)
         else {
             return
         }
         
         guard let contentData = try? encodeContent(in: entity) else {
-            Log("PasswordInteractor - can't encode content", module: .interactor, severity: .error)
+            Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             return
         }
         
         let date = mainRepository.currentDate
         
         mainRepository.updateItem(
-            itemID: passwordID,
+            itemID: itemID,
             modificationDate: date,
             trashedStatus: .no,
             protectionLevel: entity.protectionLevel,
@@ -447,7 +447,7 @@ extension PasswordInteractor: PasswordInteracting {
         )
 
         mainRepository.updateEncryptedItem(
-            itemID: passwordID,
+            itemID: itemID,
             modificationDate: date,
             trashedStatus: .no,
             protectionLevel: encryptedEntity.protectionLevel,
@@ -457,7 +457,7 @@ extension PasswordInteractor: PasswordInteracting {
             vaultID: encryptedEntity.vaultID,
             tagIds: encryptedEntity.tagIds
         )
-        deletedItemsInteractor.deleteDeletedItem(id: passwordID)
+        deletedItemsInteractor.deleteDeletedItem(id: itemID)
     }
     
     func encrypt(_ string: String, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data? {
@@ -539,12 +539,12 @@ extension PasswordInteractor: PasswordInteracting {
     func reencryptDecryptedList(
         _ list: [RawItemData],
         tags: [ItemTagData],
-        completion: @escaping (Result<Void, PasswordInteractorReencryptError>) -> Void
+        completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     ) {
         let date = mainRepository.currentDate
-        Log("Password interactor - Reencrypting \(list.count) passwords", module: .interactor)
+        Log("ItemsInteractor - Reencrypting \(list.count) items", module: .interactor)
         guard let selectedVaultID = mainRepository.selectedVault?.vaultID else {
-            Log("Password interactor: Update password. No vault", module: .interactor, severity: .error)
+            Log("ItemsInteractor: Update item. No vault", module: .interactor, severity: .error)
             completion(.failure(.noVault))
             return
         }
@@ -587,7 +587,7 @@ extension PasswordInteractor: PasswordInteracting {
             }
         }
         
-        Log("Password interactor - Password field encrypted", module: .interactor)
+        Log("ItemsInteractor - Secure fields encrypted", module: .interactor)
         
         let passwordsEncrypted = passwordsEncryptedBuffer.compactMap {
             switch $0 {
@@ -646,12 +646,12 @@ extension PasswordInteractor: PasswordInteracting {
             return
         }
         
-        Log("Password interactor - rest of the field encrypted", module: .interactor)
+        Log("ItemsInteractor - rest of the field encrypted", module: .interactor)
         
         mainRepository.passwordsBatchUpdate(passwordsEncrypted)
-        Log("Password interactor - Password entries updated", module: .interactor)
+        Log("ItemsInteractor - Items entries updated", module: .interactor)
         mainRepository.encryptedItemsBatchUpdate(fullyEncrypted)
-        Log("Password interactor - Password encrypted entries updated", module: .interactor)
+        Log("ItemsInteractor - Items encrypted entries updated", module: .interactor)
         
         tagInteractor.batchUpdateTagsForNewEncryption(tags)
         
@@ -662,7 +662,7 @@ extension PasswordInteractor: PasswordInteracting {
     
     @discardableResult func loadTrustedKey() -> Bool {
         guard let trustedKey = mainRepository.trustedKeyFromVault else {
-            Log("PasswordInteractor - error while loading trusted key", module: .interactor, severity: .error)
+            Log("ItemsInteractor - error while loading trusted key", module: .interactor, severity: .error)
             return false
         }
                 
@@ -679,7 +679,7 @@ extension PasswordInteractor: PasswordInteracting {
     }
 }
 
-private extension PasswordInteractor {
+private extension ItemsInteractor {
     
     func encodeContent(in item: ItemData) throws -> Data {
         switch item {
@@ -694,7 +694,7 @@ private extension PasswordInteractor {
     
     func markAsTrashed(entity: ItemData, encryptedEntity: ItemEncryptedData, date: Date) {
         guard let contentData = try? encodeContent(in: entity) else {
-            Log("PasswordInteractor - can't encode content", module: .interactor, severity: .error)
+            Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             return
         }
         
@@ -778,11 +778,11 @@ private extension PasswordInteractor {
         
         let urisUnpacked = urisList.map({ $0.uri })
         guard let urisJSON = try? mainRepository.jsonEncoder.encode(urisUnpacked) else {
-            Log("PasswordInteractor - can't encode uris to JSON", module: .interactor, severity: .error)
+            Log("ItemsInteractor - can't encode uris to JSON", module: .interactor, severity: .error)
             return nil
         }
         guard let encryptedURIs = encryptData(urisJSON, isSecureField: false, protectionLevel: protectionLevel) else {
-            Log("PasswordInteractor - error encrypting uris JSON", module: .interactor, severity: .error)
+            Log("ItemsInteractor - error encrypting uris JSON", module: .interactor, severity: .error)
             return nil
         }
         uris = encryptedURIs
@@ -811,7 +811,7 @@ private extension PasswordInteractor {
         let name = name.nilIfEmpty
         if let name {
             guard let encrypted = encrypt(name, isSecureField: false, protectionLevel: protectionLevel) else {
-                Log("Password interactor: Update password. Can't encrypt name", module: .interactor, severity: .error)
+                Log("ItemsInteractor: Update password. Can't encrypt name", module: .interactor, severity: .error)
                 return nil
             }
             encryptedName = encrypted
@@ -822,7 +822,7 @@ private extension PasswordInteractor {
         if let username {
             guard let encrypted = encrypt(username, isSecureField: false, protectionLevel: protectionLevel) else {
                 Log(
-                    "Password interactor: Update password. Can't encrypt username",
+                    "ItemsInteractor: Update password. Can't encrypt username",
                     module: .interactor,
                     severity: .error
                 )
@@ -835,7 +835,7 @@ private extension PasswordInteractor {
         if let notes {
             guard let encrypted = encrypt(notes, isSecureField: false, protectionLevel: protectionLevel) else {
                 Log(
-                    "Password interactor: Update password. Can't encrypt notes",
+                    "ItemsInteractor: Update password. Can't encrypt notes",
                     module: .interactor,
                     severity: .error
                 )
@@ -848,14 +848,14 @@ private extension PasswordInteractor {
             iconType: iconType,
             protectionLevel: protectionLevel
         ) else {
-            Log("Password interactor: Update password. Can't encrypt icon type", module: .interactor, severity: .error)
+            Log("ItemsInteractor: Update password. Can't encrypt icon type", module: .interactor, severity: .error)
             return nil
         }
         
         var encryptedURIs: PasswordEncryptedURIs?
         if let uris, !uris.isEmpty {
             guard let encrypted = createEncryptedURIs(from: uris, protectionLevel: protectionLevel) else {
-                Log("Password interactor: Update password. Can't encrypt uris", module: .interactor, severity: .error)
+                Log("ItemsInteractor: Update password. Can't encrypt uris", module: .interactor, severity: .error)
                 return nil
             }
             encryptedURIs = encrypted
@@ -870,12 +870,12 @@ private extension PasswordInteractor {
         )
     }
     
-    func makeLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(PasswordInteractorSaveError) -> LoginItemData {
+    func makeLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) -> LoginItemData {
         var encryptedPassword: Data?
         if let password = password?.trim(), !password.isEmpty {
             guard let encrypted = encrypt(password, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
                 Log(
-                    "Password interactor: Create password. Can't encrypt password",
+                    "ItemsInteractor: Create login. Can't encrypt password",
                     module: .interactor,
                     severity: .error
                 )
@@ -899,12 +899,12 @@ private extension PasswordInteractor {
         )
     }
     
-    func makeSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(PasswordInteractorSaveError) -> SecureNoteItemData {
+    func makeSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) -> SecureNoteItemData {
         var encryptedText: Data?
         if let text = text?.trim(), !text.isEmpty {
             guard let encrypted = encrypt(text, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
                 Log(
-                    "Password interactor: Create secure note. Can't encrypt text",
+                    "ItemsInteractor: Create secure note. Can't encrypt text",
                     module: .interactor,
                     severity: .error
                 )
