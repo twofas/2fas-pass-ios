@@ -154,20 +154,24 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
     ) -> SavePasswordResult {
         let date = currentDateInteractor.currentDate
         if let current = getEditPassword() {
-            switch passwordInteractor.updatePassword(
-                for: current.id,
-                name: name,
-                username: username,
-                password: password,
-                notes: notes,
-                modificationDate: date,
-                iconType: iconType,
-                trashedStatus: .no,
-                protectionLevel: protectionLevel,
-                uris: uris,
-                tagIds: tagIds ?? current.tagIds
-            ) {
-            case .success:
+            do {
+                try passwordInteractor.updateLogin(
+                    id: current.id,
+                    metadata: .init(
+                        creationDate: current.creationDate,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds ?? current.tagIds
+                    ),
+                    name: name,
+                    username: username,
+                    password: password,
+                    notes: notes,
+                    iconType: iconType,
+                    uris: uris
+                )
+                
                 Log("AddPasswordModuleInteractor - success while updating password. Saving storage")
                 passwordInteractor.saveStorage()
                 syncChangeTriggerInteractor.trigger()
@@ -183,40 +187,48 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                 }
                 
                 return .success(.saved(current.id))
-            case .failure(let error): return .failure(.interactorError(error))
+                
+            } catch {
+                return .failure(.interactorError(error))
             }
         } else {
-            let passwordID = UUID()
-            switch passwordInteractor.createPassword(
-                passwordID: passwordID,
-                name: name,
-                username: username,
-                password: password,
-                notes: notes,
-                creationDate: date,
-                modificationDate: date,
-                iconType: iconType,
-                trashedStatus: .no,
-                protectionLevel: protectionLevel,
-                uris: uris,
-                tagIds: tagIds
-            ) {
-            case .success:
+            let itemID = UUID()
+            do {
+                try passwordInteractor.createLogin(
+                    id: itemID,
+                    metadata: .init(
+                        creationDate: date,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds
+                    ),
+                    name: name,
+                    username: username,
+                    password: password,
+                    notes: notes,
+                    iconType: iconType,
+                    uris: uris
+                )
+                
                 Log("AddPasswordModuleInteractor - success while adding password. Saving storage")
+                
                 passwordInteractor.saveStorage()
                 syncChangeTriggerInteractor.trigger()
             
                 Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                     try await autoFillCredentialsInteractor.addSuggestions(
-                        passwordID: passwordID,
+                        passwordID: itemID,
                         username: username,
                         uris: uris,
                         protectionLevel: protectionLevel
                     )
                 }
                 
-                return .success(.saved(passwordID))
-            case .failure(let error): return .failure(.interactorError(error))
+                return .success(.saved(itemID))
+                
+            } catch {
+                return .failure(.interactorError(error))
             }
         }
     }

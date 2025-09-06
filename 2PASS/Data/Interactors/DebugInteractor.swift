@@ -323,26 +323,28 @@ extension DebugInteractor: DebugInteracting {
             let password = words.randomElement() ?? "SomePass123\(i)"
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
-            _ = passwordInteractor.createPassword(
-                passwordID: .init(),
+            try? passwordInteractor.createLogin(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: [ItemProtectionLevel.confirm,
+                                      ItemProtectionLevel.normal,
+                                      ItemProtectionLevel.topSecret].randomElement() ?? .normal,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
                 name: name,
                 username: username,
                 password: password,
                 notes: notes,
-                creationDate: date,
-                modificationDate: date,
                 iconType: .default,
-                trashedStatus: .no,
-                protectionLevel: [ItemProtectionLevel.confirm,
-                ItemProtectionLevel.normal,
-                ItemProtectionLevel.topSecret].randomElement() ?? .normal,
                 uris: [.init(uri: username,
                 match: .domain),
                 .init(uri: name,
                 match: .exact),
                 .init(uri: password,
                 match: .startsWith)],
-                tagIds: nil
             )
         }
 
