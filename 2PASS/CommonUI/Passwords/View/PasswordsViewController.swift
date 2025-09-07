@@ -59,7 +59,7 @@ final class PasswordsViewController: UIViewController {
                     self?.presenter.onSetContentTypeFilter(category.contentType)
                 }
             )
-            .padding(.top, 4)
+            .padding(.top, 6)
             .frame(height: contentTypPickerHeight, alignment: .top)
         )
         
