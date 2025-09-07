@@ -73,7 +73,7 @@ public protocol ItemsInteracting: AnyObject {
         searchPhrase: String?,
         tagId: ItemTagID?,
         sortBy: SortType,
-        trashed: PasswordListOptions.TrashOptions
+        trashed: ItemsListOptions.TrashOptions
     ) -> [ItemData]
     func listTrashedItems() -> [ItemData]
     func listAllItems() -> [ItemData]
@@ -257,7 +257,7 @@ extension ItemsInteractor: ItemsInteracting {
         searchPhrase: String?,
         tagId: ItemTagID? = nil,
         sortBy: SortType = .newestFirst,
-        trashed: PasswordListOptions.TrashOptions = .no
+        trashed: ItemsListOptions.TrashOptions = .no
     ) -> [ItemData] {
         let searchPhrase: String? = {
             if let searchPhrase {

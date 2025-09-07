@@ -311,7 +311,7 @@ protocol MainRepository: AnyObject {
     ) -> RawItemData?
     
     func listItems(
-        options: PasswordListOptions
+        options: ItemsListOptions
     ) -> [RawItemData]
     
     func listTrashedPasswords() -> [RawItemData]

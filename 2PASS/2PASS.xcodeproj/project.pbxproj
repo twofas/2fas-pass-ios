@@ -93,8 +93,8 @@
 		C249E7792BF10B23003464D5 /* Storage.h in Headers */ = {isa = PBXBuildFile; fileRef = C249E7782BF10B23003464D5 /* Storage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C249E77C2BF10B23003464D5 /* Storage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C249E7762BF10B23003464D5 /* Storage.framework */; };
 		C249E77D2BF10B23003464D5 /* Storage.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C249E7762BF10B23003464D5 /* Storage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C249E7872BF130E8003464D5 /* PasswordEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C249E7852BF130E8003464D5 /* PasswordEntity+CoreDataClass.swift */; };
-		C249E7882BF130E8003464D5 /* PasswordEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C249E7862BF130E8003464D5 /* PasswordEntity+CoreDataProperties.swift */; };
+		C249E7872BF130E8003464D5 /* ItemEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C249E7852BF130E8003464D5 /* ItemEntity+CoreDataClass.swift */; };
+		C249E7882BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C249E7862BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift */; };
 		C25577212DC819790025C09F /* ExternalService+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25577202DC819590025C09F /* ExternalService+.swift */; };
 		C25D38D72BF94F4200F95A55 /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D52BF94F4200F95A55 /* Assets.swift */; };
 		C25D38D82BF94F4200F95A55 /* T.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D62BF94F4200F95A55 /* T.generated.swift */; };
@@ -374,8 +374,8 @@
 		C246BAFF2C46FE01007CF48D /* SocialChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialChannel.swift; sourceTree = "<group>"; };
 		C249E7762BF10B23003464D5 /* Storage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Storage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C249E7782BF10B23003464D5 /* Storage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Storage.h; sourceTree = "<group>"; };
-		C249E7852BF130E8003464D5 /* PasswordEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PasswordEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		C249E7862BF130E8003464D5 /* PasswordEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PasswordEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		C249E7852BF130E8003464D5 /* ItemEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		C249E7862BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C25577202DC819590025C09F /* ExternalService+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExternalService+.swift"; sourceTree = "<group>"; };
 		C25D38D52BF94F4200F95A55 /* Assets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
 		C25D38D62BF94F4200F95A55 /* T.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = T.generated.swift; sourceTree = "<group>"; };
@@ -805,14 +805,14 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
-		C249E7812BF10B5B003464D5 /* Password */ = {
+		C249E7812BF10B5B003464D5 /* Item */ = {
 			isa = PBXGroup;
 			children = (
-				C249E7852BF130E8003464D5 /* PasswordEntity+CoreDataClass.swift */,
-				C249E7862BF130E8003464D5 /* PasswordEntity+CoreDataProperties.swift */,
+				C249E7852BF130E8003464D5 /* ItemEntity+CoreDataClass.swift */,
+				C249E7862BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift */,
 				C2145B662BF559AC00A40A0A /* PasswordListOptions+.swift */,
 			);
-			path = Password;
+			path = Item;
 			sourceTree = "<group>";
 		};
 		C25D38D02BF94E5F00F95A55 /* Other */ = {
@@ -1130,7 +1130,7 @@
 			children = (
 				8FD25CFB2CC30BDE001DC8EB /* TwoPass.xcdatamodeld */,
 				C2FC82642E0EDE9F0030EDCB /* Tag */,
-				C249E7812BF10B5B003464D5 /* Password */,
+				C249E7812BF10B5B003464D5 /* Item */,
 			);
 			path = InMemory;
 			sourceTree = "<group>";
@@ -1704,11 +1704,11 @@
 				C298FD3F2D39C56200CFFB3D /* CloudCacheStorageDataSource.swift in Sources */,
 				8FD25CFA2CC30BC9001DC8EB /* LogStorage.xcdatamodeld in Sources */,
 				C2FC82682E0F21E10030EDCB /* TagListOptions.swift in Sources */,
-				C249E7872BF130E8003464D5 /* PasswordEntity+CoreDataClass.swift in Sources */,
+				C249E7872BF130E8003464D5 /* ItemEntity+CoreDataClass.swift in Sources */,
 				C2145B672BF559AC00A40A0A /* PasswordListOptions+.swift in Sources */,
 				C28A01072BF417C900BAF976 /* InMemoryStorageDataSource.swift in Sources */,
 				C21422CE2C8E42C200C978F9 /* LogEntryEntity+CodeDataClass.swift in Sources */,
-				C249E7882BF130E8003464D5 /* PasswordEntity+CoreDataProperties.swift in Sources */,
+				C249E7882BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift in Sources */,
 				C21422C42C8E422400C978F9 /* LogHandler.swift in Sources */,
 				C21422D02C8E432700C978F9 /* LogStorageDataSource.swift in Sources */,
 				C2D8995C2E2C4A69008521D1 /* ItemCachedEntity+CoreDataProperties.swift in Sources */,

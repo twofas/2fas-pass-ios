@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24295.2" systemVersion="25A5351b" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="PasswordEntity" representedClassName=".PasswordEntity" syncable="YES">
+    <entity name="ItemEntity" representedClassName=".ItemEntity" syncable="YES">
         <attribute name="contentData" attributeType="Binary"/>
         <attribute name="contentType" attributeType="String"/>
         <attribute name="contentVersion" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>

@@ -43,7 +43,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         contentVersion: Int,
         content: Data
     ) {
-        PasswordEntity.create(
+        ItemEntity.create(
             on: context,
             itemID: itemID,
             creationDate: creationDate,
@@ -69,7 +69,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         contentVersion: Int,
         content: Data
     ) {
-        PasswordEntity.update(
+        ItemEntity.update(
             on: context,
             for: itemID,
             modificationDate: modificationDate,
@@ -84,10 +84,10 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     }
     
     public func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date) {
-        let listAll = PasswordEntity.listItems(on: context, options: .all)
+        let listAll = ItemEntity.listItems(on: context, options: .all)
         for item in items {
             if let entity = listAll.first(where: { $0.itemID == item.id }) {
-                PasswordEntity.update(
+                ItemEntity.update(
                     on: context,
                     entity: entity,
                     modificationDate: date,
@@ -109,7 +109,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData? {
-        PasswordEntity.getEntity(
+        ItemEntity.getEntity(
             on: context,
             itemID: itemID,
             checkInTrash: checkInTrash
@@ -117,23 +117,23 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     }
     
     public func listItems(
-        options: PasswordListOptions
+        options: ItemsListOptions
     ) -> [RawItemData] {
-        PasswordEntity.listItems(on: context, options: options)
+        ItemEntity.listItems(on: context, options: options)
             .map { $0.toData() }
     }
 
     public func deleteItem(itemID: ItemID) {
-        guard let entity = PasswordEntity.getEntity(
+        guard let entity = ItemEntity.getEntity(
             on: context,
             itemID: itemID,
             checkInTrash: true
         ) else { return }
-        PasswordEntity.delete(on: context, entity: entity)
+        ItemEntity.delete(on: context, entity: entity)
     }
     
     public func deleteAllItemEntities() {
-        PasswordEntity.deleteAllItemEntities(on: context)
+        ItemEntity.deleteAllItemEntities(on: context)
     }
 }
 
@@ -226,7 +226,7 @@ extension InMemoryStorageDataSourceImpl {
 
 extension InMemoryStorageDataSourceImpl {
     public func listUsernames() -> [String] {
-        PasswordEntity.listItems(on: context, options: .allNotTrashed)
+        ItemEntity.listItems(on: context, options: .allNotTrashed)
             .compactMap {
                 if let loginItem = ItemData($0.toData())?.asLoginItem {
                     return loginItem.username

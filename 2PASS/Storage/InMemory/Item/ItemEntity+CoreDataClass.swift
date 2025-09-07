@@ -8,9 +8,9 @@ import Foundation
 import CoreData
 import Common
 
-@objc(PasswordEntity)
-final class PasswordEntity: NSManagedObject {
-    @nonobjc static let entityName = "PasswordEntity"
+@objc(ItemEntity)
+final class ItemEntity: NSManagedObject {
+    @nonobjc static let entityName = "ItemEntity"
     
     @nonobjc static func create(
         on context: NSManagedObjectContext,
@@ -25,7 +25,7 @@ final class PasswordEntity: NSManagedObject {
         contentVersion: Int,
         content: Data
     ) {
-        let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! PasswordEntity
+        let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! ItemEntity
         
         entity.itemID = itemID
         entity.name = name
@@ -85,7 +85,7 @@ final class PasswordEntity: NSManagedObject {
     
     @nonobjc static func update(
         on context: NSManagedObjectContext,
-        entity: PasswordEntity,
+        entity: ItemEntity,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -123,7 +123,7 @@ final class PasswordEntity: NSManagedObject {
         on context: NSManagedObjectContext,
         itemID: UUID,
         checkInTrash: Bool
-    ) -> PasswordEntity? {
+    ) -> ItemEntity? {
         let list = listItems(
             on: context,
             options: checkInTrash ? .findExistingByItemID(itemID) : .findNotTrashedByItemID(itemID)
@@ -142,12 +142,12 @@ final class PasswordEntity: NSManagedObject {
     
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
-        options: PasswordListOptions
-    ) -> [PasswordEntity] {
+        options: ItemsListOptions
+    ) -> [ItemEntity] {
         listItems(on: context, predicate: options.predicate, sortDescriptors: options.sortDescriptors)
     }
     
-    @nonobjc static func delete(on context: NSManagedObjectContext, entity: PasswordEntity) {
+    @nonobjc static func delete(on context: NSManagedObjectContext, entity: ItemEntity) {
         Log("Deleting entity of type: \(entity)", module: .storage)
         context.delete(entity)
     }
@@ -160,13 +160,13 @@ final class PasswordEntity: NSManagedObject {
     }
 }
 
-private extension PasswordEntity {
+private extension ItemEntity {
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
         predicate: NSPredicate?,
         sortDescriptors: [NSSortDescriptor]?
-    ) -> [PasswordEntity] {
-        let fetchRequest = PasswordEntity.fetchRequest()
+    ) -> [ItemEntity] {
+        let fetchRequest = ItemEntity.fetchRequest()
         if let predicate {
             fetchRequest.predicate = predicate
         }
@@ -174,7 +174,7 @@ private extension PasswordEntity {
             fetchRequest.sortDescriptors = sortDescriptors
         }
         
-        var list: [PasswordEntity] = []
+        var list: [ItemEntity] = []
         
         do {
             list = try context.fetch(fetchRequest)

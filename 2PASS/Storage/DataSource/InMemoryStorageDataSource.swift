@@ -46,7 +46,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     ) -> RawItemData?
     
     func listItems(
-        options: PasswordListOptions
+        options: ItemsListOptions
     ) -> [RawItemData]
     
     func deleteItem(itemID: ItemID)

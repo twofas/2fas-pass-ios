@@ -90,7 +90,7 @@ extension MainRepositoryImpl {
     }
     
     func listItems(
-        options: PasswordListOptions
+        options: ItemsListOptions
     ) -> [RawItemData] {
         inMemoryStorage?.listItems(options: options) ?? []
     }

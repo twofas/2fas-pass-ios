@@ -8,9 +8,9 @@ import Foundation
 import CoreData
 import Common
 
-extension PasswordEntity {
-    @nonobjc static func fetchRequest() -> NSFetchRequest<PasswordEntity> {
-        NSFetchRequest<PasswordEntity>(entityName: entityName)
+extension ItemEntity {
+    @nonobjc static func fetchRequest() -> NSFetchRequest<ItemEntity> {
+        NSFetchRequest<ItemEntity>(entityName: entityName)
     }
     
     @NSManaged var itemID: ItemID
@@ -31,9 +31,9 @@ extension PasswordEntity {
     @NSManaged var contentData: Data
 }
 
-extension PasswordEntity: Identifiable {}
+extension ItemEntity: Identifiable {}
 
-extension PasswordEntity {
+extension ItemEntity {
     
     func toData() -> RawItemData {
         let metadata = ItemMetadata(

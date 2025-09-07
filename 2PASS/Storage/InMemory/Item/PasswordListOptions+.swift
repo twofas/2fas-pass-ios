@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-extension PasswordListOptions {
+extension ItemsListOptions {
     var predicate: NSPredicate? {
         var andPredicates: [NSPredicate] = []
         
@@ -23,7 +23,7 @@ extension PasswordListOptions {
             andPredicates.append(Predicate.findByItemID(itemID))
         case .findNotTrashedByItemID(let itemID):
             andPredicates.append(contentsOf: [Predicate.findByItemID(itemID), Predicate.notTrashedItems])
-        case .includePasswords(let itemIDs):
+        case .includeItems(let itemIDs):
             andPredicates.append(contentsOf: [Predicate.paswords(itemIDs), Predicate.notTrashedItems])
         case .allTrashed:
             andPredicates.append(Predicate.trashedItems)
@@ -63,7 +63,7 @@ extension PasswordListOptions {
     }
 }
 
-extension PasswordListOptions.TrashOptions {
+extension ItemsListOptions.TrashOptions {
     var predicate: NSPredicate? {
         switch self {
         case .yes:
@@ -77,16 +77,16 @@ extension PasswordListOptions.TrashOptions {
 }
 
 enum PasswordSortDescriptor {
-    static let trashingDate = NSSortDescriptor(key: #keyPath(PasswordEntity.trashingDate), ascending: false)
-    static let newestFirst = NSSortDescriptor(key: #keyPath(PasswordEntity.creationDate), ascending: false)
-    static let oldestFirst = NSSortDescriptor(key: #keyPath(PasswordEntity.creationDate), ascending: true)
+    static let trashingDate = NSSortDescriptor(key: #keyPath(ItemEntity.trashingDate), ascending: false)
+    static let newestFirst = NSSortDescriptor(key: #keyPath(ItemEntity.creationDate), ascending: false)
+    static let oldestFirst = NSSortDescriptor(key: #keyPath(ItemEntity.creationDate), ascending: true)
     static let sortByNameAscending = NSSortDescriptor(
-        key: #keyPath(PasswordEntity.name),
+        key: #keyPath(ItemEntity.name),
         ascending: true,
         selector: #selector(NSString.localizedStandardCompare)
     )
     static let sortByNameDescending = NSSortDescriptor(
-        key: #keyPath(PasswordEntity.name),
+        key: #keyPath(ItemEntity.name),
         ascending: false,
         selector: #selector(NSString.localizedStandardCompare)
     )
@@ -104,7 +104,7 @@ enum Predicate {
         NSPredicate(format: "itemID IN %@", itemIDs)
     }
     
-    static func excludePasswords(_ itemIDs: [UUID]) -> NSPredicate {
+    static func excludeItems(_ itemIDs: [UUID]) -> NSPredicate {
         NSPredicate(format: "NOT (itemID IN %@)", itemIDs)
     }
     
