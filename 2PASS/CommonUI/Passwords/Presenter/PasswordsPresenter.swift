@@ -179,7 +179,7 @@ extension PasswordsPresenter {
     }
 
     func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
-        interactor.countPasswordsForTag(tagID)
+        interactor.countItemsForTag(tagID)
     }
 }
 

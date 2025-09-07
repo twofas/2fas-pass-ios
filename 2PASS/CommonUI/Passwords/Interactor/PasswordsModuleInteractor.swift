@@ -31,7 +31,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     
     func normalizedURL(for uri: String) -> URL?
     func listAllTags() -> [ItemTagData]
-    func countPasswordsForTag(_ tagID: ItemTagID) -> Int
+    func countItemsForTag(_ tagID: ItemTagID) -> Int
 }
 
 final class PasswordsModuleInteractor {
@@ -211,7 +211,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             .sorted(by: { $0.name < $1.name })
     }
     
-    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
+    func countItemsForTag(_ tagID: ItemTagID) -> Int {
         itemsInteractor.getItemCountForTag(tagID: tagID)
     }
 }
