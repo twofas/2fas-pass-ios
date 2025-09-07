@@ -24,11 +24,13 @@ final class PasswordsViewController: UIViewController {
     private(set) var navigationBarHeight: NSLayoutConstraint?
     private(set) var isSearching: Bool = false
     
+    let contentTypPickerHeight: CGFloat = 56
     let minNavigationBarHeight = 100.0
     var largeTitleNavigationBarHeight: CGFloat {
         navigationBar.largeDisplayModeHeight
     }
     private(set) var preventHideSearching = true
+    let categoryPickerBottomLine = UIView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +43,49 @@ final class PasswordsViewController: UIViewController {
         setupDelegates()
         setupDataSource()
         setupEmptyLists()
+
+        let categories = [
+            CategoryItem(contentType: .all, title: "All items", icon: "briefcase.fill", color: .brand500),
+            CategoryItem(contentType: .contentType(.login), title: "Logins", icon: "person.crop.square.fill", color: Color(uiColor: UIColor(hexString: "#00C700")!)),
+            CategoryItem(contentType: .contentType(.notes), title: "Secure Notes", icon: "note.text", color: Color(uiColor: UIColor(hexString: "#FF8400")!)),
+            CategoryItem(contentType: .contentType(.cards), title: "Cards", icon: "creditcard.fill", color: Color(uiColor: UIColor(hexString: "#AC7F5E")!))
+        ]
+        
+        let categoriesViewController = UIHostingController(
+            rootView: CategoryPickerUIKitWrapper(
+                initialCategory: categories[0],
+                categories: categories,
+                onChange: { [weak self] category in
+                    self?.presenter.onSetContentTypeFilter(category.contentType)
+                }
+            )
+            .padding(.top, 4)
+            .frame(height: contentTypPickerHeight, alignment: .top)
+        )
+        
+        addChild(categoriesViewController)
+        categoriesViewController.view.translatesAutoresizingMaskIntoConstraints = false
+//        categoriesViewController.view.backgroundColor = .clear
+        view.addSubview(categoriesViewController.view)
+        NSLayoutConstraint.activate([
+            categoriesViewController.view.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
+            categoriesViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            categoriesViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            categoriesViewController.view.heightAnchor.constraint(equalToConstant: contentTypPickerHeight)
+        ])
+        categoriesViewController.didMove(toParent: self)
+        
+        // Setup bottom line for category picker
+        categoryPickerBottomLine.backgroundColor = UIColor.separator
+        categoryPickerBottomLine.alpha = 0
+        categoryPickerBottomLine.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(categoryPickerBottomLine)
+        NSLayoutConstraint.activate([
+            categoryPickerBottomLine.topAnchor.constraint(equalTo: categoriesViewController.view.bottomAnchor),
+            categoryPickerBottomLine.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            categoryPickerBottomLine.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            categoryPickerBottomLine.heightAnchor.constraint(equalToConstant: 0.5)
+        ])
     }
     
     // MARK: - App events
@@ -121,7 +166,7 @@ private extension PasswordsViewController {
             let animator = UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1.0) {
                 self.navigationBar.hideLargeTitle = true
 
-                self.passwordsList?.contentInset.top = 56
+                self.passwordsList?.contentInset.top = 56 + self.contentTypPickerHeight
                 self.navigationBarHeight?.constant = 56
                 
                 self.view.setNeedsLayout()
@@ -139,7 +184,7 @@ private extension PasswordsViewController {
             let animator = UIViewPropertyAnimator(duration: 0.5, dampingRatio: 1.0) {
                 self.navigationBar.hideButtons = false
                 
-                self.passwordsList?.contentInset.top = self.largeTitleNavigationBarHeight
+                self.passwordsList?.contentInset.top = self.largeTitleNavigationBarHeight + self.contentTypPickerHeight
                 
                 var currentContentOffset = self.passwordsList?.contentOffset ?? .zero
                 currentContentOffset.y -= diffHeight
@@ -179,7 +224,7 @@ private extension PasswordsViewController {
             self?.presenter.onSetContentTypeFilter(filter)
         }
         
-        passwordsList?.contentInset.top = largeTitleNavigationBarHeight
+        passwordsList?.contentInset.top = largeTitleNavigationBarHeight + contentTypPickerHeight
                 
         if #available(iOS 26.0, *) {
             let interaction = UIScrollEdgeElementContainerInteraction()

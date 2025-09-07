@@ -24,6 +24,8 @@ class ItemsContentTypePickerView: UIView {
                 updateSelection(title: "Logins", icon: "person.crop.square.fill", color: UIColor(hexString: "#00C700")!)
             case .contentType(.notes):
                 updateSelection(title: "Notes", icon: "note.text", color: UIColor(hexString: "#FF8400")!)
+            case .contentType(.cards):
+                updateSelection(title: "Cards", icon: "note.text", color: UIColor(hexString: "#FF8400")!)
             }
         }
     }

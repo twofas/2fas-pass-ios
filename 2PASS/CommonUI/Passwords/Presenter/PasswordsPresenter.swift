@@ -25,7 +25,7 @@ private class IconFetcherProxy: RemoteImageCollectionFetcher {
     }
 }
 
-enum ItemContentTypeFilter: Equatable {
+enum ItemContentTypeFilter: Equatable, Hashable {
     case all
     case contentType(ItemContentType)
     
@@ -39,6 +39,8 @@ enum ItemContentTypeFilter: Equatable {
                 return "Logins"
             case .notes:
                 return "Notes"
+            case .cards:
+                return "Cards"
             }
         }
     }

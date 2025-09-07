@@ -21,6 +21,10 @@ extension PasswordsViewController: UICollectionViewDelegate {
         } else {
             navigationBar.titleDisplayMode = .large
         }
+        
+        UIView.animate(withDuration: 0.2) {
+            self.categoryPickerBottomLine.alpha = height == self.minNavigationBarHeight ? 1.0 : 0
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
