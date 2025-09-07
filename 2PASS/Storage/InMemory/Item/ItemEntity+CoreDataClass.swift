@@ -21,7 +21,7 @@ final class ItemEntity: NSManagedObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     ) {
@@ -32,7 +32,7 @@ final class ItemEntity: NSManagedObject {
         entity.creationDate = creationDate
         entity.modificationDate = modificationDate
         entity.contentData = content
-        entity.contentType = contentType
+        entity.contentType = contentType.rawValue
         entity.contentVersion = Int16(contentVersion)
         
         switch trashedStatus {
@@ -60,7 +60,7 @@ final class ItemEntity: NSManagedObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     ) {
@@ -91,14 +91,14 @@ final class ItemEntity: NSManagedObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     ) {
         entity.modificationDate = modificationDate
         entity.name = name
         entity.contentData = content
-        entity.contentType = contentType
+        entity.contentType = contentType.rawValue
         entity.contentVersion = Int16(contentVersion)
         
         

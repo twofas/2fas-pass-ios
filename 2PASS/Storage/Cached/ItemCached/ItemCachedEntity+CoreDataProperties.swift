@@ -44,7 +44,7 @@ extension ItemCachedEntity {
                 return .no
             }(),
             protectionLevel: ItemProtectionLevel(level: protectionLevel),
-            contentType: contentType,
+            contentType: .init(rawValue: contentType),
             contentVersion: Int(contentVersion),
             content: content,
             vaultID: vaultID,

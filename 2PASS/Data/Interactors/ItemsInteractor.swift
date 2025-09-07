@@ -188,7 +188,7 @@ extension ItemsInteractor: ItemsInteracting {
             protectionLevel: item.protectionLevel,
             tagIds: item.tagIds,
             name: item.name,
-            contentType: item.contentType.rawValue,
+            contentType: item.contentType,
             contentVersion: item.contentVersion,
             content: contentData
         )
@@ -199,7 +199,7 @@ extension ItemsInteractor: ItemsInteracting {
             modificationDate: item.modificationDate,
             trashedStatus: item.trashedStatus,
             protectionLevel: item.protectionLevel,
-            contentType: item.contentType.rawValue,
+            contentType: item.contentType,
             contentVersion: item.contentVersion,
             content: contentDataEnc,
             vaultID: selectedVault.vaultID,
@@ -230,7 +230,7 @@ extension ItemsInteractor: ItemsInteracting {
             protectionLevel: item.protectionLevel,
             tagIds: item.tagIds,
             name: item.name,
-            contentType: item.contentType.rawValue,
+            contentType: item.contentType,
             contentVersion: item.contentVersion,
             content: contentData
         )
@@ -240,7 +240,7 @@ extension ItemsInteractor: ItemsInteracting {
             modificationDate: item.modificationDate,
             trashedStatus: item.trashedStatus,
             protectionLevel: item.protectionLevel,
-            contentType: item.contentType.rawValue,
+            contentType: item.contentType,
             contentVersion: item.contentVersion,
             content: contentDataEnc,
             vaultID: selectedVault.vaultID,
@@ -441,7 +441,7 @@ extension ItemsInteractor: ItemsInteracting {
             protectionLevel: entity.protectionLevel,
             tagIds: entity.tagIds,
             name: entity.name,
-            contentType: entity.contentType.rawValue,
+            contentType: entity.contentType,
             contentVersion: entity.contentVersion,
             content: contentData
         )
@@ -621,7 +621,7 @@ extension ItemsInteractor: ItemsInteracting {
                             modificationDate: current.modificationDate,
                             trashedStatus: current.trashedStatus,
                             protectionLevel: current.protectionLevel,
-                            contentType: current.contentType.rawValue,
+                            contentType: current.contentType,
                             contentVersion: current.contentVersion,
                             content: contentDataEnc,
                             vaultID: selectedVaultID,
@@ -705,7 +705,7 @@ private extension ItemsInteractor {
             protectionLevel: entity.protectionLevel,
             tagIds: entity.tagIds,
             name: entity.name,
-            contentType: entity.contentType.rawValue,
+            contentType: entity.contentType,
             contentVersion: entity.contentVersion,
             content: contentData,
         )

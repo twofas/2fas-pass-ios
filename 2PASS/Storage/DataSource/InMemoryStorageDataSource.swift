@@ -21,7 +21,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     )
@@ -33,7 +33,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     )

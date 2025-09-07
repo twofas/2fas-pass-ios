@@ -129,7 +129,7 @@ extension TagInteractor: TagInteracting {
                     protectionLevel: item.protectionLevel,
                     tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds,
                     name: item.name,
-                    contentType: item.contentType.rawValue,
+                    contentType: item.contentType,
                     contentVersion: item.contentVersion,
                     content: item.content
                 )

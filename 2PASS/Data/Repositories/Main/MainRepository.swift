@@ -286,7 +286,7 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     )
@@ -298,7 +298,7 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     )
@@ -343,7 +343,7 @@ protocol MainRepository: AnyObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data,
         vaultID: VaultID,
@@ -354,7 +354,7 @@ protocol MainRepository: AnyObject {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data,
         vaultID: VaultID,
@@ -443,7 +443,7 @@ protocol MainRepository: AnyObject {
     func cloudCacheCreateItem(
         itemID: ItemID,
         content: Data,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,
@@ -456,7 +456,7 @@ protocol MainRepository: AnyObject {
     func cloudCacheUpdateItem(
         itemID: ItemID,
         content: Data,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         creationDate: Date,
         modificationDate: Date,

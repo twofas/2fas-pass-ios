@@ -16,7 +16,7 @@ public struct ItemEncryptedData: Hashable, Identifiable {
     public let modificationDate: Date
     public let trashedStatus: ItemTrashedStatus
     public let protectionLevel: ItemProtectionLevel
-    public let contentType: String
+    public let contentType: ItemContentType
     public private(set) var content: Data
     public let contentVersion: Int
     public let vaultID: VaultID
@@ -28,7 +28,7 @@ public struct ItemEncryptedData: Hashable, Identifiable {
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data,
         vaultID: VaultID,

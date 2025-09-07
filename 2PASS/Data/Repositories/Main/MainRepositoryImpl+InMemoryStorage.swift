@@ -20,7 +20,7 @@ extension MainRepositoryImpl {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     ) {
@@ -45,7 +45,7 @@ extension MainRepositoryImpl {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        contentType: String,
+        contentType: ItemContentType,
         contentVersion: Int,
         content: Data
     ) {
@@ -71,7 +71,7 @@ extension MainRepositoryImpl {
                 protectionLevel: item.protectionLevel,
                 tagIds: item.tagIds,
                 name: item.name,
-                contentType: item.contentType.rawValue,
+                contentType: item.contentType,
                 contentVersion: item.contentVersion,
                 content: item.content
             )
