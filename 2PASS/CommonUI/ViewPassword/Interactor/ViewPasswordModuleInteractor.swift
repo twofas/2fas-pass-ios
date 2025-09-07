@@ -9,9 +9,9 @@ import Data
 import Common
 
 protocol ViewPasswordModuleInteracting: AnyObject {
-    func fetchPassword(for passwordID: PasswordID) -> LoginItemData?
+    func fetchPassword(for itemID: ItemID) -> LoginItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
-    func decryptPassword(for passwordID: PasswordID) -> String?
+    func decryptPassword(for itemID: ItemID) -> String?
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
@@ -40,12 +40,12 @@ final class ViewPasswordModuleInteractor {
 }
 
 extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
-    func fetchPassword(for passwordID: PasswordID) -> LoginItemData? {
-        itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem
+    func fetchPassword(for itemID: ItemID) -> LoginItemData? {
+        itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem
     }
     
-    func decryptPassword(for passwordID: PasswordID) -> String? {
-        switch itemsInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false) {
+    func decryptPassword(for itemID: ItemID) -> String? {
+        switch itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false) {
         case .success(let password): return password
         case .failure: return nil
         }

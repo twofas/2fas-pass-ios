@@ -44,7 +44,7 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     // MARK: Encrypted Passwords
     
     public func createEncryptedPassword(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -72,7 +72,7 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     }
     
     public func updateEncryptedPassword(
-        itemID: PasswordID,
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -122,7 +122,7 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         }
     }
     
-    public func getEncryptedPasswordEntity(itemID: PasswordID) -> ItemEncryptedData? {
+    public func getEncryptedPasswordEntity(itemID: ItemID) -> ItemEncryptedData? {
         ItemEncryptedEntity.getEntity(on: context, itemID: itemID)?
             .toData()
     }
@@ -147,14 +147,14 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         }
     }
     
-    public func addEncryptedPassword(_ itemID: PasswordID, to vaultID: VaultID) {
+    public func addEncryptedPassword(_ itemID: ItemID, to vaultID: VaultID) {
         guard let entity = ItemEncryptedEntity.getEntity(on: context, itemID: itemID),
               let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID)
         else { return }
         vault.addToItems(entity)
     }
     
-    public func deleteEncryptedPassword(itemID: PasswordID) {
+    public func deleteEncryptedPassword(itemID: ItemID) {
         guard let entity = ItemEncryptedEntity.getEntity(on: context, itemID: itemID) else { return }
         ItemEncryptedEntity.delete(on: context, entity: entity)
     }

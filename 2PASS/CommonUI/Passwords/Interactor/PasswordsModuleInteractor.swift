@@ -22,9 +22,9 @@ protocol PasswordsModuleInteracting: AnyObject {
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
     
-    func moveToTrash(_ passwordID: PasswordID)
-    func copyUsername(_ passwordID: PasswordID) -> Bool
-    func copyPassword(_ passwordID: PasswordID) -> Bool
+    func moveToTrash(_ itemID: ItemID)
+    func copyUsername(_ itemID: ItemID) -> Bool
+    func copyPassword(_ itemID: ItemID) -> Bool
     
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
@@ -165,8 +165,8 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         }
     }
     
-    func copyUsername(_ passwordID: PasswordID) -> Bool {
-        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem,
+    func copyUsername(_ itemID: ItemID) -> Bool {
+        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem,
               let username = loginItem.username
         else {
             return false
@@ -175,8 +175,8 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         return true
     }
     
-    func copyPassword(_ passwordID: PasswordID) -> Bool {
-        let passwordResult = itemsInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
+    func copyPassword(_ itemID: ItemID) -> Bool {
+        let passwordResult = itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false)
 
         switch passwordResult {
         case .success(let password):

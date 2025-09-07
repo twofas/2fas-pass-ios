@@ -42,7 +42,7 @@ public protocol CloudCacheStorageDataSource: AnyObject {
         metadata: Data
     )
     
-    func getCloudCachedItemEntity(passwordID: ItemID) -> CloudDataItem?
+    func getCloudCachedItemEntity(itemID: ItemID) -> CloudDataItem?
     
     func listCloudCachedItems(in vaultID: VaultID) -> [CloudDataItem]
     func listAllCloudCachedItems() -> [CloudDataItem]

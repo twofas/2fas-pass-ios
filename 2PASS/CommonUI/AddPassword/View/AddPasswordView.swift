@@ -603,7 +603,7 @@ fileprivate extension View {
     AddPasswordView(
         presenter: AddPasswordPresenter(
             flowController: AddPasswordFlowController(viewController: UIViewController()),
-            interactor: ModuleInteractorFactory.shared.addPasswordInteractor(editPasswordID: nil)
+            interactor: ModuleInteractorFactory.shared.addPasswordInteractor(editItemID: nil)
         ),
         resignFirstResponder: {}
     )

@@ -11,7 +11,7 @@ import Data
 import CommonUI
 
 enum TrashDestination: RouterDestination {
-    case confirmDelete(id: PasswordID, onFinish: (Bool) -> Void)
+    case confirmDelete(id: ItemID, onFinish: (Bool) -> Void)
     case upgradePlanPrompt(limitItems: Int)
     
     var id: String {
@@ -45,7 +45,7 @@ final class TrashPresenter {
     var isTrashEmpty = true
     var passwords: [TrashPasswordData] = []
     
-    private(set) var icons: [PasswordID: IconContent] = [:]
+    private(set) var icons: [ItemID: IconContent] = [:]
     private let iconDataSource: RemoteImageCollectionDataSource<TrashPasswordData>
     
     private let interactor: TrashModuleInteracting
@@ -113,21 +113,21 @@ extension TrashPresenter {
         iconDataSource.cancelFetches(for: password)
     }
     
-    func onRestore(passwordID: PasswordID) {
+    func onRestore(itemID: ItemID) {
         if interactor.canRestore {
-            interactor.restore(with: passwordID)
+            interactor.restore(with: itemID)
             reload()
         } else {
             destination = .upgradePlanPrompt(limitItems: interactor.currentPlanLimitItems)
         }
     }
     
-    func onDelete(passwordID: PasswordID) {
-        destination = .confirmDelete(id: passwordID, onFinish: { [weak self] confirm in
+    func onDelete(itemID: ItemID) {
+        destination = .confirmDelete(id: itemID, onFinish: { [weak self] confirm in
             self?.destination = nil
             
             if confirm {
-                self?.interactor.delete(with: passwordID)
+                self?.interactor.delete(with: itemID)
                 self?.reload()
             }
         })
@@ -156,7 +156,7 @@ private extension TrashPresenter {
                     switch item {
                     case .login(let loginItem):
                         return TrashPasswordData(
-                            passwordID: loginItem.id,
+                            itemID: loginItem.id,
                             name: loginItem.name,
                             username: loginItem.username,
                             deletedDate: trashingDate,

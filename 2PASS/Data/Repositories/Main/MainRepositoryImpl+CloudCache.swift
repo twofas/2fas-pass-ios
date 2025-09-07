@@ -74,7 +74,7 @@ extension MainRepositoryImpl {
     }
     
     func cloudCacheGetItemEntity(itemID: ItemID) -> CloudDataItem? {
-        cloudCache.getCloudCachedItemEntity(passwordID: itemID)
+        cloudCache.getCloudCachedItemEntity(itemID: itemID)
     }
     
     func cloudCacheListItems(in vaultID: VaultID) -> [CloudDataItem] {

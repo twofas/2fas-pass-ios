@@ -13,7 +13,7 @@ protocol ViewPasswordFlowControllerParent: AnyObject {
 }
 
 protocol ViewPasswordFlowControlling: AnyObject {
-    func toEdit(_ passwordID: PasswordID)
+    func toEdit(_ itemID: ItemID)
     func toOpenURI(_ url: URL)
     func close()
     func autoFillTextToInsert(_ text: String)
@@ -26,7 +26,7 @@ final class ViewPasswordFlowController: FlowController {
     static func push(
         on navigationController: UINavigationController,
         parent: ViewPasswordFlowControllerParent,
-        passwordID: PasswordID,
+        itemID: ItemID,
         autoFillEnvironment: AutoFillEnvironment? = nil
     ) {
         let view = ViewPasswordViewController()
@@ -36,7 +36,7 @@ final class ViewPasswordFlowController: FlowController {
         let interactor = ModuleInteractorFactory.shared.viewPasswordInteractor()
                 
         let presenter = ViewPasswordPresenter(
-            passwordID: passwordID,
+            itemID: itemID,
             flowController: flowController,
             interactor: interactor,
             autoFillEnvironment: autoFillEnvironment
@@ -52,11 +52,11 @@ final class ViewPasswordFlowController: FlowController {
 }
 
 extension ViewPasswordFlowController: ViewPasswordFlowControlling {
-    func toEdit(_ passwordID: PasswordID) {
+    func toEdit(_ itemID: ItemID) {
         AddPasswordNavigationFlowController.present(
             on: viewController,
             parent: self,
-            editPasswordID: passwordID
+            editItemID: itemID
         )
     }
     

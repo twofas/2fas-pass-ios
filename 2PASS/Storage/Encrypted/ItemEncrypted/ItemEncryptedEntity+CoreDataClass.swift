@@ -13,7 +13,7 @@ final class ItemEncryptedEntity: NSManagedObject {
     
     @nonobjc static func create(
         on context: NSManagedObjectContext,
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -53,7 +53,7 @@ final class ItemEncryptedEntity: NSManagedObject {
     @discardableResult
     @nonobjc static func update(
         on context: NSManagedObjectContext,
-        for itemID: PasswordID,
+        for itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -115,7 +115,7 @@ final class ItemEncryptedEntity: NSManagedObject {
     
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
-        itemID: PasswordID
+        itemID: ItemID
     ) -> ItemEncryptedEntity? {
         let fetchRequest = ItemEncryptedEntity.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "itemID == %@", itemID as CVarArg)
@@ -135,7 +135,7 @@ final class ItemEncryptedEntity: NSManagedObject {
         
         // If something went wrong (wrong migration, some bugs) -> remove duplicated entries instead of:
         if list.count > 1 {
-            Log("ItemEncryptedEntity: Error while fetching entity with PasswordID: \(itemID). There's more than one. Correcting!", severity: .error)
+            Log("ItemEncryptedEntity: Error while fetching entity with ItemID: \(itemID). There's more than one. Correcting!", severity: .error)
             let itemsForDeletition = list[1...]
             for item in itemsForDeletition {
                 delete(on: context, entity: item)

@@ -35,8 +35,8 @@ struct AutoFillPasswordsListView: UIViewControllerRepresentable {
             self.interactor = interactor
         }
         
-        func selectPassword(passwordID: PasswordID) {
-            guard let credential = interactor.credential(for: passwordID) else {
+        func selectPassword(itemID: ItemID) {
+            guard let credential = interactor.credential(for: itemID) else {
                 return
             }
             parent.context.completeRequest(withSelectedCredential: credential)

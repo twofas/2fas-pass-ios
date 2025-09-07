@@ -44,16 +44,16 @@ public final class PasswordsNavigationFlowController: NavigationFlowController {
 }
 
 extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
-    public func passwordsToViewPassword(passwordID: PasswordID) {
+    public func passwordsToViewPassword(itemID: ItemID) {
         ViewPasswordFlowController.push(
             on: navigationController,
             parent: self,
-            passwordID: passwordID
+            itemID: itemID
         )
     }
     
-    public func selectPassword(passwordID: PasswordID) {
-        passwordsToViewPassword(passwordID: passwordID)
+    public func selectPassword(itemID: ItemID) {
+        passwordsToViewPassword(itemID: itemID)
     }
     
     public func toQuickSetup() {

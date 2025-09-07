@@ -31,7 +31,7 @@ public enum ConnectError: Error {
     case itemsLimitReached(Int)
 }
 
-public typealias ConnectContinuation = (accepted: Bool, passwordID: PasswordID?)
+public typealias ConnectContinuation = (accepted: Bool, itemID: ItemID?)
 
 public protocol ConnectInteracting: AnyObject {
     

@@ -24,7 +24,7 @@ public final class ModuleInteractorFactory {
         )
     }
     
-    func addPasswordInteractor(editPasswordID: PasswordID?, changeRequest: PasswordDataChangeRequest? = nil) -> AddPasswordModuleInteracting {
+    func addPasswordInteractor(editItemID: ItemID?, changeRequest: PasswordDataChangeRequest? = nil) -> AddPasswordModuleInteracting {
         AddPasswordModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
@@ -36,7 +36,7 @@ public final class ModuleInteractorFactory {
             currentDateInteractor: InteractorFactory.shared.currentDateInteractor(),
             passwordListInteractor: InteractorFactory.shared.passwordListInteractor(),
             tagInteractor: InteractorFactory.shared.tagInteractor(),
-            editPasswordID: editPasswordID,
+            editItemID: editItemID,
             changeRequest: changeRequest
         )
     }

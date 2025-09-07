@@ -19,12 +19,12 @@ extension PasswordListOptions {
             if let trashPredicate = trashed.predicate {
                 andPredicates.append(trashPredicate)
             }
-        case .findExistingByPasswordID(let passwordID):
-            andPredicates.append(Predicate.findByPasswordID(passwordID))
-        case .findNotTrashedByPasswordID(let passwordID):
-            andPredicates.append(contentsOf: [Predicate.findByPasswordID(passwordID), Predicate.notTrashedItems])
-        case .includePasswords(let passwordIDs):
-            andPredicates.append(contentsOf: [Predicate.paswords(passwordIDs), Predicate.notTrashedItems])
+        case .findExistingByItemID(let itemID):
+            andPredicates.append(Predicate.findByItemID(itemID))
+        case .findNotTrashedByItemID(let itemID):
+            andPredicates.append(contentsOf: [Predicate.findByItemID(itemID), Predicate.notTrashedItems])
+        case .includePasswords(let itemIDs):
+            andPredicates.append(contentsOf: [Predicate.paswords(itemIDs), Predicate.notTrashedItems])
         case .allTrashed:
             andPredicates.append(Predicate.trashedItems)
         case .allNotTrashed:
@@ -96,16 +96,16 @@ enum Predicate {
     static let trashedItems = NSPredicate(format: "isTrashed == TRUE")
     static let notTrashedItems = NSPredicate(format: "isTrashed == FALSE")
     
-    static func findByPasswordID(_ passwordID: UUID) -> NSPredicate {
-        NSPredicate(format: "itemID == %@", passwordID as CVarArg)
+    static func findByItemID(_ itemID: UUID) -> NSPredicate {
+        NSPredicate(format: "itemID == %@", itemID as CVarArg)
     }
     
-    static func paswords(_ passwordIDs: [UUID]) -> NSPredicate {
-        NSPredicate(format: "itemID IN %@", passwordIDs)
+    static func paswords(_ itemIDs: [UUID]) -> NSPredicate {
+        NSPredicate(format: "itemID IN %@", itemIDs)
     }
     
-    static func excludePasswords(_ passwordIDs: [UUID]) -> NSPredicate {
-        NSPredicate(format: "NOT (itemID IN %@)", passwordIDs)
+    static func excludePasswords(_ itemIDs: [UUID]) -> NSPredicate {
+        NSPredicate(format: "NOT (itemID IN %@)", itemIDs)
     }
     
     static func findByPhrase(_ phrase: String) -> NSPredicate {

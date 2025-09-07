@@ -10,8 +10,8 @@ import AuthenticationServices
 public protocol AutoFillCredentialsInteracting: AnyObject {
     func canAddSuggestionForPassword(with level: ItemProtectionLevel) -> Bool
     
-    func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
-    func replaceSuggestions(from passwordData: LoginItemData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
+    func addSuggestions(itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
+    func replaceSuggestions(from passwordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
     func removeSuggestions(for passwordData: LoginItemData) async throws
     
     func syncSuggestions() async throws
@@ -32,7 +32,7 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         Config.autoFillExcludeProtectionLevels.contains(protectionLevel) == false
     }
     
-    func addSuggestions(passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
+    func addSuggestions(itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         let isEnabled = await mainRepository.refreshAutoFillStatus()
         guard isEnabled else {
             return
@@ -50,7 +50,7 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
                     return ASPasswordCredentialIdentity(
                         serviceIdentifier: .init(identifier: uriNormalized, type: .URL),
                         user: username ?? "",
-                        recordIdentifier: passwordID.uuidString
+                        recordIdentifier: itemID.uuidString
                     )
                 } as [any ASCredentialIdentity]
             )
@@ -60,9 +60,9 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         }
     }
     
-    func replaceSuggestions(from oldPasswordData: LoginItemData, passwordID: PasswordID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
+    func replaceSuggestions(from oldPasswordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         try await removeSuggestions(for: oldPasswordData)
-        try await addSuggestions(passwordID: passwordID, username: username, uris: uris, protectionLevel: protectionLevel)
+        try await addSuggestions(itemID: itemID, username: username, uris: uris, protectionLevel: protectionLevel)
     }
     
     func removeSuggestions(for passwordData: LoginItemData) async throws {

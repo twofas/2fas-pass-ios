@@ -17,7 +17,7 @@ protocol ConnectPullReqestCommunicationModuleInteracting: AnyObject {
     func identiconSVG(colorScheme: ColorScheme) -> String?
     func fetchIconImage(from url: URL) async throws -> Data
     func extractDomain(from urlString: String) -> String?
-    func deletePassword(for passwordID: PasswordID)
+    func deleteItem(for itemID: ItemID)
     func deleteAppNotification() async throws
     
     func connect(
@@ -96,8 +96,8 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         uriInteractor.extractDomain(from: urlString)
     }
     
-    func deletePassword(for passwordID: PasswordID) {
-        itemsInteractor.markAsTrashed(for: passwordID)
+    func deleteItem(for itemID: ItemID) {
+        itemsInteractor.markAsTrashed(for: itemID)
         itemsInteractor.saveStorage()
     }
     

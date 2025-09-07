@@ -364,10 +364,10 @@ final class AddPasswordPresenter {
     }
     
     func onDelete() {
-        guard let passwordID = interactor.moveToTrash() else {
+        guard let itemID = interactor.moveToTrash() else {
             return
         }
-        flowController.close(with: .success(.deleted(passwordID)))
+        flowController.close(with: .success(.deleted(itemID)))
     }
     
     deinit {

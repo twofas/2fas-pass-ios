@@ -372,9 +372,9 @@ extension ConnectInteractor {
     
     private func handlePasswordRequestResponse(_ data: Data, keys: SessionKeys, shouldPerfromAction: (ConnectAction) async -> ConnectContinuation) async throws -> ConnectActionPasswordData {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionPasswordRequestData>.self, from: data)
-        let passwordID = actionRequestData.data.loginId
+        let itemID = actionRequestData.data.loginId
         
-        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
@@ -414,9 +414,9 @@ extension ConnectInteractor {
     
     private func handleUpdateLoginResponse(_ data: Data, keys: SessionKeys, shouldPerfromAction: (ConnectAction) async -> ConnectContinuation) async throws -> ConnectActionItemData {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionUpdateRequestData>.self, from: data)
-        let passwordID = actionRequestData.data.id
+        let itemID = actionRequestData.data.id
         
-        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         
@@ -479,7 +479,7 @@ extension ConnectInteractor {
             throw ConnectError.missingDeviceId
         }
         
-        let connectLogin = try await connectExportInteractor.preparePasswordForConnectExport(id: passwordID, encryptPasswordKey: encryptionPasswordKey, deviceId: deviceID)
+        let connectLogin = try await connectExportInteractor.preparePasswordForConnectExport(id: itemID, encryptPasswordKey: encryptionPasswordKey, deviceId: deviceID)
         let actionData = ConnectActionItemData(
             type: .updateLogin,
             status: connectLogin.securityType == ItemProtectionLevel.topSecret.intValue ? .addedInT1 : .updated,
@@ -490,9 +490,9 @@ extension ConnectInteractor {
     
     private func handleDeleteLoginResponse(_ data: Data, keys: SessionKeys, shouldPerfromAction: (ConnectAction) async -> ConnectContinuation) async throws -> ConnectActionItemData {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectActionRequest<ConnectActionPasswordRequestData>.self, from: data)
-        let passwordID = actionRequestData.data.loginId
+        let itemID = actionRequestData.data.loginId
         
-        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem else {
             throw ConnectError.missingItem
         }
         

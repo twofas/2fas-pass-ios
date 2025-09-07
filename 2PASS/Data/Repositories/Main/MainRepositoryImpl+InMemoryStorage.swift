@@ -13,7 +13,7 @@ extension MainRepositoryImpl {
     // MARK: Passwords
     
     func createItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -83,10 +83,10 @@ extension MainRepositoryImpl {
     }
     
     func getPasswordEntity(
-        passwordID: PasswordID,
+        itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData? {
-        inMemoryStorage?.getPasswordEntity(passwordID: passwordID, checkInTrash: checkInTrash)
+        inMemoryStorage?.getPasswordEntity(itemID: itemID, checkInTrash: checkInTrash)
     }
     
     func listPasswords(
@@ -99,8 +99,8 @@ extension MainRepositoryImpl {
         inMemoryStorage?.listPasswords(options: .allTrashed) ?? []
     }
     
-    func deletePassword(passwordID: PasswordID) {
-        inMemoryStorage?.deletePassword(passwordID: passwordID)
+    func deletePassword(itemID: ItemID) {
+        inMemoryStorage?.deletePassword(itemID: itemID)
     }
     
     func deleteAllPasswords() {

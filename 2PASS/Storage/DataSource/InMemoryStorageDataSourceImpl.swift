@@ -32,7 +32,7 @@ public final class InMemoryStorageDataSourceImpl {
 
 extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     public func createItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -106,12 +106,12 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     }
     
     public func getPasswordEntity(
-        passwordID: PasswordID,
+        itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData? {
         PasswordEntity.getEntity(
             on: context,
-            passwordID: passwordID,
+            itemID: itemID,
             checkInTrash: checkInTrash
         )?.toData()
     }
@@ -123,10 +123,10 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
             .map { $0.toData() }
     }
 
-    public func deletePassword(passwordID: PasswordID) {
+    public func deletePassword(itemID: ItemID) {
         guard let entity = PasswordEntity.getEntity(
             on: context,
-            passwordID: passwordID,
+            itemID: itemID,
             checkInTrash: true
         ) else { return }
         PasswordEntity.delete(on: context, entity: entity)

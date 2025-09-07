@@ -24,8 +24,8 @@ final class PreviewTrashModuleInteractor: TrashModuleInteracting {
         []
     }
     
-    func delete(with passwordID: PasswordID) {}
-    func restore(with passwordID: PasswordID) {}
+    func delete(with itemID: ItemID) {}
+    func restore(with itemID: ItemID) {}
     func restoreAll() {}
     func emptyTrash() {}
     

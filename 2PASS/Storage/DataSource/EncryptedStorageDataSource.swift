@@ -17,7 +17,7 @@ public protocol EncryptedStorageDataSource: AnyObject {
     // MARK: Encrypted Passwords
     
     func createEncryptedPassword(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -30,7 +30,7 @@ public protocol EncryptedStorageDataSource: AnyObject {
     )
     
     func updateEncryptedPassword(
-        itemID: PasswordID,
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -42,14 +42,14 @@ public protocol EncryptedStorageDataSource: AnyObject {
     )
     func batchUpdateRencryptedPasswords(_ passwords: [ItemEncryptedData], date: Date)
     
-    func getEncryptedPasswordEntity(itemID: PasswordID) -> ItemEncryptedData?
+    func getEncryptedPasswordEntity(itemID: ItemID) -> ItemEncryptedData?
     
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
     func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
     
-    func addEncryptedPassword(_ itemID: PasswordID, to vaultID: VaultID)
+    func addEncryptedPassword(_ itemID: ItemID, to vaultID: VaultID)
     
-    func deleteEncryptedPassword(itemID: PasswordID)
+    func deleteEncryptedPassword(itemID: ItemID)
     func deleteAllEncryptedPasswords(in vault: VaultID?)
     
     // MARK: Encrypted Vaults

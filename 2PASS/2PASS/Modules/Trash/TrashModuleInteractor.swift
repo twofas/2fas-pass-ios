@@ -14,8 +14,8 @@ protocol TrashModuleInteracting: AnyObject {
     var isTrashEmpty: Bool { get }
 
     func list() -> [ItemData]
-    func delete(with passwordID: PasswordID)
-    func restore(with passwordID: PasswordID)
+    func delete(with itemID: ItemID)
+    func restore(with itemID: ItemID)
     
     func restoreAll()
     func emptyTrash()
@@ -59,15 +59,15 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         itemsInteractor.listTrashedItems()
     }
     
-    func delete(with passwordID: PasswordID) {
-        Log("TrashModuleInteractor: Deleting password: \(passwordID)", module: .moduleInteractor)
-        itemsInteractor.deleteItem(for: passwordID)
+    func delete(with itemID: ItemID) {
+        Log("TrashModuleInteractor: Deleting item: \(itemID)", module: .moduleInteractor)
+        itemsInteractor.deleteItem(for: itemID)
         itemsInteractor.saveStorage()
     }
     
-    func restore(with passwordID: PasswordID) {
-        Log("TrashModuleInteractor: Restoring password: \(passwordID)", module: .moduleInteractor)
-        itemsInteractor.markAsNotTrashed(for: passwordID)
+    func restore(with itemID: ItemID) {
+        Log("TrashModuleInteractor: Restoring item: \(itemID)", module: .moduleInteractor)
+        itemsInteractor.markAsNotTrashed(for: itemID)
         itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }

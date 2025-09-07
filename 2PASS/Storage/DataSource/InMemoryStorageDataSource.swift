@@ -41,7 +41,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     func batchUpdateRencryptedPasswords(_ passwords: [RawItemData], date: Date)
     
     func getPasswordEntity(
-        passwordID: PasswordID,
+        itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData?
     
@@ -49,7 +49,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         options: PasswordListOptions
     ) -> [RawItemData]
     
-    func deletePassword(passwordID: PasswordID)
+    func deletePassword(itemID: ItemID)
     func deleteAllPasswordEntities()
     
     // MARK: - Tags

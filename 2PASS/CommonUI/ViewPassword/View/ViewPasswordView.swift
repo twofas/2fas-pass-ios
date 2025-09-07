@@ -148,7 +148,7 @@ struct ViewPasswordView: View {
 
 #Preview {
     ViewPasswordView(presenter: .init(
-        passwordID: PasswordID(),
+        itemID: ItemID(),
         flowController: ViewPasswordFlowController(viewController: UIViewController()),
         interactor: ViewPasswordModulePreviewInteractor())
     )
@@ -156,9 +156,9 @@ struct ViewPasswordView: View {
 
 private class ViewPasswordModulePreviewInteractor: ViewPasswordModuleInteracting {
     
-    func fetchPassword(for passwordID: PasswordID) -> LoginItemData? {
+    func fetchPassword(for itemID: ItemID) -> LoginItemData? {
         LoginItemData(
-            id: passwordID,
+            id: itemID,
             metadata: .init(
                 creationDate: Date(),
                 modificationDate: Date(),
@@ -178,7 +178,7 @@ private class ViewPasswordModulePreviewInteractor: ViewPasswordModuleInteracting
         )
     }
     
-    func decryptPassword(for passwordID: PasswordID) -> String? {
+    func decryptPassword(for itemID: ItemID) -> String? {
         "Password"
     }
     

@@ -14,7 +14,7 @@ final class PasswordEntity: NSManagedObject {
     
     @nonobjc static func create(
         on context: NSManagedObjectContext,
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -64,7 +64,7 @@ final class PasswordEntity: NSManagedObject {
         contentVersion: Int,
         content: Data
     ) {
-        guard let entity = getEntity(on: context, passwordID: itemID, checkInTrash: true) else {
+        guard let entity = getEntity(on: context, itemID: itemID, checkInTrash: true) else {
             Log("Can't find entity for itemID: \(itemID)", module: .storage)
             return
         }
@@ -121,12 +121,12 @@ final class PasswordEntity: NSManagedObject {
     
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
-        passwordID: UUID,
+        itemID: UUID,
         checkInTrash: Bool
     ) -> PasswordEntity? {
         let list = listItems(
             on: context,
-            options: checkInTrash ? .findExistingByPasswordID(passwordID) : .findNotTrashedByPasswordID(passwordID)
+            options: checkInTrash ? .findExistingByItemID(itemID) : .findNotTrashedByItemID(itemID)
         )
         
         // If something went wrong (wrong migration, some bugs) -> remove duplicated entries instead of:

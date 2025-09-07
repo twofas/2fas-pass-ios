@@ -13,7 +13,7 @@ extension ItemEncryptedEntity {
         NSFetchRequest<ItemEncryptedEntity>(entityName: "ItemEncryptedEntity")
     }
     
-    @NSManaged var itemID: PasswordID
+    @NSManaged var itemID: ItemID
     
     @NSManaged var contentVersion: Int16
     @NSManaged var contentType: String

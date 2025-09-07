@@ -17,7 +17,7 @@ extension MainRepositoryImpl {
     // MARK: Passwords
     
     func createEncryptedItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -43,7 +43,7 @@ extension MainRepositoryImpl {
     }
     
     func updateEncryptedItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -70,7 +70,7 @@ extension MainRepositoryImpl {
         encryptedStorage.batchUpdateRencryptedPasswords(passwords, date: currentDate)
     }
     
-    func getEncryptedItemEntity(itemID: PasswordID) -> ItemEncryptedData? {
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
         encryptedStorage.getEncryptedPasswordEntity(itemID: itemID)
     }
     
@@ -82,11 +82,11 @@ extension MainRepositoryImpl {
         encryptedStorage.listEncryptedItems(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
     }
     
-    func addEncryptedItem(_ passwordID: PasswordID, to vaultID: VaultID) {
-        encryptedStorage.addEncryptedPassword(passwordID, to: vaultID)
+    func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
+        encryptedStorage.addEncryptedPassword(itemID, to: vaultID)
     }
     
-    func deleteEncryptedItem(itemID: PasswordID) {
+    func deleteEncryptedItem(itemID: ItemID) {
         encryptedStorage.deleteEncryptedPassword(itemID: itemID)
     }
     

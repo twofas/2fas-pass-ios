@@ -79,7 +79,7 @@ public protocol ItemsInteracting: AnyObject {
     func listAllItems() -> [ItemData]
     
     func getPasswordEncryptedContents(
-        for passwordID: ItemID,
+        for itemID: ItemID,
         checkInTrash: Bool
     ) -> Result<String?, ItemsInteractorGetError>
     func getItem(for item: ItemID, checkInTrash: Bool) -> ItemData?
@@ -293,8 +293,8 @@ extension ItemsInteractor: ItemsInteracting {
         listItems(searchPhrase: nil, sortBy: .newestFirst, trashed: .all)
     }
     
-    func getPasswordEncryptedContents(for passwordID: PasswordID, checkInTrash: Bool = false) -> Result<String?, ItemsInteractorGetError> {
-        guard let rawItem = mainRepository.getPasswordEntity(passwordID: passwordID, checkInTrash: checkInTrash),
+    func getPasswordEncryptedContents(for itemID: ItemID, checkInTrash: Bool = false) -> Result<String?, ItemsInteractorGetError> {
+        guard let rawItem = mainRepository.getPasswordEntity(itemID: itemID, checkInTrash: checkInTrash),
               let loginItem = ItemData(rawItem, decoder: mainRepository.jsonDecoder)?.asLoginItem else {
             return .failure(.noEntity)
         }
@@ -311,8 +311,8 @@ extension ItemsInteractor: ItemsInteracting {
         return .success(decryptedPassword)
     }
     
-    func getItem(for passwordID: PasswordID, checkInTrash: Bool) -> ItemData? {
-        guard let item = mainRepository.getPasswordEntity(passwordID: passwordID, checkInTrash: checkInTrash) else {
+    func getItem(for itemID: ItemID, checkInTrash: Bool) -> ItemData? {
+        guard let item = mainRepository.getPasswordEntity(itemID: itemID, checkInTrash: checkInTrash) else {
             return nil
         }
         return ItemData(item, decoder: mainRepository.jsonDecoder)
@@ -380,7 +380,7 @@ extension ItemsInteractor: ItemsInteracting {
             "ItemsInteractor: Deleting item for itemID: \(itemID)",
             module: .interactor
         )
-        mainRepository.deletePassword(passwordID: itemID)
+        mainRepository.deletePassword(itemID: itemID)
         mainRepository.deleteEncryptedItem(itemID: itemID)
     }
     

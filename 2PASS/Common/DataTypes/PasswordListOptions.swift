@@ -14,9 +14,9 @@ public enum PasswordListOptions: Hashable {
     }
     
     case filterByPhrase(String?, sortBy: SortType, trashed: TrashOptions)
-    case findExistingByPasswordID(PasswordID)
-    case findNotTrashedByPasswordID(PasswordID)
-    case includePasswords([PasswordID])
+    case findExistingByItemID(ItemID)
+    case findNotTrashedByItemID(ItemID)
+    case includePasswords([ItemID])
     case allTrashed
     case allNotTrashed
     case all

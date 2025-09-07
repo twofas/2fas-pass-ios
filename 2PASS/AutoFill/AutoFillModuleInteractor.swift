@@ -10,7 +10,7 @@ import Common
 
 protocol AutoFillModuleInteracting: AnyObject {
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
-    func credential(for passwordID: PasswordID) -> ASPasswordCredential?
+    func credential(for itemID: ItemID) -> ASPasswordCredential?
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
 }
 
@@ -23,8 +23,8 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     }
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
-        guard let passwordID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? ""),
-              let encrypted = itemsInteractor.getEncryptedItemEntity(itemID: passwordID) else {
+        guard let itemID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? ""),
+              let encrypted = itemsInteractor.getEncryptedItemEntity(itemID: itemID) else {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }
@@ -51,18 +51,18 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     }
     
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
-        guard let passwordID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? "") else {
+        guard let itemID = UUID(uuidString: credentialRequest.credentialIdentity.recordIdentifier ?? "") else {
             return nil
         }
-        return credential(for: passwordID)
+        return credential(for: itemID)
     }
     
-    func credential(for passwordID: PasswordID) -> ASPasswordCredential? {
-        guard let loginItem = itemsInteractor.getItem(for: passwordID, checkInTrash: false)?.asLoginItem else {
+    func credential(for itemID: ItemID) -> ASPasswordCredential? {
+        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem else {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }
-        let result = itemsInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
+        let result = itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false)
         switch result {
         case .success(let value):
             Log("AutoFill - Complete get credential", module: .autofill)

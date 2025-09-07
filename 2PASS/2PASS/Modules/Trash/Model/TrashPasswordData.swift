@@ -8,10 +8,10 @@ import Foundation
 import Common
 
 struct TrashPasswordData: Identifiable, Hashable {
-    var id: PasswordID {
-        passwordID
+    var id: ItemID {
+        itemID
     }
-    let passwordID: PasswordID
+    let itemID: ItemID
     let name: String?
     let username: String?
     let deletedDate: Date

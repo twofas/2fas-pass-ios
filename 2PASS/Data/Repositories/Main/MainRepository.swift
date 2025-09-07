@@ -306,7 +306,7 @@ protocol MainRepository: AnyObject {
     func updatePasswords(_ passwords: [RawItemData])
     func passwordsBatchUpdate(_ passwords: [RawItemData])
     func getPasswordEntity(
-        passwordID: PasswordID,
+        itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData?
     
@@ -315,7 +315,7 @@ protocol MainRepository: AnyObject {
     ) -> [RawItemData]
     
     func listTrashedPasswords() -> [RawItemData]
-    func deletePassword(passwordID: PasswordID)
+    func deletePassword(itemID: ItemID)
     func deleteAllPasswords()
     func saveStorage()
     func listUsernames() -> [String]

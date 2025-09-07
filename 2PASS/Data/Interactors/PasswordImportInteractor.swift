@@ -85,7 +85,7 @@ private extension PasswordImportInteractor {
             result[item.id] = item
         }
         
-        let localPasswordByEqualContent: [PasswordContentEqualItem: PasswordID] = localPasswords.reduce(into: [:]) { result, item in
+        let localPasswordByEqualContent: [PasswordContentEqualItem: ItemID] = localPasswords.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem {
                 let localContentItem = PasswordContentEqualItem(
                     name: loginItem.name,

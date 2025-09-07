@@ -122,12 +122,12 @@ extension PasswordsPresenter {
         reload()
     }
     
-    func onCellMenuAction(_ action: PasswordCellMenu, passwordID: PasswordID, selectedURI: URL?) {
+    func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
         switch action {
-        case .view: flowController.toViewPassword(passwordID: passwordID)
-        case .edit: flowController.toEditPassword(passwordID: passwordID)
+        case .view: flowController.toViewPassword(itemID: itemID)
+        case .edit: flowController.toEditPassword(itemID: itemID)
         case .copyUsername:
-            if interactor.copyUsername(passwordID) {
+            if interactor.copyUsername(itemID) {
                 toastPresenter.presentUsernameCopied()
             } else {
                 toastPresenter.present(
@@ -136,7 +136,7 @@ extension PasswordsPresenter {
                 )
             }
         case .copyPassword:
-            copyPassword(id: passwordID)
+            copyPassword(id: itemID)
             
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
@@ -144,7 +144,7 @@ extension PasswordsPresenter {
         case .moveToTrash:
             Task { @MainActor in
                 if await flowController.toConfirmDelete() {
-                    interactor.moveToTrash(passwordID)
+                    interactor.moveToTrash(itemID)
                     reload()
                 }
             }
@@ -158,7 +158,7 @@ extension PasswordsPresenter {
         
         switch interactor.selectAction {
         case .viewDetails:
-            flowController.selectPassword(passwordID: itemData.id)
+            flowController.selectPassword(itemID: itemData.id)
         case .copyPassword:
             copyPassword(id: itemData.id)
         case .goToURI:
@@ -166,7 +166,7 @@ extension PasswordsPresenter {
                 flowController.toURI(normalized)
             }
         case .edit:
-            flowController.toEditPassword(passwordID: itemData.id)
+            flowController.toEditPassword(itemID: itemData.id)
         }
     }
     
@@ -209,7 +209,7 @@ extension PasswordsPresenter {
 
 private extension PasswordsPresenter {
     
-    func copyPassword(id: PasswordID) {
+    func copyPassword(id: ItemID) {
         if interactor.copyPassword(id) {
             toastPresenter.presentPasswordCopied()
         } else {
@@ -297,7 +297,7 @@ private extension PasswordsPresenter {
         switch itemData {
         case .login(let loginItem):
             return PasswordCellData(
-                passwordID: loginItem.id,
+                itemID: loginItem.id,
                 name: loginItem.name,
                 username: loginItem.content.username,
                 iconType: loginItem.content.iconType,
