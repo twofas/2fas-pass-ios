@@ -9,7 +9,7 @@ import Common
 import CryptoKit
 
 public enum ExportError: Error {
-    case noPasswordsToExport
+    case noItemsToExport
     case noSelectedVault
     case missingExternalKey
     case encryptionDef
@@ -17,7 +17,7 @@ public enum ExportError: Error {
 }
 
 public protocol ExportInteracting: AnyObject {
-    func preparePasswordsForExport(encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void)
+    func prepareItemsForExport(encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void)
 }
 
 final class ExportInteractor {
@@ -45,7 +45,7 @@ final class ExportInteractor {
 
 extension ExportInteractor: ExportInteracting {
         
-    func preparePasswordsForExport(encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void) {
+    func prepareItemsForExport(encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void) {
         func end(_ result: Result<(Data, String), ExportError>) {
             DispatchQueue.main.async {
                 completion(result)
@@ -58,19 +58,19 @@ extension ExportInteractor: ExportInteracting {
             }
             
             DispatchQueue.main.async {
-                let passwords = self.mainRepository.listItems(options: .allNotTrashed).compactMap {
+                let items = self.mainRepository.listItems(options: .allNotTrashed).compactMap {
                     ItemData($0, decoder: self.mainRepository.jsonDecoder)?.asLoginItem
                 }
                 let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []
                 
                 DispatchQueue.global(qos: .userInitiated).async {
-                    guard exportIfEmpty || (!passwords.isEmpty || !deleted.isEmpty) else {
-                        end(.failure(.noPasswordsToExport))
+                    guard exportIfEmpty || (!items.isEmpty || !deleted.isEmpty) else {
+                        end(.failure(.noItemsToExport))
                         return
                     }
                     
-                    let exchangeLogins = passwords.map { self.passwordToExchangeLogin($0) }
+                    let exchangeLogins = items.map { self.itemToExchangeLogin($0) }
                     let exchangeDeleted = deleted.map { self.deletedToExchangeDeleted($0) }
                     let exchangeTags = tags.map { self.tagsToExchangeTags($0) }
                     let jsonEncoder = self.mainRepository.jsonEncoder
@@ -174,7 +174,7 @@ private extension ExportInteractor {
             let jsonEncoder = mainRepository.jsonEncoder
             guard let data = try? jsonEncoder.encode(pass) else {
                 Log(
-                    "Export Interactor - can't encode one of the passwords for export",
+                    "Export Interactor - can't encode one of the items for export",
                     module: .interactor,
                     severity: .error
                 )
@@ -182,7 +182,7 @@ private extension ExportInteractor {
             }
             guard let value = self.mainRepository.encrypt(data, key: key)?.base64EncodedString() else {
                 Log(
-                    "Export Interactor - can't encrypt one of the passwords for export",
+                    "Export Interactor - can't encrypt one of the items for export",
                     module: .interactor,
                     severity: .error
                 )
@@ -330,15 +330,15 @@ private extension ExportInteractor {
         )
     }
     
-    func passwordToExchangeLogin(_ password: LoginItemData) -> ExchangeVault.ExchangeVaultItem.ExchangeLogin {
+    func itemToExchangeLogin(_ item: LoginItemData) -> ExchangeVault.ExchangeVaultItem.ExchangeLogin {
         let passwordDecrypted: String? = {
-            guard let pass = password.password else {
+            guard let pass = item.password else {
                 return nil
             }
-            return itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: password.protectionLevel)
+            return itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: item.protectionLevel)
         }()
         let securityType: Int = {
-            switch password.protectionLevel {
+            switch item.protectionLevel {
             case .normal: 2
             case .confirm: 1
             case .topSecret: 0
@@ -349,7 +349,7 @@ private extension ExportInteractor {
         var iconURI: String?
         
         let iconType: Int = {
-            switch password.iconType {
+            switch item.iconType {
             case .domainIcon:
                 return 0
             case .label(let labelTitleValue, let labelColorValue):
@@ -363,9 +363,9 @@ private extension ExportInteractor {
         }()
         
         let iconURIIndex: Int? = {
-            switch password.iconType {
+            switch item.iconType {
             case .domainIcon(let domain):
-                return password.uris?.firstIndex(where: {
+                return item.uris?.firstIndex(where: {
                     uriInteractor.extractDomain(from: $0.uri) == domain
                 })
             default:
@@ -374,21 +374,21 @@ private extension ExportInteractor {
         }()
         
         return .init(
-            id: password.id.exportString(),
-            name: password.name,
-            username: password.username,
+            id: item.id.exportString(),
+            name: item.name,
+            username: item.username,
             password: passwordDecrypted,
-            notes: password.notes?.sanitizeNotes(),
+            notes: item.notes?.sanitizeNotes(),
             securityType: securityType,
             iconType: iconType,
             iconUriIndex: iconURIIndex,
             labelText: labelTitle,
             labelColor: labelColor,
             customImageUrl: iconURI,
-            createdAt: password.creationDate.exportTimestamp,
-            updatedAt: password.modificationDate.exportTimestamp,
-            uris: password.uris?.map({ uriToExchangeURI(uri: $0) }) ?? [],
-            tags: password.tagIds?.map { $0.exportString() }
+            createdAt: item.creationDate.exportTimestamp,
+            updatedAt: item.modificationDate.exportTimestamp,
+            uris: item.uris?.map({ uriToExchangeURI(uri: $0) }) ?? [],
+            tags: item.tagIds?.map { $0.exportString() }
         )
     }
     

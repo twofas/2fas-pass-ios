@@ -14,7 +14,7 @@ public enum MigrationError: Error {
 
 extension MainRepositoryImpl {
     
-    // MARK: Passwords
+    // MARK: Items
     
     func createEncryptedItem(
         itemID: ItemID,

@@ -283,7 +283,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func listTrashedItems() -> [ItemData] {
-        mainRepository.listTrashedPasswords()
+        mainRepository.listTrashedItems()
             .compactMap {
                 ItemData($0, decoder: mainRepository.jsonDecoder)
             }

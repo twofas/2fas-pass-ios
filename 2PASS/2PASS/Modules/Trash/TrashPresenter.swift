@@ -43,10 +43,10 @@ private class IconFetcherProxy: RemoteImageCollectionFetcher {
 final class TrashPresenter {
     var showMenu: ((Bool) -> Void)?
     var isTrashEmpty = true
-    var passwords: [TrashPasswordData] = []
+    var items: [TrashItemData] = []
     
     private(set) var icons: [ItemID: IconContent] = [:]
-    private let iconDataSource: RemoteImageCollectionDataSource<TrashPasswordData>
+    private let iconDataSource: RemoteImageCollectionDataSource<TrashItemData>
     
     private let interactor: TrashModuleInteracting
     private let notificationCenter: NotificationCenter
@@ -71,9 +71,9 @@ extension TrashPresenter {
     
     @MainActor
     func onAppear() {
-        iconDataSource.onImageFetchResult = { [weak self] password, url, result in
+        iconDataSource.onImageFetchResult = { [weak self] item, url, result in
             if let imageData = try? result.get(), let image = UIImage(data: imageData) {
-                self?.icons[password.id] = .icon(image)
+                self?.icons[item.id] = .icon(image)
             }
         }
         
@@ -81,36 +81,36 @@ extension TrashPresenter {
     }
     
     @MainActor
-    func onAppear(for password: TrashPasswordData) {
-        switch password.iconType {
+    func onAppear(for item: TrashItemData) {
+        switch item.iconType {
         case .domainIcon:
-            let label = Config.defaultIconLabel(forName: password.name ?? "")
-            icons[password.id] = .label(label, color: nil)
+            let label = Config.defaultIconLabel(forName: item.name ?? "")
+            icons[item.id] = .label(label, color: nil)
             
-            if let url = password.iconType.iconURL {
+            if let url = item.iconType.iconURL {
                 if let cachedData = iconDataSource.cachedImage(from: url), let image = UIImage(data: cachedData) {
-                    icons[password.id] = .icon(image)
+                    icons[item.id] = .icon(image)
                 }
-                iconDataSource.fetchImage(from: url, for: password)
+                iconDataSource.fetchImage(from: url, for: item)
             }
             
         case .customIcon(let url):
-            let label = Config.defaultIconLabel(forName: password.name ?? "")
-            icons[password.id] = .label(label, color: nil)
+            let label = Config.defaultIconLabel(forName: item.name ?? "")
+            icons[item.id] = .label(label, color: nil)
             
             if let cachedData = iconDataSource.cachedImage(from: url), let image = UIImage(data: cachedData) {
-                icons[password.id] = .icon(image)
+                icons[item.id] = .icon(image)
             }
-            iconDataSource.fetchImage(from: url, for: password)
+            iconDataSource.fetchImage(from: url, for: item)
             
         case .label(labelTitle: let title, labelColor: let color):
-            icons[password.id] = .label(title, color: color)
+            icons[item.id] = .label(title, color: color)
         }
     }
     
     @MainActor
-    func onDisappear(for password: TrashPasswordData) {
-        iconDataSource.cancelFetches(for: password)
+    func onDisappear(for item: TrashItemData) {
+        iconDataSource.cancelFetches(for: item)
     }
     
     func onRestore(itemID: ItemID) {
@@ -148,14 +148,14 @@ private extension TrashPresenter {
     func reload() {
         isTrashEmpty = interactor.isTrashEmpty
         showMenu?(!isTrashEmpty)
-        passwords = interactor.list()
-            .compactMap({ item -> TrashPasswordData? in
+        items = interactor.list()
+            .compactMap({ item -> TrashItemData? in
                 switch item.trashedStatus {
                 case .no: return nil
                 case .yes(let trashingDate):
                     switch item {
                     case .login(let loginItem):
-                        return TrashPasswordData(
+                        return TrashItemData(
                             itemID: loginItem.id,
                             name: loginItem.name,
                             username: loginItem.username,

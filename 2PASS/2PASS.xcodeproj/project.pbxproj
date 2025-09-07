@@ -82,7 +82,7 @@
 		C21422D22C8E439F00C978F9 /* LogStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21422D12C8E439F00C978F9 /* LogStorageDataSourceImpl.swift */; };
 		C2145B5D2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2145B5C2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift */; };
 		C2145B602BF555F800A40A0A /* Storage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C249E7762BF10B23003464D5 /* Storage.framework */; };
-		C2145B672BF559AC00A40A0A /* PasswordListOptions+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2145B662BF559AC00A40A0A /* PasswordListOptions+.swift */; };
+		C2145B672BF559AC00A40A0A /* ItemListOptions+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2145B662BF559AC00A40A0A /* ItemListOptions+.swift */; };
 		C23903ED2C7E648600545E8C /* EnterWordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23903EC2C7E648600545E8C /* EnterWordsView.swift */; };
 		C23903EF2C7E706A00545E8C /* EnterWordsInputListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23903EE2C7E706A00545E8C /* EnterWordsInputListView.swift */; };
 		C23903F32C7E796200545E8C /* ScanQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23903F22C7E796200545E8C /* ScanQRCodeView.swift */; };
@@ -364,7 +364,7 @@
 		C21422CF2C8E432700C978F9 /* LogStorageDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStorageDataSource.swift; sourceTree = "<group>"; };
 		C21422D12C8E439F00C978F9 /* LogStorageDataSourceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStorageDataSourceImpl.swift; sourceTree = "<group>"; };
 		C2145B5C2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryStorageDataSourceImpl.swift; sourceTree = "<group>"; };
-		C2145B662BF559AC00A40A0A /* PasswordListOptions+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PasswordListOptions+.swift"; sourceTree = "<group>"; };
+		C2145B662BF559AC00A40A0A /* ItemListOptions+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemListOptions+.swift"; sourceTree = "<group>"; };
 		C23903EC2C7E648600545E8C /* EnterWordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsView.swift; sourceTree = "<group>"; };
 		C23903EE2C7E706A00545E8C /* EnterWordsInputListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterWordsInputListView.swift; sourceTree = "<group>"; };
 		C23903F22C7E796200545E8C /* ScanQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQRCodeView.swift; sourceTree = "<group>"; };
@@ -810,7 +810,7 @@
 			children = (
 				C249E7852BF130E8003464D5 /* ItemEntity+CoreDataClass.swift */,
 				C249E7862BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift */,
-				C2145B662BF559AC00A40A0A /* PasswordListOptions+.swift */,
+				C2145B662BF559AC00A40A0A /* ItemListOptions+.swift */,
 			);
 			path = Item;
 			sourceTree = "<group>";
@@ -1705,7 +1705,7 @@
 				8FD25CFA2CC30BC9001DC8EB /* LogStorage.xcdatamodeld in Sources */,
 				C2FC82682E0F21E10030EDCB /* TagListOptions.swift in Sources */,
 				C249E7872BF130E8003464D5 /* ItemEntity+CoreDataClass.swift in Sources */,
-				C2145B672BF559AC00A40A0A /* PasswordListOptions+.swift in Sources */,
+				C2145B672BF559AC00A40A0A /* ItemListOptions+.swift in Sources */,
 				C28A01072BF417C900BAF976 /* InMemoryStorageDataSource.swift in Sources */,
 				C21422CE2C8E42C200C978F9 /* LogEntryEntity+CodeDataClass.swift in Sources */,
 				C249E7882BF130E8003464D5 /* ItemEntity+CoreDataProperties.swift in Sources */,

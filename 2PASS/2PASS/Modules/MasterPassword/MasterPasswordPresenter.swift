@@ -22,7 +22,7 @@ enum MasterPasswordDestination: RouterDestination {
         }
     }
     
-    case restoreVault(passwords: [ItemData], tags: [ItemTagData])
+    case restoreVault(items: [ItemData], tags: [ItemTagData])
     case vaultDecryptionKit(onLogin: Callback)
     case onboardingRecoveryKit
     case confirmChange(onConfirm: Callback)
@@ -129,9 +129,9 @@ extension MasterPasswordPresenter {
                 destination = .onboardingRecoveryKit
             case .change:
                 destination = .changeSuccess(onFinish: onFinish)
-            case .unencryptedVaultRecovery(let passwords, let tags):
+            case .unencryptedVaultRecovery(let items, let tags):
                 destination = .restoreVault(
-                    passwords: passwords,
+                    items: items,
                     tags: tags
                 )
             }

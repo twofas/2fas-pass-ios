@@ -21,7 +21,7 @@ extension VaultEncryptedEntity {
     @NSManaged var items: Set<ItemEncryptedEntity>?
 }
 
-// MARK: Generated accessors for passwords
+// MARK: Generated accessors for items
 extension VaultEncryptedEntity {    
     @objc(addItemsObject:)
     @NSManaged func addToItems(_ value: ItemEncryptedEntity)

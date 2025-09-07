@@ -43,7 +43,7 @@ extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInte
             })
         
         case .encrypted(_, let masterKey, let vault):
-            importInteractor.extractPasswordsUsingMasterKey(masterKey, exchangeVault: vault) { result in
+            importInteractor.extractItemsUsingMasterKey(masterKey, exchangeVault: vault) { result in
                 switch result {
                 case .success((let items, let tags, let deleted)):
                     self.itemsImportInteractor.importDeleted(deleted)

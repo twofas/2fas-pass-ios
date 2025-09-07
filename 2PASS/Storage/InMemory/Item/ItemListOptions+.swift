@@ -47,18 +47,18 @@ extension ItemsListOptions {
         case .filterByPhrase(_, let sortBy, _):
             switch sortBy {
             case .az:
-                return [PasswordSortDescriptor.sortByNameAscending, PasswordSortDescriptor.oldestFirst]
+                return [ItemSortDescriptor.sortByNameAscending, ItemSortDescriptor.oldestFirst]
             case .za:
-                return [PasswordSortDescriptor.sortByNameDescending, PasswordSortDescriptor.newestFirst]
+                return [ItemSortDescriptor.sortByNameDescending, ItemSortDescriptor.newestFirst]
             case .newestFirst:
-                return [PasswordSortDescriptor.newestFirst, PasswordSortDescriptor.sortByNameDescending]
+                return [ItemSortDescriptor.newestFirst, ItemSortDescriptor.sortByNameDescending]
             case .oldestFirst:
-                return [PasswordSortDescriptor.oldestFirst, PasswordSortDescriptor.sortByNameAscending]
+                return [ItemSortDescriptor.oldestFirst, ItemSortDescriptor.sortByNameAscending]
             }
         case .allTrashed:
-            return [PasswordSortDescriptor.trashingDate]
+            return [ItemSortDescriptor.trashingDate]
         default:
-            return [PasswordSortDescriptor.newestFirst]
+            return [ItemSortDescriptor.newestFirst]
         }
     }
 }
@@ -76,7 +76,7 @@ extension ItemsListOptions.TrashOptions {
     }
 }
 
-enum PasswordSortDescriptor {
+enum ItemSortDescriptor {
     static let trashingDate = NSSortDescriptor(key: #keyPath(ItemEntity.trashingDate), ascending: false)
     static let newestFirst = NSSortDescriptor(key: #keyPath(ItemEntity.creationDate), ascending: false)
     static let oldestFirst = NSSortDescriptor(key: #keyPath(ItemEntity.creationDate), ascending: true)

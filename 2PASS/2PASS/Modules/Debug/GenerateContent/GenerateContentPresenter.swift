@@ -9,7 +9,7 @@ import SwiftUI
 @Observable
 final class GenerateContentPresenter {
     var isWorking = false
-    var passwordCount: Int = 0
+    var itemsCount: Int = 0
     
     private let interactor: GenerateContentModuleInteracting
     
@@ -23,9 +23,9 @@ extension GenerateContentPresenter {
         refreshCount()
     }
     
-    func onRemoveAllPasswords() {
+    func onRemoveAllItems() {
         isWorking = true
-        interactor.removeAllPasswords()
+        interactor.removeAllItems()
         refreshCount()
         isWorking = false
     }
@@ -39,6 +39,6 @@ extension GenerateContentPresenter {
     }
     
     private func refreshCount() {
-        passwordCount = interactor.itemsCount
+        itemsCount = interactor.itemsCount
     }
 }

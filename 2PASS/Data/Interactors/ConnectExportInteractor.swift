@@ -8,8 +8,8 @@ import CryptoKit
 import Common
 
 protocol ConnectExportInteracting: AnyObject {
-    func preparePasswordForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
-    func preparePasswordsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data
+    func prepareItemForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
+    func prepareItemsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data
     func prepareTagsForConnectExport() async throws(ExportError) -> Data
 }
 
@@ -32,19 +32,19 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         self.uriInteractor = uriInteractor
     }
     
-    func preparePasswordsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data {
+    func prepareItemsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data {
         guard let _ = self.mainRepository.selectedVault else {
             throw .noSelectedVault
         }
         
-        let passwords = Task { @MainActor in
+        let items = Task { @MainActor in
             mainRepository.listItems(options: .allNotTrashed)
                 .filter { $0.protectionLevel != .topSecret }
                 .compactMap { ItemData($0, decoder: mainRepository.jsonDecoder)?.asLoginItem }
         }
              
-        let connectLogins = await passwords.value.map {
-            passwordToConnectLogin($0, deviceId: deviceId, excludePasswordsValueProtectionLevels: [.confirm], encryptPasswordKey: encryptPasswordKey)
+        let connectLogins = await items.value.map {
+            itemToConnectLogin($0, deviceId: deviceId, excludeSecureValuesProtectionLevels: [.confirm], encryptPasswordKey: encryptPasswordKey)
         }
         
         do {
@@ -54,16 +54,16 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
     }
     
-    func preparePasswordForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
+    func prepareItemForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
         let rawItem = Task { @MainActor in
             mainRepository.getItemEntity(itemID: id, checkInTrash: false)
         }
    
         guard let rawItem = await rawItem.value, let loginItem = ItemData(rawItem, decoder: mainRepository.jsonDecoder)?.asLoginItem else {
-            throw .noPasswordsToExport
+            throw .noItemsToExport
         }
         
-        let connectLogin = passwordToConnectLogin(loginItem, deviceId: deviceId, encryptPasswordKey: encryptPasswordKey(loginItem.protectionLevel))
+        let connectLogin = itemToConnectLogin(loginItem, deviceId: deviceId, encryptPasswordKey: encryptPasswordKey(loginItem.protectionLevel))
         return connectLogin
     }
     
@@ -86,14 +86,14 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
     }
     
-    private func passwordToConnectLogin(
+    private func itemToConnectLogin(
         _ item: LoginItemData,
         deviceId: UUID,
-        excludePasswordsValueProtectionLevels: Set<ItemProtectionLevel> = [],
+        excludeSecureValuesProtectionLevels: Set<ItemProtectionLevel> = [],
         encryptPasswordKey: SymmetricKey? = nil
     ) -> ConnectLogin {
         let passwordExported: String? = {
-            guard excludePasswordsValueProtectionLevels.contains(item.protectionLevel) == false else {
+            guard excludeSecureValuesProtectionLevels.contains(item.protectionLevel) == false else {
                 return nil
             }
             

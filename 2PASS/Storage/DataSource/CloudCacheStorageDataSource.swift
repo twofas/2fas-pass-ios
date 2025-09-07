@@ -12,7 +12,7 @@ public protocol CloudCacheStorageDataSource: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     var initilizingNewStore: (() -> Void)? { get set }
     
-    // MARK: Cloud Cached Passwords
+    // MARK: Cloud Cached Items
     
     func createCloudCachedItem(
         itemID: ItemID,

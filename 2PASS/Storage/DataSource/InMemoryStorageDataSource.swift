@@ -11,7 +11,7 @@ import Common
 public protocol InMemoryStorageDataSource: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
-    // MARK: - Passwords
+    // MARK: - Items
     
     func createItem(
         itemID: ItemID,

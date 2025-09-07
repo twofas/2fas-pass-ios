@@ -10,7 +10,7 @@ import Storage
 
 extension MainRepositoryImpl {
     
-    // MARK: Passwords
+    // MARK: Items
     
     func createItem(
         itemID: ItemID,
@@ -62,7 +62,7 @@ extension MainRepositoryImpl {
         )
     }
     
-    func updatePasswords(_ items: [RawItemData]) {
+    func updateItems(_ items: [RawItemData]) {
         items.forEach { item in
             inMemoryStorage?.updateItem(
                 itemID: item.id,
@@ -95,7 +95,7 @@ extension MainRepositoryImpl {
         inMemoryStorage?.listItems(options: options) ?? []
     }
     
-    func listTrashedPasswords() -> [RawItemData] {
+    func listTrashedItems() -> [RawItemData] {
         inMemoryStorage?.listItems(options: .allTrashed) ?? []
     }
     

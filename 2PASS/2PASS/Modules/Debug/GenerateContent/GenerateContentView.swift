@@ -22,9 +22,9 @@ struct GenerateContentView: View {
         } else {
             List {
                 Section {
-                    Text("Password count: \(presenter.passwordCount)" as String)
+                    Text("Password count: \(presenter.itemsCount)" as String)
                 }
-                Section("Generate Additional Passwords" as String) {
+                Section("Generate Additional Items" as String) {
                     PrimaryButton(title: "5") {
                         presenter.onGenerate(count: 5)
                     }
@@ -48,7 +48,7 @@ struct GenerateContentView: View {
                     }
                 }
                 .listRowBackground(Color.clear)
-                PrimaryButton(title: "Remove All Passwords") {
+                PrimaryButton(title: "Remove All Items") {
                     presentWarning = true
                 }
                 .padding(.vertical, Spacing.xl)
@@ -60,7 +60,7 @@ struct GenerateContentView: View {
             .scrollContentBackground(.hidden)
             .alert("Are you sure?" as String, isPresented: $presentWarning, actions: {
                 Button("Remove all" as String, role: .destructive) {
-                    presenter.onRemoveAllPasswords()
+                    presenter.onRemoveAllItems()
                 }
                 Button(T.commonCancel.localizedKey, role: .cancel) {
                     presentWarning = false

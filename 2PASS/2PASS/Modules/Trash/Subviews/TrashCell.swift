@@ -9,7 +9,7 @@ import CommonUI
 
 struct TrashCell: View {
     
-    let data: TrashPasswordData
+    let data: TrashItemData
     let presenter: TrashPresenter
     
     var body: some View {

@@ -44,11 +44,11 @@ struct SettingsDebugView: View {
                 }
                 
                 Button {
-                    presenter.onGeneratePasswords()
+                    presenter.onGenerateItems()
                 } label: {
                     SettingsRowView(
                         icon: .generate,
-                        title: Text("Generate Passwords" as String)
+                        title: Text("Generate Items" as String)
                     )
                 }
                 

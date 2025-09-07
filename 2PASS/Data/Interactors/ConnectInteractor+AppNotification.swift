@@ -357,7 +357,7 @@ extension ConnectInteractor {
             throw ConnectError.missingDeviceId
         }
         
-        let connectLogin = try await connectExportInteractor.preparePasswordForConnectExport(
+        let connectLogin = try await connectExportInteractor.prepareItemForConnectExport(
             id: newPasswordId,
             encryptPasswordKey: encryptionPasswordKey,
             deviceId: deviceID
@@ -479,7 +479,7 @@ extension ConnectInteractor {
             throw ConnectError.missingDeviceId
         }
         
-        let connectLogin = try await connectExportInteractor.preparePasswordForConnectExport(id: itemID, encryptPasswordKey: encryptionPasswordKey, deviceId: deviceID)
+        let connectLogin = try await connectExportInteractor.prepareItemForConnectExport(id: itemID, encryptPasswordKey: encryptionPasswordKey, deviceId: deviceID)
         let actionData = ConnectActionItemData(
             type: .updateLogin,
             status: connectLogin.securityType == ItemProtectionLevel.topSecret.intValue ? .addedInT1 : .updated,

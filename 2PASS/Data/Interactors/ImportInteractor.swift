@@ -63,20 +63,20 @@ public protocol ImportInteracting: AnyObject {
     func checkDeviceId(in vault: ExchangeVault) -> Bool
     func checkEncryption(in vault: ExchangeVault) -> ImportEncryptionType
     func checkEncryptionWithoutParsing(in vault: ExchangeVault) -> ImportEncryptionTypeNoParsing
-    func extractPasswordsUsingCurrentEncryption(
+    func extractItemsUsingCurrentEncryption(
         from vault: ExchangeVault,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     )
-    func extractUnencryptedPasswords(from file: ExchangeVault) -> [ItemData]
+    func extractUnencryptedItems(from file: ExchangeVault) -> [ItemData]
     func extractUnencryptedTags(from file: ExchangeVault) -> [ItemTagData]
     
-    func extractPasswordsUsingMasterPassword(
+    func extractItemsUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
         vault: ExchangeVault,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     )
-    func extractPasswordsUsingMasterKey(
+    func extractItemsUsingMasterKey(
         _ masterKey: MasterKey,
         exchangeVault: ExchangeVault,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
@@ -200,7 +200,7 @@ extension ImportInteractor: ImportInteracting {
         return .currentEncryption
     }
     
-    func extractUnencryptedPasswords(from file: ExchangeVault) -> [ItemData] {
+    func extractUnencryptedItems(from file: ExchangeVault) -> [ItemData] {
         guard let logins = file.vault.logins else {
             return []
         }
@@ -228,7 +228,7 @@ extension ImportInteractor: ImportInteracting {
         return .needsPassword
     }
     
-    func extractPasswordsUsingCurrentEncryption(
+    func extractItemsUsingCurrentEncryption(
         from vault: ExchangeVault,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     ) {
@@ -249,12 +249,12 @@ extension ImportInteractor: ImportInteracting {
         let deletedPasswords = vault.vault.itemsDeletedEncrypted ?? []
         let tags = vault.vault.tagsEncrypted ?? []
         
-        extractPasswords(from: passwords, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
+        extractItems(from: passwords, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
             completion(.success((itemsData, tagsData, deletedData)))
         }
     }
     
-    func extractPasswordsUsingMasterPassword(
+    func extractItemsUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
         vault: ExchangeVault,
@@ -270,10 +270,10 @@ extension ImportInteractor: ImportInteracting {
             completion(.failure(.masterKey))
             return
         }
-        extractPasswordsUsingMasterKey(masterKey, exchangeVault: vault, completion: completion)
+        extractItemsUsingMasterKey(masterKey, exchangeVault: vault, completion: completion)
     }
     
-    func extractPasswordsUsingMasterKey(
+    func extractItemsUsingMasterKey(
         _ masterKey: MasterKey,
         exchangeVault: ExchangeVault,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
@@ -313,7 +313,7 @@ extension ImportInteractor: ImportInteracting {
         let deletedPasswords = exchangeVault.vault.itemsDeletedEncrypted ?? []
         let tags = exchangeVault.vault.tagsEncrypted ?? []
         
-        extractPasswords(from: items, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
+        extractItems(from: items, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
             completion(.success((items, tagsData, deleted)))
         }
     }
@@ -414,7 +414,7 @@ private extension ImportInteractor {
         return masterKey
     }
     
-    func extractPasswords(
+    func extractItems(
         from items: [String],
         tags: [String],
         deletedPasswords: [String],

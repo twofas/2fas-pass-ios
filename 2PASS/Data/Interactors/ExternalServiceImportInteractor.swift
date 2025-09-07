@@ -102,7 +102,7 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -127,7 +127,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let notes = dict["Notes"]?.nilIfEmpty
                 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -153,7 +153,7 @@ private extension ExternalServiceImportInteractor {
             return .failure(.wrongFormat)
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     func importBitWarden(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
@@ -162,7 +162,7 @@ private extension ExternalServiceImportInteractor {
         else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         parsedJSON.items?.forEach { item in
@@ -192,7 +192,7 @@ private extension ExternalServiceImportInteractor {
                 return urisList
             }()
             
-            passwords.append(
+            items.append(
                 .login(.init(
                     id: .init(),
                     metadata: .init(
@@ -215,14 +215,14 @@ private extension ExternalServiceImportInteractor {
             )
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     func importChrome(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -247,7 +247,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let notes = dict["note"]?.nilIfEmpty
                 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -273,14 +273,14 @@ private extension ExternalServiceImportInteractor {
             return .failure(.wrongFormat)
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     func importDashlaneMobile(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -306,7 +306,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let notes = dict["note"]?.nilIfEmpty
                 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -329,7 +329,7 @@ private extension ExternalServiceImportInteractor {
                 )
             }
             
-            return .success(passwords)
+            return .success(items)
             
         } catch {
             return .failure(.wrongFormat)
@@ -340,7 +340,7 @@ private extension ExternalServiceImportInteractor {
         guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
             return .failure(.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         if let entry = archive.first(where: { $0.path.hasSuffix("credentials.csv")}) {
@@ -375,7 +375,7 @@ private extension ExternalServiceImportInteractor {
                     }()
                     let notes = dict["note"]?.nilIfEmpty
                     
-                    passwords.append(
+                    items.append(
                         .login(.init(
                             id: .init(),
                             metadata: .init(
@@ -422,7 +422,7 @@ private extension ExternalServiceImportInteractor {
                     let name = dict["title"].formattedName
                     let notes = dict["note"]?.nilIfEmpty
                     
-                    passwords.append(
+                    items.append(
                         .login(.init(
                             id: .init(),
                             metadata: .init(
@@ -449,14 +449,14 @@ private extension ExternalServiceImportInteractor {
             }
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     func importLastPass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -481,7 +481,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let notes = dict["extra"]?.nilIfEmpty
                 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -507,14 +507,14 @@ private extension ExternalServiceImportInteractor {
             return .failure(.wrongFormat)
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     func importProtonPass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -539,7 +539,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let notes = dict["note"]?.nilIfEmpty
                 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -565,7 +565,7 @@ private extension ExternalServiceImportInteractor {
             return .failure(.wrongFormat)
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     func importApplePasswordsMobile(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
@@ -602,7 +602,7 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -637,7 +637,7 @@ private extension ExternalServiceImportInteractor {
                 let timeCreated = dict["timeCreated"]?.nilIfEmpty as? String
                 let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty as? String
 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -663,11 +663,11 @@ private extension ExternalServiceImportInteractor {
             return .failure(.wrongFormat)
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     private func importApplePasswords(csvContent: String) async -> Result<[ItemData], ExternalServiceImportError> {
-        var passwords: [ItemData] = []
+        var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
         do {
@@ -701,7 +701,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let notes = dict["Notes"]?.nilIfEmpty
                 
-                passwords.append(
+                items.append(
                     .login(.init(
                         id: .init(),
                         metadata: .init(
@@ -727,7 +727,7 @@ private extension ExternalServiceImportInteractor {
             return .failure(.wrongFormat)
         }
         
-        return .success(passwords)
+        return .success(items)
     }
     
     private func makeIconType(uri: String?) -> PasswordIconType {

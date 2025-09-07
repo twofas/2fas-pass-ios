@@ -17,7 +17,7 @@ enum SettingsIcon {
     case pushNotifications
     case sync
     case importExport
-    case transferPasswords
+    case transferItems
     case about
     case help
     case discord
@@ -131,7 +131,7 @@ struct SettingsIconView: View {
             Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
         case .importExport:
             Image(systemName: "rectangle.portrait.and.arrow.right")
-        case .transferPasswords:
+        case .transferItems:
             Image(systemName: "iphone.gen1")
         case .about:
             Image(systemName: "info.circle.fill")

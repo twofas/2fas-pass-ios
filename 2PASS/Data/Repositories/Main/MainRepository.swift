@@ -303,7 +303,7 @@ protocol MainRepository: AnyObject {
         content: Data
     )
     
-    func updatePasswords(_ passwords: [RawItemData])
+    func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func getItemEntity(
         itemID: ItemID,
@@ -314,7 +314,7 @@ protocol MainRepository: AnyObject {
         options: ItemsListOptions
     ) -> [RawItemData]
     
-    func listTrashedPasswords() -> [RawItemData]
+    func listTrashedItems() -> [RawItemData]
     func deleteItem(itemID: ItemID)
     func deleteAllItems()
     func saveStorage()

@@ -122,17 +122,17 @@ extension ConnectInteractor {
                 outputByteCount: 32
             )
             
-            let passwordsData = try await connectExportInteractor.preparePasswordsForConnectExport(encryptPasswordKey: encryptionPassKey, deviceId: deviceID)
+            let itemsData = try await connectExportInteractor.prepareItemsForConnectExport(encryptPasswordKey: encryptionPassKey, deviceId: deviceID)
             let tagsData = try await connectExportInteractor.prepareTagsForConnectExport()
             
             try Task.checkCancellation()
             
             progress(0.5)
             
-            let compressedPasswords = try passwordsData.gzipped()
+            let compressedItems = try itemsData.gzipped()
             let compressedTags = try tagsData.gzipped()
             let vault = ConnectVault(
-                logins: compressedPasswords.base64EncodedString(),
+                logins: compressedItems.base64EncodedString(),
                 tags: compressedTags.base64EncodedString()
             )
             let vaultData = try mainRepository.jsonEncoder.encode(vault)

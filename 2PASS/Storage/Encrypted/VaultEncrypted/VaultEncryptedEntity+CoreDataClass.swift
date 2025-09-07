@@ -99,7 +99,7 @@ final class VaultEncryptedEntity: NSManagedObject {
         context.delete(entity)
     }
     
-    // MARK: - Passwords
+    // MARK: - Items
     
     @nonobjc static func deleteItem(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, item: ItemEncryptedEntity) {
         Log("VaultEncryptedEntity: Deleting entity of type: \(item) in vault: \(vault)", module: .storage)

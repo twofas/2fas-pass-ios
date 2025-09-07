@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-struct TrashPasswordData: Identifiable, Hashable {
+struct TrashItemData: Identifiable, Hashable {
     var id: ItemID {
         itemID
     }

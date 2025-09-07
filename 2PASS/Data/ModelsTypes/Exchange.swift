@@ -144,7 +144,7 @@ extension ExchangeVault {
         return vault.logins?.isEmpty == false || vault.loginsEncrypted?.isEmpty == false
     }
     
-    var passwordCount: Int {
+    var itemsCount: Int {
         if let lCount = vault.logins?.count {
             return lCount
         } else if let lEncrypted = vault.loginsEncrypted?.count {

@@ -10,7 +10,7 @@ import Data
 import CommonUI
 
 enum VaultRecoveryRecoverKind {
-    case importUnencrypted(passwords: [ItemData], tags: [ItemTagData])
+    case importUnencrypted(items: [ItemData], tags: [ItemTagData])
     case recoverEncrypted(
         entropy: Entropy,
         masterKey: MasterKey,

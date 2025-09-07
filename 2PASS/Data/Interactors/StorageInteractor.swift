@@ -89,7 +89,7 @@ extension StorageInteractor: StorageInteracting {
         mainRepository.selectVault(vaultID)
         
         mainRepository.createInMemoryStorage()
-        let passwords = mainRepository.listEncryptedItems(
+        let items = mainRepository.listEncryptedItems(
             in: vaultID,
             excludeProtectionLevels: mainRepository.isMainAppProcess ? [] : Config.autoFillExcludeProtectionLevels
         )
@@ -98,7 +98,7 @@ extension StorageInteractor: StorageInteracting {
         
         let group = DispatchGroup()
         
-        for encryptedData in passwords {
+        for encryptedData in items {
             group.enter()
             queue.async { [weak self] in
                 guard let self else {

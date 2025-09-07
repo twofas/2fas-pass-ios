@@ -20,7 +20,7 @@ enum MasterPasswordKind: Equatable {
     
     case onboarding
     case change
-    case unencryptedVaultRecovery(passwords: [ItemData], tags: [ItemTagData])
+    case unencryptedVaultRecovery(items: [ItemData], tags: [ItemTagData])
 }
 
 extension MasterPasswordKind {

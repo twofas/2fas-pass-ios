@@ -27,8 +27,8 @@ final class TransferItemsInstructionsModuleInteractor: TransferItemsInstructions
         
         let result = await externalServiceImportInteractor.importService(service, content: data)
         switch result {
-        case .success(let passwords):
-            return passwords
+        case .success(let items):
+            return items
         case .failure(let error):
             throw error
         }

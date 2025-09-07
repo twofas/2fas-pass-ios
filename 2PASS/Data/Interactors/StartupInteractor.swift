@@ -148,7 +148,7 @@ extension StartupInteractor: StartupInteracting {
         
         guard protectionInteractor.hasEncryptionReference else {
             Log("StartupInteractor: No Encryption Reference", module: .interactor)
-            if protectionInteractor.vaultHasTrustedPasswords {
+            if protectionInteractor.vaultHasTrustedItems {
                 Log("StartupInteractor: Enter Password", module: .interactor)
                 
                 protectionInteractor.selectVault()

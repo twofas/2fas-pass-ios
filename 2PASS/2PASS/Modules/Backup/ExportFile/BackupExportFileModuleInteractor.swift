@@ -29,7 +29,7 @@ extension BackupExportFileModuleInteractor: BackupExportFileModuleInteracting {
     
     func export(encrypt: Bool) async throws -> URL {
         try await withCheckedThrowingContinuation { continuation in
-            self.exportInteractor.preparePasswordsForExport(encrypt: encrypt, exportIfEmpty: false, includeDeletedItems: false) { result in
+            self.exportInteractor.prepareItemsForExport(encrypt: encrypt, exportIfEmpty: false, includeDeletedItems: false) { result in
                 switch result {
                 case .success(let data):
                     do {                    

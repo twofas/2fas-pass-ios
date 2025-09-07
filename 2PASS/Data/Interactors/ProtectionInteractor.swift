@@ -31,7 +31,7 @@ public protocol ProtectionInteracting: AnyObject {
     var entropy: Entropy? { get }
     
     var hasVault: Bool { get }
-    var vaultHasTrustedPasswords: Bool { get }
+    var vaultHasTrustedItems: Bool { get }
     var hasEncryptedEntropy: Bool { get }
     func restoreEntropy()
     func saveEntropy()
@@ -116,7 +116,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         !mainRepository.listEncrypteVaults().isEmpty
     }
     
-    var vaultHasTrustedPasswords: Bool {
+    var vaultHasTrustedItems: Bool {
         guard let vault = mainRepository.listEncrypteVaults().first else {
             return false
         }

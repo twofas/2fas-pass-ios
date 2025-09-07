@@ -25,7 +25,7 @@ struct SettingsDebugRouter: Router {
             AppStateRouter.buildView()
         case .eventLog:
             EventLogRouter.buildView()
-        case .generatePasswords:
+        case .generateItems:
             GenerateContentRouter.buildView()
         case .modifyState:
             ModifyStateRouter.buildView()

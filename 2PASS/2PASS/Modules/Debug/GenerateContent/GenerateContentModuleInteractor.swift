@@ -11,7 +11,7 @@ import Data
 protocol GenerateContentModuleInteracting: AnyObject {
     var itemsCount: Int { get }
     func generateItems(count: Int, completion: @escaping Callback)
-    func removeAllPasswords()
+    func removeAllItems()
 }
 
 final class GenerateContentModuleInteractor {
@@ -34,7 +34,7 @@ extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
         syncChangeTriggerInteractor.trigger()
     }
     
-    func removeAllPasswords() {
+    func removeAllItems() {
         debugInteractor.deleteAllItems()
         syncChangeTriggerInteractor.trigger()
     }

@@ -64,9 +64,9 @@ private extension ItemsImportInteractor {
         var failure = 0
         
         let localTags = tagInteractor.listAllTags()
-        let localPasswords = itemsInteractor.listAllItems()
+        let localItems = itemsInteractor.listAllItems()
         
-        let decryptedLocalPasswordValues: [ItemID: String] = localPasswords.reduce(into: [:]) { result, item in
+        let decryptedLocalPasswordValues: [ItemID: String] = localItems.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem,
                let passwordValueEnc = loginItem.password,
                let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isSecureField: true, protectionLevel: item.protectionLevel) {
@@ -81,11 +81,11 @@ private extension ItemsImportInteractor {
             }
         }
         
-        let localPasswordByIds: [ItemID: ItemData] = localPasswords.reduce(into: [:]) { result, item in
+        let localItemsByIds: [ItemID: ItemData] = localItems.reduce(into: [:]) { result, item in
             result[item.id] = item
         }
         
-        let localPasswordByEqualContent: [PasswordContentEqualItem: ItemID] = localPasswords.reduce(into: [:]) { result, item in
+        let localPasswordByEqualContent: [PasswordContentEqualItem: ItemID] = localItems.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem {
                 let localContentItem = PasswordContentEqualItem(
                     name: loginItem.name,
@@ -119,12 +119,12 @@ private extension ItemsImportInteractor {
                         return nil
                     }
                     
-                    return localPasswordByIds[localId]
+                    return localItemsByIds[localId]
                 }
                 return nil
             }
             
-            let current = localPasswordByIds[item.id] ?? findByContent()
+            let current = localItemsByIds[item.id] ?? findByContent()
          
             if let current {
                 exists += 1

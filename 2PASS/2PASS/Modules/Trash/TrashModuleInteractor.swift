@@ -74,8 +74,8 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     
     func restoreAll() {
         Log("TrashModuleInteractor: Restore all", module: .moduleInteractor)
-        list().forEach { password in
-            itemsInteractor.markAsNotTrashed(for: password.id)
+        list().forEach { item in
+            itemsInteractor.markAsNotTrashed(for: item.id)
         }
         itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
@@ -83,8 +83,8 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     
     func emptyTrash() {
         Log("TrashModuleInteractor: Empty trash", module: .moduleInteractor)
-        list().forEach { password in
-            itemsInteractor.deleteItem(for: password.id)
+        list().forEach { item in
+            itemsInteractor.deleteItem(for: item.id)
         }
         itemsInteractor.saveStorage()
     }
