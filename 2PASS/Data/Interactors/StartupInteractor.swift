@@ -35,7 +35,7 @@ public protocol StartupInteracting: AnyObject {
     func getAllWords() -> [String]
     
     func initialize()
-    func start() -> StartupInteractorStartResult
+    func start() async -> StartupInteractorStartResult
     func setupEncryptionElements()
     func setMasterPassword(masterPassword: String?, enableBiometryLogin: Bool, completion: @escaping () -> Void)
     func clearAfterInit()
@@ -127,14 +127,15 @@ extension StartupInteractor: StartupInteracting {
     }
     
     /// Run every time user is in logged out state
-    func start() -> StartupInteractorStartResult {
+    @MainActor
+    func start() async -> StartupInteractorStartResult {
         Log("StartupInteractor: Start", module: .interactor)
         
-        if migrationInteractor.requiresReencryptionMigration() {
+        guard !migrationInteractor.requiresReencryptionMigration() else {
             return .login
-        } else {
-            storageInteractor.loadStore()
         }
+        
+        await storageInteractor.loadStore()
         
         guard protectionInteractor.hasVault, onboardingInteractor.isOnboardingCompleted else {
             Log("StartupInteractor: Select Vault", module: .interactor)

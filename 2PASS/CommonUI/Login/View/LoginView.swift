@@ -102,7 +102,10 @@ public struct LoginView: View {
             }
             .ignoresSafeArea()
             .onAppear {
-                guard presenter.isBiometryAvailable == false else { return }
+                guard presenter.isBiometryAvailable == false else {
+                    presenter.startBiometryIfAvailable()
+                    return
+                }
                 
                 Task {
                     showEnterPasswordView()

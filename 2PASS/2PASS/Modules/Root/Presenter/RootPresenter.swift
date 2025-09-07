@@ -159,15 +159,17 @@ final class RootPresenter {
         if interactor.isUserLoggedIn {
             presentMain(immediately: coldRun)
         } else {
-            switch interactor.start() {
-            case .selectVault:
-                presentVaultRecovery()
-            case .enterWords:
-                presentEnterWords()
-            case .login:
-                presentLogin(coldRun: coldRun, canUseBiometry: canUseBiometry)
-            case .enterPassword:
-                presentEnterPassword()
+            Task { @MainActor in
+                switch await interactor.start() {
+                case .selectVault:
+                    presentVaultRecovery()
+                case .enterWords:
+                    presentEnterWords()
+                case .login:
+                    presentLogin(coldRun: coldRun, canUseBiometry: canUseBiometry)
+                case .enterPassword:
+                    presentEnterPassword()
+                }
             }
         }
     }

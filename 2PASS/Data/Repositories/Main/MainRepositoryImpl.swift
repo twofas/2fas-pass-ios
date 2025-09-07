@@ -125,7 +125,9 @@ final class MainRepositoryImpl: MainRepository {
         cloudCache.storageError = { [weak self] in self?.storageError?($0) }
         cloudCache.initilizingNewStore = { [weak self] in self?._cloudCacheInitilizingNewStore = true }
 
-        LogStorage.setStorage(logDataSource)
+        logDataSource.loadStore {
+            LogStorage.setStorage(logDataSource)
+        }
         
         cloudCache.warmUp()
         

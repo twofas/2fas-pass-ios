@@ -32,7 +32,7 @@ protocol RootModuleInteracting: AnyObject {
     func lockScreenActive()
     func lockScreenInactive()
     
-    func start() -> StartupInteractorStartResult
+    func start() async -> StartupInteractorStartResult
     
     func handleRemoteNotification()
     func handleDidReceiveRegistrationToken(_ token: String?)
@@ -112,8 +112,9 @@ extension RootModuleInteractor: RootModuleInteracting {
         paymentHandlingInteractor.initialize()
     }
     
-    func start() -> StartupInteractorStartResult {
-        startupInteractor.start()
+    @MainActor
+    func start() async -> StartupInteractorStartResult {
+        await startupInteractor.start()
     }
     
     func lockApplication() {

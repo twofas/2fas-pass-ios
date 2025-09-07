@@ -10,7 +10,7 @@ import CryptoKit
 import LocalAuthentication
 
 public protocol StorageInteracting: AnyObject {
-    func loadStore()
+    func loadStore() async
     func initialize(completion: @escaping () -> Void)
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
     func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
@@ -40,8 +40,13 @@ final class StorageInteractor {
 
 extension StorageInteractor: StorageInteracting {
     
-    func loadStore() {
-        mainRepository.loadEncryptedStore()
+    @MainActor
+    func loadStore() async {
+        await withCheckedContinuation { continuation in
+            mainRepository.loadEncryptedStore {
+                continuation.resume()
+            }
+        }
     }
     
     func initialize(completion: @escaping () -> Void) {

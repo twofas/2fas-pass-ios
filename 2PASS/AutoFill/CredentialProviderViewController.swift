@@ -19,10 +19,12 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
 
         view.backgroundColor = UIColor(named: "MainBackgroundColor")
         
-        let startup = InteractorFactory.shared.startupInteractor()
-        startup.initialize()
-        let startupResult = startup.start()
-        addRootView(for: startupResult)
+        Task { @MainActor in
+            let startup = InteractorFactory.shared.startupInteractor()
+            startup.initialize()
+            let startupResult = await startup.start()
+            addRootView(for: startupResult)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
