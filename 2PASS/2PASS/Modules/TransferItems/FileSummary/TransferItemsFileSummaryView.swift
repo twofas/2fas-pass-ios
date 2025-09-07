@@ -15,7 +15,7 @@ struct TransferItemsFileSummaryView: View {
         SettingsDetailsForm(Text(T.transferInstructionsHeader(presenter.service.name).localizedKey)) {
             HStack {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(presenter.passwords.count, format: .number)
+                    Text(presenter.items.count, format: .number)
                         .font(.bodyEmphasized)
                         .foregroundStyle(.neutral950)
                     
@@ -66,5 +66,5 @@ struct TransferItemsFileSummaryView: View {
 }
 
 #Preview {
-    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, passwords: [], onClose: {}))
+    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, items: [], onClose: {}))
 }

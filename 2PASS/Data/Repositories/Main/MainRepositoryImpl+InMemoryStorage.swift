@@ -78,33 +78,33 @@ extension MainRepositoryImpl {
         }
     }
     
-    func passwordsBatchUpdate(_ passwords: [RawItemData]) {
-        inMemoryStorage?.batchUpdateRencryptedPasswords(passwords, date: currentDate)
+    func itemsBatchUpdate(_ items: [RawItemData]) {
+        inMemoryStorage?.batchUpdateRencryptedItems(items, date: currentDate)
     }
     
-    func getPasswordEntity(
+    func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData? {
-        inMemoryStorage?.getPasswordEntity(itemID: itemID, checkInTrash: checkInTrash)
+        inMemoryStorage?.getItemEntity(itemID: itemID, checkInTrash: checkInTrash)
     }
     
-    func listPasswords(
+    func listItems(
         options: PasswordListOptions
     ) -> [RawItemData] {
-        inMemoryStorage?.listPasswords(options: options) ?? []
+        inMemoryStorage?.listItems(options: options) ?? []
     }
     
     func listTrashedPasswords() -> [RawItemData] {
-        inMemoryStorage?.listPasswords(options: .allTrashed) ?? []
+        inMemoryStorage?.listItems(options: .allTrashed) ?? []
     }
     
-    func deletePassword(itemID: ItemID) {
-        inMemoryStorage?.deletePassword(itemID: itemID)
+    func deleteItem(itemID: ItemID) {
+        inMemoryStorage?.deleteItem(itemID: itemID)
     }
     
-    func deleteAllPasswords() {
-        inMemoryStorage?.deleteAllPasswordEntities()
+    func deleteAllItems() {
+        inMemoryStorage?.deleteAllItemEntities()
     }
     
     // MARK: Tags

@@ -38,19 +38,19 @@ public protocol InMemoryStorageDataSource: AnyObject {
         content: Data
     )
     
-    func batchUpdateRencryptedPasswords(_ passwords: [RawItemData], date: Date)
+    func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date)
     
-    func getPasswordEntity(
+    func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData?
     
-    func listPasswords(
+    func listItems(
         options: PasswordListOptions
     ) -> [RawItemData]
     
-    func deletePassword(itemID: ItemID)
-    func deleteAllPasswordEntities()
+    func deleteItem(itemID: ItemID)
+    func deleteAllItemEntities()
     
     // MARK: - Tags
     

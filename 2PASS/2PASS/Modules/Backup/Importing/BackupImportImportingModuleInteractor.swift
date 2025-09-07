@@ -14,40 +14,40 @@ enum BackupImportInput {
 }
 
 protocol BackupImportImportingModuleInteracting: AnyObject {
-    func importPasswords(completion: @escaping (Result<Int, Error>) -> Void)
+    func importItems(completion: @escaping (Result<Int, Error>) -> Void)
 }
 
 final class BackupImportImportingModuleInteractor {
-    private let passwordImportInteractor: PasswordImportInteracting
+    private let itemsImportInteractor: ItemsImportInteracting
     private let importInteractor: ImportInteracting
     private let input: BackupImportInput
     
     init(
-        passwordImportInteractor: PasswordImportInteracting,
+        itemsImportInteractor: ItemsImportInteracting,
         importInteractor: ImportInteracting,
         input: BackupImportInput
     ) {
-        self.passwordImportInteractor = passwordImportInteractor
+        self.itemsImportInteractor = itemsImportInteractor
         self.importInteractor = importInteractor
         self.input = input
     }
 }
 
 extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInteracting {
-    func importPasswords(completion: @escaping (Result<Int, Error>) -> Void) {
+    func importItems(completion: @escaping (Result<Int, Error>) -> Void) {
         switch input {
-        case .decrypted(let passwords, let tags, deleted: let deleted):
-            passwordImportInteractor.importDeleted(deleted)
-            passwordImportInteractor.importPasswords(passwords, tags: tags, completion: {
+        case .decrypted(let items, let tags, deleted: let deleted):
+            itemsImportInteractor.importDeleted(deleted)
+            itemsImportInteractor.importItems(items, tags: tags, completion: {
                 completion(.success($0))
             })
         
         case .encrypted(_, let masterKey, let vault):
             importInteractor.extractPasswordsUsingMasterKey(masterKey, exchangeVault: vault) { result in
                 switch result {
-                case .success((let passwords, let tags, let deleted)):
-                    self.passwordImportInteractor.importDeleted(deleted)
-                    self.passwordImportInteractor.importPasswords(passwords, tags: tags, completion: {
+                case .success((let items, let tags, let deleted)):
+                    self.itemsImportInteractor.importDeleted(deleted)
+                    self.itemsImportInteractor.importItems(items, tags: tags, completion: {
                         completion(.success($0))
                     })
                 case .failure(let error):

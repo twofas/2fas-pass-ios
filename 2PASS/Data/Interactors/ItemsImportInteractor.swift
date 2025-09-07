@@ -7,12 +7,12 @@
 import Foundation
 import Common
 
-public protocol PasswordImportInteracting: AnyObject {
-    func importPasswords(_ passwords: [ItemData], tags: [ItemTagData], completion: @escaping (Int) -> Void)
+public protocol ItemsImportInteracting: AnyObject {
+    func importItems(_ items: [ItemData], tags: [ItemTagData], completion: @escaping (Int) -> Void)
     func importDeleted(_ deleted: [DeletedItemData])
 }
 
-final class PasswordImportInteractor {
+final class ItemsImportInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let itemsInteractor: ItemsInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
@@ -37,9 +37,9 @@ final class PasswordImportInteractor {
     }
 }
 
-extension PasswordImportInteractor: PasswordImportInteracting {
-    func importPasswords(_ passwords: [ItemData], tags: [ItemTagData], completion: @escaping (Int) -> Void) {
-        let imported = importAllPasswords(passwords, tags: tags)
+extension ItemsImportInteractor: ItemsImportInteracting {
+    func importItems(_ items: [ItemData], tags: [ItemTagData], completion: @escaping (Int) -> Void) {
+        let imported = importAllItems(items, tags: tags)
         completion(imported)
     }
     
@@ -49,15 +49,15 @@ extension PasswordImportInteractor: PasswordImportInteracting {
         toAdd.forEach {
             deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
         }
-        Log("PasswordImportInteractor - deleted passwords to add: \(toAdd.count)", module: .interactor)
+        Log("ItemsImportInteractor - deleted items to add: \(toAdd.count)", module: .interactor)
         itemsInteractor.saveStorage()
     }
 }
 
-private extension PasswordImportInteractor {
+private extension ItemsImportInteractor {
 
-    func importAllPasswords(_ passwords: [ItemData], tags: [ItemTagData]) -> Int {
-        Log("PasswordImportInteractor - passwords: \(passwords.count)", module: .interactor)
+    func importAllItems(_ items: [ItemData], tags: [ItemTagData]) -> Int {
+        Log("ItemsImportInteractor - items: \(items.count)", module: .interactor)
         var imported = 0
         var exists = 0
         var new = 0
@@ -73,7 +73,7 @@ private extension PasswordImportInteractor {
                 result[item.id] = passwordValue
             }
         }
-        let decryptedImportingPasswordValues: [ItemID: String] = passwords.reduce(into: [:]) { result, item in
+        let decryptedImportingPasswordValues: [ItemID: String] = items.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem,
                let passwordValueEnc = loginItem.password,
                let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isSecureField: true, protectionLevel: loginItem.protectionLevel) {
@@ -105,9 +105,9 @@ private extension PasswordImportInteractor {
             }
         }
         
-        for password in passwords {
+        for item in items {
             func findByContent() -> (ItemData)? {
-                if let loginItem = password.asLoginItem {
+                if let loginItem = item.asLoginItem {
                     let content = PasswordContentEqualItem(
                         name: loginItem.name,
                         username: loginItem.username,
@@ -124,11 +124,11 @@ private extension PasswordImportInteractor {
                 return nil
             }
             
-            let current = localPasswordByIds[password.id] ?? findByContent()
+            let current = localPasswordByIds[item.id] ?? findByContent()
          
             if let current {
                 exists += 1
-                if current.modificationDate >= password.modificationDate {
+                if current.modificationDate >= item.modificationDate {
                     imported += 1
                     switch current.trashedStatus {
                     case .no: break
@@ -136,7 +136,7 @@ private extension PasswordImportInteractor {
                     }
                 } else {
                     do {
-                        try itemsInteractor.updateItem(password)
+                        try itemsInteractor.updateItem(item)
                         imported += 1
                     } catch {
                         failure += 1
@@ -144,13 +144,13 @@ private extension PasswordImportInteractor {
                 }
             } else {
                 do {
-                    try itemsInteractor.createItem(password)
+                    try itemsInteractor.createItem(item)
                     imported += 1; new += 1
                 } catch {
                     failure += 1
                 }
             }
-            Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
+            Log("ItemsImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         }
         Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         itemsInteractor.saveStorage()

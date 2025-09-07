@@ -148,8 +148,8 @@ public final class InteractorFactory {
         BackupImportInteractor(importInteractor: importInteractor())
     }
     
-    public func passwordImportInteractor() -> PasswordImportInteracting {
-        PasswordImportInteractor(
+    public func itemsImportInteractor() -> ItemsImportInteracting {
+        ItemsImportInteractor(
             fileIconInteractor: fileIconInteractor(),
             itemsInteractor: itemsInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
@@ -183,7 +183,7 @@ public final class InteractorFactory {
     public func syncInteractor() -> SyncInteracting {
         SyncInteractor(
             itemsInteractor: itemsInteractor(),
-            passwordImportInteractor: passwordImportInteractor(),
+            itemsImportInteractor: itemsImportInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
             tagInteractor: tagInteractor(),
             autoFillCredentialsInteractor: autoFillCredentialsInteractor()

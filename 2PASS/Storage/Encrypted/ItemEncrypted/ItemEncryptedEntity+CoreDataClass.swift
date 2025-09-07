@@ -145,7 +145,7 @@ final class ItemEncryptedEntity: NSManagedObject {
         return list.first
     }
     
-    @nonobjc static func deleteAllEncryptedPasswords(on context: NSManagedObjectContext, vaultID: VaultID?) {
+    @nonobjc static func deleteAllEncryptedItems(on context: NSManagedObjectContext, vaultID: VaultID?) {
         let items = listItems(
             on: context,
             predicate: NSPredicate(format: "isTrashed == FALSE"),

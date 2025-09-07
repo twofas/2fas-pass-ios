@@ -59,10 +59,10 @@ public protocol DebugInteracting: AnyObject {
     func clearAllLogs()
     func generateLogs() -> String
     
-    // MARK: - Passwords
-    var passwordCount: Int { get }
-    func deleteAllPasswords()
-    func generatePasswords(count: Int, completion: @escaping Callback)
+    // MARK: - Items
+    var itemsCount: Int { get }
+    func deleteAllItems()
+    func generateItems(count: Int, completion: @escaping Callback)
     
     // MARK: - WebDAV debug
     var writeDecryptedCopy: Bool { get }
@@ -297,21 +297,21 @@ extension DebugInteractor: DebugInteracting {
         return output + logs
     }
     
-    // MARK: - Passwords
+    // MARK: - Items
     
-    var passwordCount: Int {
-        mainRepository.listPasswords(options: .allNotTrashed).count
+    var itemsCount: Int {
+        mainRepository.listItems(options: .allNotTrashed).count
     }
     
-    func deleteAllPasswords() {
-        mainRepository.deleteAllPasswords()
+    func deleteAllItems() {
+        mainRepository.deleteAllItems()
         mainRepository.deleteAllEncryptedItems()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
         mainRepository.webDAVSetHasLocalChanges()
     }
     
-    func generatePasswords(count: Int, completion: @escaping Callback) {
+    func generateItems(count: Int, completion: @escaping Callback) {
         guard let words = mainRepository.importBIP0039Words() else {
             completion()
             return

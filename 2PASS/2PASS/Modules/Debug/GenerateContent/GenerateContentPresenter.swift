@@ -32,13 +32,13 @@ extension GenerateContentPresenter {
     
     func onGenerate(count: Int) {
         isWorking = true
-        interactor.generatePasswords(count: count) { [weak self] in
+        interactor.generateItems(count: count) { [weak self] in
             self?.refreshCount()
             self?.isWorking = false
         }
     }
     
     private func refreshCount() {
-        passwordCount = interactor.passwordCount
+        passwordCount = interactor.itemsCount
     }
 }

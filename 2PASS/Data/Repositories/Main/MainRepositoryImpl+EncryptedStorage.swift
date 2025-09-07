@@ -28,7 +28,7 @@ extension MainRepositoryImpl {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) {
-        encryptedStorage.createEncryptedPassword(
+        encryptedStorage.createEncryptedItem(
             itemID: itemID,
             creationDate: creationDate,
             modificationDate: modificationDate,
@@ -53,7 +53,7 @@ extension MainRepositoryImpl {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) {
-        encryptedStorage.updateEncryptedPassword(
+        encryptedStorage.updateEncryptedItem(
             itemID: itemID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -66,12 +66,12 @@ extension MainRepositoryImpl {
         )
     }
     
-    func encryptedItemsBatchUpdate(_ passwords: [ItemEncryptedData]) {
-        encryptedStorage.batchUpdateRencryptedPasswords(passwords, date: currentDate)
+    func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData]) {
+        encryptedStorage.batchUpdateRencryptedItems(items, date: currentDate)
     }
     
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
-        encryptedStorage.getEncryptedPasswordEntity(itemID: itemID)
+        encryptedStorage.getEncryptedItemEntity(itemID: itemID)
     }
     
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
@@ -83,15 +83,15 @@ extension MainRepositoryImpl {
     }
     
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
-        encryptedStorage.addEncryptedPassword(itemID, to: vaultID)
+        encryptedStorage.addEncryptedItem(itemID, to: vaultID)
     }
     
     func deleteEncryptedItem(itemID: ItemID) {
-        encryptedStorage.deleteEncryptedPassword(itemID: itemID)
+        encryptedStorage.deleteEncryptedItem(itemID: itemID)
     }
     
     func deleteAllEncryptedItems() {
-        encryptedStorage.deleteAllEncryptedPasswords(in: selectedVault?.vaultID)
+        encryptedStorage.deleteAllEncryptedItems(in: selectedVault?.vaultID)
     }
     
     // MARK: Encrypted Vaults

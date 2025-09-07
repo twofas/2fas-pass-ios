@@ -138,10 +138,10 @@ final class ItemsInteractor {
 
 extension ItemsInteractor: ItemsInteracting {
     
-    var hasItems: Bool { !mainRepository.listPasswords(options: .allNotTrashed).isEmpty }
+    var hasItems: Bool { !mainRepository.listItems(options: .allNotTrashed).isEmpty }
     
     var itemsCount: Int {
-        mainRepository.listPasswords(options: .allNotTrashed).count
+        mainRepository.listItems(options: .allNotTrashed).count
     }
     
     func createSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) {
@@ -268,7 +268,7 @@ extension ItemsInteractor: ItemsInteracting {
             }
             return nil
         }()
-        let items = mainRepository.listPasswords(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
+        let items = mainRepository.listItems(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
             .compactMap {
                 ItemData($0, decoder: mainRepository.jsonDecoder)
             }
@@ -294,7 +294,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func getPasswordEncryptedContents(for itemID: ItemID, checkInTrash: Bool = false) -> Result<String?, ItemsInteractorGetError> {
-        guard let rawItem = mainRepository.getPasswordEntity(itemID: itemID, checkInTrash: checkInTrash),
+        guard let rawItem = mainRepository.getItemEntity(itemID: itemID, checkInTrash: checkInTrash),
               let loginItem = ItemData(rawItem, decoder: mainRepository.jsonDecoder)?.asLoginItem else {
             return .failure(.noEntity)
         }
@@ -312,7 +312,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func getItem(for itemID: ItemID, checkInTrash: Bool) -> ItemData? {
-        guard let item = mainRepository.getPasswordEntity(itemID: itemID, checkInTrash: checkInTrash) else {
+        guard let item = mainRepository.getItemEntity(itemID: itemID, checkInTrash: checkInTrash) else {
             return nil
         }
         return ItemData(item, decoder: mainRepository.jsonDecoder)
@@ -380,7 +380,7 @@ extension ItemsInteractor: ItemsInteracting {
             "ItemsInteractor: Deleting item for itemID: \(itemID)",
             module: .interactor
         )
-        mainRepository.deletePassword(itemID: itemID)
+        mainRepository.deleteItem(itemID: itemID)
         mainRepository.deleteEncryptedItem(itemID: itemID)
     }
     
@@ -499,7 +499,7 @@ extension ItemsInteractor: ItemsInteracting {
     
     func getCompleteDecryptedList() -> ([RawItemData], [ItemTagData])  {
         (
-            mainRepository.listPasswords(options: .all)
+            mainRepository.listItems(options: .all)
                 .compactMap({ entity -> RawItemData? in
                     do {
                         guard let contentDict = try JSONSerialization.jsonObject(with: entity.content) as? [String: Any] else {
@@ -554,9 +554,9 @@ extension ItemsInteractor: ItemsInteracting {
             case error
         }
         
-        var passwordsEncryptedBuffer: [DataFiller1] = list.map({ .itemData($0) })
+        var itemsEncryptedBuffer: [DataFiller1] = list.map({ .itemData($0) })
         
-        passwordsEncryptedBuffer.withUnsafeMutableBufferPointer { buffer in
+        itemsEncryptedBuffer.withUnsafeMutableBufferPointer { buffer in
             DispatchQueue.concurrentPerform(iterations: buffer.count) { i in
                 let current = buffer[i]
                 
@@ -589,14 +589,14 @@ extension ItemsInteractor: ItemsInteracting {
         
         Log("ItemsInteractor - Secure fields encrypted", module: .interactor)
         
-        let passwordsEncrypted = passwordsEncryptedBuffer.compactMap {
+        let itemsEncrypted = itemsEncryptedBuffer.compactMap {
             switch $0 {
             case .itemData(let itemData): itemData
             case .error: nil
             }
         }
         
-        guard passwordsEncrypted.count == passwordsEncryptedBuffer.count else {
+        guard itemsEncrypted.count == itemsEncryptedBuffer.count else {
             completion(.failure(.encryptionError))
             return
         }
@@ -607,11 +607,11 @@ extension ItemsInteractor: ItemsInteracting {
             case error
         }
         
-        var fullyEncryptedBuffer: [DataFiller2] = [DataFiller2](repeating: .empty, count: passwordsEncrypted.count)
+        var fullyEncryptedBuffer: [DataFiller2] = [DataFiller2](repeating: .empty, count: itemsEncrypted.count)
         
         fullyEncryptedBuffer.withUnsafeMutableBufferPointer { buffer in
             DispatchQueue.concurrentPerform(iterations: buffer.count) { i in
-                let current = passwordsEncrypted[i]
+                let current = itemsEncrypted[i]
                 
                 if let contentDataEnc = encryptData(current.content, isSecureField: false, protectionLevel: current.protectionLevel) {
                     buffer[i] = .itemData(
@@ -648,7 +648,7 @@ extension ItemsInteractor: ItemsInteracting {
         
         Log("ItemsInteractor - rest of the field encrypted", module: .interactor)
         
-        mainRepository.passwordsBatchUpdate(passwordsEncrypted)
+        mainRepository.itemsBatchUpdate(itemsEncrypted)
         Log("ItemsInteractor - Items entries updated", module: .interactor)
         mainRepository.encryptedItemsBatchUpdate(fullyEncrypted)
         Log("ItemsInteractor - Items encrypted entries updated", module: .interactor)
@@ -671,7 +671,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func getItemCountForTag(tagID: ItemTagID) -> Int {
-        mainRepository.listPasswords(options: .allNotTrashed)
+        mainRepository.listItems(options: .allNotTrashed)
             .filter {
                 $0.tagIds?.contains(tagID) ?? false
             }

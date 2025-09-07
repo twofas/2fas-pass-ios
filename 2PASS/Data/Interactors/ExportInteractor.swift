@@ -58,7 +58,7 @@ extension ExportInteractor: ExportInteracting {
             }
             
             DispatchQueue.main.async {
-                let passwords = self.mainRepository.listPasswords(options: .allNotTrashed).compactMap {
+                let passwords = self.mainRepository.listItems(options: .allNotTrashed).compactMap {
                     ItemData($0, decoder: self.mainRepository.jsonDecoder)?.asLoginItem
                 }
                 let tags = self.tagInteractor.listAllTags()

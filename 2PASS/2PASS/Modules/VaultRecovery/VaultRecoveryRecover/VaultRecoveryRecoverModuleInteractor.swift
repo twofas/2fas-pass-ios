@@ -16,7 +16,7 @@ protocol VaultRecoveryRecoverModuleInteracting: AnyObject {
 
 final class VaultRecoveryRecoverModuleInteractor {
     let kind: VaultRecoveryRecoverKind
-    private let passwordImportInteractor: PasswordImportInteracting
+    private let itemsImportInteractor: ItemsImportInteracting
     private let startupInteractor: StartupInteracting
     private let importInteractor: ImportInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
@@ -30,7 +30,7 @@ final class VaultRecoveryRecoverModuleInteractor {
     
     init(
         kind: VaultRecoveryRecoverKind,
-        passwordImportInteractor: PasswordImportInteracting,
+        itemsImportInteractor: ItemsImportInteracting,
         startupInteractor: StartupInteracting,
         importInteractor: ImportInteracting,
         cloudSyncInteractor: CloudSyncInteracting,
@@ -38,7 +38,7 @@ final class VaultRecoveryRecoverModuleInteractor {
         webDAVBackupInteractor: WebDAVBackupInteracting
     ) {
         self.kind = kind
-        self.passwordImportInteractor = passwordImportInteractor
+        self.itemsImportInteractor = itemsImportInteractor
         self.startupInteractor = startupInteractor
         self.importInteractor = importInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
@@ -59,7 +59,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     func recover(completion: @escaping (Bool) -> Void) {
         switch kind {
         case .importUnencrypted(let passwords, let tags):
-            passwordImportInteractor.importPasswords(passwords, tags: tags) { count in
+            itemsImportInteractor.importItems(passwords, tags: tags) { count in
                 completion(count == passwords.count)
             }
         case .recoverEncrypted(let entropy, let masterKey, let recoveryData):
@@ -108,8 +108,8 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                     switch result {
                     case .success((let passwords, let tags, let deletedItems)):
                         Log("VaultRecoveryRecoverModuleInteractor - passwords: \(passwords.count), deleted: \(deletedItems.count)", module: .moduleInteractor)
-                        self?.passwordImportInteractor.importDeleted(deletedItems)
-                        self?.passwordImportInteractor.importPasswords(passwords, tags: tags, completion: { count in
+                        self?.itemsImportInteractor.importDeleted(deletedItems)
+                        self?.itemsImportInteractor.importItems(passwords, tags: tags, completion: { count in
                             if count == passwords.count {
                                 if self?.webDAVBackupInteractor.hasConfiguration == true {
                                     self?.syncCompletion = completion

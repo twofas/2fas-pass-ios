@@ -96,7 +96,7 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         Log("Autofill - Start sync suggestions", module: .autofill)
         
         let items = Task { @MainActor in
-            mainRepository.listPasswords(options: .allNotTrashed).filter {
+            mainRepository.listItems(options: .allNotTrashed).filter {
                 canAddSuggestionForPassword(with: $0.protectionLevel)
             }
             .compactMap {

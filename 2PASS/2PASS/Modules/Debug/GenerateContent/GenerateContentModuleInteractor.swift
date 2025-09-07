@@ -9,8 +9,8 @@ import Common
 import Data
 
 protocol GenerateContentModuleInteracting: AnyObject {
-    var passwordCount: Int { get }
-    func generatePasswords(count: Int, completion: @escaping Callback)
+    var itemsCount: Int { get }
+    func generateItems(count: Int, completion: @escaping Callback)
     func removeAllPasswords()
 }
 
@@ -25,17 +25,17 @@ final class GenerateContentModuleInteractor {
 }
 
 extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
-    var passwordCount: Int {
-        debugInteractor.passwordCount
+    var itemsCount: Int {
+        debugInteractor.itemsCount
     }
     
-    func generatePasswords(count: Int, completion: @escaping Callback) {
-        debugInteractor.generatePasswords(count: count, completion: completion)
+    func generateItems(count: Int, completion: @escaping Callback) {
+        debugInteractor.generateItems(count: count, completion: completion)
         syncChangeTriggerInteractor.trigger()
     }
     
     func removeAllPasswords() {
-        debugInteractor.deleteAllPasswords()
+        debugInteractor.deleteAllItems()
         syncChangeTriggerInteractor.trigger()
     }
 }

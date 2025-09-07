@@ -83,7 +83,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         )
     }
     
-    public func batchUpdateRencryptedPasswords(_ items: [RawItemData], date: Date) {
+    public func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date) {
         let listAll = PasswordEntity.listItems(on: context, options: .all)
         for item in items {
             if let entity = listAll.first(where: { $0.itemID == item.id }) {
@@ -105,7 +105,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         }
     }
     
-    public func getPasswordEntity(
+    public func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData? {
@@ -116,14 +116,14 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         )?.toData()
     }
     
-    public func listPasswords(
+    public func listItems(
         options: PasswordListOptions
     ) -> [RawItemData] {
         PasswordEntity.listItems(on: context, options: options)
             .map { $0.toData() }
     }
 
-    public func deletePassword(itemID: ItemID) {
+    public func deleteItem(itemID: ItemID) {
         guard let entity = PasswordEntity.getEntity(
             on: context,
             itemID: itemID,
@@ -132,8 +132,8 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         PasswordEntity.delete(on: context, entity: entity)
     }
     
-    public func deleteAllPasswordEntities() {
-        PasswordEntity.deleteAllPasswordEntities(on: context)
+    public func deleteAllItemEntities() {
+        PasswordEntity.deleteAllItemEntities(on: context)
     }
 }
 

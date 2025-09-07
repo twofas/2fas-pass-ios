@@ -304,19 +304,19 @@ protocol MainRepository: AnyObject {
     )
     
     func updatePasswords(_ passwords: [RawItemData])
-    func passwordsBatchUpdate(_ passwords: [RawItemData])
-    func getPasswordEntity(
+    func itemsBatchUpdate(_ items: [RawItemData])
+    func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
     ) -> RawItemData?
     
-    func listPasswords(
+    func listItems(
         options: PasswordListOptions
     ) -> [RawItemData]
     
     func listTrashedPasswords() -> [RawItemData]
-    func deletePassword(itemID: ItemID)
-    func deleteAllPasswords()
+    func deleteItem(itemID: ItemID)
+    func deleteAllItems()
     func saveStorage()
     func listUsernames() -> [String]
     

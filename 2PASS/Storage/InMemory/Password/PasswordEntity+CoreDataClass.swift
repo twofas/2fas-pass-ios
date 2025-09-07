@@ -152,7 +152,7 @@ final class PasswordEntity: NSManagedObject {
         context.delete(entity)
     }
     
-    @nonobjc static func deleteAllPasswordEntities(on context: NSManagedObjectContext) {
+    @nonobjc static func deleteAllItemEntities(on context: NSManagedObjectContext) {
         let items = listItems(on: context, options: .allNotTrashed)
         items.forEach { item in
             context.delete(item)

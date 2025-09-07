@@ -118,7 +118,7 @@ extension TagInteractor: TagInteracting {
         
         let currentDate = mainRepository.currentDate
         
-        for item in mainRepository.listPasswords(options: .all) {
+        for item in mainRepository.listItems(options: .all) {
             if let tagIds = item.tagIds, tagIds.contains(tagID) {
                 let updatedTagIds = tagIds.filter { $0 != tagID }
  

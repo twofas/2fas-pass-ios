@@ -8,11 +8,11 @@ import CommonUI
 import Common
 
 enum TransferItemsFileSummaryDestination: RouterDestination {
-    case importPasswords([ItemData], service: ExternalService, onClose: Callback)
+    case importItems([ItemData], service: ExternalService, onClose: Callback)
     
     var id: String {
         switch self {
-        case .importPasswords: "importPasswords"
+        case .importItems: "importItems"
         }
     }
 }
@@ -21,19 +21,19 @@ enum TransferItemsFileSummaryDestination: RouterDestination {
 final class TransferItemsFileSummaryPresenter {
     
     let service: ExternalService
-    let passwords: [ItemData]
+    let items: [ItemData]
     
     var destination: TransferItemsFileSummaryDestination?
     
     private let onClose: Callback
     
-    init(service: ExternalService, passwords: [ItemData], onClose: @escaping Callback) {
+    init(service: ExternalService, items: [ItemData], onClose: @escaping Callback) {
         self.service = service
-        self.passwords = passwords
+        self.items = items
         self.onClose = onClose
     }
     
     func onProceed() {
-        destination = .importPasswords(passwords, service: service, onClose: onClose)
+        destination = .importItems(items, service: service, onClose: onClose)
     }
 }

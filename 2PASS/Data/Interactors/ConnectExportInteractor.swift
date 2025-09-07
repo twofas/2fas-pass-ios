@@ -38,7 +38,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
         
         let passwords = Task { @MainActor in
-            mainRepository.listPasswords(options: .allNotTrashed)
+            mainRepository.listItems(options: .allNotTrashed)
                 .filter { $0.protectionLevel != .topSecret }
                 .compactMap { ItemData($0, decoder: mainRepository.jsonDecoder)?.asLoginItem }
         }
@@ -56,7 +56,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     
     func preparePasswordForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
         let rawItem = Task { @MainActor in
-            mainRepository.getPasswordEntity(itemID: id, checkInTrash: false)
+            mainRepository.getItemEntity(itemID: id, checkInTrash: false)
         }
    
         guard let rawItem = await rawItem.value, let loginItem = ItemData(rawItem, decoder: mainRepository.jsonDecoder)?.asLoginItem else {

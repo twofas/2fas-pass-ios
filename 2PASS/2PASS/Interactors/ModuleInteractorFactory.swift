@@ -124,7 +124,7 @@ extension ModuleInteractorFactory {
     
     func backupImportImportingModuleInteractor(input: BackupImportInput) -> BackupImportImportingModuleInteracting {
         BackupImportImportingModuleInteractor(
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor(),
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             input: input
         )
@@ -193,7 +193,7 @@ extension ModuleInteractorFactory {
     func vaultRecoveryRecoverModuleInteractor(kind: VaultRecoveryRecoverKind) -> VaultRecoveryRecoverModuleInteracting {
         VaultRecoveryRecoverModuleInteractor(
             kind: kind,
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor(),
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
@@ -336,11 +336,11 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, passwords: [ItemData]) -> TransferItemsImportingModuleInteracting {
+    func transferItemsImportingModuleInteractor(service: ExternalService, items: [ItemData]) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
-            passwords: passwords,
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor()
+            items: items,
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
         )
     }
     

@@ -249,8 +249,8 @@ extension ImportInteractor: ImportInteracting {
         let deletedPasswords = vault.vault.itemsDeletedEncrypted ?? []
         let tags = vault.vault.tagsEncrypted ?? []
         
-        extractPasswords(from: passwords, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { passwordsData, tagsData, deletedData in
-            completion(.success((passwordsData, tagsData, deletedData)))
+        extractPasswords(from: passwords, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
+            completion(.success((itemsData, tagsData, deletedData)))
         }
     }
     
@@ -306,15 +306,15 @@ extension ImportInteractor: ImportInteracting {
             return
         }
         
-        guard let passwords = exchangeVault.vault.loginsEncrypted else {
+        guard let items = exchangeVault.vault.loginsEncrypted else {
             completion(.failure(.noPasswords))
             return
         }
         let deletedPasswords = exchangeVault.vault.itemsDeletedEncrypted ?? []
         let tags = exchangeVault.vault.tagsEncrypted ?? []
         
-        extractPasswords(from: passwords, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { passwords, tagsData, deleted in
-            completion(.success((passwords, tagsData, deleted)))
+        extractPasswords(from: items, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
+            completion(.success((items, tagsData, deleted)))
         }
     }
     
@@ -415,7 +415,7 @@ private extension ImportInteractor {
     }
     
     func extractPasswords(
-        from passwords: [String],
+        from items: [String],
         tags: [String],
         deletedPasswords: [String],
         vaultID: VaultID,
@@ -449,12 +449,12 @@ private extension ImportInteractor {
             return nil
         }
         
-        Log("ImportInteractor - importing \(passwords.count) passwords and \(deletedPasswords.count) deleted entries", module: .interactor)
+        Log("ImportInteractor - importing \(items.count) items and \(deletedPasswords.count) deleted entries", module: .interactor)
         
-        if passwords.isEmpty {
-            Log("ImportInteractor - no passwords to parse", module: .interactor)
+        if items.isEmpty {
+            Log("ImportInteractor - no items to parse", module: .interactor)
             continueExtractionOfPasswordsTags(
-                passwords: [],
+                items: [],
                 tags: tags,
                 deletedPasswords: deletedPasswords,
                 vaultID: vaultID,
@@ -469,7 +469,7 @@ private extension ImportInteractor {
             
             var results: [ItemData] = []
             
-            for string in passwords {
+            for string in items {
                 group.enter()
                 self.queue.async {
                     let result = parse(string)
@@ -483,9 +483,9 @@ private extension ImportInteractor {
             }
             
             group.notify(queue: .global()) {
-                Log("ImportInteractor - parsed \(results.count) passwords", module: .interactor)
+                Log("ImportInteractor - parsed \(results.count) items", module: .interactor)
                 self.continueExtractionOfPasswordsTags(
-                    passwords: results,
+                    items: results,
                     tags: tags,
                     deletedPasswords: deletedPasswords,
                     vaultID: vaultID,
@@ -497,7 +497,7 @@ private extension ImportInteractor {
     }
 
     func continueExtractionOfPasswordsTags(
-        passwords: [ItemData],
+        items: [ItemData],
         tags: [String],
         deletedPasswords: [String],
         vaultID: VaultID,
@@ -532,11 +532,11 @@ private extension ImportInteractor {
         }
 
         let decryptedTags = tags.compactMap(parse)
-        continueExtractionOfDeletedPasswords(passwords: passwords, tags: decryptedTags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key, completion: completion)
+        continueExtractionOfDeletedPasswords(items: items, tags: decryptedTags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key, completion: completion)
     }
     
     func continueExtractionOfDeletedPasswords(
-        passwords: [ItemData],
+        items: [ItemData],
         tags: [ItemTagData],
         deletedPasswords: [String],
         vaultID: VaultID,
@@ -574,7 +574,7 @@ private extension ImportInteractor {
         
         if deletedPasswords.isEmpty {
             DispatchQueue.main.async {
-                completion(passwords, tags, [])
+                completion(items, tags, [])
             }
             return
         }
@@ -598,8 +598,8 @@ private extension ImportInteractor {
             }
             
             group.notify(queue: .main) {
-                Log("ImportInteractor - parsed \(passwords.count) passwords and \(deletedResults.count) deleted entries", module: .interactor)
-                completion(passwords, tags, deletedResults)
+                Log("ImportInteractor - parsed \(items.count) items and \(deletedResults.count) deleted entries", module: .interactor)
+                completion(items, tags, deletedResults)
             }
         }
     }
