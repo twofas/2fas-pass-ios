@@ -69,14 +69,14 @@ private extension PasswordImportInteractor {
         let decryptedLocalPasswordValues: [ItemID: String] = localPasswords.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem,
                let passwordValueEnc = loginItem.password,
-               let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: item.protectionLevel) {
+               let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isSecureField: true, protectionLevel: item.protectionLevel) {
                 result[item.id] = passwordValue
             }
         }
         let decryptedImportingPasswordValues: [ItemID: String] = passwords.reduce(into: [:]) { result, item in
             if let loginItem = item.asLoginItem,
                let passwordValueEnc = loginItem.password,
-               let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isPassword: true, protectionLevel: loginItem.protectionLevel) {
+               let passwordValue = itemsInteractor.decrypt(passwordValueEnc, isSecureField: true, protectionLevel: loginItem.protectionLevel) {
                 result[loginItem.id] = passwordValue
             }
         }

@@ -335,7 +335,7 @@ private extension ExportInteractor {
             guard let pass = password.password else {
                 return nil
             }
-            return itemsInteractor.decrypt(pass, isPassword: true, protectionLevel: password.protectionLevel)
+            return itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: password.protectionLevel)
         }()
         let securityType: Int = {
             switch password.protectionLevel {

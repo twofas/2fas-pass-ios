@@ -97,7 +97,7 @@ public protocol ItemsInteracting: AnyObject {
     
     func encrypt(_ string: String, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data?
     func encryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data?
-    func decrypt(_ data: Data, isPassword: Bool, protectionLevel: ItemProtectionLevel) -> String?
+    func decrypt(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> String?
     func decryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data?
     func decryptContent<T>(_ result: T.Type, from data: Data, protectionLevel: ItemProtectionLevel) -> T? where T: Decodable
 
@@ -303,7 +303,7 @@ extension ItemsInteractor: ItemsInteracting {
         }
         guard let decryptedPassword = decrypt(
             password,
-            isPassword: true,
+            isSecureField: true,
             protectionLevel: loginItem.protectionLevel
         ) else {
             return .failure(.decryptionError)
@@ -480,8 +480,8 @@ extension ItemsInteractor: ItemsInteracting {
         return decryptedData
     }
     
-    func decrypt(_ data: Data, isPassword: Bool, protectionLevel: ItemProtectionLevel) -> String? {
-        guard let decryptedData = decryptData(data, isSecureField: isPassword, protectionLevel: protectionLevel) else {
+    func decrypt(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> String? {
+        guard let decryptedData = decryptData(data, isSecureField: isSecureField, protectionLevel: protectionLevel) else {
             return nil
         }
         return String(data: decryptedData, encoding: .utf8)
@@ -509,7 +509,7 @@ extension ItemsInteractor: ItemsInteracting {
                         var newContentDict = contentDict
                         for (key, value) in contentDict where entity.isSecureField(key: key) {
                             if let dataValue = value as? Data {
-                                guard let decrypted = decrypt(dataValue, isPassword: true, protectionLevel: entity.protectionLevel),
+                                guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: entity.protectionLevel),
                                       let decryptedData = decrypted.data(using: .utf8) else {
                                     return nil
                                 }
@@ -720,153 +720,6 @@ private extension ItemsInteractor {
             content: encryptedEntity.content,
             vaultID: encryptedEntity.vaultID,
             tagIds: encryptedEntity.tagIds
-        )
-    }
-    
-    func createEncryptedIconType(
-        iconType: PasswordIconType,
-        protectionLevel: ItemProtectionLevel
-    ) -> PasswordEncryptedIconType? {
-        let eIconType = iconType.value
-        var eIconDomain: Data?
-        var eIconCustomURL: Data?
-        var eLabelTitle: Data?
-        var eLabelColor: UIColor?
-        
-        switch iconType {
-        case .domainIcon(let domain):
-            if let domain, let encrypted = encrypt(
-                domain,
-                isSecureField: false,
-                protectionLevel: protectionLevel
-            ) {
-                eIconDomain = encrypted
-            } else {
-                eIconDomain = nil
-            }
-        case .customIcon(let iconURI):
-            guard let encrypted = encrypt(
-                iconURI.absoluteString,
-                isSecureField: false,
-                protectionLevel: protectionLevel
-            ) else {
-                return nil
-            }
-            eIconCustomURL = encrypted
-        case .label(let labelTitle, let labelColor):
-            guard let encrypted = encrypt(labelTitle, isSecureField: false, protectionLevel: protectionLevel) else {
-                return nil
-            }
-            eLabelTitle = encrypted
-            eLabelColor = labelColor
-        }
-        return PasswordEncryptedIconType(
-            iconType: eIconType,
-            iconDomain: eIconDomain,
-            iconCustomURL: eIconCustomURL,
-            labelTitle: eLabelTitle,
-            labelColor: eLabelColor
-        )
-    }
-    
-    func createEncryptedURIs(
-        from urisList: [PasswordURI],
-        protectionLevel: ItemProtectionLevel
-    ) -> PasswordEncryptedURIs? {
-        let uris: Data
-        let match: [PasswordURI.Match] = urisList.map({ $0.match })
-        
-        let urisUnpacked = urisList.map({ $0.uri })
-        guard let urisJSON = try? mainRepository.jsonEncoder.encode(urisUnpacked) else {
-            Log("ItemsInteractor - can't encode uris to JSON", module: .interactor, severity: .error)
-            return nil
-        }
-        guard let encryptedURIs = encryptData(urisJSON, isSecureField: false, protectionLevel: protectionLevel) else {
-            Log("ItemsInteractor - error encrypting uris JSON", module: .interactor, severity: .error)
-            return nil
-        }
-        uris = encryptedURIs
-        
-        return PasswordEncryptedURIs(
-            uris: uris,
-            match: match
-        )
-    }
-    
-    func encrypt(
-        name: String?,
-        username: String?,
-        notes: String?,
-        iconType: PasswordIconType,
-        protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?
-    ) -> (
-        encryptedName: Data?,
-        encryptedUsername: Data?,
-        encryptedNotes: Data?,
-        encryptedIconType: PasswordEncryptedIconType,
-        encryptedURIs: PasswordEncryptedURIs?
-    )? {
-        var encryptedName: Data?
-        let name = name.nilIfEmpty
-        if let name {
-            guard let encrypted = encrypt(name, isSecureField: false, protectionLevel: protectionLevel) else {
-                Log("ItemsInteractor: Update password. Can't encrypt name", module: .interactor, severity: .error)
-                return nil
-            }
-            encryptedName = encrypted
-        }
-        
-        var encryptedUsername: Data?
-        let username = username.nilIfEmpty
-        if let username {
-            guard let encrypted = encrypt(username, isSecureField: false, protectionLevel: protectionLevel) else {
-                Log(
-                    "ItemsInteractor: Update password. Can't encrypt username",
-                    module: .interactor,
-                    severity: .error
-                )
-                return nil
-            }
-            encryptedUsername = encrypted
-        }
-        
-        var encryptedNotes: Data?
-        if let notes {
-            guard let encrypted = encrypt(notes, isSecureField: false, protectionLevel: protectionLevel) else {
-                Log(
-                    "ItemsInteractor: Update password. Can't encrypt notes",
-                    module: .interactor,
-                    severity: .error
-                )
-                return nil
-            }
-            encryptedNotes = encrypted
-        }
-        
-        guard let encryptedIconType = createEncryptedIconType(
-            iconType: iconType,
-            protectionLevel: protectionLevel
-        ) else {
-            Log("ItemsInteractor: Update password. Can't encrypt icon type", module: .interactor, severity: .error)
-            return nil
-        }
-        
-        var encryptedURIs: PasswordEncryptedURIs?
-        if let uris, !uris.isEmpty {
-            guard let encrypted = createEncryptedURIs(from: uris, protectionLevel: protectionLevel) else {
-                Log("ItemsInteractor: Update password. Can't encrypt uris", module: .interactor, severity: .error)
-                return nil
-            }
-            encryptedURIs = encrypted
-        }
-        
-        return (
-            encryptedName: encryptedName,
-            encryptedUsername: encryptedUsername,
-            encryptedNotes: encryptedNotes,
-            encryptedIconType: encryptedIconType,
-            encryptedURIs: encryptedURIs
         )
     }
     

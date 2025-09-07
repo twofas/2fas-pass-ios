@@ -101,7 +101,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                 return nil
             }
             
-            guard let decryptedPassword = itemsInteractor.decrypt(pass, isPassword: true, protectionLevel: item.protectionLevel) else {
+            guard let decryptedPassword = itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: item.protectionLevel) else {
                 return nil
             }
             

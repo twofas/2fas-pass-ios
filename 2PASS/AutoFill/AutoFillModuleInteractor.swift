@@ -41,7 +41,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return nil
         }
         
-        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isPassword: true, protectionLevel: encrypted.protectionLevel) else {
+        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isSecureField: true, protectionLevel: encrypted.protectionLevel) else {
             Log("AutoFill - Error while decrypting password", module: .autofill)
             return nil
         }

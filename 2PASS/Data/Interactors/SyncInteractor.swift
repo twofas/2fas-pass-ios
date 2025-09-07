@@ -242,6 +242,6 @@ private extension SyncInteractor {
     
     func decrypt(_ data: Data?, protectionLevel: ItemProtectionLevel) -> String? {
         guard let data else { return nil }
-        return itemsInteractor.decrypt(data, isPassword: true, protectionLevel: protectionLevel)
+        return itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
     }
 }
