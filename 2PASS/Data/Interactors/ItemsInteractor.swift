@@ -170,7 +170,7 @@ extension ItemsInteractor: ItemsInteracting {
             throw .noVault
         }
         
-        guard let contentData = try? encodeContent(in: item) else {
+        guard let contentData = try? item.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
@@ -213,7 +213,7 @@ extension ItemsInteractor: ItemsInteracting {
             throw .noVault
         }
         
-        guard let contentData = try? encodeContent(in: item) else {
+        guard let contentData = try? item.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
@@ -427,7 +427,7 @@ extension ItemsInteractor: ItemsInteracting {
             return
         }
         
-        guard let contentData = try? encodeContent(in: entity) else {
+        guard let contentData = try? entity.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             return
         }
@@ -681,19 +681,8 @@ extension ItemsInteractor: ItemsInteracting {
 
 private extension ItemsInteractor {
     
-    func encodeContent(in item: ItemData) throws -> Data {
-        switch item {
-        case .login(let loginItem):
-            return try mainRepository.jsonEncoder.encode(loginItem.content)
-        case .secureNote(let secureItem):
-            return try mainRepository.jsonEncoder.encode(secureItem.content)
-        case .raw(let rawItem):
-            return rawItem.content
-        }
-    }
-    
     func markAsTrashed(entity: ItemData, encryptedEntity: ItemEncryptedData, date: Date) {
-        guard let contentData = try? encodeContent(in: entity) else {
+        guard let contentData = try? entity.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             return
         }

@@ -14,6 +14,7 @@ public protocol ItemDataType: Hashable {
     var contentVersion: Int { get }
     
     func isSecureField(key: String) -> Bool
+    func encodeContent(using encoder: JSONEncoder) throws -> Data
 }
 
 public struct ItemMetadata: Hashable {
@@ -90,6 +91,10 @@ public enum ItemData: ItemDataType {
     public var contentType: ItemContentType { base.contentType }
     public var contentVersion: Int { base.contentVersion }
     
+    public func encodeContent(using encoder: JSONEncoder) throws -> Data {
+        try base.encodeContent(using: encoder)
+    }
+    
     private var base: any ItemDataType {
         switch self {
         case .login(let data): return data
@@ -128,7 +133,7 @@ public enum ItemData: ItemDataType {
     }
 }
 
-public struct _ItemData<Content>: ItemDataType where Content: Hashable {
+public struct _ItemData<Content>: ItemDataType where Content: Hashable, Content: Codable {
     public typealias Content = Content
     
     public let id: ItemID
@@ -137,6 +142,14 @@ public struct _ItemData<Content>: ItemDataType where Content: Hashable {
     public let contentType: ItemContentType
     public let contentVersion: Int
     public let content: Content
+    
+    public func encodeContent(using encoder: JSONEncoder) throws -> Data {
+        if let contentData = content as? Data {
+            return contentData
+        } else {
+            return try encoder.encode(content)
+        }
+    }
 }
 
 extension _ItemData where Content: ItemContent {
