@@ -19,16 +19,7 @@ extension RawItemData {
     
     public init?(_ item: ItemData, encoder: JSONEncoder = .init()) {
         do {
-            let contentData = try {
-                switch item {
-                case .login(let loginItem):
-                    return try encoder.encode(loginItem.content)
-                case .secureNote(let secureNoteItem):
-                    return try encoder.encode(secureNoteItem.content)
-                case .raw(let rawItem):
-                    return rawItem.content
-                }
-            }()
+            let contentData = try item.encodeContent(using: encoder)
             
             self = RawItemData(
                 id: item.id,
