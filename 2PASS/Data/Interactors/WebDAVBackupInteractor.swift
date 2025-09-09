@@ -369,9 +369,9 @@ private extension WebDAVBackupInteractor {
                         case .corruptedFile(let error):
                             Log("WebDAVBackupInteractor - error, Vault file corrupted: \(error)", module: .interactor, severity: .error)
                             self?.prepareForExport()
-                        case .newerSchemaVersion:
-                            Log("WebDAVBackupInteractor - error, newer schema detected", module: .interactor, severity: .error)
-                            self?.webDAVStateInteractor.syncError(.newerVersionNeeded)
+                        case .schemaNotSupported(let actualVersion, let expectedVersion):
+                            Log("WebDAVBackupInteractor - error, schema not supported: version \(actualVersion), expected \(expectedVersion)", module: .interactor, severity: .error)
+                            self?.webDAVStateInteractor.syncError(.schemaNotSupported(actualVersion, expected: expectedVersion))
                         case .nothingToImport:
                             Log("WebDAVBackupInteractor - nothing to import", module: .interactor)
                             if self?.mainRepository.webDAVHasLocalChanges == true {

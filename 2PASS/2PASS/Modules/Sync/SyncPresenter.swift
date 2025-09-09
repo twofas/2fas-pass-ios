@@ -156,6 +156,7 @@ struct WebDAVStatusFormatStyle: FormatStyle {
             case .unauthorized: T.syncStatusErrorUnauthorized
             case .urlError(let urlError): urlError
             case .passwordChanged: T.syncStatusErrorPasswordChanged
+            case .schemaNotSupported(let schemeVersion, let expectedSchemeVersion): T.cloudSyncInvalidSchemaErrorMsg(expectedSchemeVersion, schemeVersion)
             }
         case .retry(let reason):
             reason.map { "\(T.syncStatusRetry) \($0)" } ?? T.syncStatusRetry

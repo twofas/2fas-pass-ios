@@ -16,8 +16,8 @@ public enum WebDAVRecoveryInteractorError: Error {
     case methodNotAllowed
     case indexNotFound
     case vaultNotFound
-    case newerSchemaVersion
     case nothingToImport
+    case schemaNotSupported(Int, expected: Int)
     case sslError
     case syncError(message: String?)
     case networkError(message: String)
@@ -158,12 +158,12 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
                         case .jsonError(let error):
                             Log("WebDAVRecoveryInteractor - error, Vault file corrupted: \(error)", module: .interactor, severity: .error)
                             completion(.failure(.vaultIsDamaged))
-                        case .newerSchemaVersion:
-                            Log("WebDAVRecoveryInteractor - error, newer schema detected", module: .interactor, severity: .error)
-                            completion(.failure(.newerSchemaVersion))
                         case .nothingToImport:
                             Log("WebDAVRecoveryInteractor - nothing to import", module: .interactor)
                             completion(.failure(.nothingToImport))
+                        case .schemaNotSupported(let actualVersion, let expectedVersion):
+                            Log("WebDAVRecoveryInteractor - schema not supported: version \(actualVersion), expected \(expectedVersion)", module: .interactor)
+                            completion(.failure(.schemaNotSupported(actualVersion, expected: expectedVersion)))
                         }
                     }
                 }

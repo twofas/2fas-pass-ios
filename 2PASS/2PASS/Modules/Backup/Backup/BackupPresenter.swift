@@ -42,6 +42,7 @@ enum BackupDestination: RouterDestination {
     case recovery(ExchangeVault, onClose: Callback)
     case importing(BackupImportInput, onClose: Callback)
     case importingFailure(onClose: Callback)
+    case schemaNotSupported(schemeVersion: Int, expectedSchemeVersion: Int, onClose: Callback)
     case upgradePlanPrompt(itemsLimit: Int)
     
     var id: String {
@@ -53,6 +54,7 @@ enum BackupDestination: RouterDestination {
         case .recovery: "recovery"
         case .importing: "importing"
         case .importingFailure: "importingFailure"
+        case .schemaNotSupported: "schemaNotSupported"
         case .upgradePlanPrompt: "upgradePlanPrompt"
         }
     }
@@ -137,10 +139,21 @@ extension BackupPresenter {
                                 })
                             }
                         }
-                    case .failure:
-                        destination = .importingFailure(onClose: { [weak self] in
-                            self?.close()
-                        })
+                    case .failure(let error):
+                        switch error {
+                        case .schemaNotSupported(let schemeVersion, let expectedSchemeVersion):
+                            destination = .schemaNotSupported(
+                                schemeVersion: schemeVersion,
+                                expectedSchemeVersion: expectedSchemeVersion,
+                                onClose: { [weak self] in
+                                    self?.close()
+                                }
+                            )
+                        default:
+                            destination = .importingFailure(onClose: { [weak self] in
+                                self?.close()
+                            })
+                        }
                     }
                 })
             case .failure:
