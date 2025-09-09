@@ -459,6 +459,50 @@
         }
       }
     },
+    "app_update_modal_cta_negative" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not now"
+          }
+        }
+      }
+    },
+    "app_update_modal_cta_positive" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update app"
+          }
+        }
+      }
+    },
+    "app_update_modal_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re using an old version. Update now to get the latest features and improvements."
+          }
+        }
+      }
+    },
+    "app_update_modal_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Update Recommended"
+          }
+        }
+      }
+    },
     "auth_biometrics_disabled_message" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -950,6 +994,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Error while scanning the QR Code"
+          }
+        }
+      }
+    },
+    "cloud_sync_invalid_schema_error_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update app"
+          }
+        }
+      }
+    },
+    "cloud_sync_invalid_schema_error_msg" : {
+      "comment" : "https://share.cleanshot.com/TYsPJlYz",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your app supports backups up to version %1$d. The backup you’re trying to open is version %2$d. Please update your app to the latest version to restore it."
           }
         }
       }
@@ -1526,13 +1593,24 @@
         }
       }
     },
+    "connect_modal_error_app_update_required_cta_android" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update app"
+          }
+        }
+      }
+    },
     "connect_modal_error_app_update_required_subtitle" : {
       "extractionState" : "manual",
       "localizations" : {
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update application in App Store"
+            "value" : "Update the application in App Store"
           }
         }
       }
@@ -2468,6 +2546,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Items"
+          }
+        }
+      }
+    },
+    "import_invalid_schema_error_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update app"
+          }
+        }
+      }
+    },
+    "import_invalid_schema_error_msg" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your app supports backups up to version %1$d. The backup you’re trying to open is version %2$d. Please update your app to the latest version to restore it."
           }
         }
       }
@@ -8474,6 +8574,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transfer from %@"
+          }
+        }
+      }
+    },
+    "transfer_instructions_keepass" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transfer_instructions_keepass"
+          }
+        }
+      }
+    },
+    "transfer_instructions_keepassxc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transfer_instructions_keepassxc"
           }
         }
       }
