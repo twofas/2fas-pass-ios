@@ -33,6 +33,8 @@ public enum Config {
     public static let defaultIconLabel = ""
     public static let maxLabelLength = 2
     public static let scaleImageSize = CGSize(width: 128, height: 128)
+    public static let maxTagNameLength: Int = 64
+    
     public enum kdfSpec {
         public static let algorithm: KDFSpec.KDFType = .argon2id
         public static let hashLength: Int = 32

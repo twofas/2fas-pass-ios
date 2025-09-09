@@ -4,7 +4,7 @@ import Common
 @Observable @MainActor
 final class EditTagPresenter {
     
-    let limitNameLength: Int = 64
+    let limitNameLength: Int = Config.maxTagNameLength
     
     private let interactor: EditTagModuleInteracting
     private let onClose: Callback
