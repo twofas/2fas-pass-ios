@@ -114,12 +114,10 @@ extension PasswordsPresenter {
     
     func onSelectFilterTag(_ tag: ItemTagData?) {
         selectedFilterTag = tag
-        reload()
     }
     
     func onClearFilterTag() {
         selectedFilterTag = nil
-        reload()
     }
     
     func onCellMenuAction(_ action: PasswordCellMenu, passwordID: PasswordID, selectedURI: URL?) {
