@@ -165,7 +165,7 @@ struct ConnectCommunicationView: View {
 }
 
 #Preview {
-    let session = ConnectSession(version: "", sessionId: "", pkPersBeHex: "", pkEpheBeHex: "", signatureHex: "")
+    let session = ConnectSession(version: 1, sessionId: "", pkPersBeHex: "", pkEpheBeHex: "", signatureHex: "")
     
     Color.white
         .sheet(isPresented: .constant(true)) {
