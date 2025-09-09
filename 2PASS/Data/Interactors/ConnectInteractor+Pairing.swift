@@ -21,6 +21,9 @@ extension ConnectInteractor {
             deviceName: mainRepository.deviceName,
             appVersion: mainRepository.currentAppVersion
         )
+        
+        try webSocketSession.validateSchemeVersion(session.version)
+        
         webSocketSession.start()
         
         let continuationStorage = CheckedContinuationThreadSafeStorage<Void>()
