@@ -137,10 +137,6 @@ public struct LoginView: View {
                 }
                 .padding(.bottom, Spacing.s)
                 
-                if presenter.showBiometryButton {
-                    biometryButton
-                }
-                
                 Spacer(minLength: Spacing.l)
                 
                 VStack(spacing: Spacing.m) {
@@ -206,9 +202,15 @@ public struct LoginView: View {
     
     private var passwordInput: some View {
         PasswordInput(label: T.masterPasswordLabel.localizedKey, password: $presenter.loginInput)
+            .hideRevealButton(presenter.loginInput.isEmpty)
             .focused($focusedField, equals: .login)
             .onSubmit {
                 presenter.onLogin()
+            }
+            .overlay(alignment: .trailing) {
+                if presenter.loginInput.isEmpty, presenter.showBiometryButton {
+                    biometryButton
+                }
             }
             .padding(.leading, Spacing.l)
             .padding(.trailing, 11)
@@ -250,16 +252,20 @@ public struct LoginView: View {
             focusedField = nil
             presenter.onBiometry()
         } label: {
-            switch presenter.biometryType {
-            case .faceID:
-                Label(T.lockScreenUnlockUseFaceid.localizedKey, systemImage: "faceid")
-            case .touchID:
-                Label(T.lockScreenUnlockUseTouchid.localizedKey, systemImage: "touchid")
-            case .missing:
-                EmptyView()
+            Group {
+                switch presenter.biometryType {
+                case .faceID:
+                    Image(systemName: "faceid")
+                case .touchID:
+                    Image(systemName: "touchid")
+                case .missing:
+                    EmptyView()
+                }
             }
+            .font(.system(size: 24, weight: .medium))
         }
-        .buttonStyle(.bezeledGray(fillSpace: false))
+        .offset(x: 14)
+        .buttonStyle(.twofasBorderless(fillSpace: false))
         .controlSize(.small)
     }
     

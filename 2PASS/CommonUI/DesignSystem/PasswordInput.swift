@@ -19,6 +19,7 @@ public struct PasswordInput: View {
     private var bindingReveal: Binding<Bool>?
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
+    private var hideRevealButton = false
     private var onSubmit: (() -> Void)?
     
     public init(label: LocalizedStringKey, password: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
@@ -42,6 +43,7 @@ public struct PasswordInput: View {
             Toggle(isOn: $isReveal, label: {})
                 .toggleStyle(RevealToggleStyle())
                 .frame(width: 22)
+                .opacity(hideRevealButton ? 0 : 1)
         }
         .onChange(of: isReveal) { oldValue, newValue in
             if let bindingReveal, newValue != bindingReveal.wrappedValue {
@@ -58,6 +60,12 @@ public struct PasswordInput: View {
     public func introspect(_ introspect: @escaping (UITextField) -> Void) -> Self {
         var instance = self
         instance.introspectTextField = introspect
+        return instance
+    }
+    
+    public func hideRevealButton(_ hide: Bool = true) -> Self {
+        var instance = self
+        instance.hideRevealButton = hide
         return instance
     }
     
