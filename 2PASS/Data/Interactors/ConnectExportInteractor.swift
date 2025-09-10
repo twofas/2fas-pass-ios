@@ -165,6 +165,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
             createdAt: password.creationDate.exportTimestamp,
             updatedAt: password.modificationDate.exportTimestamp,
             uris: password.uris?.map({ uriToConnectURI(uri: $0) }) ?? [],
+            tags: password.tagIds?.map { $0.exportString() },
             deviceId: deviceId
         )
     }

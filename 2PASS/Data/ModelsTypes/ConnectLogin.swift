@@ -24,5 +24,6 @@ struct ConnectLogin: Codable {
     let createdAt: Int
     let updatedAt: Int
     let uris: [ConnectURI]?
+    let tags: [String]?
     let deviceId: UUID
 }
