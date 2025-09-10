@@ -71,7 +71,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         let tags = tagInteractor.listAllTags()
             .map {
                 ConnectTag(
-                    id: $0.id.uuidString,
+                    id: $0.id.exportString(),
                     name: $0.name,
                     color: $0.color?.hexString,
                     position: $0.position,
@@ -165,6 +165,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
             createdAt: password.creationDate.exportTimestamp,
             updatedAt: password.modificationDate.exportTimestamp,
             uris: password.uris?.map({ uriToConnectURI(uri: $0) }) ?? [],
+            tags: password.tagIds?.map { $0.exportString() },
             deviceId: deviceId
         )
     }
