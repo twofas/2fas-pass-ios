@@ -78,6 +78,7 @@ internal enum Asset {
   internal static let githubIcon = ImageAsset(name: "github.icon")
   internal static let highlySecretTierFigure = ImageAsset(name: "highly.secret.tier.figure")
   internal static let importItemsIcon = ImageAsset(name: "import.items.icon")
+  internal static let keepassxcIcon = ImageAsset(name: "keepassxc.icon")
   internal static let lastpassIcon = ImageAsset(name: "lastpass.icon")
   internal static let linkedinIcon = ImageAsset(name: "linkedin.icon")
   internal static let lockFileHeaderIcon = ImageAsset(name: "lock.file.header.icon")
