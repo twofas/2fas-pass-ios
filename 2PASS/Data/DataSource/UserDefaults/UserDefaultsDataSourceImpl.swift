@@ -44,6 +44,7 @@ final class UserDefaultsDataSourceImpl {
         case webDAVAwaitsVaultOverrideAfterPasswordChange
         case lastKnownAppVersion
         case shouldShowQuickSetup
+        case lastAppUpdatePromptDate
     }
     
     private let userDefaults = UserDefaults()
@@ -428,5 +429,19 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     
     func setShouldShowQuickSetup(_ value: Bool) {
         userDefaults.set(value, forKey: Keys.shouldShowQuickSetup.rawValue)
+    }
+    
+    var lastAppUpdatePromptDate: Date? {
+        userDefaults.object(forKey: Keys.lastAppUpdatePromptDate.rawValue) as? Date
+    }
+    
+    func setLastAppUpdatePromptDate(_ date: Date) {
+        userDefaults.set(date, forKey: Keys.lastAppUpdatePromptDate.rawValue)
+        userDefaults.synchronize()
+    }
+    
+    func clearLastAppUpdatePromptDate() {
+        userDefaults.set(nil, forKey: Keys.lastAppUpdatePromptDate.rawValue)
+        userDefaults.synchronize()
     }
 }

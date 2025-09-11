@@ -31,6 +31,8 @@ protocol RootFlowControlling: AnyObject {
     func toAppNotification(_ notification: AppNotification)
     func toRequestEnableBiometry()
     func toOpenExternalFileError()
+    func toUpdateAppForNewSyncScheme(schemeVersion: Int, expectedSchemeVersion: Int)
+    func toUpdateAppForUnsupportedVersion()
 }
 
 final class RootFlowController: FlowController {
@@ -201,6 +203,54 @@ extension RootFlowController: RootFlowControlling {
         let alert = UIAlertController(title: T.commonError, message: T.openExternalFileErrorBody, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: T.commonOk, style: .cancel, handler: nil))
         viewController.present(alert, animated: true, completion: nil)
+    }
+    
+    func toUpdateAppForNewSyncScheme(schemeVersion: Int, expectedSchemeVersion: Int) {
+        let alert = UIAlertController(
+            title: T.appUpdateModalTitle,
+            message: T.cloudSyncInvalidSchemaErrorMsg(schemeVersion),
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaNegative,
+            style: .cancel,
+            handler: nil
+        ))
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaPositive,
+            style: .default,
+            handler: { _ in
+                UIApplication.shared.open(Config.appStoreURL)
+            }
+        ))
+        
+        viewController.topViewController.present(alert, animated: true, completion: nil)
+    }
+    
+    func toUpdateAppForUnsupportedVersion() {
+        let alert = UIAlertController(
+            title: T.appUpdateModalTitle,
+            message: T.appUpdateModalSubtitle,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaNegative,
+            style: .cancel,
+            handler: nil
+        ))
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaPositive,
+            style: .default,
+            handler: { _ in
+                UIApplication.shared.open(Config.appStoreURL)
+            }
+        ))
+        
+        viewController.topViewController.present(alert, animated: true, completion: nil)
     }
 }
 

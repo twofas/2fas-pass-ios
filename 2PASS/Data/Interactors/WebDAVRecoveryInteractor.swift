@@ -38,6 +38,7 @@ public protocol WebDAVRecoveryInteracting: AnyObject {
         baseURL: URL,
         allowTLSOff: Bool,
         vaultID: VaultID,
+        schemeVersion: Int,
         login: String?,
         password: String?,
         completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
@@ -131,11 +132,20 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
         baseURL: URL,
         allowTLSOff: Bool,
         vaultID: VaultID,
+        schemeVersion: Int,
         login: String?,
         password: String?,
         completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
-    ) {
-        Log("WebDAVRecoveryInteractor - fetching Vault", module: .interactor)
+    ) { 
+        Log("WebDAVRecoveryInteractor - fetching Vault with scheme version: \(schemeVersion)", module: .interactor)
+        
+        // Check if the scheme version is supported before fetching
+        if schemeVersion > Config.schemaVersion {
+            Log("WebDAVRecoveryInteractor - scheme version \(schemeVersion) not supported, expected \(Config.schemaVersion) or lower", module: .interactor, severity: .error)
+            completion(.failure(.schemaNotSupported(schemeVersion, expected: Config.schemaVersion)))
+            return
+        }
+        
         mainRepository.webDAVSetBackupConfig(
             .init(baseURL: baseURL.absoluteString,
                   normalizedURL: baseURL,

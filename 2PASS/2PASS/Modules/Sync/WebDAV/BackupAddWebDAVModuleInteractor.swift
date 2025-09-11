@@ -19,7 +19,6 @@ enum BackupAddWebDAVModuleInteractorStatus {
     case urlError(String)
     case syncError(String?)
     case retrying(String?)
-    case newerVersionNeeded
     case networkError(String)
     case serverError(String)
     case synced
@@ -136,7 +135,6 @@ private extension BackupAddWebDAVModuleInteractor {
             switch syncError {
             case .unauthorized: return .unauthorized
             case .forbidden: return .forbidden
-            case .newerVersionNeeded: return .newerVersionNeeded
             case .notConfigured: return .notConfigured
             case .syncError(let string): return .syncError(string)
             case .networkError(let string): return .networkError(string)

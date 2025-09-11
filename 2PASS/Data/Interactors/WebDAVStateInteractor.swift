@@ -152,7 +152,7 @@ extension WebDAVStateInteractor: WebDAVStateInteracting {
         case .syncing: return false
         case .error(let syncError):
             switch syncError {
-            case .unauthorized, .forbidden, .newerVersionNeeded, .schemaNotSupported, .notConfigured, .urlError, .sslError, .methodNotAllowed, .limitDevicesReached, .passwordChanged: return false
+            case .unauthorized, .forbidden, .schemaNotSupported, .notConfigured, .urlError, .sslError, .methodNotAllowed, .limitDevicesReached, .passwordChanged: return false
             case .syncError, .networkError, .serverError: return true
             }
         case .retry: return true

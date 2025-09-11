@@ -20,7 +20,7 @@ struct BackupSchemaNotSupportedView: View {
         ResultView(
             kind: .failure,
             title: Text(T.backupImportingFailureTitle),
-            description: Text(T.importInvalidSchemaErrorMsg(expectedSchemeVersion, schemeVersion)),
+            description: Text(T.importInvalidSchemaErrorMsg(schemeVersion)),
             action: {
                 VStack {
                     Button(T.importInvalidSchemaErrorCta.localizedKey) {

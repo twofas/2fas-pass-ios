@@ -56,6 +56,10 @@ protocol MainRepository: AnyObject {
     var shouldShowQuickSetup: Bool { get }
     func setShouldShowQuickSetup(_ value: Bool)
     
+    var lastAppUpdatePromptDate: Date? { get }
+    func setLastAppUpdatePromptDate(_ date: Date)
+    func clearLastAppUpdatePromptDate()
+    
     // MARK: - Biometry
     var biometryType: BiometryType { get }
     var isBiometryEnabled: Bool { get }

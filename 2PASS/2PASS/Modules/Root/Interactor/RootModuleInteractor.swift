@@ -12,6 +12,7 @@ import UserNotifications
 protocol RootModuleInteracting: AnyObject {
     var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
+    var presentAppUpdateNeededForNewSyncScheme: ((Int, Int) -> Void)? { get set }
     
     var isUserLoggedIn: Bool { get }
     var isUserSetUp: Bool { get }
@@ -43,6 +44,7 @@ protocol RootModuleInteracting: AnyObject {
 
 final class RootModuleInteractor {
     var storageError: ((String) -> Void)?
+    var presentAppUpdateNeededForNewSyncScheme: ((Int, Int) -> Void)?
     
     private let rootInteractor: RootInteracting
     private let appStateInteractor: AppStateInteracting
@@ -53,6 +55,7 @@ final class RootModuleInteractor {
     private let appNotificationsInteractor: AppNotificationsInteracting
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
+    private let updateAppPromptInteractor: UpdateAppPromptInteracting
     
     init(
         rootInteractor: RootInteracting,
@@ -63,7 +66,8 @@ final class RootModuleInteractor {
         syncInteractor: CloudSyncInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         timeVerificationInteractor: TimeVerificationInteracting,
-        paymentHandlingInteractor: PaymentHandlingInteracting
+        paymentHandlingInteractor: PaymentHandlingInteracting,
+        updateAppPromptInteractor: UpdateAppPromptInteracting
     ) {
         self.rootInteractor = rootInteractor
         self.appStateInteractor = appStateInteractor
@@ -74,11 +78,20 @@ final class RootModuleInteractor {
         self.appNotificationsInteractor = appNotificationsInteractor
         self.timeVerificationInteractor = timeVerificationInteractor
         self.paymentHandlingInteractor = paymentHandlingInteractor
+        self.updateAppPromptInteractor = updateAppPromptInteractor
         
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
         }
+        
+        updateAppPromptInteractor.showPrompt = { [weak self] reason in
+            switch reason {
+            case .webDAVSchemeNotSupported(let schemeVersion, let expectedVersion):
+                self?.presentAppUpdateNeededForNewSyncScheme?(schemeVersion, expectedVersion)
+            }
+        }
     }
+    
 }
 
 extension RootModuleInteractor: RootModuleInteracting {

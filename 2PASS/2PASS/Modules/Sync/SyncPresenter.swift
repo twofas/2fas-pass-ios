@@ -8,6 +8,7 @@ import CommonUI
 import Common
 import Data
 import Backup
+import UIKit
 
 enum SyncDestination: RouterDestination {
     case webDAV
@@ -68,6 +69,7 @@ final class SyncPresenter {
     private(set) var lastSyncDate: Date?
     private(set) var isWebDAVEnabled: Bool
     private(set) var showUpgradePlanButton: Bool = false
+    private(set) var showUpdateAppButton: Bool = false
     
     private var presentSyncPremiumNeededScreen: Task<Void, Never>?
     
@@ -117,6 +119,7 @@ final class SyncPresenter {
             status = WebDAVStatusFormatStyle().format(interactor.webDAVState)
             lastSyncDate = interactor.webDAVLastSyncDate
             showUpgradePlanButton = interactor.webDAVState.isLimitDevicesReached
+            showUpdateAppButton = interactor.webDAVState.isSchemeNotSupported
         } else {
             status = nil
             lastSyncDate = nil
@@ -127,6 +130,10 @@ final class SyncPresenter {
     
     func onWebDAV() {
         destination = .webDAV
+    }
+    
+    func onUpdateApp() {
+        UIApplication.shared.open(Config.appStoreURL)
     }
     
     @MainActor
@@ -147,7 +154,6 @@ struct WebDAVStatusFormatStyle: FormatStyle {
             case .forbidden: T.syncStatusErrorForbidden
             case .methodNotAllowed: T.syncStatusErrorMethodNotAllowed
             case .networkError(let networkError): networkError
-            case .newerVersionNeeded: T.syncStatusErrorNewerVersionNeededTitle
             case .notConfigured: T.syncStatusErrorNotConfigured
             case .limitDevicesReached: T.syncStatusErrorLimitDevicesReached
             case .serverError(let serverError): serverError
@@ -156,7 +162,7 @@ struct WebDAVStatusFormatStyle: FormatStyle {
             case .unauthorized: T.syncStatusErrorUnauthorized
             case .urlError(let urlError): urlError
             case .passwordChanged: T.syncStatusErrorPasswordChanged
-            case .schemaNotSupported(let schemeVersion, let expectedSchemeVersion): T.cloudSyncInvalidSchemaErrorMsg(expectedSchemeVersion, schemeVersion)
+            case .schemaNotSupported(let schemeVersion, _): T.cloudSyncInvalidSchemaErrorMsg(schemeVersion)
             }
         case .retry(let reason):
             reason.map { "\(T.syncStatusRetry) \($0)" } ?? T.syncStatusRetry

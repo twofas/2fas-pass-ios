@@ -10,7 +10,6 @@ public enum WebDAVState: Equatable, Codable {
         case forbidden
         case limitDevicesReached
         case methodNotAllowed
-        case newerVersionNeeded
         case schemaNotSupported(Int, expected: Int)
         case notConfigured
         case passwordChanged
@@ -46,5 +45,14 @@ public enum WebDAVState: Equatable, Codable {
     
     public var isLimitDevicesReached: Bool {
         self == .error(.limitDevicesReached)
+    }
+    
+    public var isSchemeNotSupported: Bool {
+        switch self {
+        case .error(.schemaNotSupported):
+            return true
+        default:
+            return false
+        }
     }
 }

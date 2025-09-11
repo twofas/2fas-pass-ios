@@ -192,4 +192,16 @@ extension MainRepositoryImpl {
     var is2FASAuthInstalled: Bool {
         UIApplication.shared.canOpenURL(Config.twofasAuthCheckLink)
     }
+    
+    var lastAppUpdatePromptDate: Date? {
+        userDefaultsDataSource.lastAppUpdatePromptDate
+    }
+    
+    func setLastAppUpdatePromptDate(_ date: Date) {
+        userDefaultsDataSource.setLastAppUpdatePromptDate(date)
+    }
+    
+    func clearLastAppUpdatePromptDate() {
+        userDefaultsDataSource.clearLastAppUpdatePromptDate()
+    }
 }

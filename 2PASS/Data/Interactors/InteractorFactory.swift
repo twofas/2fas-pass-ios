@@ -317,6 +317,10 @@ public final class InteractorFactory {
     public func quickSetupInteractor() -> QuickSetupInteracting {
         QuickSetupInteractor(mainRepository: MainRepositoryImpl.shared)
     }
+    
+    public func updateAppPromptInteractor() -> UpdateAppPromptInteracting {
+        UpdateAppPromptInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
 }
 
 private extension InteractorFactory {

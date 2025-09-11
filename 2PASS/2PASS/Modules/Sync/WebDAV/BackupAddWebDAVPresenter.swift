@@ -140,8 +140,6 @@ extension BackupAddWebDAVPresenter {
                 return T.syncStatusRetrying
             }()
             isEditable = false
-        case .newerVersionNeeded:
-            uriError = T.syncStatusErrorNewerVersionNeeded
         case .networkError(let string):
             uriError = T.generalNetworkErrorDetails(string)
             isEditable = false
@@ -161,8 +159,8 @@ extension BackupAddWebDAVPresenter {
             destination = .upgradePlanPrompt
         case .passwordChanged:
             uriError = T.syncStatusErrorPasswordChanged
-        case .schemaNotSupported(let schemeVersion, let expectedSchemeVersion):
-            uriError = T.cloudSyncInvalidSchemaErrorMsg(expectedSchemeVersion, schemeVersion)
+        case .schemaNotSupported(let schemeVersion, _):
+            uriError = T.cloudSyncInvalidSchemaErrorMsg(schemeVersion)
         }
     }
 }

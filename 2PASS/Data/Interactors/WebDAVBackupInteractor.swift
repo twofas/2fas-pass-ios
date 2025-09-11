@@ -196,7 +196,7 @@ private extension WebDAVBackupInteractor {
                     module: .interactor,
                     severity: .error
                 )
-                webDAVStateInteractor.syncError(.newerVersionNeeded)
+                webDAVStateInteractor.syncError(.schemaNotSupported(matchingVault.schemaVersion, expected: Config.indexSchemaVersion))
                 return
             }
             

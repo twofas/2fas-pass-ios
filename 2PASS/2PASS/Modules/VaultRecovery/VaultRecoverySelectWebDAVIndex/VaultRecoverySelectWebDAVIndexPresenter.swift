@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import UIKit
 import Common
 import Data
 
@@ -13,11 +14,13 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
         switch self {
         case .selectRecoveryKey: "selectRecoveryKey"
         case .error: "error"
+        case .appUpdateNeeded: "appUpdateNeeded"
         }
     }
     
     case selectRecoveryKey(ExchangeVault, onClose: Callback)
     case error(message: String, onClose: Callback)
+    case appUpdateNeeded(schemeVersion: Int, expectedVersion: Int, onUpdate: Callback, onClose: Callback)
 }
 
 @Observable
@@ -70,6 +73,7 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
             baseURL: baseURL,
             allowTLSOff: allowTLSOff,
             vaultID: uuid,
+            schemeVersion: vault.schemaVersion,
             login: login,
             password: password
         ) { [weak self] result in
@@ -93,12 +97,31 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
     
     private func showStatus(_ status: WebDAVRecoveryInteractorError) {
         isLoading = false
-        showError(status.message)
+        
+        switch status {
+        case .schemaNotSupported(let schemeVersion, let expectedVersion):
+            destination = .appUpdateNeeded(
+                schemeVersion: schemeVersion,
+                expectedVersion: expectedVersion,
+                onUpdate: { [weak self] in
+                    self?.onUpdateApp()
+                },
+                onClose: { [weak self] in
+                    self?.destination = nil
+                }
+            )
+        default:
+            showError(status.message)
+        }
     }
     
     func showError(_ message: String) {
         destination = .error(message: message, onClose: { [weak self] in
             self?.destination = nil
         })
+    }
+    
+    private func onUpdateApp() {
+        UIApplication.shared.open(Config.appStoreURL)
     }
 }

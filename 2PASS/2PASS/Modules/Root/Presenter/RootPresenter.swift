@@ -46,6 +46,9 @@ final class RootPresenter {
         interactor.storageError = { [weak self] error in
             self?.flowController.toStorageError(error: error)
         }
+        interactor.presentAppUpdateNeededForNewSyncScheme = { [weak self] schemeVersion, expectedVersion in
+            self?.flowController.toUpdateAppForNewSyncScheme(schemeVersion: schemeVersion, expectedSchemeVersion: expectedVersion)
+        }
         handleViewFlow(canUseBiometry: false)
         fetchAppNotifications()
     }
