@@ -32,7 +32,7 @@ protocol RootFlowControlling: AnyObject {
     func toRequestEnableBiometry()
     func toOpenExternalFileError()
     func toUpdateAppForNewSyncScheme(schemeVersion: Int, expectedSchemeVersion: Int)
-    func toUpdateAppForUnsupportedVersion()
+    func toUpdateAppForUnsupportedVersion(minimalVersion: String)
 }
 
 final class RootFlowController: FlowController {
@@ -119,6 +119,7 @@ extension RootFlowController: RootFlowControlling {
         }
         
         biometricPromptViewController?.dismiss(animated: false)
+        
         
         let coverViewController = LoginFlowController.setAsCover(
             in: coverWindow,
@@ -229,7 +230,7 @@ extension RootFlowController: RootFlowControlling {
         viewController.topViewController.present(alert, animated: true, completion: nil)
     }
     
-    func toUpdateAppForUnsupportedVersion() {
+    func toUpdateAppForUnsupportedVersion(minimalVersion: String) {        
         let alert = UIAlertController(
             title: T.appUpdateModalTitle,
             message: T.appUpdateModalSubtitle,

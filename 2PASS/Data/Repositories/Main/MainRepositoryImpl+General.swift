@@ -204,4 +204,16 @@ extension MainRepositoryImpl {
     func clearLastAppUpdatePromptDate() {
         userDefaultsDataSource.clearLastAppUpdatePromptDate()
     }
+    
+    var minimalAppVersionSupported: String? {
+        _minimalAppVersionSupported
+    }
+    
+    func setMinimalAppVersionSupported(_ version: String) {
+        _minimalAppVersionSupported = version
+    }
+    
+    func clearMinimalAppVersionSupported() {
+        _minimalAppVersionSupported = nil
+    }
 }

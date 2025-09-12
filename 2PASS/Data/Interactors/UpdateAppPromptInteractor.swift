@@ -7,27 +7,52 @@
 import Foundation
 import Common
 
-public enum UpdatePromptReason {
+public enum UpdateAppPromptRequestReason {
     case webDAVSchemeNotSupported(schemeVersion: Int, expectedVersion: Int)
+    case iCloudSchemeNotSupported(schemeVersion: Int, expectedVersion: Int)
+}
+
+public enum UpdateAppPromptState {
+    case hidden
+    case unsupportedAppVersion(minimalVersion: String)
 }
 
 public protocol UpdateAppPromptInteracting: AnyObject {
-    var showPrompt: ((UpdatePromptReason) -> Void)? { get set }
+    
+    var appVersionPromptState: UpdateAppPromptState { get }
+    
+    func markPromptAsShown()
 }
 
 final class UpdateAppPromptInteractor: UpdateAppPromptInteracting {
     
     private let mainRepository: MainRepository
+    private let systemInteractor: SystemInteracting
     private let notificationCenter: NotificationCenter
     private let promptInterval: TimeInterval = 60 * 60 * 24
     
-    var showPrompt: ((UpdatePromptReason) -> Void)?
-    
-    init(mainRepository: MainRepository) {
+    init(mainRepository: MainRepository, systemInteractor: SystemInteracting) {
         self.mainRepository = mainRepository
+        self.systemInteractor = systemInteractor
         self.notificationCenter = NotificationCenter.default
         
         startMonitoring()
+    }
+
+    var appVersionPromptState: UpdateAppPromptState {
+        guard let minimalVersion = mainRepository.minimalAppVersionSupported else {
+            return .hidden
+        }
+        let currentVersion = systemInteractor.appVersion
+        if isVersion(currentVersion, olderThan: minimalVersion) && shouldShowPrompt() {
+            return .unsupportedAppVersion(minimalVersion: minimalVersion)
+        } else {
+            return .hidden
+        }
+    }
+    
+    func markPromptAsShown() {
+        mainRepository.setLastAppUpdatePromptDate(Date())
     }
     
     deinit {
@@ -61,10 +86,9 @@ private extension UpdateAppPromptInteractor {
             switch state {
             case .error(.schemaNotSupported(let schemeVersion, let expectedVersion)):
                 Log("UpdateAppPromptInteractor - Scheme not supported detected (v\(schemeVersion), expected v\(expectedVersion)), showing update prompt", module: .interactor)
-                mainRepository.setLastAppUpdatePromptDate(Date())
                 
                 Task { @MainActor in
-                    showPrompt?(.webDAVSchemeNotSupported(schemeVersion: schemeVersion, expectedVersion: expectedVersion))
+                    self.postUpdatePromptNotification(.webDAVSchemeNotSupported(schemeVersion: schemeVersion, expectedVersion: expectedVersion))
                 }
             default:
                 break
@@ -79,5 +103,32 @@ private extension UpdateAppPromptInteractor {
         
         let timeSinceLastPrompt = Date().timeIntervalSince(lastPromptDate)
         return timeSinceLastPrompt >= promptInterval
+    }
+    
+    func isVersion(_ version1: String, olderThan version2: String) -> Bool {
+        let v1Components = version1.split(separator: ".").compactMap { Int($0) }
+        let v2Components = version2.split(separator: ".").compactMap { Int($0) }
+        
+        let maxLength = max(v1Components.count, v2Components.count)
+        for i in 0..<maxLength {
+            let v1Value = i < v1Components.count ? v1Components[i] : 0
+            let v2Value = i < v2Components.count ? v2Components[i] : 0
+            
+            if v1Value < v2Value {
+                return true
+            } else if v1Value > v2Value {
+                return false
+            }
+        }
+        
+        return false
+    }
+    
+    func postUpdatePromptNotification(_ state: UpdateAppPromptRequestReason) {
+        notificationCenter.post(
+            name: .showUpdateAppPrompt,
+            object: nil,
+            userInfo: [Notification.showUpdateAppPromptReasonKey: state]
+        )
     }
 }

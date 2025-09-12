@@ -8,11 +8,15 @@ import UIKit
 import Common
 import Data
 import UserNotifications
+import Foundation
 
 protocol RootModuleInteracting: AnyObject {
     var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
     var presentAppUpdateNeededForNewSyncScheme: ((Int, Int) -> Void)? { get set }
+    
+    var appVersionPromptState: UpdateAppPromptState { get }
+    func markAppVersionPromptAsShown()
     
     var isUserLoggedIn: Bool { get }
     var isUserSetUp: Bool { get }
@@ -56,6 +60,7 @@ final class RootModuleInteractor {
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
     private let updateAppPromptInteractor: UpdateAppPromptInteracting
+    private let notificationCenter = NotificationCenter.default
     
     init(
         rootInteractor: RootInteracting,
@@ -84,17 +89,24 @@ final class RootModuleInteractor {
             self?.storageError?(error)
         }
         
-        updateAppPromptInteractor.showPrompt = { [weak self] reason in
-            switch reason {
-            case .webDAVSchemeNotSupported(let schemeVersion, let expectedVersion):
-                self?.presentAppUpdateNeededForNewSyncScheme?(schemeVersion, expectedVersion)
-            }
-        }
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleShowUpdatePromptNotification(_:)),
+            name: .showUpdateAppPrompt,
+            object: nil
+        )
     }
-    
 }
 
 extension RootModuleInteractor: RootModuleInteracting {
+    
+    var appVersionPromptState: UpdateAppPromptState {
+        updateAppPromptInteractor.appVersionPromptState
+    }
+    
+    func markAppVersionPromptAsShown() {
+        updateAppPromptInteractor.markPromptAsShown()
+    }
     
     var shouldRequestForBiometryToLogin: Bool {
         loginInteractor.shouldRequestForBiometryToLogin
@@ -183,5 +195,21 @@ extension RootModuleInteractor: RootModuleInteracting {
     
     func isBackupFileURL(_ url: URL) -> Bool {
         url.pathExtension == "2faspass"
+    }
+}
+
+private extension RootModuleInteractor {
+    
+    @objc func handleShowUpdatePromptNotification(_ notification: Notification) {
+        guard let reason = notification.userInfo?[Notification.showUpdateAppPromptReasonKey] as? UpdateAppPromptRequestReason else {
+            return
+        }
+        
+        switch reason {
+        case .webDAVSchemeNotSupported(let schemeVersion, let expectedVersion):
+            presentAppUpdateNeededForNewSyncScheme?(schemeVersion, expectedVersion)
+        case .iCloudSchemeNotSupported(let schemeVersion, let expectedVersion):
+            presentAppUpdateNeededForNewSyncScheme?(schemeVersion, expectedVersion)
+        }
     }
 }

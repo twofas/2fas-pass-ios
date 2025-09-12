@@ -8,9 +8,9 @@ import Common
 
 extension MainRepositoryImpl {
     
-    func appNotifications() async throws -> [AppNotification] {
+    func appNotifications() async throws -> AppNotifications {
         guard let deviceID else {
-            return []
+            return AppNotifications(notifications: nil, compatibility: nil)
         }
         return try await twoFASWebServiceSession.fetchNotifications(forDeviceId: deviceID)
     }
