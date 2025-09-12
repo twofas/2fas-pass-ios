@@ -98,12 +98,11 @@ public struct TwoFASButtonStyle: ButtonStyle {
         case .rectangle:
             base(configuration: configuration)
                 .background(
-                    RoundedRectangle(cornerRadius: ButtonMetrics(controlSize: controlSize).cornerRadius)
+                    baseBackgroundShape
                         .foregroundStyle(backgroundColor(for: configuration))
                 )
                 .overlay {
-                    RoundedRectangle(cornerRadius: ButtonMetrics(controlSize: controlSize).cornerRadius)
-                        .fill(Color.white)
+                    baseOverlayShape
                         .opacity(configuration.isPressed ? Constants.tapWhiteOpacity : 0)
                 }
         case .circle:
@@ -117,6 +116,25 @@ public struct TwoFASButtonStyle: ButtonStyle {
                         .fill(Color.white)
                         .opacity(configuration.isPressed ? Constants.tapWhiteOpacity : 0)
                 }
+        }
+    }
+    
+    @ViewBuilder
+    private var baseBackgroundShape: some View {
+        if #available(iOS 26, *) {
+            Capsule()
+        } else {
+            RoundedRectangle(cornerRadius: ButtonMetrics(controlSize: controlSize).cornerRadius)
+        }
+    }
+    
+    @ViewBuilder
+    private var baseOverlayShape: some View {
+        if #available(iOS 26, *) {
+            Capsule()
+        } else {
+            RoundedRectangle(cornerRadius: ButtonMetrics(controlSize: controlSize).cornerRadius)
+                .fill(Color.white)
         }
     }
     
