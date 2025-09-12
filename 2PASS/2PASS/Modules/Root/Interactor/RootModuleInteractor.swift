@@ -8,10 +8,15 @@ import UIKit
 import Common
 import Data
 import UserNotifications
+import Foundation
 
 protocol RootModuleInteracting: AnyObject {
     var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
+    var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)? { get set }
+    
+    var appVersionPromptState: UpdateAppPromptState { get }
+    func markAppVersionPromptAsShown()
     
     var isUserLoggedIn: Bool { get }
     var isUserSetUp: Bool { get }
@@ -43,6 +48,7 @@ protocol RootModuleInteracting: AnyObject {
 
 final class RootModuleInteractor {
     var storageError: ((String) -> Void)?
+    var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)?
     
     private let rootInteractor: RootInteracting
     private let appStateInteractor: AppStateInteracting
@@ -53,6 +59,8 @@ final class RootModuleInteractor {
     private let appNotificationsInteractor: AppNotificationsInteracting
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
+    private let updateAppPromptInteractor: UpdateAppPromptInteracting
+    private let notificationCenter = NotificationCenter.default
     
     init(
         rootInteractor: RootInteracting,
@@ -63,7 +71,8 @@ final class RootModuleInteractor {
         syncInteractor: CloudSyncInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         timeVerificationInteractor: TimeVerificationInteracting,
-        paymentHandlingInteractor: PaymentHandlingInteracting
+        paymentHandlingInteractor: PaymentHandlingInteracting,
+        updateAppPromptInteractor: UpdateAppPromptInteracting
     ) {
         self.rootInteractor = rootInteractor
         self.appStateInteractor = appStateInteractor
@@ -74,14 +83,30 @@ final class RootModuleInteractor {
         self.appNotificationsInteractor = appNotificationsInteractor
         self.timeVerificationInteractor = timeVerificationInteractor
         self.paymentHandlingInteractor = paymentHandlingInteractor
+        self.updateAppPromptInteractor = updateAppPromptInteractor
         
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
         }
+        
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleShowUpdatePromptNotification(_:)),
+            name: .showUpdateAppPrompt,
+            object: nil
+        )
     }
 }
 
 extension RootModuleInteractor: RootModuleInteracting {
+    
+    var appVersionPromptState: UpdateAppPromptState {
+        updateAppPromptInteractor.appVersionPromptState
+    }
+    
+    func markAppVersionPromptAsShown() {
+        updateAppPromptInteractor.markPromptAsShown()
+    }
     
     var shouldRequestForBiometryToLogin: Bool {
         loginInteractor.shouldRequestForBiometryToLogin
@@ -170,5 +195,21 @@ extension RootModuleInteractor: RootModuleInteracting {
     
     func isBackupFileURL(_ url: URL) -> Bool {
         url.pathExtension == "2faspass"
+    }
+}
+
+private extension RootModuleInteractor {
+    
+    @objc func handleShowUpdatePromptNotification(_ notification: Notification) {
+        guard let reason = notification.userInfo?[Notification.showUpdateAppPromptReasonKey] as? UpdateAppPromptRequestReason else {
+            return
+        }
+        
+        switch reason {
+        case .webDAVSchemeNotSupported(let schemaVersion):
+            presentAppUpdateNeededForNewSyncSchema?(schemaVersion)
+        case .iCloudSchemeNotSupported(let schemaVersion):
+            presentAppUpdateNeededForNewSyncSchema?(schemaVersion)
+        }
     }
 }

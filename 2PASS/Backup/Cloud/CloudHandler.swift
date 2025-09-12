@@ -35,11 +35,18 @@ final class CloudHandler: CloudHandlerType {
     private var isClearing = false
     
     private var shouldResetState = false
+    private var isEnabling = false
     
     private(set) var currentState: CloudCurrentState = .unknown {
         didSet {
             guard oldValue != currentState else { return }
             guard !isClearing else { return }
+            
+            switch currentState {
+            case .enabled(sync: .syncing): break
+            default: isEnabling = false
+            }
+            
             Log("Cloud Handler - state change \(currentState)", module: .cloudSync)
             NotificationCenter.default.post(name: .cloudStateChanged, object: nil)
         }
@@ -59,7 +66,9 @@ final class CloudHandler: CloudHandlerType {
         self.cacheHandler = cacheHandler
         clearHandler = ClearHandler()
 
-        mergeHandler.newerVersion = { [weak self] in self?.newerVersionOfCloud() }
+        mergeHandler.schemaNotSupported = { [weak self] schemaVersion in
+            self?.schemaNotSupported(schemaVersion)
+        }
         mergeHandler.incorrectEncryption = { [weak self] in self?.incorrectEncryption() }
         mergeHandler.syncNotAllowed = { [weak self] in self?.syncNotAllowed() }
         
@@ -100,6 +109,7 @@ final class CloudHandler: CloudHandlerType {
     
     func synchronize() {
         guard !isClearing else { return }
+        
         Log("Cloud Handler -  Got Synchronize action", module: .cloudSync)
         if shouldResetState {
             Log("Cloud Handler - Reseting state", module: .cloudSync)
@@ -120,6 +130,9 @@ final class CloudHandler: CloudHandlerType {
     
     func enable() {
         guard !isClearing else { return }
+
+        isEnabling = true
+        
         Log("Cloud Handler - Got Enable action", module: .cloudSync)
         switch currentState {
         case .enabled:
@@ -321,10 +334,15 @@ final class CloudHandler: CloudHandlerType {
         currentState = .disabledNotAvailable(reason: .error(error: error))
     }
     
-    private func newerVersionOfCloud() {
-        Log("Cloud Handler - newer version of cloud", module: .cloudSync)
-        clearAll()
-        currentState = .disabledNotAvailable(reason: .newerVersion)
+    private func schemaNotSupported(_ schemaVersion: Int) {
+        Log("Cloud Handler - schema not supported (v\(schemaVersion))", module: .cloudSync)
+        
+        if isEnabling {
+            currentState = .disabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
+            clearAll()
+        } else {
+            currentState = .enabled(sync: .outOfSync(.schemaNotSupported(schemaVersion)))
+        }
     }
     
     private func incorrectEncryption() {

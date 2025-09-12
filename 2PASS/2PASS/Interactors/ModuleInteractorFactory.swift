@@ -21,7 +21,8 @@ extension ModuleInteractorFactory {
             syncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
-            paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor()
+            paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
+            updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor()
         )
     }
     

@@ -85,7 +85,7 @@ public enum Config {
         public static let baseURL = URL(string: "wss://dev-pass.2fas.com/proxy/mobile/")!
         #endif
         
-        public static let schemeVersion = 1
+        public static let schemaVersion = 1
         
         public static let sessionIdByteCount = 16
         public static let nonceByteCount = 12

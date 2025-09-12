@@ -13,6 +13,7 @@ protocol VaultRecoverySelectWebDAVIndexModuleInteracting: AnyObject {
         baseURL: URL,
         allowTLSOff: Bool,
         vaultID: VaultID,
+        schemeVersion: Int,
         login: String?,
         password: String?,
         completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
@@ -39,6 +40,7 @@ extension VaultRecoverySelectWebDAVIndexModuleInteractor: VaultRecoverySelectWeb
         baseURL: URL,
         allowTLSOff: Bool,
         vaultID: VaultID,
+        schemeVersion: Int,
         login: String?,
         password: String?,
         completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
@@ -47,6 +49,7 @@ extension VaultRecoverySelectWebDAVIndexModuleInteractor: VaultRecoverySelectWeb
             baseURL: baseURL,
             allowTLSOff: allowTLSOff,
             vaultID: vaultID,
+            schemeVersion: schemeVersion,
             login: login,
             password: password,
             completion: completion
