@@ -107,6 +107,20 @@ public extension UIView {
         ])
     }
     
+    func pinToSafeAreaParentCenter() {
+        guard let s = superview else {
+            Log("No parent view available")
+            return
+        }
+        
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            centerXAnchor.constraint(equalTo: s.safeAreaLayoutGuide.centerXAnchor),
+            centerYAnchor.constraint(equalTo: s.safeAreaLayoutGuide.centerYAnchor)
+        ])
+    }
+    
     func shake() {
         let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
         animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)

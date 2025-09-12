@@ -20,6 +20,7 @@ public extension ExternalService {
         case .protonPass: "Proton Pass"
         case .applePasswordsDesktop: "Apple Passwords Desktop"
         case .applePasswordsMobile: "Apple Passwords Mobile"
+        case .firefox: "Firefox"
         }
     }
     
@@ -34,6 +35,7 @@ public extension ExternalService {
         case .protonPass: UTType.commaSeparatedText
         case .applePasswordsDesktop: UTType.commaSeparatedText
         case .applePasswordsMobile: UTType.zip
+        case .firefox: UTType.commaSeparatedText
         }
     }
 }

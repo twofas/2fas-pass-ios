@@ -25,6 +25,17 @@ struct CustomizationView: View {
                 Text(T.settingsEntryLoginClickActionDescription.localizedKey)
                     .settingsFooter()
             }
+            
+            Section {
+                Button {
+                    presenter.onManageTags()
+                } label: {
+                    SettingsRowView(title: T.settingsEntryManageTags.localizedKey)
+                }
+            } footer: {
+                Text(T.settingsEntryManageTagsDescription.localizedKey)
+                    .settingsFooter()
+            }
         }
         .router(router: CustomizationRouter(), destination: $presenter.destination)
     }

@@ -36,6 +36,15 @@ final class PasswordsPresenter {
         autoFillEnvironment != nil
     }
     
+    var selectedFilterTag: ItemTagData? {
+        didSet {
+            reload()
+        }
+    }
+    
+    private(set) var itemsCount: Int = 0
+    private(set) var hasSuggestedItems = false
+
     private let autoFillEnvironment: AutoFillEnvironment?
     private let iconsDataSource: RemoteImageCollectionDataSource<PasswordCellData>
     private let flowController: PasswordsFlowControlling
@@ -103,6 +112,16 @@ extension PasswordsPresenter {
         reload()
     }
     
+    func onSelectFilterTag(_ tag: ItemTagData?) {
+        selectedFilterTag = tag
+        reload()
+    }
+    
+    func onClearFilterTag() {
+        selectedFilterTag = nil
+        reload()
+    }
+    
     func onCellMenuAction(_ action: PasswordCellMenu, passwordID: PasswordID, selectedURI: URL?) {
         switch action {
         case .view: flowController.toViewPassword(passwordID: passwordID)
@@ -154,6 +173,14 @@ extension PasswordsPresenter {
     func handleRefresh() {
         reload()
     }
+    
+    func listAllTags() -> [ItemTagData] {
+        interactor.listAllTags()
+    }
+
+    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
+        interactor.countPasswordsForTag(tagID)
+    }
 }
 
 extension PasswordsPresenter {
@@ -199,29 +226,48 @@ private extension PasswordsPresenter {
     
     func reload() {
         listData.removeAll()
+        hasSuggestedItems = false
         
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers)
-            listData[0] = list.suggested
-            listData[1] = list.rest
-            let suggestedCells = list.suggested.map(makeCellData(for:))
-            let restCells = list.rest.map(makeCellData(for:))
-            let suggestedSection = PasswordSectionData(title: T.commonSuggested)
-            let section = PasswordSectionData(title: T.commonOther)
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
+            
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             
-            snapshot.appendSections([suggestedSection, section])
-            snapshot.appendItems(suggestedCells, toSection: suggestedSection)
-            snapshot.appendItems(restCells, toSection: section)
+            if list.suggested.isEmpty {
+                listData[0] = list.rest
+                
+                let restCells = list.rest.map(makeCellData(for:))
+                let section = PasswordSectionData()
+                
+                snapshot.appendSections([section])
+                snapshot.appendItems(restCells, toSection: section)
+                
+                cellsCount = list.rest.count
+
+            } else {
+                listData[0] = list.suggested
+                listData[1] = list.rest
+                hasSuggestedItems = true
+
+                let suggestedCells = list.suggested.map(makeCellData(for:))
+                let restCells = list.rest.map(makeCellData(for:))
+                let suggestedSection = PasswordSectionData(title: T.commonSuggested)
+                let section = PasswordSectionData(title: T.commonOther)
+                
+                snapshot.appendSections([suggestedSection])
+                snapshot.appendItems(suggestedCells, toSection: suggestedSection)
+                snapshot.appendSections([section])
+                snapshot.appendItems(restCells, toSection: section)
+                
+                cellsCount = suggestedCells.count + restCells.count
+            }
             
             view?.reloadData(newSnapshot: snapshot)
             
-            cellsCount = suggestedCells.count + restCells.count
-            
         } else {
-            let list = interactor.loadList()
+            let list = interactor.loadList(tag: selectedFilterTag)
             listData[0] = list
             let cells = list.map(makeCellData(for:))
             let section = PasswordSectionData()
@@ -234,8 +280,10 @@ private extension PasswordsPresenter {
             cellsCount = cells.count
         }
         
+        itemsCount = cellsCount
+        
         if cellsCount == 0 {
-            if interactor.isSearching {
+            if interactor.isSearching || selectedFilterTag != nil {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()

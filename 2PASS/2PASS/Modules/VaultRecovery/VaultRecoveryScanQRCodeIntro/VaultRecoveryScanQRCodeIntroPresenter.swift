@@ -71,7 +71,7 @@ final class VaultRecoveryScanQRCodeIntroPresenter {
                         case .cloud:
                             fatalError("Unsupported importing vault from cloud")
                         case .file(let vault):
-                            self.destination = .importVault(.encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: self.flowContext.onClose ?? {})
+                            self.destination = .importVault(.encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: self.flowContext.onClose)
                         }
                     }
                     

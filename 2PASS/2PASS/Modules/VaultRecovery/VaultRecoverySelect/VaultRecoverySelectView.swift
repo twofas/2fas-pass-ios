@@ -109,7 +109,7 @@ private struct RecoveryKitImage: Transferable {
 
 #Preview {
     VaultRecoverySelectView(presenter: .init(
-        flowContext: .onboarding,
+        flowContext: .onboarding(onClose: {}),
         interactor: ModuleInteractorFactory.shared.vaultRecoverySelectModuleInteractor(),
         recoveryData: .cloud(
             .init(

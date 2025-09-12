@@ -18,17 +18,17 @@ struct VaultRecoveryFlowContext {
     }
     
     let kind: Kind
-    let onClose: Callback?
+    let onClose: Callback
     
-    static var onboarding: Self {
-        .init(kind: .onboarding)
+    static func onboarding(onClose: @escaping Callback) -> Self {
+        .init(kind: .onboarding, onClose: onClose)
     }
     
     static func importVault(onClose: @escaping Callback) -> Self {
         .init(kind: .importVault, onClose: onClose)
     }
     
-    private init(kind: Kind, onClose: Callback? = nil) {
+    private init(kind: Kind, onClose: @escaping Callback) {
         self.kind = kind
         self.onClose = onClose
     }
@@ -43,6 +43,7 @@ enum VaultRecoverySelectDestination: Identifiable {
         case .vaultRecovery: "vaultRecovery"
         case .enterMasterPassword: "enterMasterPassword"
         case .importVault: "importing"
+        case .importFailed: "importFailed"
         }
     }
     
@@ -62,6 +63,8 @@ enum VaultRecoverySelectDestination: Identifiable {
         entropy: Entropy,
         recoveryData: VaultRecoveryData,
     )
+    
+    case importFailed(onSelectVault: Callback, onSelectDecryptionKit: Callback)
 }
 
 @Observable
@@ -180,6 +183,18 @@ private extension VaultRecoverySelectPresenter {
                     showError()
                     return
                 }
+  
+                guard interactor.validateEntropy(parseResult.entropy, for: self.recoveryData) else {
+                    Task { @MainActor [weak self] in
+                        self?.destination = .importFailed(onSelectVault: { [weak self] in
+                            self?.flowContext.onClose()
+                        }, onSelectDecryptionKit: { [weak self] in
+                            self?.destination = nil
+                        })
+                    }
+                    return
+                }
+                
                 DispatchQueue.main.async {
                     if let masterKey = parseResult.masterKey {
                         switch self.flowContext.kind {
@@ -196,7 +211,7 @@ private extension VaultRecoverySelectPresenter {
                             case .file(let file):
                                 self.destination = .importVault(
                                     .encrypted(entropy: parseResult.entropy, masterKey: masterKey, vault: file),
-                                    onClose: self.flowContext.onClose ?? {}
+                                    onClose: self.flowContext.onClose
                                 )
                             }
                         }

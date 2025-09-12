@@ -16,7 +16,7 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
         }
     }
     
-    case selectRecoveryKey(ExchangeVault)
+    case selectRecoveryKey(ExchangeVault, onClose: Callback)
     case error(message: String, onClose: Callback)
 }
 

@@ -234,6 +234,7 @@ private extension PasswordsCellView {
             list.append(
                 UIMenu(
                     title: T.loginViewActionUrisTitle,
+                    image: PasswordCellMenu.goToURI.icon,
                     children: [UIDeferredMenuElement.uncached { [weak self] completion in
                         completion(self?.urisSubmenu() ?? [])
                     }]

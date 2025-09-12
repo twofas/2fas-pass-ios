@@ -14,4 +14,5 @@ public enum ExternalService: CaseIterable, Equatable {
     case dashlaneDesktop
     case lastPass
     case protonPass
+    case firefox
 }
