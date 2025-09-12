@@ -141,6 +141,8 @@ final class SyncPresenter {
             showUpgradePlanButton = interactor.webDAVState.isLimitDevicesReached
             showUpdateAppButton = interactor.webDAVState.isSchemeNotSupported
         } else {
+            showUpdateAppButton = false
+            
             switch interactor.cloudState {
             case .disabledNotAvailable(.schemaNotSupported(let schemaVersion)):
                 destination = .iCloudSchemeNotSupported(schemaVersion, onUpdateApp: { [weak self] in
