@@ -86,7 +86,7 @@ private extension PasswordsViewController {
         
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(
-                image: UIImage(systemName: "plus.circle.fill"),
+                image: UIImage(systemName: "plus.circle"),
                 style: .plain,
                 target: self,
                 action: #selector(addAction)
