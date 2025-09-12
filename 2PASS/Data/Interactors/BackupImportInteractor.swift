@@ -27,7 +27,7 @@ public enum BackupImportParseError: Error {
     case errorDecrypting
     case otherDeviceId
     case passwordChanged
-    case schemaNotSupported(Int, expected: Int)
+    case schemaNotSupported(Int)
 }
 
 public protocol BackupImportInteracting: AnyObject {
@@ -117,7 +117,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                 switch error {
                 case .jsonError(let reason): completion(.failure(.corruptedFile(reason)))
                 case .nothingToImport: completion(.failure(.nothingToImport))
-                case .schemaNotSupported(let actualVersion, let expectedVersion): completion(.failure(.schemaNotSupported(actualVersion, expected: expectedVersion)))
+                case .schemaNotSupported(let schemaVersion): completion(.failure(.schemaNotSupported(schemaVersion)))
                 }
             }
         }
@@ -241,7 +241,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                 switch error {
                 case .jsonError(let reason): completion(.failure(.corruptedFile(reason)))
                 case .nothingToImport: completion(.failure(.nothingToImport))
-                case .schemaNotSupported(let actualVersion, let expectedVersion): completion(.failure(.schemaNotSupported(actualVersion, expected: expectedVersion)))
+                case .schemaNotSupported(let actualVersion): completion(.failure(.schemaNotSupported(actualVersion)))
                 }
             }
         }

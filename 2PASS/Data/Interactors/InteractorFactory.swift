@@ -324,7 +324,8 @@ public final class InteractorFactory {
     public func updateAppPromptInteractor() -> UpdateAppPromptInteracting {
         UpdateAppPromptInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            systemInteractor: systemInteractor()
+            systemInteractor: systemInteractor(),
+            cloudSyncInteractor: cloudSyncInteractor()
         )
     }
 }

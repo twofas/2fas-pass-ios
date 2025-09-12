@@ -14,7 +14,7 @@ public enum ImportOpenFileError: Error {
 
 public enum ImportParseError: Error {
     case jsonError(Error)
-    case schemaNotSupported(Int, expected: Int)
+    case schemaNotSupported(Int)
     case nothingToImport
 }
 
@@ -161,7 +161,7 @@ extension ImportInteractor: ImportInteracting {
                 let parsedJSON = try jsonDecoder.decode(ExchangeVault.self, from: data)
                 end(.success(parsedJSON))
             } catch let ExchangeError.mismatchSchemaVersion(actualVersion, expected: expectedVersion) {
-                end(.failure(.schemaNotSupported(actualVersion, expected: expectedVersion)))
+                end(.failure(.schemaNotSupported(actualVersion)))
             } catch {
                 end(.failure(.jsonError(error)))
             }

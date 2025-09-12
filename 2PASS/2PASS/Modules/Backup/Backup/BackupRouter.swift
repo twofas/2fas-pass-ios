@@ -56,10 +56,9 @@ struct BackupRouter: Router {
                 title: Text(T.paywallNoticeItemsLimitImportTitle.localizedKey),
                 description: Text(T.paywallNoticeItemsLimitImportMsg(itemsLimit))
             )
-        case .schemaNotSupported(let schemeVersion, let expectedSchemeVersion, let onClose):
+        case .schemaNotSupported(let schemaVersion, let onClose):
             BackupSchemaNotSupportedView(
-                schemeVersion: schemeVersion,
-                expectedSchemeVersion: expectedSchemeVersion,
+                schemaVersion: schemaVersion,
                 onClose: onClose
             )
         }

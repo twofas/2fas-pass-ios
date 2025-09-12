@@ -14,12 +14,15 @@ enum SyncDestination: RouterDestination {
     case webDAV
     case disableWebDAVConfirmation(onConfirm: Callback)
     case iCloudNotAvailable(reason: String?)
+    case iCloudSchemeNotSupported(Int, onUpdateApp: Callback)
     case syncNotAllowed
     
     var id: String {
         switch self {
         case .webDAV:
             "WebDAV"
+        case .iCloudSchemeNotSupported:
+            "iCloudSchemeNotSupported"
         case .disableWebDAVConfirmation:
             "DisableWebDAVConfirmation"
         case .iCloudNotAvailable:
@@ -46,7 +49,15 @@ final class SyncPresenter {
             
             if newValue {
                 if case .disabledNotAvailable(reason: let reason) = interactor.cloudState {
-                    destination = .iCloudNotAvailable(reason: reason.description)
+                    switch reason {
+                    case .schemaNotSupported(let schemaVersion):
+                        destination = .iCloudSchemeNotSupported(schemaVersion, onUpdateApp: { [weak self] in
+                            self?.onUpdateApp()
+                        })
+                    default:
+                        destination = .iCloudNotAvailable(reason: reason.description)
+                    }
+                    
                 } else if newValue, interactor.isWebDAVEnabled {
                     destination = .disableWebDAVConfirmation(onConfirm: { [interactor] in
                         interactor.disableWebDAV()
@@ -109,31 +120,43 @@ final class SyncPresenter {
         NotificationCenter.default.post(name: .presentPaymentScreen, object: nil)
     }
     
-    private func refreshStatus() {
-        icloudSyncEnabled = interactor.isCloudEnabled
-        
-        if interactor.isCloudEnabled {
-            status = interactor.cloudState.description
-            lastSyncDate = interactor.cloudLastSuccessSyncDate
-        } else if interactor.isWebDAVEnabled {
-            status = WebDAVStatusFormatStyle().format(interactor.webDAVState)
-            lastSyncDate = interactor.webDAVLastSyncDate
-            showUpgradePlanButton = interactor.webDAVState.isLimitDevicesReached
-            showUpdateAppButton = interactor.webDAVState.isSchemeNotSupported
-        } else {
-            status = nil
-            lastSyncDate = nil
-        }
-        
-        isWebDAVEnabled = interactor.isWebDAVEnabled
-    }
-    
     func onWebDAV() {
         destination = .webDAV
     }
     
     func onUpdateApp() {
         UIApplication.shared.open(Config.appStoreURL)
+    }
+    
+    private func refreshStatus() {
+        icloudSyncEnabled = interactor.isCloudEnabled
+        
+        if interactor.isCloudEnabled {
+            status = interactor.cloudState.description
+            lastSyncDate = interactor.cloudLastSuccessSyncDate
+            showUpdateAppButton = interactor.cloudState.isSchemeNotSupported
+        } else if interactor.isWebDAVEnabled {
+            status = WebDAVStatusFormatStyle().format(interactor.webDAVState)
+            lastSyncDate = interactor.webDAVLastSyncDate
+            showUpgradePlanButton = interactor.webDAVState.isLimitDevicesReached
+            showUpdateAppButton = interactor.webDAVState.isSchemeNotSupported
+        } else {
+            switch interactor.cloudState {
+            case .disabledNotAvailable(.schemaNotSupported(let schemaVersion)):
+                destination = .iCloudSchemeNotSupported(schemaVersion, onUpdateApp: { [weak self] in
+                    self?.onUpdateApp()
+                })
+            case .disabledNotAvailable(let reason):
+                print(reason)
+            default:
+                break
+            }
+            
+            status = nil
+            lastSyncDate = nil
+        }
+        
+        isWebDAVEnabled = interactor.isWebDAVEnabled
     }
     
     @MainActor
@@ -162,7 +185,7 @@ struct WebDAVStatusFormatStyle: FormatStyle {
             case .unauthorized: T.syncStatusErrorUnauthorized
             case .urlError(let urlError): urlError
             case .passwordChanged: T.syncStatusErrorPasswordChanged
-            case .schemaNotSupported(let schemeVersion, _): T.cloudSyncInvalidSchemaErrorMsg(schemeVersion)
+            case .schemaNotSupported(let schemaVersion): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
             }
         case .retry(let reason):
             reason.map { "\(T.syncStatusRetry) \($0)" } ?? T.syncStatusRetry
@@ -176,6 +199,7 @@ private extension CloudState.Sync {
         switch self {
         case .syncing: T.syncSyncing
         case .synced: T.syncSynced
+        case .outOfSync(.schemaNotSupported(let schemaVersion)): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
         }
     }
 }
@@ -208,7 +232,7 @@ private extension CloudState.NotAvailableReason {
             }
         case .useriCloudProblem: T.syncErrorIcloudErrorUserLoggedIn
         case .other: T.syncErrorIcloudErrorReboot
-        case .newerVersion: T.syncErrorIcloudErrorNewerVersion
+        case .schemaNotSupported(let schemaVersion): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
         case .incorrectEncryption: T.syncErrorIcloudErrorDiffrentEncryption
         case .noAccount: T.syncErrorIcloudErrorNoAccount
         case .restricted: T.syncErrorIcloudErrorAccessRestricted
@@ -219,7 +243,7 @@ private extension CloudState.NotAvailableReason {
 private extension MergeHandlerError {
     var description: String {
         switch self {
-        case .newerVersion: T.syncErrorIcloudErrorNewerVersion
+        case .schemaNotSupported: T.syncErrorIcloudErrorNewerVersion
         case .noLocalVault: T.generalErrorNoLocalVault
         case .incorrectEncryption: T.syncErrorIcloudVaultEncryptionRestore
         case .mergeError: T.syncErrorIcloudMergeError

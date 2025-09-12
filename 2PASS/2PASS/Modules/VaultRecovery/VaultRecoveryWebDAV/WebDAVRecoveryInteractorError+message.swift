@@ -29,7 +29,7 @@ extension WebDAVRecoveryInteractorError {
         case .serverError(let message): T.generalServerErrorDetails(message)
         case .sslError: T.syncStatusErrorTlsCertFailed
         case .methodNotAllowed: T.syncStatusErrorNoWebDavServer
-        case .schemaNotSupported(let schemeVersion, _): T.cloudSyncInvalidSchemaErrorMsg(schemeVersion)
+        case .schemaNotSupported(let schemaVersion): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
         }
     }
 }

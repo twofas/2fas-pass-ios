@@ -10,7 +10,7 @@ public enum WebDAVState: Equatable, Codable {
         case forbidden
         case limitDevicesReached
         case methodNotAllowed
-        case schemaNotSupported(Int, expected: Int)
+        case schemaNotSupported(Int)
         case notConfigured
         case passwordChanged
         case sslError

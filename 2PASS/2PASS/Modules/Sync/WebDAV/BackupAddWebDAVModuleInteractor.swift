@@ -24,7 +24,7 @@ enum BackupAddWebDAVModuleInteractorStatus {
     case synced
     case limitDevicesReached
     case passwordChanged
-    case schemaNotSupported(Int, expected: Int)
+    case schemaNotSupported(Int)
 }
 
 protocol BackupAddWebDAVModuleInteracting: AnyObject {
@@ -144,7 +144,7 @@ private extension BackupAddWebDAVModuleInteractor {
             case .methodNotAllowed: return .methodNotAllowed
             case .limitDevicesReached: return .limitDevicesReached
             case .passwordChanged: return .passwordChanged
-            case .schemaNotSupported(let schemeVersion, let expectedSchemeVersion): return .schemaNotSupported(schemeVersion, expected: expectedSchemeVersion)
+            case .schemaNotSupported(let schemaVersion): return .schemaNotSupported(schemaVersion)
             }
         case .retry(let string): return .retrying(string)
         case .synced: return .synced

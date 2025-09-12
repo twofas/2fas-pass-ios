@@ -8,8 +8,8 @@ import Foundation
 import Common
 
 public enum UpdateAppPromptRequestReason {
-    case webDAVSchemeNotSupported(schemeVersion: Int, expectedVersion: Int)
-    case iCloudSchemeNotSupported(schemeVersion: Int, expectedVersion: Int)
+    case webDAVSchemeNotSupported(schemaVersion: Int)
+    case iCloudSchemeNotSupported(schemaVersion: Int)
 }
 
 public enum UpdateAppPromptState {
@@ -28,12 +28,14 @@ final class UpdateAppPromptInteractor: UpdateAppPromptInteracting {
     
     private let mainRepository: MainRepository
     private let systemInteractor: SystemInteracting
+    private let cloudSyncInteractor: CloudSyncInteracting
     private let notificationCenter: NotificationCenter
     private let promptInterval: TimeInterval = 60 * 60 * 24
     
-    init(mainRepository: MainRepository, systemInteractor: SystemInteracting) {
+    init(mainRepository: MainRepository, systemInteractor: SystemInteracting, cloudSyncInteractor: CloudSyncInteracting) {
         self.mainRepository = mainRepository
         self.systemInteractor = systemInteractor
+        self.cloudSyncInteractor = cloudSyncInteractor
         self.notificationCenter = NotificationCenter.default
         
         startMonitoring()
@@ -69,12 +71,18 @@ private extension UpdateAppPromptInteractor {
             name: .webDAVStateChange,
             object: nil
         )
-        Log("UpdateAppPromptInteractor - Started monitoring WebDAV state changes", module: .interactor)
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleCloudStateChange(_:)),
+            name: .cloudStateChanged,
+            object: nil
+        )
+        Log("UpdateAppPromptInteractor - Started monitoring WebDAV and iCloud state changes", module: .interactor)
     }
     
     func stopMonitoring() {
         notificationCenter.removeObserver(self)
-        Log("UpdateAppPromptInteractor - Stopped monitoring WebDAV state changes", module: .interactor)
+        Log("UpdateAppPromptInteractor - Stopped monitoring WebDAV and iCloud state changes", module: .interactor)
     }
     
     @objc func handleWebDAVStateChange(_ notification: Notification) {
@@ -84,11 +92,11 @@ private extension UpdateAppPromptInteractor {
         
         if shouldShowPrompt() {
             switch state {
-            case .error(.schemaNotSupported(let schemeVersion, let expectedVersion)):
-                Log("UpdateAppPromptInteractor - Scheme not supported detected (v\(schemeVersion), expected v\(expectedVersion)), showing update prompt", module: .interactor)
+            case .error(.schemaNotSupported(let schemaVersion)):
+                Log("UpdateAppPromptInteractor - Schema not supported detected (v\(schemaVersion)), showing update prompt", module: .interactor)
                 
                 Task { @MainActor in
-                    self.postUpdatePromptNotification(.webDAVSchemeNotSupported(schemeVersion: schemeVersion, expectedVersion: expectedVersion))
+                    self.postUpdatePromptNotification(.webDAVSchemeNotSupported(schemaVersion: schemaVersion))
                 }
             default:
                 break
@@ -122,6 +130,23 @@ private extension UpdateAppPromptInteractor {
         }
         
         return false
+    }
+    
+    @objc func handleCloudStateChange(_ notification: Notification) {
+        let cloudState = cloudSyncInteractor.currentState
+        
+        if shouldShowPrompt() {
+            switch cloudState {
+            case .enabled(.outOfSync(.schemaNotSupported(let schemaVersion))):
+                Log("UpdateAppPromptInteractor - iCloud schema not supported detected (v\(schemaVersion)), showing update prompt", module: .interactor)
+                
+                Task { @MainActor in
+                    self.postUpdatePromptNotification(.iCloudSchemeNotSupported(schemaVersion: schemaVersion))
+                }
+            default:
+                break
+            }
+        }
     }
     
     func postUpdatePromptNotification(_ state: UpdateAppPromptRequestReason) {

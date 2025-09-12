@@ -31,7 +31,7 @@ protocol RootFlowControlling: AnyObject {
     func toAppNotification(_ notification: AppNotification)
     func toRequestEnableBiometry()
     func toOpenExternalFileError()
-    func toUpdateAppForNewSyncScheme(schemeVersion: Int, expectedSchemeVersion: Int)
+    func toUpdateAppForNewSyncScheme(schemaVersion: Int)
     func toUpdateAppForUnsupportedVersion(minimalVersion: String)
 }
 
@@ -206,10 +206,10 @@ extension RootFlowController: RootFlowControlling {
         viewController.present(alert, animated: true, completion: nil)
     }
     
-    func toUpdateAppForNewSyncScheme(schemeVersion: Int, expectedSchemeVersion: Int) {
+    func toUpdateAppForNewSyncScheme(schemaVersion: Int) {
         let alert = UIAlertController(
             title: T.appUpdateModalTitle,
-            message: T.cloudSyncInvalidSchemaErrorMsg(schemeVersion),
+            message: T.cloudSyncInvalidSchemaErrorMsg(schemaVersion),
             preferredStyle: .alert
         )
         

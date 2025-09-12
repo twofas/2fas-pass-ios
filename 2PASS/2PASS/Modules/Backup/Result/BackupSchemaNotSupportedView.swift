@@ -10,8 +10,7 @@ import Common
 
 struct BackupSchemaNotSupportedView: View {
     
-    let schemeVersion: Int
-    let expectedSchemeVersion: Int
+    let schemaVersion: Int
     let onClose: Callback
     
     @Environment(\.openURL) private var openURL
@@ -20,7 +19,7 @@ struct BackupSchemaNotSupportedView: View {
         ResultView(
             kind: .failure,
             title: Text(T.backupImportingFailureTitle),
-            description: Text(T.importInvalidSchemaErrorMsg(schemeVersion)),
+            description: Text(T.importInvalidSchemaErrorMsg(schemaVersion)),
             action: {
                 VStack {
                     Button(T.importInvalidSchemaErrorCta.localizedKey) {

@@ -13,7 +13,7 @@ import Foundation
 protocol RootModuleInteracting: AnyObject {
     var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
-    var presentAppUpdateNeededForNewSyncScheme: ((Int, Int) -> Void)? { get set }
+    var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)? { get set }
     
     var appVersionPromptState: UpdateAppPromptState { get }
     func markAppVersionPromptAsShown()
@@ -48,7 +48,7 @@ protocol RootModuleInteracting: AnyObject {
 
 final class RootModuleInteractor {
     var storageError: ((String) -> Void)?
-    var presentAppUpdateNeededForNewSyncScheme: ((Int, Int) -> Void)?
+    var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)?
     
     private let rootInteractor: RootInteracting
     private let appStateInteractor: AppStateInteracting
@@ -206,10 +206,10 @@ private extension RootModuleInteractor {
         }
         
         switch reason {
-        case .webDAVSchemeNotSupported(let schemeVersion, let expectedVersion):
-            presentAppUpdateNeededForNewSyncScheme?(schemeVersion, expectedVersion)
-        case .iCloudSchemeNotSupported(let schemeVersion, let expectedVersion):
-            presentAppUpdateNeededForNewSyncScheme?(schemeVersion, expectedVersion)
+        case .webDAVSchemeNotSupported(let schemaVersion):
+            presentAppUpdateNeededForNewSyncSchema?(schemaVersion)
+        case .iCloudSchemeNotSupported(let schemaVersion):
+            presentAppUpdateNeededForNewSyncSchema?(schemaVersion)
         }
     }
 }

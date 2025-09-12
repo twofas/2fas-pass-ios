@@ -20,7 +20,7 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
     
     case selectRecoveryKey(ExchangeVault, onClose: Callback)
     case error(message: String, onClose: Callback)
-    case appUpdateNeeded(schemeVersion: Int, expectedVersion: Int, onUpdate: Callback, onClose: Callback)
+    case appUpdateNeeded(schemaVersion: Int, onUpdate: Callback, onClose: Callback)
 }
 
 @Observable
@@ -99,10 +99,9 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
         isLoading = false
         
         switch status {
-        case .schemaNotSupported(let schemeVersion, let expectedVersion):
+        case .schemaNotSupported(let schemaVersion):
             destination = .appUpdateNeeded(
-                schemeVersion: schemeVersion,
-                expectedVersion: expectedVersion,
+                schemaVersion: schemaVersion,
                 onUpdate: { [weak self] in
                     self?.onUpdateApp()
                 },

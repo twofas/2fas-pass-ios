@@ -159,8 +159,8 @@ extension BackupAddWebDAVPresenter {
             destination = .upgradePlanPrompt
         case .passwordChanged:
             uriError = T.syncStatusErrorPasswordChanged
-        case .schemaNotSupported(let schemeVersion, _):
-            uriError = T.cloudSyncInvalidSchemaErrorMsg(schemeVersion)
+        case .schemaNotSupported(let schemaVersion):
+            uriError = T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
         }
     }
 }
