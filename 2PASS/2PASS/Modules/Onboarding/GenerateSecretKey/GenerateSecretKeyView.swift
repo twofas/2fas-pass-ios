@@ -173,8 +173,7 @@ struct GenerateSecretKeyView: View {
             .frame(maxWidth: .infinity)
             .foregroundStyle(.baseStatic0)
             .background {
-                RoundedRectangle(cornerRadius: Constants.Button.cornerRadius)
-                    .fill(.brand500)
+                tapAndHoldLongPressShape
                     .opacity(generateSecretKeyAnimator.isGenerating ? Constants.Button.tapOpacity : 1)
             }
             .onLongPressGesture(
@@ -188,6 +187,17 @@ struct GenerateSecretKeyView: View {
             .animation(.smooth(duration: Constants.Animation.tapScaleDuration), value: generateSecretKeyAnimator.isGenerating)
             .sensoryFeedback(.selection, trigger: generateSecretKeyAnimator.isGenerating)
             .disabled(presenter.isFinished)
+    }
+    
+    @ViewBuilder
+    private var tapAndHoldLongPressShape: some View {
+        if #available(iOS 26, *) {
+            Capsule()
+                .fill(.brand500)
+        } else {
+            RoundedRectangle(cornerRadius: Constants.Button.cornerRadius)
+                .fill(.brand500)
+        }
     }
 }
 
