@@ -22,6 +22,20 @@ extension View {
     }
 }
 
+extension View {
+    
+    @ViewBuilder
+    public func slideNavigationButtonLabel() -> some View {
+        if #available(iOS 26, *) {
+            font(.system(size: 22, weight: .light))
+                .frame(width: 30, height: 30)
+        } else {
+            font(.system(size: 22))
+        }
+    }
+        
+}
+
 public struct SlideNavigationStack<RootView: View>: View {
     private var root: RootView
 
@@ -39,17 +53,37 @@ public struct SlideNavigationStack<RootView: View>: View {
         SlideNavigationController_UIKit(path: path, root: root)
             .overlay(alignment: .top) {
                 HStack {
-                    Button {
-                        toolbarItem = nil
-                        back()
-                    } label: {
-                        Label(title: { Text("Back") }, icon: { Image(systemName: "chevron.backward").font(.title2) })
-                            .labelStyle(ButtonLabelStyle())
+                    if #available(iOS 26, *) {
+                        Button {
+                            toolbarItem = nil
+                            back()
+                        } label: {
+                            Image(systemName: "chevron.backward")
+                                .slideNavigationButtonLabel()
+                        }
+                        .tint(nil)
+                        .buttonStyle(.glass)
+                        .buttonBorderShape(.circle)
+                    } else {
+                        Button {
+                            toolbarItem = nil
+                            back()
+                        } label: {
+                            Label(title: { Text("Back") }, icon: { Image(systemName: "chevron.backward").font(.title2) })
+                                .labelStyle(ButtonLabelStyle())
+                        }
                     }
                     
                     Spacer()
                     
-                    toolbarItem?.view
+                    if #available(iOS 26, *) {
+                        toolbarItem?.view
+                            .tint(nil)
+                            .buttonStyle(.glass)
+                            .buttonBorderShape(.circle)
+                    } else {
+                        toolbarItem?.view
+                    }
                 }
                 .animation(.easeInOut, value: toolbarItem != nil)
                 .padding(.horizontal, Spacing.s)
