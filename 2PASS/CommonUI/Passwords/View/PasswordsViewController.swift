@@ -80,22 +80,44 @@ private extension PasswordsViewController {
     }
     
     func updateNavigationBarButtons() {
-        let filterIconName = presenter.selectedFilterTag != nil 
-            ? "line.3.horizontal.decrease.circle.fill" 
-            : "line.3.horizontal.decrease.circle"
-        
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(systemName: "plus.circle"),
+        if #available(iOS 26, *) {
+            let addButton = UIBarButtonItem(
+                image: UIImage(systemName: "plus"),
                 style: .plain,
                 target: self,
                 action: #selector(addAction)
-            ),
-            UIBarButtonItem(
-                image: UIImage(systemName: filterIconName),
+            )
+            
+            let filterButton = UIBarButtonItem(
+                image: UIImage(systemName: "line.3.horizontal.decrease"),
                 menu: filterMenu()
             )
-        ]
+            filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
+            filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
+            
+            navigationItem.rightBarButtonItems = [
+                addButton,
+                .fixedSpace(0),
+                filterButton
+            ]
+        } else {
+            let filterIconName = presenter.selectedFilterTag != nil
+            ? "line.3.horizontal.decrease.circle.fill"
+            : "line.3.horizontal.decrease.circle"
+            
+            navigationItem.rightBarButtonItems = [
+                UIBarButtonItem(
+                    image: UIImage(systemName: "plus.circle"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(addAction)
+                ),
+                UIBarButtonItem(
+                    image: UIImage(systemName: filterIconName),
+                    menu: filterMenu()
+                )
+            ]
+        }
     }
     
     func setupDelegates() {
