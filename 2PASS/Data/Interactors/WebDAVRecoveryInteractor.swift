@@ -43,6 +43,7 @@ public protocol WebDAVRecoveryInteracting: AnyObject {
         completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
     )
     func saveConfiguration(baseURL: URL, allowTLSOff: Bool, vaultID: VaultID, login: String?, password: String?)
+    func resetConfiguration()
 }
 
 final class WebDAVRecoveryInteractor {
@@ -204,7 +205,7 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
         }
     }
     
-    func saveConfiguration(baseURL: URL, allowTLSOff: Bool, vaultID: VaultID, login: String?, password: String?) {
+    func saveConfiguration(baseURL: URL, allowTLSOff: Bool, vaultID: VaultID, login: String?, password: String?) {        
         mainRepository.webDAVSaveSavedConfig(
             .init(
                 baseURL: baseURL.absoluteString,
@@ -217,5 +218,10 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
             )
         )
         mainRepository.webDAVSetIsConnected(true)
+    }
+    
+    func resetConfiguration() {
+        mainRepository.webDAVClearConfig()
+        mainRepository.webDAVClearIsConnected()
     }
 }
