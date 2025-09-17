@@ -44,40 +44,6 @@ final class PasswordsViewController: UIViewController {
         super.viewWillDisappear(animated)
         stopSafeAreaKeyboardAdjustment()
     }
-}
-
-private extension PasswordsViewController {
-    @objc
-    func addAction() {  
-        presenter.onAdd()
-    }
-    
-    @objc
-    func cancel() {
-        presenter.onCancel()
-    }
-    
-    func setupPasswordsList() {
-        layout = makeLayout()
-        let passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
-        self.passwordsList = passwordsList
-        view.addSubview(passwordsList)
-        passwordsList.pinToParent()
-        passwordsList.configure(isAutoFillExtension: presenter.isAutoFillExtension)
-    }
-
-    func setupNavigationItems() {
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        navigationItem.largeTitleDisplayMode = .always
-        title = T.homeTitle
-        
-        updateNavigationBarButtons()
-        
-        if presenter.isAutoFillExtension {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
-        }
-    }
     
     func updateNavigationBarButtons() {
         if #available(iOS 26, *) {
@@ -124,6 +90,40 @@ private extension PasswordsViewController {
             ]
         }
     }
+}
+
+private extension PasswordsViewController {
+    @objc
+    func addAction() {  
+        presenter.onAdd()
+    }
+    
+    @objc
+    func cancel() {
+        presenter.onCancel()
+    }
+    
+    func setupPasswordsList() {
+        layout = makeLayout()
+        let passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
+        self.passwordsList = passwordsList
+        view.addSubview(passwordsList)
+        passwordsList.pinToParent()
+        passwordsList.configure(isAutoFillExtension: presenter.isAutoFillExtension)
+    }
+
+    func setupNavigationItems() {
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.largeTitleDisplayMode = .always
+        title = T.homeTitle
+        
+        updateNavigationBarButtons()
+        
+        if presenter.isAutoFillExtension {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
+        }
+    }
     
     func setupDelegates() {
         searchController.searchBarDelegate = self
@@ -135,7 +135,13 @@ private extension PasswordsViewController {
         addChild(emptySearchViewController)
         view.addSubview(emptySearchViewController.view)
         emptySearchViewController.view.backgroundColor = .clear
-        emptySearchViewController.view?.pinToSafeAreaParentCenter()
+        
+        if presenter.isAutoFillExtension, #available(iOS 26, *) {
+            emptySearchViewController.view?.pinToParentCenter()
+        } else {
+            emptySearchViewController.view?.pinToSafeAreaParentCenter()
+        }
+        
         emptySearchViewController.didMove(toParent: self)
         
         emptySearchList = emptySearchViewController.view
@@ -150,7 +156,13 @@ private extension PasswordsViewController {
         addChild(emptyListViewController)
         view.addSubview(emptyListViewController.view)
         emptyListViewController.view.backgroundColor = .clear
-        emptyListViewController.view?.pinToSafeAreaParentCenter()
+        
+        if presenter.isAutoFillExtension, #available(iOS 26, *) {
+            emptyListViewController.view?.pinToParentCenter()
+        } else {
+            emptyListViewController.view?.pinToSafeAreaParentCenter()
+        }
+        
         emptyListViewController.didMove(toParent: self)
         
         emptyList = emptyListViewController.view
