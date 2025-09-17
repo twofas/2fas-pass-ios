@@ -388,13 +388,24 @@ struct AddPasswordView: View {
         let mostUsedUsernames = presenter.mostUsedUsernamesForKeyboard()
         guard mostUsedUsernames.isEmpty == false else { return }
         
-        let frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
+        let frame: CGRect
+        if #available(iOS 26, *) {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeightLiquidGlass)
+        } else {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
+        }
 
         let inputView = UIInputView(frame: frame, inputViewStyle: .keyboard)
         
         let buttons = mostUsedUsernames.map { username in
-            var config = UIButton.Configuration.plain()
-            config.baseForegroundColor = .label
+            var config: UIButton.Configuration
+            if #available(iOS 26, *) {
+                config = UIButton.Configuration.glass()
+            } else {
+                config = UIButton.Configuration.plain()
+                config.baseForegroundColor = .label
+            }
+            
             config.titleAlignment = .center
             config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { container in
                 var container = container
@@ -410,8 +421,14 @@ struct AddPasswordView: View {
             return button
         }
         
-        var config = UIButton.Configuration.plain()
-        config.baseForegroundColor = .label
+        var config: UIButton.Configuration
+        if #available(iOS 26, *) {
+            config = UIButton.Configuration.glass()
+        } else {
+            config = UIButton.Configuration.plain()
+            config.baseForegroundColor = .label
+        }
+        
         let showMoreButton = UIButton(configuration: config, primaryAction: UIAction(image: UIImage(systemName: "person.badge.key"), handler: { _ in
             showMostUsed = true
         }))
@@ -425,15 +442,23 @@ struct AddPasswordView: View {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         inputView.addSubview(stackView)
         
+        let isLiquidGlass: Bool
+        if #available(iOS 26, *) {
+            isLiquidGlass = true
+            stackView.spacing = 8
+        } else {
+            isLiquidGlass = false
+        }
+        
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor),
-            stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor),
-            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor),
+            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor, constant: isLiquidGlass ? 8 : 0),
+            stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: isLiquidGlass ? 13 : 5),
+            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -8 : 0),
+            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor, constant: isLiquidGlass ? -8 : 0),
             
-            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: -4),
-            showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor)
+            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: isLiquidGlass ? -12 : -4),
+            showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: isLiquidGlass ? 13 : 5),
+            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -8 : 0)
         ])
 
         textField.inputAccessoryView = inputView
@@ -549,10 +574,17 @@ struct AddPasswordView: View {
                             }
                         }
                     }
+                    .scrollBounceBehavior(.basedOnSize)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button(T.commonClose.localizedKey, action: { showMostUsed = false }))
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    ToolbarCancelButton {
+                        showMostUsed = false
+                    }
+                }
+            }
             .navigationTitle(T.loginUsernameMostUsedHeader.localizedKey)
         }
         .presentationDragIndicator(.hidden)
