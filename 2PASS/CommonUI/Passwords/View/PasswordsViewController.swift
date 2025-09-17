@@ -88,6 +88,11 @@ private extension PasswordsViewController {
                 action: #selector(addAction)
             )
             
+            if presenter.itemsCount == 0 {
+                addButton.tintColor = .brand500
+                addButton.style = .prominent
+            }
+            
             let filterButton = UIBarButtonItem(
                 image: UIImage(systemName: "line.3.horizontal.decrease"),
                 menu: filterMenu()
@@ -107,7 +112,7 @@ private extension PasswordsViewController {
             
             navigationItem.rightBarButtonItems = [
                 UIBarButtonItem(
-                    image: UIImage(systemName: "plus.circle"),
+                    image: UIImage(systemName: presenter.itemsCount == 0 ? "plus.circle.fill" : "plus.circle"),
                     style: .plain,
                     target: self,
                     action: #selector(addAction)
@@ -129,6 +134,7 @@ private extension PasswordsViewController {
         let emptySearchViewController = UIHostingController(rootView: EmptySearchView())
         addChild(emptySearchViewController)
         view.addSubview(emptySearchViewController.view)
+        emptySearchViewController.view.backgroundColor = .clear
         emptySearchViewController.view?.pinToSafeAreaParentCenter()
         emptySearchViewController.didMove(toParent: self)
         
@@ -143,6 +149,7 @@ private extension PasswordsViewController {
         )
         addChild(emptyListViewController)
         view.addSubview(emptyListViewController.view)
+        emptyListViewController.view.backgroundColor = .clear
         emptyListViewController.view?.pinToSafeAreaParentCenter()
         emptyListViewController.didMove(toParent: self)
         
