@@ -27,6 +27,7 @@ private struct Constants {
         static let cornerRadius: CGFloat = 10
         static let height: CGFloat = 50
         static let tapScale: CGFloat = 0.96
+        static let tapScaleLiquidGlass: CGFloat = 0.92
         static let tapOpacity: CGFloat = 0.9
     }
     
@@ -156,7 +157,7 @@ struct GenerateSecretKeyView: View {
                 .frame(maxWidth: .infinity)
                 .transition(.move(edge: .trailing))
             } else {
-                tapAndHoldLongPressView()
+                tapAndHoldLongPressView
                     .padding(.horizontal, Spacing.xl)
                     .readableContentMargins()
                     .frame(maxWidth: .infinity)
@@ -167,7 +168,7 @@ struct GenerateSecretKeyView: View {
     }
     
     @ViewBuilder
-    private func tapAndHoldLongPressView() -> some View {
+    private var tapAndHoldLongPressView: some View {
         Text(T.onboardingGenerateSecretKeyCta.localizedKey)
             .frame(height: Constants.Button.height)
             .frame(maxWidth: .infinity)
@@ -183,10 +184,17 @@ struct GenerateSecretKeyView: View {
                     generateSecretKeyAnimator.onPressingChanged(to: status)
                 }
             )
-            .scaleEffect(generateSecretKeyAnimator.isGenerating ? Constants.Button.tapScale : 1)
-            .animation(.smooth(duration: Constants.Animation.tapScaleDuration), value: generateSecretKeyAnimator.isGenerating)
             .sensoryFeedback(.selection, trigger: generateSecretKeyAnimator.isGenerating)
             .disabled(presenter.isFinished)
+            .modify {
+                if #available(iOS 26, *) {
+                    $0.glassEffect(.regular.interactive())
+                        .scaleEffect(generateSecretKeyAnimator.isGenerating ? Constants.Button.tapScaleLiquidGlass : 1)
+                } else {
+                    $0.scaleEffect(generateSecretKeyAnimator.isGenerating ? Constants.Button.tapScale : 1)
+                }
+            }
+            .animation(.smooth(duration: Constants.Animation.tapScaleDuration), value: generateSecretKeyAnimator.isGenerating)
     }
     
     @ViewBuilder

@@ -94,28 +94,37 @@ public struct TwoFASButtonStyle: ButtonStyle {
     
     @ViewBuilder
     public func makeBody(configuration: Configuration) -> some View {
-        switch layout {
-        case .rectangle:
-            base(configuration: configuration)
-                .background(
-                    baseBackgroundShape
-                        .foregroundStyle(backgroundColor(for: configuration))
-                )
-                .overlay {
-                    baseOverlayShape
-                        .opacity(configuration.isPressed ? Constants.tapWhiteOpacity : 0)
-                }
-        case .circle:
-            base(configuration: configuration)
-                .background(
-                    Circle()
-                        .foregroundStyle(backgroundColor(for: configuration))
-                )
-                .overlay {
-                    Circle()
-                        .fill(Color.white)
-                        .opacity(configuration.isPressed ? Constants.tapWhiteOpacity : 0)
-                }
+        Group {
+            switch layout {
+            case .rectangle:
+                base(configuration: configuration)
+                    .background(
+                        baseBackgroundShape
+                            .foregroundStyle(backgroundColor(for: configuration))
+                    )
+                    .overlay {
+                        baseOverlayShape
+                            .opacity(configuration.isPressed ? Constants.tapWhiteOpacity : 0)
+                    }
+            case .circle:
+                base(configuration: configuration)
+                    .background(
+                        Circle()
+                            .foregroundStyle(backgroundColor(for: configuration))
+                    )
+                    .overlay {
+                        Circle()
+                            .fill(Color.white)
+                            .opacity(configuration.isPressed ? Constants.tapWhiteOpacity : 0)
+                    }
+            }
+        }
+        .modify {
+            if #available(iOS 26, *), colorStyle != .borderless {
+                $0.glassEffect(.regular.interactive())
+            } else {
+                $0
+            }
         }
     }
     
