@@ -15,6 +15,7 @@ struct SyncView: View {
         SettingsDetailsForm(T.settingsEntryCloudSync.localizedKey) {
             Section {
                 Toggle(T.settingsCloudSyncIcloudLabel.localizedKey, isOn: $presenter.icloudSyncEnabled)
+                    .tint(.accentColor)
                 
                 Button {
                     presenter.onWebDAV()
