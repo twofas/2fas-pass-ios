@@ -213,6 +213,8 @@ internal enum T {
   internal static let cloudVaultRemovingFailure = T.tr("Localizable", "cloud_vault_removing_failure", fallback: "Vault deletion failed")
   /// Add
   internal static let commonAdd = T.tr("Localizable", "common_add", fallback: "Add")
+  /// Back
+  internal static let commonBack = T.tr("Localizable", "common_back", fallback: "Back")
   /// Cancel
   internal static let commonCancel = T.tr("Localizable", "common_cancel", fallback: "Cancel")
   /// Close
@@ -313,10 +315,10 @@ internal enum T {
   internal static let connectModalErrorAppUpdateRequiredCta = T.tr("Localizable", "connect_modal_error_app_update_required_cta", fallback: "Update")
   /// Update app
   internal static let connectModalErrorAppUpdateRequiredCtaAndroid = T.tr("Localizable", "connect_modal_error_app_update_required_cta_android", fallback: "Update app")
-  /// Please update the app
-  internal static let connectModalErrorAppUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_app_update_required_subtitle", fallback: "Please update the app")
-  /// App update required
-  internal static let connectModalErrorAppUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_app_update_required_title", fallback: "App update required")
+  /// Please update the app to connect to the browser extension
+  internal static let connectModalErrorAppUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_app_update_required_subtitle", fallback: "Please update the app to connect to the browser extension")
+  /// Update required
+  internal static let connectModalErrorAppUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_app_update_required_title", fallback: "Update required")
   /// Update browser extension
   internal static let connectModalErrorBrowserExtensionUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_browser_extension_update_required_subtitle", fallback: "Update browser extension")
   /// Browser extension update required
