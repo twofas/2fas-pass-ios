@@ -68,7 +68,7 @@ struct AddPasswordView: View {
                         presenter.onCustomizeIcon()
                     }
                     .controlSize(.small)
-                    .buttonStyle(.bezeled(fillSpace: false))
+                    .buttonStyle(.bezeled(fillSpace: false, allowGlassEffect: false))
                 }
                 
                 Spacer()

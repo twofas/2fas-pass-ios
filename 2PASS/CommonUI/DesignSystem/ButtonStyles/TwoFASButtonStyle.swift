@@ -31,8 +31,8 @@ public extension ButtonStyle where Self == TwoFASButtonStyle {
         TwoFASButtonStyle(colorStyle: .bezeled, layout: .circle)
     }
     
-    static func bezeled(fillSpace: Bool) -> TwoFASButtonStyle {
-        TwoFASButtonStyle(colorStyle: .bezeled, fillSpace: fillSpace)
+    static func bezeled(fillSpace: Bool, allowGlassEffect: Bool = true) -> TwoFASButtonStyle {
+        TwoFASButtonStyle(colorStyle: .bezeled, fillSpace: fillSpace, allowGlassEffect: allowGlassEffect)
     }
 }
 
@@ -82,11 +82,13 @@ public struct TwoFASButtonStyle: ButtonStyle {
     private let colorStyle: ColorStyle
     private let layout: ButtonLayoutType
     private let fillSpace: Bool
+    private let allowGlassEffect: Bool
     
-    init(colorStyle: ColorStyle, layout: ButtonLayoutType = .rectangle, fillSpace: Bool = false) {
+    init(colorStyle: ColorStyle, layout: ButtonLayoutType = .rectangle, fillSpace: Bool = false, allowGlassEffect: Bool = true) {
         self.layout = layout
         self.fillSpace = fillSpace
         self.colorStyle = colorStyle
+        self.allowGlassEffect = allowGlassEffect
     }
     
     @Environment(\.isEnabled) private var isEnabled
@@ -120,7 +122,7 @@ public struct TwoFASButtonStyle: ButtonStyle {
             }
         }
         .modify {
-            if #available(iOS 26, *), colorStyle != .borderless {
+            if #available(iOS 26, *), colorStyle != .borderless, allowGlassEffect {
                 $0.glassEffect(.regular.interactive())
             } else {
                 $0
