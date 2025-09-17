@@ -14,6 +14,7 @@ private struct Constants {
     static let minHeightNotes: CGFloat = 80
     static let inputAccessoryHeight: CGFloat = 44
     static let matchingRuleSheetHeight: CGFloat = 420
+    static let matchingRuleSheetHeightLiquidGlass: CGFloat = 460
 }
 
 struct AddPasswordView: View {
@@ -458,12 +459,26 @@ struct AddPasswordView: View {
                     }
                 }
                 .scrollBounceBehavior(.basedOnSize)
+                .modify {
+                    if #available(iOS 26, *) {
+                        $0.contentMargins(.top, Spacing.xxl4)
+                    } else {
+                        $0
+                    }
+                }                
             }
             
             HStack {
                 Text(T.uriSettingsMatchingRuleHeader.localizedKey)
                     .font(.title3Emphasized)
                     .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    .modify {
+                        if #available(iOS 26, *) {
+                            $0.padding(.leading, Spacing.s)
+                        } else {
+                            $0
+                        }
+                    }
             
                 Spacer()
                 
@@ -471,9 +486,22 @@ struct AddPasswordView: View {
                     showURIMatchSettings = false
                 }
             }
+            .modify {
+                if #available(iOS 26, *) {
+                    $0.padding(.top, Spacing.xs)
+                } else {
+                    $0
+                }
+            }
             .padding(Spacing.l)
         }
-        .presentationDetents([.height(Constants.matchingRuleSheetHeight)])
+        .modify {
+            if #available(iOS 26, *) {
+                $0.presentationDetents([.height(Constants.matchingRuleSheetHeightLiquidGlass)])
+            } else {
+                $0.presentationDetents([.height(Constants.matchingRuleSheetHeight)])
+            }
+        }
     }
     
     @ViewBuilder
