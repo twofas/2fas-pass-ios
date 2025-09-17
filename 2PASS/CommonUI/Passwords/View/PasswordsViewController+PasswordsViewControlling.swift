@@ -52,6 +52,8 @@ extension PasswordsViewController: PasswordsViewControlling {
         guard emptyList?.isHidden == true else { return }
         emptyList?.alpha = 0
         emptyList?.isHidden = false
+        emptySearchList?.alpha = 1
+        emptySearchList?.isHidden = true
         UIView.animate(withDuration: Animation.duration, animations: {
             self.emptyList?.alpha = 1
         })
@@ -62,6 +64,8 @@ extension PasswordsViewController: PasswordsViewControlling {
         VoiceOver.say(T.loginSearchNoResultsTitle)
         emptySearchList?.alpha = 0
         emptySearchList?.isHidden = false
+        emptyList?.alpha = 0
+        emptyList?.isHidden = true
         UIView.animate(
             withDuration: Animation.duration,
             delay: 0,
