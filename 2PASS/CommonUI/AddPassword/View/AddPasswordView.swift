@@ -13,6 +13,7 @@ private struct Constants {
     static let iconPlaceholderCornerRadius: CGFloat = 16
     static let minHeightNotes: CGFloat = 80
     static let inputAccessoryHeight: CGFloat = 44
+    static let inputAccessoryHeightLiquidGlass: CGFloat = 52
     static let matchingRuleSheetHeight: CGFloat = 420
     static let matchingRuleSheetHeightLiquidGlass: CGFloat = 460
 }
@@ -327,12 +328,23 @@ struct AddPasswordView: View {
         textField.inputAssistantItem.leadingBarButtonGroups = []
         textField.inputAssistantItem.trailingBarButtonGroups = []
         
-        let frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
-
+        let frame: CGRect
+        if #available(iOS 26.0, *) {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeightLiquidGlass)
+        } else {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
+        }
+        
         let inputView = UIInputView(frame: frame, inputViewStyle: .keyboard)
         
-        var config = UIButton.Configuration.plain()
-        config.baseForegroundColor = .label
+        var config: UIButton.Configuration
+        if #available(iOS 26.0, *) {
+            config = UIButton.Configuration.glass()
+        } else {
+            config = UIButton.Configuration.plain()
+            config.baseForegroundColor = .label
+        }
+        
         config.imagePadding = 8
         
         let feedback = UIImpactFeedbackGenerator()
@@ -351,8 +363,14 @@ struct AddPasswordView: View {
         stackView.distribution = .fillEqually
         
         inputView.addSubview(stackView)
-        stackView.pinToParent(with: .init(top: 5, left: 0, bottom: 0, right: 0))
-
+        
+        if #available(iOS 26.0, *) {
+            stackView.spacing = 8
+            stackView.pinToParent(with: .init(top: 5, left: 8, bottom: 8, right: 8))
+        } else {
+            stackView.pinToParent(with: .init(top: 5, left: 0, bottom: 0, right: 0))
+        }
+    
         textField.inputAccessoryView = inputView
     }
     
