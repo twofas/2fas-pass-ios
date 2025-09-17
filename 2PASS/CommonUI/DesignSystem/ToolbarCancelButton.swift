@@ -18,6 +18,7 @@ public struct ToolbarCancelButton: View {
             Button(symbol: Image(systemName: "xmark")) {
                 action()
             }
+            .tint(nil)
         } else {
             Button(T.commonCancel.localizedKey) {
                 action()
