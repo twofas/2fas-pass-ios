@@ -149,10 +149,14 @@ struct SecurityTierHelpView: View {
     }
     
     private func highlight(@ViewBuilder content: () -> some View) -> some View {
-        content()
-            .padding(Spacing.l)
-            .background(Color(UIColor.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+        HStack {
+            content()
+            Spacer(minLength: 0)
+        }
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
     
     private func tierDescription(title: Text, description: Text, figure: Image) -> some View {
