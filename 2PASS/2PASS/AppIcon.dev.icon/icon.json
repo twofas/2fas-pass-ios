@@ -10,6 +10,19 @@
           "name" : "Vector 3"
         },
         {
+          "fill-specializations" : [
+            {
+              "value" : "none"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "none"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "none"
+            }
+          ],
           "image-name" : "caution-tape.svg",
           "name" : "caution-tape"
         }
