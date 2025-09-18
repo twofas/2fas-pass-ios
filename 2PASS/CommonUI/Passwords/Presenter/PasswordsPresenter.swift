@@ -42,6 +42,11 @@ final class PasswordsPresenter {
         }
     }
     
+    var fillAddButton: Bool {
+        (autoFillEnvironment?.serviceIdentifiers.isEmpty == false && hasSuggestedItems == false)
+        || (itemsCount == 0 && selectedFilterTag == nil)
+    }
+    
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
 

@@ -54,7 +54,7 @@ final class PasswordsViewController: UIViewController {
                 action: #selector(addAction)
             )
             
-            if presenter.itemsCount == 0 {
+            if presenter.fillAddButton {
                 addButton.tintColor = .brand500
                 addButton.style = .prominent
             }
@@ -78,7 +78,7 @@ final class PasswordsViewController: UIViewController {
             
             navigationItem.rightBarButtonItems = [
                 UIBarButtonItem(
-                    image: UIImage(systemName: presenter.itemsCount == 0 ? "plus.circle.fill" : "plus.circle"),
+                    image: UIImage(systemName: presenter.fillAddButton ? "plus.circle.fill" : "plus.circle"),
                     style: .plain,
                     target: self,
                     action: #selector(addAction)
