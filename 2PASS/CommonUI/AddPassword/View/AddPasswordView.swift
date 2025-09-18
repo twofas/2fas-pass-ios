@@ -13,7 +13,7 @@ private struct Constants {
     static let iconPlaceholderCornerRadius: CGFloat = 16
     static let minHeightNotes: CGFloat = 80
     static let inputAccessoryHeight: CGFloat = 44
-    static let inputAccessoryHeightLiquidGlass: CGFloat = 52
+    static let inputAccessoryHeightLiquidGlass: CGFloat = 64
     static let matchingRuleSheetHeight: CGFloat = 420
     static let matchingRuleSheetHeightLiquidGlass: CGFloat = 460
 }
@@ -365,8 +365,8 @@ struct AddPasswordView: View {
         inputView.addSubview(stackView)
         
         if #available(iOS 26.0, *) {
-            stackView.spacing = 8
-            stackView.pinToParent(with: .init(top: 5, left: 8, bottom: 8, right: 8))
+            stackView.spacing = 16
+            stackView.pinToParent(with: .init(top: 5, left: 16, bottom: 12, right: 16))
         } else {
             stackView.pinToParent(with: .init(top: 5, left: 0, bottom: 0, right: 0))
         }
@@ -418,6 +418,7 @@ struct AddPasswordView: View {
                 focusField = presenter.password.isEmpty ? .password : nil
             }))
             button.titleLabel?.textAlignment = .center
+            button.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
             return button
         }
         
@@ -451,14 +452,15 @@ struct AddPasswordView: View {
         }
         
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor, constant: isLiquidGlass ? 8 : 0),
-            stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: isLiquidGlass ? 13 : 5),
-            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -8 : 0),
-            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor, constant: isLiquidGlass ? -8 : 0),
+            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor, constant: isLiquidGlass ? 16 : 0),
+            stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
+            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
+            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor, constant: isLiquidGlass ? -16 : 0),
             
-            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: isLiquidGlass ? -12 : -4),
-            showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: isLiquidGlass ? 13 : 5),
-            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -8 : 0)
+            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: isLiquidGlass ? -20 : -4),
+            showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
+            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
+            showMoreButton.widthAnchor.constraint(equalTo: showMoreButton.heightAnchor)
         ])
 
         textField.inputAccessoryView = inputView
