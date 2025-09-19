@@ -68,6 +68,10 @@ final class AddPasswordPresenter {
         interactor.hasPasswords
     }
     
+    var showRemoveItemButton: Bool {
+        isEdit && interactor.changeRequest == nil
+    }
+    
     var nameChanged: Bool {
         guard let initialPasswordData else {
             return false
