@@ -178,7 +178,7 @@ final class AddPasswordPresenter {
             }
             
             if case .domainIcon(let domain) = passwordData.iconType, let domain {
-                selectedURIIconIndex = passwordData.uris?.firstIndex(where: {
+                selectedURIIconIndex = (interactor.changeRequest?.uris ?? passwordData.uris)?.firstIndex(where: {
                     interactor.extractDomain(from: $0.uri) == domain
                 })
             }
