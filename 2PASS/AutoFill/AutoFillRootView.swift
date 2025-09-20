@@ -15,7 +15,7 @@ struct AutoFillRootView: View {
         switch presenter.startupResult {
         case .enterPassword, .enterWords, .selectVault:
             noVaultView
-        case .login:
+        case .ready, .login:
             if presenter.isLogged {
                 AutoFillPasswordsListView(
                     context: presenter.extensionContext,

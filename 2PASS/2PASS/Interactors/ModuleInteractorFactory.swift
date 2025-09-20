@@ -14,7 +14,6 @@ extension ModuleInteractorFactory {
     func rootModuleInteractor() -> RootModuleInteracting {
         RootModuleInteractor(
             rootInteractor: InteractorFactory.shared.rootInteractor(),
-            appStateInteractor: InteractorFactory.shared.appStateInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             securityInteractor: InteractorFactory.shared.securityInteractor(),
             syncInteractor: InteractorFactory.shared.cloudSyncInteractor(),

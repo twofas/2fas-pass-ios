@@ -12,6 +12,7 @@ public enum StartupInteractorStartResult {
     case enterWords
     case enterPassword
     case login
+    case ready
 }
 
 public enum StartupInteractorSetWordsResult {
@@ -164,7 +165,7 @@ extension StartupInteractor: StartupInteracting {
         
         protectionInteractor.selectVault()
         
-        return .login
+        return .ready
     }
     
     func setupEncryptionElements() {

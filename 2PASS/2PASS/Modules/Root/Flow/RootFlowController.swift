@@ -11,6 +11,7 @@ import CommonUI
 import SwiftUI
 
 extension UIWindow.Level {
+    static let cover = UIWindow.Level.normal + 3
     static let login = UIWindow.Level.normal + 2
     static let appNotifications = UIWindow.Level.normal + 1
     static let toasts = UIWindow.Level.alert
@@ -27,6 +28,7 @@ protocol RootFlowControlling: AnyObject {
     func toLogin(coldRun: Bool)
     func toStorageError(error: String)
     func toRemoveCover(animated: Bool)
+    func toRemoveLogin(animated: Bool)
     func toDismissKeyboard()
     func toAppNotification(_ notification: AppNotification)
     func toOpenExternalFileError()
@@ -34,19 +36,25 @@ protocol RootFlowControlling: AnyObject {
 
 final class RootFlowController: FlowController {
     private weak var parent: RootFlowControllerParent?
-    private weak var coverViewController: LoginViewController?
+    private weak var coverViewController: UIViewController?
+    private weak var loginViewController: LoginViewController?
     private weak var window: UIWindow?
     private let appNotificationsPresenter = AppNotificationsPresenter(windowLevel: .appNotifications)
     
     private let coverWindow: UIWindow = {
         let window = UIWindow()
-        window.windowLevel = .login
+        window.windowLevel = .cover
         window.backgroundColor = .clear
         return window
     }()
     
-    private var isLoginInCoverView = false
-    
+    private let loginWindow: UIWindow = {
+        let window = UIWindow()
+        window.windowLevel = .login
+        window.backgroundColor = .clear
+        return window
+    }()
+        
     private var mainViewController: MainViewController?
     private var activeViewController: UIViewController?
     
@@ -82,10 +90,10 @@ extension RootFlowController: RootFlowControlling {
     func toCover() {
         let storyboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "LaunchScreen")
-        guard let loginViewController = vc as? LoginViewController else { return }
-        coverViewController = loginViewController
-        window?.addSubview(loginViewController.view)
-        loginViewController.view.pinToParent()
+        coverViewController = vc
+        coverWindow.addSubview(vc.view)
+        vc.view.pinToParent()
+        coverWindow.isHidden = false
     }
     
     func toEnterPassword() {
@@ -97,37 +105,23 @@ extension RootFlowController: RootFlowControlling {
     }
     
     func toMain() {
-        // TODO: Add removing e.g. for login
         guard mainViewController == nil else { return }
         mainViewController = MainFlowController.embedAsRoot(in: viewController, parent: self)
     }
     
     func toLogin(coldRun: Bool) {
-//        guard !isLoginInCoverView else {
-//            if canUseBiometry {
-//                coverViewController?.presenter?.startBiometryIfAvailable()
-//            }
-//            return
-//        }
-        
-        if coverViewController != nil {
-            removeCover()
-        }
+        toRemoveCover(animated: true)
+        guard loginViewController == nil else { return }
                 
-        let coverViewController = LoginFlowController.setAsCover(
-            in: coverWindow,
+        let loginViewController = LoginFlowController.setAsCover(
+            in: loginWindow,
             coldRun: coldRun,
             parent: self
         )
         
-        self.coverViewController = coverViewController
-        isLoginInCoverView = true
-        
-        coverWindow.makeKeyAndVisible()
-        
-//        if canUseBiometry {
-//            coverViewController.presenter.startBiometryIfAvailable()
-//        }
+        self.loginViewController = loginViewController
+        loginWindow.isHidden = false
+        loginWindow.makeKeyAndVisible()
     }
     
     func toStorageError(error: String) {
@@ -136,7 +130,21 @@ extension RootFlowController: RootFlowControlling {
         viewController.present(alert, animated: false, completion: nil)
     }
     
+    func toRemoveLogin(animated: Bool) {
+        guard loginViewController != nil else { return }
+        guard animated else {
+            removeLogin()
+            return
+        }
+        UIView.animate(withDuration: Animation.duration, delay: 0, options: .curveEaseInOut) {
+            self.loginViewController?.view.alpha = 0
+        } completion: { _ in
+            self.removeLogin()
+        }
+    }
+    
     func toRemoveCover(animated: Bool) {
+        guard coverViewController != nil else { return }
         guard animated else {
             removeCover()
             return
@@ -235,7 +243,6 @@ extension RootFlowController: MainFlowControllerParent {
         coverViewController?.view.removeFromSuperview()
         coverViewController = nil
         coverWindow.isHidden = true
-        isLoginInCoverView = false
         window?.makeKeyAndVisible()
     }
 }
@@ -247,7 +254,9 @@ extension RootFlowController: LoginFlowControllerParent {
     }
     
     private func removeLogin() {
-        // TODO: Remove VC!
-        toRemoveCover(animated: true)
+        loginViewController?.view.removeFromSuperview()
+        loginViewController = nil
+        loginWindow.isHidden = true
+        window?.makeKeyAndVisible()
     }
 }

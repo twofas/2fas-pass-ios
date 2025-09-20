@@ -25,7 +25,7 @@ protocol RootModuleInteracting: AnyObject {
     func applicationDidBecomeActive(didCopyToken: @escaping Callback)
     func applicationWillTerminate()
         
-    func lockApplication()
+    func logoutFromApp()
     
     func start() async -> StartupInteractorStartResult
     
@@ -104,7 +104,7 @@ extension RootModuleInteractor: RootModuleInteracting {
         await startupInteractor.start()
     }
     
-    func lockApplication() {
+    func logoutFromApp() {
         rootInteractor.lockApplication()
     }
     

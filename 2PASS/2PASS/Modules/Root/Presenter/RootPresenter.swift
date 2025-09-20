@@ -65,7 +65,7 @@ final class RootPresenter {
             Log("App: Token copied")
         }
         removeCover(animated: true)
-        toLogin()
+        handleViewFlow()
     }
     
     func applicationWillResignActive() {
@@ -75,6 +75,7 @@ final class RootPresenter {
         if interactor.isUserSetUp && interactor.canLockApp {
             installCover()
         }
+        handleViewFlow()
     }
     
     func applicationDidEnterBackground() {
@@ -82,9 +83,8 @@ final class RootPresenter {
         
         toastPresenter.dismissAll(animated: false)
         
-        interactor.lockApplication()
-        removeCover()
-        toLogin()
+        interactor.logoutFromApp()
+        handleViewFlow()
     }
     
     func applicationWillTerminate() {
@@ -145,32 +145,29 @@ final class RootPresenter {
         let coldRun = (currentState == .initial)
         
         Log("RootPresenter: Changing state for: \(currentState)")
-        if interactor.isUserLoggedIn && interactor.isOnboardingCompleted && interactor.isUserSetUp {
-            presentMain()
-        } else {
-            Task { @MainActor in
-                switch await interactor.start() {
-                case .selectVault:
-                    presentOnboarding()
-                case .enterWords:
-                    presentEnterWords()
-                case .login:
+        
+        Task { @MainActor in
+            switch await interactor.start() {
+            case .selectVault:
+                presentOnboarding()
+            case .enterWords:
+                presentEnterWords()
+            case .login:
+                presentLogin(coldRun: coldRun)
+            case .enterPassword:
+                presentEnterPassword()
+            case .ready:
+                if interactor.isUserLoggedIn {
+                    presentMain()
+                    flowController.toRemoveLogin(animated: true)
+                } else {
                     presentLogin(coldRun: coldRun)
-                case .enterPassword:
-                    presentEnterPassword()
                 }
             }
         }
     }
     
     // MARK: - Private methods
-    
-    private func toLogin(coldRun: Bool = false) {
-        if !interactor.isUserLoggedIn && interactor.isUserSetUp { // onboarding???
-            presentLogin(coldRun: coldRun)
-        }
-    }
-    
     private func installCover() {
         guard currentState != .login else { return }
         flowController.toDismissKeyboard()
@@ -210,10 +207,8 @@ final class RootPresenter {
     }
     
     private func presentLogin(coldRun: Bool) {
-        if currentState != .login {  // != else return!
-            changeState(.login)
-        }
-        Log("Presenting Login")
+        guard currentState != .login else { return }
+        changeState(.login)
         flowController.toLogin(coldRun: coldRun)
     }
     
