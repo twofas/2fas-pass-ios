@@ -8,7 +8,6 @@ import Foundation
 import Common
 
 public protocol RootInteracting: AnyObject {
-    var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
     
     var isUserLoggedIn: Bool { get }
@@ -19,7 +18,6 @@ public protocol RootInteracting: AnyObject {
     func applicationDidBecomeActive()
     func applicationWillTerminate()
     
-    func markIntroAsShown()
     func lockApplication()
     
     func handleDidReceiveRegistrationToken(_ token: String?)
@@ -52,22 +50,12 @@ extension RootInteractor: RootInteracting {
         securityInteractor.isUserLoggedIn
     }
     
-    var introductionWasShown: Bool {
-        mainRepository.wasIntroductionShown()
-    }
-    
     func initializeApp() {
         Log("RootInteractor: initialize app", module: .interactor)
         mainRepository.initialPermissionStateSetChildren([
             cameraInteractor
         ])
         mainRepository.initialPermissionStateInitialize()
-    }
-    
-    func markIntroAsShown() {
-        Log("RootInteractor: mark intro as shown", module: .interactor)
-        mainRepository.setIntroductionAsShown()
-        mainRepository.enableCloudBackup()
     }
     
     func lockApplication() {

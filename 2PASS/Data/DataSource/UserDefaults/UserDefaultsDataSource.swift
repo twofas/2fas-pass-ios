@@ -12,9 +12,6 @@ protocol UserDefaultsDataSource: AnyObject {
     func setDeviceID(_ deviceID: UUID)
     func clearDeviceID()
     
-    func setIntroductionAsShown()
-    var wasIntroductionShown: Bool { get }
-    
     func setCrashlyticsDisabled(_ disabled: Bool)
     var isCrashlyticsDisabled: Bool { get }
     

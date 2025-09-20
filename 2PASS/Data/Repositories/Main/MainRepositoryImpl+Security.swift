@@ -8,7 +8,7 @@ import Foundation
 
 extension MainRepositoryImpl {
     var isUserLoggedIn: Bool {
-        secureKey != nil && isOnboardingCompleted
+        _empheralSecureKey != nil
     }
     
     var isAppInBackground: Bool {

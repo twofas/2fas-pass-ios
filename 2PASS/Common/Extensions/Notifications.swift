@@ -9,8 +9,6 @@ import Foundation
 public extension Notification.Name {
     static let orientationSizeWillChange = Notification.Name("orientationSizeWillChange")
     static let tokensScreenIsVisible = Notification.Name("tokensScreenIsVisible")
-    static let lockScreenIsInactive = Notification.Name("lockScreenIsInactive")
-    static let lockScreenIsActive = Notification.Name("lockScreenIsActive")
     static let userLoggedIn = Notification.Name("userLoggedIn")
     static let cloudStateChanged = Notification.Name("cloudStateChanged")
     static let cloudRefreshLocalData = Notification.Name("cloudRefreshLocalData")

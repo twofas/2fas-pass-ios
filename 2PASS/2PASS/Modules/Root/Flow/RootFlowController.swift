@@ -20,23 +20,21 @@ protocol RootFlowControllerParent: AnyObject {}
 
 protocol RootFlowControlling: AnyObject {
     func toCover()
-    func toVaultRecovery()
+    func toOnboarding()
     func toEnterPassword()
     func toEnterWords()
-    func toMain(immediately: Bool)
-    func toLogin(coldRun: Bool, canUseBiometry: Bool)
+    func toMain()
+    func toLogin(coldRun: Bool)
     func toStorageError(error: String)
     func toRemoveCover(animated: Bool)
     func toDismissKeyboard()
     func toAppNotification(_ notification: AppNotification)
-    func toRequestEnableBiometry()
     func toOpenExternalFileError()
 }
 
 final class RootFlowController: FlowController {
     private weak var parent: RootFlowControllerParent?
     private weak var coverViewController: LoginViewController?
-    private weak var biometricPromptViewController: UIViewController?
     private weak var window: UIWindow?
     private let appNotificationsPresenter = AppNotificationsPresenter(windowLevel: .appNotifications)
     
@@ -94,30 +92,28 @@ extension RootFlowController: RootFlowControlling {
         activeViewController = LoginRestoreFlowController.embedAsRoot(in: viewController, parent: self)
     }
     
-    func toVaultRecovery() {
+    func toOnboarding() {
         activeViewController = OnboardingFlowController.embedAsRoot(in: viewController, parent: self)
     }
     
-    func toMain(immediately: Bool) {
+    func toMain() {
         // TODO: Add removing e.g. for login
         guard mainViewController == nil else { return }
         mainViewController = MainFlowController.embedAsRoot(in: viewController, parent: self)
     }
     
-    func toLogin(coldRun: Bool, canUseBiometry: Bool) {
-        guard !isLoginInCoverView else {
-            if canUseBiometry {
-                coverViewController?.presenter?.startBiometryIfAvailable()
-            }
-            return
-        }
+    func toLogin(coldRun: Bool) {
+//        guard !isLoginInCoverView else {
+//            if canUseBiometry {
+//                coverViewController?.presenter?.startBiometryIfAvailable()
+//            }
+//            return
+//        }
         
         if coverViewController != nil {
             removeCover()
         }
-        
-        biometricPromptViewController?.dismiss(animated: false)
-        
+                
         let coverViewController = LoginFlowController.setAsCover(
             in: coverWindow,
             coldRun: coldRun,
@@ -129,14 +125,14 @@ extension RootFlowController: RootFlowControlling {
         
         coverWindow.makeKeyAndVisible()
         
-        if canUseBiometry {
-            coverViewController.presenter.startBiometryIfAvailable()
-        }
+//        if canUseBiometry {
+//            coverViewController.presenter.startBiometryIfAvailable()
+//        }
     }
     
     func toStorageError(error: String) {
-        let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        let alert = UIAlertController(title: T.commonError.localized, message: error, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: T.commonOk.localized, style: .cancel, handler: nil))
         viewController.present(alert, animated: false, completion: nil)
     }
     
@@ -172,29 +168,6 @@ extension RootFlowController: RootFlowControlling {
     
     func toAppNotification(_ notification: AppNotification) {
         appNotificationsPresenter.present(notification)
-    }
-    
-    func toRequestEnableBiometry() {
-        guard mainViewController?.presentedViewController == nil else { return }
-        
-        let viewController = UIHostingController(rootView: BiometricPromptRouter.buildView(onClose: { [weak self] in
-            self?.mainViewController?.dismiss(animated: true)
-        }))
-        
-        if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.custom(resolver: { context in
-                if context.containerTraitCollection.userInterfaceIdiom == .phone {
-                    return BiometricPromptViewConstants.sheetHeight
-                } else {
-                    return context.maximumDetentValue
-                }
-            })]
-        }
-        
-        viewController.isModalInPresentation = true
-        biometricPromptViewController = viewController
-        
-        mainViewController?.present(viewController, animated: true)
     }
     
     func toOpenExternalFileError() {

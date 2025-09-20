@@ -37,10 +37,6 @@ public final class InteractorFactory {
         )
     }
     
-    public func appStateInteractor() -> AppStateInteracting {
-        AppStateInteractor(mainRepository: MainRepositoryImpl.shared)
-    }
-    
     public func passwordInteractor() -> PasswordInteracting {
         PasswordInteractor(
             mainRepository: MainRepositoryImpl.shared,

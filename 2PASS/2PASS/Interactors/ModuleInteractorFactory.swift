@@ -17,11 +17,11 @@ extension ModuleInteractorFactory {
             appStateInteractor: InteractorFactory.shared.appStateInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             securityInteractor: InteractorFactory.shared.securityInteractor(),
-            loginInteractor: InteractorFactory.shared.loginInteractor(),
             syncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
-            paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor()
+            paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
+            onboardingInteractor: InteractorFactory.shared.onboardingInteractor()
         )
     }
     
@@ -179,7 +179,8 @@ extension ModuleInteractorFactory {
             webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
-            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
+            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
         )
     }
     

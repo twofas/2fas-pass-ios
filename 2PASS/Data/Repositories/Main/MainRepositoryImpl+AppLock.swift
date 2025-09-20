@@ -62,16 +62,4 @@ extension MainRepositoryImpl {
     func clearIncorrectBiometryCountAttempt() {
         userDefaultsDataSource.clearIncorrectBiometryCountAttempt()
     }
-    
-    var isLockScreenActive: Bool { _isLockScreenActive }
-    
-    func lockScreenActive() {
-        _isLockScreenActive = true
-        notificationCenter.post(name: .lockScreenIsActive, object: nil)
-    }
-    
-    func lockScreenInactive() {
-        _isLockScreenActive = false
-        notificationCenter.post(name: .lockScreenIsInactive, object: nil)
-    }
 }

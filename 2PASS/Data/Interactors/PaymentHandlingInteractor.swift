@@ -25,11 +25,13 @@ extension PaymentHandlingInteractor: PaymentHandlingInteracting {
         guard !isInitialized else { return }
         isInitialized = true
         
-        mainRepository.paymentInitialize(apiKey: Config.Payment.apiKey, debug: false)
-        mainRepository.paymentUpdatePaymentStatus(subscriptionName: Config.Payment.subscriptionId)
-        mainRepository.paymentRegisterForUserUpdate { [weak self] in
-            self?.mainRepository.paymentUpdatePaymentStatus(subscriptionName: Config.Payment.subscriptionId)
+        Task {
+            mainRepository.paymentInitialize(apiKey: Config.Payment.apiKey, debug: false)
+            mainRepository.paymentUpdatePaymentStatus(subscriptionName: Config.Payment.subscriptionId)
+            mainRepository.paymentRegisterForUserUpdate { [weak self] in
+                self?.mainRepository.paymentUpdatePaymentStatus(subscriptionName: Config.Payment.subscriptionId)
+            }
+            mainRepository.paymentRegisterForPromotedPurchase { true }
         }
-        mainRepository.paymentRegisterForPromotedPurchase { true }
     }
 }

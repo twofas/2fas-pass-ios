@@ -9,6 +9,7 @@ import Foundation
 final class MainPresenter {
     private let flowController: MainFlowControlling
     private let interactor: MainModuleInteracting
+    private let waitingTime: Duration = .milliseconds(750)
     
     weak var view: (any MainViewControlling)?
     
@@ -39,9 +40,18 @@ final class MainPresenter {
         
         if interactor.shouldShowQuickSetup {
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(800))
+                try await Task.sleep(for: waitingTime)
                 flowController.toQuickSetup()
             }
+        } else if interactor.shouldRequestForBiometryToLogin {
+            Task { @MainActor in
+                try await Task.sleep(for: waitingTime)
+                flowController.toRequestEnableBiometry()
+            }
         }
+    }
+    
+    func viewWillDisappear() {
+        flowController.dismissRequestEnableBiometry()
     }
 }

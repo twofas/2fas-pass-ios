@@ -10,15 +10,13 @@ import Data
 import UserNotifications
 
 protocol RootModuleInteracting: AnyObject {
-    var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
     
     var isUserLoggedIn: Bool { get }
     var isUserSetUp: Bool { get }
     var canLockApp: Bool { get }
-    
-    var shouldRequestForBiometryToLogin: Bool { get }
-    
+    var isOnboardingCompleted: Bool { get }
+        
     func isBackupFileURL(_ url: URL) -> Bool
     
     func initializeApp()
@@ -28,9 +26,6 @@ protocol RootModuleInteracting: AnyObject {
     func applicationWillTerminate()
         
     func lockApplication()
-            
-    func lockScreenActive()
-    func lockScreenInactive()
     
     func start() async -> StartupInteractorStartResult
     
@@ -45,35 +40,32 @@ final class RootModuleInteractor {
     var storageError: ((String) -> Void)?
     
     private let rootInteractor: RootInteracting
-    private let appStateInteractor: AppStateInteracting
     private let startupInteractor: StartupInteracting
     private let securityInteractor: SecurityInteracting
-    private let loginInteractor: LoginInteracting
     private let syncInteractor: CloudSyncInteracting
     private let appNotificationsInteractor: AppNotificationsInteracting
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
+    private let onboardingInteractor: OnboardingInteracting
     
     init(
         rootInteractor: RootInteracting,
-        appStateInteractor: AppStateInteracting,
         startupInteractor: StartupInteracting,
         securityInteractor: SecurityInteracting,
-        loginInteractor: LoginInteracting,
         syncInteractor: CloudSyncInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         timeVerificationInteractor: TimeVerificationInteracting,
-        paymentHandlingInteractor: PaymentHandlingInteracting
+        paymentHandlingInteractor: PaymentHandlingInteracting,
+        onboardingInteractor: OnboardingInteracting
     ) {
         self.rootInteractor = rootInteractor
-        self.appStateInteractor = appStateInteractor
         self.startupInteractor = startupInteractor
         self.securityInteractor = securityInteractor
-        self.loginInteractor = loginInteractor
         self.syncInteractor = syncInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.timeVerificationInteractor = timeVerificationInteractor
         self.paymentHandlingInteractor = paymentHandlingInteractor
+        self.onboardingInteractor = onboardingInteractor
         
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
@@ -82,11 +74,6 @@ final class RootModuleInteractor {
 }
 
 extension RootModuleInteractor: RootModuleInteracting {
-    
-    var shouldRequestForBiometryToLogin: Bool {
-        loginInteractor.shouldRequestForBiometryToLogin
-    }
-    
     var canLockApp: Bool {
         securityInteractor.canLockApp
     }
@@ -95,8 +82,8 @@ extension RootModuleInteractor: RootModuleInteracting {
         securityInteractor.isUserLoggedIn
     }
     
-    var introductionWasShown: Bool {
-        rootInteractor.introductionWasShown
+    var isOnboardingCompleted: Bool {
+        onboardingInteractor.isOnboardingCompleted
     }
     
     var isUserSetUp: Bool {
@@ -137,17 +124,9 @@ extension RootModuleInteractor: RootModuleInteracting {
     func applicationDidBecomeActive(didCopyToken: @escaping Callback) {
         rootInteractor.applicationDidBecomeActive()
     }
-        
-    func lockScreenActive() {
-        appStateInteractor.lockScreenActive()
-    }
-    
-    func lockScreenInactive() {
-        appStateInteractor.lockScreenInactive()
-    }
     
     func handleRemoteNotification() {
-        guard isUserLoggedIn && isUserSetUp else {
+        guard isUserLoggedIn && isUserSetUp else { // add some flag here that we're ready!
             return
         }
         syncInteractor.synchronize()

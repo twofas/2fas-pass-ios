@@ -31,14 +31,6 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.setLastKnownAppVersion(version)
     }
     
-    func setIntroductionAsShown() {
-        userDefaultsDataSource.setIntroductionAsShown()
-    }
-    
-    func wasIntroductionShown() -> Bool {
-        userDefaultsDataSource.wasIntroductionShown
-    }
-    
     func setCrashlyticsEnabled(_ enabled: Bool) {
         Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
         userDefaultsDataSource.setCrashlyticsDisabled(enabled == false)

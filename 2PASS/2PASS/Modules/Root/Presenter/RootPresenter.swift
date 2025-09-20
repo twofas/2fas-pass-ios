@@ -14,11 +14,10 @@ final class RootPresenter {
     fileprivate enum State {
         case initial
         case login
-        case vaultRecovery
+        case onboarding
         case enterPassword
         case enterWords
         case recoveryKit
-        case intro
         case main
     }
     
@@ -46,8 +45,27 @@ final class RootPresenter {
         interactor.storageError = { [weak self] error in
             self?.flowController.toStorageError(error: error)
         }
-        handleViewFlow(canUseBiometry: false)
+        handleViewFlow()
         fetchAppNotifications()
+    }
+    
+    // MARK: - App flow
+    
+    func applicationWillEnterForeground() {
+        Log("App: applicationWillEnterForeground")
+        interactor.applicationWillEnterForeground()
+        removeCover()
+        handleViewFlow()
+        fetchAppNotifications()
+    }
+    
+    func applicationDidBecomeActive() {
+        Log("App: applicationDidBecomeActive")
+        interactor.applicationDidBecomeActive {
+            Log("App: Token copied")
+        }
+        removeCover(animated: true)
+        toLogin()
     }
     
     func applicationWillResignActive() {
@@ -55,7 +73,6 @@ final class RootPresenter {
         interactor.applicationWillResignActive()
         
         if interactor.isUserSetUp && interactor.canLockApp {
-            interactor.lockScreenActive()
             installCover()
         }
     }
@@ -67,27 +84,7 @@ final class RootPresenter {
         
         interactor.lockApplication()
         removeCover()
-        toLogin(canUseBiometry: false)
-    }
-    
-    func applicationWillEnterForeground() {
-        Log("App: applicationWillEnterForeground")
-        lockScreenIsInactive()
-        interactor.applicationWillEnterForeground()
-        removeCover()
-        handleViewFlow(canUseBiometry: false)
-        fetchAppNotifications()
-    }
-    
-    func applicationDidBecomeActive() {
-        Log("App: applicationDidBecomeActive")
-        lockScreenIsInactive()
-        interactor.applicationDidBecomeActive {
-            Log("App: Token copied")
-        }
-        removeCover(animated: true)
         toLogin()
-        //        view?.rateApp()
     }
     
     func applicationWillTerminate() {
@@ -104,9 +101,7 @@ final class RootPresenter {
         return false
     }
     
-    func handleIntroHasFinished() {
-        handleViewFlow()
-    }
+    // MARK: - Handle external events
     
     func handleAppReset() {
         handleViewFlow()
@@ -114,18 +109,10 @@ final class RootPresenter {
     
     func handleUserWasLoggedIn() {
         flowController.toDismissKeyboard()
-        interactor.lockScreenInactive()
         handleViewFlow()
         
         if let newestNotification = appNotificationsQueue.last {
             flowController.toAppNotification(newestNotification)
-        }
-        
-        if interactor.shouldRequestForBiometryToLogin {
-            Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(700))
-                flowController.toRequestEnableBiometry()
-            }
         }
     }
     
@@ -133,9 +120,11 @@ final class RootPresenter {
         handleViewFlow()
     }
     
+    // MARK: - Notifications
+    
     func handleRemoteNotification(userInfo: [AnyHashable: Any]) {
         interactor.handleRemoteNotification()
-
+        
         if interactor.isConnectNotification(userInfo: userInfo) {
             Task { @MainActor in
                 let notifications = try await interactor.fetchAppNotifications()
@@ -152,21 +141,21 @@ final class RootPresenter {
     
     // MARK: - RootCoordinatorDelegate methods
     
-    func handleViewFlow(canUseBiometry: Bool = true) {
+    func handleViewFlow() {
         let coldRun = (currentState == .initial)
         
         Log("RootPresenter: Changing state for: \(currentState)")
-        if interactor.isUserLoggedIn {
-            presentMain(immediately: coldRun)
+        if interactor.isUserLoggedIn && interactor.isOnboardingCompleted && interactor.isUserSetUp {
+            presentMain()
         } else {
             Task { @MainActor in
                 switch await interactor.start() {
                 case .selectVault:
-                    presentVaultRecovery()
+                    presentOnboarding()
                 case .enterWords:
                     presentEnterWords()
                 case .login:
-                    presentLogin(coldRun: coldRun, canUseBiometry: canUseBiometry)
+                    presentLogin(coldRun: coldRun)
                 case .enterPassword:
                     presentEnterPassword()
                 }
@@ -176,15 +165,9 @@ final class RootPresenter {
     
     // MARK: - Private methods
     
-    private func toLogin(coldRun: Bool = false, canUseBiometry: Bool = true) {
-        if !interactor.isUserLoggedIn && interactor.isUserSetUp {
-            presentLogin(coldRun: coldRun, canUseBiometry: canUseBiometry)
-        }
-    }
-    
-    private func lockScreenIsInactive() {
-        if currentState == .main {
-            interactor.lockScreenInactive()
+    private func toLogin(coldRun: Bool = false) {
+        if !interactor.isUserLoggedIn && interactor.isUserSetUp { // onboarding???
+            presentLogin(coldRun: coldRun)
         }
     }
     
@@ -202,43 +185,36 @@ final class RootPresenter {
         flowController.toRemoveCover(animated: animated)
     }
     
-    private func presentVaultRecovery() {
-        guard currentState != .vaultRecovery else { return }
-        changeState(.vaultRecovery)
-        Log("Presenting Vault Recovery")
-        flowController.toVaultRecovery()
+    private func presentOnboarding() {
+        guard currentState != .onboarding else { return }
+        changeState(.onboarding)
+        flowController.toOnboarding()
     }
     
     private func presentEnterPassword() {
         guard currentState != .enterPassword else { return }
         changeState(.enterPassword)
-        Log("Presenting Enter Password")
         flowController.toEnterPassword()
     }
     
     private func presentEnterWords() {
         guard currentState != .enterWords else { return }
         changeState(.enterWords)
-        Log("Presenting Enter Words")
         flowController.toEnterWords()
     }
     
-    private func presentMain(immediately: Bool) {
+    private func presentMain() {
         guard currentState != .main else { return }
-        let immediately = !(currentState == .login || currentState == .intro)
         changeState(.main)
-        Log("Presenting Main")
-        flowController.toMain(immediately: immediately)
+        flowController.toMain()
     }
     
-    private func presentLogin(coldRun: Bool, canUseBiometry: Bool) {
-        if currentState != .login {
+    private func presentLogin(coldRun: Bool) {
+        if currentState != .login {  // != else return!
             changeState(.login)
-            
-            interactor.lockScreenActive()
         }
         Log("Presenting Login")
-        flowController.toLogin(coldRun: coldRun, canUseBiometry: canUseBiometry)
+        flowController.toLogin(coldRun: coldRun)
     }
     
     private func changeState(_ newState: State) {

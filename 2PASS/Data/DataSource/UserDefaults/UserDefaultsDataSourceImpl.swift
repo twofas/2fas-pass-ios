@@ -14,7 +14,6 @@ final class UserDefaultsDataSourceImpl {
         case appLockBlockTime
         case sortType
         case lockAppUntil
-        case introductionWasShown
         case crashlyticsDisabled
         case activeSearchEnabled
         case dateOfFirstRun
@@ -66,15 +65,6 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearDeviceID() {
         sharedDefaults.set(nil, forKey: Keys.deviceID.rawValue)
         sharedDefaults.synchronize()
-    }
-    
-    func setIntroductionAsShown() {
-        userDefaults.set(true, forKey: Keys.introductionWasShown.rawValue)
-        userDefaults.synchronize()
-    }
-    
-    var wasIntroductionShown: Bool {
-        userDefaults.bool(forKey: Keys.introductionWasShown.rawValue)
     }
     
     func setCrashlyticsDisabled(_ disabled: Bool) {

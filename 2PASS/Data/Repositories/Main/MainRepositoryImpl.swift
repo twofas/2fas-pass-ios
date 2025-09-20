@@ -18,7 +18,6 @@ final class MainRepositoryImpl: MainRepository {
     
     // MARK: State
     
-    var _isLockScreenActive = false
     var _empheralDeviceID: UUID?
     var _ephemeralMasterKey: MasterKey?
     var _selectedVault: VaultEncryptedData?

@@ -96,18 +96,12 @@ protocol MainRepository: AnyObject {
     var incorrectBiometryCountAttemp: Int { get }
     func setIncorrectBiometryCountAttempt(_ count: Int)
     func clearIncorrectBiometryCountAttempt()
-    
-    var isLockScreenActive: Bool { get }
-    func lockScreenActive()
-    func lockScreenInactive()
         
     // MARK: - General
     var currentAppVersion: String { get }
     var currentBuildVersion: String { get }
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
-    func setIntroductionAsShown()
-    func wasIntroductionShown() -> Bool
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
     
