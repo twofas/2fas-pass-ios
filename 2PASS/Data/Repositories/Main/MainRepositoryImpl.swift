@@ -30,7 +30,6 @@ final class MainRepositoryImpl: MainRepository {
     var _empheralSalt: Data?
     var _empheralMasterPassword: MasterPassword?
     var _isInBackground = false
-    var _canLockApp = true
     var _webDAVState: WebDAVState = .idle
     var _isAutoFillEnabled: Bool = false
     var _pushNotificationToken: String?

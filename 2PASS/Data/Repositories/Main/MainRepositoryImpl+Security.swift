@@ -18,16 +18,4 @@ extension MainRepositoryImpl {
     func setIsAppInBackground(_ isInBackground: Bool) {
         _isInBackground = isInBackground
     }
-    
-    var canLockApp: Bool {
-        _canLockApp
-    }
-    
-    func blockAppLocking() {
-        _canLockApp = false
-    }
-    
-    func unblockAppLocking() {
-        _canLockApp = true
-    }
 }

@@ -4,17 +4,16 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import Foundation
+import UIKit
 
 final class MainPresenter {
     private let flowController: MainFlowControlling
     private let interactor: MainModuleInteracting
+    private let notificationCenter: NotificationCenter = .default
     private let waitingTime: Duration = .milliseconds(750)
     
     weak var view: (any MainViewControlling)?
-    
-    private var didAppear = false
-    
+        
     init(flowController: MainFlowControlling, interactor: MainModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
@@ -31,11 +30,17 @@ final class MainPresenter {
         interactor.paymentScreen = { [weak flowController] in
             flowController?.toPayment()
         }
+        notificationCenter
+            .addObserver(
+                self,
+                selector: #selector(viewDidAppear),
+                name: UIApplication.didBecomeActiveNotification,
+                object: nil
+            )
     }
     
+    @objc
     func viewDidAppear() {
-        guard !didAppear else { return }
-        didAppear = true
         interactor.viewIsVisible()
         
         if interactor.shouldShowQuickSetup {
@@ -53,5 +58,9 @@ final class MainPresenter {
     
     func viewWillDisappear() {
         flowController.dismissRequestEnableBiometry()
+    }
+    
+    deinit {
+        notificationCenter.removeObserver(self)
     }
 }

@@ -59,7 +59,7 @@ extension StorageInteractor: StorageInteracting {
             migrationInteractor.performReencryptionMigration()
         }
         
-        let vaults = mainRepository.listEncrypteVaults()
+        let vaults = mainRepository.listEncryptedVaults()
         guard let masterKey = mainRepository.empheralMasterKey else {
             Log(
                 "StorageInteractor - initialize. Can't continue without Master Key!",

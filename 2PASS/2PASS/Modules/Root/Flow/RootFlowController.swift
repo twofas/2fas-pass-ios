@@ -27,8 +27,8 @@ protocol RootFlowControlling: AnyObject {
     func toMain()
     func toLogin(coldRun: Bool)
     func toStorageError(error: String)
-    func toRemoveCover(animated: Bool)
-    func toRemoveLogin(animated: Bool)
+    func toRemoveCover(delayAnim: Bool)
+    func toRemoveLogin()
     func toDismissKeyboard()
     func toAppNotification(_ notification: AppNotification)
     func toOpenExternalFileError()
@@ -36,7 +36,6 @@ protocol RootFlowControlling: AnyObject {
 
 final class RootFlowController: FlowController {
     private weak var parent: RootFlowControllerParent?
-    private weak var coverViewController: UIViewController?
     private weak var loginViewController: LoginViewController?
     private weak var window: UIWindow?
     private let appNotificationsPresenter = AppNotificationsPresenter(windowLevel: .appNotifications)
@@ -45,6 +44,10 @@ final class RootFlowController: FlowController {
         let window = UIWindow()
         window.windowLevel = .cover
         window.backgroundColor = .clear
+        let storyboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "LaunchScreen")
+        window.addSubview(vc.view)
+        vc.view.pinToParent()
         return window
     }()
     
@@ -88,12 +91,11 @@ extension RootFlowController {
 
 extension RootFlowController: RootFlowControlling {
     func toCover() {
-        let storyboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "LaunchScreen")
-        coverViewController = vc
-        coverWindow.addSubview(vc.view)
-        vc.view.pinToParent()
+        coverWindow.layer.removeAllAnimations()
         coverWindow.isHidden = false
+        coverWindow.alpha = 1
+        
+        coverWindow.makeKeyAndVisible()
     }
     
     func toEnterPassword() {
@@ -105,14 +107,16 @@ extension RootFlowController: RootFlowControlling {
     }
     
     func toMain() {
-        guard mainViewController == nil else { return }
+        guard mainViewController == nil else {
+            mainViewController?.viewDidAppear(false)
+            return
+        }
         mainViewController = MainFlowController.embedAsRoot(in: viewController, parent: self)
     }
     
     func toLogin(coldRun: Bool) {
-        toRemoveCover(animated: true)
         guard loginViewController == nil else { return }
-                
+        
         let loginViewController = LoginFlowController.setAsCover(
             in: loginWindow,
             coldRun: coldRun,
@@ -130,33 +134,37 @@ extension RootFlowController: RootFlowControlling {
         viewController.present(alert, animated: false, completion: nil)
     }
     
-    func toRemoveLogin(animated: Bool) {
+    func toRemoveLogin() {
         guard loginViewController != nil else { return }
-        guard animated else {
-            removeLogin()
-            return
-        }
-        UIView.animate(withDuration: Animation.duration, delay: 0, options: .curveEaseInOut) {
+        UIView.animate(
+            withDuration: Animation.duration,
+            delay: 0,
+            options:  [.curveEaseInOut, .beginFromCurrentState]
+        ) {
             self.loginViewController?.view.alpha = 0
         } completion: { _ in
             self.removeLogin()
         }
     }
     
-    func toRemoveCover(animated: Bool) {
-        guard coverViewController != nil else { return }
-        guard animated else {
-            removeCover()
-            return
-        }
-        UIView.animate(withDuration: Animation.duration, delay: 0, options: .curveEaseInOut) {
-            self.coverViewController?.view.alpha = 0
-        } completion: { _ in
-            self.removeCover()
+    func toRemoveCover(delayAnim: Bool) {
+        guard !coverWindow.isHidden else { return }
+        
+        UIView.animate(
+            withDuration: Animation.duration,
+            delay: delayAnim ? Animation.duration : 0,
+            options: [.curveEaseInOut, .beginFromCurrentState]
+        ) {
+            self.coverWindow.alpha = 0
+        } completion: { finished in
+            guard finished else { return }
+            self.coverWindow.isHidden = true
+            self.coverWindow.alpha = 1
         }
     }
     
     func toDismissKeyboard() {
+        loginWindow.endEditing(true)
         window?.endEditing(true)
     }
     
@@ -238,24 +246,17 @@ extension RootFlowController: EnterWordsFlowControllerParent {
     }
 }
 
-extension RootFlowController: MainFlowControllerParent {
-    func removeCover() {
-        coverViewController?.view.removeFromSuperview()
-        coverViewController = nil
-        coverWindow.isHidden = true
-        window?.makeKeyAndVisible()
-    }
-}
+extension RootFlowController: MainFlowControllerParent {}
 
 extension RootFlowController: LoginFlowControllerParent {
     func loginSuccessful() {
-        removeLogin()
         viewController.presenter.handleUserWasLoggedIn()
     }
     
     private func removeLogin() {
         loginViewController?.view.removeFromSuperview()
         loginViewController = nil
+        loginWindow.endEditing(true)
         loginWindow.isHidden = true
         window?.makeKeyAndVisible()
     }

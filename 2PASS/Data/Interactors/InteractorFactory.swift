@@ -77,7 +77,8 @@ public final class InteractorFactory {
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
             onboardingInteractor: onboardingInteractor(),
-            migrationInteractor: migrationInteractor()
+            migrationInteractor: migrationInteractor(),
+            securityInteractor: securityInteractor()
         )
     }
     

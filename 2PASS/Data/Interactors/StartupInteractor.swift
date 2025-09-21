@@ -12,7 +12,7 @@ public enum StartupInteractorStartResult {
     case enterWords
     case enterPassword
     case login
-    case ready
+    case main
 }
 
 public enum StartupInteractorSetWordsResult {
@@ -60,19 +60,22 @@ final class StartupInteractor {
     private let biometryInteractor: BiometryInteracting
     private let onboardingInteractor: OnboardingInteracting
     private let migrationInteractor: MigrationInteracting
+    private let securityInteractor: SecurityInteracting
     
     init(
         protectionInteractor: ProtectionInteracting,
         storageInteractor: StorageInteracting,
         biometryInteractor: BiometryInteracting,
         onboardingInteractor: OnboardingInteracting,
-        migrationInteractor: MigrationInteracting
+        migrationInteractor: MigrationInteracting,
+        securityInteractor: SecurityInteracting
     ) {
         self.protectionInteractor = protectionInteractor
         self.storageInteractor = storageInteractor
         self.biometryInteractor = biometryInteractor
         self.onboardingInteractor = onboardingInteractor
         self.migrationInteractor = migrationInteractor
+        self.securityInteractor = securityInteractor
     }
 }
 
@@ -165,7 +168,11 @@ extension StartupInteractor: StartupInteracting {
         
         protectionInteractor.selectVault()
         
-        return .ready
+        if securityInteractor.isUserLoggedIn {
+            return .main
+        }
+        
+        return .login
     }
     
     func setupEncryptionElements() {

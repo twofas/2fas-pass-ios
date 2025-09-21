@@ -43,9 +43,6 @@ protocol MainRepository: AnyObject {
     var isUserLoggedIn: Bool { get }
     var isAppInBackground: Bool { get }
     func setIsAppInBackground(_ isInBackground: Bool)
-    var canLockApp: Bool { get }
-    func blockAppLocking()
-    func unblockAppLocking()
     
     var isOnboardingCompleted: Bool { get }
     func finishOnboarding()
@@ -369,7 +366,7 @@ protocol MainRepository: AnyObject {
     
     // MARK: Encrypted Vaults
     
-    func listEncrypteVaults() -> [VaultEncryptedData]
+    func listEncryptedVaults() -> [VaultEncryptedData]
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
         vaultID: VaultID,

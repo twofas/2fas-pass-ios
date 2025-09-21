@@ -12,9 +12,7 @@ import UserNotifications
 protocol RootModuleInteracting: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
-    var isUserLoggedIn: Bool { get }
     var isUserSetUp: Bool { get }
-    var canLockApp: Bool { get }
     var isOnboardingCompleted: Bool { get }
         
     func isBackupFileURL(_ url: URL) -> Bool
@@ -74,14 +72,6 @@ final class RootModuleInteractor {
 }
 
 extension RootModuleInteractor: RootModuleInteracting {
-    var canLockApp: Bool {
-        securityInteractor.canLockApp
-    }
-    
-    var isUserLoggedIn: Bool {
-        securityInteractor.isUserLoggedIn
-    }
-    
     var isOnboardingCompleted: Bool {
         onboardingInteractor.isOnboardingCompleted
     }
@@ -126,7 +116,7 @@ extension RootModuleInteractor: RootModuleInteracting {
     }
     
     func handleRemoteNotification() {
-        guard isUserLoggedIn && isUserSetUp else { // add some flag here that we're ready!
+        guard securityInteractor.isUserLoggedIn && isUserSetUp else {
             return
         }
         syncInteractor.synchronize()

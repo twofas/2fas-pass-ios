@@ -12,14 +12,26 @@ protocol AutoFillModuleInteracting: AnyObject {
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
     func credential(for passwordID: PasswordID) -> ASPasswordCredential?
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
+    func initialize()
+    func start() async -> StartupInteractorStartResult
 }
 
 final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     
     private let passwordInteractor: PasswordInteracting
+    private let startupInteractor: StartupInteracting
     
-    init(passwordInteractor: PasswordInteracting) {
+    init(passwordInteractor: PasswordInteracting, startupInteractor: StartupInteracting) {
         self.passwordInteractor = passwordInteractor
+        self.startupInteractor = startupInteractor
+    }
+    
+    func initialize() {
+        startupInteractor.initialize()
+    }
+    
+    func start() async -> StartupInteractorStartResult {
+        await startupInteractor.start()
     }
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {

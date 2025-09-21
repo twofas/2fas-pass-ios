@@ -96,7 +96,7 @@ extension MainRepositoryImpl {
     
     // MARK: Encrypted Vaults
     
-    func listEncrypteVaults() -> [VaultEncryptedData] {
+    func listEncryptedVaults() -> [VaultEncryptedData] {
         encryptedStorage.listEncrypteVaults()
     }
     
@@ -137,7 +137,7 @@ extension MainRepositoryImpl {
     }
     
     func deleteAllVaults() {
-        listEncrypteVaults().forEach { vault in
+        listEncryptedVaults().forEach { vault in
             deleteEncryptedVault(vault.vaultID)
         }
         saveEncryptedStorage()

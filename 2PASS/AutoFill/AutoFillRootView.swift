@@ -12,29 +12,30 @@ struct AutoFillRootView: View {
     @Bindable var presenter: AutoFillRootPresenter
     
     var body: some View {
-        switch presenter.startupResult {
+        switch presenter.startupState {
+        case nil:
+            AnyView(EmptyView())
         case .enterPassword, .enterWords, .selectVault:
             noVaultView
-        case .ready, .login:
-            if presenter.isLogged {
-                AutoFillPasswordsListView(
-                    context: presenter.extensionContext,
-                    serviceIdentifiers: presenter.serviceIdentifiers,
-                    isTextToInsert: presenter.isTextToInsert
-                )
-                .ignoresSafeArea()
-            } else {
-                NavigationStack {
-                    LoginView(presenter: presenter.loginPresenter)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("common_cancel") {
-                                    presenter.onCancel()
-                                }
+            
+        case .login:
+            NavigationStack {
+                LoginView(presenter: presenter.loginPresenter)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("common_cancel") {
+                                presenter.onCancel()
                             }
                         }
-                }
+                    }
             }
+        case .main:
+            AutoFillPasswordsListView(
+                context: presenter.extensionContext,
+                serviceIdentifiers: presenter.serviceIdentifiers,
+                isTextToInsert: presenter.isTextToInsert
+            )
+            .ignoresSafeArea()
         }
     }
     

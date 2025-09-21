@@ -26,9 +26,7 @@ final class RootPresenter {
             Log("RootPresenter: new currentState: \(currentState)")
         }
     }
-    
-    private var isCoverActive = false
-    
+        
     private let flowController: RootFlowControlling
     private let interactor: RootModuleInteracting
     private let toastPresenter: ToastPresenter
@@ -54,7 +52,6 @@ final class RootPresenter {
     func applicationWillEnterForeground() {
         Log("App: applicationWillEnterForeground")
         interactor.applicationWillEnterForeground()
-        removeCover()
         handleViewFlow()
         fetchAppNotifications()
     }
@@ -64,27 +61,29 @@ final class RootPresenter {
         interactor.applicationDidBecomeActive {
             Log("App: Token copied")
         }
-        removeCover(animated: true)
-        handleViewFlow()
+        handleViewFlow { [weak self] in
+            // so we won't blink between removing cover and bio login
+            let longerAnim: Bool = self?.currentState == .login
+            self?.removeCover(longerAnim: longerAnim)
+        }
     }
     
     func applicationWillResignActive() {
         Log("App: applicationWillResignActive")
         interactor.applicationWillResignActive()
-        
-        if interactor.isUserSetUp && interactor.canLockApp {
-            installCover()
-        }
+
         handleViewFlow()
+        installCover()
     }
     
     func applicationDidEnterBackground() {
         Log("App: applicationDidEnterBackground")
         
         toastPresenter.dismissAll(animated: false)
-        
-        interactor.logoutFromApp()
-        handleViewFlow()
+        if interactor.isUserSetUp {
+            interactor.logoutFromApp()
+            handleViewFlow()
+        }
     }
     
     func applicationWillTerminate() {
@@ -110,6 +109,7 @@ final class RootPresenter {
     func handleUserWasLoggedIn() {
         flowController.toDismissKeyboard()
         handleViewFlow()
+        flowController.toRemoveLogin()
         
         if let newestNotification = appNotificationsQueue.last {
             flowController.toAppNotification(newestNotification)
@@ -141,9 +141,7 @@ final class RootPresenter {
     
     // MARK: - RootCoordinatorDelegate methods
     
-    func handleViewFlow() {
-        let coldRun = (currentState == .initial)
-        
+    func handleViewFlow(completion: Callback? = nil) {
         Log("RootPresenter: Changing state for: \(currentState)")
         
         Task { @MainActor in
@@ -153,33 +151,26 @@ final class RootPresenter {
             case .enterWords:
                 presentEnterWords()
             case .login:
+                let coldRun = (currentState == .initial)
                 presentLogin(coldRun: coldRun)
             case .enterPassword:
                 presentEnterPassword()
-            case .ready:
-                if interactor.isUserLoggedIn {
-                    presentMain()
-                    flowController.toRemoveLogin(animated: true)
-                } else {
-                    presentLogin(coldRun: coldRun)
-                }
+            case .main:
+                presentMain()
             }
+            completion?()
         }
     }
     
     // MARK: - Private methods
     private func installCover() {
-        guard currentState != .login else { return }
+        guard currentState == .login || currentState == .main else { return }
         flowController.toDismissKeyboard()
-        isCoverActive = true
         flowController.toCover()
     }
     
-    private func removeCover(animated: Bool = false) {
-        guard isCoverActive else { return }
-        isCoverActive = false
-        guard  currentState != .login else { return }
-        flowController.toRemoveCover(animated: animated)
+    private func removeCover(longerAnim: Bool) {
+        flowController.toRemoveCover(delayAnim: longerAnim)
     }
     
     private func presentOnboarding() {
