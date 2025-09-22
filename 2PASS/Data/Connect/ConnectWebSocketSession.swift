@@ -184,7 +184,7 @@ final class ConnectWebSocketSession: NSObject {
     
     private func makeMessage<Request>(for request: Request) -> ConnectMessage<Request.Payload> where Request: ConnectRequest {
         ConnectMessage(
-            scheme: Config.Connect.schemeVersion,
+            scheme: Config.Connect.schemaVersion,
             origin: deviceName,
             originVersion: appVersion,
             id: request.id,

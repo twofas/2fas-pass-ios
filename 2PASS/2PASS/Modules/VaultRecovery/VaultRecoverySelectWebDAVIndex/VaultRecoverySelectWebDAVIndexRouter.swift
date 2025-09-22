@@ -43,6 +43,9 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
             Button(T.commonOk.localizedKey, action: onClose)
         case .selectRecoveryKey(let vault, let onClose):
             VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: .file(vault))
+        case .appUpdateNeeded(_, let onUpdate, let onClose):
+            Button(T.importInvalidSchemaErrorCta.localizedKey, action: onUpdate)
+            Button(T.commonCancel.localizedKey, role: .cancel, action: onClose)
         }
     }
     
@@ -50,6 +53,11 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
         switch destination {
         case .selectRecoveryKey: .push
         case .error(let message, _): .alert(title: T.commonError, message: message)
+        case .appUpdateNeeded(let schemaVersion, _, _):
+            .alert(
+                title: T.commonError,
+                message: T.importInvalidSchemaErrorMsg(schemaVersion)
+            )
         case nil: nil
         }
     }

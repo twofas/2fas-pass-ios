@@ -16,16 +16,23 @@ final class AppNotificationsInteractor: AppNotificationsInteracting {
     private let mainRepository: MainRepository
     private let connectInteractor: ConnectInteracting
     
-    init(mainRepository: MainRepository, connectInteractor: ConnectInteracting) {
+    init(
+        mainRepository: MainRepository,
+        connectInteractor: ConnectInteracting
+    ) {
         self.mainRepository = mainRepository
         self.connectInteractor = connectInteractor
     }
     
     func fetchAppNotifications() async throws -> [AppNotification] {
-        let notifications = try await mainRepository.appNotifications()
+        let appNotifications = try await mainRepository.appNotifications()
+        
+        if let minimalVersion = appNotifications.compatibility?.minimalIosVersion {
+            mainRepository.setMinimalAppVersionSupported(minimalVersion)
+        }
         
         var validNotifications: [AppNotification] = []
-        for notification in notifications {
+        for notification in appNotifications.notifications ?? [] {
             let isValid = await connectInteractor.validateNotification(notification)
             if isValid, notification.expiresAt.timeIntervalSince(mainRepository.currentDate) > Config.Connect.notificationExpiryOffset {
                 validNotifications.append(notification)

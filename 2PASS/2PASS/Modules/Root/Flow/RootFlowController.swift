@@ -31,6 +31,8 @@ protocol RootFlowControlling: AnyObject {
     func toAppNotification(_ notification: AppNotification)
     func toRequestEnableBiometry()
     func toOpenExternalFileError()
+    func toUpdateAppForNewSyncScheme(schemaVersion: Int)
+    func toUpdateAppForUnsupportedVersion(minimalVersion: String)
 }
 
 final class RootFlowController: FlowController {
@@ -118,6 +120,7 @@ extension RootFlowController: RootFlowControlling {
         
         biometricPromptViewController?.dismiss(animated: false)
         
+        
         let coverViewController = LoginFlowController.setAsCover(
             in: coverWindow,
             coldRun: coldRun,
@@ -201,6 +204,54 @@ extension RootFlowController: RootFlowControlling {
         let alert = UIAlertController(title: T.commonError, message: T.openExternalFileErrorBody, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: T.commonOk, style: .cancel, handler: nil))
         viewController.present(alert, animated: true, completion: nil)
+    }
+    
+    func toUpdateAppForNewSyncScheme(schemaVersion: Int) {
+        let alert = UIAlertController(
+            title: T.appUpdateModalTitle,
+            message: T.cloudSyncInvalidSchemaErrorMsg(schemaVersion),
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaNegative,
+            style: .cancel,
+            handler: nil
+        ))
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaPositive,
+            style: .default,
+            handler: { _ in
+                UIApplication.shared.open(Config.appStoreURL)
+            }
+        ))
+        
+        viewController.topViewController.present(alert, animated: true, completion: nil)
+    }
+    
+    func toUpdateAppForUnsupportedVersion(minimalVersion: String) {        
+        let alert = UIAlertController(
+            title: T.appUpdateModalTitle,
+            message: T.appUpdateModalSubtitle,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaNegative,
+            style: .cancel,
+            handler: nil
+        ))
+        
+        alert.addAction(UIAlertAction(
+            title: T.appUpdateModalCtaPositive,
+            style: .default,
+            handler: { _ in
+                UIApplication.shared.open(Config.appStoreURL)
+            }
+        ))
+        
+        viewController.topViewController.present(alert, animated: true, completion: nil)
     }
 }
 
