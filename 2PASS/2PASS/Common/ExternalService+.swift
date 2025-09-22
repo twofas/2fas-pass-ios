@@ -21,6 +21,7 @@ public extension ExternalService {
         case .applePasswordsDesktop: "Apple Passwords Desktop"
         case .applePasswordsMobile: "Apple Passwords Mobile"
         case .firefox: "Firefox"
+        case .keePassXC: "KeePassXC"
         }
     }
     
@@ -36,6 +37,7 @@ public extension ExternalService {
         case .applePasswordsDesktop: UTType.commaSeparatedText
         case .applePasswordsMobile: UTType.zip
         case .firefox: UTType.commaSeparatedText
+        case .keePassXC: UTType.commaSeparatedText
         }
     }
 }
