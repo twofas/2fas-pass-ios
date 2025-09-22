@@ -53,6 +53,7 @@ enum SettingsIcon {
     case applePasswords
     case twoFASAuth
     case firefox
+    case keePass
     case keePassXC
 }
 
@@ -206,6 +207,8 @@ struct SettingsIconView: View {
             Image(.twoFASAuth)
         case .firefox:
             Image(.firefoxIcon)
+        case .keePass:
+            Image(.keepassIcon)
         case .keePassXC:
             Image(.keepassxcIcon)
         }
@@ -221,7 +224,7 @@ struct SettingsIconView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: size * 0.7, height: size * 0.7)
-        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePassXC:
+        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePass, .keePassXC:
             image
                 .resizable()
                 .scaledToFit()
