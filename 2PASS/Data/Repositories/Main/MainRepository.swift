@@ -43,9 +43,6 @@ protocol MainRepository: AnyObject {
     var isUserLoggedIn: Bool { get }
     var isAppInBackground: Bool { get }
     func setIsAppInBackground(_ isInBackground: Bool)
-    var canLockApp: Bool { get }
-    func blockAppLocking()
-    func unblockAppLocking()
     
     var isOnboardingCompleted: Bool { get }
     func finishOnboarding()
@@ -104,18 +101,12 @@ protocol MainRepository: AnyObject {
     var incorrectBiometryCountAttemp: Int { get }
     func setIncorrectBiometryCountAttempt(_ count: Int)
     func clearIncorrectBiometryCountAttempt()
-    
-    var isLockScreenActive: Bool { get }
-    func lockScreenActive()
-    func lockScreenInactive()
         
     // MARK: - General
     var currentAppVersion: String { get }
     var currentBuildVersion: String { get }
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
-    func setIntroductionAsShown()
-    func wasIntroductionShown() -> Bool
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
     
@@ -378,12 +369,12 @@ protocol MainRepository: AnyObject {
     func deleteAllEncryptedItems()
     
     func requiresReencryptionMigration() -> Bool
-    func loadEncryptedStore()
+    func loadEncryptedStore(completion: @escaping Callback)
     func loadEncryptedStoreWithReencryptionMigration()
     
     // MARK: Encrypted Vaults
     
-    func listEncrypteVaults() -> [VaultEncryptedData]
+    func listEncryptedVaults() -> [VaultEncryptedData]
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
         vaultID: VaultID,

@@ -11,19 +11,15 @@ import UserNotifications
 import Foundation
 
 protocol RootModuleInteracting: AnyObject {
-    var introductionWasShown: Bool { get }
     var storageError: ((String) -> Void)? { get set }
     var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)? { get set }
     
     var appVersionPromptState: UpdateAppPromptState { get }
     func markAppVersionPromptAsShown()
     
-    var isUserLoggedIn: Bool { get }
     var isUserSetUp: Bool { get }
-    var canLockApp: Bool { get }
-    
-    var shouldRequestForBiometryToLogin: Bool { get }
-    
+    var isOnboardingCompleted: Bool { get }
+        
     func isBackupFileURL(_ url: URL) -> Bool
     
     func initializeApp()
@@ -32,12 +28,9 @@ protocol RootModuleInteracting: AnyObject {
     func applicationDidBecomeActive(didCopyToken: @escaping Callback)
     func applicationWillTerminate()
         
-    func lockApplication()
-            
-    func lockScreenActive()
-    func lockScreenInactive()
+    func logoutFromApp()
     
-    func start() -> StartupInteractorStartResult
+    func start() async -> StartupInteractorStartResult
     
     func handleRemoteNotification()
     func handleDidReceiveRegistrationToken(_ token: String?)
@@ -51,38 +44,35 @@ final class RootModuleInteractor {
     var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)?
     
     private let rootInteractor: RootInteracting
-    private let appStateInteractor: AppStateInteracting
     private let startupInteractor: StartupInteracting
     private let securityInteractor: SecurityInteracting
-    private let loginInteractor: LoginInteracting
     private let syncInteractor: CloudSyncInteracting
     private let appNotificationsInteractor: AppNotificationsInteracting
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
+    private let onboardingInteractor: OnboardingInteracting
     private let updateAppPromptInteractor: UpdateAppPromptInteracting
     private let notificationCenter = NotificationCenter.default
     
     init(
         rootInteractor: RootInteracting,
-        appStateInteractor: AppStateInteracting,
         startupInteractor: StartupInteracting,
         securityInteractor: SecurityInteracting,
-        loginInteractor: LoginInteracting,
         syncInteractor: CloudSyncInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         timeVerificationInteractor: TimeVerificationInteracting,
         paymentHandlingInteractor: PaymentHandlingInteracting,
+        onboardingInteractor: OnboardingInteracting,
         updateAppPromptInteractor: UpdateAppPromptInteracting
     ) {
         self.rootInteractor = rootInteractor
-        self.appStateInteractor = appStateInteractor
         self.startupInteractor = startupInteractor
         self.securityInteractor = securityInteractor
-        self.loginInteractor = loginInteractor
         self.syncInteractor = syncInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.timeVerificationInteractor = timeVerificationInteractor
         self.paymentHandlingInteractor = paymentHandlingInteractor
+        self.onboardingInteractor = onboardingInteractor
         self.updateAppPromptInteractor = updateAppPromptInteractor
         
         rootInteractor.storageError = { [weak self] error in
@@ -100,28 +90,16 @@ final class RootModuleInteractor {
 
 extension RootModuleInteractor: RootModuleInteracting {
     
+    var isOnboardingCompleted: Bool {
+        onboardingInteractor.isOnboardingCompleted
+    }
+    
     var appVersionPromptState: UpdateAppPromptState {
         updateAppPromptInteractor.appVersionPromptState
     }
     
     func markAppVersionPromptAsShown() {
         updateAppPromptInteractor.markPromptAsShown()
-    }
-    
-    var shouldRequestForBiometryToLogin: Bool {
-        loginInteractor.shouldRequestForBiometryToLogin
-    }
-    
-    var canLockApp: Bool {
-        securityInteractor.canLockApp
-    }
-    
-    var isUserLoggedIn: Bool {
-        securityInteractor.isUserLoggedIn
-    }
-    
-    var introductionWasShown: Bool {
-        rootInteractor.introductionWasShown
     }
     
     var isUserSetUp: Bool {
@@ -137,11 +115,12 @@ extension RootModuleInteractor: RootModuleInteracting {
         paymentHandlingInteractor.initialize()
     }
     
-    func start() -> StartupInteractorStartResult {
-        startupInteractor.start()
+    @MainActor
+    func start() async -> StartupInteractorStartResult {
+        await startupInteractor.start()
     }
     
-    func lockApplication() {
+    func logoutFromApp() {
         rootInteractor.lockApplication()
     }
     
@@ -161,17 +140,9 @@ extension RootModuleInteractor: RootModuleInteracting {
     func applicationDidBecomeActive(didCopyToken: @escaping Callback) {
         rootInteractor.applicationDidBecomeActive()
     }
-        
-    func lockScreenActive() {
-        appStateInteractor.lockScreenActive()
-    }
-    
-    func lockScreenInactive() {
-        appStateInteractor.lockScreenInactive()
-    }
     
     func handleRemoteNotification() {
-        guard isUserLoggedIn && isUserSetUp else {
+        guard securityInteractor.isUserLoggedIn && isUserSetUp else {
             return
         }
         syncInteractor.synchronize()

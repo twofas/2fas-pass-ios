@@ -39,17 +39,19 @@ public final class CoreDataStack {
         migrator?.bundle = bundle
         self.isPersistent = isPersistent
         
-        let container = NSPersistentContainer(name: name, bundle: bundle)
-        self.persistentContainer = container
+        self.persistentContainer = NSPersistentContainer(name: name, bundle: bundle)
     }
     
-    public func loadStore() {
-        guard isLoaded == false else { return }
+    public func loadStore(completion: @escaping Callback) {
+        guard isLoaded == false else {
+            completion()
+            return
+        }
         isLoaded = true
-        configurePersistentContainer(persistentContainer)
+        configurePersistentContainer(persistentContainer, completion: completion)
     }
     
-    private func configurePersistentContainer(_ container: NSPersistentContainer) {
+    private func configurePersistentContainer(_ container: NSPersistentContainer, completion: @escaping Callback) {
         let name = self.name
         if !FileManager.default.fileExists(atPath: storeUrl.path()) {
             DispatchQueue.main.async {
@@ -67,10 +69,14 @@ public final class CoreDataStack {
                     self?.logError?(err)
                     self?.parseError(with: error.userInfo)
                     fatalError(err.description)
+                } else {
+                    container.viewContext.automaticallyMergesChangesFromParent = true
+                    DispatchQueue.main.async {
+                        completion()
+                    }
                 }
             }
         }
-        container.viewContext.automaticallyMergesChangesFromParent = true
     }
     
     private lazy var storeDescription: NSPersistentStoreDescription = {

@@ -10,26 +10,27 @@ import CommonUI
 
 @Observable
 final class AutoFillRootPresenter {
-    
     let extensionContext: ASCredentialProviderExtensionContext
-    let startupResult: StartupInteractorStartResult
     
     private(set) var serviceIdentifiers: [ASCredentialServiceIdentifier] = []
     private(set) var credentialRequest: (any ASCredentialRequest)?
     private(set) var isTextToInsert: Bool = false
-    private(set) var isLogged = false
     private(set) var loginPresenter: LoginPresenter!
+    private(set) var startupState: StartupInteractorStartResult?
     private let interactor: AutoFillModuleInteracting
     
-    init(extensionContext: ASCredentialProviderExtensionContext, startupResult: StartupInteractorStartResult, interactor: AutoFillModuleInteracting) {
+    init(extensionContext: ASCredentialProviderExtensionContext, interactor: AutoFillModuleInteracting) {
         self.extensionContext = extensionContext
-        self.startupResult = startupResult
         self.interactor = interactor
         
         let loginInteractor = ModuleInteractorFactory.shared.loginModuleInteractor(config: .init(allowBiometrics: true, loginType: .login))
         loginPresenter = LoginPresenter(loginSuccessful: { [weak self] in
             self?.onLoginSuccessful()
         }, interactor: loginInteractor)
+    }
+    
+    func viewDidAppear() {
+        refreshState()
     }
     
     func startBiometryIfAvailable() {
@@ -64,11 +65,10 @@ final class AutoFillRootPresenter {
         if let credentialRequest {
             if completeCredentialRequest(credentialRequest) == false {
                 prepare(for: [credentialRequest.credentialIdentity.serviceIdentifier])
-                isLogged = true
             }
-        } else {
-            isLogged = true
         }
+        
+        refreshState()
     }
 
     private func completeCredentialRequest(_ credentialRequest: any ASCredentialRequest) -> Bool {
@@ -78,5 +78,11 @@ final class AutoFillRootPresenter {
         
         extensionContext.completeRequest(withSelectedCredential: credential)
         return true
+    }
+    
+    private func refreshState() {
+        Task { @MainActor in
+            startupState = await interactor.start()
+        }
     }
 }

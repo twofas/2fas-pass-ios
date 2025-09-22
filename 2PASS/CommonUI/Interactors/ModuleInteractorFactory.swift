@@ -14,7 +14,8 @@ public final class ModuleInteractorFactory {
     public func loginModuleInteractor(config: LoginModuleInteractorConfig) -> LoginModuleInteracting {
         LoginModuleInteractor(
             config: config,
-            loginInteractor: InteractorFactory.shared.loginInteractor()
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            securityInteractor: InteractorFactory.shared.securityInteractor()
         )
     }
     

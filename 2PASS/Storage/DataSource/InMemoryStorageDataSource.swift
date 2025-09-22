@@ -10,6 +10,7 @@ import Common
 
 public protocol InMemoryStorageDataSource: AnyObject {
     var storageError: ((String) -> Void)? { get set }
+    func loadStore(completion: @escaping Callback)
     
     // MARK: - Passwords
     

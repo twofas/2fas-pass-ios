@@ -10,6 +10,7 @@ import Common
 public protocol LogStorageDataSource: LogStorageHandling {
     var storageError: ((String) -> Void)? { get set }
     
+    func loadStore(completion: @escaping Callback)
     func listAll() -> [LogEntry]
     func removeOldStoreLogs()
     func save()

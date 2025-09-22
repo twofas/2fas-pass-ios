@@ -11,7 +11,8 @@ extension ModuleInteractorFactory {
     
     func autoFillInteractor() -> AutoFillModuleInteracting {
         AutoFillModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor()
+            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            startupInteractor: InteractorFactory.shared.startupInteractor()
         )
     }
 }
