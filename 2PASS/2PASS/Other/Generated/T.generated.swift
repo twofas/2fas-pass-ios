@@ -201,9 +201,9 @@ internal enum T {
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning the QR Code")
   /// Update app
   internal static let cloudSyncInvalidSchemaErrorCta = T.tr("Localizable", "cloud_sync_invalid_schema_error_cta", fallback: "Update app")
-  /// Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.
-  internal static func cloudSyncInvalidSchemaErrorMsg(_ p1: Int) -> String {
-    return T.tr("Localizable", "cloud_sync_invalid_schema_error_msg", p1, fallback: "Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.")
+  /// Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to synchronize it.
+  internal static func cloudSyncInvalidSchemaErrorMsg(_ p1: Int, _ p2: Int) -> String {
+    return T.tr("Localizable", "cloud_sync_invalid_schema_error_msg", p1, p2, fallback: "Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to synchronize it.")
   }
   /// Are you sure you want to delete this backup? You cannot restore it later.
   internal static let cloudVaultDeleteConfirmBody = T.tr("Localizable", "cloud_vault_delete_confirm_body", fallback: "Are you sure you want to delete this backup? You cannot restore it later.")
@@ -497,9 +497,9 @@ internal enum T {
   internal static let homeTitle = T.tr("Localizable", "home_title", fallback: "Items")
   /// Update app
   internal static let importInvalidSchemaErrorCta = T.tr("Localizable", "import_invalid_schema_error_cta", fallback: "Update app")
-  /// The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it.
-  internal static func importInvalidSchemaErrorMsg(_ p1: Int) -> String {
-    return T.tr("Localizable", "import_invalid_schema_error_msg", p1, fallback: "The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it.")
+  /// Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to import it.
+  internal static func importInvalidSchemaErrorMsg(_ p1: Int, _ p2: Int) -> String {
+    return T.tr("Localizable", "import_invalid_schema_error_msg", p1, p2, fallback: "Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to import it.")
   }
   /// Master Password
   internal static let iosLockScreenUnlockTitle = T.tr("Localizable", "ios_lock_screen_unlock_title", fallback: "Master Password")

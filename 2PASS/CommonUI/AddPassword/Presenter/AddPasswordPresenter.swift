@@ -68,6 +68,10 @@ final class AddPasswordPresenter {
         interactor.hasPasswords
     }
     
+    var showRemoveItemButton: Bool {
+        isEdit && interactor.changeRequest == nil
+    }
+    
     var nameChanged: Bool {
         guard let initialPasswordData else {
             return false
@@ -178,7 +182,7 @@ final class AddPasswordPresenter {
             }
             
             if case .domainIcon(let domain) = passwordData.iconType, let domain {
-                selectedURIIconIndex = passwordData.uris?.firstIndex(where: {
+                selectedURIIconIndex = (interactor.changeRequest?.uris ?? passwordData.uris)?.firstIndex(where: {
                     interactor.extractDomain(from: $0.uri) == domain
                 })
             }

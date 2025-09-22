@@ -82,6 +82,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importApplePasswordsDesktop(content: content)
         case .firefox:
             return await importFirefox(content: content)
+        case .keePassXC:
+            return await importKeePassXC(content: content)
         }
     }
 }
@@ -664,6 +666,63 @@ private extension ExternalServiceImportInteractor {
                         notes: notes,
                         creationDate: Date.importPasswordPlaceholder,
                         modificationDate: Date.importPasswordPlaceholder,
+                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                        trashedStatus: .no,
+                        protectionLevel: protectionLevel,
+                        uris: uris,
+                        tagIds: nil
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
+    }
+    
+    func importKeePassXC(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [PasswordData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["Title", "Username", "Password", "URL", "Notes", "Last Modified", "Created"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            try csv.enumerateAsDict { [weak self] dict in
+                let name = dict["Title"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["URL"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["Username"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["Password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let notes = dict["Notes"]?.nilIfEmpty
+
+                let dateFormatter = ISO8601DateFormatter()
+                let creationDate = dict["Created"]?.nilIfEmpty.flatMap { dateFormatter.date(from: $0) }
+                let modificationDate = dict["Last Modified"]?.nilIfEmpty.flatMap { dateFormatter.date(from: $0) }
+                
+                passwords.append(
+                    PasswordData(
+                        passwordID: .init(),
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: notes,
+                        creationDate: creationDate ?? Date.importPasswordPlaceholder,
+                        modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
                         iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
                         trashedStatus: .no,
                         protectionLevel: protectionLevel,
