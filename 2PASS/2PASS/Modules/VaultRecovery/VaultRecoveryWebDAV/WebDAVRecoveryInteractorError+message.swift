@@ -16,7 +16,6 @@ extension WebDAVRecoveryInteractorError {
         case .forbidden: T.recoveryErrorForbidden
         case .indexNotFound: T.recoveryErrorIndexNotFound
         case .vaultNotFound: T.recoveryErrorVaultNotFound
-        case .newerSchemaVersion: T.recoveryErrorNewerVersion
         case .nothingToImport: T.recoveryErrorNothingToImport
         case .urlError(let message): T.loginUriError(message)
         case .syncError(let message):
@@ -30,6 +29,7 @@ extension WebDAVRecoveryInteractorError {
         case .serverError(let message): T.generalServerErrorDetails(message)
         case .sslError: T.syncStatusErrorTlsCertFailed
         case .methodNotAllowed: T.syncStatusErrorNoWebDavServer
+        case .schemaNotSupported(let schemaVersion): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
         }
     }
 }

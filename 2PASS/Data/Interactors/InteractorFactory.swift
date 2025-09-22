@@ -277,7 +277,10 @@ public final class InteractorFactory {
     }
     
     public func appNotificationsInteractor() -> AppNotificationsInteracting {
-        AppNotificationsInteractor(mainRepository: MainRepositoryImpl.shared, connectInteractor: connectInteractor())
+        AppNotificationsInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            connectInteractor: connectInteractor()
+        )
     }
     
     public func paymentHandlingInteractor() -> PaymentHandlingInteracting {
@@ -313,6 +316,14 @@ public final class InteractorFactory {
     
     public func quickSetupInteractor() -> QuickSetupInteracting {
         QuickSetupInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+    
+    public func updateAppPromptInteractor() -> UpdateAppPromptInteracting {
+        UpdateAppPromptInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            systemInteractor: systemInteractor(),
+            cloudSyncInteractor: cloudSyncInteractor()
+        )
     }
 }
 

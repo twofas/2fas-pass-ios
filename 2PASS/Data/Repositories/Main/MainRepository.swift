@@ -53,6 +53,14 @@ protocol MainRepository: AnyObject {
     var shouldShowQuickSetup: Bool { get }
     func setShouldShowQuickSetup(_ value: Bool)
     
+    var lastAppUpdatePromptDate: Date? { get }
+    func setLastAppUpdatePromptDate(_ date: Date)
+    func clearLastAppUpdatePromptDate()
+    
+    var minimalAppVersionSupported: String? { get }
+    func setMinimalAppVersionSupported(_ version: String)
+    func clearMinimalAppVersionSupported()
+    
     // MARK: - Biometry
     var biometryType: BiometryType { get }
     var isBiometryEnabled: Bool { get }
@@ -616,7 +624,7 @@ protocol MainRepository: AnyObject {
     func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool)
 
     // MARK: 2FAS Web Service
-    func appNotifications() async throws -> [AppNotification]
+    func appNotifications() async throws -> AppNotifications
     func deleteAppNotification(id: String) async throws
     
     // MARK: - Scan

@@ -14,6 +14,7 @@ import CryptoKit
 import RevenueCat
 
 final class MainRepositoryImpl: MainRepository {
+    
     private static var _shared: MainRepositoryImpl!
     
     // MARK: State
@@ -37,6 +38,7 @@ final class MainRepositoryImpl: MainRepository {
     var _startPurchaseBlock: StartPurchaseBlock?
     var _subscriptionPlan: SubscriptionPlan = .free
     var _cloudCacheInitilizingNewStore = false
+    var _minimalAppVersionSupported: String?
     
     // Cached values for higher pefrormance
     var cachedSortType: SortType?

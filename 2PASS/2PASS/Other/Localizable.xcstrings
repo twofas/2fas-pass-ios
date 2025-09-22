@@ -476,7 +476,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update app"
+            "value" : "Update"
           }
         }
       }
@@ -487,7 +487,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You’re using an old version. Update now to get the latest features and improvements."
+            "value" : "You’re using an old app version. Please update it to get the latest features and improvements."
           }
         }
       }
@@ -498,7 +498,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Update Recommended"
+            "value" : "Update recommended"
           }
         }
       }
@@ -1010,13 +1010,12 @@
       }
     },
     "cloud_sync_invalid_schema_error_msg" : {
-      "comment" : "https://share.cleanshot.com/TYsPJlYz",
       "extractionState" : "manual",
       "localizations" : {
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your app supports backups up to version %1$d. The backup you’re trying to open is version %2$d. Please update your app to the latest version to restore it."
+            "value" : "Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it."
           }
         }
       }
@@ -1061,6 +1060,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add"
+          }
+        }
+      }
+    },
+    "common_back" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
           }
         }
       }
@@ -1588,7 +1598,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Go to App Store"
+            "value" : "Update"
           }
         }
       }
@@ -1610,7 +1620,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update the application in App Store"
+            "value" : "Please update the app to connect to the browser extension"
           }
         }
       }
@@ -1621,7 +1631,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New app version required"
+            "value" : "Update required"
           }
         }
       }
@@ -1643,7 +1653,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New browser extension version required"
+            "value" : "Browser extension update required"
           }
         }
       }
@@ -2567,7 +2577,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your app supports backups up to version %1$d. The backup you’re trying to open is version %2$d. Please update your app to the latest version to restore it."
+            "value" : "The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it."
           }
         }
       }
@@ -5889,7 +5899,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan the QR code or manually enter the Secret Words"
+            "value" : "Scan the QR code from the printed Decryption Kit"
           }
         }
       }
@@ -5900,7 +5910,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the printed Decryption Kit"
+            "value" : "Scan the QR code"
           }
         }
       }
@@ -8556,6 +8566,17 @@
         }
       }
     },
+    "transfer_instructions_enpass" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transfer_instructions_enpass"
+          }
+        }
+      }
+    },
     "transfer_instructions_firefox" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8584,7 +8605,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "transfer_instructions_keepass"
+            "value" : "Open KeePass on your PC and log in to your database.\n\nClick **File** in the menu bar, and select **Export**.\n\nChoose the **KeePass CSV format**, the export location and click **OK**.\n\nCopy the exported file to this device and tap **Upload CSV file** below."
           }
         }
       }
@@ -8595,7 +8616,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "transfer_instructions_keepassxc"
+            "value" : "Open KeePassXC on your PC and log in to your database.\n\nClick **Database** in the menu bar, and select **Export**.\n\nChoose the **CSV format**, confirm and choose the export location and click **OK**.\n\nCopy the exported file to this device and tap **Upload CSV file** below."
           }
         }
       }
@@ -8607,6 +8628,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the CSV file.\n\nCopy the exported file to this device and tap **Upload CSV file** below. "
+          }
+        }
+      }
+    },
+    "transfer_instructions_microsoft_edge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transfer_instructions_microsoft_edge"
           }
         }
       }

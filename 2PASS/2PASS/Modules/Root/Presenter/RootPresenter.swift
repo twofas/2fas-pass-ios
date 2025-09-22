@@ -10,6 +10,10 @@ import Data
 import CommonUI
 import UIKit
 
+private struct Constants {
+    static let showUpdateAppPromptDelay: Duration = .milliseconds(500)
+}
+
 final class RootPresenter {
     fileprivate enum State {
         case initial
@@ -43,7 +47,14 @@ final class RootPresenter {
         interactor.storageError = { [weak self] error in
             self?.flowController.toStorageError(error: error)
         }
+
         handleViewFlow()
+
+        interactor.presentAppUpdateNeededForNewSyncSchema = { [weak self] schemaVersion in
+            self?.flowController.toUpdateAppForNewSyncScheme(schemaVersion: schemaVersion)
+            self?.interactor.markAppVersionPromptAsShown()
+        }
+
         fetchAppNotifications()
     }
     
@@ -114,6 +125,8 @@ final class RootPresenter {
         if let newestNotification = appNotificationsQueue.last {
             flowController.toAppNotification(newestNotification)
         }
+        
+        showAppNotificationIfNeeded()
     }
     
     func handleWordsEntered() {
@@ -218,6 +231,18 @@ final class RootPresenter {
         if let newestNotification = appNotificationsQueue.last {
             if currentState == .main {
                 flowController.toAppNotification(newestNotification)
+            }
+        } else {
+            switch interactor.appVersionPromptState {
+            case .unsupportedAppVersion(let minimalVersion):
+                Task { @MainActor in
+                    try await Task.sleep(for: Constants.showUpdateAppPromptDelay)
+
+                    flowController.toUpdateAppForUnsupportedVersion(minimalVersion: minimalVersion)
+                    interactor.markAppVersionPromptAsShown()
+                }
+            default:
+                break
             }
         }
     }

@@ -18,4 +18,9 @@ public extension Notification.Name {
     static let presentPaymentScreen = Notification.Name("presentPaymentScreen")
     static let presentSyncPremiumNeededScreen = Notification.Name("presentSyncPremiumNeededScreen")
     static let didImportItems = Notification.Name("didImportItems")
+    static let showUpdateAppPrompt = Notification.Name("showUpdateAppPrompt")
+}
+
+public extension Notification {
+    static let showUpdateAppPromptReasonKey = "showUpdateAppPromptReasonKey"
 }

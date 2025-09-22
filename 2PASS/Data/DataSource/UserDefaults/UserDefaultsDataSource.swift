@@ -109,4 +109,8 @@ protocol UserDefaultsDataSource: AnyObject {
     
     var shouldShowQuickSetup: Bool { get }
     func setShouldShowQuickSetup(_ value: Bool)
+    
+    var lastAppUpdatePromptDate: Date? { get }
+    func setLastAppUpdatePromptDate(_ date: Date)
+    func clearLastAppUpdatePromptDate()
 }

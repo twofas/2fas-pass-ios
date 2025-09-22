@@ -20,7 +20,8 @@ extension ModuleInteractorFactory {
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
             paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
-            onboardingInteractor: InteractorFactory.shared.onboardingInteractor()
+            onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
+            updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor()
         )
     }
     
