@@ -1683,6 +1683,8 @@ internal enum T {
   /// 
   /// Copy this ZIP file to this device and tap **Upload ZIP file** below.
   internal static let transferInstructionsDashlanePc = T.tr("Localizable", "transfer_instructions_dashlane_pc", fallback: "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this ZIP file to this device and tap **Upload ZIP file** below.")
+  /// transfer_instructions_enpass
+  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "transfer_instructions_enpass")
   /// Open Firefox on your PC
   /// 
   /// Select the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.
@@ -1723,6 +1725,8 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below. 
   internal static let transferInstructionsLastpass = T.tr("Localizable", "transfer_instructions_lastpass", fallback: "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the CSV file.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
+  /// transfer_instructions_microsoft_edge
+  internal static let transferInstructionsMicrosoftEdge = T.tr("Localizable", "transfer_instructions_microsoft_edge", fallback: "transfer_instructions_microsoft_edge")
   /// Open 1Password on your PC.
   /// 
   /// Click the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).

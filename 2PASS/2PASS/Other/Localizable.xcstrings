@@ -8566,6 +8566,17 @@
         }
       }
     },
+    "transfer_instructions_enpass" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transfer_instructions_enpass"
+          }
+        }
+      }
+    },
     "transfer_instructions_firefox" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8617,6 +8628,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the CSV file.\n\nCopy the exported file to this device and tap **Upload CSV file** below. "
+          }
+        }
+      }
+    },
+    "transfer_instructions_microsoft_edge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "transfer_instructions_microsoft_edge"
           }
         }
       }
