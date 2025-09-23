@@ -21,8 +21,15 @@ public final class CoreDataStack {
     private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
     
-    private var isLoaded: Bool = false
+    private enum LoadState {
+        case initial
+        case loading
+        case loaded
+    }
     
+    private var loadState: LoadState = .initial
+    private var loadStoreCompletions: [Callback] = []
+
     public init(
         readOnly: Bool,
         name: String,
@@ -43,15 +50,22 @@ public final class CoreDataStack {
     }
     
     public func loadStore(completion: @escaping Callback) {
-        guard isLoaded == false else {
+        guard loadState != .loaded else {
             completion()
             return
         }
-        isLoaded = true
         configurePersistentContainer(persistentContainer, completion: completion)
     }
     
     private func configurePersistentContainer(_ container: NSPersistentContainer, completion: @escaping Callback) {
+        guard loadState != .loading else {
+            loadStoreCompletions.append(completion)
+            return
+        }
+        
+        loadState = .loading
+        loadStoreCompletions.append(completion)
+        
         let name = self.name
         if !FileManager.default.fileExists(atPath: storeUrl.path()) {
             DispatchQueue.main.async {
@@ -72,7 +86,12 @@ public final class CoreDataStack {
                 } else {
                     container.viewContext.automaticallyMergesChangesFromParent = true
                     DispatchQueue.main.async {
-                        completion()
+                        self?.loadState = .loaded
+                        
+                        for completion in self?.loadStoreCompletions ?? [] {
+                            completion()
+                        }
+                        self?.loadStoreCompletions = []
                     }
                 }
             }
