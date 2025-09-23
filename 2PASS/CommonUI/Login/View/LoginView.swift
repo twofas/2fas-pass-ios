@@ -73,6 +73,11 @@ public struct LoginView: View {
                 }
             }
         }
+        .onAppear {
+            if presenter.showKeyboard {
+                focusedField = .login
+            }
+        }
         .onChange(of: presenter.showKeyboard) { _, newValue in
             if newValue {
                 Task {
