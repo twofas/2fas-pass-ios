@@ -14,7 +14,8 @@ struct AutoFillRootView: View {
     var body: some View {
         switch presenter.startupState {
         case nil:
-            AnyView(EmptyView())
+            EmptyView()
+            
         case .enterPassword, .enterWords, .selectVault:
             noVaultView
             
