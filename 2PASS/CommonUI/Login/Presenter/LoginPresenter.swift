@@ -11,7 +11,7 @@ import Data
 
 private struct Constants {
     static let appLockTimerInterval: TimeInterval = 0.2
-    static let showPasswordViewAnimationDuration = 0.3
+    static let showPasswordViewAnimationDuration = 0.45
     static let showPasswordViewAnimationDelay = 0.4
 }
 
@@ -20,7 +20,7 @@ public final class LoginPresenter {
     
     var loginInput = "" {
         didSet {
-            refreshStatus()
+            isUnlockAvailable = !interactor.isAppLocked && hasInput
         }
     }
     
@@ -29,6 +29,7 @@ public final class LoginPresenter {
     private(set) var isUnlockAvailable = false
     private(set) var isBiometryAvailable = false
     private(set) var isBiometryAllowed = false
+    private(set) var biometrySuccess = false
     private(set) var biometryFailed = false
     private(set) var biometryType: BiometryType
     private(set) var lockTimeRemaining: Duration?
@@ -69,7 +70,7 @@ public final class LoginPresenter {
     private let coldRun: Bool
     private let loginSuccessful: Callback
     private let appReset: Callback?
-
+    
     private var lockTimer: Timer?
     
     public init(
@@ -84,19 +85,34 @@ public final class LoginPresenter {
         self.appReset = appReset
         self.biometryType = interactor.biometryType
         self.notficationCenter = .default
-        notficationCenter
-            .addObserver(
-                self,
-                selector: #selector(onAppear),
-                name: UIApplication.didBecomeActiveNotification,
-                object: nil
-            )
-        
+                
         interactor.lockLogin = { [weak self] in self?.refreshStatus() }
         interactor.unlockLogin = { [weak self] in self?.refreshStatus() }
         loginInput = interactor.prefillMasterPassword ?? ""
         isBiometryAllowed = interactor.isBiometryAllowed
         hasAppReset = interactor.hasAppReset
+        
+        if case .login = interactor.loginType {
+            notficationCenter
+                .addObserver(
+                    self,
+                    selector: #selector(willEnterForegroundNotification),
+                    name: UIApplication.willEnterForegroundNotification,
+                    object: nil
+                )
+            
+            notficationCenter
+                .addObserver(
+                    self,
+                    selector: #selector(didBecomeActiveNotification),
+                    name: UIApplication.didBecomeActiveNotification,
+                    object: nil
+                )
+        }
+        
+        if coldRun, UIApplication.shared.applicationState == .active {
+            didBecomeActiveNotification()
+        }
     }
     
     deinit {
@@ -105,6 +121,7 @@ public final class LoginPresenter {
 }
 
 extension LoginPresenter {
+    
     // Called from AutoFill extension
     public func startBiometryIfAvailable() {
         guard interactor.isAppLocked == false,
@@ -115,10 +132,70 @@ extension LoginPresenter {
         onBiometry()
     }
     
+    func onAppear() {
+        if interactor.isUserLoggedIn {
+            showSplashScreen = false
+            isEnterPasswordVisible = true
+            showKeyboard = true
+        } else {
+            guard isBiometryScanning == false else { return }
+            isBiometryAvailable = interactor.isBiometryAvailable
+            
+            if canUseBiometry {
+                showSplashScreen = true
+            } else if coldRun {
+                Task { @MainActor in
+                    withAnimation(.smooth(duration: 0.3).delay(0.3)) {
+                        showSplashScreen = false
+                    }
+                    
+                    try await Task.sleep(for: .milliseconds(300))
+                    
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isEnterPasswordVisible = true
+                    }
+                }
+            } else {
+                showSplashScreen = false
+                isEnterPasswordVisible = true
+            }
+            
+            startLockTimerIfNeeded()
+        }
+    }
+    
     @objc
-    func onAppear() { // this method is called multiple times, but should run once
-        guard !interactor.isUserLoggedIn && !isBiometryScanning else { return }
-        refreshStatus()
+    func willEnterForegroundNotification() {
+        biometryFailed = false
+        showKeyboard = false
+    }
+    
+    @objc
+    func didBecomeActiveNotification() {
+        isBiometryAvailable = interactor.isBiometryAvailable
+        
+        startLockTimerIfNeeded()
+        
+        if canUseBiometry {
+            if biometrySuccess == false, isBiometryScanning == false {
+                onBiometry()
+            }
+        } else if coldRun {
+            Task { @MainActor in
+                try await Task.sleep(for: .milliseconds(500))
+                showKeyboard = true
+            }
+        } else {
+            showKeyboard = true
+        }
+    }
+    
+    private var canUseBiometry: Bool {
+        interactor.loginType == .login
+            && isBiometryAvailable
+            && !interactor.isAppLocked
+            && interactor.isBiometryAllowed
+            && biometryFailed == false
     }
     
     func onLogin() {
@@ -170,7 +247,7 @@ extension LoginPresenter {
             
             switch result {
             case .success:
-                self?.showSplashScreen = true
+                self?.biometrySuccess = true
                 self?.loginSuccessful()
             case .failure, .unavailable:
                 self?.biometryFailed = true
@@ -201,31 +278,12 @@ private extension LoginPresenter {
     }
     
     func refreshStatus() {
-        isUnlockAvailable = !interactor.isAppLocked && hasInput
         isBiometryAvailable = interactor.isBiometryAvailable
         inputError = false
         errorDescription = ""
-        
-        // we're showing Login screen when going into background, but biometry shouldn't run
-        guard UIApplication.shared.applicationState == .active else {
-            showSplashScreen = true
-            isEnterPasswordVisible = false
-            return
-        }
-        
-        if interactor.loginType == .login
-            && (coldRun || isBiometryAvailable)
-            && !interactor.isAppLocked
-            && interactor.isBiometryAllowed
-            && biometryFailed == false {
-            showSplashScreen = true
-            isEnterPasswordVisible = false
-            if isBiometryScanning == false {
-                onBiometry()
-            }
-        } else {
-            withAnimation(.easeInOut(duration: Constants.showPasswordViewAnimationDuration)
-                .delay(Constants.showPasswordViewAnimationDelay)) {
+
+        if canUseBiometry == false {
+            withAnimation(.smooth(duration: 0.4)) {
                 showSplashScreen = false
                 isEnterPasswordVisible = true
             } completion: { [weak self] in
@@ -233,6 +291,10 @@ private extension LoginPresenter {
             }
         }
         
+        startLockTimerIfNeeded()
+    }
+    
+    private func startLockTimerIfNeeded() {
         if lockTimer == nil, interactor.isAppLocked {
             startLockTimer()
         }
