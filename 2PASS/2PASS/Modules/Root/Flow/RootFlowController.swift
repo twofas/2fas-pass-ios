@@ -292,6 +292,7 @@ extension RootFlowController: LoginFlowControllerParent {
         loginViewController = nil
         loginWindow.endEditing(true)
         loginWindow.isHidden = true
+        loginWindow.rootViewController = nil
         window?.makeKeyAndVisible()
     }
 }

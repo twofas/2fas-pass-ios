@@ -8,11 +8,6 @@ import SwiftUI
 
 private struct Constants {
     static let appLockInfoHeight = 28.0
-    static let hideSplashAnimationDuration = 0.45
-    static let hideSplashAnimationDelay = 0.2
-    static let showPasswordViewAnimationDuration = 0.3
-    static let showPasswordViewAnimationDelay = 0.4
-    static let openKeyboardDelay = Duration.milliseconds(100)
     static let passwordInputCornerRadius = 10.0
     static let passwordInputHeight = 44.0
     static let appLockTooltipAnimationDuration = 0.2
@@ -57,10 +52,6 @@ public struct LoginView: View {
         .background(Asset.mainBackgroundColor.swiftUIColor)
         .toolbar(.visible, for: .navigationBar)
         .onAppear {
-            presenter.hideKeyboard = {
-                focusedField = nil
-            }
-            
             presenter.onAppear()
         }
         .readableContentMargins()
@@ -83,10 +74,9 @@ public struct LoginView: View {
         }
         .onChange(of: presenter.showKeyboard) { _, newValue in
             if newValue {
-                Task {
-                    try await Task.sleep(for: Constants.openKeyboardDelay)
-                    focusedField = .login
-                }
+                focusedField = .login
+            } else {
+                focusedField = nil
             }
         }
     }

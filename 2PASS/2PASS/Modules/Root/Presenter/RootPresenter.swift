@@ -43,12 +43,13 @@ final class RootPresenter {
     }
     
     func initialize() {
+        flowController.toCover() // add a splash screen for the time between app launch and startup completion.
+
         interactor.initializeApp()
         interactor.storageError = { [weak self] error in
             self?.flowController.toStorageError(error: error)
         }
         
-        flowController.toCover() // add a splash screen for the time between app launch and startup completion.
         handleViewFlow { [weak self] in
             self?.flowController.toRemoveCover()
         }
