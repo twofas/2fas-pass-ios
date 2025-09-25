@@ -90,6 +90,7 @@ public final class LoginPresenter {
         interactor.unlockLogin = { [weak self] in self?.refreshStatus() }
         loginInput = interactor.prefillMasterPassword ?? ""
         isBiometryAllowed = interactor.isBiometryAllowed
+        isBiometryAvailable = interactor.isBiometryAvailable
         hasAppReset = interactor.hasAppReset
         
         if case .login = interactor.loginType {
