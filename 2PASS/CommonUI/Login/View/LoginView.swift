@@ -57,10 +57,6 @@ public struct LoginView: View {
         .background(Asset.mainBackgroundColor.swiftUIColor)
         .toolbar(.visible, for: .navigationBar)
         .onAppear {
-            presenter.hideKeyboard = {
-                focusedField = nil
-            }
-            
             presenter.onAppear()
         }
         .readableContentMargins()
@@ -82,6 +78,8 @@ public struct LoginView: View {
                     try await Task.sleep(for: Constants.openKeyboardDelay)
                     focusedField = .login
                 }
+            } else {
+                focusedField = nil
             }
         }
     }

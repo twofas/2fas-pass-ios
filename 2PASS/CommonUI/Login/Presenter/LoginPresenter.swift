@@ -40,7 +40,6 @@ public final class LoginPresenter {
     private(set) var showKeyboard = false
     
     var showMigrationFailed = false
-    var hideKeyboard: Callback?
     
     var showBiometryButton: Bool {
         isBiometryAvailable && isBiometryAllowed
@@ -211,8 +210,7 @@ extension LoginPresenter {
         interactor.verifyPassword(loginInput) { [weak self] result in
             switch result {
             case .success:
-                self?.hideKeyboard?()
-                
+                self?.showKeyboard = false
                 self?.loginInput = ""
                 
                 if self?.isBiometryAllowed == true
