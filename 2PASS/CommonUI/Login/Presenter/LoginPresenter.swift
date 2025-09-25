@@ -11,8 +11,8 @@ import Data
 
 private struct Constants {
     static let appLockTimerInterval: TimeInterval = 0.2
-    static let showPasswordViewAnimationDuration = 0.45
-    static let showPasswordViewAnimationDelay = 0.4
+    static let showPasswordViewAnimationDuration = 0.3
+    static let showPasswordViewAnimationDelay: Duration = .milliseconds(300)
 }
 
 @Observable
@@ -92,7 +92,7 @@ public final class LoginPresenter {
         isBiometryAvailable = interactor.isBiometryAvailable
         hasAppReset = interactor.hasAppReset
         
-        if case .login = interactor.loginType {
+        if case .login = loginType {
             notficationCenter
                 .addObserver(
                     self,
@@ -145,13 +145,13 @@ extension LoginPresenter {
                 showSplashScreen = true
             } else if coldRun {
                 Task { @MainActor in
-                    withAnimation(.smooth(duration: 0.3).delay(0.3)) {
+                    try await Task.sleep(for: Constants.showPasswordViewAnimationDelay)
+                    
+                    withAnimation(.smooth(duration: Constants.showPasswordViewAnimationDuration)) {
                         showSplashScreen = false
                     }
-                    
-                    try await Task.sleep(for: .milliseconds(300))
-                    
-                    withAnimation(.easeInOut(duration: 0.3)) {
+
+                    withAnimation(.easeInOut(duration: Constants.showPasswordViewAnimationDuration)) {
                         isEnterPasswordVisible = true
                     }
                 }
@@ -182,7 +182,6 @@ extension LoginPresenter {
             }
         } else if coldRun {
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(500))
                 showKeyboard = true
             }
         } else {
@@ -282,11 +281,14 @@ private extension LoginPresenter {
         errorDescription = ""
 
         if canUseBiometry == false {
-            withAnimation(.smooth(duration: 0.4)) {
+            withAnimation(.smooth(duration: Constants.showPasswordViewAnimationDuration)) {
                 showSplashScreen = false
-                isEnterPasswordVisible = true
             } completion: { [weak self] in
                 self?.showKeyboard = true
+            }
+            
+            withAnimation(.easeInOut(duration: Constants.showPasswordViewAnimationDuration)) {
+                isEnterPasswordVisible = true
             }
         }
         
