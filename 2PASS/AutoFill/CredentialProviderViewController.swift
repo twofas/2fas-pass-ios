@@ -32,7 +32,8 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)        
+        super.viewWillDisappear(animated)
+        presenter.viewWillDisappear()
         LogSave()
     }
 

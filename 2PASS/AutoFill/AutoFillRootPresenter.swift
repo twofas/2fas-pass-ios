@@ -30,7 +30,16 @@ final class AutoFillRootPresenter {
     }
     
     func viewDidAppear() {
-        refreshState()
+        Task { @MainActor in
+            await refreshState()
+            if startupState == .login {
+                startBiometryIfAvailable()   
+            }
+        }
+    }
+    
+    func viewWillDisappear() {
+        interactor.logoutFromApp()
     }
     
     func startBiometryIfAvailable() {
@@ -68,7 +77,9 @@ final class AutoFillRootPresenter {
             }
         }
         
-        refreshState()
+        Task { @MainActor in
+            await refreshState()
+        }
     }
 
     private func completeCredentialRequest(_ credentialRequest: any ASCredentialRequest) -> Bool {
@@ -80,9 +91,7 @@ final class AutoFillRootPresenter {
         return true
     }
     
-    private func refreshState() {
-        Task { @MainActor in
-            startupState = await interactor.start()
-        }
+    private func refreshState() async {
+        startupState = await interactor.start()
     }
 }

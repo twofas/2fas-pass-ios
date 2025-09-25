@@ -47,30 +47,33 @@ public struct LoginView: View {
     
     @ViewBuilder
     public var body: some View {
-        NavigationStack {
-            ZStack {
-                if presenter.showSplashScreen {
-                    splashView
-                } else {
-                    enterPasswordView
+        ZStack {
+            if presenter.showSplashScreen {
+                splashView
+            } else {
+                enterPasswordView
+            }
+        }
+        .background(Asset.mainBackgroundColor.swiftUIColor)
+        .toolbar(.visible, for: .navigationBar)
+        .onAppear {
+            presenter.hideKeyboard = {
+                focusedField = nil
+            }
+            
+            presenter.onAppear()
+        }
+        .readableContentMargins()
+        .navigationDestination(isPresented: $presenter.showMigrationFailed) {
+            ResultView(kind: .failure, title: Text(T.migrationErrorTitle.localizedKey)) {
+                Button(T.commonClose) {
+                    presenter.onMigrationFailedClose()
                 }
             }
-            .background(Asset.mainBackgroundColor.swiftUIColor)
-            .toolbar(.visible, for: .navigationBar)
-            .onAppear {
-                presenter.hideKeyboard = {
-                    focusedField = nil
-                }
-                
-                presenter.onAppear()
-            }
-            .readableContentMargins()
-            .navigationDestination(isPresented: $presenter.showMigrationFailed) {
-                ResultView(kind: .failure, title: Text(T.migrationErrorTitle.localizedKey)) {
-                    Button(T.commonClose) {
-                        presenter.onMigrationFailedClose()
-                    }
-                }
+        }
+        .onAppear {
+            if presenter.showKeyboard {
+                focusedField = .login
             }
         }
         .onAppear {
