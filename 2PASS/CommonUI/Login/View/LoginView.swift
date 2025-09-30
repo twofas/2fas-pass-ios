@@ -159,7 +159,7 @@ public struct LoginView: View {
             .toolbar {
                 if presenter.showCancel {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button(T.commonCancel.localizedKey) {
+                        ToolbarCancelButton {
                             dismiss()
                         }
                     }

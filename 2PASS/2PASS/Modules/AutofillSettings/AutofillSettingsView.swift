@@ -17,6 +17,7 @@ struct AutofillSettingsView: View {
             SettingsDetailsForm(T.settingsEntryAutofill.localizedKey) {
                 Section {
                     Toggle(T.settingsAutofillService.localizedKey, isOn: $presenter.isEnabled)
+                        .tint(.accentColor)
                 } footer: {
                     Text(T.settingsAutofillServiceDescription.localizedKey)
                         .settingsFooter()

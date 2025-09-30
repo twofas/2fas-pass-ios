@@ -55,7 +55,7 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
         .background(Color(UIColor.systemGroupedBackground))
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(T.commonCancel.localizedKey) {
+                ToolbarCancelButton {
                     dismiss()
                 }
             }

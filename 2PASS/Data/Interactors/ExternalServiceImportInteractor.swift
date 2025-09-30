@@ -82,6 +82,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importApplePasswordsDesktop(content: content)
         case .firefox:
             return await importFirefox(content: content)
+        case .keePass:
+            return await importKeePass(content: content)
         case .keePassXC:
             return await importKeePassXC(content: content)
         }
@@ -656,6 +658,59 @@ private extension ExternalServiceImportInteractor {
                     return nil
                 }()
                 let notes = dict["Notes"]?.nilIfEmpty
+                
+                passwords.append(
+                    PasswordData(
+                        passwordID: .init(),
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: notes,
+                        creationDate: Date.importPasswordPlaceholder,
+                        modificationDate: Date.importPasswordPlaceholder,
+                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                        trashedStatus: .no,
+                        protectionLevel: protectionLevel,
+                        uris: uris,
+                        tagIds: nil
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
+    }
+    
+    func importKeePass(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [PasswordData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["Account", "Login Name", "Password", "Web Site", "Comments"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            try csv.enumerateAsDict { [weak self] dict in
+                let name = dict["Account"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["Web Site"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["Login Name"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["Password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let notes = dict["Comments"]?.nilIfEmpty
                 
                 passwords.append(
                     PasswordData(

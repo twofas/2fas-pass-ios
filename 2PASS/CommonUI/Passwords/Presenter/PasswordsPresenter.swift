@@ -42,6 +42,11 @@ final class PasswordsPresenter {
         }
     }
     
+    var fillAddButton: Bool {
+        (autoFillEnvironment?.serviceIdentifiers.isEmpty == false && hasSuggestedItems == false)
+        || (itemsCount == 0 && selectedFilterTag == nil)
+    }
+    
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
 
@@ -109,7 +114,10 @@ extension PasswordsPresenter {
 
     func onClearSearchPhrase() {
         interactor.setSearchPhrase(nil)
-        reload()
+        
+        Task { @MainActor in // fix animation
+            reload()
+        }
     }
     
     func onSelectFilterTag(_ tag: ItemTagData?) {
@@ -243,7 +251,8 @@ private extension PasswordsPresenter {
                 snapshot.appendItems(restCells, toSection: section)
                 
                 cellsCount = list.rest.count
-
+                itemsCount = cellsCount
+                
             } else {
                 listData[0] = list.suggested
                 listData[1] = list.rest
@@ -260,6 +269,7 @@ private extension PasswordsPresenter {
                 snapshot.appendItems(restCells, toSection: section)
                 
                 cellsCount = suggestedCells.count + restCells.count
+                itemsCount = cellsCount
             }
             
             view?.reloadData(newSnapshot: snapshot)
@@ -272,13 +282,12 @@ private extension PasswordsPresenter {
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             snapshot.appendSections([section])
             snapshot.appendItems(cells, toSection: section)
+        
+            cellsCount = cells.count
+            itemsCount = cellsCount
             
             view?.reloadData(newSnapshot: snapshot)
-            
-            cellsCount = cells.count
         }
-        
-        itemsCount = cellsCount
         
         if cellsCount == 0 {
             if interactor.isSearching || selectedFilterTag != nil {

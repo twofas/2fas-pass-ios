@@ -9,7 +9,8 @@ import Common
 
 private struct Constants {
     static let minHeightPassword: CGFloat = 60
-    static let sheetHeight: CGFloat = 480
+    static let sheetHeight: CGFloat = 490
+    static let sheetHeightLiquidGlass: CGFloat = 550
 }
 
 struct AddPasswordGenerateView: View {
@@ -85,14 +86,26 @@ struct AddPasswordGenerateView: View {
                 .contentMargins(.top, 0)
                 .scrollBounceBehavior(.basedOnSize)
                 .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                .tint(.brand500)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button(T.commonCancel.localizedKey, action: { presenter.onClose() }))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    ToolbarCancelButton {
+                        presenter.onClose()
+                    }
+                }
+            }
+            .toolbarTitleDisplayMode(.inline)
             .navigationTitle(T.passwordGeneratorHeader.localizedKey)
         }
-        .tint(.brand500)
         .presentationDragIndicator(.hidden)
-        .presentationDetents([.height(Constants.sheetHeight)])
+        .modify {
+            if #available(iOS 26, *) {
+                $0.presentationDetents([.height(Constants.sheetHeightLiquidGlass)])
+            } else {
+                $0.presentationDetents([.height(Constants.sheetHeight)])
+            }
+        }
         .onAppear {
             presenter.onAppear()
         }
