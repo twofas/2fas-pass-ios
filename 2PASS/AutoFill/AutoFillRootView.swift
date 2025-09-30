@@ -14,7 +14,17 @@ struct AutoFillRootView: View {
     var body: some View {
         switch presenter.startupState {
         case nil:
-            AnyView(EmptyView())
+            NavigationStack {
+                SplashScreenView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("common_cancel") {
+                                presenter.onCancel()
+                            }
+                        }
+                    }
+            }
+            
         case .enterPassword, .enterWords, .selectVault:
             noVaultView
             
@@ -29,6 +39,7 @@ struct AutoFillRootView: View {
                         }
                     }
             }
+
         case .main:
             AutoFillPasswordsListView(
                 context: presenter.extensionContext,

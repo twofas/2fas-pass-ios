@@ -27,7 +27,7 @@ protocol RootFlowControlling: AnyObject {
     func toMain()
     func toLogin(coldRun: Bool)
     func toStorageError(error: String)
-    func toRemoveCover(delayAnim: Bool)
+    func toRemoveCover()
     func toRemoveLogin()
     func toDismissKeyboard()
     func toAppNotification(_ notification: AppNotification)
@@ -47,9 +47,7 @@ final class RootFlowController: FlowController {
         window.windowLevel = .cover
         window.backgroundColor = .clear
         let storyboard = UIStoryboard(name: "LaunchScreen", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "LaunchScreen")
-        window.addSubview(vc.view)
-        vc.view.pinToParent()
+        window.rootViewController = storyboard.instantiateViewController(withIdentifier: "LaunchScreen")
         return window
     }()
     
@@ -93,10 +91,7 @@ extension RootFlowController {
 
 extension RootFlowController: RootFlowControlling {
     func toCover() {
-        coverWindow.layer.removeAllAnimations()
         coverWindow.isHidden = false
-        coverWindow.alpha = 1
-        
         coverWindow.makeKeyAndVisible()
     }
     
@@ -149,20 +144,9 @@ extension RootFlowController: RootFlowControlling {
         }
     }
     
-    func toRemoveCover(delayAnim: Bool) {
-        guard !coverWindow.isHidden else { return }
-        
-        UIView.animate(
-            withDuration: Animation.duration,
-            delay: delayAnim ? Animation.duration : 0,
-            options: [.curveEaseInOut, .beginFromCurrentState]
-        ) {
-            self.coverWindow.alpha = 0
-        } completion: { finished in
-            guard finished else { return }
-            self.coverWindow.isHidden = true
-            self.coverWindow.alpha = 1
-        }
+    func toRemoveCover() {
+        coverWindow.removeFromSuperview()
+        coverWindow.isHidden = true
     }
     
     func toDismissKeyboard() {
@@ -308,6 +292,7 @@ extension RootFlowController: LoginFlowControllerParent {
         loginViewController = nil
         loginWindow.endEditing(true)
         loginWindow.isHidden = true
+        loginWindow.rootViewController = nil
         window?.makeKeyAndVisible()
     }
 }

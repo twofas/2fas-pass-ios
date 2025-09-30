@@ -43,12 +43,16 @@ final class RootPresenter {
     }
     
     func initialize() {
+        flowController.toCover() // add a splash screen for the time between app launch and startup completion.
+
         interactor.initializeApp()
         interactor.storageError = { [weak self] error in
             self?.flowController.toStorageError(error: error)
         }
-
-        handleViewFlow()
+        
+        handleViewFlow { [weak self] in
+            self?.flowController.toRemoveCover()
+        }
 
         interactor.presentAppUpdateNeededForNewSyncSchema = { [weak self] schemaVersion in
             self?.flowController.toUpdateAppForNewSyncScheme(schemaVersion: schemaVersion)
@@ -72,28 +76,21 @@ final class RootPresenter {
         interactor.applicationDidBecomeActive {
             Log("App: Token copied")
         }
-        handleViewFlow { [weak self] in
-            // so we won't blink between removing cover and bio login
-            let longerAnim: Bool = self?.currentState == .login
-            self?.removeCover(longerAnim: longerAnim)
-        }
     }
     
     func applicationWillResignActive() {
         Log("App: applicationWillResignActive")
         interactor.applicationWillResignActive()
-
-        handleViewFlow()
-        installCover()
     }
     
     func applicationDidEnterBackground() {
         Log("App: applicationDidEnterBackground")
         
         toastPresenter.dismissAll(animated: false)
+        
         if interactor.isUserSetUp {
             interactor.logoutFromApp()
-            handleViewFlow()
+            presentLoginIfNeeded()
         }
     }
     
@@ -119,8 +116,11 @@ final class RootPresenter {
     
     func handleUserWasLoggedIn() {
         flowController.toDismissKeyboard()
-        handleViewFlow()
-        flowController.toRemoveLogin()
+        handleViewFlow { [weak self] in
+            if self?.currentState != .login {
+                self?.flowController.toRemoveLogin()
+            }
+        }
         
         if let newestNotification = appNotificationsQueue.last {
             flowController.toAppNotification(newestNotification)
@@ -156,9 +156,10 @@ final class RootPresenter {
     
     func handleViewFlow(completion: Callback? = nil) {
         Log("RootPresenter: Changing state for: \(currentState)")
-        
+                
         Task { @MainActor in
-            switch await interactor.start() {
+            let result = await interactor.start()
+            switch result {
             case .selectVault:
                 presentOnboarding()
             case .enterWords:
@@ -176,14 +177,11 @@ final class RootPresenter {
     }
     
     // MARK: - Private methods
-    private func installCover() {
+    
+    private func presentLoginIfNeeded() {
         guard currentState == .login || currentState == .main else { return }
         flowController.toDismissKeyboard()
-        flowController.toCover()
-    }
-    
-    private func removeCover(longerAnim: Bool) {
-        flowController.toRemoveCover(delayAnim: longerAnim)
+        flowController.toLogin(coldRun: false)
     }
     
     private func presentOnboarding() {
