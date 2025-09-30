@@ -18,7 +18,7 @@ struct AutoFillRootView: View {
                 SplashScreenView()
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("common_cancel") {
+                            ToolbarCancelButton {
                                 presenter.onCancel()
                             }
                         }
@@ -52,7 +52,7 @@ struct AutoFillRootView: View {
     
     private var noVaultView: some View {
         NavigationStack {
-            Text("autofill_no_vault_message")
+            Text(T.autofillNoVaultMessage.localizedKey)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         ToolbarCancelButton {
