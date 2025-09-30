@@ -1125,8 +1125,8 @@ internal enum T {
   internal static let restoreQrCodeErrorSystemSettings = T.tr("Localizable", "restore_qr_code_error_system_settings", fallback: "System Settings")
   /// Scan QR code
   internal static let restoreQrCodeIntroCta = T.tr("Localizable", "restore_qr_code_intro_cta", fallback: "Scan QR code")
-  /// Scan the QR code from the printed Decryption Kit
-  internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code from the printed Decryption Kit")
+  /// Scan the QR code from your printed Decryption Kit
+  internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code from your printed Decryption Kit")
   /// Scan the QR code
   internal static let restoreQrCodeIntroTitle = T.tr("Localizable", "restore_qr_code_intro_title", fallback: "Scan the QR code")
   /// Reading backup file…
@@ -1683,8 +1683,18 @@ internal enum T {
   /// 
   /// Copy this ZIP file to this device and tap **Upload ZIP file** below.
   internal static let transferInstructionsDashlanePc = T.tr("Localizable", "transfer_instructions_dashlane_pc", fallback: "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this ZIP file to this device and tap **Upload ZIP file** below.")
-  /// transfer_instructions_enpass
-  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "transfer_instructions_enpass")
+  /// Open Enpass on your PC.
+  /// 
+  /// Open the menu at the top right of the app.
+  /// 
+  /// Select **File** then **Export**.
+  /// 
+  /// Select the correct Vault and the .json file format.
+  /// 
+  /// Choose the location and confirm the export.
+  /// 
+  /// Copy the exported file to this device and tap **Upload JSON file** below. 
+  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the .json file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Open Firefox on your PC
   /// 
   /// Select the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.
@@ -1725,8 +1735,16 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below. 
   internal static let transferInstructionsLastpass = T.tr("Localizable", "transfer_instructions_lastpass", fallback: "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the CSV file.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
-  /// transfer_instructions_microsoft_edge
-  internal static let transferInstructionsMicrosoftEdge = T.tr("Localizable", "transfer_instructions_microsoft_edge", fallback: "transfer_instructions_microsoft_edge")
+  /// Open Microsoft Edge on your PC
+  /// 
+  /// Select the 3 dots next to your profile icon at the top right, then select **Passwords**.
+  /// 
+  /// Select the 3 dots next to Passkeys and click **Export passwords**.
+  /// 
+  /// Confirm the export.
+  /// 
+  /// Copy the exported file to this device and tap **Upload CSV file** below. 
+  internal static let transferInstructionsMicrosoftEdge = T.tr("Localizable", "transfer_instructions_microsoft_edge", fallback: "Open Microsoft Edge on your PC\n\nSelect the 3 dots next to your profile icon at the top right, then select **Passwords**.\n\nSelect the 3 dots next to Passkeys and click **Export passwords**.\n\nConfirm the export.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
   /// Open 1Password on your PC.
   /// 
   /// Click the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).
