@@ -51,6 +51,7 @@ public protocol ProtectionInteracting: AnyObject {
     func setMasterKey(for masterPassword: String)
     func setMasterKey(_ masterKey: MasterKey)
     func setMasterPassword(_ masterPassword: MasterPassword)
+    func masterKey(from masterPassword: MasterPassword) -> MasterKey?
     func masterKey(from masterPassword: MasterPassword, entropy: Entropy, kdfSpec: KDFSpec) -> MasterKey?
     func setupKeys()
     func selectVault()
@@ -436,6 +437,10 @@ extension ProtectionInteractor: ProtectionInteracting {
             module: .interactor
         )
         mainRepository.setEmpheralMasterKey(masterKey)
+    }
+    
+    func masterKey(from masterPassword: MasterPassword) -> MasterKey? {
+        createMasterKey(using: masterPassword)
     }
     
     func masterKey(from masterPassword: MasterPassword, entropy: Entropy, kdfSpec: KDFSpec = .default) -> MasterKey? {

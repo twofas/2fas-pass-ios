@@ -23,7 +23,7 @@ protocol RootFlowControlling: AnyObject {
     func toCover()
     func toOnboarding()
     func toEnterPassword()
-    func toEnterWords()
+    func toRestoreVault()
     func toMain()
     func toLogin(coldRun: Bool)
     func toStorageError(error: String)
@@ -165,8 +165,8 @@ extension RootFlowController: RootFlowControlling {
         }
     }
     
-    func toEnterWords() {
-        activeViewController = EnterWordsFlowController.embedAsRoot(in: viewController, parent: self)
+    func toRestoreVault() {
+        activeViewController = RestoreVaultFlowController.embedAsRoot(in: viewController, parent: self)
     }
     
     func toAppNotification(_ notification: AppNotification) {
@@ -262,20 +262,9 @@ extension RootFlowController {
     }
 }
 
-extension RootFlowController: EnterWordsFlowControllerParent {
-    func enterWordsToEnterMasterPassword(with entropy: Entropy, fileData: ExchangeVault) {
-        // not used in this context
-    }
-    
-    func enterWordsToEnterMasterPassword() {
-        // not used in this context
-    }
-    
-    func enterWordsToDecrypt(with masterKey: MasterKey, entropy: Entropy, fileData: ExchangeVault) {
-        // not used in this context
-    }
-    
-    func enterWordsClose() {
+extension RootFlowController: RestoreVaultFlowControllerParent {
+
+    func restoreVaultClose() {
         clearActiveViewController()
         viewController.presenter.handleWordsEntered()
     }

@@ -21,16 +21,19 @@ final class VaultRecoveryEnterPasswordModuleInteractor {
     let entropy: Entropy
     let recoveryData: VaultRecoveryData
     private let loginInteractor: LoginInteracting
+    private let protectionInteractor: ProtectionInteracting
     private let jsonDecoder: JSONDecoder
         
     init(
         entropy: Entropy,
         recoveryData: VaultRecoveryData,
-        loginInteractor: LoginInteracting
+        loginInteractor: LoginInteracting,
+        protectionInteractor: ProtectionInteracting
     ) {
         self.entropy = entropy
         self.recoveryData = recoveryData
         self.loginInteractor = loginInteractor
+        self.protectionInteractor = protectionInteractor
         self.jsonDecoder = JSONDecoder()
     }
 }
@@ -73,6 +76,9 @@ extension VaultRecoveryEnterPasswordModuleInteractor: VaultRecoveryEnterPassword
                 kdfSpec: kdfSpec,
                 completion: completion
             )
+        case .localVault:
+            let masterKey = protectionInteractor.masterKey(from: masterPassword)
+            completion(masterKey)
         }
     }
 }
