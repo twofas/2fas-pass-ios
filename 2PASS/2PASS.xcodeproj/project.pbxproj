@@ -1058,11 +1058,12 @@
 		C2B0B8222C1E050500D26D11 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				C267F9202BE2CA61005F7B89 /* Root */,
+				C2A7469E2C1B9CF5005E7CE6 /* Main */,
 				54FD31A22E45644E00DFAC70 /* Tags */,
 				548E54142E326EDB00DA22A7 /* QuickSetup */,
 				5415B8402E2A796000FBEE71 /* Logs */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
-				C267F9202BE2CA61005F7B89 /* Root */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
 				54B676172D87719800AB4691 /* Sync */,
 				54B66D912D86DA7700AB4691 /* PushNotifications */,
@@ -1078,7 +1079,6 @@
 				54B671632D86EC3100AB4691 /* About */,
 				54B664B42D85752200AB4691 /* Trash */,
 				54405B542D93FD7A009C66C1 /* MasterPassword */,
-				C2A7469E2C1B9CF5005E7CE6 /* Main */,
 				54AFB3212DA441BB00EE00E9 /* Connect */,
 				54A825872D82DA3700CBC463 /* Settings */,
 				54BB9E4E2DC8A90800BDD13F /* AppNotifications */,
@@ -1628,6 +1628,7 @@
 		};
 		5415C9322E2A8CB300FBEE71 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);

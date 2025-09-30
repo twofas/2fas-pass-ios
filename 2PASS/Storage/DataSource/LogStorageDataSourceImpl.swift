@@ -10,7 +10,7 @@ import CoreData
 
 public final class LogStorageDataSourceImpl {
     private let coreDataStack: CoreDataStack
-    private let handler: LogHandler
+    private var handler: LogHandler?
     
     public var storageError: ((String) -> Void)?
     
@@ -26,37 +26,43 @@ public final class LogStorageDataSourceImpl {
             storeInGroup: true,	
             isPersistent: true
         )
-        handler = LogHandler(coreDataStack: coreDataStack)
         
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
-        coreDataStack.loadStore()
+    }
+    
+    public func loadStore(completion: @escaping Callback) {
+        coreDataStack.loadStore { [weak self] in
+            guard let self else { return }
+            handler = LogHandler(coreDataStack: coreDataStack)
+            completion()
+        }
     }
 }
 
 extension LogStorageDataSourceImpl: LogStorageDataSource {
     public func store(content: String, timestamp: Date, module: Int, severity: Int) {
-        handler.store(content: content, timestamp: timestamp, module: module, severity: severity)
+        handler?.store(content: content, timestamp: timestamp, module: module, severity: severity)
     }
     
     public func markZoneStart() {
-        handler.markZoneStart()
+        handler?.markZoneStart()
     }
     
     public func markZoneEnd() {
-        handler.markZoneEnd()
+        handler?.markZoneEnd()
     }
     
     public func listAll() -> [LogEntry] {
-        handler.listAll()
+        handler?.listAll() ?? []
     }
     
     public func removeAll() {
-        handler.removeAll()
+        handler?.removeAll()
     }
     
     public func save() {
-        handler.save()
+        handler?.save()
     }
     
     public func removeOldStoreLogs() {
