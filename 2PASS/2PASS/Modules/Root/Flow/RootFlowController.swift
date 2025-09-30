@@ -145,6 +145,7 @@ extension RootFlowController: RootFlowControlling {
     }
     
     func toRemoveCover() {
+        coverWindow.rootViewController = nil
         coverWindow.removeFromSuperview()
         coverWindow.isHidden = true
     }

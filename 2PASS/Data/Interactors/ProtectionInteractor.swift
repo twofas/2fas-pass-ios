@@ -41,7 +41,8 @@ public protocol ProtectionInteracting: AnyObject {
     var hasBiometryKey: Bool { get }
     
     var hasAppKey: Bool { get }
-    func createAppKey()
+    func createAppKey(completion: @escaping (Bool) -> Void)
+    func verifyAppKey() -> Bool
     
     func generateEntropy()
     func createSeed()
@@ -67,11 +68,14 @@ public protocol ProtectionInteracting: AnyObject {
     
     func recreateSeedSaltWordsMasterKey() -> Bool
     
+    func clearAppKeyStorage()
     func clearMasterKey()
     func clearMasterKeyEncrypted()
     func clearAppKeyEncryptedStorage()
     
     func createExternalSymmetricKey(from masterKey: MasterKey, vaultID: VaultID) -> SymmetricKey?
+    
+    func verifyMasterKeyForVault(_ masterKey: MasterKey) -> Bool
 }
 
 extension ProtectionInteracting {
@@ -146,6 +150,11 @@ extension ProtectionInteractor: ProtectionInteracting {
         mainRepository.clearEncryptionReference()
     }
     
+    func clearAppKeyStorage() {
+        mainRepository.clearAppKey()
+        clearAppKeyEncryptedStorage()
+    }
+    
     func clearApp() {
         Log("ProtectionInteractor: Clear All!", module: .interactor)
         mainRepository.clearAppKey()
@@ -166,7 +175,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         mainRepository.hasEncryptionReference
     }
     
-    func createAppKey() {
+    func createAppKey(completion: @escaping (Bool) -> Void) {
         Log("ProtectionInteractor: Create App Key", module: .interactor)
         guard let accessControl = mainRepository.createSecureEnclaveAccessControl(needAuth: false) else {
             Log(
@@ -174,6 +183,7 @@ extension ProtectionInteractor: ProtectionInteracting {
                 module: .interactor,
                 severity: .error
             )
+            completion(false)
             return
         }
         mainRepository.createSecureEnclavePrivateKey(
@@ -181,11 +191,64 @@ extension ProtectionInteractor: ProtectionInteracting {
         ) { [weak self] key in
             guard let key else {
                 Log("ProtectionInteractor: Error while creating App Key", module: .interactor, severity: .error)
+                completion(false)
                 return
             }
             Log("ProtectionInteractor: Saving App Key", module: .interactor)
             self?.mainRepository.saveAppKey(key)
+            completion(true)
         }
+    }
+    
+    func verifyAppKey() -> Bool {
+        guard let appKey = mainRepository.appKey else {
+            return false
+        }
+        return mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) != nil
+    }
+    
+    func verifyMasterKeyForVault(_ masterKey: MasterKey) -> Bool {
+        guard let vault = mainRepository.listEncryptedVaults().first else {
+            return true
+        }
+        
+        guard let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(vault.vaultID, using: masterKey.hexEncodedString()),
+              let trustedKeyData = Data(hexString: trustedKeyString) else {
+            return false
+        }
+        
+        guard let secureKeyString = mainRepository.generateSecureKeyForVaultID(vault.vaultID, using: masterKey.hexEncodedString()),
+              let secureKeyData = Data(hexString: secureKeyString) else {
+            return false
+        }
+        
+        let trustedKey = mainRepository.createSymmetricKey(from: trustedKeyData)
+        let secureKey = mainRepository.createSymmetricKey(from: secureKeyData)
+        
+        // Find any encrypted element in the database and try to decrypt it.
+        
+        if let item = mainRepository.listEncryptedItems(in: vault.vaultID).first {
+            let key: SymmetricKey = {
+                switch item.protectionLevel {
+                case .normal, .confirm:
+                    return trustedKey
+                case .topSecret:
+                    return secureKey
+                }
+            }()
+            
+            return mainRepository.decrypt(item.content, key: key) != nil
+        }
+        
+        if let tag = mainRepository.listEncryptedTags(in: vault.vaultID).first {
+            return mainRepository.decrypt(tag.name, key: trustedKey) != nil
+        }
+        
+        if let browser = mainRepository.listEncryptedWebBrowsers().first {
+            return mainRepository.decrypt(browser.extName, key: trustedKey) != nil
+        }
+        
+        return true
     }
     
     func restoreEntropy() {
