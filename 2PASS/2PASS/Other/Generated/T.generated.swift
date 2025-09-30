@@ -1125,10 +1125,10 @@ internal enum T {
   internal static let restoreQrCodeErrorSystemSettings = T.tr("Localizable", "restore_qr_code_error_system_settings", fallback: "System Settings")
   /// Scan QR code
   internal static let restoreQrCodeIntroCta = T.tr("Localizable", "restore_qr_code_intro_cta", fallback: "Scan QR code")
-  /// Scan the QR code or manually enter the Secret Words
-  internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code or manually enter the Secret Words")
-  /// Use the printed Decryption Kit
-  internal static let restoreQrCodeIntroTitle = T.tr("Localizable", "restore_qr_code_intro_title", fallback: "Use the printed Decryption Kit")
+  /// Scan the QR code from the printed Decryption Kit
+  internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code from the printed Decryption Kit")
+  /// Scan the QR code
+  internal static let restoreQrCodeIntroTitle = T.tr("Localizable", "restore_qr_code_intro_title", fallback: "Scan the QR code")
   /// Reading backup file…
   internal static let restoreReadingFileText = T.tr("Localizable", "restore_reading_file_text", fallback: "Reading backup file…")
   /// Start using app

@@ -21,8 +21,15 @@ public final class CoreDataStack {
     private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
     
-    private var isLoaded: Bool = false
+    private enum LoadState {
+        case initial
+        case loading
+        case loaded
+    }
     
+    private var loadState: LoadState = .initial
+    private var loadStoreCompletions: [Callback] = []
+
     public init(
         readOnly: Bool,
         name: String,
@@ -39,17 +46,26 @@ public final class CoreDataStack {
         migrator?.bundle = bundle
         self.isPersistent = isPersistent
         
-        let container = NSPersistentContainer(name: name, bundle: bundle)
-        self.persistentContainer = container
+        self.persistentContainer = NSPersistentContainer(name: name, bundle: bundle)
     }
     
-    public func loadStore() {
-        guard isLoaded == false else { return }
-        isLoaded = true
-        configurePersistentContainer(persistentContainer)
+    public func loadStore(completion: @escaping Callback) {
+        guard loadState != .loaded else {
+            completion()
+            return
+        }
+        configurePersistentContainer(persistentContainer, completion: completion)
     }
     
-    private func configurePersistentContainer(_ container: NSPersistentContainer) {
+    private func configurePersistentContainer(_ container: NSPersistentContainer, completion: @escaping Callback) {
+        guard loadState != .loading else {
+            loadStoreCompletions.append(completion)
+            return
+        }
+        
+        loadState = .loading
+        loadStoreCompletions.append(completion)
+        
         let name = self.name
         if !FileManager.default.fileExists(atPath: storeUrl.path()) {
             DispatchQueue.main.async {
@@ -67,10 +83,19 @@ public final class CoreDataStack {
                     self?.logError?(err)
                     self?.parseError(with: error.userInfo)
                     fatalError(err.description)
+                } else {
+                    container.viewContext.automaticallyMergesChangesFromParent = true
+                    DispatchQueue.main.async {
+                        self?.loadState = .loaded
+                        
+                        for completion in self?.loadStoreCompletions ?? [] {
+                            completion()
+                        }
+                        self?.loadStoreCompletions = []
+                    }
                 }
             }
         }
-        container.viewContext.automaticallyMergesChangesFromParent = true
     }
     
     private lazy var storeDescription: NSPersistentStoreDescription = {

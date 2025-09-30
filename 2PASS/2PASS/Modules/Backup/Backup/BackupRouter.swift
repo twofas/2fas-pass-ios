@@ -43,12 +43,7 @@ struct BackupRouter: Router {
         case .importFile:
             EmptyView()
         case .currentPassword(let config, let onSuccess):
-            LoginView(presenter: .init(
-                loginSuccessful: onSuccess,
-                interactor: ModuleInteractorFactory.shared.loginModuleInteractor(
-                    config: config
-                )
-            ))
+            LoginRouter.buildView(config: config, onSuccess: onSuccess)
         case .export(let onClose):
             BackupExportFileRouter.buildView(onClose: onClose)
         case .upgradePlanPrompt(let itemsLimit):

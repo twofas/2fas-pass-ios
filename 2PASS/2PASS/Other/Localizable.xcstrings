@@ -5899,7 +5899,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan the QR code or manually enter the Secret Words"
+            "value" : "Scan the QR code from the printed Decryption Kit"
           }
         }
       }
@@ -5910,7 +5910,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the printed Decryption Kit"
+            "value" : "Scan the QR code"
           }
         }
       }

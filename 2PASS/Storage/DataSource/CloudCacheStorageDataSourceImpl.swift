@@ -28,7 +28,9 @@ public final class CloudCacheStorageDataSourceImpl {
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.initilizingNewStore = { [weak self] in self?.initilizingNewStore?() }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
-        coreDataStack.loadStore()
+        coreDataStack.loadStore {
+            Log("CloudCache storage initialized")
+        }
     }
 }
 

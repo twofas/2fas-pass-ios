@@ -9,17 +9,18 @@ import SwiftUI
 import CommonUI
 import RevenueCatUI
 
-protocol MainFlowControllerParent: AnyObject {
-    
-}
+protocol MainFlowControllerParent: AnyObject {}
 
 protocol MainFlowControlling: AnyObject {
     func toQuickSetup()
     func toPayment()
+    func toRequestEnableBiometry()
+    func dismissRequestEnableBiometry()
 }
 
 final class MainFlowController: FlowController {
     private weak var parent: MainFlowControllerParent?
+    private weak var biometricPromptViewController: UIViewController?
     
     static func embedAsRoot(
         in viewController: UIViewController,
@@ -87,6 +88,35 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
         }
         
         viewController.present(controller, animated: true)
+    }
+    
+    func toRequestEnableBiometry() {
+        guard viewController.presentedViewController == nil else { return }
+        
+        let vc = UIHostingController(rootView: BiometricPromptRouter.buildView(onClose: { [weak self] in
+            self?.viewController.dismiss(animated: true)
+        }))
+        
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom(resolver: { context in
+                if context.containerTraitCollection.userInterfaceIdiom == .phone {
+                    return BiometricPromptViewConstants.sheetHeight
+                } else {
+                    return context.maximumDetentValue
+                }
+            })]
+        }
+        
+        vc.isModalInPresentation = true
+        biometricPromptViewController = viewController
+        
+        viewController.present(vc, animated: true)
+    }
+    
+    func dismissRequestEnableBiometry() {
+        guard biometricPromptViewController != nil else { return }
+        biometricPromptViewController?.dismiss(animated: false)
+        biometricPromptViewController = nil
     }
     
     @MainActor
