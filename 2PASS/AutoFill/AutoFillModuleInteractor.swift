@@ -12,14 +12,29 @@ protocol AutoFillModuleInteracting: AnyObject {
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
     func credential(for itemID: ItemID) -> ASPasswordCredential?
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
+    func initialize()
+    func start() async -> StartupInteractorStartResult
+    func logoutFromApp()
 }
 
 final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     
     private let itemsInteractor: ItemsInteracting
+    private let startupInteractor: StartupInteracting
+    private let securityInteractor: SecurityInteracting
     
-    init(itemsInteractor: ItemsInteracting) {
+    init(itemsInteractor: ItemsInteracting, startupInteractor: StartupInteracting, securityInteractor: SecurityInteracting) {
         self.itemsInteractor = itemsInteractor
+        self.startupInteractor = startupInteractor
+        self.securityInteractor = securityInteractor
+    }
+    
+    func initialize() {
+        startupInteractor.initialize()
+    }
+    
+    func start() async -> StartupInteractorStartResult {
+        await startupInteractor.start()
     }
     
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential? {
@@ -71,5 +86,9 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             Log("AutoFill - Failed get credential: \(failure)", module: .autofill)
             return nil
         }
+    }
+    
+    func logoutFromApp() {
+        securityInteractor.logout()
     }
 }

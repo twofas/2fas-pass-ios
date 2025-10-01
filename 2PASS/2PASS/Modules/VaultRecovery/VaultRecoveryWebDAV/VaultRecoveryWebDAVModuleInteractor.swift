@@ -18,6 +18,7 @@ protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
         password: String?,
         completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
     )
+    func resetConfiguration()
 }
 
 final class VaultRecoveryWebDAVModuleInteractor {
@@ -38,6 +39,10 @@ extension VaultRecoveryWebDAVModuleInteractor: VaultRecoveryWebDAVModuleInteract
     
     func normalizeURL(_ url: String) -> URL? {
         uriInteractor.normalizeURL(url, options: .trailingSlash)
+    }
+    
+    func resetConfiguration() {
+        webDAVRecoveryInteractor.resetConfiguration()
     }
     
     func recover(

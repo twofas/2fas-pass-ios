@@ -4,6 +4,8 @@ import Common
 @Observable @MainActor
 final class EditTagPresenter {
     
+    let limitNameLength: Int = Config.maxTagNameLength
+    
     private let interactor: EditTagModuleInteracting
     private let onClose: Callback
     private let tagID: ItemTagID?
@@ -19,7 +21,11 @@ final class EditTagPresenter {
         
         if let tagID, let tag = interactor.getTag(tagID: tagID) {
             self.name = tag.name
-        }
+        }        
+    }
+    
+    var canSave: Bool {
+        name.isEmpty == false && name.count <= limitNameLength
     }
 
     func onSave() {

@@ -14,11 +14,11 @@ import CryptoKit
 import RevenueCat
 
 final class MainRepositoryImpl: MainRepository {
+    
     private static var _shared: MainRepositoryImpl!
     
     // MARK: State
     
-    var _isLockScreenActive = false
     var _empheralDeviceID: UUID?
     var _ephemeralMasterKey: MasterKey?
     var _selectedVault: VaultEncryptedData?
@@ -31,7 +31,6 @@ final class MainRepositoryImpl: MainRepository {
     var _empheralSalt: Data?
     var _empheralMasterPassword: MasterPassword?
     var _isInBackground = false
-    var _canLockApp = true
     var _webDAVState: WebDAVState = .idle
     var _isAutoFillEnabled: Bool = false
     var _pushNotificationToken: String?
@@ -39,6 +38,7 @@ final class MainRepositoryImpl: MainRepository {
     var _startPurchaseBlock: StartPurchaseBlock?
     var _subscriptionPlan: SubscriptionPlan = .free
     var _cloudCacheInitilizingNewStore = false
+    var _minimalAppVersionSupported: String?
     
     // Cached values for higher pefrormance
     var cachedSortType: SortType?
@@ -125,7 +125,9 @@ final class MainRepositoryImpl: MainRepository {
         cloudCache.storageError = { [weak self] in self?.storageError?($0) }
         cloudCache.initilizingNewStore = { [weak self] in self?._cloudCacheInitilizingNewStore = true }
 
-        LogStorage.setStorage(logDataSource)
+        logDataSource.loadStore {
+            LogStorage.setStorage(logDataSource)
+        }
         
         cloudCache.warmUp()
         

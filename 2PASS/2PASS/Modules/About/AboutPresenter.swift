@@ -70,7 +70,7 @@ extension AboutPresenter {
 }
 
 extension AboutPresenter.LinkItem {
-    static let rate = AboutPresenter.LinkItem(icon: .rate, title: T.aboutRateUsAppStore.localizedKey, url: Config.rateAppURL)
+    static let rate = AboutPresenter.LinkItem(icon: .rate, title: T.aboutRateUsAppStore.localizedKey, url: Config.appStoreURL)
     static let privacyPolicy = AboutPresenter.LinkItem(icon: .privacyPolicy, title: T.aboutPrivacyPolicy.localizedKey, url: Config.privacyPolicyURL)
     static let termsOfUse = AboutPresenter.LinkItem(icon: .termsOfUse, title: T.aboutTermsOfUse.localizedKey, url: Config.tosURL)
     static let libraries = AboutPresenter.LinkItem(icon: .libraries, title: T.aboutLibrariesWeUse.localizedKey, url: Config.openSourceLicencesURL)

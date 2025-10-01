@@ -196,7 +196,7 @@ private extension WebDAVBackupInteractor {
                     module: .interactor,
                     severity: .error
                 )
-                webDAVStateInteractor.syncError(.newerVersionNeeded)
+                webDAVStateInteractor.syncError(.schemaNotSupported(matchingVault.schemaVersion))
                 return
             }
             
@@ -369,9 +369,9 @@ private extension WebDAVBackupInteractor {
                         case .corruptedFile(let error):
                             Log("WebDAVBackupInteractor - error, Vault file corrupted: \(error)", module: .interactor, severity: .error)
                             self?.prepareForExport()
-                        case .newerSchemaVersion:
-                            Log("WebDAVBackupInteractor - error, newer schema detected", module: .interactor, severity: .error)
-                            self?.webDAVStateInteractor.syncError(.newerVersionNeeded)
+                        case .schemaNotSupported(let schemeVersion):
+                            Log("WebDAVBackupInteractor - error, schema not supported: version \(schemeVersion)", module: .interactor, severity: .error)
+                            self?.webDAVStateInteractor.syncError(.schemaNotSupported(schemeVersion))
                         case .nothingToImport:
                             Log("WebDAVBackupInteractor - nothing to import", module: .interactor)
                             if self?.mainRepository.webDAVHasLocalChanges == true {

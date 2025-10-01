@@ -19,12 +19,12 @@ enum BackupAddWebDAVModuleInteractorStatus {
     case urlError(String)
     case syncError(String?)
     case retrying(String?)
-    case newerVersionNeeded
     case networkError(String)
     case serverError(String)
     case synced
     case limitDevicesReached
     case passwordChanged
+    case schemaNotSupported(Int)
 }
 
 protocol BackupAddWebDAVModuleInteracting: AnyObject {
@@ -135,7 +135,6 @@ private extension BackupAddWebDAVModuleInteractor {
             switch syncError {
             case .unauthorized: return .unauthorized
             case .forbidden: return .forbidden
-            case .newerVersionNeeded: return .newerVersionNeeded
             case .notConfigured: return .notConfigured
             case .syncError(let string): return .syncError(string)
             case .networkError(let string): return .networkError(string)
@@ -145,6 +144,7 @@ private extension BackupAddWebDAVModuleInteractor {
             case .methodNotAllowed: return .methodNotAllowed
             case .limitDevicesReached: return .limitDevicesReached
             case .passwordChanged: return .passwordChanged
+            case .schemaNotSupported(let schemaVersion): return .schemaNotSupported(schemaVersion)
             }
         case .retry(let string): return .retrying(string)
         case .synced: return .synced

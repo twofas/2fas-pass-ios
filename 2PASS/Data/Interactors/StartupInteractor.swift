@@ -12,6 +12,7 @@ public enum StartupInteractorStartResult {
     case enterWords
     case enterPassword
     case login
+    case main
 }
 
 public enum StartupInteractorSetWordsResult {
@@ -35,7 +36,7 @@ public protocol StartupInteracting: AnyObject {
     func getAllWords() -> [String]
     
     func initialize()
-    func start() -> StartupInteractorStartResult
+    func start() async -> StartupInteractorStartResult
     func setupEncryptionElements()
     func setMasterPassword(masterPassword: String?, enableBiometryLogin: Bool, completion: @escaping () -> Void)
     func clearAfterInit()
@@ -59,19 +60,22 @@ final class StartupInteractor {
     private let biometryInteractor: BiometryInteracting
     private let onboardingInteractor: OnboardingInteracting
     private let migrationInteractor: MigrationInteracting
+    private let securityInteractor: SecurityInteracting
     
     init(
         protectionInteractor: ProtectionInteracting,
         storageInteractor: StorageInteracting,
         biometryInteractor: BiometryInteracting,
         onboardingInteractor: OnboardingInteracting,
-        migrationInteractor: MigrationInteracting
+        migrationInteractor: MigrationInteracting,
+        securityInteractor: SecurityInteracting
     ) {
         self.protectionInteractor = protectionInteractor
         self.storageInteractor = storageInteractor
         self.biometryInteractor = biometryInteractor
         self.onboardingInteractor = onboardingInteractor
         self.migrationInteractor = migrationInteractor
+        self.securityInteractor = securityInteractor
     }
 }
 
@@ -127,14 +131,15 @@ extension StartupInteractor: StartupInteracting {
     }
     
     /// Run every time user is in logged out state
-    func start() -> StartupInteractorStartResult {
+    @MainActor
+    func start() async -> StartupInteractorStartResult {
         Log("StartupInteractor: Start", module: .interactor)
         
-        if migrationInteractor.requiresReencryptionMigration() {
+        guard !migrationInteractor.requiresReencryptionMigration() else {
             return .login
-        } else {
-            storageInteractor.loadStore()
         }
+        
+        await storageInteractor.loadStore()
         
         guard protectionInteractor.hasVault, onboardingInteractor.isOnboardingCompleted else {
             Log("StartupInteractor: Select Vault", module: .interactor)
@@ -162,6 +167,10 @@ extension StartupInteractor: StartupInteracting {
         }
         
         protectionInteractor.selectVault()
+        
+        if securityInteractor.isUserLoggedIn {
+            return .main
+        }
         
         return .login
     }

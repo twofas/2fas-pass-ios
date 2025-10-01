@@ -72,8 +72,8 @@ private extension MainRepositoryImpl {
                 return .disabledNotAvailable(reason: .useriCloudProblem)
             case .other:
                 return .disabledNotAvailable(reason: .other)
-            case .newerVersion:
-                return .disabledNotAvailable(reason: .newerVersion)
+            case .schemaNotSupported(let schemaVersion):
+                return .disabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
             case .incorrectEncryption:
                 return .disabledNotAvailable(reason: .incorrectEncryption)
             case .noAccount:
@@ -89,6 +89,8 @@ private extension MainRepositoryImpl {
                 return .enabled(sync: .syncing)
             case .synced:
                 return .enabled(sync: .synced)
+            case .outOfSync(.schemaNotSupported(let schemaVersion)):
+                return .enabled(sync: .outOfSync(.schemaNotSupported(schemaVersion)))
             }
         }
     }

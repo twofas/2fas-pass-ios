@@ -43,6 +43,15 @@ struct SyncView: View {
                 .listSectionSpacing(0)
             }
             
+            if presenter.showUpdateAppButton {
+                Section {
+                    Button(T.cloudSyncInvalidSchemaErrorCta.localizedKey) {
+                        presenter.onUpdateApp()
+                    }
+                }
+                .listSectionSpacing(0)
+            }
+            
         } header: {
             SettingsHeaderView(
                 icon: .sync,

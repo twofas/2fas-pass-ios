@@ -36,11 +36,7 @@ public final class InteractorFactory {
             protectionInteractor: protectionInteractor()
         )
     }
-    
-    public func appStateInteractor() -> AppStateInteracting {
-        AppStateInteractor(mainRepository: MainRepositoryImpl.shared)
-    }
-    
+
     public func itemsInteractor() -> ItemsInteracting {
         ItemsInteractor(
             mainRepository: MainRepositoryImpl.shared,
@@ -81,7 +77,8 @@ public final class InteractorFactory {
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
             onboardingInteractor: onboardingInteractor(),
-            migrationInteractor: migrationInteractor()
+            migrationInteractor: migrationInteractor(),
+            securityInteractor: securityInteractor()
         )
     }
     
@@ -280,7 +277,10 @@ public final class InteractorFactory {
     }
     
     public func appNotificationsInteractor() -> AppNotificationsInteracting {
-        AppNotificationsInteractor(mainRepository: MainRepositoryImpl.shared, connectInteractor: connectInteractor())
+        AppNotificationsInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            connectInteractor: connectInteractor()
+        )
     }
     
     public func paymentHandlingInteractor() -> PaymentHandlingInteracting {
@@ -316,6 +316,14 @@ public final class InteractorFactory {
     
     public func quickSetupInteractor() -> QuickSetupInteracting {
         QuickSetupInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+    
+    public func updateAppPromptInteractor() -> UpdateAppPromptInteracting {
+        UpdateAppPromptInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            systemInteractor: systemInteractor(),
+            cloudSyncInteractor: cloudSyncInteractor()
+        )
     }
 }
 

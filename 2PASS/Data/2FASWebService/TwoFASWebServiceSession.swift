@@ -16,7 +16,7 @@ final class TwoFASWebServiceSession {
         self.baseURL = baseURL
     }
     
-    func fetchNotifications(forDeviceId deviceId: UUID) async throws -> [AppNotification] {
+    func fetchNotifications(forDeviceId deviceId: UUID) async throws -> AppNotifications {
         let url = baseURL.appending(path: "device/\(deviceId)/notifications")
         let (data, _) = try await session.data(from: url)
         
@@ -28,7 +28,7 @@ final class TwoFASWebServiceSession {
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         decoder.dateDecodingStrategy = .formatted(formatter)
         
-        return try decoder.decode(AppNotifications.self, from: data).notifications ?? []
+        return try decoder.decode(AppNotifications.self, from: data)
     }
     
     func deleteNotification(id: String, deviceId: UUID) async throws {

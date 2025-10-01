@@ -82,6 +82,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importApplePasswordsDesktop(content: content)
         case .firefox:
             return await importFirefox(content: content)
+        case .keePassXC:
+            return await importKeePassXC(content: content)
         }
     }
 }
@@ -728,6 +730,70 @@ private extension ExternalServiceImportInteractor {
         }
         
         return .success(items)
+    }
+    
+    func importKeePassXC(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [ItemData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["Title", "Username", "Password", "URL", "Notes", "Last Modified", "Created"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            try csv.enumerateAsDict { [weak self] dict in
+                let name = dict["Title"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["URL"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["Username"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["Password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let notes = dict["Notes"]?.nilIfEmpty
+
+                let dateFormatter = ISO8601DateFormatter()
+                let creationDate = dict["Created"]?.nilIfEmpty.flatMap { dateFormatter.date(from: $0) }
+                let modificationDate = dict["Last Modified"]?.nilIfEmpty.flatMap { dateFormatter.date(from: $0) }
+                
+                passwords.append(
+                    .login(
+                        .init(
+                            id: .init(),
+                            metadata: .init(
+                                creationDate: creationDate ?? Date.importPasswordPlaceholder,
+                                modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                username: username,
+                                password: password,
+                                notes: notes,
+                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                                uris: uris
+                            )
+                        )
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
     }
     
     private func makeIconType(uri: String?) -> PasswordIconType {

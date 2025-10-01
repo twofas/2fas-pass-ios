@@ -113,11 +113,11 @@ extension ProtectionInteractor: ProtectionInteracting {
     }
     
     var hasVault: Bool {
-        !mainRepository.listEncrypteVaults().isEmpty
+        !mainRepository.listEncryptedVaults().isEmpty
     }
     
     var vaultHasTrustedItems: Bool {
-        guard let vault = mainRepository.listEncrypteVaults().first else {
+        guard let vault = mainRepository.listEncryptedVaults().first else {
             return false
         }
         guard !vault.isEmpty else {
@@ -448,7 +448,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     
     func selectVault() {
         Log("ProtectionInteractor: Selecting Vault", module: .interactor)
-        guard let vault = mainRepository.listEncrypteVaults().first else {
+        guard let vault = mainRepository.listEncryptedVaults().first else {
             Log("ProtectionInteractor: Can't find any Vault", module: .interactor, severity: .error)
             return
         }

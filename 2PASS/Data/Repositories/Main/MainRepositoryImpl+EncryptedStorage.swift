@@ -96,7 +96,7 @@ extension MainRepositoryImpl {
     
     // MARK: Encrypted Vaults
     
-    func listEncrypteVaults() -> [VaultEncryptedData] {
+    func listEncryptedVaults() -> [VaultEncryptedData] {
         encryptedStorage.listEncrypteVaults()
     }
     
@@ -137,7 +137,7 @@ extension MainRepositoryImpl {
     }
     
     func deleteAllVaults() {
-        listEncrypteVaults().forEach { vault in
+        listEncryptedVaults().forEach { vault in
             deleteEncryptedVault(vault.vaultID)
         }
         saveEncryptedStorage()
@@ -168,9 +168,11 @@ extension MainRepositoryImpl {
         hasEncryptionReference && encryptedStorage.migrationRequired
     }
     
-    func loadEncryptedStore() {
-        encryptedStorage.loadStore()
-        encryptedStorage.warmUp()
+    func loadEncryptedStore(completion: @escaping Callback) {
+        encryptedStorage.loadStore { [weak encryptedStorage] in
+            encryptedStorage?.warmUp()
+            completion()
+        }
     }
     
     func loadEncryptedStoreWithReencryptionMigration() {
@@ -219,9 +221,9 @@ extension MainRepositoryImpl {
             }
         )
         
-        encryptedStorage.loadStore()
-        
-        MigrationController.current = nil
+        encryptedStorage.loadStore {
+            MigrationController.current = nil
+        }
     }
     
     // MARK: Deleted Items

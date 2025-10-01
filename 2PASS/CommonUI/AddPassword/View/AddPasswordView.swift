@@ -86,7 +86,7 @@ struct AddPasswordView: View {
                             .autocorrectionDisabled(true)
                             .textInputAutocapitalization(.never)
                             .focused($focusField, equals: .username)
-                            .introspect(.textField, on: .iOS(.v17, .v18)) {
+                            .introspect(.textField, on: .iOS(.v17, .v18, .v26)) {
                                 setupUsernameTextField($0)
                             }
                     }
@@ -243,7 +243,7 @@ struct AddPasswordView: View {
             }
             .listSectionSpacing(Spacing.l)
             
-            if presenter.isEdit {
+            if presenter.showRemoveItemButton {
                 Section {
                     Button(role: .destructive) {
                         showDeleteConfirmation = true

@@ -36,6 +36,11 @@ final class MainViewController: UITabBarController {
         presenter.viewDidAppear()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        presenter.viewWillDisappear()
+    }
+    
     private func changeStyling() {
         let app = tabBar.standardAppearance.copy()
         app.backgroundColor = Asset.mainBackgroundColor.color

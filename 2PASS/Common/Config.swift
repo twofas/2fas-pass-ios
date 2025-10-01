@@ -11,7 +11,7 @@ public enum Config {
     public static let tosURL = URL(string: "https://2fas.com/pass/eula")!
     public static let privacyPolicyURL = URL(string: "https://2fas.com/pass/privacy-policy")!
     public static let openSourceLicencesURL = URL(string: "https://2fas.com/pass/open-source-licenses")!
-    public static let rateAppURL = URL(string: "https://apps.apple.com/us/app/2fas-pass-password-manager/id6504464955")!
+    public static let appStoreURL = URL(string: "https://apps.apple.com/us/app/2fas-pass-password-manager/id6504464955")!
     
     #if PROD
     public static let suiteName = "group.twopass.twofas.com"
@@ -33,6 +33,8 @@ public enum Config {
     public static let defaultIconLabel = ""
     public static let maxLabelLength = 2
     public static let scaleImageSize = CGSize(width: 128, height: 128)
+    public static let maxTagNameLength: Int = 64
+    
     public enum kdfSpec {
         public static let algorithm: KDFSpec.KDFType = .argon2id
         public static let hashLength: Int = 32
@@ -47,6 +49,7 @@ public enum Config {
     public static let maxNotesLength = 2048
     public static let maxURICount = 9
     
+    public static let connectSchemaVersion = 1
     public static let cloudSchemaVersion = 2
     public static let indexSchemaVersion = 1
     #if PROD
@@ -82,7 +85,7 @@ public enum Config {
         public static let baseURL = URL(string: "wss://dev-pass.2fas.com/proxy/mobile/")!
         #endif
         
-        public static let schemeVersion = 1
+        public static let schemaVersion = 1
         
         public static let sessionIdByteCount = 16
         public static let nonceByteCount = 12

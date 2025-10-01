@@ -112,7 +112,7 @@ public struct PasswordContentInput: View {
             SecureField(label, text: $password)
                 .focused($focusedField, equals: .secure)
                 .opacity(isReveal ? 0 : 1)
-                .introspect(.textField, on: .iOS(.v17, .v18)) { textField in
+                .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     introspectTextField(textField)
                 }
             
@@ -120,7 +120,7 @@ public struct PasswordContentInput: View {
                 RevealedPasswordTextField(text: $password, isColorized: isColorized)
                     .focused($focusedField, equals: .unsecure)
                     .fontDesign(password.isEmpty ? .default : .monospaced)
-                    .introspect(.textField, on: .iOS(.v17, .v18)) { textField in
+                    .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                         introspectTextField(textField)
                     }
             }

@@ -27,13 +27,17 @@ extension TimeVerificationInteractor: TimeVerificationInteracting {
         guard !isTimeValid && !isValidating else { return }
         isValidating = true
         Log("TimeVerification - Starting")
-        mainRepository.checkTimeOffset { [weak self] timeInterval in
-            self?.isValidating = false
-            guard let timeInterval else {
-                return
+        Task {
+            mainRepository.checkTimeOffset { [weak self] timeInterval in
+                Task { @MainActor [weak self] in
+                    self?.isValidating = false
+                    guard let timeInterval else {
+                        return
+                    }
+                    self?.isTimeValid = true
+                    self?.mainRepository.setTimeOffset(timeInterval)
+                }
             }
-            self?.isTimeValid = true
-            self?.mainRepository.setTimeOffset(timeInterval)
         }
     }
 }

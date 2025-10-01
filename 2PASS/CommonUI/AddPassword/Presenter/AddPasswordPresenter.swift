@@ -68,6 +68,10 @@ final class AddPasswordPresenter {
         interactor.hasPasswords
     }
     
+    var showRemoveItemButton: Bool {
+        isEdit && interactor.changeRequest == nil
+    }
+    
     var nameChanged: Bool {
         guard let initialPasswordData else {
             return false
@@ -178,7 +182,7 @@ final class AddPasswordPresenter {
             }
             
             if case .domainIcon(let domain) = passwordData.iconType, let domain {
-                selectedURIIconIndex = passwordData.uris?.firstIndex(where: {
+                selectedURIIconIndex = (interactor.changeRequest?.uris ?? passwordData.uris)?.firstIndex(where: {
                     interactor.extractDomain(from: $0.uri) == domain
                 })
             }
@@ -313,7 +317,7 @@ final class AddPasswordPresenter {
             uris: checkedURIs.map { content in
                 PasswordURI(uri: content.original, match: content.match)
             },
-            tagIds: selectedTags.isEmpty ? nil : Array(selectedTags.map { $0.tagID })
+            tagIds: Array(selectedTags.map { $0.tagID })
         )
         if result.isSuccess {
             flowController.close(with: result)
