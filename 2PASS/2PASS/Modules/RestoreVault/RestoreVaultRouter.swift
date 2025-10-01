@@ -6,16 +6,17 @@
 
 import SwiftUI
 import Common
+import CommonUI
 
 struct RestoreVaultRouter {
     
     static func buildView(onClose: @escaping Callback) -> some View {
         NavigationStack {
-            VaultRecoverySelectRouter.buildView(
+            RestoreVaultView(presenter: .init(
                 flowContext: .restoreVault,
+                interactor: ModuleInteractorFactory.shared.vaultRecoverySelectModuleInteractor(),
                 recoveryData: .localVault
-            )
-            .toolbar(.visible, for: .navigationBar)
+            ))
         }
         .environment(\.dismissFlow, DismissFlowAction(action: {
             onClose()

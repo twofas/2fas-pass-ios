@@ -42,6 +42,7 @@
 		549200602DD4D83100C2431E /* ios-secret-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 5492005F2DD4D83100C2431E /* ios-secret-key.json */; };
 		549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */; };
 		549B1F712E8C035600228FE2 /* CameraViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B1F6F2E8C035600228FE2 /* CameraViewport.swift */; };
+		549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
 		54BB9E5E2DC8AC4800BDD13F /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54BB9E572DC8AC4800BDD13F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -330,6 +331,7 @@
 		5492005F2DD4D83100C2431E /* ios-secret-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ios-secret-key.json"; sourceTree = "<group>"; };
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		549B1F6F2E8C035600228FE2 /* CameraViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewport.swift; sourceTree = "<group>"; };
+		549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDecryptionMethod.swift; sourceTree = "<group>"; };
 		54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -825,6 +827,7 @@
 			isa = PBXGroup;
 			children = (
 				549B1F6F2E8C035600228FE2 /* CameraViewport.swift */,
+				549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */,
 				54EABA712DD2537B0018189F /* ShareSheetView.swift */,
 				C2AA58802CCE8AD000DC3613 /* BackupImportFileError+LocalizedDescription.swift */,
 				C2AA587E2CCE8A4800DC3613 /* BackupImportParseError+LocalizedDescription.swift */,
@@ -1688,6 +1691,7 @@
 				C2CD74082C7FBCA200B8E9FE /* CameraOutputQRScanner.swift in Sources */,
 				C25577212DC819790025C09F /* ExternalService+.swift in Sources */,
 				C2F81EBC2BE42325008FD374 /* RootModuleInteractor.swift in Sources */,
+				549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */,
 				54EABA722DD2537B0018189F /* ShareSheetView.swift in Sources */,
 				8F6F40D02D3723790010F7CE /* OnboardingPagesPresenter.swift in Sources */,
 				8F6F40E32D386EDF0010F7CE /* OnboardingStepDimmedView.swift in Sources */,
