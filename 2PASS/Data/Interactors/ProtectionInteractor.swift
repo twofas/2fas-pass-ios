@@ -210,7 +210,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     
     func verifyMasterKeyForVault(_ masterKey: MasterKey) -> Bool {
         guard let vault = mainRepository.listEncryptedVaults().first else {
-            return true
+            return false
         }
         
         guard let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(vault.vaultID, using: masterKey.hexEncodedString()),
@@ -249,7 +249,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             return mainRepository.decrypt(browser.extName, key: trustedKey) != nil
         }
         
-        return true
+        return false
     }
     
     func restoreEntropy() {
