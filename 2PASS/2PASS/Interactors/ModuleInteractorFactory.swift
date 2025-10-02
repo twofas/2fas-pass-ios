@@ -78,14 +78,6 @@ extension ModuleInteractorFactory {
         ))
     }
     
-    func enterWordsModuleInteractor() -> EnterWordsModuleInteracting {
-        EnterWordsModuleInteractor(
-            cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
-            startupInteractor: InteractorFactory.shared.startupInteractor(),
-            importInteractor: InteractorFactory.shared.importInteractor()
-        )
-    }
-    
     func eventLogModuleInteractor() -> EventLogModuleInteracting {
         EventLogModuleInteractor(
             debugInteractor: InteractorFactory.shared.debugInteractor()
@@ -152,7 +144,8 @@ extension ModuleInteractorFactory {
         VaultRecoveryEnterPasswordModuleInteractor(
             entropy: entropy,
             recoveryData: recoveryData,
-            loginInteractor: InteractorFactory.shared.loginInteractor()
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            protectionInteractor: InteractorFactory.shared.protectionInteractor()
         )
     }
     

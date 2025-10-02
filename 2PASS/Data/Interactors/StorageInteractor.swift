@@ -56,8 +56,22 @@ extension StorageInteractor: StorageInteracting {
         )
         
         if migrationInteractor.requiresReencryptionMigration() {
-            migrationInteractor.performReencryptionMigration()
+            Task { @MainActor in
+                guard await migrationInteractor.loadStoreWithReencryptionMigration() else {
+                    fatalError("Failed to load Encrypted store with reencryption migration")
+                }
+                performInitialize(completion: completion)
+            }
+        } else {
+            performInitialize(completion: completion)
         }
+    }
+    
+    private func performInitialize(completion: @escaping () -> Void) {
+        Log(
+            "StorageInteractor - perform initialize",
+            module: .interactor
+        )
         
         let vaults = mainRepository.listEncryptedVaults()
         guard let masterKey = mainRepository.empheralMasterKey else {

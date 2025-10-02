@@ -163,7 +163,7 @@ final class RootPresenter {
             case .selectVault:
                 presentOnboarding()
             case .enterWords:
-                presentEnterWords()
+                presentRestoreVault()
             case .login:
                 let coldRun = (currentState == .initial)
                 presentLogin(coldRun: coldRun)
@@ -196,10 +196,10 @@ final class RootPresenter {
         flowController.toEnterPassword()
     }
     
-    private func presentEnterWords() {
+    private func presentRestoreVault() {
         guard currentState != .enterWords else { return }
         changeState(.enterWords)
-        flowController.toEnterWords()
+        flowController.toRestoreVault()
     }
     
     private func presentMain() {

@@ -32,7 +32,8 @@ public final class LogStorageDataSourceImpl {
     }
     
     public func loadStore(completion: @escaping Callback) {
-        coreDataStack.loadStore { [weak self] in
+        coreDataStack.loadStore { [weak self] success in
+            guard success else { fatalError("Failed to load Log store") }
             guard let self else { return }
             handler = LogHandler(coreDataStack: coreDataStack)
             completion()

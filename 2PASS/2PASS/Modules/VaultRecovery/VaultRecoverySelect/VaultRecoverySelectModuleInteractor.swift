@@ -106,25 +106,11 @@ extension VaultRecoverySelectModuleInteractor: VaultRecoverySelectModuleInteract
     }
     
     func validateEntropy(_ entropy: Entropy, for data: VaultRecoveryData) -> Bool {
-        let vaultSeedHash: String? = {
-            switch data {
-            case .file(let vault):
-                vault.encryption?.seedHash
-            case .cloud(let vaultData):
-                vaultData.seedHash
-            }
-        }()
+        if case .localVault = data {
+            return true
+        }
         
-        let vaultID: UUID? = {
-            switch data {
-            case .file(let vault):
-                UUID(uuidString: vault.vault.id)
-            case .cloud(let vaultData):
-                vaultData.vaultID
-            }
-        }()
-        
-        guard let vaultSeedHash, let vaultID else {
+        guard let vaultSeedHash = data.vaultSeedHash, let vaultID = data.vaultID else {
             return false
         }
         guard let seedHash = importInteractor.generateSeedHash(from: entropy, vaultID: vaultID) else {
