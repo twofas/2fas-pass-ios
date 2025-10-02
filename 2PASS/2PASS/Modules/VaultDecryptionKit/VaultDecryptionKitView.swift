@@ -108,7 +108,7 @@ struct VaultDecryptionKitView: View {
             presenter.onSettings()
         } label: {
             Image(systemName: "gearshape")
-                .font(.system(size: 22))
+                .slideNavigationButtonLabel()
         }
     }
 }

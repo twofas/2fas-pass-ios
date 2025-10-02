@@ -67,6 +67,11 @@ public struct LoginView: View {
                 focusedField = .login
             }
         }
+        .onAppear {
+            if presenter.showKeyboard {
+                focusedField = .login
+            }
+        }
         .onChange(of: presenter.showKeyboard) { _, newValue in
             if newValue {
                 focusedField = .login
@@ -159,7 +164,7 @@ public struct LoginView: View {
             .toolbar {
                 if presenter.showCancel {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button(T.commonCancel.localizedKey) {
+                        ToolbarCancelButton {
                             dismiss()
                         }
                     }

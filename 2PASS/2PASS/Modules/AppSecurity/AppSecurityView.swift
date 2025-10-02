@@ -35,6 +35,7 @@ struct AppSecurityView: View {
                     .disabled(
                         !presenter.isBiometryAvailable || !presenter.enableBiometryToggle || presenter.lockInteraction
                     )
+                    .tint(.accentColor)
                 
             } header: {
                 Text(T.settingsEntryAppAccess.localizedKey)

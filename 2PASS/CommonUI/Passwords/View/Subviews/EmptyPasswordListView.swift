@@ -52,6 +52,7 @@ struct EmptyPasswordListView: View {
                 .padding(.bottom, Spacing.xxl4)
             }
         }
+        .ignoresSafeArea(.keyboard)
     }
     
     func quickSetupHidden(_ hidden: Bool) -> some View {
