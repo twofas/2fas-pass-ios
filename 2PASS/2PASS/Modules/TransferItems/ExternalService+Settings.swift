@@ -19,6 +19,7 @@ extension ExternalService {
         case .applePasswordsDesktop, .applePasswordsMobile: .applePasswords
         case .firefox: .firefox
         case .keePassXC: .keePassXC
+        case .microsoftEdge: .microsoftEdge
         }
     }
 }
