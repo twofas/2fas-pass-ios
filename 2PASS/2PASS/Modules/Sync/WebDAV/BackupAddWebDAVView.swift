@@ -27,6 +27,7 @@ struct BackupAddWebDAVView: View {
                     Toggle(T.webdavAllowUntrustedCertificates.localizedKey, isOn: $presenter.allowTLSOff)
                         .frame(maxWidth: .infinity)
                         .disabled(!presenter.isEditable)
+                        .tint(.accentColor)
                 }
                 
                 Section(T.webdavCredentials.localizedKey) {

@@ -46,6 +46,7 @@ public struct InfoToggle: View {
                 
                 Toggle(isOn: $isOn) {}
                     .frame(width: Constants.toggleWidth)
+                    .tint(.accentColor)
             }
             .padding(Spacing.l)
         }

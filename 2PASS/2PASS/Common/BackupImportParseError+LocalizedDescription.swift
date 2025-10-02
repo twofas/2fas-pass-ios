@@ -11,11 +11,11 @@ extension BackupImportParseError {
     var localizedDescription: String {
         switch self {
         case .corruptedFile(let error): "File is corrupted:\n\(error.localizedDescription)"
-        case .newerSchemaVersion: "This file requries newer version of the app."
         case .nothingToImport: "File doesn't contain any passwords."
         case .errorDecrypting: "There was an error while decrypting the file. Try again."
         case .otherDeviceId: "This file was synchronized on a different device."
         case .passwordChanged: ""
+        case .schemaNotSupported(let schemaVersion): T.importInvalidSchemaErrorMsg(schemaVersion)
         }
     }
 }

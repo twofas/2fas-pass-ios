@@ -44,6 +44,52 @@ final class PasswordsViewController: UIViewController {
         super.viewWillDisappear(animated)
         stopSafeAreaKeyboardAdjustment()
     }
+    
+    func updateNavigationBarButtons() {
+        if #available(iOS 26, *) {
+            let addButton = UIBarButtonItem(
+                image: UIImage(systemName: "plus"),
+                style: .plain,
+                target: self,
+                action: #selector(addAction)
+            )
+            
+            if presenter.fillAddButton {
+                addButton.tintColor = .brand500
+                addButton.style = .prominent
+            }
+            
+            let filterButton = UIBarButtonItem(
+                image: UIImage(systemName: "line.3.horizontal.decrease"),
+                menu: filterMenu()
+            )
+            filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
+            filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
+            
+            navigationItem.rightBarButtonItems = [
+                addButton,
+                .fixedSpace(0),
+                filterButton
+            ]
+        } else {
+            let filterIconName = presenter.selectedFilterTag != nil
+            ? "line.3.horizontal.decrease.circle.fill"
+            : "line.3.horizontal.decrease.circle"
+            
+            navigationItem.rightBarButtonItems = [
+                UIBarButtonItem(
+                    image: UIImage(systemName: presenter.fillAddButton ? "plus.circle.fill" : "plus.circle"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(addAction)
+                ),
+                UIBarButtonItem(
+                    image: UIImage(systemName: filterIconName),
+                    menu: filterMenu()
+                )
+            ]
+        }
+    }
 }
 
 private extension PasswordsViewController {
@@ -79,25 +125,6 @@ private extension PasswordsViewController {
         }
     }
     
-    func updateNavigationBarButtons() {
-        let filterIconName = presenter.selectedFilterTag != nil 
-            ? "line.3.horizontal.decrease.circle.fill" 
-            : "line.3.horizontal.decrease.circle"
-        
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(systemName: "plus.circle.fill"),
-                style: .plain,
-                target: self,
-                action: #selector(addAction)
-            ),
-            UIBarButtonItem(
-                image: UIImage(systemName: filterIconName),
-                menu: filterMenu()
-            )
-        ]
-    }
-    
     func setupDelegates() {
         searchController.searchBarDelegate = self
         passwordsList?.delegate = self
@@ -107,7 +134,14 @@ private extension PasswordsViewController {
         let emptySearchViewController = UIHostingController(rootView: EmptySearchView())
         addChild(emptySearchViewController)
         view.addSubview(emptySearchViewController.view)
-        emptySearchViewController.view?.pinToSafeAreaParentCenter()
+        emptySearchViewController.view.backgroundColor = .clear
+        
+        if presenter.isAutoFillExtension, #available(iOS 26, *) {
+            emptySearchViewController.view?.pinToParentCenter()
+        } else {
+            emptySearchViewController.view?.pinToSafeAreaParentCenter()
+        }
+        
         emptySearchViewController.didMove(toParent: self)
         
         emptySearchList = emptySearchViewController.view
@@ -121,7 +155,14 @@ private extension PasswordsViewController {
         )
         addChild(emptyListViewController)
         view.addSubview(emptyListViewController.view)
-        emptyListViewController.view?.pinToSafeAreaParentCenter()
+        emptyListViewController.view.backgroundColor = .clear
+        
+        if presenter.isAutoFillExtension, #available(iOS 26, *) {
+            emptyListViewController.view?.pinToParentCenter()
+        } else {
+            emptyListViewController.view?.pinToSafeAreaParentCenter()
+        }
+        
         emptyListViewController.didMove(toParent: self)
         
         emptyList = emptyListViewController.view
@@ -217,15 +258,6 @@ private extension PasswordsViewController {
     func tagMenu() -> UIMenu {
         let tags = presenter.listAllTags()
         
-        // Add "All" option for tags
-        let allAction = UIAction(
-            title: "\(T.loginFilterModalTagAll) (\(presenter.itemsCount))",
-            state: presenter.selectedFilterTag == nil ? .on : .off
-        ) { [weak self] _ in
-            self?.presenter.onClearFilterTag()
-            self?.updateLayoutWithTagFilter()
-        }
-        
         // Create tag actions
         let tagActions = tags.map { tag in
             let count = presenter.countPasswordsForTag(tag.tagID)
@@ -239,11 +271,11 @@ private extension PasswordsViewController {
             }
         }
         
-        // Create a submenu that contains all tags
+        // Create a submenu that contains only tags (without "All" option)
         return UIMenu(
             title: T.loginFilterModalTag,
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
-            children: [allAction] + tagActions
+            children: tagActions
         )
     }
     

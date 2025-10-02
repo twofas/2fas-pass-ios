@@ -15,6 +15,7 @@ struct SyncView: View {
         SettingsDetailsForm(T.settingsEntryCloudSync.localizedKey) {
             Section {
                 Toggle(T.settingsCloudSyncIcloudLabel.localizedKey, isOn: $presenter.icloudSyncEnabled)
+                    .tint(.accentColor)
                 
                 Button {
                     presenter.onWebDAV()
@@ -38,6 +39,15 @@ struct SyncView: View {
                 Section {
                     Button(T.paywallNoticeCta.localizedKey) {
                         presenter.onUpgradePlan()
+                    }
+                }
+                .listSectionSpacing(0)
+            }
+            
+            if presenter.showUpdateAppButton {
+                Section {
+                    Button(T.cloudSyncInvalidSchemaErrorCta.localizedKey) {
+                        presenter.onUpdateApp()
                     }
                 }
                 .listSectionSpacing(0)

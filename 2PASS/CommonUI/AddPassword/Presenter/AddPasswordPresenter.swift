@@ -313,7 +313,7 @@ final class AddPasswordPresenter {
             uris: checkedURIs.map { content in
                 PasswordURI(uri: content.original, match: content.match)
             },
-            tagIds: selectedTags.isEmpty ? nil : Array(selectedTags.map { $0.tagID })
+            tagIds: Array(selectedTags.map { $0.tagID })
         )
         if result.isSuccess {
             flowController.close(with: result)

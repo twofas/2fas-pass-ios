@@ -5,6 +5,11 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Common
+
+enum ExchangeError: Error {
+    case mismatchSchemaVersion(Int, expected: Int)
+}
 
 public struct ExchangeVault: Codable {
     public struct ExchangeVaultOrigin: Codable {
@@ -137,6 +142,43 @@ public struct ExchangeVault: Codable {
     
     public let encryption: ExchangeEncryption?
     public let vault: ExchangeVaultItem
+    
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case origin
+        case encryption
+        case vault
+    }
+    
+    public init(schemaVersion: Int, origin: ExchangeVaultOrigin, encryption: ExchangeEncryption?, vault: ExchangeVaultItem) {
+        self.schemaVersion = schemaVersion
+        self.origin = origin
+        self.encryption = encryption
+        self.vault = vault
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        
+        guard schemaVersion == Config.schemaVersion else {
+            throw ExchangeError.mismatchSchemaVersion(schemaVersion, expected: Config.schemaVersion)
+        }
+        
+        origin = try container.decode(ExchangeVaultOrigin.self, forKey: .origin)
+        encryption = try container.decodeIfPresent(ExchangeEncryption.self, forKey: .encryption)
+        vault = try container.decode(ExchangeVaultItem.self, forKey: .vault)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(origin, forKey: .origin)
+        try container.encodeIfPresent(encryption, forKey: .encryption)
+        try container.encode(vault, forKey: .vault)
+    }
 }
 
 extension ExchangeVault {

@@ -22,13 +22,24 @@ public struct CloseButton: View {
         Button {
             closeAction()
         } label: {
-            Image(systemName: "xmark.circle.fill")
-                .resizable()
-                .frame(width: 30, height: 30)
-                .foregroundStyle(.neutral600, colorScheme == .dark ? .neutral300 : .neutral100)
+            if #available(iOS 26, *) {
+                Image(systemName: "xmark")
+            } else {
+                Image(systemName: "xmark.circle.fill")
+                    .resizable()
+                    .frame(width: 30, height: 30)
+                    .foregroundStyle(.neutral600, colorScheme == .dark ? .neutral300 : .neutral100)
+            }
         }
         .accessibilityLabel(Text("Close button"))
-        .buttonStyle(.plain)
+        .modify {
+            if #available(iOS 26, *) {
+                $0.buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+            } else {
+                $0.buttonStyle(.plain)
+            }
+        }
     }
 }
 

@@ -101,6 +101,14 @@ internal enum T {
   internal static let aboutYoutube = T.tr("Localizable", "about_youtube", fallback: "YouTube")
   /// 2FAS Pass
   internal static let appName = T.tr("Localizable", "app_name", fallback: "2FAS Pass")
+  /// Not now
+  internal static let appUpdateModalCtaNegative = T.tr("Localizable", "app_update_modal_cta_negative", fallback: "Not now")
+  /// Update
+  internal static let appUpdateModalCtaPositive = T.tr("Localizable", "app_update_modal_cta_positive", fallback: "Update")
+  /// You’re using an old app version. Please update it to get the latest features and improvements.
+  internal static let appUpdateModalSubtitle = T.tr("Localizable", "app_update_modal_subtitle", fallback: "You’re using an old app version. Please update it to get the latest features and improvements.")
+  /// Update recommended
+  internal static let appUpdateModalTitle = T.tr("Localizable", "app_update_modal_title", fallback: "Update recommended")
   /// Biometrics are disabled due to changes in system fingerprint settings. Use your Master Password to re-enable biometrics in settings.
   internal static let authBiometricsDisabledMessage = T.tr("Localizable", "auth_biometrics_disabled_message", fallback: "Biometrics are disabled due to changes in system fingerprint settings. Use your Master Password to re-enable biometrics in settings.")
   /// Biometrics
@@ -191,6 +199,12 @@ internal enum T {
   internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app is using the camera. If closing other apps doesn't help, please reboot the device.")
   /// Error while scanning the QR Code
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning the QR Code")
+  /// Update app
+  internal static let cloudSyncInvalidSchemaErrorCta = T.tr("Localizable", "cloud_sync_invalid_schema_error_cta", fallback: "Update app")
+  /// Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.
+  internal static func cloudSyncInvalidSchemaErrorMsg(_ p1: Int) -> String {
+    return T.tr("Localizable", "cloud_sync_invalid_schema_error_msg", p1, fallback: "Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.")
+  }
   /// Are you sure you want to delete this backup? You cannot restore it later.
   internal static let cloudVaultDeleteConfirmBody = T.tr("Localizable", "cloud_vault_delete_confirm_body", fallback: "Are you sure you want to delete this backup? You cannot restore it later.")
   /// Delete backup?
@@ -199,6 +213,8 @@ internal enum T {
   internal static let cloudVaultRemovingFailure = T.tr("Localizable", "cloud_vault_removing_failure", fallback: "Vault deletion failed")
   /// Add
   internal static let commonAdd = T.tr("Localizable", "common_add", fallback: "Add")
+  /// Back
+  internal static let commonBack = T.tr("Localizable", "common_back", fallback: "Back")
   /// Cancel
   internal static let commonCancel = T.tr("Localizable", "common_cancel", fallback: "Cancel")
   /// Close
@@ -295,6 +311,18 @@ internal enum T {
   internal static let connectInvalidSignatureMessage = T.tr("Localizable", "connect_invalid_signature_message", fallback: "Signature could not be verified.")
   /// Error
   internal static let connectInvalidSignatureTitle = T.tr("Localizable", "connect_invalid_signature_title", fallback: "Error")
+  /// Update
+  internal static let connectModalErrorAppUpdateRequiredCta = T.tr("Localizable", "connect_modal_error_app_update_required_cta", fallback: "Update")
+  /// Update app
+  internal static let connectModalErrorAppUpdateRequiredCtaAndroid = T.tr("Localizable", "connect_modal_error_app_update_required_cta_android", fallback: "Update app")
+  /// Please update the app to connect to the browser extension
+  internal static let connectModalErrorAppUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_app_update_required_subtitle", fallback: "Please update the app to connect to the browser extension")
+  /// Update required
+  internal static let connectModalErrorAppUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_app_update_required_title", fallback: "Update required")
+  /// Update browser extension
+  internal static let connectModalErrorBrowserExtensionUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_browser_extension_update_required_subtitle", fallback: "Update browser extension")
+  /// Browser extension update required
+  internal static let connectModalErrorBrowserExtensionUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_browser_extension_update_required_title", fallback: "Browser extension update required")
   /// Upgrade plan
   internal static let connectModalErrorExtensionsLimitCta = T.tr("Localizable", "connect_modal_error_extensions_limit_cta", fallback: "Upgrade plan")
   /// You’ve reached the limit of connected browsers. Disconnect one to continue, or consider upgrading your plan for more flexibility.
@@ -469,6 +497,12 @@ internal enum T {
   internal static let homeListOptionsModalTitle = T.tr("Localizable", "home_list_options_modal_title", fallback: "List Options")
   /// Items
   internal static let homeTitle = T.tr("Localizable", "home_title", fallback: "Items")
+  /// Update app
+  internal static let importInvalidSchemaErrorCta = T.tr("Localizable", "import_invalid_schema_error_cta", fallback: "Update app")
+  /// The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it.
+  internal static func importInvalidSchemaErrorMsg(_ p1: Int) -> String {
+    return T.tr("Localizable", "import_invalid_schema_error_msg", p1, fallback: "The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it.")
+  }
   /// Master Password
   internal static let iosLockScreenUnlockTitle = T.tr("Localizable", "ios_lock_screen_unlock_title", fallback: "Master Password")
   /// Delete
@@ -1663,6 +1697,22 @@ internal enum T {
   internal static func transferInstructionsHeader(_ p1: Any) -> String {
     return T.tr("Localizable", "transfer_instructions_header %@", String(describing: p1), fallback: "Transfer from %@")
   }
+  /// Open KeePass on your PC and log in to your database.
+  /// 
+  /// Click **File** in the menu bar, and select **Export**.
+  /// 
+  /// Choose the **KeePass CSV format**, the export location and click **OK**.
+  /// 
+  /// Copy the exported file to this device and tap **Upload CSV file** below.
+  internal static let transferInstructionsKeepass = T.tr("Localizable", "transfer_instructions_keepass", fallback: "Open KeePass on your PC and log in to your database.\n\nClick **File** in the menu bar, and select **Export**.\n\nChoose the **KeePass CSV format**, the export location and click **OK**.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
+  /// Open KeePassXC on your PC and log in to your database.
+  /// 
+  /// Click **Database** in the menu bar, and select **Export**.
+  /// 
+  /// Choose the **CSV format**, confirm and choose the export location and click **OK**.
+  /// 
+  /// Copy the exported file to this device and tap **Upload CSV file** below.
+  internal static let transferInstructionsKeepassxc = T.tr("Localizable", "transfer_instructions_keepassxc", fallback: "Open KeePassXC on your PC and log in to your database.\n\nClick **Database** in the menu bar, and select **Export**.\n\nChoose the **CSV format**, confirm and choose the export location and click **OK**.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
   /// Log in to LastPass on your browser and go to **Advanced Options**.
   /// 
   /// Under **Manage Your Vault**, select **Export**. This will send you a verification email.
