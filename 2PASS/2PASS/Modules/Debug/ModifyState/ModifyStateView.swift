@@ -26,6 +26,13 @@ struct ModifyStateView: View {
                 .disabled(!presenter.rebootButtonEnabled)
 
             }
+            Section {
+                Button("Randomize AppKey" as String, role: .destructive) {
+                    presenter.randomizeAppKey()
+                }
+                .buttonStyle(.filled)
+                .controlSize(.large)
+            }
             Section("CUSTOM" as String) {
                 Toggle(
                     "Write decrypted copy of WebDAV backup" as String,
