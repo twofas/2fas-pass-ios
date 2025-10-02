@@ -11,7 +11,7 @@ public protocol CoreDataMigratorProtocol: AnyObject {
     typealias Migrating = ((CoreDataMigrationVersion, CoreDataMigrationVersion) -> Void)
     
     func requiresMigrationToCurrentVersion(at storeURL: URL) -> Bool
-    func migrateStoreToCurrentVersion(at storeURL: URL)
+    func migrateStoreToCurrentVersion(at storeURL: URL) throws
     var bundle: Bundle? { get set }
     var migrating: Migrating? { get set }
 }
@@ -58,7 +58,7 @@ public final class CoreDataMigrator: CoreDataMigratorProtocol {
     
     // MARK: - Migration
     
-    public func migrateStoreToCurrentVersion(at storeURL: URL) {
+    public func migrateStoreToCurrentVersion(at storeURL: URL) throws {
         forceWALCheckpointingForStore(at: storeURL)
         
         var currentURL = storeURL
@@ -73,21 +73,15 @@ public final class CoreDataMigrator: CoreDataMigratorProtocol {
             let destinationURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
                 .appendingPathComponent(UUID().uuidString)
             
-            do {
-                try manager.migrateStore(
-                    from: currentURL,
-                    sourceType: NSSQLiteStoreType,
-                    options: nil,
-                    with: migrationStep.mappingModel,
-                    toDestinationURL: destinationURL,
-                    destinationType: NSSQLiteStoreType,
-                    destinationOptions: nil
-                )
-            } catch let error {
-                // swiftlint:disable line_length
-                fatalError("failed attempting to migrate from \(migrationStep.sourceModel) to \(migrationStep.destinationModel), error: \(error)")
-                // swiftlint:enable line_length
-            }
+            try manager.migrateStore(
+                from: currentURL,
+                sourceType: NSSQLiteStoreType,
+                options: nil,
+                with: migrationStep.mappingModel,
+                toDestinationURL: destinationURL,
+                destinationType: NSSQLiteStoreType,
+                destinationOptions: nil
+            )
             
             if currentURL != storeURL {
                 // Destroy intermediate step's store

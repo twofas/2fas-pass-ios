@@ -8,10 +8,6 @@ import Foundation
 import Common
 import Storage
 
-public enum MigrationError: Error {
-    case verificationFailed
-}
-
 extension MainRepositoryImpl {
     
     // MARK: Passwords
@@ -169,13 +165,14 @@ extension MainRepositoryImpl {
     }
     
     func loadEncryptedStore(completion: @escaping Callback) {
-        encryptedStorage.loadStore { [weak encryptedStorage] in
+        encryptedStorage.loadStore { [weak encryptedStorage] success in
+            guard success else { fatalError("Failed to load Encrypted store") }
             encryptedStorage?.warmUp()
             completion()
         }
     }
     
-    func loadEncryptedStoreWithReencryptionMigration() {
+    func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void) {
         MigrationController.current = .init(
             setupKeys: { vaultID in
                 guard self.hasCachedKeys() == false else {
@@ -221,8 +218,9 @@ extension MainRepositoryImpl {
             }
         )
         
-        encryptedStorage.loadStore {
+        encryptedStorage.loadStore { success in
             MigrationController.current = nil
+            completion(success)
         }
     }
     

@@ -30,6 +30,8 @@ internal enum T {
   internal static func paywallNoticeItemsLimitTransferMsg(_ p1: Int) -> String {
     return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
+  /// Select decryption method:
+  internal static let restoreDecryptVaultOptionTitle = T.tr("Localizable", " restore_decrypt_vault_option_title", fallback: "Select decryption method:")
   /// 3. Multi-Layer Encryption
   internal static let securityTiersHelpLayersSectionTitle = T.tr("Localizable", " security_tiers_help_layers_section_title", fallback: "3. Multi-Layer Encryption")
   /// Your data is protected with a unique, randomly generated SEED combined with your Master Password.
@@ -1063,20 +1065,20 @@ internal enum T {
   internal static func restoreCloudFilesUpdatedAt(_ p1: Any) -> String {
     return T.tr("Localizable", "restore_cloud_files_updated_at %@", String(describing: p1), fallback: "Updated at: %@")
   }
-  /// To proceed, enter your Secret Words and Master Password using one of the available methods to decrypt a backup file
-  internal static let restoreDecryptVaultDescription = T.tr("Localizable", "restore_decrypt_vault_description", fallback: "To proceed, enter your Secret Words and Master Password using one of the available methods to decrypt a backup file")
+  /// To proceed, enter your Secret Words and Master Password using one of the available methods:
+  internal static let restoreDecryptVaultDescription = T.tr("Localizable", "restore_decrypt_vault_description", fallback: "To proceed, enter your Secret Words and Master Password using one of the available methods:")
   /// Local Decryption Kit File
   internal static let restoreDecryptVaultOptionFile = T.tr("Localizable", "restore_decrypt_vault_option_file", fallback: "Local Decryption Kit File")
   /// Select a PDF file
   internal static let restoreDecryptVaultOptionFileDescription = T.tr("Localizable", "restore_decrypt_vault_option_file_description", fallback: "Select a PDF file")
   /// Manual Input
   internal static let restoreDecryptVaultOptionManual = T.tr("Localizable", "restore_decrypt_vault_option_manual", fallback: "Manual Input")
-  /// Manually enter Secret Words
-  internal static let restoreDecryptVaultOptionManualDescription = T.tr("Localizable", "restore_decrypt_vault_option_manual_description", fallback: "Manually enter Secret Words")
+  /// Enter Secret Words manually
+  internal static let restoreDecryptVaultOptionManualDescription = T.tr("Localizable", "restore_decrypt_vault_option_manual_description", fallback: "Enter Secret Words manually")
   /// Printed Decryption Kit
   internal static let restoreDecryptVaultOptionScanQr = T.tr("Localizable", "restore_decrypt_vault_option_scan_qr", fallback: "Printed Decryption Kit")
-  /// Scan QR code
-  internal static let restoreDecryptVaultOptionScanQrDescription = T.tr("Localizable", "restore_decrypt_vault_option_scan_qr_description", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let restoreDecryptVaultOptionScanQrDescription = T.tr("Localizable", "restore_decrypt_vault_option_scan_qr_description", fallback: "Scan the QR code")
   /// Decrypt Your Backup
   internal static let restoreDecryptVaultTitle = T.tr("Localizable", "restore_decrypt_vault_title", fallback: "Decrypt Your Backup")
   /// Enter Secret Words manually
@@ -1117,14 +1119,14 @@ internal enum T {
   internal static let restoreMasterPasswordTitle = T.tr("Localizable", "restore_master_password_title", fallback: "Master Password")
   /// Hover over the QR code and wait for a moment
   internal static let restoreQrCodeCameraDescription = T.tr("Localizable", "restore_qr_code_camera_description", fallback: "Hover over the QR code and wait for a moment")
-  /// Scan QR code
-  internal static let restoreQrCodeCameraTitle = T.tr("Localizable", "restore_qr_code_camera_title", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let restoreQrCodeCameraTitle = T.tr("Localizable", "restore_qr_code_camera_title", fallback: "Scan the QR code")
   /// The camera is unavailable. Check the 2FAS Pass camera access in System Settings
   internal static let restoreQrCodeError = T.tr("Localizable", "restore_qr_code_error", fallback: "The camera is unavailable. Check the 2FAS Pass camera access in System Settings")
   /// System Settings
   internal static let restoreQrCodeErrorSystemSettings = T.tr("Localizable", "restore_qr_code_error_system_settings", fallback: "System Settings")
-  /// Scan QR code
-  internal static let restoreQrCodeIntroCta = T.tr("Localizable", "restore_qr_code_intro_cta", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let restoreQrCodeIntroCta = T.tr("Localizable", "restore_qr_code_intro_cta", fallback: "Scan the QR code")
   /// Scan the QR code from your printed Decryption Kit
   internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code from your printed Decryption Kit")
   /// Scan the QR code
@@ -1147,6 +1149,8 @@ internal enum T {
   internal static let restoreUseRecoveryKeyDescription = T.tr("Localizable", "restore_use_recovery_key_description", fallback: "Scan the QR code on the Recovery Kit or enter the Secret Words manually.")
   /// Use the Decryption Kit
   internal static let restoreUseRecoveryKeyTitle = T.tr("Localizable", "restore_use_recovery_key_title", fallback: "Use the Decryption Kit")
+  /// You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items.
+  internal static let restoreVaultMessage = T.tr("Localizable", "restore_vault_message", fallback: "You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items.")
   /// To recover or sync your 2FAS Pass Vault, select one of the available backup methods:
   internal static let restoreVaultSourceDescription = T.tr("Localizable", "restore_vault_source_description", fallback: "To recover or sync your 2FAS Pass Vault, select one of the available backup methods:")
   /// Local file
@@ -1167,16 +1171,20 @@ internal enum T {
   internal static let restoreVaultSourceOptionWebdavDescription = T.tr("Localizable", "restore_vault_source_option_webdav_description", fallback: "Connect with your WebDAV server")
   /// Select backup file
   internal static let restoreVaultSourceTitle = T.tr("Localizable", "restore_vault_source_title", fallback: "Select backup file")
+  /// Welcome back!
+  internal static let restoreVaultTitle = T.tr("Localizable", "restore_vault_title", fallback: "Welcome back!")
   /// Enter your Master Password for this Vault
   internal static let restoreVaultVerifyMasterPasswordDescription = T.tr("Localizable", "restore_vault_verify_master_password_description", fallback: "Enter your Master Password for this Vault")
+  /// Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items.
+  internal static let restoreVaultWarning = T.tr("Localizable", "restore_vault_warning", fallback: "Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items.")
   /// Restore your 2FAS Pass Vault data from a WebDAV server
   internal static let restoreWebdavDescription = T.tr("Localizable", "restore_webdav_description", fallback: "Restore your 2FAS Pass Vault data from a WebDAV server")
   /// WebDAV
   internal static let restoreWebdavTitle = T.tr("Localizable", "restore_webdav_title", fallback: "WebDAV")
   /// Point your camera at the QR code found in your Decryption Kit.
   internal static let scanDecryptionKitDescription = T.tr("Localizable", "scan_decryption_kit_description", fallback: "Point your camera at the QR code found in your Decryption Kit.")
-  /// Scan QR code
-  internal static let scanDecryptionKitTitle = T.tr("Localizable", "scan_decryption_kit_title", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let scanDecryptionKitTitle = T.tr("Localizable", "scan_decryption_kit_title", fallback: "Scan the QR code")
   /// Enable Biometrics
   internal static let securityBiometricsEnableCta = T.tr("Localizable", "security_biometrics_enable_cta", fallback: "Enable Biometrics")
   /// Master Password is required to enable biometrics.

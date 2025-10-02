@@ -81,6 +81,17 @@
         }
       }
     },
+    " restore_decrypt_vault_option_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select decryption method:"
+          }
+        }
+      }
+    },
     " security_tiers_help_layers_section_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5569,7 +5580,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To proceed, enter your Secret Words and Master Password using one of the available methods to decrypt a backup file"
+            "value" : "To proceed, enter your Secret Words and Master Password using one of the available methods:"
           }
         }
       }
@@ -5613,7 +5624,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manually enter Secret Words"
+            "value" : "Enter Secret Words manually"
           }
         }
       }
@@ -5635,7 +5646,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan QR code"
+            "value" : "Scan the QR code"
           }
         }
       }
@@ -5855,7 +5866,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan QR code"
+            "value" : "Scan the QR code"
           }
         }
       }
@@ -5888,7 +5899,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan QR code"
+            "value" : "Scan the QR code"
           }
         }
       }
@@ -6014,6 +6025,17 @@
         }
       }
     },
+    "restore_vault_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items."
+          }
+        }
+      }
+    },
     "restore_vault_source_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6124,6 +6146,17 @@
         }
       }
     },
+    "restore_vault_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome back!"
+          }
+        }
+      }
+    },
     "restore_vault_verify_master_password_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6131,6 +6164,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter your Master Password for this Vault"
+          }
+        }
+      }
+    },
+    "restore_vault_warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items."
           }
         }
       }
@@ -6174,7 +6218,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan QR code"
+            "value" : "Scan the QR code"
           }
         }
       }
