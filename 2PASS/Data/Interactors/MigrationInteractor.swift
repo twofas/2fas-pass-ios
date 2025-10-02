@@ -10,6 +10,8 @@ public protocol MigrationInteracting {
     func migrateIfNeeded()
     
     func requiresReencryptionMigration() -> Bool
+    
+    @MainActor
     func loadStoreWithReencryptionMigration() async -> Bool
 }
 
@@ -25,6 +27,7 @@ final class MigrationInteractor: MigrationInteracting {
         mainRepository.requiresReencryptionMigration()
     }
     
+    @MainActor
     func loadStoreWithReencryptionMigration() async -> Bool {
         await withCheckedContinuation { continuation in
             Log("Start migration with re-encryption", module: .migration, severity: .info)
