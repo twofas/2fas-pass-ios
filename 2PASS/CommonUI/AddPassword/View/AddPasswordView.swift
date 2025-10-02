@@ -59,6 +59,7 @@ struct AddPasswordView: View {
                     IconRendererView(content: presenter.iconContent)
                         .frame(width: Constants.iconSize, height: Constants.iconSize)
                         .onTapGesture {
+                            resignFirstResponder()
                             presenter.onCustomizeIcon()
                         }
                     
@@ -163,6 +164,7 @@ struct AddPasswordView: View {
             
             Section {
                 Button {
+                    resignFirstResponder()
                     presenter.onChangeProtectionLevel()
                 } label: {
                     HStack(spacing: Spacing.s) {
@@ -195,6 +197,7 @@ struct AddPasswordView: View {
             
             Section {
                 Button {
+                    resignFirstResponder()
                     presenter.onSelectTags()
                 } label: {
                     HStack {
