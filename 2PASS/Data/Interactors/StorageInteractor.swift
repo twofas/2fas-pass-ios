@@ -10,7 +10,7 @@ import CryptoKit
 import LocalAuthentication
 
 public protocol StorageInteracting: AnyObject {
-    func loadStore() async
+    @MainActor func loadStore() async
     func initialize(completion: @escaping () -> Void)
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
     func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
