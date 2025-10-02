@@ -63,6 +63,14 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                 completion(count == items.count)
             }
         case .recoverEncrypted(let entropy, let masterKey, let recoveryData):
+            if case .localVault = recoveryData {
+                Task { @MainActor in
+                    let result = await startupInteractor.restoreVault(entropy: entropy, masterKey: masterKey)
+                    completion(result)
+                }
+                return
+            }
+            
             startupInteractor.setEntropy(entropy, masterKey: masterKey)
             let vaultID: VaultID
             let creationDate: Date?
@@ -85,6 +93,8 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                 creationDate = vaultRawData.createdAt
                 modificationDate = vaultRawData.updatedAt
                 reference = vaultRawData.reference
+            case .localVault:
+                fatalError()
             }
             
             switch importInteractor.validateReference(reference, using: masterKey, for: vaultID) {
@@ -133,6 +143,8 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(syncAwaitSeconds)) {
                     self.didSync()
                 }
+            case .localVault:
+                fatalError()
             }
         }
     }

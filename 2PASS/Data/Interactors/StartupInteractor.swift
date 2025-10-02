@@ -45,6 +45,7 @@ public protocol StartupInteracting: AnyObject {
     func setEntropy(_ entropy: Entropy, masterKey: MasterKey?) -> Bool
     func wordsToEntropy(_ words: [String]) -> Entropy?
     func createVault(for vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> Bool
+    func restoreVault(entropy: Entropy, masterKey: MasterKey) async -> Bool
 }
 
 extension StartupInteracting {
@@ -122,7 +123,7 @@ extension StartupInteractor: StartupInteracting {
         
         if !protectionInteractor.hasAppKey {
             protectionInteractor.clearAppKeyEncryptedStorage()
-            protectionInteractor.createAppKey()
+            protectionInteractor.createAppKey { _ in }
         }
 
         if !protectionInteractor.hasBiometryKey {
@@ -134,6 +135,10 @@ extension StartupInteractor: StartupInteracting {
     @MainActor
     func start() async -> StartupInteractorStartResult {
         Log("StartupInteractor: Start", module: .interactor)
+        
+        if protectionInteractor.hasAppKey, protectionInteractor.verifyAppKey() == false {
+            return .enterWords
+        }
         
         guard !migrationInteractor.requiresReencryptionMigration() else {
             return .login
@@ -241,6 +246,59 @@ extension StartupInteractor: StartupInteracting {
         protectionInteractor.saveEntropy()
         storageInteractor.initialize(completion: {})
         
+        return true
+    }
+    
+    func restoreVault(entropy: Entropy, masterKey: MasterKey) async -> Bool {
+        guard protectionInteractor.setEntropy(entropy, masterKey: masterKey) else {
+            return false
+        }
+ 
+        if migrationInteractor.requiresReencryptionMigration() {
+            guard await migrationInteractor.loadStoreWithReencryptionMigration() else {
+                return false
+            }
+        } else {
+            await storageInteractor.loadStore()
+        }
+        
+        guard protectionInteractor.verifyMasterKeyForVault(masterKey) else {
+            return false
+        }
+                
+        protectionInteractor.clearAppKeyStorage()
+        
+        await withCheckedContinuation { continuation in
+            biometryInteractor.setBiometryEnabled(false) { _ in
+                continuation.resume()
+            }
+        }
+        
+        let createAppKeySuccess = await withCheckedContinuation { continuatioon in
+            protectionInteractor.createAppKey { result in
+                continuatioon.resume(returning: result)
+            }
+        }
+        
+        guard createAppKeySuccess else {
+            return false
+        }
+        
+        protectionInteractor.setupDeviceID()
+        protectionInteractor.saveEncryptionReference()
+        protectionInteractor.selectVault()
+        protectionInteractor.setupKeys()
+        protectionInteractor.updateExistingVault()
+        protectionInteractor.saveEntropy()
+        
+        await withCheckedContinuation { continuation in
+            storageInteractor.initialize {
+                continuation.resume()
+            }
+        }
+
+        protectionInteractor.clearAfterInit()
+
         return true
     }
 }

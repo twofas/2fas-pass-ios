@@ -28,7 +28,7 @@ public final class InMemoryStorageDataSourceImpl {
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
     }
     
-    public func loadStore(completion: @escaping Callback) {
+    public func loadStore(completion: @escaping LoadStoreCallback) {
         coreDataStack.loadStore(completion: completion)
     }
 }

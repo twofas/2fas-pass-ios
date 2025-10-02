@@ -369,7 +369,7 @@ protocol MainRepository: AnyObject {
     
     func requiresReencryptionMigration() -> Bool
     func loadEncryptedStore(completion: @escaping Callback)
-    func loadEncryptedStoreWithReencryptionMigration()
+    func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void)
     
     // MARK: Encrypted Vaults
     

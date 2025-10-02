@@ -82,8 +82,12 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importApplePasswordsDesktop(content: content)
         case .firefox:
             return await importFirefox(content: content)
+        case .keePass:
+            return await importKeePass(content: content)
         case .keePassXC:
             return await importKeePassXC(content: content)
+        case .microsoftEdge:
+            return await importMicrosoftEdge(content: content)
         }
     }
 }
@@ -732,6 +736,66 @@ private extension ExternalServiceImportInteractor {
         return .success(items)
     }
     
+    func importKeePass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [ItemData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["Account", "Login Name", "Password", "Web Site", "Comments"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            try csv.enumerateAsDict { [weak self] dict in
+                let name = dict["Account"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["Web Site"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["Login Name"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["Password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let notes = dict["Comments"]?.nilIfEmpty
+
+                passwords.append(
+                    .login(
+                        .init(
+                            id: .init(),
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                username: username,
+                                password: password,
+                                notes: notes,
+                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                                uris: uris
+                            )
+                        )
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
+    }
+    
     func importKeePassXC(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
@@ -772,6 +836,66 @@ private extension ExternalServiceImportInteractor {
                             metadata: .init(
                                 creationDate: creationDate ?? Date.importPasswordPlaceholder,
                                 modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                username: username,
+                                password: password,
+                                notes: notes,
+                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                                uris: uris
+                            )
+                        )
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
+    }
+    
+    func importMicrosoftEdge(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [ItemData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            try csv.enumerateAsDict { [weak self] dict in
+                let name = dict["name"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["username"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let notes = dict["note"]?.nilIfEmpty
+                
+                passwords.append(
+                    .login(
+                        .init(
+                            id: .init(),
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
                                 protectionLevel: protectionLevel,
                                 trashedStatus: .no,
                                 tagIds: nil

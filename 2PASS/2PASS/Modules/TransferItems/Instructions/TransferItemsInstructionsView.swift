@@ -94,6 +94,10 @@ struct TransferItemsInstructionsView: View {
                 T.transferInstructionsFirefox
             case .keePassXC:
                 T.transferInstructionsKeepassxc
+            case .keePass:
+                T.transferInstructionsKeepass
+            case .microsoftEdge:
+                T.transferInstructionsMicrosoftEdge
             }
         }()
         return input.components(separatedBy: "\n\n")

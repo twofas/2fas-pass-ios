@@ -52,6 +52,7 @@ public protocol DebugInteracting: AnyObject {
     func clearStoredMasterKey()
     func clearEncryptionReference()
     func clearStoredEntropy()
+    func randomizeAppKey()
     func reboot()
     
     // MARK: - Logs
@@ -239,6 +240,10 @@ extension DebugInteractor: DebugInteracting {
 
     func clearStoredEntropy() {
         mainRepository.clearMasterKeyEntropy()
+    }
+    
+    func randomizeAppKey() {
+        mainRepository.saveAppKey(UUID().uuidString.data(using: .utf8)!)
     }
     
     func reboot() {

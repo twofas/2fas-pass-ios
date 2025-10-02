@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 enum MigrationError: Error {
+    case decryptionFailed
     case missingDestinationInstance
     case missingMigrationController
     case missingSourceValue(key: String)
