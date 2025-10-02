@@ -86,6 +86,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importKeePass(content: content)
         case .keePassXC:
             return await importKeePassXC(content: content)
+        case .microsoftEdge:
+            return await importMicrosoftEdge(content: content)
         }
     }
 }
@@ -778,6 +780,59 @@ private extension ExternalServiceImportInteractor {
                         notes: notes,
                         creationDate: creationDate ?? Date.importPasswordPlaceholder,
                         modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
+                        iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
+                        trashedStatus: .no,
+                        protectionLevel: protectionLevel,
+                        uris: uris,
+                        tagIds: nil
+                    )
+                )
+            }
+        } catch {
+            return .failure(.wrongFormat)
+        }
+        
+        return .success(passwords)
+    }
+    
+    func importMicrosoftEdge(content: Data) async -> Result<[PasswordData], ExternalServiceImportError> {
+        guard let csvString = String(data: content, encoding: .utf8) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var passwords: [PasswordData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+        
+        do {
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
+                return .failure(ExternalServiceImportError.wrongFormat)
+            }
+            try csv.enumerateAsDict { [weak self] dict in
+                let name = dict["name"].formattedName
+                let uris: [PasswordURI]? = {
+                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    return [uri]
+                }()
+                let username = dict["username"]?.nilIfEmpty
+                let password: Data? = {
+                    if let passwordString = dict["password"]?.nilIfEmpty,
+                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                        return password
+                    }
+                    return nil
+                }()
+                let notes = dict["note"]?.nilIfEmpty
+                
+                passwords.append(
+                    PasswordData(
+                        passwordID: .init(),
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: notes,
+                        creationDate: Date.importPasswordPlaceholder,
+                        modificationDate: Date.importPasswordPlaceholder,
                         iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
                         trashedStatus: .no,
                         protectionLevel: protectionLevel,

@@ -16,13 +16,18 @@ public enum CloudCurrentState: Equatable {
         case other
         case noAccount
         case restricted
-        case newerVersion
+        case schemaNotSupported(Int)
         case incorrectEncryption
+    }
+    
+    public enum OutOfSyncReason: Equatable {
+        case schemaNotSupported(Int)
     }
     
     public enum Sync: Equatable {
         case syncing // in progress
         case synced // all done
+        case outOfSync(OutOfSyncReason)
         // case error(error: NSError) <- not used. Sync restarts itself
     }
     

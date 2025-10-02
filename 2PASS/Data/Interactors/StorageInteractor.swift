@@ -10,7 +10,7 @@ import CryptoKit
 import LocalAuthentication
 
 public protocol StorageInteracting: AnyObject {
-    func loadStore()
+    func loadStore() async
     func initialize(completion: @escaping () -> Void)
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
     func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
@@ -40,8 +40,13 @@ final class StorageInteractor {
 
 extension StorageInteractor: StorageInteracting {
     
-    func loadStore() {
-        mainRepository.loadEncryptedStore()
+    @MainActor
+    func loadStore() async {
+        await withCheckedContinuation { continuation in
+            mainRepository.loadEncryptedStore {
+                continuation.resume()
+            }
+        }
     }
     
     func initialize(completion: @escaping () -> Void) {
@@ -51,10 +56,24 @@ extension StorageInteractor: StorageInteracting {
         )
         
         if migrationInteractor.requiresReencryptionMigration() {
-            migrationInteractor.performReencryptionMigration()
+            Task { @MainActor in
+                guard await migrationInteractor.loadStoreWithReencryptionMigration() else {
+                    fatalError("Failed to load Encrypted store with reencryption migration")
+                }
+                performInitialize(completion: completion)
+            }
+        } else {
+            performInitialize(completion: completion)
         }
+    }
+    
+    private func performInitialize(completion: @escaping () -> Void) {
+        Log(
+            "StorageInteractor - perform initialize",
+            module: .interactor
+        )
         
-        let vaults = mainRepository.listEncrypteVaults()
+        let vaults = mainRepository.listEncryptedVaults()
         guard let masterKey = mainRepository.empheralMasterKey else {
             Log(
                 "StorageInteractor - initialize. Can't continue without Master Key!",

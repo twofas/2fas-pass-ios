@@ -26,47 +26,11 @@ struct VaultRecoverySelectView: View {
             )
             .padding(.vertical, Spacing.l)
 
-            VStack(spacing: Spacing.m) {
-                Button {
-                    presenter.onFiles()
-                } label: {
-                    OptionButtonLabel(
-                        title: Text(T.restoreDecryptVaultOptionFile.localizedKey),
-                        subtitle: Text(T.restoreDecryptVaultOptionFileDescription.localizedKey),
-                        icon: {
-                            Image(systemName: "document.fill")
-                        }
-                    )
-                }
-                .buttonStyle(.option)
-                
-                Button {
-                    presenter.onCamera()
-                } label: {
-                    OptionButtonLabel(
-                        title: Text(T.restoreDecryptVaultOptionScanQr.localizedKey),
-                        subtitle: Text(T.restoreDecryptVaultOptionScanQrDescription.localizedKey),
-                        icon: {
-                            Image(systemName: "qrcode.viewfinder")
-                        }
-                    )
-                }
-                .buttonStyle(.option)
-                
-                Button {
-                    presenter.onEnterManually()
-                } label: {
-                    OptionButtonLabel(
-                        title: Text(T.restoreDecryptVaultOptionManual.localizedKey),
-                        subtitle: Text(T.restoreDecryptVaultOptionManualDescription.localizedKey),
-                        icon: {
-                            Image(.manualInputIcon)
-                                .renderingMode(.template)
-                        }
-                    )
-                }
-                .buttonStyle(.option)
-            }
+            SelectDecryptionMethod(
+                onFiles: { presenter.onFiles() },
+                onCamera: { presenter.onCamera() },
+                onEnterManually: { presenter.onEnterManually() }
+            )
             .padding(.vertical, Spacing.xll)
             
             Spacer()

@@ -43,9 +43,6 @@ protocol MainRepository: AnyObject {
     var isUserLoggedIn: Bool { get }
     var isAppInBackground: Bool { get }
     func setIsAppInBackground(_ isInBackground: Bool)
-    var canLockApp: Bool { get }
-    func blockAppLocking()
-    func unblockAppLocking()
     
     var isOnboardingCompleted: Bool { get }
     func finishOnboarding()
@@ -55,6 +52,14 @@ protocol MainRepository: AnyObject {
     
     var shouldShowQuickSetup: Bool { get }
     func setShouldShowQuickSetup(_ value: Bool)
+    
+    var lastAppUpdatePromptDate: Date? { get }
+    func setLastAppUpdatePromptDate(_ date: Date)
+    func clearLastAppUpdatePromptDate()
+    
+    var minimalAppVersionSupported: String? { get }
+    func setMinimalAppVersionSupported(_ version: String)
+    func clearMinimalAppVersionSupported()
     
     // MARK: - Biometry
     var biometryType: BiometryType { get }
@@ -96,18 +101,12 @@ protocol MainRepository: AnyObject {
     var incorrectBiometryCountAttemp: Int { get }
     func setIncorrectBiometryCountAttempt(_ count: Int)
     func clearIncorrectBiometryCountAttempt()
-    
-    var isLockScreenActive: Bool { get }
-    func lockScreenActive()
-    func lockScreenInactive()
         
     // MARK: - General
     var currentAppVersion: String { get }
     var currentBuildVersion: String { get }
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
-    func setIntroductionAsShown()
-    func wasIntroductionShown() -> Bool
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
     
@@ -370,12 +369,12 @@ protocol MainRepository: AnyObject {
     func deleteAllEncryptedItems()
     
     func requiresReencryptionMigration() -> Bool
-    func loadEncryptedStore()
-    func loadEncryptedStoreWithReencryptionMigration()
+    func loadEncryptedStore(completion: @escaping Callback)
+    func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void)
     
     // MARK: Encrypted Vaults
     
-    func listEncrypteVaults() -> [VaultEncryptedData]
+    func listEncryptedVaults() -> [VaultEncryptedData]
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
         vaultID: VaultID,
@@ -625,7 +624,7 @@ protocol MainRepository: AnyObject {
     func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool)
 
     // MARK: 2FAS Web Service
-    func appNotifications() async throws -> [AppNotification]
+    func appNotifications() async throws -> AppNotifications
     func deleteAppNotification(id: String) async throws
     
     // MARK: - Scan

@@ -96,6 +96,8 @@ struct TransferItemsInstructionsView: View {
                 T.transferInstructionsKeepassxc
             case .keePass:
                 T.transferInstructionsKeepass
+            case .microsoftEdge:
+                T.transferInstructionsMicrosoftEdge
             }
         }()
         return input.components(separatedBy: "\n\n")

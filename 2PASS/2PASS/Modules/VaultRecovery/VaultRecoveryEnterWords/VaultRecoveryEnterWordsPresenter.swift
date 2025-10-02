@@ -8,6 +8,30 @@ import Foundation
 import Data
 import Common
 
+struct EnterWordsWord: Hashable, Identifiable {
+    let id: UUID
+    let index: Int
+    var word: String
+    var isIncorrect: Bool
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(index)
+        hasher.combine(word)
+        hasher.combine(isIncorrect)
+    }
+    
+    static func createList(count: Int) -> [EnterWordsWord] {
+        (0..<count).map { index in
+            empty(index: index)
+        }
+    }
+    
+    static func empty(index: Int) -> EnterWordsWord {
+        .init(id: UUID(), index: index, word: "", isIncorrect: false)
+    }
+}
+
 enum VaultRecoveryEnterWordsDestination: Identifiable {
     var id: String {
         switch self {

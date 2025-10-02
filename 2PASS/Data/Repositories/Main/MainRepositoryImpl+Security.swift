@@ -8,7 +8,7 @@ import Foundation
 
 extension MainRepositoryImpl {
     var isUserLoggedIn: Bool {
-        secureKey != nil && isOnboardingCompleted
+        _empheralSecureKey != nil
     }
     
     var isAppInBackground: Bool {
@@ -17,17 +17,5 @@ extension MainRepositoryImpl {
     
     func setIsAppInBackground(_ isInBackground: Bool) {
         _isInBackground = isInBackground
-    }
-    
-    var canLockApp: Bool {
-        _canLockApp
-    }
-    
-    func blockAppLocking() {
-        _canLockApp = false
-    }
-    
-    func unblockAppLocking() {
-        _canLockApp = true
     }
 }

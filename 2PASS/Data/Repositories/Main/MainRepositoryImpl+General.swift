@@ -31,14 +31,6 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.setLastKnownAppVersion(version)
     }
     
-    func setIntroductionAsShown() {
-        userDefaultsDataSource.setIntroductionAsShown()
-    }
-    
-    func wasIntroductionShown() -> Bool {
-        userDefaultsDataSource.wasIntroductionShown
-    }
-    
     func setCrashlyticsEnabled(_ enabled: Bool) {
         Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
         userDefaultsDataSource.setCrashlyticsDisabled(enabled == false)
@@ -191,5 +183,29 @@ extension MainRepositoryImpl {
     
     var is2FASAuthInstalled: Bool {
         UIApplication.shared.canOpenURL(Config.twofasAuthCheckLink)
+    }
+    
+    var lastAppUpdatePromptDate: Date? {
+        userDefaultsDataSource.lastAppUpdatePromptDate
+    }
+    
+    func setLastAppUpdatePromptDate(_ date: Date) {
+        userDefaultsDataSource.setLastAppUpdatePromptDate(date)
+    }
+    
+    func clearLastAppUpdatePromptDate() {
+        userDefaultsDataSource.clearLastAppUpdatePromptDate()
+    }
+    
+    var minimalAppVersionSupported: String? {
+        _minimalAppVersionSupported
+    }
+    
+    func setMinimalAppVersionSupported(_ version: String) {
+        _minimalAppVersionSupported = version
+    }
+    
+    func clearMinimalAppVersionSupported() {
+        _minimalAppVersionSupported = nil
     }
 }

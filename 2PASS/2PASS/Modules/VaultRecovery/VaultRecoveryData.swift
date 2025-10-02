@@ -11,4 +11,30 @@ import Data
 enum VaultRecoveryData {
     case file(ExchangeVault)
     case cloud(VaultRawData)
+    case localVault
+}
+
+extension VaultRecoveryData {
+
+    var vaultSeedHash: String? {
+        switch self {
+        case .file(let vault):
+            vault.encryption?.seedHash
+        case .cloud(let vaultData):
+            vaultData.seedHash
+        case .localVault:
+            nil
+        }
+    }
+    
+    var vaultID: UUID? {
+        switch self {
+        case .file(let vault):
+            UUID(uuidString: vault.vault.id)
+        case .cloud(let vaultData):
+            vaultData.vaultID
+        case .localVault:
+            nil
+        }
+    }
 }

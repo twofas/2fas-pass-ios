@@ -243,7 +243,7 @@ struct AddPasswordView: View {
             }
             .listSectionSpacing(Spacing.l)
             
-            if presenter.isEdit {
+            if presenter.showRemoveItemButton {
                 Section {
                     Button(role: .destructive) {
                         showDeleteConfirmation = true

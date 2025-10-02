@@ -30,6 +30,8 @@ internal enum T {
   internal static func paywallNoticeItemsLimitTransferMsg(_ p1: Int) -> String {
     return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
+  /// Select decryption method:
+  internal static let restoreDecryptVaultOptionTitle = T.tr("Localizable", " restore_decrypt_vault_option_title", fallback: "Select decryption method:")
   /// 3. Multi-Layer Encryption
   internal static let securityTiersHelpLayersSectionTitle = T.tr("Localizable", " security_tiers_help_layers_section_title", fallback: "3. Multi-Layer Encryption")
   /// Your data is protected with a unique, randomly generated SEED combined with your Master Password.
@@ -201,9 +203,9 @@ internal enum T {
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning the QR Code")
   /// Update app
   internal static let cloudSyncInvalidSchemaErrorCta = T.tr("Localizable", "cloud_sync_invalid_schema_error_cta", fallback: "Update app")
-  /// Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to synchronize it.
-  internal static func cloudSyncInvalidSchemaErrorMsg(_ p1: Int, _ p2: Int) -> String {
-    return T.tr("Localizable", "cloud_sync_invalid_schema_error_msg", p1, p2, fallback: "Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to synchronize it.")
+  /// Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.
+  internal static func cloudSyncInvalidSchemaErrorMsg(_ p1: Int) -> String {
+    return T.tr("Localizable", "cloud_sync_invalid_schema_error_msg", p1, fallback: "Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.")
   }
   /// Are you sure you want to delete this backup? You cannot restore it later.
   internal static let cloudVaultDeleteConfirmBody = T.tr("Localizable", "cloud_vault_delete_confirm_body", fallback: "Are you sure you want to delete this backup? You cannot restore it later.")
@@ -213,6 +215,8 @@ internal enum T {
   internal static let cloudVaultRemovingFailure = T.tr("Localizable", "cloud_vault_removing_failure", fallback: "Vault deletion failed")
   /// Add
   internal static let commonAdd = T.tr("Localizable", "common_add", fallback: "Add")
+  /// Back
+  internal static let commonBack = T.tr("Localizable", "common_back", fallback: "Back")
   /// Cancel
   internal static let commonCancel = T.tr("Localizable", "common_cancel", fallback: "Cancel")
   /// Close
@@ -313,10 +317,10 @@ internal enum T {
   internal static let connectModalErrorAppUpdateRequiredCta = T.tr("Localizable", "connect_modal_error_app_update_required_cta", fallback: "Update")
   /// Update app
   internal static let connectModalErrorAppUpdateRequiredCtaAndroid = T.tr("Localizable", "connect_modal_error_app_update_required_cta_android", fallback: "Update app")
-  /// Please update the app
-  internal static let connectModalErrorAppUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_app_update_required_subtitle", fallback: "Please update the app")
-  /// App update required
-  internal static let connectModalErrorAppUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_app_update_required_title", fallback: "App update required")
+  /// Please update the app to connect to the browser extension
+  internal static let connectModalErrorAppUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_app_update_required_subtitle", fallback: "Please update the app to connect to the browser extension")
+  /// Update required
+  internal static let connectModalErrorAppUpdateRequiredTitle = T.tr("Localizable", "connect_modal_error_app_update_required_title", fallback: "Update required")
   /// Update browser extension
   internal static let connectModalErrorBrowserExtensionUpdateRequiredSubtitle = T.tr("Localizable", "connect_modal_error_browser_extension_update_required_subtitle", fallback: "Update browser extension")
   /// Browser extension update required
@@ -497,9 +501,9 @@ internal enum T {
   internal static let homeTitle = T.tr("Localizable", "home_title", fallback: "Items")
   /// Update app
   internal static let importInvalidSchemaErrorCta = T.tr("Localizable", "import_invalid_schema_error_cta", fallback: "Update app")
-  /// Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to import it.
-  internal static func importInvalidSchemaErrorMsg(_ p1: Int, _ p2: Int) -> String {
-    return T.tr("Localizable", "import_invalid_schema_error_msg", p1, p2, fallback: "Your app supports backups up to version %1$d. The backup you’re trying to open was created in a newer version %2$d, which is not supported in your current version. Please update your app to import it.")
+  /// The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it.
+  internal static func importInvalidSchemaErrorMsg(_ p1: Int) -> String {
+    return T.tr("Localizable", "import_invalid_schema_error_msg", p1, fallback: "The backup you’re trying to import was created in a newer version %d, which is not supported in your current version. Please update your app to import it.")
   }
   /// Master Password
   internal static let iosLockScreenUnlockTitle = T.tr("Localizable", "ios_lock_screen_unlock_title", fallback: "Master Password")
@@ -1061,20 +1065,20 @@ internal enum T {
   internal static func restoreCloudFilesUpdatedAt(_ p1: Any) -> String {
     return T.tr("Localizable", "restore_cloud_files_updated_at %@", String(describing: p1), fallback: "Updated at: %@")
   }
-  /// To proceed, enter your Secret Words and Master Password using one of the available methods to decrypt a backup file
-  internal static let restoreDecryptVaultDescription = T.tr("Localizable", "restore_decrypt_vault_description", fallback: "To proceed, enter your Secret Words and Master Password using one of the available methods to decrypt a backup file")
+  /// To proceed, enter your Secret Words and Master Password using one of the available methods:
+  internal static let restoreDecryptVaultDescription = T.tr("Localizable", "restore_decrypt_vault_description", fallback: "To proceed, enter your Secret Words and Master Password using one of the available methods:")
   /// Local Decryption Kit File
   internal static let restoreDecryptVaultOptionFile = T.tr("Localizable", "restore_decrypt_vault_option_file", fallback: "Local Decryption Kit File")
   /// Select a PDF file
   internal static let restoreDecryptVaultOptionFileDescription = T.tr("Localizable", "restore_decrypt_vault_option_file_description", fallback: "Select a PDF file")
   /// Manual Input
   internal static let restoreDecryptVaultOptionManual = T.tr("Localizable", "restore_decrypt_vault_option_manual", fallback: "Manual Input")
-  /// Manually enter Secret Words
-  internal static let restoreDecryptVaultOptionManualDescription = T.tr("Localizable", "restore_decrypt_vault_option_manual_description", fallback: "Manually enter Secret Words")
+  /// Enter Secret Words manually
+  internal static let restoreDecryptVaultOptionManualDescription = T.tr("Localizable", "restore_decrypt_vault_option_manual_description", fallback: "Enter Secret Words manually")
   /// Printed Decryption Kit
   internal static let restoreDecryptVaultOptionScanQr = T.tr("Localizable", "restore_decrypt_vault_option_scan_qr", fallback: "Printed Decryption Kit")
-  /// Scan QR code
-  internal static let restoreDecryptVaultOptionScanQrDescription = T.tr("Localizable", "restore_decrypt_vault_option_scan_qr_description", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let restoreDecryptVaultOptionScanQrDescription = T.tr("Localizable", "restore_decrypt_vault_option_scan_qr_description", fallback: "Scan the QR code")
   /// Decrypt Your Backup
   internal static let restoreDecryptVaultTitle = T.tr("Localizable", "restore_decrypt_vault_title", fallback: "Decrypt Your Backup")
   /// Enter Secret Words manually
@@ -1115,18 +1119,18 @@ internal enum T {
   internal static let restoreMasterPasswordTitle = T.tr("Localizable", "restore_master_password_title", fallback: "Master Password")
   /// Hover over the QR code and wait for a moment
   internal static let restoreQrCodeCameraDescription = T.tr("Localizable", "restore_qr_code_camera_description", fallback: "Hover over the QR code and wait for a moment")
-  /// Scan QR code
-  internal static let restoreQrCodeCameraTitle = T.tr("Localizable", "restore_qr_code_camera_title", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let restoreQrCodeCameraTitle = T.tr("Localizable", "restore_qr_code_camera_title", fallback: "Scan the QR code")
   /// The camera is unavailable. Check the 2FAS Pass camera access in System Settings
   internal static let restoreQrCodeError = T.tr("Localizable", "restore_qr_code_error", fallback: "The camera is unavailable. Check the 2FAS Pass camera access in System Settings")
   /// System Settings
   internal static let restoreQrCodeErrorSystemSettings = T.tr("Localizable", "restore_qr_code_error_system_settings", fallback: "System Settings")
-  /// Scan QR code
-  internal static let restoreQrCodeIntroCta = T.tr("Localizable", "restore_qr_code_intro_cta", fallback: "Scan QR code")
-  /// Scan the QR code or manually enter the Secret Words
-  internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code or manually enter the Secret Words")
-  /// Use the printed Decryption Kit
-  internal static let restoreQrCodeIntroTitle = T.tr("Localizable", "restore_qr_code_intro_title", fallback: "Use the printed Decryption Kit")
+  /// Scan the QR code
+  internal static let restoreQrCodeIntroCta = T.tr("Localizable", "restore_qr_code_intro_cta", fallback: "Scan the QR code")
+  /// Scan the QR code from your printed Decryption Kit
+  internal static let restoreQrCodeIntroDescription = T.tr("Localizable", "restore_qr_code_intro_description", fallback: "Scan the QR code from your printed Decryption Kit")
+  /// Scan the QR code
+  internal static let restoreQrCodeIntroTitle = T.tr("Localizable", "restore_qr_code_intro_title", fallback: "Scan the QR code")
   /// Reading backup file…
   internal static let restoreReadingFileText = T.tr("Localizable", "restore_reading_file_text", fallback: "Reading backup file…")
   /// Start using app
@@ -1145,6 +1149,8 @@ internal enum T {
   internal static let restoreUseRecoveryKeyDescription = T.tr("Localizable", "restore_use_recovery_key_description", fallback: "Scan the QR code on the Recovery Kit or enter the Secret Words manually.")
   /// Use the Decryption Kit
   internal static let restoreUseRecoveryKeyTitle = T.tr("Localizable", "restore_use_recovery_key_title", fallback: "Use the Decryption Kit")
+  /// You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items.
+  internal static let restoreVaultMessage = T.tr("Localizable", "restore_vault_message", fallback: "You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items.")
   /// To recover or sync your 2FAS Pass Vault, select one of the available backup methods:
   internal static let restoreVaultSourceDescription = T.tr("Localizable", "restore_vault_source_description", fallback: "To recover or sync your 2FAS Pass Vault, select one of the available backup methods:")
   /// Local file
@@ -1165,16 +1171,20 @@ internal enum T {
   internal static let restoreVaultSourceOptionWebdavDescription = T.tr("Localizable", "restore_vault_source_option_webdav_description", fallback: "Connect with your WebDAV server")
   /// Select backup file
   internal static let restoreVaultSourceTitle = T.tr("Localizable", "restore_vault_source_title", fallback: "Select backup file")
+  /// Welcome back!
+  internal static let restoreVaultTitle = T.tr("Localizable", "restore_vault_title", fallback: "Welcome back!")
   /// Enter your Master Password for this Vault
   internal static let restoreVaultVerifyMasterPasswordDescription = T.tr("Localizable", "restore_vault_verify_master_password_description", fallback: "Enter your Master Password for this Vault")
+  /// Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items.
+  internal static let restoreVaultWarning = T.tr("Localizable", "restore_vault_warning", fallback: "Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items.")
   /// Restore your 2FAS Pass Vault data from a WebDAV server
   internal static let restoreWebdavDescription = T.tr("Localizable", "restore_webdav_description", fallback: "Restore your 2FAS Pass Vault data from a WebDAV server")
   /// WebDAV
   internal static let restoreWebdavTitle = T.tr("Localizable", "restore_webdav_title", fallback: "WebDAV")
   /// Point your camera at the QR code found in your Decryption Kit.
   internal static let scanDecryptionKitDescription = T.tr("Localizable", "scan_decryption_kit_description", fallback: "Point your camera at the QR code found in your Decryption Kit.")
-  /// Scan QR code
-  internal static let scanDecryptionKitTitle = T.tr("Localizable", "scan_decryption_kit_title", fallback: "Scan QR code")
+  /// Scan the QR code
+  internal static let scanDecryptionKitTitle = T.tr("Localizable", "scan_decryption_kit_title", fallback: "Scan the QR code")
   /// Enable Biometrics
   internal static let securityBiometricsEnableCta = T.tr("Localizable", "security_biometrics_enable_cta", fallback: "Enable Biometrics")
   /// Master Password is required to enable biometrics.
@@ -1681,6 +1691,18 @@ internal enum T {
   /// 
   /// Copy this ZIP file to this device and tap **Upload ZIP file** below.
   internal static let transferInstructionsDashlanePc = T.tr("Localizable", "transfer_instructions_dashlane_pc", fallback: "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this ZIP file to this device and tap **Upload ZIP file** below.")
+  /// Open Enpass on your PC.
+  /// 
+  /// Open the menu at the top right of the app.
+  /// 
+  /// Select **File** then **Export**.
+  /// 
+  /// Select the correct Vault and the .json file format.
+  /// 
+  /// Choose the location and confirm the export.
+  /// 
+  /// Copy the exported file to this device and tap **Upload JSON file** below. 
+  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the .json file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Open Firefox on your PC
   /// 
   /// Select the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.
@@ -1721,6 +1743,16 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below. 
   internal static let transferInstructionsLastpass = T.tr("Localizable", "transfer_instructions_lastpass", fallback: "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the CSV file.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
+  /// Open Microsoft Edge on your PC
+  /// 
+  /// Select the 3 dots next to your profile icon at the top right, then select **Passwords**.
+  /// 
+  /// Select the 3 dots next to Passkeys and click **Export passwords**.
+  /// 
+  /// Confirm the export.
+  /// 
+  /// Copy the exported file to this device and tap **Upload CSV file** below. 
+  internal static let transferInstructionsMicrosoftEdge = T.tr("Localizable", "transfer_instructions_microsoft_edge", fallback: "Open Microsoft Edge on your PC\n\nSelect the 3 dots next to your profile icon at the top right, then select **Passwords**.\n\nSelect the 3 dots next to Passkeys and click **Export passwords**.\n\nConfirm the export.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
   /// Open 1Password on your PC.
   /// 
   /// Click the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).

@@ -105,6 +105,12 @@ extension VaultRecoveryWebDAVPresenter {
         }
     }
     
+    func onDisappear() {
+        if destination == nil {
+            interactor.resetConfiguration()
+        }
+    }
+    
     private func showStatus(_ status: WebDAVRecoveryInteractorError) {
         isLoading = false
         showError(status.message)

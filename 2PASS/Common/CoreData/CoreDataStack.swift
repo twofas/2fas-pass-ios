@@ -7,6 +7,8 @@
 import Foundation
 import CoreData
 
+public typealias LoadStoreCallback = (Bool) -> Void
+
 public final class CoreDataStack {
     private let migrator: CoreDataMigratorProtocol?
     
@@ -21,8 +23,15 @@ public final class CoreDataStack {
     private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
     
-    private var isLoaded: Bool = false
+    private enum LoadState {
+        case initial
+        case loading
+        case loaded
+    }
     
+    private var loadState: LoadState = .initial
+    private var loadStoreCompletions: [LoadStoreCallback] = []
+
     public init(
         readOnly: Bool,
         name: String,
@@ -39,17 +48,26 @@ public final class CoreDataStack {
         migrator?.bundle = bundle
         self.isPersistent = isPersistent
         
-        let container = NSPersistentContainer(name: name, bundle: bundle)
-        self.persistentContainer = container
+        self.persistentContainer = NSPersistentContainer(name: name, bundle: bundle)
     }
     
-    public func loadStore() {
-        guard isLoaded == false else { return }
-        isLoaded = true
-        configurePersistentContainer(persistentContainer)
+    public func loadStore(completion: @escaping LoadStoreCallback) {
+        guard loadState != .loaded else {
+            completion(true)
+            return
+        }
+        configurePersistentContainer(persistentContainer, completion: completion)
     }
     
-    private func configurePersistentContainer(_ container: NSPersistentContainer) {
+    private func configurePersistentContainer(_ container: NSPersistentContainer, completion: @escaping LoadStoreCallback) {
+        guard loadState != .loading else {
+            loadStoreCompletions.append(completion)
+            return
+        }
+        
+        loadState = .loading
+        loadStoreCompletions.append(completion)
+        
         let name = self.name
         if !FileManager.default.fileExists(atPath: storeUrl.path()) {
             DispatchQueue.main.async {
@@ -58,7 +76,19 @@ public final class CoreDataStack {
         }
         container.persistentStoreDescriptions = [storeDescription]
         
-        migrateStoreIfNeeded {
+        migrateStoreIfNeeded { error in
+            if error != nil {
+                DispatchQueue.main.async {
+                    self.loadState = .initial
+                    
+                    for completion in self.loadStoreCompletions {
+                        completion(false)
+                    }
+                    self.loadStoreCompletions = []
+                }
+                return
+            }
+            
             container.loadPersistentStores { [weak self] _, error in
                 if let error = error as NSError? {
                     // swiftlint:disable line_length
@@ -67,10 +97,19 @@ public final class CoreDataStack {
                     self?.logError?(err)
                     self?.parseError(with: error.userInfo)
                     fatalError(err.description)
+                } else {
+                    container.viewContext.automaticallyMergesChangesFromParent = true
+                    DispatchQueue.main.async {
+                        self?.loadState = .loaded
+                        
+                        for completion in self?.loadStoreCompletions ?? [] {
+                            completion(true)
+                        }
+                        self?.loadStoreCompletions = []
+                    }
                 }
             }
         }
-        container.viewContext.automaticallyMergesChangesFromParent = true
     }
     
     private lazy var storeDescription: NSPersistentStoreDescription = {
@@ -149,9 +188,9 @@ public final class CoreDataStack {
         return migrator.requiresMigrationToCurrentVersion(at: storeURL)
     }
     
-    private func migrateStoreIfNeeded(completion: @escaping () -> Void) {
+    private func migrateStoreIfNeeded(completion: @escaping (Error?) -> Void) {
         guard let migrator, isPersistent else {
-            completion()
+            completion(nil)
             return
         }
         guard let storeURL = storeDescription.url else {
@@ -159,9 +198,15 @@ public final class CoreDataStack {
         }
         
         if migrator.requiresMigrationToCurrentVersion(at: storeURL) {
-            migrator.migrateStoreToCurrentVersion(at: storeURL)
+            do {
+                try migrator.migrateStoreToCurrentVersion(at: storeURL)
+                completion(nil)
+            } catch {
+                completion(error)
+            }
+        } else {
+            completion(nil)
         }
-        completion()
     }
     
     private func parseError(with dict: [String: Any]) {

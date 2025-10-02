@@ -41,12 +41,7 @@ struct AppSecurityRouter: Router {
             )
             
         case .currentPassword(let config, let onSuccess):
-            LoginView(presenter: .init(
-                loginSuccessful: onSuccess,
-                interactor: ModuleInteractorFactory.shared.loginModuleInteractor(
-                    config: config
-                )
-            ))
+            LoginRouter.buildView(config: config, onSuccess: onSuccess)
 
         case .defaultSecurityTier:
             DefaultSecurityTierRouter.buildView()
