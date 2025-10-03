@@ -249,6 +249,7 @@ extension StartupInteractor: StartupInteracting {
         return true
     }
     
+    @MainActor
     func restoreVault(entropy: Entropy, masterKey: MasterKey) async -> Bool {
         guard protectionInteractor.setEntropy(entropy, masterKey: masterKey) else {
             return false
