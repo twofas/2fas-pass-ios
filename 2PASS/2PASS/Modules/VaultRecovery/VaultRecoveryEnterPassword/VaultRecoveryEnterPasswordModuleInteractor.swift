@@ -77,7 +77,7 @@ extension VaultRecoveryEnterPasswordModuleInteractor: VaultRecoveryEnterPassword
                 completion: completion
             )
         case .localVault:
-            let masterKey = protectionInteractor.masterKey(from: masterPassword)
+            let masterKey = protectionInteractor.masterKey(from: masterPassword, entropy: entropy)
             completion(masterKey)
         }
     }
