@@ -289,6 +289,17 @@ protocol MainRepository: AnyObject {
         contentVersion: Int,
         content: Data
     )
+
+    func updateMetadataItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int
+    )
     
     func updateItem(
         itemID: ItemID,
@@ -307,13 +318,13 @@ protocol MainRepository: AnyObject {
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
-    ) -> RawItemData?
+    ) -> ItemData?
     
     func listItems(
         options: ItemsListOptions
-    ) -> [RawItemData]
+    ) -> [ItemData]
     
-    func listTrashedItems() -> [RawItemData]
+    func listTrashedItems() -> [ItemData]
     func deleteItem(itemID: ItemID)
     func deleteAllItems()
     func saveStorage()

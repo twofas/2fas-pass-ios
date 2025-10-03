@@ -38,6 +38,28 @@ extension MainRepositoryImpl {
         )
     }
     
+    func updateMetadataItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int
+    ) {
+        inMemoryStorage?.updateMetadataItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion
+        )
+    }
+    
     func updateItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -85,17 +107,17 @@ extension MainRepositoryImpl {
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
-    ) -> RawItemData? {
+    ) -> ItemData? {
         inMemoryStorage?.getItemEntity(itemID: itemID, checkInTrash: checkInTrash)
     }
     
     func listItems(
         options: ItemsListOptions
-    ) -> [RawItemData] {
+    ) -> [ItemData] {
         inMemoryStorage?.listItems(options: options) ?? []
     }
     
-    func listTrashedItems() -> [RawItemData] {
+    func listTrashedItems() -> [ItemData] {
         inMemoryStorage?.listItems(options: .allTrashed) ?? []
     }
     

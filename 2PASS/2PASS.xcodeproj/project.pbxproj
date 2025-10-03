@@ -45,8 +45,12 @@
 		549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
 		549CCC252E8EA608008E1E59 /* ItemListOptions+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CCC212E8EA608008E1E59 /* ItemListOptions+.swift */; };
-		549CCC262E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CCC1F2E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift */; };
-		549CCC272E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CCC202E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift */; };
+		549CD1C52E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CD1C42E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataProperties.swift */; };
+		549CD1C62E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CD1C32E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataClass.swift */; };
+		549CD1CD2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CD1CA2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataClass.swift */; };
+		549CD1CE2E8EAA44008E1E59 /* LoginEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CD1C72E8EAA44008E1E59 /* LoginEntity+CoreDataClass.swift */; };
+		549CD1CF2E8EAA44008E1E59 /* LoginEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CD1C82E8EAA44008E1E59 /* LoginEntity+CoreDataProperties.swift */; };
+		549CD1D02E8EAA44008E1E59 /* SecureNoteEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CD1CB2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataProperties.swift */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
 		54BB9E5E2DC8AC4800BDD13F /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54BB9E572DC8AC4800BDD13F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		54BB9E642DC8ACF500BDD13F /* T.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D62BF94F4200F95A55 /* T.generated.swift */; };
@@ -332,9 +336,13 @@
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		549B1F6F2E8C035600228FE2 /* CameraViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewport.swift; sourceTree = "<group>"; };
 		549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDecryptionMethod.swift; sourceTree = "<group>"; };
-		549CCC1F2E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		549CCC202E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		549CCC212E8EA608008E1E59 /* ItemListOptions+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemListOptions+.swift"; sourceTree = "<group>"; };
+		549CD1C32E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemMetadataEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		549CD1C42E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemMetadataEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		549CD1C72E8EAA44008E1E59 /* LoginEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		549CD1C82E8EAA44008E1E59 /* LoginEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		549CD1CA2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureNoteEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		549CD1CB2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureNoteEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -497,6 +505,7 @@
 		547139D72D89644100A81142 /* AppSecurity */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppSecurity; sourceTree = "<group>"; };
 		548E54142E326EDB00DA22A7 /* QuickSetup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = QuickSetup; sourceTree = "<group>"; };
 		549B1F652E8C01DA00228FE2 /* RestoreVault */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = RestoreVault; sourceTree = "<group>"; };
+		549C2BB82E8FF11E008E1E59 /* Raw */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Raw; sourceTree = "<group>"; };
 		54A825872D82DA3700CBC463 /* Settings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Settings; sourceTree = "<group>"; };
 		54AFB3212DA441BB00EE00E9 /* Connect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Connect; sourceTree = "<group>"; };
 		54B6643F2D84E09700AB4691 /* AutofillSettings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AutofillSettings; sourceTree = "<group>"; };
@@ -621,11 +630,29 @@
 		549CCC222E8EA608008E1E59 /* Item */ = {
 			isa = PBXGroup;
 			children = (
-				549CCC1F2E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift */,
-				549CCC202E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift */,
 				549CCC212E8EA608008E1E59 /* ItemListOptions+.swift */,
+				549CD1C32E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataClass.swift */,
+				549CD1C42E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataProperties.swift */,
 			);
 			path = Item;
+			sourceTree = "<group>";
+		};
+		549CD1C92E8EAA44008E1E59 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				549CD1C72E8EAA44008E1E59 /* LoginEntity+CoreDataClass.swift */,
+				549CD1C82E8EAA44008E1E59 /* LoginEntity+CoreDataProperties.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		549CD1CC2E8EAA44008E1E59 /* SecureNote */ = {
+			isa = PBXGroup;
+			children = (
+				549CD1CA2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataClass.swift */,
+				549CD1CB2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataProperties.swift */,
+			);
+			path = SecureNote;
 			sourceTree = "<group>";
 		};
 		54C090542D6E6B4C00954E76 /* Interactors */ = {
@@ -1073,6 +1100,9 @@
 			isa = PBXGroup;
 			children = (
 				8FD25CFB2CC30BDE001DC8EB /* TwoPass.xcdatamodeld */,
+				549C2BB82E8FF11E008E1E59 /* Raw */,
+				549CD1C92E8EAA44008E1E59 /* Login */,
+				549CD1CC2E8EAA44008E1E59 /* SecureNote */,
 				549CCC222E8EA608008E1E59 /* Item */,
 				C2FC82642E0EDE9F0030EDCB /* Tag */,
 			);
@@ -1237,6 +1267,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				544D691F2E21204A00290EFA /* Encrypted */,
+				549C2BB82E8FF11E008E1E59 /* Raw */,
 			);
 			name = Storage;
 			productName = Storage;
@@ -1638,16 +1669,20 @@
 				C298FD222D39B3ED00CFFB3D /* CloudCache2.xcdatamodeld in Sources */,
 				C298FD262D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataClass.swift in Sources */,
 				C298FD3A2D39C48D00CFFB3D /* VaultCachedEntity+CoreDataClass.swift in Sources */,
+				549CD1C52E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataProperties.swift in Sources */,
+				549CD1C62E8EAA3A008E1E59 /* ItemMetadataEntity+CoreDataClass.swift in Sources */,
 				C26A236C2E1082E400C43CD7 /* TagCachedEntity+CoreDataProperties.swift in Sources */,
 				C26A236D2E1082E400C43CD7 /* TagCachedEntity+CoreDataClass.swift in Sources */,
 				C298FD3B2D39C48D00CFFB3D /* VaultCachedEntity+CoreDataProperties.swift in Sources */,
+				549CD1CD2E8EAA44008E1E59 /* SecureNoteEntity+CoreDataClass.swift in Sources */,
+				549CD1CE2E8EAA44008E1E59 /* LoginEntity+CoreDataClass.swift in Sources */,
+				549CD1CF2E8EAA44008E1E59 /* LoginEntity+CoreDataProperties.swift in Sources */,
+				549CD1D02E8EAA44008E1E59 /* SecureNoteEntity+CoreDataProperties.swift in Sources */,
 				C2FC82652E0EDE9F0030EDCB /* TagEntity+CoreDataProperties.swift in Sources */,
 				C2FC82662E0EDE9F0030EDCB /* TagEntity+CoreDataClass.swift in Sources */,
 				C298FD272D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataProperties.swift in Sources */,
 				C298FD3E2D39C56200CFFB3D /* CloudCacheStorageDataSourceImpl.swift in Sources */,
 				549CCC252E8EA608008E1E59 /* ItemListOptions+.swift in Sources */,
-				549CCC262E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift in Sources */,
-				549CCC272E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift in Sources */,
 				C298AEB52C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift in Sources */,
 				C298AEB32C6923ED0009BAA2 /* EncryptedStorageDataSource.swift in Sources */,
 				C298FD3F2D39C56200CFFB3D /* CloudCacheStorageDataSource.swift in Sources */,

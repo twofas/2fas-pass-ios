@@ -77,16 +77,16 @@ extension ItemsListOptions.TrashOptions {
 }
 
 enum ItemSortDescriptor {
-    static let trashingDate = NSSortDescriptor(key: #keyPath(ItemEntity.trashingDate), ascending: false)
-    static let newestFirst = NSSortDescriptor(key: #keyPath(ItemEntity.creationDate), ascending: false)
-    static let oldestFirst = NSSortDescriptor(key: #keyPath(ItemEntity.creationDate), ascending: true)
+    static let trashingDate = NSSortDescriptor(key: #keyPath(ItemMetadataEntity.trashingDate), ascending: false)
+    static let newestFirst = NSSortDescriptor(key: #keyPath(ItemMetadataEntity.creationDate), ascending: false)
+    static let oldestFirst = NSSortDescriptor(key: #keyPath(ItemMetadataEntity.creationDate), ascending: true)
     static let sortByNameAscending = NSSortDescriptor(
-        key: #keyPath(ItemEntity.name),
+        key: #keyPath(ItemMetadataEntity.name),
         ascending: true,
         selector: #selector(NSString.localizedStandardCompare)
     )
     static let sortByNameDescending = NSSortDescriptor(
-        key: #keyPath(ItemEntity.name),
+        key: #keyPath(ItemMetadataEntity.name),
         ascending: false,
         selector: #selector(NSString.localizedStandardCompare)
     )

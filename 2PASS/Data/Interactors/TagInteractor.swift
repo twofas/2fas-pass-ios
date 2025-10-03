@@ -122,7 +122,7 @@ extension TagInteractor: TagInteracting {
             if let tagIds = item.tagIds, tagIds.contains(tagID) {
                 let updatedTagIds = tagIds.filter { $0 != tagID }
  
-                mainRepository.updateItem(
+                mainRepository.updateMetadataItem(
                     itemID: item.id,
                     modificationDate: item.modificationDate,
                     trashedStatus: item.trashedStatus,
@@ -130,8 +130,7 @@ extension TagInteractor: TagInteracting {
                     tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds,
                     name: item.name,
                     contentType: item.contentType,
-                    contentVersion: item.contentVersion,
-                    content: item.content
+                    contentVersion: item.contentVersion
                 )
             }
         }
