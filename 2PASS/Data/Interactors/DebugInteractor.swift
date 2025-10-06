@@ -79,10 +79,12 @@ public protocol DebugInteracting: AnyObject {
 final class DebugInteractor {
     private let mainRepository: MainRepository
     private let itemsInteractor: ItemsInteracting
-    
-    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting) {
+    private let loginItemInteractor: LoginItemInteracting
+
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, loginItemInteractor: LoginItemInteracting) {
         self.mainRepository = mainRepository
         self.itemsInteractor = itemsInteractor
+        self.loginItemInteractor = loginItemInteractor
     }
 }
 
@@ -328,7 +330,7 @@ extension DebugInteractor: DebugInteracting {
             let password = words.randomElement() ?? "SomePass123\(i)"
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
-            try? itemsInteractor.createLogin(
+            try? loginItemInteractor.createLogin(
                 id: .init(),
                 metadata: .init(
                     creationDate: date,

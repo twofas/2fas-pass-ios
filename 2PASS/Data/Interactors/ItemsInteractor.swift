@@ -27,43 +27,7 @@ public enum ItemsInteractorGetError: Error {
 public protocol ItemsInteracting: AnyObject {
     var hasItems: Bool { get }
     var itemsCount: Int { get }
-    
-    func createLogin(
-        id: ItemID,
-        metadata: ItemMetadata,
-        name: String?,
-        username: String?,
-        password: String?,
-        notes: String?,
-        iconType: PasswordIconType,
-        uris: [PasswordURI]?
-    ) throws(ItemsInteractorSaveError)
-    
-    func updateLogin(
-        id: ItemID,
-        metadata: ItemMetadata,
-        name: String?,
-        username: String?,
-        password: String?,
-        notes: String?,
-        iconType: PasswordIconType,
-        uris: [PasswordURI]?
-    ) throws(ItemsInteractorSaveError)
-    
-    func createSecureNote(
-        id: ItemID,
-        metadata: ItemMetadata,
-        name: String,
-        text: String?
-    ) throws(ItemsInteractorSaveError)
-    
-    func updateSecureNote(
-        id: ItemID,
-        metadata: ItemMetadata,
-        name: String,
-        text: String?
-    ) throws(ItemsInteractorSaveError)
-    
+
     func createItem(_ item: ItemData) throws(ItemsInteractorSaveError)
     func updateItem(_ item: ItemData) throws(ItemsInteractorSaveError)
     
@@ -137,33 +101,13 @@ final class ItemsInteractor {
 }
 
 extension ItemsInteractor: ItemsInteracting {
-    
+
     var hasItems: Bool { !mainRepository.listItems(options: .allNotTrashed).isEmpty }
-    
+
     var itemsCount: Int {
         mainRepository.listItems(options: .allNotTrashed).count
     }
-    
-    func createSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) {
-        let secureNoteItem = try makeSecureNote(id: id, metadata: metadata, name: name, text: text)
-        try createItem(.secureNote(secureNoteItem))
-    }
-    
-    func updateSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) {
-        let secureNoteItem = try makeSecureNote(id: id, metadata: metadata, name: name, text: text)
-        try updateItem(.secureNote(secureNoteItem))
-    }
-    
-    func createLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
-        let loginItem = try makeLogin(id: id, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
-        try createItem(.login(loginItem))
-    }
-    
-    func updateLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
-        let loginItem = try makeLogin(id: id, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
-        try updateItem(.login(loginItem))
-    }
-    
+
     func createItem(_ item: ItemData) throws(ItemsInteractorSaveError) {
         guard let selectedVault = mainRepository.selectedVault else {
             Log("ItemsInteractor: Create item. No vault", module: .interactor, severity: .error)
@@ -679,7 +623,7 @@ extension ItemsInteractor: ItemsInteracting {
 
 private extension ItemsInteractor {
     
-    func markAsTrashed(entity: ItemData, encryptedEntity: ItemEncryptedData, date: Date) {        
+    func markAsTrashed(entity: ItemData, encryptedEntity: ItemEncryptedData, date: Date) {
         mainRepository.updateMetadataItem(
             itemID: entity.id,
             modificationDate: entity.modificationDate,
@@ -701,60 +645,6 @@ private extension ItemsInteractor {
             content: encryptedEntity.content,
             vaultID: encryptedEntity.vaultID,
             tagIds: encryptedEntity.tagIds
-        )
-    }
-    
-    func makeLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) -> LoginItemData {
-        var encryptedPassword: Data?
-        if let password = password?.trim(), !password.isEmpty {
-            guard let encrypted = encrypt(password, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
-                Log(
-                    "ItemsInteractor: Create login. Can't encrypt password",
-                    module: .interactor,
-                    severity: .error
-                )
-                throw .encryptionError
-            }
-            encryptedPassword = encrypted
-        }
-        
-        return .init(
-            id: id,
-            metadata: metadata,
-            name: name,
-            content: .init(
-                name: name?.nilIfEmpty,
-                username: username?.nilIfEmpty,
-                password: encryptedPassword,
-                notes: notes,
-                iconType: iconType,
-                uris: uris
-            )
-        )
-    }
-    
-    func makeSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) -> SecureNoteItemData {
-        var encryptedText: Data?
-        if let text = text?.trim(), !text.isEmpty {
-            guard let encrypted = encrypt(text, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
-                Log(
-                    "ItemsInteractor: Create secure note. Can't encrypt text",
-                    module: .interactor,
-                    severity: .error
-                )
-                throw .encryptionError
-            }
-            encryptedText = encrypted
-        }
-        
-        return .init(
-            id: id,
-            metadata: metadata,
-            name: name,
-            content: .init(
-                name: name,
-                text: encryptedText
-            )
         )
     }
 }
