@@ -37,6 +37,58 @@ extension MainRepositoryImpl {
             content: content
         )
     }
+
+    func createLoginItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    ) {
+        inMemoryStorage?.createLoginItem(
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            username: username,
+            password: password,
+            notes: notes,
+            iconType: iconType,
+            uris: uris
+        )
+    }
+
+    func createSecureNoteItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    ) {
+        inMemoryStorage?.createSecureNoteItem(
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            text: text
+        )
+    }
     
     func updateMetadataItem(
         itemID: ItemID,
@@ -81,6 +133,54 @@ extension MainRepositoryImpl {
             contentType: contentType,
             contentVersion: contentVersion,
             content: content
+        )
+    }
+
+    func updateLoginItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    ) {
+        inMemoryStorage?.updateLoginItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            username: username,
+            password: password,
+            notes: notes,
+            iconType: iconType,
+            uris: uris
+        )
+    }
+
+    func updateSecureNoteItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    ) {
+        inMemoryStorage?.updateSecureNoteItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            text: text
         )
     }
     

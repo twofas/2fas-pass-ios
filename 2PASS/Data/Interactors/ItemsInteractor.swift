@@ -113,30 +113,59 @@ extension ItemsInteractor: ItemsInteracting {
             Log("ItemsInteractor: Create item. No vault", module: .interactor, severity: .error)
             throw .noVault
         }
-        
+
         guard let contentData = try? item.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
-        
+
         guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel) else {
             Log("ItemsInteractor: Create item. Encryption error", module: .interactor, severity: .error)
             return
         }
-        
-        mainRepository.createItem(
-            itemID: item.id,
-            creationDate: item.creationDate,
-            modificationDate: item.modificationDate,
-            trashedStatus: item.trashedStatus,
-            protectionLevel: item.protectionLevel,
-            tagIds: item.tagIds,
-            name: item.name,
-            contentType: item.contentType,
-            contentVersion: item.contentVersion,
-            content: contentData
-        )
-        
+
+        switch item {
+        case .login(let loginItem):
+            mainRepository.createLoginItem(
+                itemID: loginItem.id,
+                creationDate: loginItem.creationDate,
+                modificationDate: loginItem.modificationDate,
+                trashedStatus: loginItem.trashedStatus,
+                protectionLevel: loginItem.protectionLevel,
+                tagIds: loginItem.tagIds,
+                name: loginItem.name,
+                username: loginItem.username,
+                password: loginItem.password,
+                notes: loginItem.notes,
+                iconType: loginItem.iconType,
+                uris: loginItem.uris
+            )
+        case .secureNote(let secureNoteItem):
+            mainRepository.createSecureNoteItem(
+                itemID: secureNoteItem.id,
+                creationDate: secureNoteItem.creationDate,
+                modificationDate: secureNoteItem.modificationDate,
+                trashedStatus: secureNoteItem.trashedStatus,
+                protectionLevel: secureNoteItem.protectionLevel,
+                tagIds: secureNoteItem.tagIds,
+                name: secureNoteItem.name,
+                text: secureNoteItem.content.text
+            )
+        case .raw:
+            mainRepository.createItem(
+                itemID: item.id,
+                creationDate: item.creationDate,
+                modificationDate: item.modificationDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: contentData
+            )
+        }
+
         mainRepository.createEncryptedItem(
             itemID: item.id,
             creationDate: item.creationDate,
@@ -156,29 +185,56 @@ extension ItemsInteractor: ItemsInteracting {
             Log("ItemsInteractor: Update item. No vault", module: .interactor, severity: .error)
             throw .noVault
         }
-        
+
         guard let contentData = try? item.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
-        
+
         guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel) else {
             Log("ItemsInteractor: Update item. Encryption error", module: .interactor, severity: .error)
             return
         }
-        
-        mainRepository.updateItem(
-            itemID: item.id,
-            modificationDate: item.modificationDate,
-            trashedStatus: item.trashedStatus,
-            protectionLevel: item.protectionLevel,
-            tagIds: item.tagIds,
-            name: item.name,
-            contentType: item.contentType,
-            contentVersion: item.contentVersion,
-            content: contentData
-        )
-        
+
+        switch item {
+        case .login(let loginItem):
+            mainRepository.updateLoginItem(
+                itemID: loginItem.id,
+                modificationDate: loginItem.modificationDate,
+                trashedStatus: loginItem.trashedStatus,
+                protectionLevel: loginItem.protectionLevel,
+                tagIds: loginItem.tagIds,
+                name: loginItem.name,
+                username: loginItem.username,
+                password: loginItem.password,
+                notes: loginItem.notes,
+                iconType: loginItem.iconType,
+                uris: loginItem.uris
+            )
+        case .secureNote(let secureNoteItem):
+            mainRepository.updateSecureNoteItem(
+                itemID: secureNoteItem.id,
+                modificationDate: secureNoteItem.modificationDate,
+                trashedStatus: secureNoteItem.trashedStatus,
+                protectionLevel: secureNoteItem.protectionLevel,
+                tagIds: secureNoteItem.tagIds,
+                name: secureNoteItem.name,
+                text: secureNoteItem.content.text
+            )
+        case .raw:
+            mainRepository.updateItem(
+                itemID: item.id,
+                modificationDate: item.modificationDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: contentData
+            )
+        }
+
         mainRepository.updateEncryptedItem(
             itemID: item.id,
             modificationDate: item.modificationDate,
