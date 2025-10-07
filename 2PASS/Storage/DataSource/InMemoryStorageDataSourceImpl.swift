@@ -112,72 +112,18 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     
     public func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date) {
         for item in items {
-            if item.contentType == .login {
-                if let loginEntity = LoginEntity.getLoginEntity(on: context, itemID: item.id, checkInTrash: true) {
-                    do {
-                        let decoder = JSONDecoder()
-                        let loginContent = try decoder.decode(LoginItemContent.self, from: item.content)
-                        
-                        LoginEntity.updateLogin(
-                            on: context,
-                            entity: loginEntity,
-                            modificationDate: date,
-                            trashedStatus: item.trashedStatus,
-                            protectionLevel: item.protectionLevel,
-                            tagIds: item.tagIds,
-                            name: item.name,
-                            username: loginContent.username,
-                            password: loginContent.password,
-                            notes: loginContent.notes,
-                            iconType: loginContent.iconType,
-                            uris: loginContent.uris
-                        )
-                    } catch {
-                        Log("Error decoding login content for batch update: \(error)", module: .storage)
-                    }
-                } else {
-                    Log("Error while searching for Login Entity \(item.id)")
-                }
-            } else if item.contentType == .secureNote {
-                if let secureNoteEntity = SecureNoteEntity.getSecureNoteEntity(on: context, itemID: item.id, checkInTrash: true) {
-                    do {
-                        let decoder = JSONDecoder()
-                        let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: item.content)
-                        
-                        SecureNoteEntity.updateSecureNote(
-                            on: context,
-                            entity: secureNoteEntity,
-                            modificationDate: date,
-                            trashedStatus: item.trashedStatus,
-                            protectionLevel: item.protectionLevel,
-                            tagIds: item.tagIds,
-                            name: item.name,
-                            text: secureNoteContent.text
-                        )
-                    } catch {
-                        Log("Error decoding secure note content for batch update: \(error)", module: .storage)
-                    }
-                } else {
-                    Log("Error while searching for SecureNote Entity \(item.id)")
-                }
-            } else {
-                if let entity = RawEntity.getRawEntity(on: context, itemID: item.id, checkInTrash: true) {
-                    RawEntity.updateRaw(
-                        on: context,
-                        entity: entity,
-                        modificationDate: date,
-                        trashedStatus: item.trashedStatus,
-                        protectionLevel: item.protectionLevel,
-                        tagIds: item.tagIds,
-                        name: item.name,
-                        contentType: item.contentType,
-                        contentVersion: item.contentVersion,
-                        content: item.content
-                    )
-                } else {
-                    Log("Error while searching for Item Entity \(item.id)")
-                }
-            }
+            ItemMetadataEntity.updateItem(
+                on: context,
+                for: item.id,
+                modificationDate: item.modificationDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: item.content
+            )
         }
     }
     
