@@ -12,7 +12,15 @@ import Common
 class ItemMetadataEntity: NSManagedObject {
     @nonobjc static let entityName = "ItemMetadataEntity"
     
-    @nonobjc static func create(
+    private static func entity(for contentType: ItemContentType) -> ItemMetadataEntity.Type {
+        switch contentType {
+        case .login: LoginEntity.self
+        case .secureNote: SecureNoteEntity.self
+        case .unknown: RawEntity.self
+        }
+    }
+    
+    @nonobjc static func createItem(
         on context: NSManagedObjectContext,
         itemID: ItemID,
         creationDate: Date,
@@ -25,64 +33,19 @@ class ItemMetadataEntity: NSManagedObject {
         contentVersion: Int,
         content: Data
     ) {
-        // For login items, decode the content and create a LoginEntity
-        if contentType == .login {
-            do {
-                let decoder = JSONDecoder()
-                let loginContent = try decoder.decode(LoginItemContent.self, from: content)
-                
-                LoginEntity.createLogin(
-                    on: context,
-                    itemID: itemID,
-                    creationDate: creationDate,
-                    modificationDate: modificationDate,
-                    trashedStatus: trashedStatus,
-                    protectionLevel: protectionLevel,
-                    tagIds: tagIds,
-                    name: name,
-                    username: loginContent.username,
-                    password: loginContent.password,
-                    notes: loginContent.notes,
-                    iconType: loginContent.iconType,
-                    uris: loginContent.uris
-                )
-            } catch {
-                fatalError()
-            }
-        } else if contentType == .secureNote {
-            do {
-                let decoder = JSONDecoder()
-                let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: content)
-                
-                SecureNoteEntity.createSecureNote(
-                    on: context,
-                    itemID: itemID,
-                    creationDate: creationDate,
-                    modificationDate: modificationDate,
-                    trashedStatus: trashedStatus,
-                    protectionLevel: protectionLevel,
-                    tagIds: tagIds,
-                    name: name,
-                    text: secureNoteContent.text
-                )
-            } catch {
-                fatalError()
-            }
-        } else {
-            RawEntity.createRaw(
-                on: context,
-                itemID: itemID,
-                creationDate: creationDate,
-                modificationDate: modificationDate,
-                trashedStatus: trashedStatus,
-                protectionLevel: protectionLevel,
-                tagIds: tagIds,
-                name: name,
-                contentType: contentType,
-                contentVersion: contentVersion,
-                content: content
-            )
-        }
+        entity(for: contentType).create(
+            on: context,
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
+        )
     }
     
     @nonobjc static func updateMetadata(
@@ -148,7 +111,7 @@ class ItemMetadataEntity: NSManagedObject {
         entity.contentVersion = Int16(contentVersion)
     }
     
-    @nonobjc static func update(
+    @nonobjc static func updateItem(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
         modificationDate: Date,
@@ -160,14 +123,9 @@ class ItemMetadataEntity: NSManagedObject {
         contentVersion: Int,
         content: Data
     ) {
-        guard let entity = getEntity(on: context, itemID: itemID, checkInTrash: true) else {
-            Log("Can't find entity for itemID: \(itemID)", module: .storage)
-            return
-        }
-        
-        update(
+        entity(for: contentType).update(
             on: context,
-            entity: entity,
+            for: itemID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -177,74 +135,6 @@ class ItemMetadataEntity: NSManagedObject {
             contentVersion: contentVersion,
             content: content
         )
-    }
-    
-    @nonobjc static func update(
-        on context: NSManagedObjectContext,
-        entity: ItemMetadataEntity,
-        modificationDate: Date,
-        trashedStatus: ItemTrashedStatus,
-        protectionLevel: ItemProtectionLevel,
-        tagIds: [ItemTagID]?,
-        name: String?,
-        contentType: ItemContentType,
-        contentVersion: Int,
-        content: Data
-    ) {
-        if contentType == .login {
-            do {
-                let decoder = JSONDecoder()
-                let loginContent = try decoder.decode(LoginItemContent.self, from: content)
-                
-                LoginEntity.updateLogin(
-                    on: context,
-                    for: entity.itemID,
-                    modificationDate: modificationDate,
-                    trashedStatus: trashedStatus,
-                    protectionLevel: protectionLevel,
-                    tagIds: tagIds,
-                    name: name,
-                    username: loginContent.username,
-                    password: loginContent.password,
-                    notes: loginContent.notes,
-                    iconType: loginContent.iconType,
-                    uris: loginContent.uris
-                )
-            } catch {
-                fatalError()
-            }
-        } else if contentType == .secureNote {
-            do {
-                let decoder = JSONDecoder()
-                let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: content)
-                
-                SecureNoteEntity.updateSecureNote(
-                    on: context,
-                    for: entity.itemID,
-                    modificationDate: modificationDate,
-                    trashedStatus: trashedStatus,
-                    protectionLevel: protectionLevel,
-                    tagIds: tagIds,
-                    name: name,
-                    text: secureNoteContent.text
-                )
-            } catch {
-                fatalError()
-            }
-        } else {
-            RawEntity.updateRaw(
-                on: context,
-                for: entity.itemID,
-                modificationDate: modificationDate,
-                trashedStatus: trashedStatus,
-                protectionLevel: protectionLevel,
-                tagIds: tagIds,
-                name: name,
-                contentType: contentType,
-                contentVersion: contentVersion,
-                content: content
-            )
-        }
     }
     
     @nonobjc static func getEntity(
@@ -276,6 +166,37 @@ class ItemMetadataEntity: NSManagedObject {
         items.forEach { item in
             context.delete(item)
         }
+    }
+    
+    @nonobjc class func create(
+        on context: NSManagedObjectContext,
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        fatalError("Should be overridden by subclasses")
+    }
+    
+    @nonobjc class func update(
+        on context: NSManagedObjectContext,
+        for itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        fatalError("Should be overridden by subclasses")
     }
     
     func toData() -> ItemData {

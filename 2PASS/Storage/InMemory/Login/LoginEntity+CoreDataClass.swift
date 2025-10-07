@@ -12,6 +12,78 @@ import UIKit
 @objc(LoginEntity)
 final class LoginEntity: ItemMetadataEntity {
     @nonobjc static let loginEntityName = "LoginEntity"
+
+    @nonobjc override static func create(
+        on context: NSManagedObjectContext,
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        do {
+            let decoder = JSONDecoder()
+            let loginContent = try decoder.decode(LoginItemContent.self, from: content)
+            
+            createLogin(
+                on: context,
+                itemID: itemID,
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                trashedStatus: trashedStatus,
+                protectionLevel: protectionLevel,
+                tagIds: tagIds,
+                name: name,
+                username: loginContent.username,
+                password: loginContent.password,
+                notes: loginContent.notes,
+                iconType: loginContent.iconType,
+                uris: loginContent.uris
+            )
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    @nonobjc override static func update(
+        on context: NSManagedObjectContext,
+        for itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        do {
+            let decoder = JSONDecoder()
+            let loginContent = try decoder.decode(LoginItemContent.self, from: content)
+            
+            updateLogin(
+                on: context,
+                for: itemID,
+                modificationDate: modificationDate,
+                trashedStatus: trashedStatus,
+                protectionLevel: protectionLevel,
+                tagIds: tagIds,
+                name: name,
+                username: loginContent.name,
+                password: loginContent.password,
+                notes: loginContent.notes,
+                iconType: loginContent.iconType,
+                uris: loginContent.uris
+            )
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
     
     @nonobjc static func createLogin(
         on context: NSManagedObjectContext,

@@ -21,7 +21,7 @@
         <attribute name="notes" optional="YES" attributeType="String"/>
         <attribute name="password" optional="YES" attributeType="Binary"/>
         <attribute name="uris" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
-        <attribute name="urisMatching" optional="YES" attributeType="Transformable"/>
+        <attribute name="urisMatching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
         <attribute name="username" optional="YES" attributeType="String"/>
     </entity>
     <entity name="RawEntity" representedClassName="RawEntity" syncable="YES">

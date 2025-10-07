@@ -12,6 +12,70 @@ import Common
 final class SecureNoteEntity: ItemMetadataEntity {
     @nonobjc static let secureNoteEntityName = "SecureNoteEntity"
     
+    override class func create(
+        on context: NSManagedObjectContext,
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        do {
+            let decoder = JSONDecoder()
+            let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: content)
+            
+            createSecureNote(
+                on: context,
+                itemID: itemID,
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                trashedStatus: trashedStatus,
+                protectionLevel: protectionLevel,
+                tagIds: tagIds,
+                name: name,
+                text: secureNoteContent.text
+            )
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    @nonobjc override static func update(
+        on context: NSManagedObjectContext,
+        for itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        do {
+            let decoder = JSONDecoder()
+            let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: content)
+            
+            updateSecureNote(
+                on: context,
+                for: itemID,
+                modificationDate: modificationDate,
+                trashedStatus: trashedStatus,
+                protectionLevel: protectionLevel,
+                tagIds: tagIds,
+                name: name,
+                text: secureNoteContent.text
+            )
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
     @nonobjc static func createSecureNote(
         on context: NSManagedObjectContext,
         itemID: ItemID,

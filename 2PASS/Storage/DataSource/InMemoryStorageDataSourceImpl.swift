@@ -47,7 +47,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         contentVersion: Int,
         content: Data
     ) {
-        ItemMetadataEntity.create(
+        ItemMetadataEntity.createItem(
             on: context,
             itemID: itemID,
             creationDate: creationDate,
@@ -96,7 +96,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         contentVersion: Int,
         content: Data
     ) {
-        ItemMetadataEntity.update(
+        ItemMetadataEntity.updateItem(
             on: context,
             for: itemID,
             modificationDate: modificationDate,
