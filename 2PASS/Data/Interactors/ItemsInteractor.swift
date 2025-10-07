@@ -7,6 +7,8 @@
 import UIKit
 import Common
 
+let ItemContentNameKey = "name"
+
 public enum ItemsInteractorSaveError: Error {
     case encryptionError
     case noVault
@@ -327,7 +329,7 @@ extension ItemsInteractor: ItemsInteracting {
     
     func createEncryptedItem(_ item: ItemEncryptedData) {
         let contentDict = try? JSONSerialization.jsonObject(with: item.content) as? [String: Any]
-        let name = contentDict?["name"] as? String
+        let name = contentDict?[ItemContentNameKey] as? String
         
         try? createItem(.raw(
             .init(
@@ -349,7 +351,7 @@ extension ItemsInteractor: ItemsInteracting {
     
     func updateEncryptedItem(_ item: ItemEncryptedData) {
         let contentDict = try? JSONSerialization.jsonObject(with: item.content) as? [String: Any]
-        let name = contentDict?["name"] as? String
+        let name = contentDict?[ItemContentNameKey] as? String
         
         try? updateItem(.raw(
             .init(
@@ -521,7 +523,7 @@ extension ItemsInteractor: ItemsInteracting {
                                 trashedStatus: entity.trashedStatus,
                                 tagIds: entity.tagIds
                             ),
-                            name: newContentDict["name"] as? String,
+                            name: newContentDict[ItemContentNameKey] as? String,
                             contentType: entity.contentType,
                             contentVersion: entity.contentVersion,
                             content: newContent
