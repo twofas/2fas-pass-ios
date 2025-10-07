@@ -18,3 +18,13 @@ public struct SecureNoteContent: ItemContent {
         self.text = text
     }
 }
+
+extension ItemData {
+    
+    public var asSecureNote: SecureNoteItemData? {
+        switch self {
+        case .secureNote(let secureNoteItem): secureNoteItem
+        default: nil
+        }
+    }
+}

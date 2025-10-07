@@ -40,7 +40,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         let items = Task { @MainActor in
             mainRepository.listItems(options: .allNotTrashed)
                 .filter { $0.protectionLevel != .topSecret }
-                .compactMap { ItemData($0, decoder: mainRepository.jsonDecoder)?.asLoginItem }
+                .compactMap { $0.asLoginItem }
         }
              
         let connectLogins = await items.value.map {
@@ -55,11 +55,11 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     }
     
     func prepareItemForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
-        let rawItem = Task { @MainActor in
+        let itemDataTask = Task { @MainActor in
             mainRepository.getItemEntity(itemID: id, checkInTrash: false)
         }
    
-        guard let rawItem = await rawItem.value, let loginItem = ItemData(rawItem, decoder: mainRepository.jsonDecoder)?.asLoginItem else {
+        guard let itemData = await itemDataTask.value, let loginItem = itemData.asLoginItem else {
             throw .noItemsToExport
         }
         

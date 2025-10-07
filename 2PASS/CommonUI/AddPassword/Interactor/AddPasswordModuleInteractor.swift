@@ -67,8 +67,9 @@ protocol AddPasswordModuleInteracting: AnyObject {
 
 final class AddPasswordModuleInteractor {
     public let changeRequest: PasswordDataChangeRequest?
-    
+
     private let itemsInteractor: ItemsInteracting
+    private let loginItemInteractor: LoginItemInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
@@ -84,6 +85,7 @@ final class AddPasswordModuleInteractor {
     
     init(
         itemsInteractor: ItemsInteracting,
+        loginItemInteractor: LoginItemInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
@@ -97,6 +99,7 @@ final class AddPasswordModuleInteractor {
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
         self.itemsInteractor = itemsInteractor
+        self.loginItemInteractor = loginItemInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -155,7 +158,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         let date = currentDateInteractor.currentDate
         if let current = getEditPassword() {
             do {
-                try itemsInteractor.updateLogin(
+                try loginItemInteractor.updateLogin(
                     id: current.id,
                     metadata: .init(
                         creationDate: current.creationDate,
@@ -194,7 +197,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         } else {
             let itemID = UUID()
             do {
-                try itemsInteractor.createLogin(
+                try loginItemInteractor.createLogin(
                     id: itemID,
                     metadata: .init(
                         creationDate: date,

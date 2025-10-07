@@ -8,9 +8,9 @@ import Foundation
 import CoreData
 import Common
 
-extension ItemEntity {
-    @nonobjc static func fetchRequest() -> NSFetchRequest<ItemEntity> {
-        NSFetchRequest<ItemEntity>(entityName: entityName)
+extension ItemMetadataEntity {
+    @nonobjc static func fetchRequest() -> NSFetchRequest<ItemMetadataEntity> {
+        NSFetchRequest<ItemMetadataEntity>(entityName: entityName)
     }
     
     @NSManaged var itemID: ItemID
@@ -28,15 +28,14 @@ extension ItemEntity {
     
     @NSManaged var contentType: String
     @NSManaged var contentVersion: Int16
-    @NSManaged var contentData: Data
 }
 
-extension ItemEntity: Identifiable {}
+extension ItemMetadataEntity: Identifiable {}
 
-extension ItemEntity {
+extension ItemMetadataEntity {
     
-    func toData() -> RawItemData {
-        let metadata = ItemMetadata(
+    func toMetadata() -> ItemMetadata {
+        ItemMetadata(
             creationDate: creationDate,
             modificationDate: modificationDate,
             protectionLevel: ItemProtectionLevel(level: level),
@@ -47,17 +46,6 @@ extension ItemEntity {
                 return .no
             }(),
             tagIds: tagIds
-        )
-        
-        let contentType = ItemContentType(rawValue: contentType)
-        
-        return .init(
-            id: itemID,
-            metadata: metadata,
-            name: name,
-            contentType: contentType,
-            contentVersion: Int(contentVersion),
-            content: contentData
         )
     }
 }

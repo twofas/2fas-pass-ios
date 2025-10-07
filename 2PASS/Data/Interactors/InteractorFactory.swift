@@ -46,7 +46,15 @@ public final class InteractorFactory {
             tagInteractor: tagInteractor()
         )
     }
-    
+
+    public func secureNoteInteractor() -> SecureNoteItemInteracting {
+        SecureNoteInteractor(itemsInteractor: itemsInteractor())
+    }
+
+    public func loginItemInteractor() -> LoginItemInteracting {
+        LoginItemInteractor(itemsInteractor: itemsInteractor())
+    }
+
     public func systemInteractor() -> SystemInteracting {
         SystemInteractor(mainRepository: MainRepositoryImpl.shared)
     }
@@ -99,7 +107,8 @@ public final class InteractorFactory {
     public func debugInteractor() -> DebugInteracting {
         DebugInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            itemsInteractor: itemsInteractor()
+            itemsInteractor: itemsInteractor(),
+            loginItemInteractor: loginItemInteractor()
         )
     }
     

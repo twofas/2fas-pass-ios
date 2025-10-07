@@ -59,7 +59,7 @@ extension ExportInteractor: ExportInteracting {
             
             DispatchQueue.main.async {
                 let items = self.mainRepository.listItems(options: .allNotTrashed).compactMap {
-                    ItemData($0, decoder: self.mainRepository.jsonDecoder)?.asLoginItem
+                    $0.asLoginItem
                 }
                 let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []

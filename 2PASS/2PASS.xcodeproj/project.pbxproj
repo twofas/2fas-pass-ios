@@ -44,9 +44,6 @@
 		549B1F712E8C035600228FE2 /* CameraViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B1F6F2E8C035600228FE2 /* CameraViewport.swift */; };
 		549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
-		549CCC252E8EA608008E1E59 /* ItemListOptions+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CCC212E8EA608008E1E59 /* ItemListOptions+.swift */; };
-		549CCC262E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CCC1F2E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift */; };
-		549CCC272E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549CCC202E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
 		54BB9E5E2DC8AC4800BDD13F /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54BB9E572DC8AC4800BDD13F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		54BB9E642DC8ACF500BDD13F /* T.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D62BF94F4200F95A55 /* T.generated.swift */; };
@@ -77,7 +74,6 @@
 		8F6F40E92D3878460010F7CE /* HalfwayPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6F40E82D3878400010F7CE /* HalfwayPresenter.swift */; };
 		8F6F40F12D387E4D0010F7CE /* SetupCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6F40F02D387E460010F7CE /* SetupCompleteView.swift */; };
 		8FD25CFA2CC30BC9001DC8EB /* LogStorage.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8FD25CF82CC30BC8001DC8EB /* LogStorage.xcdatamodeld */; };
-		8FD25CFD2CC30BDE001DC8EB /* TwoPass.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8FD25CFB2CC30BDE001DC8EB /* TwoPass.xcdatamodeld */; };
 		8FDFEA3F2D34780300A1899A /* SetupVaultPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDFEA3E2D34780200A1899A /* SetupVaultPresenter.swift */; };
 		8FDFEA442D3478BA00A1899A /* GenerateSecretKeyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDFEA432D3478B300A1899A /* GenerateSecretKeyView.swift */; };
 		C21422C42C8E422400C978F9 /* LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21422C32C8E422400C978F9 /* LogHandler.swift */; };
@@ -150,9 +146,6 @@
 		C2F81EBC2BE42325008FD374 /* RootModuleInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F81EBB2BE42325008FD374 /* RootModuleInteractor.swift */; };
 		C2F81EC82BE42858008FD374 /* Data.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F81EC22BE42858008FD374 /* Data.framework */; };
 		C2F81EC92BE42858008FD374 /* Data.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C2F81EC22BE42858008FD374 /* Data.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C2FC82652E0EDE9F0030EDCB /* TagEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2FC82632E0EDE9F0030EDCB /* TagEntity+CoreDataProperties.swift */; };
-		C2FC82662E0EDE9F0030EDCB /* TagEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2FC82622E0EDE9F0030EDCB /* TagEntity+CoreDataClass.swift */; };
-		C2FC82682E0F21E10030EDCB /* TagListOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2FC82672E0F21DD0030EDCB /* TagListOptions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -332,9 +325,6 @@
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		549B1F6F2E8C035600228FE2 /* CameraViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewport.swift; sourceTree = "<group>"; };
 		549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDecryptionMethod.swift; sourceTree = "<group>"; };
-		549CCC1F2E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		549CCC202E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		549CCC212E8EA608008E1E59 /* ItemListOptions+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemListOptions+.swift"; sourceTree = "<group>"; };
 		54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -354,7 +344,6 @@
 		8F6F40E82D3878400010F7CE /* HalfwayPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HalfwayPresenter.swift; sourceTree = "<group>"; };
 		8F6F40F02D387E460010F7CE /* SetupCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupCompleteView.swift; sourceTree = "<group>"; };
 		8FD25CF92CC30BC9001DC8EB /* LogStorage.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = LogStorage.xcdatamodel; sourceTree = "<group>"; };
-		8FD25CFC2CC30BDE001DC8EB /* TwoPass.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TwoPass.xcdatamodel; sourceTree = "<group>"; };
 		8FDFEA3E2D34780200A1899A /* SetupVaultPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultPresenter.swift; sourceTree = "<group>"; };
 		8FDFEA432D3478B300A1899A /* GenerateSecretKeyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecretKeyView.swift; sourceTree = "<group>"; };
 		C21422C32C8E422400C978F9 /* LogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogHandler.swift; sourceTree = "<group>"; };
@@ -412,9 +401,6 @@
 		C2F489502D3C761C00F3761B /* CloudCached.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCached.swift; sourceTree = "<group>"; };
 		C2F81EBB2BE42325008FD374 /* RootModuleInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootModuleInteractor.swift; sourceTree = "<group>"; };
 		C2F81EC22BE42858008FD374 /* Data.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Data.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C2FC82622E0EDE9F0030EDCB /* TagEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TagEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		C2FC82632E0EDE9F0030EDCB /* TagEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TagEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		C2FC82672E0F21DD0030EDCB /* TagListOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListOptions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -512,6 +498,7 @@
 		54C7EBFD2D5CCE35000E79D0 /* SwiftUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SwiftUI; sourceTree = "<group>"; };
 		54D6B3282D91EBE80013185C /* VaultDecryptionKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultDecryptionKit; sourceTree = "<group>"; };
 		54D768E82DFAA4DF000CB649 /* ManageSubscription */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ManageSubscription; sourceTree = "<group>"; };
+		54DBC5D62E950EC000092B00 /* InMemory */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InMemory; sourceTree = "<group>"; };
 		54EABA602DD252760018189F /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
 		54FD31A22E45644E00DFAC70 /* Tags */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tags; sourceTree = "<group>"; };
 		C2B0FC1C2CE91C4D005CFADD /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C2B0FC232CE91C4D005CFADD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
@@ -618,16 +605,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		549CCC222E8EA608008E1E59 /* Item */ = {
-			isa = PBXGroup;
-			children = (
-				549CCC1F2E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift */,
-				549CCC202E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift */,
-				549CCC212E8EA608008E1E59 /* ItemListOptions+.swift */,
-			);
-			path = Item;
-			sourceTree = "<group>";
-		};
 		54C090542D6E6B4C00954E76 /* Interactors */ = {
 			isa = PBXGroup;
 			children = (
@@ -751,7 +728,7 @@
 				C298FD332D39C37F00CFFB3D /* Cached */,
 				C21422C52C8E425E00C978F9 /* Log */,
 				544D691F2E21204A00290EFA /* Encrypted */,
-				C2FC825B2E0EDE120030EDCB /* InMemory */,
+				54DBC5D62E950EC000092B00 /* InMemory */,
 				C249E7782BF10B23003464D5 /* Storage.h */,
 			);
 			path = Storage;
@@ -1069,26 +1046,6 @@
 			path = Interactor;
 			sourceTree = "<group>";
 		};
-		C2FC825B2E0EDE120030EDCB /* InMemory */ = {
-			isa = PBXGroup;
-			children = (
-				8FD25CFB2CC30BDE001DC8EB /* TwoPass.xcdatamodeld */,
-				549CCC222E8EA608008E1E59 /* Item */,
-				C2FC82642E0EDE9F0030EDCB /* Tag */,
-			);
-			path = InMemory;
-			sourceTree = "<group>";
-		};
-		C2FC82642E0EDE9F0030EDCB /* Tag */ = {
-			isa = PBXGroup;
-			children = (
-				C2FC82672E0F21DD0030EDCB /* TagListOptions.swift */,
-				C2FC82622E0EDE9F0030EDCB /* TagEntity+CoreDataClass.swift */,
-				C2FC82632E0EDE9F0030EDCB /* TagEntity+CoreDataProperties.swift */,
-			);
-			path = Tag;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1237,6 +1194,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				544D691F2E21204A00290EFA /* Encrypted */,
+				54DBC5D62E950EC000092B00 /* InMemory */,
 			);
 			name = Storage;
 			productName = Storage;
@@ -1641,18 +1599,12 @@
 				C26A236C2E1082E400C43CD7 /* TagCachedEntity+CoreDataProperties.swift in Sources */,
 				C26A236D2E1082E400C43CD7 /* TagCachedEntity+CoreDataClass.swift in Sources */,
 				C298FD3B2D39C48D00CFFB3D /* VaultCachedEntity+CoreDataProperties.swift in Sources */,
-				C2FC82652E0EDE9F0030EDCB /* TagEntity+CoreDataProperties.swift in Sources */,
-				C2FC82662E0EDE9F0030EDCB /* TagEntity+CoreDataClass.swift in Sources */,
 				C298FD272D39BC1C00CFFB3D /* DeletedItemCachedEntity+CoreDataProperties.swift in Sources */,
 				C298FD3E2D39C56200CFFB3D /* CloudCacheStorageDataSourceImpl.swift in Sources */,
-				549CCC252E8EA608008E1E59 /* ItemListOptions+.swift in Sources */,
-				549CCC262E8EA608008E1E59 /* ItemEntity+CoreDataClass.swift in Sources */,
-				549CCC272E8EA608008E1E59 /* ItemEntity+CoreDataProperties.swift in Sources */,
 				C298AEB52C6926690009BAA2 /* EncryptedStorageDataSourceImpl.swift in Sources */,
 				C298AEB32C6923ED0009BAA2 /* EncryptedStorageDataSource.swift in Sources */,
 				C298FD3F2D39C56200CFFB3D /* CloudCacheStorageDataSource.swift in Sources */,
 				8FD25CFA2CC30BC9001DC8EB /* LogStorage.xcdatamodeld in Sources */,
-				C2FC82682E0F21E10030EDCB /* TagListOptions.swift in Sources */,
 				C28A01072BF417C900BAF976 /* InMemoryStorageDataSource.swift in Sources */,
 				C21422CE2C8E42C200C978F9 /* LogEntryEntity+CodeDataClass.swift in Sources */,
 				C21422C42C8E422400C978F9 /* LogHandler.swift in Sources */,
@@ -1660,7 +1612,6 @@
 				C2D8995C2E2C4A69008521D1 /* ItemCachedEntity+CoreDataProperties.swift in Sources */,
 				C2D8995D2E2C4A69008521D1 /* ItemCachedEntity+CoreDataClass.swift in Sources */,
 				C21422D22C8E439F00C978F9 /* LogStorageDataSourceImpl.swift in Sources */,
-				8FD25CFD2CC30BDE001DC8EB /* TwoPass.xcdatamodeld in Sources */,
 				C2145B5D2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3263,16 +3214,6 @@
 			);
 			currentVersion = 8FD25CF92CC30BC9001DC8EB /* LogStorage.xcdatamodel */;
 			path = LogStorage.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-		8FD25CFB2CC30BDE001DC8EB /* TwoPass.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				8FD25CFC2CC30BDE001DC8EB /* TwoPass.xcdatamodel */,
-			);
-			currentVersion = 8FD25CFC2CC30BDE001DC8EB /* TwoPass.xcdatamodel */;
-			path = TwoPass.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

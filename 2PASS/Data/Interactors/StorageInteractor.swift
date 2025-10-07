@@ -232,7 +232,7 @@ extension StorageInteractor: StorageInteracting {
                 return (nil, value)
             }
             
-            return (content["name"] as? String, value)
+            return (content[ItemContentNameKey] as? String, value)
         }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {

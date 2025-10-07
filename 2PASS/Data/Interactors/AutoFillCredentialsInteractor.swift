@@ -100,7 +100,7 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
                 canAddSuggestionForPassword(with: $0.protectionLevel)
             }
             .compactMap {
-                ItemData($0, decoder: mainRepository.jsonDecoder)?.asLoginItem
+                $0.asLoginItem
             }
         }
         

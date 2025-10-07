@@ -34,6 +34,7 @@ public final class InMemoryStorageDataSourceImpl {
 }
 
 extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
+    
     public func createItem(
         itemID: ItemID,
         creationDate: Date,
@@ -46,7 +47,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         contentVersion: Int,
         content: Data
     ) {
-        ItemEntity.create(
+        ItemMetadataEntity.createItem(
             on: context,
             itemID: itemID,
             creationDate: creationDate,
@@ -58,6 +59,29 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
             contentType: contentType,
             contentVersion: contentVersion,
             content: content
+        )
+    }
+
+    public func updateMetadataItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int
+    ) {
+        ItemMetadataEntity.updateMetadata(
+            on: context,
+            for: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion
         )
     }
     
@@ -72,7 +96,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         contentVersion: Int,
         content: Data
     ) {
-        ItemEntity.update(
+        ItemMetadataEntity.updateItem(
             on: context,
             for: itemID,
             modificationDate: modificationDate,
@@ -87,32 +111,27 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     }
     
     public func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date) {
-        let listAll = ItemEntity.listItems(on: context, options: .all)
         for item in items {
-            if let entity = listAll.first(where: { $0.itemID == item.id }) {
-                ItemEntity.update(
-                    on: context,
-                    entity: entity,
-                    modificationDate: date,
-                    trashedStatus: item.trashedStatus,
-                    protectionLevel: item.protectionLevel,
-                    tagIds: item.tagIds,
-                    name: item.name,
-                    contentType: item.contentType,
-                    contentVersion: item.contentVersion,
-                    content: item.content
-                )
-            } else {
-                Log("Error while searching for Password Entity \(item.id)")
-            }
+            ItemMetadataEntity.updateItem(
+                on: context,
+                for: item.id,
+                modificationDate: item.modificationDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: item.content
+            )
         }
     }
     
     public func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
-    ) -> RawItemData? {
-        ItemEntity.getEntity(
+    ) -> ItemData? {
+        ItemMetadataEntity.getEntity(
             on: context,
             itemID: itemID,
             checkInTrash: checkInTrash
@@ -121,22 +140,22 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     
     public func listItems(
         options: ItemsListOptions
-    ) -> [RawItemData] {
-        ItemEntity.listItems(on: context, options: options)
+    ) -> [ItemData] {
+        ItemMetadataEntity.listItems(on: context, options: options)
             .map { $0.toData() }
     }
 
     public func deleteItem(itemID: ItemID) {
-        guard let entity = ItemEntity.getEntity(
+        guard let entity = ItemMetadataEntity.getEntity(
             on: context,
             itemID: itemID,
             checkInTrash: true
         ) else { return }
-        ItemEntity.delete(on: context, entity: entity)
+        ItemMetadataEntity.delete(on: context, entity: entity)
     }
     
     public func deleteAllItemEntities() {
-        ItemEntity.deleteAllItemEntities(on: context)
+        ItemMetadataEntity.deleteAllItemEntities(on: context)
     }
 }
 
@@ -228,14 +247,153 @@ extension InMemoryStorageDataSourceImpl {
 }
 
 extension InMemoryStorageDataSourceImpl {
+    public func createLoginItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    ) {
+        LoginEntity.createLogin(
+            on: context,
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            username: username,
+            password: password,
+            notes: notes,
+            iconType: iconType,
+            uris: uris
+        )
+    }
+    
+    public func updateLoginItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    ) {
+        LoginEntity.updateLogin(
+            on: context,
+            for: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            username: username,
+            password: password,
+            notes: notes,
+            iconType: iconType,
+            uris: uris
+        )
+    }
+    
+    public func getLoginItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> LoginItemData? {
+        LoginEntity.getLoginEntity(
+            on: context,
+            itemID: itemID,
+            checkInTrash: checkInTrash
+        )?.toData().asLoginItem
+    }
+    
+    public func listLoginItems(
+        options: ItemsListOptions
+    ) -> [LoginItemData] {
+        LoginEntity.listLoginEntities(on: context, options: options)
+            .compactMap { $0.toData().asLoginItem }
+    }
+}
+
+extension InMemoryStorageDataSourceImpl {
+    public func createSecureNoteItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    ) {
+        SecureNoteEntity.createSecureNote(
+            on: context,
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            text: text
+        )
+    }
+    
+    public func updateSecureNoteItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    ) {
+        SecureNoteEntity.updateSecureNote(
+            on: context,
+            for: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            text: text
+        )
+    }
+    
+    public func getSecureNoteItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> SecureNoteItemData? {
+        SecureNoteEntity.getSecureNoteEntity(
+            on: context,
+            itemID: itemID,
+            checkInTrash: checkInTrash
+        )?.toData().asSecureNote
+    }
+    
+    public func listSecureNoteItems(
+        options: ItemsListOptions
+    ) -> [SecureNoteItemData] {
+        SecureNoteEntity.listSecureNoteEntities(on: context, options: options)
+            .compactMap { $0.toData().asSecureNote }
+    }
+}
+
+extension InMemoryStorageDataSourceImpl {
     public func listUsernames() -> [String] {
-        ItemEntity.listItems(on: context, options: .allNotTrashed)
-            .compactMap {
-                if let loginItem = ItemData($0.toData())?.asLoginItem {
-                    return loginItem.username
-                }
-                return nil
-            }
+        LoginEntity.listLoginEntities(on: context, options: .allNotTrashed)
+            .compactMap { $0.username }
     }
     
     public func warmUp() {
