@@ -10,7 +10,7 @@ import Common
 
 @objc(RawEntity)
 final class RawEntity: ItemMetadataEntity {
-    @nonobjc static let loginEntityName = "RawEntity"
+    @nonobjc static let rawEntityName = "RawEntity"
     
     override class func create(
         on context: NSManagedObjectContext,
@@ -79,7 +79,7 @@ final class RawEntity: ItemMetadataEntity {
         contentVersion: Int,
         content: Data
     ) {
-        let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! RawEntity
+        let entity = NSEntityDescription.insertNewObject(forEntityName: rawEntityName, into: context) as! RawEntity
         
         entity.itemID = itemID
         entity.name = name

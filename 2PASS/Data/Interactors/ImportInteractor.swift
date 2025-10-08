@@ -160,8 +160,24 @@ extension ImportInteractor: ImportInteracting {
             do {
                 let parsedJSON = try jsonDecoder.decode(ExchangeVault.self, from: data)
                 end(.success(parsedJSON))
-            } catch let ExchangeError.mismatchSchemaVersion(actualVersion, expected: expectedVersion) {
-                end(.failure(.schemaNotSupported(actualVersion)))
+            } catch let ExchangeError.mismatchSchemaVersion(schemaVersion, expected: _) {
+                guard schemaVersion <= Config.schemaVersion else {
+                    end(.failure(.schemaNotSupported(schemaVersion)))
+                    return
+                }
+                
+                do {
+                    switch schemaVersion {
+                    case 1:
+                        let parsedJSON = try jsonDecoder.decode(ExchangeSchemaV1.ExchangeVault.self, from: data)
+                        let vault = try ExchangeVault(parsedJSON, decoder: self.mainRepository.jsonDecoder, encoder: self.mainRepository.jsonEncoder)
+                        end(.success(vault))
+                    default:
+                        end(.failure(.schemaNotSupported(schemaVersion)))
+                    }
+                } catch {
+                    end(.failure(.jsonError(error)))
+                }
             } catch {
                 end(.failure(.jsonError(error)))
             }
@@ -173,7 +189,7 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func checkEncryption(in file: ExchangeVault) -> ImportEncryptionType {
-        if let logins = file.vault.logins, !logins.isEmpty {
+        if let logins = file.vault.items, !logins.isEmpty {
             return .noEncryption
         }
         guard let key = mainRepository.cachedExternalKey else {
@@ -199,10 +215,10 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func extractUnencryptedItems(from file: ExchangeVault) -> [ItemData] {
-        guard let logins = file.vault.logins else {
+        guard let items = file.vault.items else {
             return []
         }
-        return logins.compactMap({ self.exchangeLoginToPasswordData($0) })
+        return items.compactMap({ self.exchangeItemToItemData($0) })
     }
     
     func extractUnencryptedDeletedItems(from file: ExchangeVault) -> [DeletedItemData] {
@@ -220,7 +236,7 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func checkEncryptionWithoutParsing(in vault: ExchangeVault) -> ImportEncryptionTypeNoParsing {
-        if vault.vault.logins?.isEmpty == false {
+        if vault.vault.items?.isEmpty == false {
             return .noEncryption
         }
         return .needsPassword
@@ -230,7 +246,7 @@ extension ImportInteractor: ImportInteracting {
         from vault: ExchangeVault,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     ) {
-        guard let passwords = vault.vault.loginsEncrypted else {
+        guard let passwords = vault.vault.itemsEncrypted else {
             completion(.failure(.noPasswordsField))
             return
         }
@@ -304,7 +320,7 @@ extension ImportInteractor: ImportInteracting {
             return
         }
         
-        guard let items = exchangeVault.vault.loginsEncrypted else {
+        guard let items = exchangeVault.vault.itemsEncrypted else {
             completion(.failure(.noPasswords))
             return
         }
@@ -433,10 +449,10 @@ private extension ImportInteractor {
                 }
                     do {
                         let exchangeLogin = try jsonDecoder.decode(
-                            ExchangeVault.ExchangeVaultItem.ExchangeLogin.self,
+                            ExchangeVault.ExchangeVaultItem.ExchangeItem.self,
                             from: jsonData
                         )
-                        if let pass = self.exchangeLoginToPasswordData(exchangeLogin) {
+                        if let pass = self.exchangeItemToItemData(exchangeLogin) {
                             return pass
                         } else {
                             Log("Import Interactor - Error creating Password Data", severity: .error)
@@ -451,7 +467,7 @@ private extension ImportInteractor {
         
         if items.isEmpty {
             Log("ImportInteractor - no items to parse", module: .interactor)
-            continueExtractionOfPasswordsTags(
+            continueExtractionOfItemsTags(
                 items: [],
                 tags: tags,
                 deletedPasswords: deletedPasswords,
@@ -482,7 +498,7 @@ private extension ImportInteractor {
             
             group.notify(queue: .global()) {
                 Log("ImportInteractor - parsed \(results.count) items", module: .interactor)
-                self.continueExtractionOfPasswordsTags(
+                self.continueExtractionOfItemsTags(
                     items: results,
                     tags: tags,
                     deletedPasswords: deletedPasswords,
@@ -494,7 +510,7 @@ private extension ImportInteractor {
         }
     }
 
-    func continueExtractionOfPasswordsTags(
+    func continueExtractionOfItemsTags(
         items: [ItemData],
         tags: [String],
         deletedPasswords: [String],
@@ -602,7 +618,7 @@ private extension ImportInteractor {
         }
     }
     
-    func exchangeLoginToPasswordData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeLogin) -> ItemData? {
+    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem) -> ItemData? {
         guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
         }
@@ -616,83 +632,126 @@ private extension ImportInteractor {
             }
         }()
         
+        let itemMetadata = ItemMetadata(
+            creationDate: Date(exportTimestamp: exchangeLogin.createdAt),
+            modificationDate: Date(exportTimestamp: exchangeLogin.updatedAt),
+            protectionLevel: protectionLevel,
+            trashedStatus: .no,
+            tagIds: exchangeLogin.tags?.compactMap { UUID(uuidString: $0) }
+        )
+        
+        let contentType = ItemContentType(rawValue: exchangeLogin.contentType)
+        
         guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel) else {
             return nil
         }
         
-        let password: Data? = {
-            guard let passwordEntry = exchangeLogin.password, let passwordData = passwordEntry.data(using: .utf8) else {
+        switch contentType {
+        case .login:
+            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(exchangeLogin.content)) else {
                 return nil
             }
-            guard let password = mainRepository.encrypt(passwordData, key: key) else {
+
+            guard let content = try? mainRepository.jsonDecoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeItem.ExchangeLoginContent.self, from: contentData) else {
                 return nil
             }
-            return password
-        }()
-        
-        let iconType: PasswordIconType = {
-            switch exchangeLogin.iconType {
-            case 0:
-                guard let uriIndex = exchangeLogin.iconUriIndex, let uri = exchangeLogin.uris?[uriIndex], let domain = uriInteractor.extractDomain(from: uri.text) else {
-                    return .domainIcon(nil)
-                }
-                return .domainIcon(domain)
-                
-            case 2:
-                guard let urlString = exchangeLogin.customImageUrl, let url = URL(string: urlString) else {
-                    return .domainIcon(nil)
-                }
-                return .customIcon(url)
-                
-            default:
-                let title = exchangeLogin.labelText ?? exchangeLogin.name.map { Config.defaultIconLabel(forName: $0) } ?? Config.defaultIconLabel
-                let color = UIColor(hexString: exchangeLogin.labelColor)
-                return .label(labelTitle: title, labelColor: color)
-            }
-        }()
-        
-        let uris: [PasswordURI]? = { () -> [PasswordURI]? in
-            guard let uris = exchangeLogin.uris, !uris.isEmpty else {
-                return nil
-            }
-            return uris.map { exchangeURI in
-                let uri = exchangeURI.text
             
-                return PasswordURI(
-                    uri: uri,
-                    match: {
-                    switch exchangeURI.matcher {
-                    case 0: .domain
-                    case 1: .host
-                    case 2: .startsWith
-                    case 3: .exact
-                    default: .domain
+            let password: Data? = {
+                guard let passwordEntry = content.password, let passwordData = passwordEntry.data(using: .utf8) else {
+                    return nil
+                }
+                guard let password = mainRepository.encrypt(passwordData, key: key) else {
+                    return nil
+                }
+                return password
+            }()
+            
+            let iconType: PasswordIconType = {
+                switch content.iconType {
+                case 0:
+                    guard let uriIndex = content.iconUriIndex, let uri = content.uris?[uriIndex], let domain = uriInteractor.extractDomain(from: uri.text) else {
+                        return .domainIcon(nil)
                     }
-                }())
-            }
-        }()
-                
-        return .login(
-            LoginItemData(
-                id: itemID,
-                metadata: .init(
-                    creationDate: Date(exportTimestamp: exchangeLogin.createdAt),
-                    modificationDate: Date(exportTimestamp: exchangeLogin.updatedAt),
-                    protectionLevel: protectionLevel,
-                    trashedStatus: .no,
-                    tagIds: exchangeLogin.tags?.compactMap { UUID(uuidString: $0) }
-                ),
-                name: exchangeLogin.name.formattedName,
-                content: .init(
-                    name: exchangeLogin.name.formattedName,
-                    username: exchangeLogin.username,
-                    password: password,
-                    notes: exchangeLogin.notes?.sanitizeNotes(),
-                    iconType: iconType,
-                    uris: uris
-                )
+                    return .domainIcon(domain)
+                    
+                case 2:
+                    guard let urlString = content.customImageUrl, let url = URL(string: urlString) else {
+                        return .domainIcon(nil)
+                    }
+                    return .customIcon(url)
+                    
+                default:
+                    let title = content.labelText ?? content.name.map { Config.defaultIconLabel(forName: $0) } ?? Config.defaultIconLabel
+                    let color = UIColor(hexString: content.labelColor)
+                    return .label(labelTitle: title, labelColor: color)
+                }
+            }()
+            
+            let uris: [PasswordURI]? = { () -> [PasswordURI]? in
+                guard let uris = content.uris, !uris.isEmpty else {
+                    return nil
+                }
+                return uris.map { exchangeURI in
+                    let uri = exchangeURI.text
+                    return PasswordURI(
+                        uri: uri,
+                        match: {
+                            switch exchangeURI.matcher {
+                            case 0: .domain
+                            case 1: .host
+                            case 2: .startsWith
+                            case 3: .exact
+                            default: .domain
+                            }
+                        }())
+                }
+            }()
+            
+            let loginContent = LoginItemData.Content(
+                name: content.name,
+                username: content.username,
+                password: password,
+                notes: content.notes?.sanitizeNotes(),
+                iconType: iconType,
+                uris: uris
             )
-        )
+            
+            return .login(.init(
+                id: itemID,
+                metadata: itemMetadata,
+                name: content.name,
+                content: loginContent
+            ))
+            
+        default:
+            let contentDict = encryptSecureFields(in: exchangeLogin.content, contentType: contentType, using: key)
+            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(contentDict)) else {
+                return nil
+            }
+
+            let rawItem = RawItemData(
+                id: itemID,
+                metadata: itemMetadata,
+                name: contentDict[ExchangeVault.contentNameKey] as? String,
+                contentType: contentType,
+                contentVersion: exchangeLogin.contentVersion,
+                content: contentData
+            )
+            
+            return ItemData(rawItem)
+        }
+    }
+    
+    private func encryptSecureFields(in content: [String: Any], contentType: ItemContentType, using key: SymmetricKey) -> [String: Any] {
+        content.reduce(into: [String: Any]()) { result, keyValue in
+            if contentType.isSecureField(key: keyValue.key) {
+                if let stringValue = keyValue.value as? String, let data = stringValue.data(using: .utf8) {
+                    result[keyValue.key] = mainRepository.encrypt(data, key: key)?.base64EncodedString()
+                }
+            } else {
+                result[keyValue.key] = keyValue.value
+            }
+        }
     }
     
     func exchangeTagToItemTagData(_ exchangeTag: ExchangeVault.ExchangeVaultItem.ExchangeTag, vaultID: VaultID) -> ItemTagData? {

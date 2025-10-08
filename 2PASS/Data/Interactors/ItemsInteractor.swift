@@ -7,8 +7,6 @@
 import UIKit
 import Common
 
-let ItemContentNameKey = "name"
-
 public enum ItemsInteractorSaveError: Error {
     case encryptionError
     case noVault
@@ -75,7 +73,7 @@ public protocol ItemsInteracting: AnyObject {
         completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     )
     
-    func getItemCountForTag(tagID: ItemTagID) -> Int    
+    func getItemCountForTag(tagID: ItemTagID) -> Int
 }
 
 final class ItemsInteractor {
@@ -328,9 +326,8 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func createEncryptedItem(_ item: ItemEncryptedData) {
-        let contentDict = try? JSONSerialization.jsonObject(with: item.content) as? [String: Any]
-        let name = contentDict?[ItemContentNameKey] as? String
-        
+        let name = mainRepository.extractItemName(fromContent: item.content)
+
         try? createItem(.raw(
             .init(
                 id: item.itemID,
@@ -350,9 +347,8 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func updateEncryptedItem(_ item: ItemEncryptedData) {
-        let contentDict = try? JSONSerialization.jsonObject(with: item.content) as? [String: Any]
-        let name = contentDict?[ItemContentNameKey] as? String
-        
+        let name = mainRepository.extractItemName(fromContent: item.content)
+
         try? updateItem(.raw(
             .init(
                 id: item.itemID,
@@ -496,15 +492,15 @@ extension ItemsInteractor: ItemsInteracting {
             mainRepository.listEncryptedItems(in: selectedVault.vaultID)
                 .compactMap({ entity -> RawItemData? in
                     do {
-                        guard let decryptedContent = decryptData(entity.content, isSecureField: false, protectionLevel: entity.protectionLevel), let contentDict = try JSONSerialization.jsonObject(with: decryptedContent) as? [String: Any] else {
+                        guard let decryptedContent = decryptData(entity.content, isSecureField: false, protectionLevel: entity.protectionLevel), let contentDict = try mainRepository.jsonDecoder.decode(AnyCodable.self, from: decryptedContent).value as? [String: Any] else {
                             return nil
                         }
                         
                         var newContentDict = contentDict
                         for (key, value) in contentDict where entity.contentType.isSecureField(key: key) {
-                            if let dataValue = value as? Data {
+                            if let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) {
                                 guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: entity.protectionLevel),
-                                      let decryptedData = decrypted.data(using: .utf8) else {
+                                      let decryptedData = decrypted.data(using: .utf8)?.base64EncodedString() else {
                                     return nil
                                 }
                                 newContentDict[key] = decryptedData
@@ -513,7 +509,7 @@ extension ItemsInteractor: ItemsInteracting {
                             }
                         }
                         
-                        let newContent = try JSONSerialization.data(withJSONObject: newContentDict, options: [])
+                        let newContent = try mainRepository.jsonEncoder.encode(AnyCodable(newContentDict))
                         return RawItemData(
                             id: entity.id,
                             metadata: .init(
@@ -562,12 +558,12 @@ extension ItemsInteractor: ItemsInteracting {
                 
                 switch current {
                 case .itemData(let rawItem):
-                    if let contentDict = try? JSONSerialization.jsonObject(with: rawItem.content) as? [String: Any] {
+                    if let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: rawItem.content).value as? [String: Any] {
                         var newContentDict = contentDict
                         for (key, value) in contentDict where rawItem.isSecureField(key: key) {
-                            if let dataValue = value as? Data {
+                            if let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) {
                                 if let decrypted = encryptData(dataValue, isSecureField: true, protectionLevel: rawItem.protectionLevel) {
-                                    newContentDict[key] = decrypted
+                                    newContentDict[key] = decrypted.base64EncodedString()
                                 } else {
                                     buffer[i] = .error
                                     return
@@ -575,7 +571,7 @@ extension ItemsInteractor: ItemsInteracting {
                             }
                         }
                         
-                        guard let contentData = try? JSONSerialization.data(withJSONObject: newContentDict) else {
+                        guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(newContentDict)) else {
                             buffer[i] = .error
                             return
                         }

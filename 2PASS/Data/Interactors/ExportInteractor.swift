@@ -58,9 +58,7 @@ extension ExportInteractor: ExportInteracting {
             }
             
             DispatchQueue.main.async {
-                let items = self.mainRepository.listItems(options: .allNotTrashed).compactMap {
-                    $0.asLoginItem
-                }
+                let items = self.mainRepository.listEncryptedItems(in: vault.id)
                 let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []
                 
@@ -70,7 +68,7 @@ extension ExportInteractor: ExportInteracting {
                         return
                     }
                     
-                    let exchangeLogins = items.map { self.itemToExchangeLogin($0) }
+                    let exchangeLogins = items.compactMap { self.itemToExchangeItems($0) }
                     let exchangeDeleted = deleted.map { self.deletedToExchangeDeleted($0) }
                     let exchangeTags = tags.map { self.tagsToExchangeTags($0) }
                     let jsonEncoder = self.mainRepository.jsonEncoder
@@ -88,8 +86,8 @@ extension ExportInteractor: ExportInteracting {
                             return
                         }
                         
-                        self.prepareEncryptedLogins(
-                            exchangeLogins: exchangeLogins,
+                        self.prepareEncryptedItems(
+                            exchangeItems: exchangeLogins,
                             exchangeDeleted: exchangeDeleted,
                             key: key
                         ) { [weak self] loginsEncrypted, loginsDeletedEncrypted in
@@ -164,13 +162,13 @@ private extension ExportInteractor {
         }
     }
     
-    func prepareEncryptedLogins(
-        exchangeLogins: [ExchangeVault.ExchangeVaultItem.ExchangeLogin],
+    func prepareEncryptedItems(
+        exchangeItems: [ExchangeVault.ExchangeVaultItem.ExchangeItem],
         exchangeDeleted: [ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem],
         key: SymmetricKey,
         completion: @escaping ([String], [String]) -> Void
     ) {
-        func exp(_ pass: ExchangeVault.ExchangeVaultItem.ExchangeLogin) -> String? {
+        func exp(_ pass: ExchangeVault.ExchangeVaultItem.ExchangeItem) -> String? {
             let jsonEncoder = mainRepository.jsonEncoder
             guard let data = try? jsonEncoder.encode(pass) else {
                 Log(
@@ -191,9 +189,9 @@ private extension ExportInteractor {
             return value
         }
         
-        if exchangeLogins.isEmpty {
-            continuePreparataionOfEncryptedLogins(
-                exchangeLogins: [],
+        if exchangeItems.isEmpty {
+            continuePreparataionOfEncryptedItems(
+                exchangeItems: [],
                 exchangeDeleted: exchangeDeleted,
                 key: key,
                 completion: completion
@@ -206,7 +204,7 @@ private extension ExportInteractor {
             
             var resultsPasswords: [String] = []
             
-            for pass in exchangeLogins {
+            for pass in exchangeItems {
                 group.enter()
                 self.queue.async {
                     let result = exp(pass)
@@ -220,8 +218,8 @@ private extension ExportInteractor {
             }
             
             group.notify(queue: .global()) {
-                self.continuePreparataionOfEncryptedLogins(
-                    exchangeLogins: resultsPasswords,
+                self.continuePreparataionOfEncryptedItems(
+                    exchangeItems: resultsPasswords,
                     exchangeDeleted: exchangeDeleted,
                     key: key,
                     completion: completion
@@ -230,8 +228,8 @@ private extension ExportInteractor {
         }
     }
     
-    func continuePreparataionOfEncryptedLogins(
-        exchangeLogins: [String],
+    func continuePreparataionOfEncryptedItems(
+        exchangeItems: [String],
         exchangeDeleted: [ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem],
         key: SymmetricKey,
         completion: @escaping ([String], [String]) -> Void
@@ -259,7 +257,7 @@ private extension ExportInteractor {
         
         if exchangeDeleted.isEmpty {
             DispatchQueue.main.async {
-                completion(exchangeLogins, [])
+                completion(exchangeItems, [])
             }
             return
         }
@@ -281,7 +279,7 @@ private extension ExportInteractor {
                 }
             }
             
-            group.notify(queue: .main) { completion(exchangeLogins, resultsDeleted) }
+            group.notify(queue: .main) { completion(exchangeItems, resultsDeleted) }
         }
     }
     
@@ -299,7 +297,7 @@ private extension ExportInteractor {
     
     func mainVault(
         _ vault: VaultEncryptedData,
-        logins: [ExchangeVault.ExchangeVaultItem.ExchangeLogin]?,
+        logins: [ExchangeVault.ExchangeVaultItem.ExchangeItem]?,
         loginsEncrypted: [String]?,
         loginsDeleted: [ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem]?,
         loginsDeletedEncrypted: [String]?,
@@ -311,8 +309,8 @@ private extension ExportInteractor {
             name: vault.name,
             createdAt: vault.createdAt.exportTimestamp,
             updatedAt: mainRepository.currentDate.exportTimestamp,
-            logins: logins,
-            loginsEncrypted: loginsEncrypted,
+            items: logins,
+            itemsEncrypted: loginsEncrypted,
             tags: tags,
             tagsEncrypted: tagsEncrypted,
             itemsDeleted: loginsDeleted,
@@ -330,66 +328,108 @@ private extension ExportInteractor {
         )
     }
     
-    func itemToExchangeLogin(_ item: LoginItemData) -> ExchangeVault.ExchangeVaultItem.ExchangeLogin {
-        let passwordDecrypted: String? = {
-            guard let pass = item.password else {
-                return nil
-            }
-            return itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: item.protectionLevel)
-        }()
-        let securityType: Int = {
-            switch item.protectionLevel {
-            case .normal: 2
-            case .confirm: 1
-            case .topSecret: 0
-            }
-        }()
-        var labelTitle: String?
-        var labelColor: String?
-        var iconURI: String?
+    func itemToExchangeItems(_ item: ItemEncryptedData) -> ExchangeVault.ExchangeVaultItem.ExchangeItem? {
+        guard let content = itemsInteractor.decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
+            return nil
+        }
         
-        let iconType: Int = {
-            switch item.iconType {
-            case .domainIcon:
-                return 0
-            case .label(let labelTitleValue, let labelColorValue):
-                labelTitle = labelTitleValue
-                labelColor = labelColorValue?.hexString
-                return 1
-            case .customIcon(let iconURIValue):
-                iconURI = iconURIValue.absoluteString
-                return 2
-            }
-        }()
-        
-        let iconURIIndex: Int? = {
-            switch item.iconType {
-            case .domainIcon(let domain):
-                return item.uris?.firstIndex(where: {
-                    uriInteractor.extractDomain(from: $0.uri) == domain
-                })
+        let exportContent: [String: Any]? = {
+            switch item.contentType {
+            case .login:
+                guard let passwordContent = try? mainRepository.jsonDecoder.decode(LoginItemData.Content.self, from: content) else {
+                    return nil
+                }
+                
+                var labelTitle: String?
+                var labelColor: String?
+                var iconURI: String?
+                
+                let iconType: Int = {
+                    switch passwordContent.iconType {
+                    case .domainIcon:
+                        return 0
+                    case .label(let labelTitleValue, let labelColorValue):
+                        labelTitle = labelTitleValue
+                        labelColor = labelColorValue?.hexString
+                        return 1
+                    case .customIcon(let iconURIValue):
+                        iconURI = iconURIValue.absoluteString
+                        return 2
+                    }
+                }()
+                
+                let iconURIIndex: Int? = {
+                    switch passwordContent.iconType {
+                    case .domainIcon(let domain):
+                        return passwordContent.uris?.firstIndex(where: {
+                            uriInteractor.extractDomain(from: $0.uri) == domain
+                        })
+                    default:
+                        return nil
+                    }
+                }()
+                
+                let passwordValue: String? = {
+                    if let passwordValue = passwordContent.password {
+                        return itemsInteractor.decrypt(passwordValue, isSecureField: true, protectionLevel: item.protectionLevel)
+                    }
+                    return nil
+                }()
+                
+                let content = ExchangeVault.ExchangeVaultItem.ExchangeItem.ExchangeLoginContent(
+                    name: passwordContent.name,
+                    username: passwordContent.username,
+                    password: passwordValue,
+                    notes: passwordContent.notes,
+                    iconType: iconType,
+                    iconUriIndex: iconURIIndex,
+                    labelText: labelTitle,
+                    labelColor: labelColor,
+                    customImageUrl: iconURI,
+                    uris: passwordContent.uris?.map({ uriToExchangeURI(uri: $0) }) ?? []
+                )
+                
+                guard let data = try? mainRepository.jsonEncoder.encode(content) else {
+                    return nil
+                }
+                return try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: data).value as? [String: Any]
             default:
-                return nil
+                guard let key = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel) else {
+                    return nil
+                }
+                guard let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: content).value as? [String: Any] else {
+                    return nil
+                }
+                return decryptSecureFields(in: contentDict, contentType: item.contentType, using: key)
             }
         }()
         
+        guard let exportContent else {
+            return nil
+        }
+
         return .init(
-            id: item.id.exportString(),
-            name: item.name,
-            username: item.username,
-            password: passwordDecrypted,
-            notes: item.notes?.sanitizeNotes(),
-            securityType: securityType,
-            iconType: iconType,
-            iconUriIndex: iconURIIndex,
-            labelText: labelTitle,
-            labelColor: labelColor,
-            customImageUrl: iconURI,
+            id: item.itemID.exportString(),
+            contentType: item.contentType.rawValue,
+            contentVersion: item.contentVersion,
+            content: exportContent,
+            securityType: item.protectionLevel.intValue,
             createdAt: item.creationDate.exportTimestamp,
             updatedAt: item.modificationDate.exportTimestamp,
-            uris: item.uris?.map({ uriToExchangeURI(uri: $0) }) ?? [],
             tags: item.tagIds?.map { $0.exportString() }
         )
+    }
+    
+    private func decryptSecureFields(in content: [String: Any], contentType: ItemContentType, using key: SymmetricKey) -> [String: Any] {
+        content.reduce(into: [String: Any]()) { result, keyValue in
+            if contentType.isSecureField(key: keyValue.key) {
+                if let stringValue = keyValue.value as? String, let data = Data(base64Encoded: stringValue), let decryptedData = mainRepository.decrypt(data, key: key) {
+                    result[keyValue.key] = String(data: decryptedData, encoding: .utf8)
+                }
+            } else {
+                result[keyValue.key] = keyValue.value
+            }
+        }
     }
     
     func deletedToExchangeDeleted(_ deleted: DeletedItemData) -> ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem {
@@ -414,7 +454,7 @@ private extension ExportInteractor {
         )
     }
     
-    func uriToExchangeURI(uri: PasswordURI) -> ExchangeVault.ExchangeVaultItem.ExchangeLogin.ExchangeURI {
+    func uriToExchangeURI(uri: PasswordURI) -> ExchangeVault.ExchangeVaultItem.ExchangeItem.ExchangeURI {
         let matcher: Int = {
             switch uri.match {
             case .domain: 0

@@ -10,9 +10,11 @@ import SwiftUI
 final class GenerateContentPresenter {
     var isWorking = false
     var itemsCount: Int = 0
-    
+    var secureNotesCount = 0
+    var unknownCount = 0
+
     private let interactor: GenerateContentModuleInteracting
-    
+
     init(interactor: GenerateContentModuleInteracting) {
         self.interactor = interactor
     }
@@ -38,7 +40,25 @@ extension GenerateContentPresenter {
         }
     }
     
+    func onGenerateSecureNote(count: Int) {
+        isWorking = true
+        interactor.generateSecureNotes(count: count) { [weak self] in
+            self?.refreshCount()
+            self?.isWorking = false
+        }
+    }
+
+    func onGenerateUnknown(count: Int) {
+        isWorking = true
+        interactor.generateUnknown(count: count) { [weak self] in
+            self?.refreshCount()
+            self?.isWorking = false
+        }
+    }
+
     private func refreshCount() {
         itemsCount = interactor.itemsCount
+        secureNotesCount = interactor.secureNotesCount
+        unknownCount = interactor.unknownCount
     }
 }

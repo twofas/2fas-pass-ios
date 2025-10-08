@@ -44,7 +44,7 @@ public enum Config {
     }
     public static let mainVaultName = "Main Vault"
     public static let wordsCount = 15
-    public static let schemaVersion = 1
+    public static let schemaVersion = 2
     public static let webDAVLockFileTime = 30
     public static let maxNotesLength = 2048
     public static let maxURICount = 9
