@@ -13,7 +13,9 @@ private struct Constants {
     static let iconPlaceholderCornerRadius: CGFloat = 16
     static let minHeightNotes: CGFloat = 80
     static let inputAccessoryHeight: CGFloat = 44
+    static let inputAccessoryHeightLiquidGlass: CGFloat = 64
     static let matchingRuleSheetHeight: CGFloat = 420
+    static let matchingRuleSheetHeightLiquidGlass: CGFloat = 460
 }
 
 struct AddPasswordView: View {
@@ -67,7 +69,7 @@ struct AddPasswordView: View {
                         presenter.onCustomizeIcon()
                     }
                     .controlSize(.small)
-                    .buttonStyle(.bezeled(fillSpace: false))
+                    .buttonStyle(.bezeled(fillSpace: false, allowGlassEffect: false))
                 }
                 
                 Spacer()
@@ -329,12 +331,23 @@ struct AddPasswordView: View {
         textField.inputAssistantItem.leadingBarButtonGroups = []
         textField.inputAssistantItem.trailingBarButtonGroups = []
         
-        let frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
-
+        let frame: CGRect
+        if #available(iOS 26.0, *) {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeightLiquidGlass)
+        } else {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
+        }
+        
         let inputView = UIInputView(frame: frame, inputViewStyle: .keyboard)
         
-        var config = UIButton.Configuration.plain()
-        config.baseForegroundColor = .label
+        var config: UIButton.Configuration
+        if #available(iOS 26.0, *) {
+            config = UIButton.Configuration.glass()
+        } else {
+            config = UIButton.Configuration.plain()
+            config.baseForegroundColor = .label
+        }
+        
         config.imagePadding = 8
         
         let feedback = UIImpactFeedbackGenerator()
@@ -353,8 +366,14 @@ struct AddPasswordView: View {
         stackView.distribution = .fillEqually
         
         inputView.addSubview(stackView)
-        stackView.pinToParent(with: .init(top: 5, left: 0, bottom: 0, right: 0))
-
+        
+        if #available(iOS 26.0, *) {
+            stackView.spacing = 16
+            stackView.pinToParent(with: .init(top: 5, left: 16, bottom: 12, right: 16))
+        } else {
+            stackView.pinToParent(with: .init(top: 5, left: 0, bottom: 0, right: 0))
+        }
+    
         textField.inputAccessoryView = inputView
     }
     
@@ -372,13 +391,24 @@ struct AddPasswordView: View {
         let mostUsedUsernames = presenter.mostUsedUsernamesForKeyboard()
         guard mostUsedUsernames.isEmpty == false else { return }
         
-        let frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
+        let frame: CGRect
+        if #available(iOS 26, *) {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeightLiquidGlass)
+        } else {
+            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
+        }
 
         let inputView = UIInputView(frame: frame, inputViewStyle: .keyboard)
         
         let buttons = mostUsedUsernames.map { username in
-            var config = UIButton.Configuration.plain()
-            config.baseForegroundColor = .label
+            var config: UIButton.Configuration
+            if #available(iOS 26, *) {
+                config = UIButton.Configuration.glass()
+            } else {
+                config = UIButton.Configuration.plain()
+                config.baseForegroundColor = .label
+            }
+            
             config.titleAlignment = .center
             config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { container in
                 var container = container
@@ -391,11 +421,18 @@ struct AddPasswordView: View {
                 focusField = presenter.password.isEmpty ? .password : nil
             }))
             button.titleLabel?.textAlignment = .center
+            button.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
             return button
         }
         
-        var config = UIButton.Configuration.plain()
-        config.baseForegroundColor = .label
+        var config: UIButton.Configuration
+        if #available(iOS 26, *) {
+            config = UIButton.Configuration.glass()
+        } else {
+            config = UIButton.Configuration.plain()
+            config.baseForegroundColor = .label
+        }
+        
         let showMoreButton = UIButton(configuration: config, primaryAction: UIAction(image: UIImage(systemName: "person.badge.key"), handler: { _ in
             showMostUsed = true
         }))
@@ -409,15 +446,24 @@ struct AddPasswordView: View {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         inputView.addSubview(stackView)
         
+        let isLiquidGlass: Bool
+        if #available(iOS 26, *) {
+            isLiquidGlass = true
+            stackView.spacing = 8
+        } else {
+            isLiquidGlass = false
+        }
+        
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor),
+            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor, constant: isLiquidGlass ? 16 : 0),
             stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor),
-            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor),
+            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
+            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor, constant: isLiquidGlass ? -16 : 0),
             
-            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: -4),
+            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: isLiquidGlass ? -20 : -4),
             showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor)
+            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
+            showMoreButton.widthAnchor.constraint(equalTo: showMoreButton.heightAnchor)
         ])
 
         textField.inputAccessoryView = inputView
@@ -461,12 +507,26 @@ struct AddPasswordView: View {
                     }
                 }
                 .scrollBounceBehavior(.basedOnSize)
+                .modify {
+                    if #available(iOS 26, *) {
+                        $0.contentMargins(.top, Spacing.xxl4)
+                    } else {
+                        $0
+                    }
+                }                
             }
             
             HStack {
                 Text(T.uriSettingsMatchingRuleHeader.localizedKey)
                     .font(.title3Emphasized)
                     .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    .modify {
+                        if #available(iOS 26, *) {
+                            $0.padding(.leading, Spacing.s)
+                        } else {
+                            $0
+                        }
+                    }
             
                 Spacer()
                 
@@ -474,9 +534,22 @@ struct AddPasswordView: View {
                     showURIMatchSettings = false
                 }
             }
+            .modify {
+                if #available(iOS 26, *) {
+                    $0.padding(.top, Spacing.xs)
+                } else {
+                    $0
+                }
+            }
             .padding(Spacing.l)
         }
-        .presentationDetents([.height(Constants.matchingRuleSheetHeight)])
+        .modify {
+            if #available(iOS 26, *) {
+                $0.presentationDetents([.height(Constants.matchingRuleSheetHeightLiquidGlass)])
+            } else {
+                $0.presentationDetents([.height(Constants.matchingRuleSheetHeight)])
+            }
+        }
     }
     
     @ViewBuilder
@@ -506,10 +579,17 @@ struct AddPasswordView: View {
                             }
                         }
                     }
+                    .scrollBounceBehavior(.basedOnSize)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button(T.commonClose.localizedKey, action: { showMostUsed = false }))
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    ToolbarCancelButton {
+                        showMostUsed = false
+                    }
+                }
+            }
             .navigationTitle(T.loginUsernameMostUsedHeader.localizedKey)
         }
         .presentationDragIndicator(.hidden)

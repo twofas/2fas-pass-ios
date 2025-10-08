@@ -15,13 +15,20 @@ final class CustomizeIconViewController: UIViewController {
         
         navigationItem.title = T.customizeIcon
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: T.commonSave,
-            style: .plain,
-            target: self,
-            action: #selector(saveAction)
-        )
-        
+        if #available(iOS 26.0, *) {
+            let saveButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(saveAction))
+            saveButton.style = .prominent
+            saveButton.isEnabled = false
+            navigationItem.rightBarButtonItem = saveButton
+        } else {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                title: T.commonSave,
+                style: .plain,
+                target: self,
+                action: #selector(saveAction)
+            )
+        }
+            
         presenter.enableSave = { [weak self] enabled in
             self?.navigationItem.rightBarButtonItem?.isEnabled = enabled
         }

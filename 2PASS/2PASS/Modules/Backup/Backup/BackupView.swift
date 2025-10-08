@@ -50,7 +50,7 @@ struct BackupView: View {
         .toolbar {
             if presenter.flowContext.kind == .quickSetup {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(T.commonCancel.localizedKey) {
+                    ToolbarCancelButton {
                         presenter.flowContext.onClose?()
                     }
                 }

@@ -218,7 +218,6 @@ struct SettingsView: View {
                 await presenter.observeSyncStateChanged()
             }
         }
-        .tint(.accentColor)
     }
 }
 

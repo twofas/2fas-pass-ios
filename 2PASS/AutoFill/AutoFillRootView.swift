@@ -33,7 +33,7 @@ struct AutoFillRootView: View {
                 LoginView(presenter: presenter.loginPresenter)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("common_cancel") {
+                            ToolbarCancelButton {
                                 presenter.onCancel()
                             }
                         }
@@ -54,8 +54,8 @@ struct AutoFillRootView: View {
         NavigationStack {
             Text("autofill_no_vault_message")
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("common_cancel") {
+                    ToolbarItem(placement: .cancellationAction) {
+                        ToolbarCancelButton {
                             presenter.onCancel()
                         }
                     }

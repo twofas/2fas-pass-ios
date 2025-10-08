@@ -55,6 +55,8 @@
 		54C7B8112D708DAE0004FD1D /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 54C7B8102D708DAE0004FD1D /* SwiftUIIntrospect */; };
 		54C7B8132D708E490004FD1D /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 54C7B8122D708E490004FD1D /* SwiftUIIntrospect */; };
 		54DA29042DB0CBC900C91F0B /* T.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D62BF94F4200F95A55 /* T.generated.swift */; };
+		54DBB76B2E789EEE003E7342 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 54DBB7692E789EEE003E7342 /* AppIcon.icon */; };
+		54DBB76C2E789EEE003E7342 /* AppIcon.dev.icon in Resources */ = {isa = PBXBuildFile; fileRef = 54DBB76A2E789EEE003E7342 /* AppIcon.dev.icon */; };
 		54E7B0FC2D6F1EA3002B1462 /* Data.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F81EC22BE42858008FD374 /* Data.framework */; platformFilter = ios; };
 		54E7B1062D6F320C002B1462 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C27D99F72BD596630008203F /* Assets.xcassets */; };
 		54E7B1092D6F366F002B1462 /* CommonUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C0900A2D6E658300954E76 /* CommonUI.framework */; };
@@ -329,6 +331,8 @@
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C090532D6E6B4C00954E76 /* ModuleInteractorFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleInteractorFactory.swift; sourceTree = "<group>"; };
+		54DBB7692E789EEE003E7342 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		54DBB76A2E789EEE003E7342 /* AppIcon.dev.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.dev.icon; sourceTree = "<group>"; };
 		54EABA712DD2537B0018189F /* ShareSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetView.swift; sourceTree = "<group>"; };
 		54FBB7A42E0D70CC0026E87B /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		8F0DB9F32D3C2FFD00CBD6A1 /* OnboardingInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingInfoView.swift; sourceTree = "<group>"; };
@@ -875,6 +879,8 @@
 				54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */,
 				540D6A8D2E15C64D000834DE /* Dev.entitlements */,
 				540D6A8E2E15C64D000834DE /* Prod.entitlements */,
+				54DBB7692E789EEE003E7342 /* AppIcon.icon */,
+				54DBB76A2E789EEE003E7342 /* AppIcon.dev.icon */,
 			);
 			path = 2PASS;
 			sourceTree = "<group>";
@@ -1478,6 +1484,8 @@
 				5402A75A2D63A2390092765B /* ios-onboarding-02-dark.json in Resources */,
 				5402A75B2D63A2390092765B /* ios-onboarding-03-dark.json in Resources */,
 				C286E9A82E3778050019CF79 /* icon_64.png in Resources */,
+				54DBB76B2E789EEE003E7342 /* AppIcon.icon in Resources */,
+				54DBB76C2E789EEE003E7342 /* AppIcon.dev.icon in Resources */,
 				5402A75C2D63A2390092765B /* ios-onboarding-02-light.json in Resources */,
 				5402A75E2D63A2390092765B /* ios-onboarding-03-light.json in Resources */,
 				5402A75F2D63A2390092765B /* ios-tick-light.json in Resources */,
@@ -1865,7 +1873,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Prod.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 174;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -1885,7 +1893,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2676,7 +2684,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 174;
 				ENABLE_MODULE_VERIFIER = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
@@ -2697,7 +2705,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2717,7 +2725,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 174;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -2737,7 +2745,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

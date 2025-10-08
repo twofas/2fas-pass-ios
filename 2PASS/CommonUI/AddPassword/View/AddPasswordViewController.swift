@@ -15,18 +15,28 @@ final class AddPasswordViewController: UIViewController {
         
         navigationItem.title = presenter.isEdit ? T.loginEditTitle : T.loginAddTitle
         navigationItem.largeTitleDisplayMode = .never
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: T.commonCancel,
-            style: .plain,
-            target: self,
-            action: #selector(actionCancel)
-        )
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: T.commonSave,
-            style: .plain,
-            target: self,
-            action: #selector(saveAction)
-        )
+        
+        if #available(iOS 26.0, *) {
+            let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(actionCancel))
+            navigationItem.leftBarButtonItem = cancelButton
+            
+            let saveButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(saveAction))
+            saveButton.style = .prominent
+            navigationItem.rightBarButtonItem = saveButton
+        } else {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(
+                title: T.commonCancel,
+                style: .plain,
+                target: self,
+                action: #selector(actionCancel)
+            )
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                title: T.commonSave,
+                style: .plain,
+                target: self,
+                action: #selector(saveAction)
+            )
+        }
         navigationItem.backButtonDisplayMode = .minimal
         
         presenter.saveEnabled = { [weak self] enabled in

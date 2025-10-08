@@ -12,7 +12,6 @@ private struct Constants {
     static let qrCodeImageMaxHeight = 225.0
     static let qrCodeImagePositionYMultiplier = 0.55
     static let arrowBottomPadding = 6.0
-    static let screenHeight = 700.0
 }
 
 struct VaultDescryptionKitSettingsView: View {
@@ -85,7 +84,6 @@ struct VaultDescryptionKitSettingsView: View {
         .padding(.horizontal, Spacing.xl)
         .padding(.top, Spacing.xll2)
         .padding(.bottom, Spacing.xl)
-        .presentationDetents([.height(Constants.screenHeight)])
         .presentationDragIndicator(.visible)
     }
     
