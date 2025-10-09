@@ -58,7 +58,7 @@ public enum BackupWebDAVOperationGET {
             guard let vid = vid?.lowercased() else {
                 return nil
             }
-            return URL(string: "\(vid)_v\(Config.schemaVersion).2faspass", relativeTo: baseURL)
+            return URL(string: "\(vid)_v\(Config.webDAVURLSchemaVersion).2faspass", relativeTo: baseURL)
         }
     }
 }
