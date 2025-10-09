@@ -326,7 +326,12 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func createEncryptedItem(_ item: ItemEncryptedData) {
-        let name = mainRepository.extractItemName(fromContent: item.content)
+        guard let decyptedContent = decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
+            Log("Items interactor: createEncryptedItem. Error decrypting content", module: .interactor, severity: .error)
+            return
+        }
+        
+        let name = mainRepository.extractItemName(fromContent: decyptedContent)
 
         try? createItem(.raw(
             .init(
@@ -341,14 +346,19 @@ extension ItemsInteractor: ItemsInteracting {
                 name: name,
                 contentType: .login,
                 contentVersion: item.contentVersion,
-                content: item.content
+                content: decyptedContent
             )
         ))
     }
     
     func updateEncryptedItem(_ item: ItemEncryptedData) {
-        let name = mainRepository.extractItemName(fromContent: item.content)
-
+        guard let decyptedContent = decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
+            Log("Items interactor: updateEncryptedItem. Error decrypting content", module: .interactor, severity: .error)
+            return
+        }
+        
+        let name = mainRepository.extractItemName(fromContent: decyptedContent)
+        
         try? updateItem(.raw(
             .init(
                 id: item.itemID,
@@ -362,7 +372,7 @@ extension ItemsInteractor: ItemsInteracting {
                 name: name,
                 contentType: .login,
                 contentVersion: item.contentVersion,
-                content: item.content
+                content: decyptedContent
             )
         ))
     }

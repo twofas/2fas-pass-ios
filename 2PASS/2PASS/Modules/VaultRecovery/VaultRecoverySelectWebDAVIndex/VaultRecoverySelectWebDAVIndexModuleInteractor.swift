@@ -16,7 +16,7 @@ protocol VaultRecoverySelectWebDAVIndexModuleInteracting: AnyObject {
         schemeVersion: Int,
         login: String?,
         password: String?,
-        completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<ExchangeVaultVersioned, WebDAVRecoveryInteractorError>) -> Void
     )
     func saveConfiguration(
         baseURL: URL,
@@ -43,7 +43,7 @@ extension VaultRecoverySelectWebDAVIndexModuleInteractor: VaultRecoverySelectWeb
         schemeVersion: Int,
         login: String?,
         password: String?,
-        completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<ExchangeVaultVersioned, WebDAVRecoveryInteractorError>) -> Void
     ) {
         webDAVRecoveryInteractor.fetchVault(
             baseURL: baseURL,
