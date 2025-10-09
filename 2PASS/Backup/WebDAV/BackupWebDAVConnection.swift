@@ -77,12 +77,12 @@ public enum BackupWebDAVOperationPUT {
             guard let vid = vid?.lowercased() else {
                 return nil
             }
-            return URL(string: "\(vid)_v\(Config.schemaVersion).2faspass.tmp", relativeTo: baseURL)
+            return URL(string: "\(vid)_v\(Config.webDAVURLSchemaVersion).2faspass.tmp", relativeTo: baseURL)
         case .decryptedVid:
             guard let vid = vid?.lowercased() else {
                 return nil
             }
-            return URL(string: "\(vid)_v\(Config.schemaVersion).2faspass-decrypted_ios.json", relativeTo: baseURL)
+            return URL(string: "\(vid)_v\(Config.webDAVURLSchemaVersion).2faspass-decrypted_ios.json", relativeTo: baseURL)
         }
     }
 }
@@ -94,8 +94,8 @@ public enum BackupWebDAVOperationMOVE {
         switch self {
         case .vid:
             guard let vid = vid?.lowercased(),
-                  let from = URL(string: "\(vid)_v\(Config.schemaVersion).2faspass.tmp", relativeTo: baseURL),
-                  let to = URL(string: "\(vid)_v\(Config.schemaVersion).2faspass", relativeTo: baseURL)
+                  let from = URL(string: "\(vid)_v\(Config.webDAVURLSchemaVersion).2faspass.tmp", relativeTo: baseURL),
+                  let to = URL(string: "\(vid)_v\(Config.webDAVURLSchemaVersion).2faspass", relativeTo: baseURL)
             else { return nil }
             return (from: from, to: to)
         }
