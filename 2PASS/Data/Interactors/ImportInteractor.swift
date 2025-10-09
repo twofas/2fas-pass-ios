@@ -59,29 +59,29 @@ public enum ImportExtractMasterPasswordReferenceVerificationError: Error {
 
 public protocol ImportInteracting: AnyObject {
     func openFile(url: URL, completion: @escaping (Result<Data, ImportOpenFileError>) -> Void)
-    func parseContents(of data: Data, completion: @escaping (Result<ExchangeVault, ImportParseError>) -> Void)
-    func checkDeviceId(in vault: ExchangeVault) -> Bool
-    func checkEncryption(in vault: ExchangeVault) -> ImportEncryptionType
-    func checkEncryptionWithoutParsing(in vault: ExchangeVault) -> ImportEncryptionTypeNoParsing
+    func parseContents(of data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void)
+    func checkDeviceId(in vault: ExchangeVaultVersioned) -> Bool
+    func checkEncryption(in vault: ExchangeVaultVersioned) -> ImportEncryptionType
+    func checkEncryptionWithoutParsing(in vault: ExchangeVaultVersioned) -> ImportEncryptionTypeNoParsing
     func extractItemsUsingCurrentEncryption(
-        from vault: ExchangeVault,
+        from vault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     )
-    func extractUnencryptedItems(from file: ExchangeVault) -> [ItemData]
-    func extractUnencryptedTags(from file: ExchangeVault) -> [ItemTagData]
-    
+    func extractUnencryptedItems(from file: ExchangeVaultVersioned) -> [ItemData]
+    func extractUnencryptedTags(from file: ExchangeVaultVersioned) -> [ItemTagData]
+
     func extractItemsUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
-        vault: ExchangeVault,
+        vault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     )
     func extractItemsUsingMasterKey(
         _ masterKey: MasterKey,
-        exchangeVault: ExchangeVault,
+        exchangeVault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     )
-    func extractUnencryptedDeletedItems(from file: ExchangeVault) -> [DeletedItemData]
+    func extractUnencryptedDeletedItems(from file: ExchangeVaultVersioned) -> [DeletedItemData]
     func validateWords(_ words: [String], using seedHash: String, vaultID: VaultID) -> Bool
     func validateReference(
         _ reference: String,
@@ -149,8 +149,8 @@ extension ImportInteractor: ImportInteracting {
         }
     }
     
-    func parseContents(of data: Data, completion: @escaping (Result<ExchangeVault, ImportParseError>) -> Void) {
-        func end(_ result: Result<ExchangeVault, ImportParseError>) {
+    func parseContents(of data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void) {
+        func end(_ result: Result<ExchangeVaultVersioned, ImportParseError>) {
             DispatchQueue.main.async {
                 completion(result)
             }
@@ -159,19 +159,18 @@ extension ImportInteractor: ImportInteracting {
             let jsonDecoder = self.mainRepository.jsonDecoder
             do {
                 let parsedJSON = try jsonDecoder.decode(ExchangeVault.self, from: data)
-                end(.success(parsedJSON))
+                end(.success(.v2(parsedJSON)))
             } catch let ExchangeError.mismatchSchemaVersion(schemaVersion, expected: _) {
                 guard schemaVersion <= Config.schemaVersion else {
                     end(.failure(.schemaNotSupported(schemaVersion)))
                     return
                 }
-                
+
                 do {
                     switch schemaVersion {
                     case 1:
                         let parsedJSON = try jsonDecoder.decode(ExchangeSchemaV1.ExchangeVault.self, from: data)
-                        let vault = try ExchangeVault(parsedJSON, decoder: self.mainRepository.jsonDecoder, encoder: self.mainRepository.jsonEncoder)
-                        end(.success(vault))
+                        end(.success(.v1(parsedJSON)))
                     default:
                         end(.failure(.schemaNotSupported(schemaVersion)))
                     }
@@ -184,12 +183,12 @@ extension ImportInteractor: ImportInteracting {
         }
     }
     
-    func checkDeviceId(in vault: ExchangeVault) -> Bool {
-        mainRepository.deviceID == vault.origin.deviceId
+    func checkDeviceId(in vault: ExchangeVaultVersioned) -> Bool {
+        mainRepository.deviceID == vault.deviceId
     }
-    
-    func checkEncryption(in file: ExchangeVault) -> ImportEncryptionType {
-        if let logins = file.vault.items, !logins.isEmpty {
+
+    func checkEncryption(in file: ExchangeVaultVersioned) -> ImportEncryptionType {
+        if file.hasServices == false, file.tags.isEmpty {
             return .noEncryption
         }
         guard let key = mainRepository.cachedExternalKey else {
@@ -214,64 +213,87 @@ extension ImportInteractor: ImportInteracting {
         return .currentEncryption
     }
     
-    func extractUnencryptedItems(from file: ExchangeVault) -> [ItemData] {
-        guard let items = file.vault.items else {
+    func extractUnencryptedItems(from file: ExchangeVaultVersioned) -> [ItemData] {
+        switch file {
+        case .v1(let v1Vault):
+            guard let logins = v1Vault.vault.logins else {
+                return []
+            }
+            return logins.compactMap({ self.exchangeV1LoginToItemData($0) })
+        case .v2(let v2Vault):
+            guard let items = v2Vault.vault.items else {
+                return []
+            }
+            return items.compactMap({ self.exchangeItemToItemData($0) })
+        }
+    }
+
+    func extractUnencryptedDeletedItems(from file: ExchangeVaultVersioned) -> [DeletedItemData] {
+        guard let vaultID = UUID(uuidString: file.vaultID) else {
             return []
         }
-        return items.compactMap({ self.exchangeItemToItemData($0) })
+        return file.itemsDeleted.compactMap({ self.exchangeDeletedPasswordToDeletedPasswordData($0, vaultID: vaultID) })
     }
-    
-    func extractUnencryptedDeletedItems(from file: ExchangeVault) -> [DeletedItemData] {
-        guard let loginsDeleted = file.vault.itemsDeleted, let vaultID = UUID(uuidString: file.vault.id) else {
+
+    func extractUnencryptedTags(from file: ExchangeVaultVersioned) -> [ItemTagData] {
+        guard let vaultID = mainRepository.selectedVault?.vaultID else {
             return []
         }
-        return loginsDeleted.compactMap({ self.exchangeDeletedPasswordToDeletedPasswordData($0, vaultID: vaultID) })
+        return file.tags.compactMap({ self.exchangeTagToItemTagData($0, vaultID: vaultID) })
     }
     
-    func extractUnencryptedTags(from file: ExchangeVault) -> [ItemTagData] {
-        guard let tags = file.vault.tags, let vaultID = mainRepository.selectedVault?.vaultID else {
-            return []
-        }
-        return tags.compactMap({ self.exchangeTagToItemTagData($0, vaultID: vaultID) })
-    }
-    
-    func checkEncryptionWithoutParsing(in vault: ExchangeVault) -> ImportEncryptionTypeNoParsing {
-        if vault.vault.items?.isEmpty == false {
+    func checkEncryptionWithoutParsing(in vault: ExchangeVaultVersioned) -> ImportEncryptionTypeNoParsing {
+        if vault.hasServices == false, vault.tags.isEmpty {
             return .noEncryption
         }
         return .needsPassword
     }
     
     func extractItemsUsingCurrentEncryption(
-        from vault: ExchangeVault,
+        from vault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     ) {
-        guard let passwords = vault.vault.itemsEncrypted else {
-            completion(.failure(.noPasswordsField))
-            return
-        }
         guard let key = mainRepository.cachedExternalKey else {
             completion(.failure(.noExternalKey))
             return
         }
-        
-        guard let vaultID = UUID(uuidString: vault.vault.id) else {
+
+        guard let vaultID = UUID(uuidString: vault.vaultID) else {
             completion(.failure(.noVaultID))
             return
         }
-        
-        let deletedPasswords = vault.vault.itemsDeletedEncrypted ?? []
-        let tags = vault.vault.tagsEncrypted ?? []
-        
-        extractItems(from: passwords, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
-            completion(.success((itemsData, tagsData, deletedData)))
+
+        switch vault {
+        case .v1(let v1Vault):
+            guard let loginsEncrypted = v1Vault.vault.loginsEncrypted else {
+                completion(.failure(.noPasswordsField))
+                return
+            }
+            let deletedPasswords = v1Vault.vault.itemsDeletedEncrypted ?? []
+            let tags = v1Vault.vault.tagsEncrypted ?? []
+
+            extractItemsV1(from: loginsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
+                completion(.success((itemsData, tagsData, deletedData)))
+            }
+
+        case .v2(let v2Vault):
+            guard let itemsEncrypted = v2Vault.vault.itemsEncrypted else {
+                completion(.failure(.noPasswordsField))
+                return
+            }
+            let deletedPasswords = v2Vault.vault.itemsDeletedEncrypted ?? []
+            let tags = v2Vault.vault.tagsEncrypted ?? []
+
+            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
+                completion(.success((itemsData, tagsData, deletedData)))
+            }
         }
     }
     
     func extractItemsUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
-        vault: ExchangeVault,
+        vault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     ) {
         let kdfSpec: KDFSpec = {
@@ -286,13 +308,13 @@ extension ImportInteractor: ImportInteracting {
         }
         extractItemsUsingMasterKey(masterKey, exchangeVault: vault, completion: completion)
     }
-    
+
     func extractItemsUsingMasterKey(
         _ masterKey: MasterKey,
-        exchangeVault: ExchangeVault,
+        exchangeVault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
     ) {
-        guard let vaultID = UUID(uuidString: exchangeVault.vault.id) else {
+        guard let vaultID = UUID(uuidString: exchangeVault.vaultID) else {
             completion(.failure(.incorrectVaultID))
             return
         }
@@ -300,7 +322,7 @@ extension ImportInteractor: ImportInteracting {
             completion(.failure(.noReference))
             return
         }
-        
+
         let key: SymmetricKey
         switch validateReference(reference, using: masterKey, for: vaultID) {
         case .success(let symmKey): key = symmKey
@@ -319,16 +341,31 @@ extension ImportInteractor: ImportInteracting {
             }
             return
         }
-        
-        guard let items = exchangeVault.vault.itemsEncrypted else {
-            completion(.failure(.noPasswords))
-            return
-        }
-        let deletedPasswords = exchangeVault.vault.itemsDeletedEncrypted ?? []
-        let tags = exchangeVault.vault.tagsEncrypted ?? []
-        
-        extractItems(from: items, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
-            completion(.success((items, tagsData, deleted)))
+
+        switch exchangeVault {
+        case .v1(let v1Vault):
+            guard let loginsEncrypted = v1Vault.vault.loginsEncrypted else {
+                completion(.failure(.noPasswords))
+                return
+            }
+            let deletedPasswords = v1Vault.vault.itemsDeletedEncrypted ?? []
+            let tags = v1Vault.vault.tagsEncrypted ?? []
+
+            extractItemsV1(from: loginsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
+                completion(.success((items, tagsData, deleted)))
+            }
+
+        case .v2(let v2Vault):
+            guard let itemsEncrypted = v2Vault.vault.itemsEncrypted else {
+                completion(.failure(.noPasswords))
+                return
+            }
+            let deletedPasswords = v2Vault.vault.itemsDeletedEncrypted ?? []
+            let tags = v2Vault.vault.tagsEncrypted ?? []
+
+            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
+                completion(.success((items, tagsData, deleted)))
+            }
         }
     }
     
@@ -428,7 +465,7 @@ private extension ImportInteractor {
         return masterKey
     }
     
-    func extractItems(
+    func extractItemsV2(
         from items: [String],
         tags: [String],
         deletedPasswords: [String],
@@ -774,4 +811,184 @@ private extension ImportInteractor {
         guard let kind = DeletedItemData.Kind(rawValue: exchangeDeleted.type) else { return nil }
         return .init(itemID: itemID, vaultID: vaultID, kind: kind, deletedAt: Date(exportTimestamp: exchangeDeleted.deletedAt))
     }
+
+    // MARK: - V1 Schema Support
+
+    func exchangeV1LoginToItemData(_ exchangeLogin: ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin) -> ItemData? {
+        guard let itemID = UUID(uuidString: exchangeLogin.id) else {
+            return nil
+        }
+
+        let protectionLevel: ItemProtectionLevel = {
+            switch exchangeLogin.securityType {
+            case 0: .topSecret
+            case 1: .confirm
+            case 2: .normal
+            default: .normal
+            }
+        }()
+
+        let itemMetadata = ItemMetadata(
+            creationDate: Date(exportTimestamp: exchangeLogin.createdAt),
+            modificationDate: Date(exportTimestamp: exchangeLogin.updatedAt),
+            protectionLevel: protectionLevel,
+            trashedStatus: .no,
+            tagIds: exchangeLogin.tags?.compactMap { UUID(uuidString: $0) }
+        )
+
+        guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel) else {
+            return nil
+        }
+
+        let password: Data? = {
+            guard let passwordEntry = exchangeLogin.password, let passwordData = passwordEntry.data(using: .utf8) else {
+                return nil
+            }
+            guard let password = mainRepository.encrypt(passwordData, key: key) else {
+                return nil
+            }
+            return password
+        }()
+
+        let iconType: PasswordIconType = {
+            switch exchangeLogin.iconType {
+            case 0:
+                guard let uriIndex = exchangeLogin.iconUriIndex, let uri = exchangeLogin.uris?[uriIndex], let domain = uriInteractor.extractDomain(from: uri.text) else {
+                    return .domainIcon(nil)
+                }
+                return .domainIcon(domain)
+
+            case 2:
+                guard let urlString = exchangeLogin.customImageUrl, let url = URL(string: urlString) else {
+                    return .domainIcon(nil)
+                }
+                return .customIcon(url)
+
+            default:
+                let title = exchangeLogin.labelText ?? exchangeLogin.name.map { Config.defaultIconLabel(forName: $0) } ?? Config.defaultIconLabel
+                let color = UIColor(hexString: exchangeLogin.labelColor)
+                return .label(labelTitle: title, labelColor: color)
+            }
+        }()
+
+        let uris: [PasswordURI]? = { () -> [PasswordURI]? in
+            guard let uris = exchangeLogin.uris, !uris.isEmpty else {
+                return nil
+            }
+            return uris.map { exchangeURI in
+                let uri = exchangeURI.text
+                return PasswordURI(
+                    uri: uri,
+                    match: {
+                        switch exchangeURI.matcher {
+                        case 0: .domain
+                        case 1: .host
+                        case 2: .startsWith
+                        case 3: .exact
+                        default: .domain
+                        }
+                    }())
+            }
+        }()
+
+        let loginContent = LoginItemData.Content(
+            name: exchangeLogin.name,
+            username: exchangeLogin.username,
+            password: password,
+            notes: exchangeLogin.notes?.sanitizeNotes(),
+            iconType: iconType,
+            uris: uris
+        )
+
+        return .login(.init(
+            id: itemID,
+            metadata: itemMetadata,
+            name: exchangeLogin.name,
+            content: loginContent
+        ))
+    }
+
+
+    func extractItemsV1(
+        from logins: [String],
+        tags: [String],
+        deletedPasswords: [String],
+        vaultID: VaultID,
+        using key: SymmetricKey,
+        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
+    ) {
+        func parse(_ string: String) -> ItemData? {
+            let jsonDecoder = mainRepository.jsonDecoder
+            guard let data = Data(base64Encoded: string) else {
+                Log("Import Interactor - Error creating Data from base64 encoded string for V1 Login", severity: .error)
+                return nil
+            }
+
+            guard let jsonData = self.mainRepository.decrypt(data, key: key) else {
+                Log("Import Interactor - Error decrypting JSON data for V1 Login", severity: .error)
+                return nil
+            }
+            do {
+                let exchangeLogin = try jsonDecoder.decode(
+                    ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self,
+                    from: jsonData
+                )
+                if let pass = self.exchangeV1LoginToItemData(exchangeLogin) {
+                    return pass
+                } else {
+                    Log("Import Interactor - Error creating Password Data from V1 Login", severity: .error)
+                }
+            } catch {
+                Log("Import Interactor - Error while parsing V1 ExchangeLogin: \(error)", severity: .error)
+            }
+            return nil
+        }
+
+        Log("ImportInteractor - importing \(logins.count) v1 logins and \(deletedPasswords.count) deleted entries", module: .interactor)
+
+        if logins.isEmpty {
+            Log("ImportInteractor - no v1 logins to parse", module: .interactor)
+            continueExtractionOfItemsTags(
+                items: [],
+                tags: tags,
+                deletedPasswords: deletedPasswords,
+                vaultID: vaultID,
+                using: key,
+                completion: completion
+            )
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let group = DispatchGroup()
+
+            var results: [ItemData] = []
+
+            for string in logins {
+                group.enter()
+                self.queue.async {
+                    let result = parse(string)
+                    self.writeQueue.async {
+                        if let result {
+                            results.append(result)
+                        }
+                        group.leave()
+                    }
+                }
+            }
+
+            group.notify(queue: .global()) {
+                Log("ImportInteractor - parsed \(results.count) v1 logins", module: .interactor)
+                self.continueExtractionOfItemsTags(
+                    items: results,
+                    tags: tags,
+                    deletedPasswords: deletedPasswords,
+                    vaultID: vaultID,
+                    using: key,
+                    completion: completion
+                )
+            }
+        }
+    }
+
 }

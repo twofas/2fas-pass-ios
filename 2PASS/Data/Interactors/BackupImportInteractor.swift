@@ -13,12 +13,12 @@ public enum BackupImportFileError: Error {
 
 public enum BackupImportResult {
     case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData], date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
-    case needsPassword(ExchangeVault, currentSeed: Bool, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
+    case needsPassword(ExchangeVaultVersioned, currentSeed: Bool, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
 }
 
 public enum BackupImportWithoutEncryptionResult {
-    case decrypted(ExchangeVault, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
-    case needsPassword(ExchangeVault, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
+    case decrypted(ExchangeVaultVersioned, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
+    case needsPassword(ExchangeVaultVersioned, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
 }
 
 public enum BackupImportParseError: Error {
@@ -32,9 +32,9 @@ public enum BackupImportParseError: Error {
 
 public protocol BackupImportInteracting: AnyObject {
     func openFile(url: URL, completion: @escaping (Result<Data, BackupImportFileError>) -> Void)
-    func extractItems(from vault: ExchangeVault) -> [ItemData]?
-    func extractDeletedItems(from vault: ExchangeVault) -> [DeletedItemData]?
-    func extractTags(from vault: ExchangeVault) -> [ItemTagData]?
+    func extractItems(from vault: ExchangeVaultVersioned) -> [ItemData]?
+    func extractDeletedItems(from vault: ExchangeVaultVersioned) -> [DeletedItemData]?
+    func extractTags(from vault: ExchangeVaultVersioned) -> [ItemTagData]?
     func parseContents(
         of data: Data,
         decryptItemsIfPossible: Bool,
@@ -46,7 +46,7 @@ public protocol BackupImportInteracting: AnyObject {
         completion: @escaping (Result<BackupImportWithoutEncryptionResult, BackupImportParseError>) -> Void
     )
     func isVaultReadyForImport() -> Bool
-    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVault, ImportParseError>) -> Void)
+    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void)
 }
 
 final class BackupImportInteractor {
@@ -123,19 +123,19 @@ extension BackupImportInteractor: BackupImportInteracting {
         }
     }
     
-    func extractItems(from vault: ExchangeVault) -> [ItemData]? {
+    func extractItems(from vault: ExchangeVaultVersioned) -> [ItemData]? {
         importInteractor.extractUnencryptedItems(from: vault)
     }
-    
-    func extractDeletedItems(from vault: ExchangeVault) -> [DeletedItemData]? {
+
+    func extractDeletedItems(from vault: ExchangeVaultVersioned) -> [DeletedItemData]? {
         importInteractor.extractUnencryptedDeletedItems(from: vault)
     }
-    
-    func extractTags(from vault: ExchangeVault) -> [ItemTagData]? {
+
+    func extractTags(from vault: ExchangeVaultVersioned) -> [ItemTagData]? {
         importInteractor.extractUnencryptedTags(from: vault)
     }
-    
-    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVault, ImportParseError>) -> Void) {
+
+    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void) {
         importInteractor.parseContents(of: data, completion: completion)
     }
     

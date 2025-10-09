@@ -10,7 +10,7 @@ import Common
 
 enum BackupImportInput {
     case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData])
-    case encrypted(entropy: Entropy, masterKey: MasterKey, vault: ExchangeVault)
+    case encrypted(entropy: Entropy, masterKey: MasterKey, vault: ExchangeVaultVersioned)
 }
 
 protocol BackupImportImportingModuleInteracting: AnyObject {

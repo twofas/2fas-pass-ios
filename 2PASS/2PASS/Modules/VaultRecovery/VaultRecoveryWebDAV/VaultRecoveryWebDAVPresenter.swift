@@ -23,7 +23,7 @@ enum VaultRecoveryWebDAVDestination: Identifiable {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        onSelect: (ExchangeVault) -> Void
+        onSelect: (ExchangeVaultVersioned) -> Void
     )
     case select(VaultRecoveryData, onClose: Callback)
     case error(message: String, onClose: Callback)

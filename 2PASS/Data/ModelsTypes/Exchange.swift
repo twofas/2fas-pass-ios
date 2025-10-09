@@ -13,37 +13,172 @@ enum ExchangeError: Error {
     case mismatchSchemaVersion(Int, expected: Int)
 }
 
-public enum ExchangeSchemaV1 {
+public enum ExchangeVaultVersioned {
+    case v1(ExchangeSchemaV1.ExchangeVault)
+    case v2(ExchangeSchemaV2.ExchangeVault)
+
+    public var encryption: ExchangeCommon.ExchangeEncryption? {
+        switch self {
+        case .v1(let vault):
+            return vault.encryption
+        case .v2(let vault):
+            return vault.encryption
+        }
+    }
+
+    public var summary: (date: Date, vaultName: String, deviceName: String?, itemsCount: Int) {
+        switch self {
+        case .v1(let vault):
+            return (
+                date: Date(exportTimestamp: vault.vault.updatedAt),
+                vaultName: vault.vault.name,
+                deviceName: vault.origin.deviceName,
+                itemsCount: vault.itemsCount
+            )
+        case .v2(let vault):
+            return vault.summary
+        }
+    }
+
+    public var vaultID: String {
+        switch self {
+        case .v1(let vault):
+            return vault.vault.id
+        case .v2(let vault):
+            return vault.vault.id
+        }
+    }
+
+    public var deviceId: UUID? {
+        switch self {
+        case .v1(let vault):
+            return vault.origin.deviceId
+        case .v2(let vault):
+            return vault.origin.deviceId
+        }
+    }
+
+    public var hasServices: Bool {
+        switch self {
+        case .v1(let vault):
+            return vault.hasServices
+        case .v2(let vault):
+            return vault.hasServices
+        }
+    }
+
+    public struct VaultMetadata {
+        public let id: String
+        public let createdAt: Int?
+        public let updatedAt: Int
+        public let name: String
+    }
+
+    public var vault: VaultMetadata {
+        switch self {
+        case .v1(let exchangeVault):
+            return VaultMetadata(
+                id: exchangeVault.vault.id,
+                createdAt: exchangeVault.vault.createdAt,
+                updatedAt: exchangeVault.vault.updatedAt,
+                name: exchangeVault.vault.name
+            )
+        case .v2(let exchangeVault):
+            return VaultMetadata(
+                id: exchangeVault.vault.id,
+                createdAt: exchangeVault.vault.createdAt,
+                updatedAt: exchangeVault.vault.updatedAt,
+                name: exchangeVault.vault.name
+            )
+        }
+    }
     
-    public struct ExchangeVault: Codable {
-        public struct ExchangeVaultOrigin: Codable {
-            let os: String
-            let appVersionCode: Int
-            let appVersionName: String
-            let deviceName: String
-            let deviceId: UUID?
-        }
-        
-        public struct ExchangeEncryption: Codable {
-            public struct ExchangeKDFSpec: Codable {
-                let type: String?
-                let hashLength: Int?
-                let memoryMb: Int?
-                let iterations: Int?
-                let parallelism: Int?
+    public var itemsDeleted: [ExchangeCommon.ExchangeDeletedItem] {
+        switch self {
+        case .v1(let v1Vault):
+            guard let items = v1Vault.vault.itemsDeleted else {
+                return []
             }
-            
-            public let seedHash: String
-            public let reference: String
-            public let kdfSpec: ExchangeKDFSpec
+            return items
+        case .v2(let v2Vault):
+            guard let items = v2Vault.vault.itemsDeleted else {
+                return []
+            }
+            return items
         }
+    }
+    
+    public var tags: [ExchangeCommon.ExchangeTag] {
+        switch self {
+        case .v1(let v1Vault):
+            guard let items = v1Vault.vault.tags else {
+                return []
+            }
+            return items
+        case .v2(let v2Vault):
+            guard let items = v2Vault.vault.tags else {
+                return []
+            }
+            return items
+        }
+    }
+}
+
+// MARK: - Common Types
+
+public enum ExchangeCommon {
+
+    public struct ExchangeVaultOrigin: Codable {
+        let os: String
+        let appVersionCode: Int
+        let appVersionName: String
+        let deviceName: String
+        let deviceId: UUID?
+    }
+
+    public struct ExchangeEncryption: Codable {
+        public struct ExchangeKDFSpec: Codable {
+            let type: String?
+            let hashLength: Int?
+            let memoryMb: Int?
+            let iterations: Int?
+            let parallelism: Int?
+        }
+
+        public let seedHash: String
+        public let reference: String
+        public let kdfSpec: ExchangeKDFSpec
+    }
+
+    public struct ExchangeDeletedItem: Codable {
+        let id: String
+        let type: String
+        let deletedAt: Int
+    }
+
+    public struct ExchangeTag: Codable {
+        public let id: String
+        public let name: String
+        public let color: String?
+        public let position: Int
+        public let updatedAt: Int
+    }
+
+    public struct ExchangeURI: Codable {
+        let text: String
+        let matcher: Int
+    }
+}
+
+public enum ExchangeSchemaV1 {
+
+    public struct ExchangeVault: Codable {
+        public typealias ExchangeVaultOrigin = ExchangeCommon.ExchangeVaultOrigin
+        public typealias ExchangeEncryption = ExchangeCommon.ExchangeEncryption
         
         public struct ExchangeVaultItem: Codable {
             struct ExchangeLogin: Codable {
-                struct ExchangeURI: Codable {
-                    let text: String
-                    let matcher: Int
-                }
+                typealias ExchangeURI = ExchangeCommon.ExchangeURI
                 
                 let id: String
                 let name: String?
@@ -61,21 +196,10 @@ public enum ExchangeSchemaV1 {
                 let uris: [ExchangeURI]?
                 let tags: [String]?
             }
-            
-            struct ExchangeDeletedItem: Codable {
-                let id: String
-                let type: String
-                let deletedAt: Int
-            }
-            
-            struct ExchangeTag: Codable {
-                public let id: String
-                public let name: String
-                public let color: String?
-                public let position: Int
-                public let updatedAt: Int
-            }
-            
+
+            typealias ExchangeDeletedItem = ExchangeCommon.ExchangeDeletedItem
+            typealias ExchangeTag = ExchangeCommon.ExchangeTag
+
             public let id: String
             public let createdAt: Int?
             public let updatedAt: Int
@@ -182,37 +306,15 @@ public enum ExchangeSchemaV1 {
 }
 
 public enum ExchangeSchemaV2 {
-    
+
     public struct ExchangeVault: Codable {
-        public struct ExchangeVaultOrigin: Codable {
-            let os: String
-            let appVersionCode: Int
-            let appVersionName: String
-            let deviceName: String
-            let deviceId: UUID?
-        }
-        
-        public struct ExchangeEncryption: Codable {
-            public struct ExchangeKDFSpec: Codable {
-                let type: String?
-                let hashLength: Int?
-                let memoryMb: Int?
-                let iterations: Int?
-                let parallelism: Int?
-            }
-            
-            public let seedHash: String
-            public let reference: String
-            public let kdfSpec: ExchangeKDFSpec
-        }
+        public typealias ExchangeVaultOrigin = ExchangeCommon.ExchangeVaultOrigin
+        public typealias ExchangeEncryption = ExchangeCommon.ExchangeEncryption
         
         public struct ExchangeVaultItem: Codable {
             struct ExchangeItem: Codable {
-                struct ExchangeURI: Codable {
-                    let text: String
-                    let matcher: Int
-                }
-                
+                typealias ExchangeURI = ExchangeCommon.ExchangeURI
+
                 struct ExchangeLoginContent: Codable {
                     private enum CodingKeys: String, CodingKey {
                         case name
@@ -319,21 +421,10 @@ public enum ExchangeSchemaV2 {
                     try container.encodeIfPresent(tags, forKey: .tags)
                 }
             }
-            
-            struct ExchangeDeletedItem: Codable {
-                let id: String
-                let type: String
-                let deletedAt: Int
-            }
-            
-            struct ExchangeTag: Codable {
-                public let id: String
-                public let name: String
-                public let color: String?
-                public let position: Int
-                public let updatedAt: Int
-            }
-            
+
+            typealias ExchangeDeletedItem = ExchangeCommon.ExchangeDeletedItem
+            typealias ExchangeTag = ExchangeCommon.ExchangeTag
+
             public let id: String
             public let createdAt: Int?
             public let updatedAt: Int
@@ -421,124 +512,11 @@ public enum ExchangeSchemaV2 {
     }
 }
 
-extension ExchangeVault {
-    
-    public init(_ data: ExchangeSchemaV1.ExchangeVault, decoder: JSONDecoder, encoder: JSONEncoder) throws {
-        self.schemaVersion = 2
-        
-        // Map origin
-        self.origin = ExchangeVaultOrigin(
-            os: data.origin.os,
-            appVersionCode: data.origin.appVersionCode,
-            appVersionName: data.origin.appVersionName,
-            deviceName: data.origin.deviceName,
-            deviceId: data.origin.deviceId
-        )
-        
-        // Map encryption if present
-        if let v1Encryption = data.encryption {
-            self.encryption = ExchangeEncryption(
-                seedHash: v1Encryption.seedHash,
-                reference: v1Encryption.reference,
-                kdfSpec: ExchangeEncryption.ExchangeKDFSpec(
-                    type: v1Encryption.kdfSpec.type,
-                    hashLength: v1Encryption.kdfSpec.hashLength,
-                    memoryMb: v1Encryption.kdfSpec.memoryMb,
-                    iterations: v1Encryption.kdfSpec.iterations,
-                    parallelism: v1Encryption.kdfSpec.parallelism
-                )
-            )
-        } else {
-            self.encryption = nil
-        }
-        
-        // Map vault items
-        var v2Items: [ExchangeVaultItem.ExchangeItem]? = nil
-        if let v1Logins = data.vault.logins {
-            v2Items = v1Logins.compactMap { v1Login in
-                // Create the content structure for V2
-                let content = ExchangeVaultItem.ExchangeItem.ExchangeLoginContent(
-                    name: v1Login.name,
-                    username: v1Login.username,
-                    password: v1Login.password,
-                    notes: v1Login.notes,
-                    iconType: v1Login.iconType,
-                    iconUriIndex: v1Login.iconUriIndex,
-                    labelText: v1Login.labelText,
-                    labelColor: v1Login.labelColor,
-                    customImageUrl: v1Login.customImageUrl,
-                    uris: v1Login.uris?.map { uri in
-                        ExchangeVaultItem.ExchangeItem.ExchangeURI(
-                            text: uri.text,
-                            matcher: uri.matcher
-                        )
-                    }
-                )
-            
-                guard let contentData = try? encoder.encode(content), let contentDict = try? decoder.decode(AnyCodable.self, from: contentData).value as? [String: Any] else {
-                    return nil
-                }
-                
-                return ExchangeVaultItem.ExchangeItem(
-                    id: v1Login.id,
-                    contentType: ItemContentType.login.rawValue,
-                    contentVersion: 1,
-                    content: contentDict,
-                    securityType: v1Login.securityType,
-                    createdAt: v1Login.createdAt,
-                    updatedAt: v1Login.updatedAt,
-                    tags: v1Login.tags
-                )
-            }
-        }
-        
-        // Map deleted items
-        var v2DeletedItems: [ExchangeVaultItem.ExchangeDeletedItem]? = nil
-        if let v1DeletedItems = data.vault.itemsDeleted {
-            v2DeletedItems = v1DeletedItems.map { v1DeletedItem in
-                ExchangeVaultItem.ExchangeDeletedItem(
-                    id: v1DeletedItem.id,
-                    type: v1DeletedItem.type,
-                    deletedAt: v1DeletedItem.deletedAt
-                )
-            }
-        }
-        
-        // Map tags
-        var v2Tags: [ExchangeVaultItem.ExchangeTag]? = nil
-        if let v1Tags = data.vault.tags {
-            v2Tags = v1Tags.map { v1Tag in
-                ExchangeVaultItem.ExchangeTag(
-                    id: v1Tag.id,
-                    name: v1Tag.name,
-                    color: v1Tag.color,
-                    position: v1Tag.position,
-                    updatedAt: v1Tag.updatedAt
-                )
-            }
-        }
-        
-        self.vault = ExchangeVaultItem(
-            id: data.vault.id,
-            name: data.vault.name,
-            createdAt: data.vault.createdAt,
-            updatedAt: data.vault.updatedAt,
-            items: v2Items,
-            itemsEncrypted: data.vault.loginsEncrypted,
-            tags: v2Tags,
-            tagsEncrypted: data.vault.tagsEncrypted,
-            itemsDeleted: v2DeletedItems,
-            itemsDeletedEncrypted: data.vault.itemsDeletedEncrypted
-        )
-    }
-}
-
-
 extension ExchangeSchemaV1.ExchangeVault {
     var hasServices: Bool {
         return vault.logins?.isEmpty == false || vault.loginsEncrypted?.isEmpty == false
     }
-    
+
     var itemsCount: Int {
         if let lCount = vault.logins?.count {
             return lCount
