@@ -183,8 +183,8 @@ struct ConnectPermissionsView: View {
                 .animation(presenter.isWaitingForUser ? .easeInOut(duration: Constants.showContinueButtonAnimationDuration) : .easeInOut(duration: Constants.showContinueButtonAnimationDuration).delay(Constants.showContinueButtonDelay), value: presenter.isWaitingForUser)
             }
             .toolbar {
-                ToolbarCancelButton {
-                    Button(T.commonClose.localizedKey) {
+                ToolbarItem(placement: .cancellationAction) {
+                    ToolbarCancelButton {
                         dismiss()
                     }
                 }
