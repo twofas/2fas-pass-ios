@@ -235,11 +235,6 @@ extension StorageInteractor: StorageInteracting {
         let createdAt = creationDate ?? date
         let updatedAt = modificationDate ?? date
         
-        guard createdAt <= updatedAt else {
-            Log("StorageInteractor - initialize. Creation date should be earlier than or equal to the modification date!", module: .interactor, severity: .error)
-            return nil
-        }
-        
         guard
             let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(
                 vaultID,
