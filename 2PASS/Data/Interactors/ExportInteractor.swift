@@ -68,7 +68,7 @@ extension ExportInteractor: ExportInteracting {
                         return
                     }
                     
-                    let exchangeLogins = items.compactMap { self.itemToExchangeItems($0) }
+                    let exchangeLogins = items.compactMap { self.itemToExchangeItems($0, encrypt: encrypt) }
                     let exchangeDeleted = deleted.map { self.deletedToExchangeDeleted($0) }
                     let exchangeTags = tags.map { self.tagsToExchangeTags($0) }
                     let jsonEncoder = self.mainRepository.jsonEncoder
@@ -328,7 +328,7 @@ private extension ExportInteractor {
         )
     }
     
-    func itemToExchangeItems(_ item: ItemEncryptedData) -> ExchangeVault.ExchangeVaultItem.ExchangeItem? {
+    func itemToExchangeItems(_ item: ItemEncryptedData, encrypt: Bool) -> ExchangeVault.ExchangeVaultItem.ExchangeItem? {
         guard let content = itemsInteractor.decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
             return nil
         }
@@ -371,7 +371,11 @@ private extension ExportInteractor {
                 
                 let passwordValue: String? = {
                     if let passwordValue = passwordContent.password {
-                        return itemsInteractor.decrypt(passwordValue, isSecureField: true, protectionLevel: item.protectionLevel)
+                        if encrypt {
+                            return passwordValue.base64EncodedString()
+                        } else {
+                            return itemsInteractor.decrypt(passwordValue, isSecureField: true, protectionLevel: item.protectionLevel)
+                        }
                     }
                     return nil
                 }()
@@ -394,13 +398,18 @@ private extension ExportInteractor {
                 }
                 return try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: data).value as? [String: Any]
             default:
-                guard let key = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel) else {
-                    return nil
-                }
                 guard let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: content).value as? [String: Any] else {
                     return nil
                 }
-                return decryptSecureFields(in: contentDict, contentType: item.contentType, using: key)
+                
+                if encrypt {
+                    return contentDict
+                } else {
+                    guard let key = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel) else {
+                        return nil
+                    }
+                    return decryptSecureFields(in: contentDict, contentType: item.contentType, using: key)
+                }
             }
         }()
         
