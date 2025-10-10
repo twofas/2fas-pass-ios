@@ -761,15 +761,14 @@ private extension ImportInteractor {
             ))
             
         default:
-            let contentDict = encryptSecureFields(in: exchangeLogin.content, contentType: contentType, using: key)
-            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(contentDict)) else {
+            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(exchangeLogin.content)) else {
                 return nil
             }
 
             let rawItem = RawItemData(
                 id: itemID,
                 metadata: itemMetadata,
-                name: contentDict[ExchangeVault.contentNameKey] as? String,
+                name: exchangeLogin.content[ExchangeVault.contentNameKey] as? String,
                 contentType: contentType,
                 contentVersion: exchangeLogin.contentVersion,
                 content: contentData
