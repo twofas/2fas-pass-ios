@@ -231,10 +231,17 @@ extension StorageInteractor: StorageInteracting {
         }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {
-        let date = mainRepository.currentDate
-        let createdAt = creationDate ?? date
-        let updatedAt = modificationDate ?? date
-        
+        let currentDate = mainRepository.currentDate
+        let createdAt = creationDate ?? currentDate
+        let updatedAt = {
+            let date = modificationDate ?? currentDate
+            if createdAt <= date {
+                return date
+            } else {
+                return createdAt
+            }
+        }()
+                
         guard
             let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(
                 vaultID,
