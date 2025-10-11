@@ -188,7 +188,7 @@ extension ImportInteractor: ImportInteracting {
     }
 
     func checkEncryption(in file: ExchangeVaultVersioned) -> ImportEncryptionType {
-        if file.hasServices == false, file.tags.isEmpty {
+        if file.hasUnencryptedServices {
             return .noEncryption
         }
         guard let key = mainRepository.cachedExternalKey else {

@@ -66,6 +66,15 @@ public enum ExchangeVaultVersioned {
             return vault.hasServices
         }
     }
+    
+    public var hasUnencryptedServices: Bool {
+        switch self {
+        case .v1(let vault):
+            return vault.vault.logins?.isEmpty == false || vault.vault.tags?.isEmpty == false || vault.vault.itemsDeleted?.isEmpty == false
+        case .v2(let vault):
+            return vault.vault.items?.isEmpty == false || vault.vault.tags?.isEmpty == false || vault.vault.itemsDeleted?.isEmpty == false
+        }
+    }
 
     public struct VaultMetadata {
         public let id: String
