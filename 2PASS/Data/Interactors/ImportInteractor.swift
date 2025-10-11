@@ -768,7 +768,15 @@ private extension ImportInteractor {
             ))
             
         default:
-            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(exchangeLogin.content)) else {
+            let content: [String: Any] = {
+                if isEncrypted {
+                    return exchangeLogin.content
+                } else {
+                    return encryptSecureFields(in: exchangeLogin.content, contentType: contentType, using: key)
+                }
+            }()
+            
+            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(content)) else {
                 return nil
             }
 
