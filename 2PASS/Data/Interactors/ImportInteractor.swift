@@ -224,7 +224,7 @@ extension ImportInteractor: ImportInteracting {
             guard let items = v2Vault.vault.items else {
                 return []
             }
-            return items.compactMap({ self.exchangeItemToItemData($0) })
+            return items.compactMap({ self.exchangeItemToItemData($0, isEncrypted: false) })
         }
     }
 
@@ -489,7 +489,7 @@ private extension ImportInteractor {
                             ExchangeVault.ExchangeVaultItem.ExchangeItem.self,
                             from: jsonData
                         )
-                        if let pass = self.exchangeItemToItemData(exchangeLogin) {
+                        if let pass = self.exchangeItemToItemData(exchangeLogin, isEncrypted: true) {
                             return pass
                         } else {
                             Log("Import Interactor - Error creating Password Data", severity: .error)
@@ -655,7 +655,7 @@ private extension ImportInteractor {
         }
     }
     
-    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem) -> ItemData? {
+    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem, isEncrypted: Bool) -> ItemData? {
         guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
         }
@@ -694,13 +694,20 @@ private extension ImportInteractor {
             }
             
             let password: Data? = {
-                guard let passwordEntry = content.password, let passwordData = passwordEntry.data(using: .utf8) else {
+                guard let passwordEntry = content.password else {
                     return nil
                 }
-                guard let password = mainRepository.encrypt(passwordData, key: key) else {
-                    return nil
+                if isEncrypted {
+                    guard let passwordData = Data(base64Encoded: passwordEntry) else {
+                        return nil
+                    }
+                    return passwordData
+                } else {
+                    guard let passwordData = passwordEntry.data(using: .utf8), let password = mainRepository.encrypt(passwordData, key: key) else {
+                        return nil
+                    }
+                    return password
                 }
-                return password
             }()
             
             let iconType: PasswordIconType = {
