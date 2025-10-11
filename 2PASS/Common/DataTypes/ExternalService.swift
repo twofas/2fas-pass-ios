@@ -18,4 +18,5 @@ public enum ExternalService: CaseIterable, Equatable {
     case keePass
     case keePassXC
     case microsoftEdge
+    case enpass
 }

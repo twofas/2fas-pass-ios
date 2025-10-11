@@ -88,6 +88,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importKeePassXC(content: content)
         case .microsoftEdge:
             return await importMicrosoftEdge(content: content)
+        case .enpass:
+            return await importEnpass(content: content)
         }
     }
 }
@@ -866,7 +868,7 @@ private extension ExternalServiceImportInteractor {
         }
         var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
@@ -888,7 +890,7 @@ private extension ExternalServiceImportInteractor {
                     return nil
                 }()
                 let notes = dict["note"]?.nilIfEmpty
-                
+
                 passwords.append(
                     .login(
                         .init(
@@ -916,10 +918,76 @@ private extension ExternalServiceImportInteractor {
         } catch {
             return .failure(.wrongFormat)
         }
-        
+
         return .success(passwords)
     }
-    
+
+    func importEnpass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
+        guard let parsedJSON = try? mainRepository.jsonDecoder.decode(Enpass.self, from: content) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        var items: [ItemData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+
+        parsedJSON.items?.forEach { item in
+            guard item.trashed != 1 else { return }
+
+            let name = item.title.formattedName
+            let notes = item.note?.nilIfEmpty
+
+            var username: String?
+            var password: Data?
+            var urlString: String?
+
+            item.fields?.forEach { field in
+                guard field.deleted != 1 else { return }
+
+                switch field.type {
+                case "username":
+                    username = field.value?.nilIfEmpty
+                case "password":
+                    if let passwordString = field.value?.nilIfEmpty {
+                        password = encryptPassword(passwordString, for: protectionLevel)
+                    }
+                case "url":
+                    urlString = field.value?.nilIfEmpty
+                default:
+                    break
+                }
+            }
+
+            let uris: [PasswordURI]? = {
+                guard let urlString else { return nil }
+                let uri = PasswordURI(uri: urlString, match: .domain)
+                return [uri]
+            }()
+
+            items.append(
+                .login(.init(
+                    id: .init(),
+                    metadata: .init(
+                        creationDate: Date.importPasswordPlaceholder,
+                        modificationDate: Date.importPasswordPlaceholder,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: name,
+                    content: .init(
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: notes,
+                        iconType: makeIconType(uri: uris?.first?.uri),
+                        uris: uris
+                    )
+                ))
+            )
+        }
+
+        return .success(items)
+    }
+
     private func makeIconType(uri: String?) -> PasswordIconType {
         guard let uri else {
             return .createDefault(domain: nil)
@@ -944,7 +1012,7 @@ private struct BitWarden: Decodable {
             struct URI: Decodable {
                 let uri: String?
                 let match: Int?
-                
+
                 var matchValue: PasswordURI.Match {
                     switch match {
                     case 0: .domain
@@ -955,16 +1023,36 @@ private struct BitWarden: Decodable {
                     }
                 }
             }
-            
+
             let username: String?
             let password: String?
             let uris: [URI]?
         }
-        
+
         let name: String?
         let notes: String?
         let login: Login?
     }
     let encrypted: Bool
+    let items: [Item]?
+}
+
+private struct Enpass: Decodable {
+    struct Item: Decodable {
+        struct Field: Decodable {
+            let label: String?
+            let type: String?
+            let value: String?
+            let sensitive: Int?
+            let deleted: Int?
+        }
+
+        let title: String?
+        let note: String?
+        let category: String?
+        let fields: [Field]?
+        let trashed: Int?
+    }
+
     let items: [Item]?
 }
