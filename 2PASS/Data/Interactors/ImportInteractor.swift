@@ -229,8 +229,7 @@ extension ImportInteractor: ImportInteracting {
     }
 
     func extractUnencryptedDeletedItems(from file: ExchangeVaultVersioned) -> [DeletedItemData] {
-        let vaultID = mainRepository.selectedVault?.vaultID ?? UUID(uuidString: file.vaultID)
-        guard let vaultID else {
+        guard let vaultID = UUID(uuidString: file.vaultID) else {
             return []
         }
         return file.itemsDeleted.compactMap({ self.exchangeDeletedPasswordToDeletedPasswordData($0, vaultID: vaultID) })
@@ -258,10 +257,8 @@ extension ImportInteractor: ImportInteracting {
             completion(.failure(.noExternalKey))
             return
         }
-        
-        let vaultID = mainRepository.selectedVault?.vaultID ?? UUID(uuidString: vault.vaultID)
 
-        guard let vaultID else {
+        guard let vaultID = UUID(uuidString: vault.vaultID) else {
             completion(.failure(.noVaultID))
             return
         }
@@ -344,8 +341,6 @@ extension ImportInteractor: ImportInteracting {
             }
             return
         }
-        
-        let destinationVaultID = mainRepository.selectedVault?.vaultID ?? vaultID
 
         switch exchangeVault {
         case .v1(let v1Vault):
@@ -356,7 +351,7 @@ extension ImportInteractor: ImportInteracting {
             let deletedPasswords = v1Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v1Vault.vault.tagsEncrypted ?? []
 
-            extractItemsV1(from: loginsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: destinationVaultID, using: key) { items, tagsData, deleted in
+            extractItemsV1(from: loginsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
                 completion(.success((items, tagsData, deleted)))
             }
 
@@ -368,7 +363,7 @@ extension ImportInteractor: ImportInteracting {
             let deletedPasswords = v2Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v2Vault.vault.tagsEncrypted ?? []
 
-            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: destinationVaultID, using: key) { items, tagsData, deleted in
+            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
                 completion(.success((items, tagsData, deleted)))
             }
         }
