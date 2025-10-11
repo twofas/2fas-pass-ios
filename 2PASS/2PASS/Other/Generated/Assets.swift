@@ -72,6 +72,7 @@ internal enum Asset {
   internal static let customExclamationmarkShieldFill = ImageAsset(name: "custom.exclamationmark.shield.fill")
   internal static let dashlaneIcon = ImageAsset(name: "dashlane.icon")
   internal static let discordIcon = ImageAsset(name: "discord.icon")
+  internal static let enpassIcon = ImageAsset(name: "enpass.icon")
   internal static let facebookIcon = ImageAsset(name: "facebook.icon")
   internal static let firefoxIcon = ImageAsset(name: "firefox.icon")
   internal static let generateIcon = ImageAsset(name: "generate.icon")
