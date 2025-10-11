@@ -243,7 +243,7 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func checkEncryptionWithoutParsing(in vault: ExchangeVaultVersioned) -> ImportEncryptionTypeNoParsing {
-        if vault.hasServices == false, vault.tags.isEmpty {
+        if vault.hasUnencryptedServices {
             return .noEncryption
         }
         return .needsPassword
