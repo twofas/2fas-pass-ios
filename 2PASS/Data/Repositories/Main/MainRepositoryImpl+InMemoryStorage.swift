@@ -293,4 +293,9 @@ extension MainRepositoryImpl {
     var hasInMemoryStorage: Bool {
         inMemoryStorage != nil
     }
+
+    func extractItemName(fromContent data: Data) -> String? {
+        let contentDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        return contentDict?[ItemContentNameKey] as? String
+    }
 }

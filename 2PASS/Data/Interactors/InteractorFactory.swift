@@ -48,7 +48,7 @@ public final class InteractorFactory {
     }
 
     public func secureNoteInteractor() -> SecureNoteItemInteracting {
-        SecureNoteInteractor(itemsInteractor: itemsInteractor())
+        SecureNoteItemInteractor(itemsInteractor: itemsInteractor())
     }
 
     public func loginItemInteractor() -> LoginItemInteracting {
@@ -108,7 +108,8 @@ public final class InteractorFactory {
         DebugInteractor(
             mainRepository: MainRepositoryImpl.shared,
             itemsInteractor: itemsInteractor(),
-            loginItemInteractor: loginItemInteractor()
+            loginItemInteractor: loginItemInteractor(),
+            secureNoteItemInteractor: secureNoteInteractor()
         )
     }
     

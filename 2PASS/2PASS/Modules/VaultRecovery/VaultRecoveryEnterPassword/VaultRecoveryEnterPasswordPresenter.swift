@@ -25,7 +25,7 @@ enum VaultRecoveryEnterPasswordDestination: Identifiable {
     case importVault(
         entropy: Entropy,
         masterKey: MasterKey,
-        vault: ExchangeVault,
+        vault: ExchangeVaultVersioned,
         onClose: Callback
     )
     

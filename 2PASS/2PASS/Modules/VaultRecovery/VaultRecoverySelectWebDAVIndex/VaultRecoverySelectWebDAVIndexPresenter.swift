@@ -17,8 +17,8 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
         case .appUpdateNeeded: "appUpdateNeeded"
         }
     }
-    
-    case selectRecoveryKey(ExchangeVault, onClose: Callback)
+
+    case selectRecoveryKey(ExchangeVaultVersioned, onClose: Callback)
     case error(message: String, onClose: Callback)
     case appUpdateNeeded(schemaVersion: Int, onUpdate: Callback, onClose: Callback)
 }
@@ -37,8 +37,8 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
     private let allowTLSOff: Bool
     private let login: String?
     private let password: String?
-    private let onSelect: (ExchangeVault) -> Void
-    
+    private let onSelect: (ExchangeVaultVersioned) -> Void
+
     init(
         interactor: VaultRecoverySelectWebDAVIndexModuleInteracting,
         index: WebDAVIndex,
@@ -46,7 +46,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        onSelect: @escaping (ExchangeVault) -> Void,
+        onSelect: @escaping (ExchangeVaultVersioned) -> Void,
     ) {
         self.interactor = interactor
         self.index = index

@@ -25,6 +25,9 @@ struct GenerateContentView: View {
                     Text("Password count: \(presenter.itemsCount)" as String)
                 }
                 Section("Generate Additional Items" as String) {
+                    PrimaryButton(title: "1") {
+                        presenter.onGenerate(count: 1)
+                    }
                     PrimaryButton(title: "5") {
                         presenter.onGenerate(count: 5)
                     }
@@ -48,6 +51,27 @@ struct GenerateContentView: View {
                     }
                 }
                 .listRowBackground(Color.clear)
+                
+                Section {
+                    Text("Secure Notes count: \(presenter.secureNotesCount)" as String)
+                }
+                Section("Generate Secure Notes" as String) {
+                    PrimaryButton(title: "1") {
+                        presenter.onGenerateSecureNote(count: 1)
+                    }
+                }
+                .listRowBackground(Color.clear)
+
+                Section {
+                    Text("Unknown count: \(presenter.unknownCount)" as String)
+                }
+                Section("Generate Unknown" as String) {
+                    PrimaryButton(title: "1") {
+                        presenter.onGenerateUnknown(count: 1)
+                    }
+                }
+                .listRowBackground(Color.clear)
+
                 PrimaryButton(title: "Remove All Items") {
                     presentWarning = true
                 }

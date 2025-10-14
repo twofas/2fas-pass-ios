@@ -150,17 +150,25 @@ private extension ViewPasswordPresenter {
             flowController.close()
             return
         }
-        if passwordData.password != nil {
-            if let password = interactor.decryptPassword(for: itemID) {
-                isPasswordAvailable = true
-                passwordDecrypted = password
-                self.password = AttributedString(passwordPlaceholder)
-            }
+        
+        if passwordData.password != nil, let password = interactor.decryptPassword(for: itemID) {
+            isPasswordAvailable = true
+            passwordDecrypted = password
+            self.password = AttributedString(passwordPlaceholder)
+        } else {
+            isPasswordAvailable = false
+            passwordDecrypted = nil
+            self.password = nil
         }
+        
         if let username = passwordData.username {
             isUsernameAvailable = true
             self.username = username
+        } else {
+            isUsernameAvailable = false
+            self.username = nil
         }
+        
         name = passwordData.name ?? ""
         notes = passwordData.notes
         protectionLevel = passwordData.protectionLevel

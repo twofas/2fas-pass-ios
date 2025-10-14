@@ -41,7 +41,7 @@ public protocol WebDAVRecoveryInteracting: AnyObject {
         schemeVersion: Int,
         login: String?,
         password: String?,
-        completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<ExchangeVaultVersioned, WebDAVRecoveryInteractorError>) -> Void
     )
     func saveConfiguration(baseURL: URL, allowTLSOff: Bool, vaultID: VaultID, login: String?, password: String?)
     func resetConfiguration()
@@ -136,7 +136,7 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
         schemeVersion: Int,
         login: String?,
         password: String?,
-        completion: @escaping (Result<ExchangeVault, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<ExchangeVaultVersioned, WebDAVRecoveryInteractorError>) -> Void
     ) { 
         Log("WebDAVRecoveryInteractor - fetching Vault with scheme version: \(schemeVersion)", module: .interactor)
         

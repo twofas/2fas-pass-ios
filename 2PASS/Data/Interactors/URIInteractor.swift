@@ -28,9 +28,9 @@ public struct URINormalizeOptions: OptionSet {
 }
 
 final class URIInteractor {
-    // Takes a long time to initialize
-    private lazy var ending: Regex = { try! Regex(##"\/(\?|\#|\?\#|\#\?)*$"##) }()
-    
+
+    private static let ending: Regex = try! Regex(##"\/(\?|\#|\?\#|\#\?)*$"##)
+
     private let mainRepository: MainRepository
     
     init(mainRepository: MainRepository) {
@@ -113,7 +113,7 @@ extension URIInteractor: URIInteracting {
         
         components.path = components.path?.removingPercentEncoding
         
-        let ranges = components.string?.ranges(of: ending).reversed()
+        let ranges = components.string?.ranges(of: URIInteractor.ending).reversed()
         if let ranges, !ranges.isEmpty, var str = components.string {
             for r in ranges {
                 str.replaceSubrange(r, with: "")

@@ -23,7 +23,7 @@ public protocol SecureNoteItemInteracting: AnyObject {
     ) throws(ItemsInteractorSaveError)
 }
 
-final class SecureNoteInteractor {
+final class SecureNoteItemInteractor {
     private let itemsInteractor: ItemsInteracting
 
     init(itemsInteractor: ItemsInteracting) {
@@ -31,7 +31,7 @@ final class SecureNoteInteractor {
     }
 }
 
-extension SecureNoteInteractor: SecureNoteItemInteracting {
+extension SecureNoteItemInteractor: SecureNoteItemInteracting {
 
     func createSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) {
         let secureNoteItem = try makeSecureNote(id: id, metadata: metadata, name: name, text: text)
@@ -44,14 +44,14 @@ extension SecureNoteInteractor: SecureNoteItemInteracting {
     }
 }
 
-private extension SecureNoteInteractor {
+private extension SecureNoteItemInteractor {
 
     func makeSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?) throws(ItemsInteractorSaveError) -> SecureNoteItemData {
         var encryptedText: Data?
         if let text = text?.trim(), !text.isEmpty {
             guard let encrypted = itemsInteractor.encrypt(text, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
                 Log(
-                    "SecureNoteInteractor: Create secure note. Can't encrypt text",
+                    "SecureNoteItemInteractor: Create secure note. Can't encrypt text",
                     module: .interactor,
                     severity: .error
                 )

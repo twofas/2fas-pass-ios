@@ -106,6 +106,11 @@ private extension ItemsImportInteractor {
         }
         
         for item in items {
+            let item = item.update(
+                creationDate: adjustDateIfNeeded(item.creationDate),
+                modificationDate: adjustDateIfNeeded(item.modificationDate)
+            )
+            
             func findByContent() -> (ItemData)? {
                 if let loginItem = item.asLoginItem {
                     let content = PasswordContentEqualItem(

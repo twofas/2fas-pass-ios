@@ -43,7 +43,7 @@ struct AutoFillPasswordsListView: UIViewControllerRepresentable {
         }
         
         func textToInsert(_ text: String) {
-            Task {
+            Task { @MainActor in
                 await parent.context.completeRequest(withTextToInsert: text)
             }
         }

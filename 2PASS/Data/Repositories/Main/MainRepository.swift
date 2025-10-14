@@ -12,6 +12,8 @@ import LocalAuthentication
 import Backup
 import Storage
 
+let ItemContentNameKey = "name"
+
 enum HMACStringReturnType {
     case hex
     case base64
@@ -379,10 +381,12 @@ protocol MainRepository: AnyObject {
     func deleteAllItems()
     func saveStorage()
     func listUsernames() -> [String]
-    
+
     var hasInMemoryStorage: Bool { get }
     func createInMemoryStorage()
     func destroyInMemoryStorage()
+
+    func extractItemName(fromContent data: Data) -> String?
     
     // MARK: Tags
     func createTag(_ tag: ItemTagData)

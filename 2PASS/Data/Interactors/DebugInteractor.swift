@@ -64,6 +64,12 @@ public protocol DebugInteracting: AnyObject {
     var itemsCount: Int { get }
     func deleteAllItems()
     func generateItems(count: Int, completion: @escaping Callback)
+
+    var secureNotesCount: Int { get }
+    func generateSecureNotes(count: Int, completion: @escaping Callback)
+
+    var unknownCount: Int { get }
+    func generateUnknown(count: Int, completion: @escaping Callback)
     
     // MARK: - WebDAV debug
     var writeDecryptedCopy: Bool { get }
@@ -80,11 +86,13 @@ final class DebugInteractor {
     private let mainRepository: MainRepository
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
+    private let secureNoteItemInteractor: SecureNoteItemInteracting
 
-    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, loginItemInteractor: LoginItemInteracting) {
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, loginItemInteractor: LoginItemInteracting, secureNoteItemInteractor: SecureNoteItemInteracting) {
         self.mainRepository = mainRepository
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor
+        self.secureNoteItemInteractor = secureNoteItemInteractor
     }
 }
 
@@ -310,6 +318,23 @@ extension DebugInteractor: DebugInteracting {
         mainRepository.listItems(options: .allNotTrashed).count
     }
     
+    var secureNotesCount: Int {
+        mainRepository.listItems(options: .allNotTrashed)
+            .filter { $0.contentType == .secureNote }
+            .count
+    }
+
+    var unknownCount: Int {
+        mainRepository.listItems(options: .allNotTrashed)
+            .filter {
+                if case .unknown = $0.contentType {
+                    return true
+                }
+                return false
+            }
+            .count
+    }
+    
     func deleteAllItems() {
         mainRepository.deleteAllItems()
         mainRepository.deleteAllEncryptedItems()
@@ -353,6 +378,78 @@ extension DebugInteractor: DebugInteracting {
                 .init(uri: password,
                 match: .startsWith)],
             )
+        }
+
+        itemsInteractor.saveStorage()
+        mainRepository.webDAVSetHasLocalChanges()
+        completion()
+    }
+    
+    func generateSecureNotes(count: Int, completion: @escaping Callback) {
+        guard let words = mainRepository.importBIP0039Words() else {
+            completion()
+            return
+        }
+
+        for i in 0..<count {
+            let name = words.randomElement() ?? "Note\(i)"
+            let text = Array(repeating: "", count: Int.random(in: 10..<150)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
+            let date = randomDate()
+            try? secureNoteItemInteractor.createSecureNote(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: [ItemProtectionLevel.confirm,
+                                      ItemProtectionLevel.normal,
+                                      ItemProtectionLevel.topSecret].randomElement() ?? .normal,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
+                name: name,
+                text: text
+            )
+        }
+
+        itemsInteractor.saveStorage()
+        mainRepository.webDAVSetHasLocalChanges()
+        completion()
+    }
+
+    func generateUnknown(count: Int, completion: @escaping Callback) {
+        guard let words = mainRepository.importBIP0039Words() else {
+            completion()
+            return
+        }
+
+        for i in 0..<count {
+            let protectionLevel = [ItemProtectionLevel.confirm,
+                                   ItemProtectionLevel.normal,
+                                   ItemProtectionLevel.topSecret].randomElement() ?? .normal
+            let name = words.randomElement() ?? "Unknown\(i)"
+            let contentDict: [String: Any] = [
+                "field1": words.randomElement() ?? "value1",
+                "s_field2": itemsInteractor.encrypt(words.randomElement() ?? "value2", isSecureField: true, protectionLevel: protectionLevel)!.base64EncodedString()
+            ]
+            
+            guard let contentData = try? JSONEncoder().encode(AnyCodable(contentDict)) else { continue }
+            
+            let date = randomDate()
+            let rawItem = RawItemData(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: protectionLevel,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
+                name: name,
+                contentType: .unknown("customType"),
+                contentVersion: 1,
+                content: contentData
+            )
+            try? itemsInteractor.createItem(.raw(rawItem))
         }
 
         itemsInteractor.saveStorage()

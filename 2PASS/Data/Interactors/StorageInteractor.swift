@@ -226,25 +226,22 @@ extension StorageInteractor: StorageInteracting {
                 Log("StorageInteractor - can't decrypt data", module: .interactor, severity: .error)
                 return (nil, nil)
             }
-            
-            guard let content = try? JSONSerialization.jsonObject(with: value) as? [String: Any] else {
-                Log("StorageInteractor - can't decode data", module: .interactor, severity: .error)
-                return (nil, value)
-            }
-            
-            return (content[ItemContentNameKey] as? String, value)
+
+            return (mainRepository.extractItemName(fromContent: value), value)
         }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {
-        let date = mainRepository.currentDate
-        let createdAt = creationDate ?? date
-        let updatedAt = modificationDate ?? date
-        
-        guard createdAt <= updatedAt else {
-            Log("StorageInteractor - initialize. Creation date should be earlier than or equal to the modification date!", module: .interactor, severity: .error)
-            return nil
-        }
-        
+        let currentDate = mainRepository.currentDate
+        let createdAt = creationDate ?? currentDate
+        let updatedAt = {
+            let date = modificationDate ?? currentDate
+            if createdAt <= date {
+                return date
+            } else {
+                return createdAt
+            }
+        }()
+                
         guard
             let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(
                 vaultID,

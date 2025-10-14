@@ -320,14 +320,25 @@ final class LoginEntity: ItemMetadataEntity {
                 return .default
             }
         }()
-        
+                
         let content = LoginItemContent(
             name: name,
             username: username,
             password: password,
             notes: notes,
             iconType: iconType,
-            uris: nil
+            uris: { () -> [PasswordURI]? in
+                guard let uris else { return nil }
+                return uris.enumerated().map { index, uri in
+                    let match: PasswordURI.Match = {
+                        if let value = urisMatching?[safe: index], let match = PasswordURI.Match(rawValue: value) {
+                            return match
+                        }
+                        return .domain
+                    }()
+                    return .init(uri: uri, match: match)
+                }
+            }()
         )
         
         return .login(LoginItemData(
