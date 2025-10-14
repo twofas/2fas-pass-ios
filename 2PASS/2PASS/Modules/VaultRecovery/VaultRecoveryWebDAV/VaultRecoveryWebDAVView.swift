@@ -35,6 +35,7 @@ struct VaultRecoveryWebDAVView: View {
                     
                     Toggle(T.webdavAllowUntrustedCertificates.localizedKey, isOn: $presenter.allowTLSOff)
                         .frame(maxWidth: .infinity)
+                        .tint(.accentColor)
                 }
                 
                 

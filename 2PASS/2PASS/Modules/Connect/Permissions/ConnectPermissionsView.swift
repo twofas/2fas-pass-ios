@@ -184,7 +184,7 @@ struct ConnectPermissionsView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(T.commonClose.localizedKey) {
+                    ToolbarCancelButton {
                         dismiss()
                     }
                 }
