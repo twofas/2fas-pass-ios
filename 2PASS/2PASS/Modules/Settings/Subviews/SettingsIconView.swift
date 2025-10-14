@@ -132,7 +132,11 @@ struct SettingsIconView: View {
         case .pushNotifications:
             Image(systemName: "bell.badge.fill")
         case .sync:
-            Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+            if #available(iOS 18, *) {
+                Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+            } else {
+                Image(systemName: "clock.arrow.circlepath")
+            }
         case .importExport:
             Image(systemName: "rectangle.portrait.and.arrow.right")
         case .transferItems:

@@ -352,8 +352,16 @@ struct AddPasswordView: View {
         
         let feedback = UIImpactFeedbackGenerator()
         
+        let generateIconName: String = {
+            if #available(iOS 18.0, *) {
+                return "gearshape.arrow.trianglehead.2.clockwise.rotate.90"
+            } else {
+                return "gearshape.arrow.triangle.2.circlepath"
+            }
+        }()
+        
         let stackView = UIStackView(arrangedSubviews: [
-            UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordGeneratorCta, image: UIImage(systemName: "gearshape.arrow.trianglehead.2.clockwise.rotate.90"), handler: { _ in
+            UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordGeneratorCta, image: UIImage(systemName: generateIconName), handler: { _ in
                 showGeneratePassword = true
             })),
             UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordAutogenerateCta, image: UIImage(systemName: "arrow.clockwise"), handler: { _ in

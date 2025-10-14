@@ -30,7 +30,11 @@ struct SelectDecryptionMethod: View {
                     title: Text(T.restoreDecryptVaultOptionFile.localizedKey),
                     subtitle: Text(T.restoreDecryptVaultOptionFileDescription.localizedKey),
                     icon: {
-                        Image(systemName: "document.fill")
+                        if #available(iOS 18, *) {
+                            Image(systemName: "document.fill")
+                        } else {
+                            Image(systemName: "doc.fill")
+                        }
                     }
                 )
             }
