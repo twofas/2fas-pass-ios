@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum PasswordListOptions: Hashable {
+public enum ItemsListOptions: Hashable {
     public enum TrashOptions {
         case yes
         case no
@@ -14,9 +14,9 @@ public enum PasswordListOptions: Hashable {
     }
     
     case filterByPhrase(String?, sortBy: SortType, trashed: TrashOptions)
-    case findExistingByPasswordID(PasswordID)
-    case findNotTrashedByPasswordID(PasswordID)
-    case includePasswords([PasswordID])
+    case findExistingByItemID(ItemID)
+    case findNotTrashedByItemID(ItemID)
+    case includeItems([ItemID])
     case allTrashed
     case allNotTrashed
     case all

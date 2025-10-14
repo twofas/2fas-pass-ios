@@ -7,7 +7,7 @@
 import Common
 
 extension ExternalService {
-    
+
     var settingsIcon: SettingsIcon {
         switch self {
         case .onePassword: .onePassword
@@ -21,6 +21,7 @@ extension ExternalService {
         case .keePass: .keePass
         case .keePassXC: .keePassXC
         case .microsoftEdge: .microsoftEdge
+        case .enpass: .enpass
         }
     }
 }

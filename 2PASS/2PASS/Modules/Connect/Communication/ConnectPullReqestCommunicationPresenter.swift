@@ -15,7 +15,7 @@ enum ConnectPullReqestCommunicationError: Error {
 
 enum ConnectPullReqestCommunicationDestination: RouterDestination {
     case addItem(changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
-    case editItem(PasswordData, changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
+    case editItem(LoginItemData, changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
     
     var id: String {
         switch self {
@@ -110,13 +110,13 @@ final class ConnectPullReqestCommunicationPresenter {
                 self?.onSavePassword(result: result)
             })
             
-        case .action(.update(let passwordData, let changeRequest)):
-            destination = .editItem(passwordData, changeRequest: changeRequest, onClose: { [weak self] result in
+        case .action(.update(let loginItem, let changeRequest)):
+            destination = .editItem(loginItem, changeRequest: changeRequest, onClose: { [weak self] result in
                 self?.onSavePassword(result: result)
             })
             
-        case .action(.delete(let passwordData)):
-            interactor.deletePassword(for: passwordData.passwordID)
+        case .action(.delete(let loginItem)):
+            interactor.deleteItem(for: loginItem.id)
             
             state = .connecting
             actionContinuation?.resume(returning: (true, nil))
@@ -205,7 +205,7 @@ final class ConnectPullReqestCommunicationPresenter {
                 state = .finish(.failure(ConnectPullReqestCommunicationError.sendPasswordDataFailure))
             } else {
                 state = .connecting
-                actionContinuation?.resume(returning: (true, saveResult.passwordID))
+                actionContinuation?.resume(returning: (true, saveResult.itemID))
                 actionContinuation = nil
             }
             
@@ -250,7 +250,7 @@ extension ConnectPullReqestCommunicationPresenter {
             }
         }
         
-        var passwordData: PasswordData? {
+        var passwordData: LoginItemData? {
             switch self {
             case .action(let action):
                 switch action {

@@ -66,7 +66,7 @@ final class MergeHandler {
     private var cloudStorageTagIDsForDeletition: [ItemTagID] = []
     
     // cloud migration
-    private var passwordIDsForDeletition: [CKRecord.ID] = []
+    private var recordItemIDsForDeletition: [CKRecord.ID] = []
     
     init(
         localStorage: LocalStorage,
@@ -90,8 +90,8 @@ extension MergeHandler {
         isMultiDeviceSyncEnabled = enabled
     }
     
-    func setPasswordIDsForDeletition(_ passwordIDsForDeletition: [CKRecord.ID]) {
-        self.passwordIDsForDeletition = passwordIDsForDeletition
+    func setItemIDsForDeletition(_ itemIDsForDeletition: [CKRecord.ID]) {
+        self.recordItemIDsForDeletition = itemIDsForDeletition
     }
     
     var hasChanges: Bool {
@@ -305,7 +305,7 @@ extension MergeHandler {
         }
         
         // Deleting unused Password records if found
-        recordIDsForRemoval.append(contentsOf: passwordIDsForDeletition)
+        recordIDsForRemoval.append(contentsOf: recordItemIDsForDeletition)
     
         LogZoneEnd()
         completion(.success(()))

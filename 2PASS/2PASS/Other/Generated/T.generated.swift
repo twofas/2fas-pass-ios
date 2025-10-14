@@ -937,8 +937,8 @@ internal enum T {
   internal static let quickSetupIcloudSyncFailure = T.tr("Localizable", "quick_setup_icloud_sync_failure", fallback: "Failed to enable Vault Sync")
   /// Vault Sync
   internal static let quickSetupIcloudSyncTitle = T.tr("Localizable", "quick_setup_icloud_sync_title", fallback: "Vault Sync")
-  /// Import Items from 2FAS Pass Backup
-  internal static let quickSetupImportItemsCta = T.tr("Localizable", "quick_setup_import_items_cta", fallback: "Import Items from 2FAS Pass Backup")
+  /// Import Items from 2FAS Pass backup
+  internal static let quickSetupImportItemsCta = T.tr("Localizable", "quick_setup_import_items_cta", fallback: "Import Items from 2FAS Pass backup")
   /// Recommended
   internal static let quickSetupRecommended = T.tr("Localizable", "quick_setup_recommended", fallback: "Recommended")
   /// Default

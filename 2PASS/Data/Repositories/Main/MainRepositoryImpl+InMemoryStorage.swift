@@ -10,111 +10,223 @@ import Storage
 
 extension MainRepositoryImpl {
     
-    // MARK: Passwords
+    // MARK: Items
     
-    func createPassword(
-        passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+    func createItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
     ) {
-        inMemoryStorage?.createPassword(
-            passwordID: passwordID,
-            name: name,
-            username: username,
-            password: password,
-            notes: notes,
+        inMemoryStorage?.createItem(
+            itemID: itemID,
             creationDate: creationDate,
             modificationDate: modificationDate,
-            iconType: iconType,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
-            uris: uris,
-            tagIds: tagIds
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
         )
     }
-    
-    func updatePassword(
-        passwordID: PasswordID,
+
+    func createLoginItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
         name: String?,
         username: String?,
         password: Data?,
         notes: String?,
-        modificationDate: Date,
         iconType: PasswordIconType,
-        trashedStatus: ItemTrashedStatus,
-        protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        uris: [PasswordURI]?
     ) {
-        inMemoryStorage?.updatePassword(
-            passwordID: passwordID,
+        inMemoryStorage?.createLoginItem(
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
             name: name,
             username: username,
             password: password,
             notes: notes,
-            modificationDate: modificationDate,
             iconType: iconType,
+            uris: uris
+        )
+    }
+
+    func createSecureNoteItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    ) {
+        inMemoryStorage?.createSecureNoteItem(
+            itemID: itemID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
-            uris: uris,
-            tagIds: tagIds
+            tagIds: tagIds,
+            name: name,
+            text: text
         )
     }
     
-    func updatePasswords(_ passwords: [PasswordData]) {
-        passwords.forEach {
-            inMemoryStorage?.updatePassword(
-                passwordID: $0.passwordID,
-                name: $0.name,
-                username: $0.username,
-                password: $0.password,
-                notes: $0.notes,
-                modificationDate: $0.modificationDate,
-                iconType: $0.iconType,
-                trashedStatus: $0.trashedStatus,
-                protectionLevel: $0.protectionLevel,
-                uris: $0.uris,
-                tagIds: $0.tagIds
+    func updateMetadataItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int
+    ) {
+        inMemoryStorage?.updateMetadataItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion
+        )
+    }
+    
+    func updateItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    ) {
+        inMemoryStorage?.updateItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
+        )
+    }
+
+    func updateLoginItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    ) {
+        inMemoryStorage?.updateLoginItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            username: username,
+            password: password,
+            notes: notes,
+            iconType: iconType,
+            uris: uris
+        )
+    }
+
+    func updateSecureNoteItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    ) {
+        inMemoryStorage?.updateSecureNoteItem(
+            itemID: itemID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            text: text
+        )
+    }
+    
+    func updateItems(_ items: [RawItemData]) {
+        items.forEach { item in
+            inMemoryStorage?.updateItem(
+                itemID: item.id,
+                modificationDate: item.modificationDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: item.content
             )
         }
     }
     
-    func passwordsBatchUpdate(_ passwords: [PasswordData]) {
-        inMemoryStorage?.batchUpdateRencryptedPasswords(passwords, date: currentDate)
+    func itemsBatchUpdate(_ items: [RawItemData]) {
+        inMemoryStorage?.batchUpdateRencryptedItems(items, date: currentDate)
     }
     
-    func getPasswordEntity(
-        passwordID: PasswordID,
+    func getItemEntity(
+        itemID: ItemID,
         checkInTrash: Bool
-    ) -> PasswordData? {
-        inMemoryStorage?.getPasswordEntity(passwordID: passwordID, checkInTrash: checkInTrash)
+    ) -> ItemData? {
+        inMemoryStorage?.getItemEntity(itemID: itemID, checkInTrash: checkInTrash)
     }
     
-    func listPasswords(
-        options: PasswordListOptions
-    ) -> [PasswordData] {
-        inMemoryStorage?.listPasswords(options: options) ?? []
+    func listItems(
+        options: ItemsListOptions
+    ) -> [ItemData] {
+        inMemoryStorage?.listItems(options: options) ?? []
     }
     
-    func listTrashedPasswords() -> [PasswordData] {
-        inMemoryStorage?.listPasswords(options: .allTrashed) ?? []
+    func listTrashedItems() -> [ItemData] {
+        inMemoryStorage?.listItems(options: .allTrashed) ?? []
     }
     
-    func deletePassword(passwordID: PasswordID) {
-        inMemoryStorage?.deletePassword(passwordID: passwordID)
+    func deleteItem(itemID: ItemID) {
+        inMemoryStorage?.deleteItem(itemID: itemID)
     }
     
-    func deleteAllPasswords() {
-        inMemoryStorage?.deleteAllPasswordEntities()
+    func deleteAllItems() {
+        inMemoryStorage?.deleteAllItemEntities()
     }
     
     // MARK: Tags
@@ -180,5 +292,10 @@ extension MainRepositoryImpl {
     
     var hasInMemoryStorage: Bool {
         inMemoryStorage != nil
+    }
+
+    func extractItemName(fromContent data: Data) -> String? {
+        let contentDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        return contentDict?[ItemContentNameKey] as? String
     }
 }

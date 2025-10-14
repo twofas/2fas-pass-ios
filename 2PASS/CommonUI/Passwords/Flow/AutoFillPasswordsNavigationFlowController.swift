@@ -14,7 +14,7 @@ public struct AutoFillEnvironment {
 }
 
 public protocol AutofillPasswordsNavigationFlowControllerParent: AnyObject {
-    func selectPassword(passwordID: PasswordID)
+    func selectPassword(itemID: ItemID)
     func textToInsert(_ text: String)
     func cancel()
 }
@@ -50,20 +50,20 @@ public final class AutofillPasswordsNavigationFlowController: NavigationFlowCont
 }
 
 extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerParent {
-    public func passwordsToViewPassword(passwordID: PasswordID) {
+    public func passwordsToViewPassword(itemID: ItemID) {
         ViewPasswordFlowController.push(
             on: navigationController,
             parent: self,
-            passwordID: passwordID,
+            itemID: itemID,
             autoFillEnvironment: autoFillEnvironment
         )
     }
     
-    public func selectPassword(passwordID: PasswordID) {
+    public func selectPassword(itemID: ItemID) {
         if autoFillEnvironment.isTextToInsert {
-            passwordsToViewPassword(passwordID: passwordID)
+            passwordsToViewPassword(itemID: itemID)
         } else {
-            parent?.selectPassword(passwordID: passwordID)
+            parent?.selectPassword(itemID: itemID)
         }
     }
     

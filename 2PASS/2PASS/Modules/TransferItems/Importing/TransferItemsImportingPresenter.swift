@@ -27,7 +27,7 @@ final class TransferItemsImportingPresenter {
     
     func onAppear() async {
         state = .importing
-        await interactor.importPasswords()
+        await interactor.importItems()
         state = .success
     }
 }

@@ -13,7 +13,7 @@ extension ItemEncryptedEntity {
         NSFetchRequest<ItemEncryptedEntity>(entityName: "ItemEncryptedEntity")
     }
     
-    @NSManaged var itemID: PasswordID
+    @NSManaged var itemID: ItemID
     
     @NSManaged var contentVersion: Int16
     @NSManaged var contentType: String
@@ -46,7 +46,7 @@ extension ItemEncryptedEntity {
                 return .no
             }(),
             protectionLevel: ItemProtectionLevel(level: level),
-            contentType: ItemContentType(rawValue: contentType)!,
+            contentType: ItemContentType(rawValue: contentType),
             contentVersion: Int(contentVersion),
             content: content,
             vaultID: vault.vaultID,

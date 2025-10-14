@@ -59,15 +59,28 @@ extension TagInteractor: TagInteracting {
     }
     
     func createTag(data: ItemTagData) {
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("TagInteractor: Create tag. No vault", module: .interactor, severity: .error)
+            return
+        }
         guard let nameEnc = encryptName(data.name) else {
             Log("TagInteractor: Error while preparing encrypted tag name for tag creation", module: .interactor, severity: .error)
             return
         }
-        mainRepository.createTag(data)
+        mainRepository.createTag(
+            ItemTagData(
+                tagID: data.id,
+                vaultID: selectedVault.vaultID,
+                name: data.name,
+                color: data.color,
+                position: data.position,
+                modificationDate: data.modificationDate
+            )
+        )
         mainRepository.createEncryptedTag(
             ItemTagEncryptedData(
                 tagID: data.id,
-                vaultID: data.vaultID,
+                vaultID: selectedVault.vaultID,
                 name: nameEnc,
                 color: data.color?.hexString,
                 position: data.position,
@@ -93,11 +106,24 @@ extension TagInteractor: TagInteracting {
     }
     
     func updateTag(data: ItemTagData) {
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("TagInteractor: Update tag. No vault", module: .interactor, severity: .error)
+            return
+        }
         guard let nameEnc = encryptName(data.name) else {
             Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
             return
         }
-        mainRepository.updateTag(data)
+        mainRepository.updateTag(
+            ItemTagData(
+                tagID: data.id,
+                vaultID: selectedVault.vaultID,
+                name: data.name,
+                color: data.color,
+                position: data.position,
+                modificationDate: data.modificationDate
+            )
+        )
         mainRepository.updateEncryptedTag(
             ItemTagEncryptedData(
                 tagID: data.id,
@@ -118,22 +144,19 @@ extension TagInteractor: TagInteracting {
         
         let currentDate = mainRepository.currentDate
         
-        for password in mainRepository.listPasswords(options: .all) {
-            if let tagIds = password.tagIds, tagIds.contains(tagID) {
+        for item in mainRepository.listItems(options: .all) {
+            if let tagIds = item.tagIds, tagIds.contains(tagID) {
                 let updatedTagIds = tagIds.filter { $0 != tagID }
-                
-                mainRepository.updatePassword(
-                    passwordID: password.passwordID,
-                    name: password.name,
-                    username: password.username,
-                    password: password.password,
-                    notes: password.notes,
-                    modificationDate: currentDate,
-                    iconType: password.iconType,
-                    trashedStatus: password.trashedStatus,
-                    protectionLevel: password.protectionLevel,
-                    uris: password.uris,
-                    tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds
+ 
+                mainRepository.updateMetadataItem(
+                    itemID: item.id,
+                    modificationDate: item.modificationDate,
+                    trashedStatus: item.trashedStatus,
+                    protectionLevel: item.protectionLevel,
+                    tagIds: updatedTagIds.isEmpty ? nil : updatedTagIds,
+                    name: item.name,
+                    contentType: item.contentType,
+                    contentVersion: item.contentVersion
                 )
             }
         }

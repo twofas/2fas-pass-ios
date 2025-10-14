@@ -12,50 +12,57 @@ public protocol InMemoryStorageDataSource: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     func loadStore(completion: @escaping LoadStoreCallback)
     
-    // MARK: - Passwords
+    // MARK: - Items
     
-    func createPassword(
-        passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+    func createItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
-    )
-    
-    func updatePassword(
-        passwordID: PasswordID,
+        tagIds: [ItemTagID]?,
         name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    )
+
+    func updateMetadataItem(
+        itemID: ItemID,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int
     )
     
-    func batchUpdateRencryptedPasswords(_ passwords: [PasswordData], date: Date)
+    func updateItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    )
     
-    func getPasswordEntity(
-        passwordID: PasswordID,
+    func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date)
+    
+    func getItemEntity(
+        itemID: ItemID,
         checkInTrash: Bool
-    ) -> PasswordData?
+    ) -> ItemData?
     
-    func listPasswords(
-        options: PasswordListOptions
-    ) -> [PasswordData]
+    func listItems(
+        options: ItemsListOptions
+    ) -> [ItemData]
     
-    func deletePassword(passwordID: PasswordID)
-    func deleteAllPasswordEntities()
+    func deleteItem(itemID: ItemID)
+    func deleteAllItemEntities()
     
     // MARK: - Tags
     
@@ -89,6 +96,78 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func deleteTag(tagID: ItemTagID)
     func deleteAllTagEntities()
+    
+    // MARK: - Login Items
+    
+    func createLoginItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    )
+    
+    func updateLoginItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    )
+    
+    func getLoginItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> LoginItemData?
+    
+    func listLoginItems(
+        options: ItemsListOptions
+    ) -> [LoginItemData]
+    
+    // MARK: - Secure Note Items
+    
+    func createSecureNoteItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    )
+    
+    func updateSecureNoteItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    )
+    
+    func getSecureNoteItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> SecureNoteItemData?
+    
+    func listSecureNoteItems(
+        options: ItemsListOptions
+    ) -> [SecureNoteItemData]
     
     // MARK: - Other
     

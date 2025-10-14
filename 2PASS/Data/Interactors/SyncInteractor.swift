@@ -8,13 +8,13 @@ import Foundation
 import Common
 
 public protocol SyncInteracting: AnyObject {
-    func syncAndApplyChanges(from external: [PasswordData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData])
+    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData])
 }
 
 final class SyncInteractor {
-    private var addedPasswords: [PasswordData] = []
-    private var modifiedPasswords: [PasswordData] = []
-    private var deletedPasswords: [PasswordData] = [] // moved to trash
+    private var addedItems: [ItemData] = []
+    private var modifiedItems: [ItemData] = []
+    private var deletedItems: [ItemData] = [] // moved to trash
     
     private var addedTags: [ItemTagData] = []
     private var modifiedTags: [ItemTagData] = []
@@ -24,21 +24,21 @@ final class SyncInteractor {
     private var modifiedDeleted: [DeletedItemData] = []
     private var removedDeleted: [DeletedItemData] = []
     
-    private let passwordInteractor: PasswordInteracting
-    private let passwordImportInteractor: PasswordImportInteracting
+    private let itemsInteractor: ItemsInteracting
+    private let itemsImportInteractor: ItemsImportInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let tagInteractor: TagInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     
     init(
-        passwordInteractor: PasswordInteracting,
-        passwordImportInteractor: PasswordImportInteracting,
+        itemsInteractor: ItemsInteracting,
+        itemsImportInteractor: ItemsImportInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         tagInteractor: TagInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     ) {
-        self.passwordInteractor = passwordInteractor
-        self.passwordImportInteractor = passwordImportInteractor
+        self.itemsInteractor = itemsInteractor
+        self.itemsImportInteractor = itemsImportInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
         self.tagInteractor = tagInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
@@ -46,48 +46,23 @@ final class SyncInteractor {
 }
 
 extension SyncInteractor: SyncInteracting {
-    func syncAndApplyChanges(from external: [PasswordData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
-        let local = passwordInteractor.listAllPasswords()
+    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
+        let local = itemsInteractor.listAllItems()
         let localTags = tagInteractor.listAllTags()
         let localDeleted = deletedItemsInteractor.listDeletedItems()
         
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
         
-        addedPasswords.forEach { pass in
-            _ = passwordInteractor.createPassword(
-                passwordID: pass.passwordID,
-                name: pass.name,
-                username: pass.username,
-                password: decrypt(pass.password, protectionLevel: pass.protectionLevel),
-                notes: pass.notes?.sanitizeNotes(),
-                creationDate: pass.creationDate,
-                modificationDate: pass.modificationDate,
-                iconType: pass.iconType,
-                trashedStatus: pass.trashedStatus,
-                protectionLevel: pass.protectionLevel,
-                uris: pass.uris,
-                tagIds: pass.tagIds
-            )
+        addedItems.forEach { item in
+            try? itemsInteractor.createItem(item)
         }
         
-        modifiedPasswords.forEach { pass in
-            _ = passwordInteractor.updatePassword(
-                for: pass.passwordID,
-                name: pass.name,
-                username: pass.username,
-                password: decrypt(pass.password, protectionLevel: pass.protectionLevel),
-                notes: pass.notes?.sanitizeNotes(),
-                modificationDate: pass.modificationDate,
-                iconType: pass.iconType,
-                trashedStatus: pass.trashedStatus,
-                protectionLevel: pass.protectionLevel,
-                uris: pass.uris,
-                tagIds: pass.tagIds
-            )
+        modifiedItems.forEach { item in
+            try? itemsInteractor.updateItem(item)
         }
         
-        deletedPasswords.forEach { pass in
-            passwordInteractor.externalMarkAsTrashed(for: pass.passwordID)
+        deletedItems.forEach { item in
+            itemsInteractor.externalMarkAsTrashed(for: item.id)
         }
         
         addedTags.forEach({
@@ -114,11 +89,11 @@ extension SyncInteractor: SyncInteracting {
             deletedItemsInteractor.deleteDeletedItem(id: deleted.itemID)
         }
         
-        Log("SyncInteractor:\nadded: \(addedPasswords.count)\nmodified: \(modifiedPasswords.count)\ntrashed: \(deletedPasswords.count)\nadded deletitions: \(addedDeleted.count)\nremoved deletitions: \(removedDeleted.count)")
+        Log("SyncInteractor:\nadded: \(addedItems.count)\nmodified: \(modifiedItems.count)\ntrashed: \(deletedItems.count)\nadded deletitions: \(addedDeleted.count)\nremoved deletitions: \(removedDeleted.count)")
         
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
         
-        if addedPasswords.isEmpty == false || modifiedPasswords.isEmpty == false || deletedPasswords.isEmpty == false {
+        if addedItems.isEmpty == false || modifiedItems.isEmpty == false || deletedItems.isEmpty == false {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                 try await autoFillCredentialsInteractor.syncSuggestions()
             }
@@ -129,36 +104,36 @@ extension SyncInteractor: SyncInteracting {
     
     @discardableResult
     func sync(
-        local: [PasswordData],
-        external: [PasswordData],
+        local: [ItemData],
+        external: [ItemData],
         localTags: [ItemTagData],
         externalTags: [ItemTagData],
         localDeleted: [DeletedItemData],
         externalDeleted: [DeletedItemData]
-    ) -> (passwords: [PasswordData], tags: [ItemTagData], deleted: [DeletedItemData]) {
+    ) -> (items: [ItemData], tags: [ItemTagData], deleted: [DeletedItemData]) {
         clearChangeList()
         
-        let mergedPasswords = mergePasswords(local: local, external: external)
+        let mergedItems = mergeItems(local: local, external: external)
         let mergedTags = mergeTags(local: localTags, external: externalTags)
         let mergedDeleted = mergeDeleted(localDeleted: localDeleted, externalDeleted: externalDeleted)
-        let (passwords, tags, deleted) = mergePasswordsAndDeleted(mergedPasswords, tags: mergedTags, deleted: mergedDeleted)
+        let (items, tags, deleted) = mergeItemsAndDeleted(mergedItems, tags: mergedTags, deleted: mergedDeleted)
         
-        return (passwords: passwords, tags: tags, deleted: deleted)
+        return (items: items, tags: tags, deleted: deleted)
     }
 }
 
 private extension SyncInteractor {
-    func mergePasswords(local: [PasswordData], external: [PasswordData]) -> [PasswordData] {
+    func mergeItems(local: [ItemData], external: [ItemData]) -> [ItemData] {
         var result = local
-        for pass in external {
-            if let index = result.firstIndex(where: { $0.passwordID == pass.passwordID }), let localPass = result[safe: index] {
-                if pass != localPass && pass.modificationDate > localPass.modificationDate {
-                    result[index] = pass
-                    modifiedPasswords.append(pass)
+        for item in external {
+            if let index = result.firstIndex(where: { $0.id == item.id }), let localPass = result[safe: index] {
+                if item != localPass && item.modificationDate > localPass.modificationDate {
+                    result[index] = item
+                    modifiedItems.append(item)
                 }
             } else {
-                result.append(pass)
-                addedPasswords.append(pass)
+                result.append(item)
+                addedItems.append(item)
             }
         }
         
@@ -211,19 +186,19 @@ private extension SyncInteractor {
         return all
     }
     
-    func mergePasswordsAndDeleted(_ passwords: [PasswordData], tags: [ItemTagData], deleted: [DeletedItemData]) -> ([PasswordData], [ItemTagData], [DeletedItemData]) {
-        var passwords = passwords
+    func mergeItemsAndDeleted(_ items: [ItemData], tags: [ItemTagData], deleted: [DeletedItemData]) -> ([ItemData], [ItemTagData], [DeletedItemData]) {
+        var items = items
         var tags = tags
         var deletedResult: [DeletedItemData] = []
         
         for del in deleted {
-            if let index = passwords.firstIndex(where: { $0.passwordID == del.itemID && !$0.isTrashed }), let pass = passwords[safe: index] {
-                if pass.modificationDate < del.deletedAt {
-                    passwords.remove(at: index)
+            if let index = items.firstIndex(where: { $0.id == del.itemID && !$0.isTrashed }), let item = items[safe: index] {
+                if item.modificationDate < del.deletedAt {
+                    items.remove(at: index)
                     deletedResult.append(del)
                     
-                    addedPasswords.removeAll(where: { $0.id == pass.passwordID })
-                    deletedPasswords.append(pass)
+                    addedItems.removeAll(where: { $0.id == item.id })
+                    deletedItems.append(item)
                 } else {
                     removedDeleted.append(del)
                 }
@@ -248,13 +223,13 @@ private extension SyncInteractor {
         addedDeleted = Array(added.subtracting(common))
         removedDeleted = Array(removed.subtracting(common))
         
-        return (passwords, tags, deletedResult)
+        return (items, tags, deletedResult)
     }
     
     func clearChangeList() {
-        addedPasswords = []
-        modifiedPasswords = []
-        deletedPasswords = []
+        addedItems = []
+        modifiedItems = []
+        deletedItems = []
         
         addedTags = []
         modifiedTags = []
@@ -267,6 +242,6 @@ private extension SyncInteractor {
     
     func decrypt(_ data: Data?, protectionLevel: ItemProtectionLevel) -> String? {
         guard let data else { return nil }
-        return passwordInteractor.decrypt(data, isPassword: true, protectionLevel: protectionLevel)
+        return itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
     }
 }

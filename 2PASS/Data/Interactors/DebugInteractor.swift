@@ -60,10 +60,16 @@ public protocol DebugInteracting: AnyObject {
     func clearAllLogs()
     func generateLogs() -> String
     
-    // MARK: - Passwords
-    var passwordCount: Int { get }
-    func deleteAllPasswords()
-    func generatePasswords(count: Int, completion: @escaping Callback)
+    // MARK: - Items
+    var itemsCount: Int { get }
+    func deleteAllItems()
+    func generateItems(count: Int, completion: @escaping Callback)
+
+    var secureNotesCount: Int { get }
+    func generateSecureNotes(count: Int, completion: @escaping Callback)
+
+    var unknownCount: Int { get }
+    func generateUnknown(count: Int, completion: @escaping Callback)
     
     // MARK: - WebDAV debug
     var writeDecryptedCopy: Bool { get }
@@ -78,11 +84,15 @@ public protocol DebugInteracting: AnyObject {
 
 final class DebugInteractor {
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
-    
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting) {
+    private let itemsInteractor: ItemsInteracting
+    private let loginItemInteractor: LoginItemInteracting
+    private let secureNoteItemInteractor: SecureNoteItemInteracting
+
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, loginItemInteractor: LoginItemInteracting, secureNoteItemInteractor: SecureNoteItemInteracting) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
+        self.loginItemInteractor = loginItemInteractor
+        self.secureNoteItemInteractor = secureNoteItemInteractor
     }
 }
 
@@ -302,21 +312,38 @@ extension DebugInteractor: DebugInteracting {
         return output + logs
     }
     
-    // MARK: - Passwords
+    // MARK: - Items
     
-    var passwordCount: Int {
-        mainRepository.listPasswords(options: .allNotTrashed).count
+    var itemsCount: Int {
+        mainRepository.listItems(options: .allNotTrashed).count
     }
     
-    func deleteAllPasswords() {
-        mainRepository.deleteAllPasswords()
+    var secureNotesCount: Int {
+        mainRepository.listItems(options: .allNotTrashed)
+            .filter { $0.contentType == .secureNote }
+            .count
+    }
+
+    var unknownCount: Int {
+        mainRepository.listItems(options: .allNotTrashed)
+            .filter {
+                if case .unknown = $0.contentType {
+                    return true
+                }
+                return false
+            }
+            .count
+    }
+    
+    func deleteAllItems() {
+        mainRepository.deleteAllItems()
         mainRepository.deleteAllEncryptedItems()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
         mainRepository.webDAVSetHasLocalChanges()
     }
     
-    func generatePasswords(count: Int, completion: @escaping Callback) {
+    func generateItems(count: Int, completion: @escaping Callback) {
         guard let words = mainRepository.importBIP0039Words() else {
             completion()
             return
@@ -328,30 +355,104 @@ extension DebugInteractor: DebugInteracting {
             let password = words.randomElement() ?? "SomePass123\(i)"
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
-            _ = passwordInteractor.createPassword(
-                passwordID: .init(),
+            try? loginItemInteractor.createLogin(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: [ItemProtectionLevel.confirm,
+                                      ItemProtectionLevel.normal,
+                                      ItemProtectionLevel.topSecret].randomElement() ?? .normal,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
                 name: name,
                 username: username,
                 password: password,
                 notes: notes,
-                creationDate: date,
-                modificationDate: date,
                 iconType: .default,
-                trashedStatus: .no,
-                protectionLevel: [ItemProtectionLevel.confirm,
-                ItemProtectionLevel.normal,
-                ItemProtectionLevel.topSecret].randomElement() ?? .normal,
                 uris: [.init(uri: username,
                 match: .domain),
                 .init(uri: name,
                 match: .exact),
                 .init(uri: password,
                 match: .startsWith)],
-                tagIds: nil
             )
         }
 
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
+        mainRepository.webDAVSetHasLocalChanges()
+        completion()
+    }
+    
+    func generateSecureNotes(count: Int, completion: @escaping Callback) {
+        guard let words = mainRepository.importBIP0039Words() else {
+            completion()
+            return
+        }
+
+        for i in 0..<count {
+            let name = words.randomElement() ?? "Note\(i)"
+            let text = Array(repeating: "", count: Int.random(in: 10..<150)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
+            let date = randomDate()
+            try? secureNoteItemInteractor.createSecureNote(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: [ItemProtectionLevel.confirm,
+                                      ItemProtectionLevel.normal,
+                                      ItemProtectionLevel.topSecret].randomElement() ?? .normal,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
+                name: name,
+                text: text
+            )
+        }
+
+        itemsInteractor.saveStorage()
+        mainRepository.webDAVSetHasLocalChanges()
+        completion()
+    }
+
+    func generateUnknown(count: Int, completion: @escaping Callback) {
+        guard let words = mainRepository.importBIP0039Words() else {
+            completion()
+            return
+        }
+
+        for i in 0..<count {
+            let protectionLevel = [ItemProtectionLevel.confirm,
+                                   ItemProtectionLevel.normal,
+                                   ItemProtectionLevel.topSecret].randomElement() ?? .normal
+            let name = words.randomElement() ?? "Unknown\(i)"
+            let contentDict: [String: Any] = [
+                "field1": words.randomElement() ?? "value1",
+                "s_field2": itemsInteractor.encrypt(words.randomElement() ?? "value2", isSecureField: true, protectionLevel: protectionLevel)!.base64EncodedString()
+            ]
+            
+            guard let contentData = try? JSONEncoder().encode(AnyCodable(contentDict)) else { continue }
+            
+            let date = randomDate()
+            let rawItem = RawItemData(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: protectionLevel,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
+                name: name,
+                contentType: .unknown("customType"),
+                contentVersion: 1,
+                content: contentData
+            )
+            try? itemsInteractor.createItem(.raw(rawItem))
+        }
+
+        itemsInteractor.saveStorage()
         mainRepository.webDAVSetHasLocalChanges()
         completion()
     }

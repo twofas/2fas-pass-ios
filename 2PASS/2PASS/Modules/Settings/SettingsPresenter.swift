@@ -125,7 +125,7 @@ extension SettingsPresenter {
         destination = .importExport
     }
     
-    func onTransferPasswords() {
+    func onTransferItems() {
         destination = .transferItems
     }
     

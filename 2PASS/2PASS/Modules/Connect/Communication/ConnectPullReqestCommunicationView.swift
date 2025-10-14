@@ -113,7 +113,7 @@ struct ConnectPullReqestCommunicationView: View {
         .frame(maxWidth: .infinity)
     }
     
-    private func passwordRequestView(item: PasswordData) -> some View {
+    private func passwordRequestView(item: LoginItemData) -> some View {
         ConnectPullReqestContentView(
             title: Text(T.requestModalPasswordRequestTitle.localizedKey),
             description: Text(T.requestModalPasswordRequestSubtitle.localizedKey),
@@ -161,7 +161,7 @@ struct ConnectPullReqestCommunicationView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
     
-    private func updatePasswordView(item: PasswordData) -> some View {
+    private func updatePasswordView(item: LoginItemData) -> some View {
         ConnectPullReqestContentView(
             title: Text(T.requestModalUpdateItemTitle.localizedKey),
             description: Text(T.requestModalUpdateItemSubtitle.localizedKey),
@@ -185,7 +185,7 @@ struct ConnectPullReqestCommunicationView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
     
-    private func deletePasswordView(item: PasswordData) -> some View {
+    private func deletePasswordView(item: LoginItemData) -> some View {
         ConnectPullReqestContentView(
             title: Text(T.requestModalRemoveItemTitle.localizedKey),
             description: Text(T.requestModalRemoveItemSubtitle.localizedKey),

@@ -9,29 +9,29 @@ import Data
 import Common
 
 protocol ViewPasswordModuleInteracting: AnyObject {
-    func fetchPassword(for passwordID: PasswordID) -> PasswordData?
+    func fetchPassword(for itemID: ItemID) -> LoginItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
-    func decryptPassword(for passwordID: PasswordID) -> String?
+    func decryptPassword(for itemID: ItemID) -> String?
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
 }
 
 final class ViewPasswordModuleInteractor {
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let systemInteractor: SystemInteracting
     private let fileIconInteractor: FileIconInteracting
     private let uriInteractor: URIInteracting
     private let tagInteractor: TagInteracting
     
     init(
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         systemInteractor: SystemInteracting,
         fileIconInteractor: FileIconInteracting,
         uriInteractor: URIInteracting,
         tagInteractor: TagInteracting
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.systemInteractor = systemInteractor
         self.fileIconInteractor = fileIconInteractor
         self.uriInteractor = uriInteractor
@@ -40,12 +40,12 @@ final class ViewPasswordModuleInteractor {
 }
 
 extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
-    func fetchPassword(for passwordID: PasswordID) -> PasswordData? {
-        passwordInteractor.getPassword(for: passwordID, checkInTrash: false)
+    func fetchPassword(for itemID: ItemID) -> LoginItemData? {
+        itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem
     }
     
-    func decryptPassword(for passwordID: PasswordID) -> String? {
-        switch passwordInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false) {
+    func decryptPassword(for itemID: ItemID) -> String? {
+        switch itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false) {
         case .success(let password): return password
         case .failure: return nil
         }

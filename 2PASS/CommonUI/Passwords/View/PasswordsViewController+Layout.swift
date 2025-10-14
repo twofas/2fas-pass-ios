@@ -57,8 +57,8 @@ extension PasswordsViewController {
             cell?.updateIcon(wirh: cachedData)
         }
 
-        cell?.menuAction = { [weak self] action, passwordID, selectedURI in
-            self?.presenter.onCellMenuAction(action, passwordID: passwordID, selectedURI: selectedURI)
+        cell?.menuAction = { [weak self] action, itemID, selectedURI in
+            self?.presenter.onCellMenuAction(action, itemID: itemID, selectedURI: selectedURI)
         }
         return cell
     }
