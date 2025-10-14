@@ -194,3 +194,37 @@ public extension ItemDataType {
     }
 }
 
+extension _ItemData {
+
+    public func update(creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
+        _ItemData(
+            id: id,
+            metadata: ItemMetadata(
+                creationDate: creationDate ?? metadata.creationDate,
+                modificationDate: modificationDate ?? metadata.modificationDate,
+                protectionLevel: metadata.protectionLevel,
+                trashedStatus: metadata.trashedStatus,
+                tagIds: metadata.tagIds
+            ),
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
+        )
+    }
+}
+
+extension ItemData {
+
+    public func update(creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
+        switch self {
+        case .login(let data):
+            return .login(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        case .secureNote(let data):
+            return .secureNote(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        case .raw(let data):
+            return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        }
+    }
+}
+
