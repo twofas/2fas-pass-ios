@@ -50,20 +50,6 @@ extension SettingsNavigationFlowController {
     }
 }
 
-extension SettingsNavigationFlowController: EnterWordsFlowControllerParent {
-    func enterWordsToEnterMasterPassword(with entropy: Entropy, fileData: ExchangeVault) {}
-    
-    func enterWordsToDecrypt(with masterKey: MasterKey, entropy: Entropy, fileData: ExchangeVault) {}
-    
-    func enterWordsToEnterMasterPassword() {
-        // not used in this context
-    }
-    
-    func enterWordsClose() {
-        goBackToBackup()
-    }
-}
-
 private extension SettingsNavigationFlowController {
     func goBackToBackup() {
         guard let backupVC = navigationController.viewControllers[safe: 1] else {

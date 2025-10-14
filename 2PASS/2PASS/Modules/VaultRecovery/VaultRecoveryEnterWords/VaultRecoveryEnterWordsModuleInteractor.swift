@@ -55,6 +55,8 @@ extension VaultRecoveryEnterWordsModuleInteractor: VaultRecoveryEnterWordsModule
             return importInteractor.validateWords(words, using: externalSeedHash, vaultID: vaultID)
         case .cloud(let vaultRawData):
             return importInteractor.validateWords(words, using: vaultRawData.seedHash, vaultID: vaultRawData.vaultID)
+        case .localVault:
+            return true
         }
     }
 }

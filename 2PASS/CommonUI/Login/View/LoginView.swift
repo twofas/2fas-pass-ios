@@ -8,11 +8,6 @@ import SwiftUI
 
 private struct Constants {
     static let appLockInfoHeight = 28.0
-    static let hideSplashAnimationDuration = 0.45
-    static let hideSplashAnimationDelay = 0.2
-    static let showPasswordViewAnimationDuration = 0.3
-    static let showPasswordViewAnimationDelay = 0.4
-    static let openKeyboardDelay = Duration.milliseconds(100)
     static let passwordInputCornerRadius = 10.0
     static let passwordInputHeight = 44.0
     static let appLockTooltipAnimationDuration = 0.2
@@ -36,12 +31,6 @@ public struct LoginView: View {
     @Environment(\.dismiss)
     private var dismiss
     
-    @State
-    private var hideSplashScreen: Bool = false
-    
-    @State
-    private var isEnterPasswordVisible: Bool = false
-    
     @Namespace
     private var namespace
     
@@ -53,45 +42,46 @@ public struct LoginView: View {
     
     @ViewBuilder
     public var body: some View {
-        NavigationStack {
-            ZStack {
-                if presenter.showSplashScreen, hideSplashScreen == false {
-                    splashView
-                } else {
-                    enterPasswordView
+        ZStack {
+            if presenter.showSplashScreen {
+                splashView
+            } else {
+                enterPasswordView
+            }
+        }
+        .background(Asset.mainBackgroundColor.swiftUIColor)
+        .toolbar(.visible, for: .navigationBar)
+        .onAppear {
+            presenter.onAppear()
+        }
+        .readableContentMargins()
+        .navigationDestination(isPresented: $presenter.showMigrationFailed) {
+            ResultView(kind: .failure, title: Text(T.migrationErrorTitle.localizedKey)) {
+                Button(T.commonClose) {
+                    presenter.onMigrationFailedClose()
                 }
             }
-            .background(Asset.mainBackgroundColor.swiftUIColor)
-            .toolbar(.visible, for: .navigationBar)
-            .onAppear {
-                presenter.hideKeyboard = {
-                    focusedField = nil
-                }
-                
-                presenter.onAppear()
-                
-                if presenter.showSplashScreen == false {
-                    hideSplashScreen = true
-                    isEnterPasswordVisible = true
-                    showEnterPasswordView()
-                }
+        }
+        .onAppear {
+            if presenter.showKeyboard {
+                focusedField = .login
             }
-            .onChange(of: presenter.biometryFailed) { oldValue, newValue in
-                if newValue {
-                    showEnterPasswordView()
-                }
+        }
+        .onAppear {
+            if presenter.showKeyboard {
+                focusedField = .login
             }
-            .readableContentMargins()
-            .navigationDestination(isPresented: $presenter.showMigrationFailed) {
-                ResultView(kind: .failure, title: Text(T.migrationErrorTitle.localizedKey)) {
-                    Button(T.commonClose) {
-                        presenter.onMigrationFailedClose()
-                    }
-                }
+        }
+        .onChange(of: presenter.showKeyboard) { _, newValue in
+            if newValue {
+                focusedField = .login
+            } else {
+                focusedField = nil
             }
         }
     }
     
+    @ViewBuilder
     private var splashView: some View {
         Color.clear
             .overlay {
@@ -101,15 +91,9 @@ public struct LoginView: View {
                     .zIndex(1)
             }
             .ignoresSafeArea()
-            .onAppear {
-                guard presenter.isBiometryAvailable == false else { return }
-                
-                Task {
-                    showEnterPasswordView()
-                }
-            }
     }
     
+    @ViewBuilder
     private var enterPasswordView: some View {
         VStack(spacing: 0) {
             Image(.smallShield)
@@ -167,7 +151,7 @@ public struct LoginView: View {
                 .animation(.easeInOut(duration: Constants.appLockTooltipAnimationDuration), value: presenter.isAppLocked)
             }
             .disabled(presenter.screenDisabled)
-            .opacity(isEnterPasswordVisible ? 1 : 0)
+            .opacity(presenter.isEnterPasswordVisible ? 1 : 0)
             .padding(Spacing.xl)
             .alert(T.lockScreenResetAppTitle, isPresented: $showResetApp) {
                 Button(role: .destructive) {
@@ -204,6 +188,7 @@ public struct LoginView: View {
             .padding(.bottom, 50)
     }
     
+    @ViewBuilder
     private var passwordInput: some View {
         PasswordInput(label: T.masterPasswordLabel.localizedKey, password: $presenter.loginInput)
             .focused($focusedField, equals: .login)
@@ -225,6 +210,7 @@ public struct LoginView: View {
             .shakeAnimation(trigger: presenter.inputError)
     }
     
+    @ViewBuilder
     private var errorDescription: some View {
         ZStack {
             if presenter.errorDescription.isEmpty == false {
@@ -245,6 +231,7 @@ public struct LoginView: View {
         .frame(minHeight: Spacing.xl)
     }
     
+    @ViewBuilder
     private var biometryButton: some View {
         Button {
             focusedField = nil
@@ -261,32 +248,6 @@ public struct LoginView: View {
         }
         .buttonStyle(.bezeledGray(fillSpace: false))
         .controlSize(.small)
-    }
-    
-    private func showEnterPasswordView() {
-        if hideSplashScreen {
-            withAnimation(.easeInOut(duration: Constants.showPasswordViewAnimationDuration)) {
-                isEnterPasswordVisible = true
-            } completion: {
-                Task {
-                    try await Task.sleep(for: Constants.openKeyboardDelay)
-                    focusedField = .login
-                }
-            }
-        } else {
-            withAnimation(.smooth(duration: Constants.hideSplashAnimationDuration).delay(Constants.hideSplashAnimationDelay)) {
-                hideSplashScreen = true
-            }
-            
-            withAnimation(.easeInOut(duration: Constants.showPasswordViewAnimationDuration).delay(Constants.showPasswordViewAnimationDelay)) {
-                isEnterPasswordVisible = true
-            } completion: {
-                Task {
-                    try await Task.sleep(for: Constants.openKeyboardDelay)
-                    focusedField = .login
-                }
-            }
-        }
     }
     
     private var welcomeText: Text {

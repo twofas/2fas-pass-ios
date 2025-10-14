@@ -23,6 +23,7 @@ public extension ExternalService {
         case .firefox: "Firefox"
         case .keePassXC: "KeePassXC"
         case .keePass: "KeePass"
+        case .microsoftEdge: "Microsoft Edge"
         }
     }
     
@@ -40,6 +41,7 @@ public extension ExternalService {
         case .firefox: UTType.commaSeparatedText
         case .keePassXC: UTType.commaSeparatedText
         case .keePass: UTType.commaSeparatedText
+        case .microsoftEdge: UTType.commaSeparatedText
         }
     }
 }

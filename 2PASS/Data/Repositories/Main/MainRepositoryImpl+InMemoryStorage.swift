@@ -165,9 +165,13 @@ extension MainRepositoryImpl {
     }
     
     func createInMemoryStorage() {
-        inMemoryStorage = InMemoryStorageDataSourceImpl()
-        inMemoryStorage?.warmUp()
-        inMemoryStorage?.storageError = { [weak self] in self?.storageError?($0) }
+        let storage = InMemoryStorageDataSourceImpl()
+        storage.storageError = { [weak self] in self?.storageError?($0) }
+        storage.loadStore { [weak self] success in
+            guard success else { fatalError("Failed to load InMemory store") }
+            self?.inMemoryStorage = storage
+            self?.inMemoryStorage?.warmUp()
+        }
     }
     
     func destroyInMemoryStorage() {

@@ -20,6 +20,7 @@ extension ExternalService {
         case .firefox: .firefox
         case .keePass: .keePass
         case .keePassXC: .keePassXC
+        case .microsoftEdge: .microsoftEdge
         }
     }
 }

@@ -9,7 +9,7 @@ import CoreData
 import Common
 
 public protocol EncryptedStorageDataSource: AnyObject {
-    func loadStore()
+    func loadStore(completion: @escaping LoadStoreCallback)
     var migrationRequired: Bool { get }
     
     var storageError: ((String) -> Void)? { get set }

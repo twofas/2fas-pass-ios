@@ -17,4 +17,5 @@ public enum ExternalService: CaseIterable, Equatable {
     case firefox
     case keePass
     case keePassXC
+    case microsoftEdge
 }

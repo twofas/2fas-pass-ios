@@ -37,6 +37,8 @@ extension MainRepositoryImpl {
     
     func disableBiometry() {
         clearMasterKey()
+        clearBiometryKey()
+        clearBiometryFingerpring()
         clearIncorrectBiometryCountAttempt()
     }
     

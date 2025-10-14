@@ -12,8 +12,11 @@ public final class LoginViewController: UIViewController {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-                
-        let vc = UIHostingController(rootView: LoginView(presenter: presenter))
+         
+        let view = NavigationStack {
+            LoginView(presenter: presenter)
+        }
+        let vc = UIHostingController(rootView: view)
         placeChild(vc)
     }
 }

@@ -12,29 +12,41 @@ struct AutoFillRootView: View {
     @Bindable var presenter: AutoFillRootPresenter
     
     var body: some View {
-        switch presenter.startupResult {
-        case .enterPassword, .enterWords, .selectVault:
-            noVaultView
-        case .login:
-            if presenter.isLogged {
-                AutoFillPasswordsListView(
-                    context: presenter.extensionContext,
-                    serviceIdentifiers: presenter.serviceIdentifiers,
-                    isTextToInsert: presenter.isTextToInsert
-                )
-                .ignoresSafeArea()
-            } else {
-                NavigationStack {
-                    LoginView(presenter: presenter.loginPresenter)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                ToolbarCancelButton {
-                                    presenter.onCancel()
-                                }
+        switch presenter.startupState {
+        case nil:
+            NavigationStack {
+                SplashScreenView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("common_cancel") {
+                                presenter.onCancel()
                             }
                         }
-                }
+                    }
             }
+            
+        case .enterPassword, .enterWords, .selectVault:
+            noVaultView
+            
+        case .login:
+            NavigationStack {
+                LoginView(presenter: presenter.loginPresenter)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            ToolbarCancelButton {
+                                presenter.onCancel()
+                            }
+                        }
+                    }
+            }
+
+        case .main:
+            AutoFillPasswordsListView(
+                context: presenter.extensionContext,
+                serviceIdentifiers: presenter.serviceIdentifiers,
+                isTextToInsert: presenter.isTextToInsert
+            )
+            .ignoresSafeArea()
         }
     }
     

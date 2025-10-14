@@ -37,8 +37,8 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         coreDataStack.migrationRequired
     }
     
-    public func loadStore() {
-        coreDataStack.loadStore()
+    public func loadStore(completion: @escaping LoadStoreCallback) {
+        coreDataStack.loadStore(completion: completion)
     }
     
     // MARK: Encrypted Passwords

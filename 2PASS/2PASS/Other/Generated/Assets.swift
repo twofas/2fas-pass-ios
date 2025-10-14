@@ -84,6 +84,7 @@ internal enum Asset {
   internal static let linkedinIcon = ImageAsset(name: "linkedin.icon")
   internal static let lockFileHeaderIcon = ImageAsset(name: "lock.file.header.icon")
   internal static let manualInputIcon = ImageAsset(name: "manual.input.icon")
+  internal static let microsoftedgeIcon = ImageAsset(name: "microsoftedge.icon")
   internal static let protonIcon = ImageAsset(name: "proton.icon")
   internal static let qrcodeCorner = ImageAsset(name: "qrcode.corner")
   internal static let quickSetupIcon = ImageAsset(name: "quick.setup.icon")

@@ -10,7 +10,9 @@ public protocol MigrationInteracting {
     func migrateIfNeeded()
     
     func requiresReencryptionMigration() -> Bool
-    func performReencryptionMigration()
+    
+    @MainActor
+    func loadStoreWithReencryptionMigration() async -> Bool
 }
 
 final class MigrationInteractor: MigrationInteracting {
@@ -25,10 +27,15 @@ final class MigrationInteractor: MigrationInteracting {
         mainRepository.requiresReencryptionMigration()
     }
     
-    func performReencryptionMigration() {
-        Log("Start migration with re-encryption", module: .migration, severity: .info)
-        mainRepository.loadEncryptedStoreWithReencryptionMigration()
-        Log("Finish migration with re-encryption", module: .migration, severity: .info)
+    @MainActor
+    func loadStoreWithReencryptionMigration() async -> Bool {
+        await withCheckedContinuation { continuation in
+            Log("Start migration with re-encryption", module: .migration, severity: .info)
+            mainRepository.loadEncryptedStoreWithReencryptionMigration { success in
+                Log("Finish migration with re-encryption", module: .migration, severity: .info)
+                continuation.resume(returning: success)
+            }
+        }
     }
     
     func migrateIfNeeded() {

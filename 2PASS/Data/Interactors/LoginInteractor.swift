@@ -205,7 +205,7 @@ extension LoginInteractor: LoginInteracting {
             completion(.invalidPassword)
             return
         }
-        guard let vault = mainRepository.listEncrypteVaults().first else {
+        guard let vault = mainRepository.listEncryptedVaults().first else {
             Log("LoginInteractor: Can't get Vault", module: .interactor, severity: .error)
             completion(.invalidPassword)
             return

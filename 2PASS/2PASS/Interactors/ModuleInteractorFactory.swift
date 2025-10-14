@@ -14,14 +14,13 @@ extension ModuleInteractorFactory {
     func rootModuleInteractor() -> RootModuleInteracting {
         RootModuleInteractor(
             rootInteractor: InteractorFactory.shared.rootInteractor(),
-            appStateInteractor: InteractorFactory.shared.appStateInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             securityInteractor: InteractorFactory.shared.securityInteractor(),
-            loginInteractor: InteractorFactory.shared.loginInteractor(),
             syncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
             paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
+            onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
             updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor()
         )
     }
@@ -77,14 +76,6 @@ extension ModuleInteractorFactory {
             translations: .default,
             pdfConfig: .default
         ))
-    }
-    
-    func enterWordsModuleInteractor() -> EnterWordsModuleInteracting {
-        EnterWordsModuleInteractor(
-            cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
-            startupInteractor: InteractorFactory.shared.startupInteractor(),
-            importInteractor: InteractorFactory.shared.importInteractor()
-        )
     }
     
     func eventLogModuleInteractor() -> EventLogModuleInteracting {
@@ -153,7 +144,8 @@ extension ModuleInteractorFactory {
         VaultRecoveryEnterPasswordModuleInteractor(
             entropy: entropy,
             recoveryData: recoveryData,
-            loginInteractor: InteractorFactory.shared.loginInteractor()
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            protectionInteractor: InteractorFactory.shared.protectionInteractor()
         )
     }
     
@@ -180,7 +172,8 @@ extension ModuleInteractorFactory {
             webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
-            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
+            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
         )
     }
     
