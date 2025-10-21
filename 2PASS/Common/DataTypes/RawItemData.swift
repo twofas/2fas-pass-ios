@@ -8,8 +8,9 @@ public typealias RawItemData = _ItemData<Data>
 
 extension RawItemData {
     
-    public init(id: ItemID, metadata: ItemMetadata, name: String?, contentType: ItemContentType, contentVersion: Int, content: Content) {
+    public init(id: ItemID, vaultId: VaultID, metadata: ItemMetadata, name: String?, contentType: ItemContentType, contentVersion: Int, content: Content) {
         self.id = id
+        self.vaultId = vaultId
         self.metadata = metadata
         self.name = name
         self.contentType = contentType
@@ -23,6 +24,7 @@ extension RawItemData {
             
             self = RawItemData(
                 id: item.id,
+                vaultId: item.vaultId,
                 metadata: item.metadata,
                 name: item.name,
                 contentType: item.contentType,
@@ -40,6 +42,7 @@ extension RawItemData {
     public func updateContent(_ contentData: Data, using newModificationDate: Date) -> RawItemData {
         .init(
             id: id,
+            vaultId: vaultId,
             metadata: .init(
                 creationDate: creationDate,
                 modificationDate: newModificationDate,

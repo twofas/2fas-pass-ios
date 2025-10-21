@@ -15,6 +15,7 @@ final class RawEntity: ItemMetadataEntity {
     override class func create(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -28,6 +29,7 @@ final class RawEntity: ItemMetadataEntity {
         createRaw(
             on: context,
             itemID: itemID,
+                vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -43,6 +45,7 @@ final class RawEntity: ItemMetadataEntity {
     @nonobjc override static func update(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -55,6 +58,7 @@ final class RawEntity: ItemMetadataEntity {
         updateRaw(
             on: context,
             for: itemID,
+                vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -69,6 +73,7 @@ final class RawEntity: ItemMetadataEntity {
     @nonobjc static func createRaw(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -82,6 +87,7 @@ final class RawEntity: ItemMetadataEntity {
         let entity = NSEntityDescription.insertNewObject(forEntityName: rawEntityName, into: context) as! RawEntity
         
         entity.itemID = itemID
+        entity.vaultID = vaultID
         entity.name = name
         entity.creationDate = creationDate
         entity.modificationDate = modificationDate
@@ -112,6 +118,7 @@ final class RawEntity: ItemMetadataEntity {
     @nonobjc static func updateRaw(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -129,6 +136,7 @@ final class RawEntity: ItemMetadataEntity {
         updateRaw(
             on: context,
             entity: entity,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -143,6 +151,7 @@ final class RawEntity: ItemMetadataEntity {
     @nonobjc static func updateRaw(
         on context: NSManagedObjectContext,
         entity: RawEntity,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -217,6 +226,7 @@ final class RawEntity: ItemMetadataEntity {
     override func toData() -> ItemData {
         return .raw(.init(
             id: itemID,
+            vaultId: vaultID,
             metadata: toMetadata(),
             name: name,
             contentType: .unknown(contentType),

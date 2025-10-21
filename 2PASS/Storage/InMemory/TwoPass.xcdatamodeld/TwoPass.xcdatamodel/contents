@@ -11,6 +11,7 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="tagIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="NSArray"/>
         <attribute name="trashingDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="vaultID" attributeType="UUID" usesScalarValueType="NO"/>
     </entity>
     <entity name="LoginEntity" representedClassName=".LoginEntity" parentEntity="ItemMetadataEntity" syncable="YES">
         <attribute name="iconColorHex" optional="YES" attributeType="String"/>

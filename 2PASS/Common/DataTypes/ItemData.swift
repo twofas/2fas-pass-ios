@@ -8,6 +8,7 @@ import Foundation
 
 public protocol ItemDataType: Hashable {
     var id: ItemID { get }
+    var vaultId: VaultID { get }
     var metadata: ItemMetadata { get }
     var name: String? { get }
     var contentType: ItemContentType { get }
@@ -44,6 +45,8 @@ public enum ItemContentType: Hashable {
     case secureNote
     case unknown(String)
     
+    public static let allKnownTypes: [ItemContentType] = [.login]
+    
     public var rawValue: String {
         switch self {
         case .login: "login"
@@ -68,6 +71,13 @@ public enum ItemContentType: Hashable {
     }
 }
 
+extension Array where Element == ItemContentType {
+    
+    public static var allKnownTypes: [ItemContentType] {
+        ItemContentType.allKnownTypes
+    }
+}
+
 public protocol ItemContent: Hashable, Codable {
     static var contentVersion: Int { get }
     static var contentType: ItemContentType { get }
@@ -86,6 +96,7 @@ public enum ItemData: ItemDataType {
     case raw(RawItemData)
     
     public var id: ItemID { base.id }
+    public var vaultId: VaultID { base.vaultId }
     public var metadata: ItemMetadata { base.metadata }
     public var name: String? { base.name }
     public var contentType: ItemContentType { base.contentType }
@@ -109,6 +120,7 @@ public enum ItemData: ItemDataType {
             case .login:
                 self = .login(.init(
                     id: rawData.id,
+                    vaultId: rawData.vaultId,
                     metadata: rawData.metadata,
                     name: rawData.name,
                     contentType: rawData.contentType,
@@ -118,6 +130,7 @@ public enum ItemData: ItemDataType {
             case .secureNote:
                 self = .secureNote(.init(
                     id: rawData.id,
+                    vaultId: rawData.vaultId,
                     metadata: rawData.metadata,
                     name: rawData.name,
                     contentType: rawData.contentType,
@@ -137,6 +150,7 @@ public struct _ItemData<Content>: ItemDataType where Content: Hashable, Content:
     public typealias Content = Content
     
     public let id: ItemID
+    public let vaultId: VaultID
     public let metadata: ItemMetadata
     public let name: String?
     public let contentType: ItemContentType
@@ -154,8 +168,9 @@ public struct _ItemData<Content>: ItemDataType where Content: Hashable, Content:
 
 extension _ItemData where Content: ItemContent {
     
-    public init(id: ItemID, metadata: ItemMetadata, name: String?, content: Content) {
+    public init(id: ItemID, vaultId: VaultID, metadata: ItemMetadata, name: String?, content: Content) {
         self.id = id
+        self.vaultId = vaultId
         self.metadata = metadata
         self.name = name
         self.contentType = Content.contentType
@@ -199,6 +214,7 @@ extension _ItemData {
     public func update(creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
         _ItemData(
             id: id,
+            vaultId: vaultId,
             metadata: ItemMetadata(
                 creationDate: creationDate ?? metadata.creationDate,
                 modificationDate: modificationDate ?? metadata.modificationDate,

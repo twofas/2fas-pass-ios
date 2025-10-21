@@ -48,11 +48,17 @@ public final class InteractorFactory {
     }
 
     public func secureNoteInteractor() -> SecureNoteItemInteracting {
-        SecureNoteItemInteractor(itemsInteractor: itemsInteractor())
+        SecureNoteItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
     }
 
     public func loginItemInteractor() -> LoginItemInteracting {
-        LoginItemInteractor(itemsInteractor: itemsInteractor())
+        LoginItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
     }
 
     public func systemInteractor() -> SystemInteracting {

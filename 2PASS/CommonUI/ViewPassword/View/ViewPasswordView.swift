@@ -159,6 +159,7 @@ private class ViewPasswordModulePreviewInteractor: ViewPasswordModuleInteracting
     func fetchPassword(for itemID: ItemID) -> LoginItemData? {
         LoginItemData(
             id: itemID,
+            vaultId: UUID(),
             metadata: .init(
                 creationDate: Date(),
                 modificationDate: Date(),

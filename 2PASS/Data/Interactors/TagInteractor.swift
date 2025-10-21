@@ -18,6 +18,7 @@ public protocol TagInteracting: AnyObject {
     func externalDeleteTag(tagID: ItemTagID)
     
     func listAllTags() -> [ItemTagData]
+    func listTags(for vaultID: VaultID) -> [ItemTagData]
     func getTag(for id: ItemTagID) -> ItemTagData?
     func getTags(by tagIDs: [ItemTagID]) -> [ItemTagData]
     func listTagWith(_ phrase: String) -> [ItemTagData]
@@ -193,7 +194,11 @@ extension TagInteractor: TagInteracting {
     func listAllTags() -> [ItemTagData] {
         mainRepository.listTags(options: .all)
     }
-    
+
+    func listTags(for vaultID: VaultID) -> [ItemTagData] {
+        mainRepository.listTags(options: .byVault(vaultID))
+    }
+
     func getTag(for id: ItemTagID) -> ItemTagData? {
         mainRepository.listTags(options: .tag(id)).first
     }

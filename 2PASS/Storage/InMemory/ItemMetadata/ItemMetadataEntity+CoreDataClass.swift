@@ -23,6 +23,7 @@ class ItemMetadataEntity: NSManagedObject {
     @nonobjc static func createItem(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -36,6 +37,7 @@ class ItemMetadataEntity: NSManagedObject {
         entity(for: contentType).create(
             on: context,
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -114,6 +116,7 @@ class ItemMetadataEntity: NSManagedObject {
     @nonobjc static func updateItem(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -126,6 +129,7 @@ class ItemMetadataEntity: NSManagedObject {
         entity(for: contentType).update(
             on: context,
             for: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -171,6 +175,7 @@ class ItemMetadataEntity: NSManagedObject {
     @nonobjc class func create(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -183,10 +188,11 @@ class ItemMetadataEntity: NSManagedObject {
     ) {
         fatalError("Should be overridden by subclasses")
     }
-    
+
     @nonobjc class func update(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,

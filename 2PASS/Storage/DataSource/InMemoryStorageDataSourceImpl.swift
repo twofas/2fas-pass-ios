@@ -37,6 +37,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     
     public func createItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -50,6 +51,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         ItemMetadataEntity.createItem(
             on: context,
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -87,6 +89,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     
     public func updateItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -99,6 +102,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
         ItemMetadataEntity.updateItem(
             on: context,
             for: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -115,6 +119,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
             ItemMetadataEntity.updateItem(
                 on: context,
                 for: item.id,
+                vaultID: item.vaultId,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
                 protectionLevel: item.protectionLevel,
@@ -249,6 +254,7 @@ extension InMemoryStorageDataSourceImpl {
 extension InMemoryStorageDataSourceImpl {
     public func createLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -264,6 +270,7 @@ extension InMemoryStorageDataSourceImpl {
         LoginEntity.createLogin(
             on: context,
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -280,6 +287,7 @@ extension InMemoryStorageDataSourceImpl {
     
     public func updateLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -294,6 +302,7 @@ extension InMemoryStorageDataSourceImpl {
         LoginEntity.updateLogin(
             on: context,
             for: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -329,6 +338,7 @@ extension InMemoryStorageDataSourceImpl {
 extension InMemoryStorageDataSourceImpl {
     public func createSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -340,6 +350,7 @@ extension InMemoryStorageDataSourceImpl {
         SecureNoteEntity.createSecureNote(
             on: context,
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -352,6 +363,7 @@ extension InMemoryStorageDataSourceImpl {
     
     public func updateSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -362,6 +374,7 @@ extension InMemoryStorageDataSourceImpl {
         SecureNoteEntity.updateSecureNote(
             on: context,
             for: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,

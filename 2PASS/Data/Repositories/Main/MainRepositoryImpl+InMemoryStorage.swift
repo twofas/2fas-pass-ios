@@ -14,6 +14,7 @@ extension MainRepositoryImpl {
     
     func createItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -26,6 +27,7 @@ extension MainRepositoryImpl {
     ) {
         inMemoryStorage?.createItem(
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -40,6 +42,7 @@ extension MainRepositoryImpl {
 
     func createLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -54,6 +57,7 @@ extension MainRepositoryImpl {
     ) {
         inMemoryStorage?.createLoginItem(
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -70,6 +74,7 @@ extension MainRepositoryImpl {
 
     func createSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -80,6 +85,7 @@ extension MainRepositoryImpl {
     ) {
         inMemoryStorage?.createSecureNoteItem(
             itemID: itemID,
+            vaultID: vaultID,
             creationDate: creationDate,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -114,6 +120,7 @@ extension MainRepositoryImpl {
     
     func updateItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -125,6 +132,7 @@ extension MainRepositoryImpl {
     ) {
         inMemoryStorage?.updateItem(
             itemID: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -138,6 +146,7 @@ extension MainRepositoryImpl {
 
     func updateLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -151,6 +160,7 @@ extension MainRepositoryImpl {
     ) {
         inMemoryStorage?.updateLoginItem(
             itemID: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -166,6 +176,7 @@ extension MainRepositoryImpl {
 
     func updateSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -175,6 +186,7 @@ extension MainRepositoryImpl {
     ) {
         inMemoryStorage?.updateSecureNoteItem(
             itemID: itemID,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -188,6 +200,7 @@ extension MainRepositoryImpl {
         items.forEach { item in
             inMemoryStorage?.updateItem(
                 itemID: item.id,
+                vaultID: item.vaultId,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
                 protectionLevel: item.protectionLevel,

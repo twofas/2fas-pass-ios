@@ -417,7 +417,8 @@ extension DebugInteractor: DebugInteracting {
     }
 
     func generateUnknown(count: Int, completion: @escaping Callback) {
-        guard let words = mainRepository.importBIP0039Words() else {
+        guard let words = mainRepository.importBIP0039Words(),
+              let vaultId = selectedVaultID else {
             completion()
             return
         }
@@ -431,12 +432,13 @@ extension DebugInteractor: DebugInteracting {
                 "field1": words.randomElement() ?? "value1",
                 "s_field2": itemsInteractor.encrypt(words.randomElement() ?? "value2", isSecureField: true, protectionLevel: protectionLevel)!.base64EncodedString()
             ]
-            
+
             guard let contentData = try? JSONEncoder().encode(AnyCodable(contentDict)) else { continue }
-            
+
             let date = randomDate()
             let rawItem = RawItemData(
                 id: .init(),
+                vaultId: vaultId,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,
