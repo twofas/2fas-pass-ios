@@ -6,10 +6,11 @@
 
 protocol ConnectRequest: Identifiable {
     associatedtype Payload: ConnectMessagePayload
-    
+
     var id: UUID { get }
     var payload: Payload { get }
     var action: ConnectMessageAction { get }
+    var schemeVersion: ConnectSchemaVersion { get }
 }
 
 protocol ConnectRequestWithoutResponse: ConnectRequest {

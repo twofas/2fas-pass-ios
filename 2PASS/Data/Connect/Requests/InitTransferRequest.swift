@@ -7,9 +7,10 @@
 extension ConnectRequests {
     
     struct InitTransfer: ConnectRequestExpectedResponse {
-        
+
         let id: UUID = UUID()
-        let payload: Payload        
+        let schemeVersion: ConnectSchemaVersion
+        let payload: Payload
         let action: ConnectMessageAction = .initTransfer
         
         struct Payload: ConnectMessagePayload {
