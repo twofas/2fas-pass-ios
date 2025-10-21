@@ -37,7 +37,7 @@ enum AddPasswordModuleInteractorCheckState {
 
 protocol AddPasswordModuleInteracting: AnyObject {
     var hasPasswords: Bool { get }
-    var changeRequest: PasswordDataChangeRequest? { get }
+    var changeRequest: LoginDataChangeRequest? { get }
     
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
     
@@ -66,7 +66,7 @@ protocol AddPasswordModuleInteracting: AnyObject {
 }
 
 final class AddPasswordModuleInteractor {
-    public let changeRequest: PasswordDataChangeRequest?
+    public let changeRequest: LoginDataChangeRequest?
 
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
@@ -96,7 +96,7 @@ final class AddPasswordModuleInteractor {
         passwordListInteractor: PasswordListInteracting,
         tagInteractor: TagInteracting,
         editItemID: ItemID?,
-        changeRequest: PasswordDataChangeRequest? = nil
+        changeRequest: LoginDataChangeRequest? = nil
     ) {
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor

@@ -64,9 +64,9 @@ public final class PasswordsFlowController: FlowController {
 
 extension PasswordsFlowController: PasswordsFlowControlling {
     func toAddPassword() {
-        let changeRequest: PasswordDataChangeRequest?
+        let changeRequest: LoginDataChangeRequest?
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers {
-            changeRequest = PasswordDataChangeRequest(uris: serviceIdentifiers.map { .init(uri: $0, match: .domain)} )
+            changeRequest = LoginDataChangeRequest(uris: serviceIdentifiers.map { .init(uri: $0, match: .domain)} )
         } else {
             changeRequest = nil
         }

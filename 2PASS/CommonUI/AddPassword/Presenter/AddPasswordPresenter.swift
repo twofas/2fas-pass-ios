@@ -158,10 +158,10 @@ final class AddPasswordPresenter {
             }
             initialDecryptedPassword = decryptedPassword
             name = interactor.changeRequest?.name ?? passwordData.name ?? ""
-            username = interactor.changeRequest?.username ?? passwordData.username ?? ""
+            username = interactor.changeRequest?.username?.value ?? passwordData.username ?? ""
             
             switch interactor.changeRequest?.password {
-            case .generateNewPassword:
+            case .generate:
                 password = interactor.generatePassword()
             case .value(let passwordValue):
                 password = passwordValue
@@ -203,7 +203,7 @@ final class AddPasswordPresenter {
             } else {
                 name = interactor.changeRequest?.name ?? ""
             }
-            username = interactor.changeRequest?.username ?? interactor.mostUsedUsernames().first ?? ""
+            username = interactor.changeRequest?.username?.value ?? interactor.mostUsedUsernames().first ?? ""
             protectionLevel = interactor.changeRequest?.protectionLevel ?? interactor.currentDefaultProtectionLevel
             uri = (interactor.changeRequest?.uris ?? []).map { URI(id: .init(), uri: $0.uri, match: $0.match) }
             isEdit = false
