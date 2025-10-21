@@ -50,7 +50,6 @@ public enum Config {
     public static let maxNotesLength = 2048
     public static let maxURICount = 9
     
-    public static let connectSchemaVersion = 1
     public static let cloudSchemaVersion = 2
     public static let indexSchemaVersion = 1
     #if PROD
@@ -86,11 +85,11 @@ public enum Config {
         public static let baseURL = URL(string: "wss://dev-pass.2fas.com/proxy/mobile/")!
         #endif
         
-        public static let schemaVersion = 1
+        public static let schemaVersion = 2
         
         public static let sessionIdByteCount = 16
         public static let nonceByteCount = 12
-        public static let passwordNonceByteCount = 12
+        public static let secureFieldNonceByteCount = 12
         public static let hkdfSaltByteCount = 16
         
         public static let chunkSize = 2 * 1024 * 1024
