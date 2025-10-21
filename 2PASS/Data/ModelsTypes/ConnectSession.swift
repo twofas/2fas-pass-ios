@@ -8,7 +8,7 @@ import CryptoKit
 import Common
 
 public struct ConnectSession: Identifiable {
-    public let version: Int
+    public let version: ConnectSchemaVersion
     public let sessionId: String
     public let pkPersBeHex: String
     public let pkEpheBeHex: String
@@ -22,7 +22,7 @@ public struct ConnectSession: Identifiable {
         "\(sessionId)\(pkPersBeHex)\(pkEpheBeHex)".data(using: .utf8)
     }
     
-    public init(version: Int, sessionId: String, pkPersBeHex: String, pkEpheBeHex: String, signatureHex: String) {
+    public init(version: ConnectSchemaVersion, sessionId: String, pkPersBeHex: String, pkEpheBeHex: String, signatureHex: String) {
         self.version = version
         self.sessionId = sessionId
         self.pkPersBeHex = pkPersBeHex
@@ -58,11 +58,13 @@ extension ConnectSession {
         }
         
         let elements = dataString.split(separator: ":").map(String.init)
-        
-        guard elements.count == 5, let version = Int(elements[0]) else {
+
+        guard elements.count == 5,
+              let versionInt = Int(elements[0]),
+              let version = ConnectSchemaVersion(rawValue: versionInt) else {
             return nil
         }
-                
+
         self = ConnectSession(
             version: version,
             sessionId: elements[1],
