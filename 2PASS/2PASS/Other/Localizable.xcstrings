@@ -87,7 +87,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Browser extension requests the sync."
+            "value" : "Sync request from the browser extension."
           }
         }
       }
@@ -5492,7 +5492,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sync successfully"
+            "value" : "Synced successfully"
           }
         }
       }
