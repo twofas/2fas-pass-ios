@@ -30,8 +30,8 @@ internal enum T {
   internal static func paywallNoticeItemsLimitTransferMsg(_ p1: Int) -> String {
     return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
-  /// Browser extension requests the sync.
-  internal static let requestModalFullSyncSubtitle = T.tr("Localizable", " request_modal_full_sync_subtitle", fallback: "Browser extension requests the sync.")
+  /// Sync request from the browser extension.
+  internal static let requestModalFullSyncSubtitle = T.tr("Localizable", " request_modal_full_sync_subtitle", fallback: "Sync request from the browser extension.")
   /// Sync Request
   internal static let requestModalFullSyncTitle = T.tr("Localizable", " request_modal_full_sync_title", fallback: "Sync Request")
   /// Select decryption method:
@@ -1045,8 +1045,8 @@ internal enum T {
   internal static let requestModalToastSuccessAddLogin = T.tr("Localizable", "request_modal_toast_success_add_login", fallback: "Item added successfully!")
   /// Item deleted successfully!
   internal static let requestModalToastSuccessDeleteLogin = T.tr("Localizable", "request_modal_toast_success_delete_login", fallback: "Item deleted successfully!")
-  /// Sync successfully
-  internal static let requestModalToastSuccessFullSync = T.tr("Localizable", "request_modal_toast_success_full_sync", fallback: "Sync successfully")
+  /// Synced successfully
+  internal static let requestModalToastSuccessFullSync = T.tr("Localizable", "request_modal_toast_success_full_sync", fallback: "Synced successfully")
   /// Password sent successfully!
   internal static let requestModalToastSuccessPasswordRequest = T.tr("Localizable", "request_modal_toast_success_password_request", fallback: "Password sent successfully!")
   /// Item updated successfully!
