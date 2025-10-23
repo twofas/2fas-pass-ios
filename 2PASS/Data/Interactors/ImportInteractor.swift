@@ -227,7 +227,7 @@ extension ImportInteractor: ImportInteracting {
             guard let items = v2Vault.vault.items else {
                 return []
             }
-            return items.compactMap({ self.exchangeItemToItemData($0, vaultID: vaultID, isEncrypted: false) })
+            return items.compactMap({ self.exchangeItemToItemData($0, vaultID: vaultID, encryption: .unencrypted) })
         }
     }
 
@@ -366,7 +366,7 @@ extension ImportInteractor: ImportInteracting {
             let deletedPasswords = v2Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v2Vault.vault.tagsEncrypted ?? []
 
-            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
+            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key, importMasterKey: masterKey) { items, tagsData, deleted in
                 completion(.success((items, tagsData, deleted)))
             }
         }
@@ -428,6 +428,29 @@ extension ImportInteractor: ImportInteracting {
 }
 
 private extension ImportInteractor {
+    enum ItemEncryption {
+        case unencrypted
+        case currentEncryption
+        case otherEncryption(trustedKey: SymmetricKey, secureKey: SymmetricKey)
+    }
+
+    func getImportKey(for protectionLevel: ItemProtectionLevel, masterKey: MasterKey, vaultID: VaultID) -> SymmetricKey? {
+        let key = {
+            switch protectionLevel {
+            case .normal:
+                mainRepository.generateTrustedKeyForVaultID(vaultID, using: masterKey.hexEncodedString())
+            case .confirm, .topSecret:
+                mainRepository.generateSecureKeyForVaultID(vaultID, using: masterKey.hexEncodedString())
+            }
+        }()
+
+        guard let key, let keyData = Data(hexString: key) else {
+            return nil
+        }
+        
+        return mainRepository.createSymmetricKey(from: keyData)
+    }
+
     func createMasterKey(
         using masterPassword: MasterPassword,
         words: [String],
@@ -474,15 +497,30 @@ private extension ImportInteractor {
         deletedPasswords: [String],
         vaultID: VaultID,
         using key: SymmetricKey,
+        importMasterKey: MasterKey? = nil,
         completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
     ) {
+        // Pre-compute import keys once if importing from different vault
+        let encryption: ItemEncryption
+        if let importMasterKey {
+            guard let importTrustedKey = getImportKey(for: .normal, masterKey: importMasterKey, vaultID: vaultID),
+                  let importSecureKey = getImportKey(for: .topSecret, masterKey: importMasterKey, vaultID: vaultID) else {
+                Log("Import Interactor - Error deriving import keys", severity: .error)
+                completion([], [], [])
+                return
+            }
+            encryption = .otherEncryption(trustedKey: importTrustedKey, secureKey: importSecureKey)
+        } else {
+            encryption = .currentEncryption
+        }
+
         func parse(_ string: String) -> ItemData? {
             let jsonDecoder = mainRepository.jsonDecoder
             guard let data = Data(base64Encoded: string) else {
                 Log("Import Interactor - Error creating Data from base64 encoded string for Password", severity: .error)
                 return nil
             }
-            
+
                 guard let jsonData = self.mainRepository.decrypt(data, key: key) else {
                     Log("Import Interactor - Error decrypting JSON data for Password", severity: .error)
                     return nil
@@ -492,7 +530,7 @@ private extension ImportInteractor {
                             ExchangeVault.ExchangeVaultItem.ExchangeItem.self,
                             from: jsonData
                         )
-                        if let pass = self.exchangeItemToItemData(exchangeLogin, vaultID: vaultID, isEncrypted: true) {
+                        if let pass = self.exchangeItemToItemData(exchangeLogin, vaultID: vaultID, encryption: encryption) {
                             return pass
                         } else {
                             Log("Import Interactor - Error creating Password Data", severity: .error)
@@ -658,7 +696,7 @@ private extension ImportInteractor {
         }
     }
     
-    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem, vaultID: VaultID, isEncrypted: Bool) -> ItemData? {
+    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem, vaultID: VaultID, encryption: ItemEncryption) -> ItemData? {
         guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
         }
@@ -700,16 +738,39 @@ private extension ImportInteractor {
                 guard let passwordEntry = content.password else {
                     return nil
                 }
-                if isEncrypted {
+                switch encryption {
+                case .unencrypted:
+                    // Encrypt plaintext password with current vault key
+                    guard let passwordData = passwordEntry.data(using: .utf8),
+                          let encryptedPassword = mainRepository.encrypt(passwordData, key: key) else {
+                        return nil
+                    }
+                    return encryptedPassword
+
+                case .currentEncryption:
+                    // Password is already encrypted with current vault key
                     guard let passwordData = Data(base64Encoded: passwordEntry) else {
                         return nil
                     }
                     return passwordData
-                } else {
-                    guard let passwordData = passwordEntry.data(using: .utf8), let password = mainRepository.encrypt(passwordData, key: key) else {
+
+                case .otherEncryption(let importTrustedKey, let importSecureKey):
+                    // Password is encrypted with a different master key
+                    // Select the correct pre-computed import key based on protection level
+                    let importKey: SymmetricKey
+                    switch protectionLevel {
+                    case .normal:
+                        importKey = importTrustedKey
+                    case .confirm, .topSecret:
+                        importKey = importSecureKey
+                    }
+
+                    guard let passwordData = Data(base64Encoded: passwordEntry),
+                          let decryptedPassword = mainRepository.decrypt(passwordData, key: importKey),
+                          let reencryptedPassword = mainRepository.encrypt(decryptedPassword, key: key) else {
                         return nil
                     }
-                    return password
+                    return reencryptedPassword
                 }
             }()
             
@@ -773,10 +834,26 @@ private extension ImportInteractor {
             
         default:
             let content: [String: Any] = {
-                if isEncrypted {
-                    return exchangeLogin.content
-                } else {
+                switch encryption {
+                case .unencrypted:
+                    // Encrypt plaintext secure fields with current vault key
                     return encryptSecureFields(in: exchangeLogin.content, contentType: contentType, using: key)
+
+                case .currentEncryption:
+                    // Fields are already encrypted with current vault key
+                    return exchangeLogin.content
+
+                case .otherEncryption(let importTrustedKey, let importSecureKey):
+                    // Secure fields are encrypted with a different master key
+                    // Select the correct pre-computed import key based on protection level
+                    let importKey: SymmetricKey
+                    switch protectionLevel {
+                    case .normal:
+                        importKey = importTrustedKey
+                    case .topSecret, .confirm:
+                        importKey = importSecureKey
+                    }
+                    return reencryptSecureFields(in: exchangeLogin.content, contentType: contentType, decryptionKey: importKey, encryptionKey: key)
                 }
             }()
             
@@ -798,11 +875,26 @@ private extension ImportInteractor {
         }
     }
     
-    private func encryptSecureFields(in content: [String: Any], contentType: ItemContentType, using key: SymmetricKey) -> [String: Any] {
+    func encryptSecureFields(in content: [String: Any], contentType: ItemContentType, using key: SymmetricKey) -> [String: Any] {
         content.reduce(into: [String: Any]()) { result, keyValue in
             if contentType.isSecureField(key: keyValue.key) {
                 if let stringValue = keyValue.value as? String, let data = stringValue.data(using: .utf8) {
                     result[keyValue.key] = mainRepository.encrypt(data, key: key)?.base64EncodedString()
+                }
+            } else {
+                result[keyValue.key] = keyValue.value
+            }
+        }
+    }
+
+    func reencryptSecureFields(in content: [String: Any], contentType: ItemContentType, decryptionKey: SymmetricKey, encryptionKey: SymmetricKey) -> [String: Any] {
+        content.reduce(into: [String: Any]()) { result, keyValue in
+            if contentType.isSecureField(key: keyValue.key) {
+                if let base64String = keyValue.value as? String,
+                   let encryptedData = Data(base64Encoded: base64String),
+                   let decryptedData = mainRepository.decrypt(encryptedData, key: decryptionKey),
+                   let reencryptedData = mainRepository.encrypt(decryptedData, key: encryptionKey) {
+                    result[keyValue.key] = reencryptedData.base64EncodedString()
                 }
             } else {
                 result[keyValue.key] = keyValue.value
@@ -1010,5 +1102,4 @@ private extension ImportInteractor {
             }
         }
     }
-
 }
