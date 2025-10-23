@@ -190,7 +190,7 @@ private extension WebDAVBackupInteractor {
            let matchingVault = index.backups[safe: matchingVaultIndex] {
             Log("WebDAVBackupInteractor - matching vault found", module: .interactor)
             
-            if matchingVault.schemaVersion > Config.indexSchemaVersion {
+            if matchingVault.schemaVersion > Config.schemaVersion {
                 Log(
                     "WebDAVBackupInteractor - Error: index schema version larger than supported.",
                     module: .interactor,
@@ -643,7 +643,8 @@ private extension WebDAVBackupInteractor {
             vaultCreatedAt: vault.createdAt.exportTimestamp,
             vaultUpdatedAt: updatedAt,
             deviceName: deviceName,
-            deviceId: deviceId
+            deviceId: deviceId,
+            schemaVersion: Config.schemaVersion
         )
         let result: WebDAVIndex
         if let fetchedIndex {
