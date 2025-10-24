@@ -52,7 +52,6 @@ public enum Config {
     
     public static let connectSchemaVersion = 1
     public static let cloudSchemaVersion = 2
-    public static let indexSchemaVersion = 1
     #if PROD
     public static let containerIdentifier = "iCloud.com.twopass.org.Vault"
     #else
