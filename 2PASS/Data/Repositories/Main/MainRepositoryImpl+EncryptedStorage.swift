@@ -10,10 +10,10 @@ import Storage
 
 extension MainRepositoryImpl {
     
-    // MARK: Passwords
+    // MARK: Items
     
     func createEncryptedItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -24,7 +24,7 @@ extension MainRepositoryImpl {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) {
-        encryptedStorage.createEncryptedPassword(
+        encryptedStorage.createEncryptedItem(
             itemID: itemID,
             creationDate: creationDate,
             modificationDate: modificationDate,
@@ -39,7 +39,7 @@ extension MainRepositoryImpl {
     }
     
     func updateEncryptedItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -49,7 +49,7 @@ extension MainRepositoryImpl {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) {
-        encryptedStorage.updateEncryptedPassword(
+        encryptedStorage.updateEncryptedItem(
             itemID: itemID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -62,12 +62,12 @@ extension MainRepositoryImpl {
         )
     }
     
-    func encryptedItemsBatchUpdate(_ passwords: [ItemEncryptedData]) {
-        encryptedStorage.batchUpdateRencryptedPasswords(passwords, date: currentDate)
+    func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData]) {
+        encryptedStorage.batchUpdateRencryptedItems(items, date: currentDate)
     }
     
-    func getEncryptedItemEntity(itemID: PasswordID) -> ItemEncryptedData? {
-        encryptedStorage.getEncryptedPasswordEntity(itemID: itemID)
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
+        encryptedStorage.getEncryptedItemEntity(itemID: itemID)
     }
     
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
@@ -78,16 +78,16 @@ extension MainRepositoryImpl {
         encryptedStorage.listEncryptedItems(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
     }
     
-    func addEncryptedItem(_ passwordID: PasswordID, to vaultID: VaultID) {
-        encryptedStorage.addEncryptedPassword(passwordID, to: vaultID)
+    func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
+        encryptedStorage.addEncryptedItem(itemID, to: vaultID)
     }
     
-    func deleteEncryptedItem(itemID: PasswordID) {
-        encryptedStorage.deleteEncryptedPassword(itemID: itemID)
+    func deleteEncryptedItem(itemID: ItemID) {
+        encryptedStorage.deleteEncryptedItem(itemID: itemID)
     }
     
     func deleteAllEncryptedItems() {
-        encryptedStorage.deleteAllEncryptedPasswords(in: selectedVault?.vaultID)
+        encryptedStorage.deleteAllEncryptedItems(in: selectedVault?.vaultID)
     }
     
     // MARK: Encrypted Vaults

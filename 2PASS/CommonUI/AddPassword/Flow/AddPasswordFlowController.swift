@@ -37,14 +37,14 @@ final class AddPasswordFlowController: FlowController {
     static func setAsRoot(
         on navigationController: UINavigationController,
         parent: AddPasswordFlowControllerParent,
-        editPasswordID: PasswordID?,
+        editItemID: ItemID?,
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
         let view = AddPasswordViewController()
         let flowController = AddPasswordFlowController(viewController: view)
         flowController.parent = parent
         let interactor = ModuleInteractorFactory.shared.addPasswordInteractor(
-            editPasswordID: editPasswordID,
+            editItemID: editItemID,
             changeRequest: changeRequest
         )
         

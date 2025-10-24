@@ -12,6 +12,8 @@ import LocalAuthentication
 import Backup
 import Storage
 
+let ItemContentNameKey = "name"
+
 enum HMACStringReturnType {
     case hex
     case base64
@@ -275,54 +277,116 @@ protocol MainRepository: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     
     // MARK: - In Memory
-    // MARK: Password
+    // MARK: Item
     
-    func createPassword(
-        passwordID: PasswordID,
-        name: String?,
-        username: String?,
-        password: Data?,
-        notes: String?,
+    func createItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
-        iconType: PasswordIconType,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
     )
-    func updatePassword(
-        passwordID: PasswordID,
+
+    func createLoginItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
         name: String?,
         username: String?,
         password: Data?,
         notes: String?,
-        modificationDate: Date,
         iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    )
+
+    func createSecureNoteItem(
+        itemID: ItemID,
+        creationDate: Date,
+        modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
-        uris: [PasswordURI]?,
-        tagIds: [ItemTagID]?
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
     )
-    func updatePasswords(_ passwords: [PasswordData])
-    func passwordsBatchUpdate(_ passwords: [PasswordData])
-    func getPasswordEntity(
-        passwordID: PasswordID,
-        checkInTrash: Bool
-    ) -> PasswordData?
+
+    func updateMetadataItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int
+    )
     
-    func listPasswords(
-        options: PasswordListOptions
-    ) -> [PasswordData]
-    func listTrashedPasswords() -> [PasswordData]
-    func deletePassword(passwordID: PasswordID)
-    func deleteAllPasswords()
+    func updateItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        contentType: ItemContentType,
+        contentVersion: Int,
+        content: Data
+    )
+
+    func updateLoginItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        username: String?,
+        password: Data?,
+        notes: String?,
+        iconType: PasswordIconType,
+        uris: [PasswordURI]?
+    )
+
+    func updateSecureNoteItem(
+        itemID: ItemID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        text: Data?
+    )
+    
+    func updateItems(_ items: [RawItemData])
+    func itemsBatchUpdate(_ items: [RawItemData])
+    func getItemEntity(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> ItemData?
+    
+    func listItems(
+        options: ItemsListOptions
+    ) -> [ItemData]
+    
+    func listTrashedItems() -> [ItemData]
+    func deleteItem(itemID: ItemID)
+    func deleteAllItems()
     func saveStorage()
     func listUsernames() -> [String]
-    
+
     var hasInMemoryStorage: Bool { get }
     func createInMemoryStorage()
     func destroyInMemoryStorage()
+
+    func extractItemName(fromContent data: Data) -> String?
     
     // MARK: Tags
     func createTag(_ tag: ItemTagData)

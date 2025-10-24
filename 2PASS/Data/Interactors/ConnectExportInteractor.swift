@@ -8,42 +8,43 @@ import CryptoKit
 import Common
 
 protocol ConnectExportInteracting: AnyObject {
-    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
-    func preparePasswordsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data
+    func prepareItemForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin
+    func prepareItemsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data
     func prepareTagsForConnectExport() async throws(ExportError) -> Data
 }
 
 final class ConnectExportInteractor: ConnectExportInteracting {
     
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     
     init(
         mainRepository: MainRepository,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         tagInteractor: TagInteracting,
         uriInteractor: URIInteracting
     ) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
     }
     
-    func preparePasswordsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data {
+    func prepareItemsForConnectExport(encryptPasswordKey: SymmetricKey, deviceId: UUID) async throws(ExportError) -> Data {
         guard let _ = self.mainRepository.selectedVault else {
             throw .noSelectedVault
         }
         
-        let passwords = Task { @MainActor in
-            mainRepository.listPasswords(options: .allNotTrashed)
+        let items = Task { @MainActor in
+            mainRepository.listItems(options: .allNotTrashed)
                 .filter { $0.protectionLevel != .topSecret }
+                .compactMap { $0.asLoginItem }
         }
              
-        let connectLogins = await passwords.value.map {
-            passwordToConnectLogin($0, deviceId: deviceId, excludePasswordsValueProtectionLevels: [.confirm], encryptPasswordKey: encryptPasswordKey)
+        let connectLogins = await items.value.map {
+            itemToConnectLogin($0, deviceId: deviceId, excludeSecureValuesProtectionLevels: [.confirm], encryptPasswordKey: encryptPasswordKey)
         }
         
         do {
@@ -53,17 +54,16 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
     }
     
-    func preparePasswordForConnectExport(id: PasswordID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
-        let password = Task { @MainActor in
-            mainRepository.getPasswordEntity(passwordID: id, checkInTrash: false)
+    func prepareItemForConnectExport(id: ItemID, encryptPasswordKey: (ItemProtectionLevel) -> SymmetricKey?, deviceId: UUID) async throws(ExportError) -> ConnectLogin {
+        let itemDataTask = Task { @MainActor in
+            mainRepository.getItemEntity(itemID: id, checkInTrash: false)
+        }
+   
+        guard let itemData = await itemDataTask.value, let loginItem = itemData.asLoginItem else {
+            throw .noItemsToExport
         }
         
-        guard let entity = await password.value else {
-            throw .noPasswordsToExport
-        }
-        
-        let connectLogin = passwordToConnectLogin(entity, deviceId: deviceId, encryptPasswordKey: encryptPasswordKey(entity.protectionLevel))
-        
+        let connectLogin = itemToConnectLogin(loginItem, deviceId: deviceId, encryptPasswordKey: encryptPasswordKey(loginItem.protectionLevel))
         return connectLogin
     }
     
@@ -86,22 +86,22 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }
     }
     
-    private func passwordToConnectLogin(
-        _ password: PasswordData,
+    private func itemToConnectLogin(
+        _ item: LoginItemData,
         deviceId: UUID,
-        excludePasswordsValueProtectionLevels: Set<ItemProtectionLevel> = [],
+        excludeSecureValuesProtectionLevels: Set<ItemProtectionLevel> = [],
         encryptPasswordKey: SymmetricKey? = nil
     ) -> ConnectLogin {
         let passwordExported: String? = {
-            guard excludePasswordsValueProtectionLevels.contains(password.protectionLevel) == false else {
+            guard excludeSecureValuesProtectionLevels.contains(item.protectionLevel) == false else {
                 return nil
             }
             
-            guard let pass = password.password else {
+            guard let pass = item.password else {
                 return nil
             }
             
-            guard let decryptedPassword = passwordInteractor.decrypt(pass, isPassword: true, protectionLevel: password.protectionLevel) else {
+            guard let decryptedPassword = itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: item.protectionLevel) else {
                 return nil
             }
             
@@ -114,19 +114,21 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                 return nil
             }
         }()
+        
         let securityType: Int = {
-            switch password.protectionLevel {
+            switch item.protectionLevel {
             case .normal: 2
             case .confirm: 1
             case .topSecret: 0
             }
         }()
+        
         var labelTitle: String?
         var labelColor: String?
         var customImageUrl: String?
         
         let iconType: Int = {
-            switch password.iconType {
+            switch item.iconType {
             case .domainIcon:
                 return 0
             case .label(let labelTitleValue, let labelColorValue):
@@ -140,9 +142,9 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }()
         
         let iconURIIndex: Int? = {
-            switch password.iconType {
+            switch item.iconType {
             case .domainIcon(let domain):
-                return password.uris?.firstIndex(where: {
+                return item.uris?.firstIndex(where: {
                     uriInteractor.extractDomain(from: $0.uri) == domain
                 })
             default:
@@ -151,21 +153,21 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         }()
         
         return .init(
-            id: password.passwordID.exportString(),
-            name: password.name,
-            username: password.username,
+            id: item.id.exportString(),
+            name: item.name,
+            username: item.username,
             password: passwordExported,
-            notes: password.notes?.sanitizeNotes(),
+            notes: item.notes?.sanitizeNotes(),
             securityType: securityType,
             iconType: iconType,
             iconUriIndex: iconURIIndex,
             labelText: labelTitle,
             labelColor: labelColor,
             customImageUrl: customImageUrl,
-            createdAt: password.creationDate.exportTimestamp,
-            updatedAt: password.modificationDate.exportTimestamp,
-            uris: password.uris?.map({ uriToConnectURI(uri: $0) }) ?? [],
-            tags: password.tagIds?.map { $0.exportString() },
+            createdAt: item.creationDate.exportTimestamp,
+            updatedAt: item.modificationDate.exportTimestamp,
+            uris: item.uris?.map({ uriToConnectURI(uri: $0) }) ?? [],
+            tags: item.tagIds?.map { $0.exportString() },
             deviceId: deviceId
         )
     }

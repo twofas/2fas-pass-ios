@@ -10,7 +10,7 @@ import Common
 enum SettingsDebugDestination: RouterDestination {
     case eventLog
     case appState
-    case generatePasswords
+    case generateItems
     case modifyState
     
     var id: Self {
@@ -54,8 +54,8 @@ final class SettingsDebugPresenter {
         destination = .appState
     }
     
-    func onGeneratePasswords() {
-        destination = .generatePasswords
+    func onGenerateItems() {
+        destination = .generateItems
     }
     
     func onModifyState() {

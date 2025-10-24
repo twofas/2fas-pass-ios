@@ -12,7 +12,7 @@ final class CacheHandler {
     private let cloudCacheStorage: CloudCacheStorage
     private let jsonDecoder: JSONDecoder
     
-    private(set) var passwordIDsForDeletition: [CKRecord.ID] = []
+    private(set) var itemIDsForDeletition: [CKRecord.ID] = []
     
     init(cloudCacheStorage: CloudCacheStorage, jsonDecoder: JSONDecoder) {
         self.cloudCacheStorage = cloudCacheStorage
@@ -53,7 +53,7 @@ extension CacheHandler {
             if let recordType = RecordType(rawValue: record.recordType) {
                 switch recordType {
                 case .password: // deprecated - should be deleted if present
-                    passwordIDsForDeletition.append(record.recordID)
+                    itemIDsForDeletition.append(record.recordID)
                 case .item:
                     let itemRecord = ItemRecord(record: record)
                     let id = itemRecord.itemID
@@ -171,7 +171,7 @@ extension CacheHandler {
         allRecords += tagItemIDList
             .map({ CKRecord.ID(recordName: TagRecord.createRecordName(for: $0), zoneID: zoneID)})
         allRecords += vaultIDList.map({ CKRecord.ID(recordName: VaultRecord.createRecordName(for: $0), zoneID: zoneID) })
-        allRecords += passwordIDsForDeletition
+        allRecords += itemIDsForDeletition
         return allRecords
     }
 }

@@ -190,7 +190,7 @@ private extension WebDAVBackupInteractor {
            let matchingVault = index.backups[safe: matchingVaultIndex] {
             Log("WebDAVBackupInteractor - matching vault found", module: .interactor)
             
-            if matchingVault.schemaVersion > Config.indexSchemaVersion {
+            if matchingVault.schemaVersion > Config.schemaVersion {
                 Log(
                     "WebDAVBackupInteractor - Error: index schema version larger than supported.",
                     module: .interactor,
@@ -351,13 +351,13 @@ private extension WebDAVBackupInteractor {
                     return
                 }
                 Log("WebDAVBackupInteractor - Vault fetched. Parsing", module: .interactor)
-                self?.backupImportInteractor.parseContents(of: vaultData, decryptPasswordsIfPossible: true, allowsAnyDeviceId: allowsAnyDeviceId, completion: { [weak self] parseResult in
+                self?.backupImportInteractor.parseContents(of: vaultData, decryptItemsIfPossible: true, allowsAnyDeviceId: allowsAnyDeviceId, completion: { [weak self] parseResult in
                     switch parseResult {
                     case .success(let parsedVault):
                         switch parsedVault {
-                        case .decrypted(let passwords, let tags, let deleted, _, _, _, _):
+                        case .decrypted(let items, let tags, let deleted, _, _, _, _):
                             Log("WebDAVBackupInteractor - Vault parsed correctly. Syncing with local database", module: .interactor)
-                            self?.syncInteractor.syncAndApplyChanges(from: passwords, externalTags: tags, externalDeleted: deleted)
+                            self?.syncInteractor.syncAndApplyChanges(from: items, externalTags: tags, externalDeleted: deleted)
                             Log("WebDAVBackupInteractor - preparing for Vault export", module: .interactor)
                             self?.prepareForExport()
                         case .needsPassword:
@@ -447,7 +447,7 @@ private extension WebDAVBackupInteractor {
     
     func prepareForExport() {
         Log("WebDAVBackupInteractor - preparing for export", module: .interactor)
-        exportInteractor.preparePasswordsForExport(encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
+        exportInteractor.prepareItemsForExport(encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
             switch exportResult {
             case .success(let vaultForExport):
                 Log("WebDAVBackupInteractor - vault for export ready", module: .interactor)
@@ -462,7 +462,7 @@ private extension WebDAVBackupInteractor {
         
         Log("WebDAVBackupInteractor - preparing decrypted copy for debug", module: .interactor)
         
-        exportInteractor.preparePasswordsForExport(encrypt: false, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
+        exportInteractor.prepareItemsForExport(encrypt: false, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
             switch exportResult {
             case .success(let vaultForExport):
                 Log("WebDAVBackupInteractor - decrypted vault for export ready", module: .interactor)
@@ -643,7 +643,8 @@ private extension WebDAVBackupInteractor {
             vaultCreatedAt: vault.createdAt.exportTimestamp,
             vaultUpdatedAt: updatedAt,
             deviceName: deviceName,
-            deviceId: deviceId
+            deviceId: deviceId,
+            schemaVersion: Config.schemaVersion
         )
         let result: WebDAVIndex
         if let fetchedIndex {

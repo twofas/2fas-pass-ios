@@ -8,7 +8,7 @@ import Foundation
 import Common
 
 struct PasswordCellData: Hashable {
-    let passwordID: PasswordID
+    let itemID: ItemID
     let name: String?
     let username: String?
     let iconType: PasswordIconType
@@ -20,7 +20,7 @@ struct PasswordCellData: Hashable {
 
 extension PasswordCellData {
     static func == (lhs: PasswordCellData, rhs: PasswordCellData) -> Bool {
-        return lhs.passwordID == rhs.passwordID &&
+        return lhs.itemID == rhs.itemID &&
             lhs.name == rhs.name &&
             lhs.username == rhs.username &&
             lhs.iconType == rhs.iconType &&
@@ -30,7 +30,7 @@ extension PasswordCellData {
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(passwordID)
+        hasher.combine(itemID)
         hasher.combine(name)
         hasher.combine(username)
         hasher.combine(iconType)
@@ -41,5 +41,5 @@ extension PasswordCellData {
 }
 
 extension PasswordCellData: Identifiable {
-    var id: PasswordID { passwordID }
+    var id: ItemID { itemID }
 }

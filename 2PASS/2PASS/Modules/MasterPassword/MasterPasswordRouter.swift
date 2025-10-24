@@ -47,9 +47,9 @@ struct MasterPasswordRouter: Router {
             ChangeSuccessRouter.buildView(onFinish: onFinish)
         case .vaultDecryptionKit(let onLogin):
             VaultDecryptionKitRouter.buildView(kind: .settings, onFinish: onLogin)
-        case .restoreVault(let passwords, let tags):
+        case .restoreVault(let items, let tags):
             VaultRecoveryRecoverRouter.buildView(
-                kind: .importUnencrypted(passwords: passwords, tags: tags)
+                kind: .importUnencrypted(items: items, tags: tags)
             )
         }
     }

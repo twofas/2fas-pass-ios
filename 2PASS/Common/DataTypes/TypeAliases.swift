@@ -7,7 +7,6 @@
 import Foundation
 
 public typealias Callback = () -> Void
-public typealias PasswordID = UUID
 public typealias DeletedItemID = UUID
 public typealias VaultID = UUID
 public typealias DeviceID = UUID

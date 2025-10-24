@@ -15,13 +15,13 @@ struct TrashView: View {
     
     var body: some View {
         List {
-            ForEach(presenter.passwords, id: \.self) { password in
-                TrashCell(data: password, presenter: presenter)
+            ForEach(presenter.items, id: \.self) { item in
+                TrashCell(data: item, presenter: presenter)
                     .onAppear {
-                        presenter.onAppear(for: password)
+                        presenter.onAppear(for: item)
                     }
                     .onDisappear {
-                        presenter.onDisappear(for: password)
+                        presenter.onDisappear(for: item)
                     }
                     .listRowInsets(EdgeInsets(
                         top: Spacing.m,

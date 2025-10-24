@@ -52,7 +52,7 @@ extension ModuleInteractorFactory {
     
     func trashInteractor() -> TrashModuleInteracting {
         TrashModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
@@ -106,7 +106,7 @@ extension ModuleInteractorFactory {
     func backupModuleInteractor() -> BackupModuleInteracting {
         BackupModuleInteractor(
             importInteractor: InteractorFactory.shared.backupImportInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             biometryInteractor: InteractorFactory.shared.biometryInteractor(),
             loginInteractor: InteractorFactory.shared.loginInteractor(),
             protectionInteractor: InteractorFactory.shared.protectionInteractor(),
@@ -116,7 +116,7 @@ extension ModuleInteractorFactory {
     
     func backupImportImportingModuleInteractor(input: BackupImportInput) -> BackupImportImportingModuleInteracting {
         BackupImportImportingModuleInteractor(
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor(),
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             input: input
         )
@@ -187,7 +187,7 @@ extension ModuleInteractorFactory {
     func vaultRecoveryRecoverModuleInteractor(kind: VaultRecoveryRecoverKind) -> VaultRecoveryRecoverModuleInteracting {
         VaultRecoveryRecoverModuleInteractor(
             kind: kind,
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor(),
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
@@ -316,7 +316,7 @@ extension ModuleInteractorFactory {
             identiconInteractor: InteractorFactory.shared.connectSecurityIconInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
@@ -330,17 +330,17 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, passwords: [PasswordData]) -> TransferItemsImportingModuleInteracting {
+    func transferItemsImportingModuleInteractor(service: ExternalService, items: [ItemData]) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
-            passwords: passwords,
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor()
+            items: items,
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
         )
     }
     
     func transferItemsServicesListInteractor() -> TransferItemsServicesListInteracting {
         TransferItemsServicesListInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
     }
@@ -357,7 +357,7 @@ extension ModuleInteractorFactory {
     @MainActor
     func manageSubscriptionInteractor() -> ManageSubscriptionModuleInteracting {
         ManageSubscriptionModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             webBrowsersInteractor: InteractorFactory.shared.webBrowsersInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor()
@@ -382,7 +382,7 @@ extension ModuleInteractorFactory {
     func manageTagsModuleInteractor() -> ManageTagsModuleInteracting {
         ManageTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }

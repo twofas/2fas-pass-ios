@@ -23,8 +23,8 @@ struct TransferItemsInstructionsRouter: Router {
         switch destination {
         case .uploadFile:
             EmptyView()
-        case .summary(let service, let passwords, let onClose):
-            TransferItemsFileSummaryRouter.buildView(service: service, passwords: passwords, onClose: onClose)
+        case .summary(let service, let items, let onClose):
+            TransferItemsFileSummaryRouter.buildView(service: service, items: items, onClose: onClose)
         case .importFailure(let onClose):
             TransferItemsFailureView(onClose: onClose)
         }

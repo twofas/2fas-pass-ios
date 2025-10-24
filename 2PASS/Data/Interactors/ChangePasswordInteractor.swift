@@ -17,18 +17,18 @@ public protocol ChangePasswordInteracting: AnyObject {
 
 final class ChangePasswordInteractor {
     private let biometryInteractor: BiometryInteracting
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     
     init(
         biometryInteractor: BiometryInteracting,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         protectionInteractor: ProtectionInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     ) {
         self.biometryInteractor = biometryInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.protectionInteractor = protectionInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
@@ -43,7 +43,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         _ masterPassword: MasterPassword,
         completion: @escaping () -> Void
     ) {
-        let (current, tags) = passwordInteractor.getCompleteDecryptedList()
+        let (current, tags) = itemsInteractor.getCompleteDecryptedList()
         let enableBiometryLogin = biometryInteractor.canUseBiometryForLogin
         Log(
             "ChangePasswordInteractor: Changing Master Password. Enable biometry: \(enableBiometryLogin)",
@@ -54,7 +54,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
             self?.protectionInteractor.saveEncryptionReference()
             self?.protectionInteractor.updateExistingVault()
             self?.protectionInteractor.setupKeys()
-            self?.passwordInteractor.reencryptDecryptedList(current, tags: tags, completion: { [weak self] _ in
+            self?.itemsInteractor.reencryptDecryptedList(current, tags: tags, completion: { [weak self] _ in
                 self?.syncChangeTriggerInteractor.setPasswordWasChanged()
                 completion()
                 self?.syncChangeTriggerInteractor.trigger()

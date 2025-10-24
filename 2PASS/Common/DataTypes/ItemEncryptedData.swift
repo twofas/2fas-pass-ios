@@ -6,10 +6,6 @@
 
 import Foundation
 
-public enum ItemContentType: String {
-    case login
-}
-
 public struct ItemEncryptedData: Hashable, Identifiable {
     public var id: UUID {
         itemID

@@ -17,8 +17,7 @@ final class ChangeMasterPasswordModuleInteractor {
 }
 
 extension ChangeMasterPasswordModuleInteractor: MasterPasswordModuleInteracting {
-    var passwords: [Common.PasswordData]? { nil }
-    
+
     var isBiometryAvailable: Bool {
         changePasswordInteractor.isBiometryAvailable
     }
