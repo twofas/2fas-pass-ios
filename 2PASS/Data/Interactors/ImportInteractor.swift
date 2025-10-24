@@ -777,7 +777,7 @@ private extension ImportInteractor {
             let iconType: PasswordIconType = {
                 switch content.iconType {
                 case 0:
-                    guard let uriIndex = content.iconUriIndex, let uri = content.uris?[uriIndex], let domain = uriInteractor.extractDomain(from: uri.text) else {
+                    guard let uriIndex = content.iconUriIndex, let uri = content.uris?[safe: uriIndex], let domain = uriInteractor.extractDomain(from: uri.text) else {
                         return .domainIcon(nil)
                     }
                     return .domainIcon(domain)

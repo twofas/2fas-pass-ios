@@ -51,7 +51,6 @@ public enum Config {
     public static let maxURICount = 9
     
     public static let cloudSchemaVersion = 2
-    public static let indexSchemaVersion = 1
     #if PROD
     public static let containerIdentifier = "iCloud.com.twopass.org.Vault"
     #else
