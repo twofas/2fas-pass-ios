@@ -17,7 +17,7 @@ enum SettingsIcon {
     case pushNotifications
     case sync
     case importExport
-    case transferPasswords
+    case transferItems
     case about
     case help
     case discord
@@ -56,6 +56,7 @@ enum SettingsIcon {
     case keePass
     case keePassXC
     case microsoftEdge
+    case enpass
 }
 
 enum SettingIconStyle {
@@ -138,7 +139,7 @@ struct SettingsIconView: View {
             }
         case .importExport:
             Image(systemName: "rectangle.portrait.and.arrow.right")
-        case .transferPasswords:
+        case .transferItems:
             Image(systemName: "iphone.gen1")
         case .about:
             Image(systemName: "info.circle.fill")
@@ -218,6 +219,8 @@ struct SettingsIconView: View {
             Image(.keepassxcIcon)
         case .microsoftEdge:
             Image(.microsoftedgeIcon)
+        case .enpass:
+            Image(.enpassIcon)
         }
     }
     
@@ -231,7 +234,7 @@ struct SettingsIconView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: size * 0.7, height: size * 0.7)
-        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePass, .keePassXC, .microsoftEdge:
+        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePass, .keePassXC, .microsoftEdge, .enpass:
             image
                 .resizable()
                 .scaledToFit()

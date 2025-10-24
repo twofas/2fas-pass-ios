@@ -12,13 +12,13 @@ public enum BackupImportFileError: Error {
 }
 
 public enum BackupImportResult {
-    case decrypted([PasswordData], tags: [ItemTagData], deleted: [DeletedItemData], date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
-    case needsPassword(ExchangeVault, currentSeed: Bool, date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
+    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData], date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
+    case needsPassword(ExchangeVaultVersioned, currentSeed: Bool, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
 }
 
 public enum BackupImportWithoutEncryptionResult {
-    case decrypted(ExchangeVault, date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
-    case needsPassword(ExchangeVault, date: Date, vaultName: String, deviceName: String?, passwordCount: Int)
+    case decrypted(ExchangeVaultVersioned, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
+    case needsPassword(ExchangeVaultVersioned, date: Date, vaultName: String, deviceName: String?, itemsCount: Int)
 }
 
 public enum BackupImportParseError: Error {
@@ -32,12 +32,12 @@ public enum BackupImportParseError: Error {
 
 public protocol BackupImportInteracting: AnyObject {
     func openFile(url: URL, completion: @escaping (Result<Data, BackupImportFileError>) -> Void)
-    func extractPasswords(from vault: ExchangeVault) -> [PasswordData]?
-    func extractDeletedItems(from vault: ExchangeVault) -> [DeletedItemData]?
-    func extractTags(from vault: ExchangeVault) -> [ItemTagData]?
+    func extractItems(from vault: ExchangeVaultVersioned) -> [ItemData]?
+    func extractDeletedItems(from vault: ExchangeVaultVersioned) -> [DeletedItemData]?
+    func extractTags(from vault: ExchangeVaultVersioned) -> [ItemTagData]?
     func parseContents(
         of data: Data,
-        decryptPasswordsIfPossible: Bool,
+        decryptItemsIfPossible: Bool,
         allowsAnyDeviceId: Bool,
         completion: @escaping (Result<BackupImportResult, BackupImportParseError>) -> Void
     )
@@ -46,7 +46,7 @@ public protocol BackupImportInteracting: AnyObject {
         completion: @escaping (Result<BackupImportWithoutEncryptionResult, BackupImportParseError>) -> Void
     )
     func isVaultReadyForImport() -> Bool
-    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVault, ImportParseError>) -> Void)
+    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void)
 }
 
 final class BackupImportInteractor {
@@ -86,7 +86,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                 let devideName = summary.deviceName
                 let date = summary.date
                 let vaultName = summary.vaultName
-                let passwordCount = summary.passwordCount
+                let itemsCount = summary.itemsCount
                 switch importInteractor.checkEncryptionWithoutParsing(in: data) {
                 case .noEncryption:
                     completion(
@@ -96,7 +96,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                                 date: date,
                                 vaultName: vaultName,
                                 deviceName: devideName,
-                                passwordCount: passwordCount
+                                itemsCount: itemsCount
                             )
                         )
                     )
@@ -108,7 +108,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                                 date: date,
                                 vaultName: vaultName,
                                 deviceName: devideName,
-                                passwordCount: passwordCount
+                                itemsCount: itemsCount
                             )
                         )
                     )
@@ -123,25 +123,25 @@ extension BackupImportInteractor: BackupImportInteracting {
         }
     }
     
-    func extractPasswords(from vault: ExchangeVault) -> [PasswordData]? {
-        importInteractor.extractUnencryptedPasswords(from: vault)
+    func extractItems(from vault: ExchangeVaultVersioned) -> [ItemData]? {
+        importInteractor.extractUnencryptedItems(from: vault)
     }
-    
-    func extractDeletedItems(from vault: ExchangeVault) -> [DeletedItemData]? {
+
+    func extractDeletedItems(from vault: ExchangeVaultVersioned) -> [DeletedItemData]? {
         importInteractor.extractUnencryptedDeletedItems(from: vault)
     }
-    
-    func extractTags(from vault: ExchangeVault) -> [ItemTagData]? {
+
+    func extractTags(from vault: ExchangeVaultVersioned) -> [ItemTagData]? {
         importInteractor.extractUnencryptedTags(from: vault)
     }
-    
-    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVault, ImportParseError>) -> Void) {
+
+    func parseRaw(data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void) {
         importInteractor.parseContents(of: data, completion: completion)
     }
     
     func parseContents(
         of data: Data,
-        decryptPasswordsIfPossible: Bool,
+        decryptItemsIfPossible: Bool,
         allowsAnyDeviceId: Bool,
         completion: @escaping (Result<BackupImportResult, BackupImportParseError>) -> Void
     ) {
@@ -157,37 +157,37 @@ extension BackupImportInteractor: BackupImportInteracting {
                 let devideName = summary.deviceName
                 let date = summary.date
                 let vaultName = summary.vaultName
-                let passwordCount = summary.passwordCount
+                let itemsCount = summary.itemsCount
                 switch self?.importInteractor.checkEncryption(in: data) {
                 case .noEncryption:
                     completion(
                         .success(
                             .decrypted(
-                                self?.importInteractor.extractUnencryptedPasswords(from: data) ?? [],
+                                self?.importInteractor.extractUnencryptedItems(from: data) ?? [],
                                 tags: self?.importInteractor.extractUnencryptedTags(from: data) ?? [],
                                 deleted: self?.importInteractor.extractUnencryptedDeletedItems(from: data) ?? [],
                                 date: date,
                                 vaultName: vaultName,
                                 deviceName: devideName,
-                                passwordCount: passwordCount
+                                itemsCount: itemsCount
                             )
                         )
                     )
                 case .noExternalKeyError, .noSelectedVaultError, .missingEncryptionError: completion(.failure(.errorDecrypting))
                 case .currentEncryption:
-                    if decryptPasswordsIfPossible {
-                        self?.importInteractor.extractPasswordsUsingCurrentEncryption(from: data, completion: { decryptResult in
+                    if decryptItemsIfPossible {
+                        self?.importInteractor.extractItemsUsingCurrentEncryption(from: data, completion: { decryptResult in
                             switch decryptResult {
-                            case .success((let passwords, let tags, let deleted)): completion(
+                            case .success((let items, let tags, let deleted)): completion(
                                 .success(
                                     .decrypted(
-                                        passwords,
+                                        items,
                                         tags: tags,
                                         deleted: deleted,
                                         date: date,
                                         vaultName: vaultName,
                                         deviceName: devideName,
-                                        passwordCount: passwordCount
+                                        itemsCount: itemsCount
                                     )
                                 )
                             )
@@ -202,12 +202,12 @@ extension BackupImportInteractor: BackupImportInteracting {
                                 date: date,
                                 vaultName: vaultName,
                                 deviceName: devideName,
-                                passwordCount: passwordCount
+                                itemsCount: itemsCount
                             )
                         ))
                     }
                 case .passwordChanged:
-                    if decryptPasswordsIfPossible {
+                    if decryptItemsIfPossible {
                         completion(.failure(.passwordChanged))
                     } else {
                         completion(
@@ -218,7 +218,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                                     date: date,
                                     vaultName: vaultName,
                                     deviceName: devideName,
-                                    passwordCount: passwordCount
+                                    itemsCount: itemsCount
                                 )
                             )
                         )
@@ -231,7 +231,7 @@ extension BackupImportInteractor: BackupImportInteracting {
                             date: date,
                             vaultName: vaultName,
                             deviceName: devideName,
-                            passwordCount: passwordCount
+                            itemsCount: itemsCount
                         )
                     )
                 )

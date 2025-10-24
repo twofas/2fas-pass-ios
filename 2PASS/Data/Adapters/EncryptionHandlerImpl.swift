@@ -11,11 +11,11 @@ import CryptoKit
 
 final class EncryptionHandlerImpl {
     private let mainRepository: MainRepository
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting) {
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting) {
         self.mainRepository = mainRepository
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
     }
 }
 

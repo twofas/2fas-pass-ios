@@ -9,7 +9,7 @@ import CommonUI
 
 enum TransferItemsInstructionsDestination: RouterDestination {
     case uploadFile(ExternalService, onClose: (FileImportResult) -> Void)
-    case summary(ExternalService, passwords: [PasswordData], onClose: Callback)
+    case summary(ExternalService, items: [ItemData], onClose: Callback)
     case importFailure(onClose: Callback)
     
     var id: String {
@@ -59,10 +59,10 @@ final class TransferItemsInstructionsPresenter {
         Task { @MainActor in
             do {
                 isUploadingFile = true
-                let passwords = try await interactor.transfer(from: url)
+                let items = try await interactor.transfer(from: url)
                 isUploadingFile = false
                 
-                destination = .summary(service, passwords: passwords, onClose: onClose)
+                destination = .summary(service, items: items, onClose: onClose)
             } catch {
                 isUploadingFile = false
                 destination = .importFailure(onClose: onClose)

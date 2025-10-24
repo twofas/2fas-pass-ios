@@ -24,9 +24,10 @@ public extension ExternalService {
         case .keePassXC: "KeePassXC"
         case .keePass: "KeePass"
         case .microsoftEdge: "Microsoft Edge"
+        case .enpass: "Enpass"
         }
     }
-    
+
     var allowedContentType: UTType {
         switch self {
         case .onePassword: UTType.commaSeparatedText
@@ -42,6 +43,7 @@ public extension ExternalService {
         case .keePassXC: UTType.commaSeparatedText
         case .keePass: UTType.commaSeparatedText
         case .microsoftEdge: UTType.commaSeparatedText
+        case .enpass: UTType.json
         }
     }
 }

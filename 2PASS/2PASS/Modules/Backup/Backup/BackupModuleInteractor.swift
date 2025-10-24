@@ -9,14 +9,14 @@ import Data
 import Common
 
 enum BackupModuleImportResult {
-    case decrypted([PasswordData], tags: [ItemTagData], deleted: [DeletedItemData])
-    case encrypted(ExchangeVault, entropy: Entropy?)
+    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData])
+    case encrypted(ExchangeVaultVersioned, entropy: Entropy?)
 }
 
 protocol BackupModuleInteracting: AnyObject {
     var currentPlanItemsLimit: Int { get }
     var canImport: Bool { get }
-    var hasPasswords: Bool { get }
+    var hasItems: Bool { get }
 
     func loginUsingBiometryIfAvailable() async -> Bool
     
@@ -30,15 +30,15 @@ protocol BackupModuleInteracting: AnyObject {
 
 final class BackupModuleInteractor {
     private let importInteractor: BackupImportInteracting
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let biometryInteractor: BiometryInteracting
     private let loginInteractor: LoginInteracting
     private let protectionInteractor: ProtectionInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(importInteractor: BackupImportInteracting, passwordInteractor: PasswordInteracting, biometryInteractor: BiometryInteracting, loginInteractor: LoginInteracting, protectionInteractor: ProtectionInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+    init(importInteractor: BackupImportInteracting, itemsInteractor: ItemsInteracting, biometryInteractor: BiometryInteracting, loginInteractor: LoginInteracting, protectionInteractor: ProtectionInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
         self.importInteractor = importInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.biometryInteractor = biometryInteractor
         self.loginInteractor = loginInteractor
         self.protectionInteractor = protectionInteractor
@@ -48,15 +48,15 @@ final class BackupModuleInteractor {
 
 extension BackupModuleInteractor: BackupModuleInteracting {
     
-    var hasPasswords: Bool {
-        passwordInteractor.hasPasswords
+    var hasItems: Bool {
+        itemsInteractor.hasItems
     }
     
     var canImport: Bool {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {
@@ -92,14 +92,14 @@ extension BackupModuleInteractor: BackupModuleInteracting {
         of data: Data,
         completion: @escaping (Result<BackupModuleImportResult, BackupImportParseError>) -> Void
     ) {
-        importInteractor.parseContents(of: data, decryptPasswordsIfPossible: false, allowsAnyDeviceId: true) { [weak self] result in
+        importInteractor.parseContents(of: data, decryptItemsIfPossible: false, allowsAnyDeviceId: true) { [weak self] result in
             guard let self else { return }
             
             switch result {
             case .success(let importResult):
                 switch importResult {
-                case .decrypted(let passwords, let tags, let deleted, _, _, _, _):
-                    completion(.success(.decrypted(passwords, tags: tags, deleted: deleted)))
+                case .decrypted(let items, let tags, let deleted, _, _, _, _):
+                    completion(.success(.decrypted(items, tags: tags, deleted: deleted)))
                 case .needsPassword(let vault, let currentSeed, _, _, _, _):
                     let entropy: Entropy? = {
                         if currentSeed {

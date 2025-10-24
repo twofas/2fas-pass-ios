@@ -17,7 +17,7 @@ protocol ConnectPullReqestCommunicationModuleInteracting: AnyObject {
     func identiconSVG(colorScheme: ColorScheme) -> String?
     func fetchIconImage(from url: URL) async throws -> Data
     func extractDomain(from urlString: String) -> String?
-    func deletePassword(for passwordID: PasswordID)
+    func deleteItem(for itemID: ItemID)
     func deleteAppNotification() async throws
     
     func connect(
@@ -34,7 +34,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     let connectInteractor: ConnectInteracting
     let fileIconInteractor: FileIconInteracting
     let uriInteractor: URIInteracting
-    let passwordInteractor: PasswordInteracting
+    let itemsInteractor: ItemsInteracting
     let appNotificationsInteractor: AppNotificationsInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
     
@@ -43,7 +43,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
          identiconInteractor: ConnectIdenticonInteracting,
          fileIconInteractor: FileIconInteracting,
          uriInteractor: URIInteracting,
-         passwordInteractor: PasswordInteracting,
+         itemsInteractor: ItemsInteracting,
          appNotificationsInteractor: AppNotificationsInteracting,
          paymentStatusInteractor: PaymentStatusInteracting
     ) {
@@ -52,7 +52,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         self.identiconInteractor = identiconInteractor
         self.fileIconInteractor = fileIconInteractor
         self.uriInteractor = uriInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
     }
@@ -61,7 +61,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {
@@ -96,9 +96,9 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         uriInteractor.extractDomain(from: urlString)
     }
     
-    func deletePassword(for passwordID: PasswordID) {
-        passwordInteractor.markAsTrashed(for: passwordID)
-        passwordInteractor.saveStorage()
+    func deleteItem(for itemID: ItemID) {
+        itemsInteractor.markAsTrashed(for: itemID)
+        itemsInteractor.saveStorage()
     }
     
     func deleteAppNotification() async throws {

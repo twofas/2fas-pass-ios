@@ -8,12 +8,12 @@ import Foundation
 import Common
 
 public extension ExchangeVault {
-    var summary: (date: Date, vaultName: String, deviceName: String?, passwordCount: Int) {
+    var summary: (date: Date, vaultName: String, deviceName: String?, itemsCount: Int) {
         (
             date: Date(exportTimestamp: vault.updatedAt),
             vaultName: vault.name,
             deviceName: origin.deviceName,
-            passwordCount: passwordCount
+            itemsCount: itemsCount
         )
     }
 }

@@ -99,32 +99,32 @@ final class VaultEncryptedEntity: NSManagedObject {
         context.delete(entity)
     }
     
-    // MARK: - Passwords
+    // MARK: - Items
     
-    @nonobjc static func deletePassword(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, password: ItemEncryptedEntity) {
-        Log("VaultEncryptedEntity: Deleting entity of type: \(password) in vault: \(vault)", module: .storage)
-        vault.removeFromItems(password)
+    @nonobjc static func deleteItem(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, item: ItemEncryptedEntity) {
+        Log("VaultEncryptedEntity: Deleting entity of type: \(item) in vault: \(vault)", module: .storage)
+        vault.removeFromItems(item)
     }
     
-    @nonobjc static func deletePasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, passwords: [ItemEncryptedEntity]) {
-        Log("VaultEncryptedEntity: Deleting entity of type: \(passwords) in vault: \(vault)", module: .storage)
-        vault.removeFromItems(Set(passwords))
+    @nonobjc static func deleteItems(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, items: [ItemEncryptedEntity]) {
+        Log("VaultEncryptedEntity: Deleting entity of type: \(items) in vault: \(vault)", module: .storage)
+        vault.removeFromItems(Set(items))
     }
     
-    @nonobjc static func addPassword(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, password: ItemEncryptedEntity) {
-        Log("VaultEncryptedEntity: Adding entity of type: \(password) in vault: \(vault)", module: .storage)
-        vault.addToItems(password)
+    @nonobjc static func addItem(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, item: ItemEncryptedEntity) {
+        Log("VaultEncryptedEntity: Adding entity of type: \(item) in vault: \(vault)", module: .storage)
+        vault.addToItems(item)
     }
 
-    @nonobjc static func addPasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, passwords: [ItemEncryptedEntity]) {
-        Log("VaultEncryptedEntity: Adding entity of type: \(passwords) in vault: \(vault)", module: .storage)
-        vault.addToItems(Set(passwords))
+    @nonobjc static func addItems(on context: NSManagedObjectContext, vault: VaultEncryptedEntity, items: [ItemEncryptedEntity]) {
+        Log("VaultEncryptedEntity: Adding entity of type: \(items) in vault: \(vault)", module: .storage)
+        vault.addToItems(Set(items))
     }
     
-    @nonobjc static func listPasswords(on context: NSManagedObjectContext, vault: VaultEncryptedEntity) -> [ItemEncryptedEntity] {
-        guard let passwords = vault.items else {
+    @nonobjc static func listItems(on context: NSManagedObjectContext, vault: VaultEncryptedEntity) -> [ItemEncryptedEntity] {
+        guard let items = vault.items else {
             return []
         }
-        return Array(passwords)
+        return Array(items)
     }
 }

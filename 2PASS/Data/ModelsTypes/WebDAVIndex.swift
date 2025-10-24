@@ -39,7 +39,7 @@ public struct WebDAVIndexEntry: Codable, Identifiable, Equatable, Hashable {
         vaultUpdatedAt: Int,
         deviceName: String,
         deviceId: UUID,
-        schemaVersion: Int = Config.indexSchemaVersion
+        schemaVersion: Int
     ) {
         self.seedHashHex = seedHashHex
         self.vaultId = vaultId

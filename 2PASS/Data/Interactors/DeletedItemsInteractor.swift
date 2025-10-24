@@ -39,11 +39,11 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
         return mainRepository.listDeletedItems(in: vaultID, limit: nil)
     }
     
-    func deleteDeletedItem(id: PasswordID) {
+    func deleteDeletedItem(id: ItemID) {
         mainRepository.deleteDeletedItem(id: id)
     }
     
-    func updateDeletedItem(id: PasswordID, kind: DeletedItemData.Kind, deletedAt: Date) {
+    func updateDeletedItem(id: ItemID, kind: DeletedItemData.Kind, deletedAt: Date) {
         guard let vaultID = mainRepository.selectedVault?.vaultID else {
             Log("DeletedItemsInteractor: Error while getting vaultID for Deleted Password update", module: .interactor, severity: .error)
             return

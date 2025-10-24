@@ -95,8 +95,8 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
         )
     }
     
-    public func getCloudCachedItemEntity(passwordID: ItemID) -> CloudDataItem? {
-        guard let entity = ItemCachedEntity.getEntity(on: context, itemID: passwordID) else {
+    public func getCloudCachedItemEntity(itemID: ItemID) -> CloudDataItem? {
+        guard let entity = ItemCachedEntity.getEntity(on: context, itemID: itemID) else {
             return nil
         }
         return .init(item: entity.toData(), metadata: entity.metadata)

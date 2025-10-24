@@ -18,7 +18,7 @@ final class AddPasswordNavigationFlowController: NavigationFlowController {
     static func present(
         on viewController: UIViewController,
         parent: AddPasswordNavigationFlowControllerParent,
-        editPasswordID: PasswordID?,
+        editItemID: ItemID?,
         changeRequest: PasswordDataChangeRequest? = nil
     ) {
         let flowController = AddPasswordNavigationFlowController()
@@ -31,7 +31,7 @@ final class AddPasswordNavigationFlowController: NavigationFlowController {
         AddPasswordFlowController.setAsRoot(
             on: navi,
             parent: flowController,
-            editPasswordID: editPasswordID,
+            editItemID: editItemID,
             changeRequest: changeRequest
         )
         
@@ -41,7 +41,7 @@ final class AddPasswordNavigationFlowController: NavigationFlowController {
     
     static func buildView(
         parent: AddPasswordNavigationFlowControllerParent,
-        editPasswordID: PasswordID?,
+        editItemID: ItemID?,
         changeRequest: PasswordDataChangeRequest?
     ) -> UIViewController {
         let flowController = AddPasswordNavigationFlowController()
@@ -54,7 +54,7 @@ final class AddPasswordNavigationFlowController: NavigationFlowController {
         AddPasswordFlowController.setAsRoot(
             on: navi,
             parent: flowController,
-            editPasswordID: editPasswordID,
+            editItemID: editItemID,
             changeRequest: changeRequest,
         )
         

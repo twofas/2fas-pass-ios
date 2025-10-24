@@ -15,7 +15,7 @@ enum VaultRecoveryCheckDestination: Identifiable {
         }
     }
     
-    case encrypted(fileData: ExchangeVault)
+    case encrypted(fileData: ExchangeVaultVersioned)
 }
 
 @Observable

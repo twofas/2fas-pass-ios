@@ -9,10 +9,12 @@ import SwiftUI
 @Observable
 final class GenerateContentPresenter {
     var isWorking = false
-    var passwordCount: Int = 0
-    
+    var itemsCount: Int = 0
+    var secureNotesCount = 0
+    var unknownCount = 0
+
     private let interactor: GenerateContentModuleInteracting
-    
+
     init(interactor: GenerateContentModuleInteracting) {
         self.interactor = interactor
     }
@@ -23,22 +25,40 @@ extension GenerateContentPresenter {
         refreshCount()
     }
     
-    func onRemoveAllPasswords() {
+    func onRemoveAllItems() {
         isWorking = true
-        interactor.removeAllPasswords()
+        interactor.removeAllItems()
         refreshCount()
         isWorking = false
     }
     
     func onGenerate(count: Int) {
         isWorking = true
-        interactor.generatePasswords(count: count) { [weak self] in
+        interactor.generateItems(count: count) { [weak self] in
             self?.refreshCount()
             self?.isWorking = false
         }
     }
     
+    func onGenerateSecureNote(count: Int) {
+        isWorking = true
+        interactor.generateSecureNotes(count: count) { [weak self] in
+            self?.refreshCount()
+            self?.isWorking = false
+        }
+    }
+
+    func onGenerateUnknown(count: Int) {
+        isWorking = true
+        interactor.generateUnknown(count: count) { [weak self] in
+            self?.refreshCount()
+            self?.isWorking = false
+        }
+    }
+
     private func refreshCount() {
-        passwordCount = interactor.passwordCount
+        itemsCount = interactor.itemsCount
+        secureNotesCount = interactor.secureNotesCount
+        unknownCount = interactor.unknownCount
     }
 }

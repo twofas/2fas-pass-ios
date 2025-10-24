@@ -13,9 +13,9 @@ protocol TrashModuleInteracting: AnyObject {
     var canRestore: Bool { get }
     var isTrashEmpty: Bool { get }
 
-    func list() -> [PasswordData]
-    func delete(with passwordID: PasswordID)
-    func restore(with passwordID: PasswordID)
+    func list() -> [ItemData]
+    func delete(with itemID: ItemID)
+    func restore(with itemID: ItemID)
     
     func restoreAll()
     func emptyTrash()
@@ -25,13 +25,13 @@ protocol TrashModuleInteracting: AnyObject {
 }
 
 final class TrashModuleInteractor {
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(passwordInteractor: PasswordInteracting, fileIconInteractor: FileIconInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
-        self.passwordInteractor = passwordInteractor
+    init(itemsInteractor: ItemsInteracting, fileIconInteractor: FileIconInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+        self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
@@ -44,7 +44,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanLimitItems: Int {
@@ -55,38 +55,38 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         list().isEmpty
     }
     
-    func list() -> [PasswordData] {
-        passwordInteractor.listTrashedPasswords()
+    func list() -> [ItemData] {
+        itemsInteractor.listTrashedItems()
     }
     
-    func delete(with passwordID: PasswordID) {
-        Log("TrashModuleInteractor: Deleting password: \(passwordID)", module: .moduleInteractor)
-        passwordInteractor.deletePassword(for: passwordID)
-        passwordInteractor.saveStorage()
+    func delete(with itemID: ItemID) {
+        Log("TrashModuleInteractor: Deleting item: \(itemID)", module: .moduleInteractor)
+        itemsInteractor.deleteItem(for: itemID)
+        itemsInteractor.saveStorage()
     }
     
-    func restore(with passwordID: PasswordID) {
-        Log("TrashModuleInteractor: Restoring password: \(passwordID)", module: .moduleInteractor)
-        passwordInteractor.markAsNotTrashed(for: passwordID)
-        passwordInteractor.saveStorage()
+    func restore(with itemID: ItemID) {
+        Log("TrashModuleInteractor: Restoring item: \(itemID)", module: .moduleInteractor)
+        itemsInteractor.markAsNotTrashed(for: itemID)
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }
     
     func restoreAll() {
         Log("TrashModuleInteractor: Restore all", module: .moduleInteractor)
-        list().forEach { password in
-            passwordInteractor.markAsNotTrashed(for: password.passwordID)
+        list().forEach { item in
+            itemsInteractor.markAsNotTrashed(for: item.id)
         }
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }
     
     func emptyTrash() {
         Log("TrashModuleInteractor: Empty trash", module: .moduleInteractor)
-        list().forEach { password in
-            passwordInteractor.deletePassword(for: password.passwordID)
+        list().forEach { item in
+            itemsInteractor.deleteItem(for: item.id)
         }
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
     }
     
     func cachedImage(from url: URL) -> Data? {

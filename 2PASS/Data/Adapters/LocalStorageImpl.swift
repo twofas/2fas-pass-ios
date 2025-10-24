@@ -9,18 +9,18 @@ import Backup
 import Common
 
 final class LocalStorageImpl {
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
     
     init(
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         tagInteractor: TagInteracting,
         mainRepository: MainRepository
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
         self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
@@ -29,11 +29,11 @@ final class LocalStorageImpl {
 
 extension LocalStorageImpl: LocalStorage {
     func save() {
-        passwordInteractor.saveStorage()
+        itemsInteractor.saveStorage()
     }
     
     func listItems() -> [ItemEncryptedData] {
-        passwordInteractor.listEncryptedItems()
+        itemsInteractor.listEncryptedItems()
     }
     
     func listAllDeletedItems() -> [DeletedItemData] {
@@ -45,7 +45,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listTrashedItemsIDs() -> [ItemID] {
-        passwordInteractor.listTrashedPasswords().map({ $0.passwordID })
+        itemsInteractor.listTrashedItems().map({ $0.id })
     }
     
     func createDeletedItem(_ deletedItem: DeletedItemData) {
@@ -57,7 +57,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func moveFromTrash(_ itemID: ItemID) {
-        passwordInteractor.markAsNotTrashed(for: itemID)
+        itemsInteractor.markAsNotTrashed(for: itemID)
     }
     
     func updateDeletedItem(_ deletedItem: DeletedItemData) {
@@ -69,11 +69,11 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func createItem(_ item: ItemEncryptedData) {
-        passwordInteractor.createEncryptedItem(item)
+        itemsInteractor.createEncryptedItem(item)
     }
     
     func updateItem(_ item: ItemEncryptedData) {
-        passwordInteractor.updateEncryptedItem(item)
+        itemsInteractor.updateEncryptedItem(item)
     }
     
     func removeDeletedItem(_ deletedItem: DeletedItemID) {
@@ -93,7 +93,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func removeItem(_ itemID: ItemID) {
-        passwordInteractor.markAsTrashed(for: itemID)
+        itemsInteractor.markAsTrashed(for: itemID)
     }
     
     func currentVault() -> VaultEncryptedData? {

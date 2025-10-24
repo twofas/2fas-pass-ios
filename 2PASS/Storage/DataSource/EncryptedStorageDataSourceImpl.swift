@@ -41,10 +41,10 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         coreDataStack.loadStore(completion: completion)
     }
     
-    // MARK: Encrypted Passwords
+    // MARK: Encrypted Items
     
-    public func createEncryptedPassword(
-        itemID: PasswordID,
+    public func createEncryptedItem(
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -71,8 +71,8 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         vault.addToItems(entity)
     }
     
-    public func updateEncryptedPassword(
-        itemID: PasswordID,
+    public func updateEncryptedItem(
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -97,32 +97,32 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         vault.addToItems(entity)
     }
     
-    public func batchUpdateRencryptedPasswords(_ passwords: [ItemEncryptedData], date: Date) {
-        guard let currentVaultID = passwords.first?.vaultID else {
+    public func batchUpdateRencryptedItems(_ items: [ItemEncryptedData], date: Date) {
+        guard let currentVaultID = items.first?.vaultID else {
             Log("Error while getting current vaultID for batch update")
             return
         }
         let listAll = ItemEncryptedEntity.listItems(on: context, vaultID: currentVaultID)
-        for pass in passwords {
-            if let entity = listAll.first(where: { $0.itemID == pass.itemID }) {
+        for item in items {
+            if let entity = listAll.first(where: { $0.itemID == item.itemID }) {
                 ItemEncryptedEntity.update(
                     on: context,
                     entity: entity,
                     modificationDate: date,
-                    trashedStatus: pass.trashedStatus,
-                    protectionLevel: pass.protectionLevel,
-                    contentType: pass.contentType,
-                    contentVersion: pass.contentVersion,
-                    content: pass.content,
-                    tagIds: pass.tagIds
+                    trashedStatus: item.trashedStatus,
+                    protectionLevel: item.protectionLevel,
+                    contentType: item.contentType,
+                    contentVersion: item.contentVersion,
+                    content: item.content,
+                    tagIds: item.tagIds
                 )
             } else {
-                Log("Error while searching for Password Encrypted Entity \(pass.itemID)")
+                Log("Error while searching for Item Encrypted Entity \(item.itemID)")
             }
         }
     }
     
-    public func getEncryptedPasswordEntity(itemID: PasswordID) -> ItemEncryptedData? {
+    public func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
         ItemEncryptedEntity.getEntity(on: context, itemID: itemID)?
             .toData()
     }
@@ -140,27 +140,27 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         guard let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID) else { return [] }
         
         if excludeProtectionLevels.isEmpty {
-            return VaultEncryptedEntity.listPasswords(on: context, vault: vault).map({ $0.toData() })
+            return VaultEncryptedEntity.listItems(on: context, vault: vault).map({ $0.toData() })
         } else {
             return ItemEncryptedEntity.listItems(on: context, excludeProtectionLevels: excludeProtectionLevels, vaultID: vaultID)
                 .map({ $0.toData() })
         }
     }
     
-    public func addEncryptedPassword(_ itemID: PasswordID, to vaultID: VaultID) {
+    public func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
         guard let entity = ItemEncryptedEntity.getEntity(on: context, itemID: itemID),
               let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID)
         else { return }
         vault.addToItems(entity)
     }
     
-    public func deleteEncryptedPassword(itemID: PasswordID) {
+    public func deleteEncryptedItem(itemID: ItemID) {
         guard let entity = ItemEncryptedEntity.getEntity(on: context, itemID: itemID) else { return }
         ItemEncryptedEntity.delete(on: context, entity: entity)
     }
     
-    public func deleteAllEncryptedPasswords(in vaultID: VaultID?) {
-        ItemEncryptedEntity.deleteAllEncryptedPasswords(on: context, vaultID: vaultID)
+    public func deleteAllEncryptedItems(in vaultID: VaultID?) {
+        ItemEncryptedEntity.deleteAllEncryptedItems(on: context, vaultID: vaultID)
     }
     
     // MARK: Encrypted Vaults
