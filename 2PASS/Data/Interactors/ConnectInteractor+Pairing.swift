@@ -22,7 +22,7 @@ extension ConnectInteractor {
             appVersion: mainRepository.currentAppVersion
         )
         
-        try webSocketSession.validateSchemeVersion(session.version)
+        try webSocketSession.validateSchemeVersion(session.version.rawValue)
         
         webSocketSession.start()
         
@@ -61,25 +61,26 @@ extension ConnectInteractor {
         }
     }
     
-    private func performConnecting(for session: ConnectSession, using: ConnectWebSocketSession, progress: @escaping (Float) -> Void, onReceiveBrowserInfo: @escaping (WebBrowser) -> Void) async throws {
+    private func performConnecting(
+        for session: ConnectSession,
+        using webSocketSession: ConnectWebSocketSession,
+        progress: @escaping (Float) -> Void,
+        onReceiveBrowserInfo: @escaping (WebBrowser) -> Void
+    ) async throws {
         let webBrowser = await webBrowsersInteractor.getWebBrowser(publicKey: session.pkPersBeHex)
-
         let keys = try createKeys(pkEpheBeHex: session.pkEpheBeHex)
         
         guard let deviceID = mainRepository.deviceID else {
             throw ConnectError.missingDeviceId
         }
         
+        let pairingSession = ConnectPairingWebSocketSession(
+            schemeVersion: session.version,
+            webSocketSession: webSocketSession
+        )
+        
         do {
-            let helloRequest = ConnectRequests.Hello(payload: .init(
-                deviceId: deviceID.uuidString,
-                deviceName: mainRepository.deviceName,
-                deviceOs: "ios"
-            ))
-            
-            let helloResponse = try await using.send(helloRequest)
-            
-            Log("Connect - Hello response received", module: .connect, severity: .info)
+            let helloResponse = try await pairingSession.helloHandshake(deviceID: deviceID, deviceName: mainRepository.deviceName)
             
             progress(0.25)
             
@@ -95,16 +96,7 @@ extension ConnectInteractor {
             )
             onReceiveBrowserInfo(browser)
             
-            let challengeRequest = ConnectRequests.Challenge(payload: .init(
-                pkEpheMa: keys.publicKey.derRepresentation.base64EncodedString(),
-                hkdfSalt: keys.hkdfSalt.base64EncodedString())
-            )
-            
-            let challengeResponse = try await using.send(challengeRequest)
-            
-            Log("Connect - Challenge response received", module: .connect, severity: .info)
-            
-            progress(0.4)
+            let challengeResponse = try await pairingSession.challengeExchange(keys: keys)
             
             do {
                 try verifySalt(challengeResponse.hkdfSaltEnc, keys: keys)
@@ -112,111 +104,45 @@ extension ConnectInteractor {
                 throw ConnectError.saltVerificationFailed
             }
             
-            let encryptionDataKey = HKDF<SHA256>.deriveKey(
-                inputKeyMaterial: keys.sessionKey,
-                salt: keys.hkdfSalt,
-                info: Keys.Connect.data.data(using: .utf8)!,
-                outputByteCount: 32
-            )
-            let encryptionPassKey = HKDF<SHA256>.deriveKey(
-                inputKeyMaterial: keys.sessionKey,
-                salt: keys.hkdfSalt,
-                info: Keys.Connect.passwordTier3.data(using:.utf8)!,
-                outputByteCount: 32
-            )
+            progress(0.4)
             
-            let itemsData = try await connectExportInteractor.prepareItemsForConnectExport(encryptPasswordKey: encryptionPassKey, deviceId: deviceID)
-            let tagsData = try await connectExportInteractor.prepareTagsForConnectExport()
+            let encryptionDataKey = deriveEncryptionDataKey(from: keys)
             
-            try Task.checkCancellation()
+            let vaultsData = try await prepareVaultsData(
+                session: session,
+                deviceID: deviceID,
+                keys: keys
+            )
             
             progress(0.5)
             
-            let compressedItems = try itemsData.gzipped()
-            let compressedTags = try tagsData.gzipped()
-            let vault = ConnectVault(
-                logins: compressedItems.base64EncodedString(),
-                tags: compressedTags.base64EncodedString()
+            let encryptedData = try encryptTransferData(
+                vaultsData: vaultsData,
+                newSessionId: newSessionId,
+                encryptionDataKey: encryptionDataKey
             )
-            let vaultData = try mainRepository.jsonEncoder.encode(vault)
             
-            guard let nonceS = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
-                  let nonceD = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
-                  let nonceT = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
-                  let nonceE = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount) else {
-                throw ConnectError.encryptionFailure
-            }
-            
-            let fcmToken = mainRepository.pushNotificationToken ?? ""
-            
-            guard let newSessionIdEnc = mainRepository.encrypt(newSessionId, key: encryptionDataKey, nonce: nonceS),
-                  let fcmTokenData = fcmToken.data(using: .utf8),
-                  let fcmTokenEnc = mainRepository.encrypt(fcmTokenData, key: encryptionDataKey, nonce: nonceT),
-                  let gzipVaultDataEnc = mainRepository.encrypt(vaultData, key: encryptionDataKey, nonce: nonceD) else {
-                throw ConnectError.encryptionFailure
-            }
-            
-            let expirationDateEnc: Data? = {
-                if let expirationDate = paymentStatusInteractor.plan.expirationDate, let expirationTimestamp = "\(expirationDate.exportTimestamp))".data(using: .utf8) {
-                    return mainRepository.encrypt(expirationTimestamp, key: encryptionDataKey, nonce: nonceE)
-                } else {
-                    return nil
-                }
-            }()
-            
-            let sha256Gzip = SHA256.hash(data: gzipVaultDataEnc)
-            
-            let dataToSend = gzipVaultDataEnc.base64EncodedString()
-            let chunkSize = Config.Connect.chunkSize
-            let chunkCount = (dataToSend.count + chunkSize - 1) / chunkSize
-            
-            let initTransferRequest = ConnectRequests.InitTransfer(payload: .init(
-                totalChunks: chunkCount,
-                totalSize: gzipVaultDataEnc.count,
-                sha256GzipVaultDataEnc: Data(sha256Gzip).base64EncodedString(),
-                fcmTokenEnc: fcmTokenEnc.base64EncodedString(),
-                newSessionIdEnc: newSessionIdEnc.base64EncodedString(),
-                expirationDateEnc: expirationDateEnc?.base64EncodedString()
-            ))
-            
-            try await using.send(initTransferRequest)
-            
-            Log("Connect - Init transfer response received", module: .connect, severity: .info)
+            try await pairingSession.initTransfer(encryptedData: encryptedData)
             
             progress(0.6)
             
+            let dataToSend = encryptedData.gzipVaultsDataEnc.base64EncodedString()
+            let chunkSize = Config.Connect.chunkSize
+            let chunkCount = (dataToSend.count + chunkSize - 1) / chunkSize
+            
             for index in 0..<chunkCount {
-                let startChunk = index * chunkSize
-                let endChunk = min((index+1) * chunkSize, dataToSend.count)
-                let chunkData = dataToSend[startChunk..<endChunk]
-                
-                if index == chunkCount - 1 {
-                    let transferRequest = ConnectRequests.TransferLastChunk(payload: .init(
-                        chunkIndex: index,
-                        chunkSize: chunkData.count,
-                        chunkData: chunkData
-                    ))
-                    _ = try await using.send(transferRequest)
-                } else {
-                    let transferRequest = ConnectRequests.TransferChunk(payload: .init(
-                        chunkIndex: index,
-                        chunkSize: chunkData.count,
-                        chunkData: chunkData
-                    ))
-                    _ = try await using.send(transferRequest)
-                }
-                
-                Log("Connect - Transfer chunk response received", module: .connect, severity: .info)
-                
+                try await pairingSession.sendChunk(
+                    index: index,
+                    chunkCount: chunkCount,
+                    chunkSize: chunkSize,
+                    dataToSend: dataToSend
+                )
                 progress(0.6 + 0.3 * Float(index) / Float(chunkCount))
             }
             
             progress(0.9)
             
-            let closeRequest = ConnectRequests.CloseWithSuccess()
-            try await using.send(closeRequest)
-            
-            Log("Connect - Close with success response received", module: .connect, severity: .info)
+            try await pairingSession.closeConnectionWithSuccess()
             
             progress(1.0)
             
@@ -227,18 +153,129 @@ extension ConnectInteractor {
         } catch is CancellationError {
             throw ConnectError.cancelled
         } catch {
-            do {
-                let closeWithError = ConnectRequests.CloseWithError(payload: .init(error: error))
-                try await using.send(closeWithError)
-            } catch {
-                Log("Connect - Error while closing with error browser extension: \(error)", module: .connect)
-            }
-            
-            Log("Connect - Error while connecting with browser extension: \(error)", module: .connect)
+            await pairingSession.closeConnection(with: error)
             throw error
         }
     }
-    
+
+    // MARK: - Vaults Data Preparation
+
+    private func prepareVaultsData(
+        session: ConnectSession,
+        deviceID: UUID,
+        keys: SessionKeys
+    ) async throws -> Data {
+        switch session.version {
+        case .v1:
+            return try await prepareV1VaultsData(deviceID: deviceID, keys: keys)
+        default:
+            return try await prepareV2VaultsData(keys: keys)
+        }
+    }
+
+    private func prepareV1VaultsData(
+        deviceID: UUID,
+        keys: SessionKeys
+    ) async throws -> Data {
+        let passwordEncryptionKey = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: keys.sessionKey,
+            salt: keys.hkdfSalt,
+            info: Keys.Connect.passwordTier3.data(using:.utf8)!,
+            outputByteCount: 32
+        )
+
+        let tags = try await connectExportInteractor.prepareTagsForConnectExport()
+        let items = try await connectExportInteractor.prepareItemsForConnectExport(
+            deviceId: deviceID,
+            secureFieldEncryptionKeyProvider: { protectionLevel in
+                switch protectionLevel {
+                case .normal: passwordEncryptionKey
+                default: nil
+                }
+            }
+        )
+
+        let itemsData = try mainRepository.jsonEncoder.encode(items)
+        let tagsData = try mainRepository.jsonEncoder.encode(tags)
+
+        try Task.checkCancellation()
+
+        let compressedItems = try itemsData.gzipped()
+        let compressedTags = try tagsData.gzipped()
+        let vault = ConnectSchemaV1.ConnectVault(
+            logins: compressedItems.base64EncodedString(),
+            tags: compressedTags.base64EncodedString()
+        )
+        return try mainRepository.jsonEncoder.encode(vault)
+    }
+
+    private func prepareV2VaultsData(keys: SessionKeys) async throws -> Data {
+        let secureFieldsKey = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: keys.sessionKey,
+            salt: keys.hkdfSalt,
+            info: Keys.Connect.itemTier3.data(using:.utf8)!,
+            outputByteCount: 32
+        )
+
+        let vaults = await connectExportInteractor.prepareVaultsForConnectExport(
+            secureFieldEncryptionKeyProvider: { protectionLevel in
+                switch protectionLevel {
+                case .normal: secureFieldsKey
+                default: nil
+                }
+            }
+        )
+
+        let vaultsData = try mainRepository.jsonEncoder.encode(vaults)
+
+        try Task.checkCancellation()
+
+        return try vaultsData.gzipped()
+    }
+
+    // MARK: - Data Encryption
+
+    private func encryptTransferData(
+        vaultsData: Data,
+        newSessionId: Data,
+        encryptionDataKey: SymmetricKey
+    ) throws -> ConnectPairingWebSocketSession.EncryptedTransferData {
+        guard let nonceS = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
+              let nonceD = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
+              let nonceT = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
+              let nonceE = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount) else {
+            throw ConnectError.encryptionFailure
+        }
+
+        let fcmToken = mainRepository.pushNotificationToken ?? ""
+
+        guard let newSessionIdEnc = mainRepository.encrypt(newSessionId, key: encryptionDataKey, nonce: nonceS),
+              let fcmTokenData = fcmToken.data(using: .utf8),
+              let fcmTokenEnc = mainRepository.encrypt(fcmTokenData, key: encryptionDataKey, nonce: nonceT),
+              let gzipVaultsDataEnc = mainRepository.encrypt(vaultsData, key: encryptionDataKey, nonce: nonceD) else {
+            throw ConnectError.encryptionFailure
+        }
+
+        let expirationDateEnc: Data? = {
+            if let expirationDate = paymentStatusInteractor.plan.expirationDate,
+               let expirationTimestamp = "\(expirationDate.exportTimestamp))".data(using: .utf8) {
+                return mainRepository.encrypt(expirationTimestamp, key: encryptionDataKey, nonce: nonceE)
+            } else {
+                return nil
+            }
+        }()
+
+        let sha256Gzip = SHA256.hash(data: gzipVaultsDataEnc)
+
+        return .init(
+            newSessionIdEnc: newSessionIdEnc,
+            fcmTokenEnc: fcmTokenEnc,
+            gzipVaultsDataEnc: gzipVaultsDataEnc,
+            expirationDateEnc: expirationDateEnc,
+            sha256Gzip: sha256Gzip
+        )
+    }
+
     @MainActor
     private func saveConnectionWithWebBrowser(
         _ webBrowser: WebBrowser?,
@@ -272,9 +309,4 @@ extension ConnectInteractor {
             return webBrowser
         }
     }
-}
-
-private struct ConnectVault: Codable {
-    public let logins: String
-    public let tags: String
 }
