@@ -24,7 +24,7 @@ final class VaultRecoveryRecoverModuleInteractor {
     private let webDAVBackupInteractor: WebDAVBackupInteracting
     private let notificationCenter: NotificationCenter
     
-    private let syncAwaitSeconds = 15
+    private let syncAwaitSeconds = 60
     
     private var syncCompletion: ((Bool) -> Void)?
     
