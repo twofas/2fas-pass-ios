@@ -109,10 +109,10 @@ struct SettingsView: View {
                     }
                     
                     Button {
-                        presenter.onTransferPasswords()
+                        presenter.onTransferItems()
                     } label: {
                         SettingsRowView(
-                            icon: .transferPasswords,
+                            icon: .transferItems,
                             title: T.settingsEntryTransferFromOtherApps.localizedKey
                         )
                     }
@@ -218,7 +218,6 @@ struct SettingsView: View {
                 await presenter.observeSyncStateChanged()
             }
         }
-        .tint(.accentColor)
     }
 }
 

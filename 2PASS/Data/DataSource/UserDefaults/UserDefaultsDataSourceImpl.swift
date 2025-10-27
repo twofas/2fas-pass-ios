@@ -14,7 +14,6 @@ final class UserDefaultsDataSourceImpl {
         case appLockBlockTime
         case sortType
         case lockAppUntil
-        case introductionWasShown
         case crashlyticsDisabled
         case activeSearchEnabled
         case dateOfFirstRun
@@ -44,6 +43,7 @@ final class UserDefaultsDataSourceImpl {
         case webDAVAwaitsVaultOverrideAfterPasswordChange
         case lastKnownAppVersion
         case shouldShowQuickSetup
+        case lastAppUpdatePromptDate
     }
     
     private let userDefaults = UserDefaults()
@@ -66,15 +66,6 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearDeviceID() {
         sharedDefaults.set(nil, forKey: Keys.deviceID.rawValue)
         sharedDefaults.synchronize()
-    }
-    
-    func setIntroductionAsShown() {
-        userDefaults.set(true, forKey: Keys.introductionWasShown.rawValue)
-        userDefaults.synchronize()
-    }
-    
-    var wasIntroductionShown: Bool {
-        userDefaults.bool(forKey: Keys.introductionWasShown.rawValue)
     }
     
     func setCrashlyticsDisabled(_ disabled: Bool) {
@@ -428,5 +419,19 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     
     func setShouldShowQuickSetup(_ value: Bool) {
         userDefaults.set(value, forKey: Keys.shouldShowQuickSetup.rawValue)
+    }
+    
+    var lastAppUpdatePromptDate: Date? {
+        userDefaults.object(forKey: Keys.lastAppUpdatePromptDate.rawValue) as? Date
+    }
+    
+    func setLastAppUpdatePromptDate(_ date: Date) {
+        userDefaults.set(date, forKey: Keys.lastAppUpdatePromptDate.rawValue)
+        userDefaults.synchronize()
+    }
+    
+    func clearLastAppUpdatePromptDate() {
+        userDefaults.set(nil, forKey: Keys.lastAppUpdatePromptDate.rawValue)
+        userDefaults.synchronize()
     }
 }

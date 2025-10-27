@@ -47,8 +47,7 @@ final class PasswordsViewController: UIViewController {
         let categories = [
             CategoryItem(contentType: .all, title: "All items", icon: "briefcase.fill", color: .brand500),
             CategoryItem(contentType: .contentType(.login), title: "Logins", icon: "person.crop.square.fill", color: Color(uiColor: UIColor(hexString: "#00C700")!)),
-            CategoryItem(contentType: .contentType(.notes), title: "Secure Notes", icon: "note.text", color: Color(uiColor: UIColor(hexString: "#FF8400")!)),
-            CategoryItem(contentType: .contentType(.cards), title: "Cards", icon: "creditcard.fill", color: Color(uiColor: UIColor(hexString: "#AC7F5E")!))
+            CategoryItem(contentType: .contentType(.secureNote), title: "Secure Notes", icon: "note.text", color: Color(uiColor: UIColor(hexString: "#FF8400")!)),
         ]
         
         let categoriesViewController = UIHostingController(
@@ -118,6 +117,72 @@ final class PasswordsViewController: UIViewController {
             right: -view.safeAreaInsets.right
         )
     }
+    
+    func updateNavigationBarButtons() {
+        navigationBar.searchBar.isFilterActive = presenter.selectedFilterTag != nil
+        
+        let plusIcon: String
+        if #available(iOS 26.0, *) {
+            plusIcon = "plus"
+        } else {
+            plusIcon = "plus.circle.fill"
+        }
+        
+        contentNavigtionItem.rightBarButtonItems = [
+            UIBarButtonItem(
+                image: UIImage(systemName: plusIcon),
+                style: .plain,
+                target: self,
+                action: #selector(addAction)
+            )
+        ]
+    }
+    
+//    func updateNavigationBarButtons() {
+//        if #available(iOS 26, *) {
+//            let addButton = UIBarButtonItem(
+//                image: UIImage(systemName: "plus"),
+//                style: .plain,
+//                target: self,
+//                action: #selector(addAction)
+//            )
+//            
+//            if presenter.fillAddButton {
+//                addButton.tintColor = .brand500
+//                addButton.style = .prominent
+//            }
+//            
+//            let filterButton = UIBarButtonItem(
+//                image: UIImage(systemName: "line.3.horizontal.decrease"),
+//                menu: filterMenu()
+//            )
+//            filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
+//            filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
+//            
+//            navigationItem.rightBarButtonItems = [
+//                addButton,
+//                .fixedSpace(0),
+//                filterButton
+//            ]
+//        } else {
+//            let filterIconName = presenter.selectedFilterTag != nil
+//            ? "line.3.horizontal.decrease.circle.fill"
+//            : "line.3.horizontal.decrease.circle"
+//            
+//            navigationItem.rightBarButtonItems = [
+//                UIBarButtonItem(
+//                    image: UIImage(systemName: presenter.fillAddButton ? "plus.circle.fill" : "plus.circle"),
+//                    style: .plain,
+//                    target: self,
+//                    action: #selector(addAction)
+//                ),
+//                UIBarButtonItem(
+//                    image: UIImage(systemName: filterIconName),
+//                    menu: filterMenu()
+//                )
+//            ]
+//        }
+//    }
 }
 
 private extension PasswordsViewController {
@@ -217,7 +282,7 @@ private extension PasswordsViewController {
             return [
                 .init(contentType: .all, count: self.presenter.itemsCount),
                 .init(contentType: .contentType(.login), count: self.presenter.itemsCount),
-                .init(contentType: .contentType(.notes), count: 0)
+                .init(contentType: .contentType(.secureNote), count: 0)
             ]
         }
         navigationBar.onContentTypeFilterChanged = { [weak self] filter in
@@ -251,27 +316,7 @@ private extension PasswordsViewController {
             contentNavigtionItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
         }
     }
-    
-    func updateNavigationBarButtons() {
-        navigationBar.searchBar.isFilterActive = presenter.selectedFilterTag != nil
-        
-        let plusIcon: String
-        if #available(iOS 26.0, *) {
-            plusIcon = "plus"
-        } else {
-            plusIcon = "plus.circle.fill"
-        }
-        
-        contentNavigtionItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(systemName: plusIcon),
-                style: .plain,
-                target: self,
-                action: #selector(addAction)
-            )
-        ]
-    }
-    
+
     func setupDelegates() {
         searchController.searchBarDelegate = self
         passwordsList?.delegate = self
@@ -281,6 +326,16 @@ private extension PasswordsViewController {
         let emptySearchViewController = UIHostingController(rootView: EmptySearchView())
         addChild(emptySearchViewController)
         view.addSubview(emptySearchViewController.view)
+
+//        emptySearchViewController.view.backgroundColor = .clear
+//        
+//        if presenter.isAutoFillExtension, #available(iOS 26, *) {
+//            emptySearchViewController.view?.pinToParentCenter()
+//        } else {
+//            emptySearchViewController.view?.pinToSafeAreaParentCenter()
+//        }
+//        
+//        emptySearchViewController.didMove(toParent: self)
         
         emptySearchViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -301,6 +356,16 @@ private extension PasswordsViewController {
         )
         addChild(emptyListViewController)
         view.addSubview(emptyListViewController.view)
+
+//        emptyListViewController.view.backgroundColor = .clear
+//        
+//        if presenter.isAutoFillExtension, #available(iOS 26, *) {
+//            emptyListViewController.view?.pinToParentCenter()
+//        } else {
+//            emptyListViewController.view?.pinToSafeAreaParentCenter()
+//        }
+//        
+//        emptyListViewController.didMove(toParent: self)
         
         emptyListViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([

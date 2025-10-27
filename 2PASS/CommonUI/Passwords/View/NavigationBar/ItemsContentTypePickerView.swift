@@ -22,10 +22,10 @@ class ItemsContentTypePickerView: UIView {
                 updateSelectionForAllItems()
             case .contentType(.login):
                 updateSelection(title: "Logins", icon: "person.crop.square.fill", color: UIColor(hexString: "#00C700")!)
-            case .contentType(.notes):
+            case .contentType(.secureNote):
                 updateSelection(title: "Notes", icon: "note.text", color: UIColor(hexString: "#FF8400")!)
-            case .contentType(.cards):
-                updateSelection(title: "Cards", icon: "note.text", color: UIColor(hexString: "#FF8400")!)
+            case .contentType(.unknown):
+                updateSelection(title: "Unknown", icon: "", color: UIColor(hexString: "#000000")!)
             }
         }
     }

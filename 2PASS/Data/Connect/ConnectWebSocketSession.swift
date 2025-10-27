@@ -14,6 +14,8 @@ public enum ConnectWebSocketError: Error {
     case missingExpectedPayload
     case closeWithError
     case webSocketClosed
+    case appUpdateRequired
+    case browserExtensionUpdateRequired
 }
 
 final class ConnectWebSocketSession: NSObject {
@@ -96,6 +98,14 @@ final class ConnectWebSocketSession: NSObject {
         return payload
     }
     
+    func validateSchemeVersion(_ version: Int) throws(ConnectWebSocketError) {
+        if version > Config.Connect.schemaVersion {
+            throw ConnectWebSocketError.appUpdateRequired
+        } else if version < Config.Connect.schemaVersion - 1 { // support 2 scheme versions of browser extension
+            throw ConnectWebSocketError.browserExtensionUpdateRequired
+        }
+    }
+    
     private func send<Request>(_ request: Request, using webSocketTask: URLSessionWebSocketTask) async throws where Request: ConnectRequest {
         guard webSocketTask.closeCode == .invalid else {
             throw ConnectWebSocketError.webSocketClosed
@@ -149,6 +159,12 @@ final class ConnectWebSocketSession: NSObject {
                 let responseMessage = try jsonDecoder.decode(GenericConnectMessage.self, from: jsonData)
                 
                 let expectedResponseId = await expectedResponseStorage.id
+
+                do {
+                    try validateSchemeVersion(responseMessage.scheme)
+                } catch {
+                    await expectedResponseStorage.finish(with: error)
+                }
                 
                 if expectedResponseId == UUID(uuidString: responseMessage.id) {
                     await expectedResponseStorage.finish(with: jsonData)
@@ -168,7 +184,7 @@ final class ConnectWebSocketSession: NSObject {
     
     private func makeMessage<Request>(for request: Request) -> ConnectMessage<Request.Payload> where Request: ConnectRequest {
         ConnectMessage(
-            scheme: Config.Connect.schemeVersion,
+            scheme: request.schemeVersion.rawValue,
             origin: deviceName,
             originVersion: appVersion,
             id: request.id,

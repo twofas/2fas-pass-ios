@@ -127,7 +127,7 @@ final class SyncHandler {
         Log("SyncHandler - method: fetch finished successfuly", module: .cloudSync)
         guard isSyncing else { return }
         Log("SyncHandler -  merging now with local database", module: .cloudSync)
-        mergeHandler.setPasswordIDsForDeletition(cacheHandler.passwordIDsForDeletition) // used for migration to Items
+        mergeHandler.setItemIDsForDeletition(cacheHandler.itemIDsForDeletition) // used for migration to Items
         mergeHandler.merge(date: currentDate) { [weak self] result in
             switch result {
             case .success:
@@ -141,7 +141,8 @@ final class SyncHandler {
             case .failure(let error):
                 Log("SyncHandler: error while merging: \(error)", module: .cloudSync, severity: .error)
                 switch error {
-                case .incorrectEncryption, .newerVersion: self?.otherError?(error as NSError)
+                case .schemaNotSupported: break
+                case .incorrectEncryption: self?.otherError?(error as NSError)
                 case .noLocalVault, .mergeError, .syncNotAllowed: self?.resetStack()
                 }
             }

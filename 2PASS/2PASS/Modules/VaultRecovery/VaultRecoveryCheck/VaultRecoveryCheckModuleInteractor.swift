@@ -15,7 +15,7 @@ protocol VaultRecoveryCheckModuleInteracting: AnyObject {
         of data: Data,
         completion: @escaping (Result<BackupImportWithoutEncryptionResult, BackupImportParseError>) -> Void
     )
-    func parsePasswords(_ exchangeVault: ExchangeVault) -> [PasswordData]?
+    func parseItems(_ exchangeVault: ExchangeVaultVersioned) -> [ItemData]?
 }
 
 final class VaultRecoveryCheckModuleInteractor {
@@ -40,7 +40,7 @@ extension VaultRecoveryCheckModuleInteractor: VaultRecoveryCheckModuleInteractin
         importInteractor.parseContentsWithoutEncryption(of: data, completion: completion)
     }
     
-    func parsePasswords(_ exchangeVault: ExchangeVault) -> [PasswordData]? {
-        importInteractor.extractPasswords(from: exchangeVault)
+    func parseItems(_ exchangeVault: ExchangeVaultVersioned) -> [ItemData]? {
+        importInteractor.extractItems(from: exchangeVault)
     }
 }

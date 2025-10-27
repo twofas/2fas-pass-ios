@@ -16,5 +16,6 @@ public struct AppNotification: Codable {
         public let pkPersBe: String
         public let sigPush: String
         public let timestamp: String
+        public let scheme: String?
     }
 }

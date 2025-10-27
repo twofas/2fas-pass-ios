@@ -23,7 +23,7 @@ struct BackupRouter: Router {
             .fileImporter(contentTypes: .vaultFiles, onClose: onClose)
         case .currentPassword, .upgradePlanPrompt:
             .sheet
-        case .export, .recoveryEnterPassword, .importing, .importingFailure, .recovery:
+        case .export, .recoveryEnterPassword, .importing, .importingFailure, .schemaNotSupported, .recovery:
             .push
         case nil:
             nil
@@ -43,18 +43,18 @@ struct BackupRouter: Router {
         case .importFile:
             EmptyView()
         case .currentPassword(let config, let onSuccess):
-            LoginView(presenter: .init(
-                loginSuccessful: onSuccess,
-                interactor: ModuleInteractorFactory.shared.loginModuleInteractor(
-                    config: config
-                )
-            ))
+            LoginRouter.buildView(config: config, onSuccess: onSuccess)
         case .export(let onClose):
             BackupExportFileRouter.buildView(onClose: onClose)
         case .upgradePlanPrompt(let itemsLimit):
             PremiumPromptRouter.buildView(
                 title: Text(T.paywallNoticeItemsLimitImportTitle.localizedKey),
                 description: Text(T.paywallNoticeItemsLimitImportMsg(itemsLimit))
+            )
+        case .schemaNotSupported(let schemaVersion, let onClose):
+            BackupSchemaNotSupportedView(
+                schemaVersion: schemaVersion,
+                onClose: onClose
             )
         }
     }

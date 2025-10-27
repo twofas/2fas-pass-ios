@@ -38,10 +38,11 @@ enum BackupDestination: RouterDestination {
     case currentPassword(config: LoginModuleInteractorConfig, onSuccess: Callback)
     case export(onClose: Callback)
     case importFile(onClose: (FileImportResult) -> Void)
-    case recoveryEnterPassword(ExchangeVault, entropy: Entropy, onClose: Callback)
-    case recovery(ExchangeVault, onClose: Callback)
+    case recoveryEnterPassword(ExchangeVaultVersioned, entropy: Entropy, onClose: Callback)
+    case recovery(ExchangeVaultVersioned, onClose: Callback)
     case importing(BackupImportInput, onClose: Callback)
     case importingFailure(onClose: Callback)
+    case schemaNotSupported(schemaVersion: Int, onClose: Callback)
     case upgradePlanPrompt(itemsLimit: Int)
     
     var id: String {
@@ -53,6 +54,7 @@ enum BackupDestination: RouterDestination {
         case .recovery: "recovery"
         case .importing: "importing"
         case .importingFailure: "importingFailure"
+        case .schemaNotSupported: "schemaNotSupported"
         case .upgradePlanPrompt: "upgradePlanPrompt"
         }
     }
@@ -72,14 +74,14 @@ final class BackupPresenter {
         self.flowContext = flowContext
         self.interactor = interactor
         
-        isExportDisabled = !interactor.hasPasswords
+        isExportDisabled = !interactor.hasItems
     }
 }
 
 extension BackupPresenter {
     
     func onAppear() {
-        isExportDisabled = !interactor.hasPasswords
+        isExportDisabled = !interactor.hasItems
     }
     
     func onImport() {
@@ -113,10 +115,10 @@ extension BackupPresenter {
                     switch parseResult {
                     case .success(let result):
                         switch result {
-                        case .decrypted(let passwords, let tags, let deleted):
+                        case .decrypted(let items, let tags, let deleted):
                             if interactor.isVaultInitialized() {
                                 destination = .importing(
-                                    .decrypted(passwords, tags: tags, deleted: deleted),
+                                    .decrypted(items, tags: tags, deleted: deleted),
                                     onClose: { [weak self] in
                                         self?.close()
                                     }
@@ -137,10 +139,20 @@ extension BackupPresenter {
                                 })
                             }
                         }
-                    case .failure:
-                        destination = .importingFailure(onClose: { [weak self] in
-                            self?.close()
-                        })
+                    case .failure(let error):
+                        switch error {
+                        case .schemaNotSupported(let schemaVersion):
+                            destination = .schemaNotSupported(
+                                schemaVersion: schemaVersion,
+                                onClose: { [weak self] in
+                                    self?.close()
+                                }
+                            )
+                        default:
+                            destination = .importingFailure(onClose: { [weak self] in
+                                self?.close()
+                            })
+                        }
                     }
                 })
             case .failure:

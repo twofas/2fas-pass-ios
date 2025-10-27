@@ -8,6 +8,7 @@ extension ConnectRequests {
     
     struct CloseWithError: ConnectRequestWithoutResponse {
         let id: UUID = UUID()
+        let schemeVersion: ConnectSchemaVersion
         let payload: Payload
         let action: ConnectMessageAction = .closeWithError
         

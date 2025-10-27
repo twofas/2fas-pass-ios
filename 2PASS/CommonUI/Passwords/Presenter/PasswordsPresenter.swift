@@ -37,10 +37,10 @@ enum ItemContentTypeFilter: Equatable, Hashable {
             switch type {
             case .login:
                 return "Logins"
-            case .notes:
+            case .secureNote:
                 return "Notes"
-            case .cards:
-                return "Cards"
+            case .unknown:
+                return "Unknown"
             }
         }
     }
@@ -72,7 +72,13 @@ final class PasswordsPresenter {
         }
     }
     
+
     private(set) var contentTypeFilter: ItemContentTypeFilter = .all
+
+    var fillAddButton: Bool {
+        (autoFillEnvironment?.serviceIdentifiers.isEmpty == false && hasSuggestedItems == false)
+        || (itemsCount == 0 && selectedFilterTag == nil)
+    }
     
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
@@ -83,7 +89,7 @@ final class PasswordsPresenter {
     private let interactor: PasswordsModuleInteracting
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
-    private var listData: [Int: [PasswordData]] = [:]
+    private var listData: [Int: [ItemData]] = [:]
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
@@ -141,7 +147,10 @@ extension PasswordsPresenter {
 
     func onClearSearchPhrase() {
         interactor.setSearchPhrase(nil)
-        reload()
+        
+        Task { @MainActor in // fix animation
+            reload()
+        }
     }
     
     func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
@@ -157,12 +166,12 @@ extension PasswordsPresenter {
         selectedFilterTag = nil
     }
     
-    func onCellMenuAction(_ action: PasswordCellMenu, passwordID: PasswordID, selectedURI: URL?) {
+    func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
         switch action {
-        case .view: flowController.toViewPassword(passwordID: passwordID)
-        case .edit: flowController.toEditPassword(passwordID: passwordID)
+        case .view: flowController.toViewPassword(itemID: itemID)
+        case .edit: flowController.toEditPassword(itemID: itemID)
         case .copyUsername:
-            if interactor.copyUsername(passwordID) {
+            if interactor.copyUsername(itemID) {
                 toastPresenter.presentUsernameCopied()
             } else {
                 toastPresenter.present(
@@ -171,7 +180,7 @@ extension PasswordsPresenter {
                 )
             }
         case .copyPassword:
-            copyPassword(id: passwordID)
+            copyPassword(id: itemID)
             
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
@@ -179,7 +188,7 @@ extension PasswordsPresenter {
         case .moveToTrash:
             Task { @MainActor in
                 if await flowController.toConfirmDelete() {
-                    interactor.moveToTrash(passwordID)
+                    interactor.moveToTrash(itemID)
                     reload()
                 }
             }
@@ -187,21 +196,21 @@ extension PasswordsPresenter {
     }
     
     func onDidSelectAt(_ indexPath: IndexPath) {
-        guard let passwordData = item(at: indexPath) else {
+        guard let itemData = item(at: indexPath) else {
             return
         }
         
         switch interactor.selectAction {
         case .viewDetails:
-            flowController.selectPassword(passwordID: passwordData.passwordID)
+            flowController.selectPassword(itemID: itemData.id)
         case .copyPassword:
-            copyPassword(id: passwordData.passwordID)
+            copyPassword(id: itemData.id)
         case .goToURI:
-            if let uri = passwordData.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
+            if let uri = itemData.asLoginItem?.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
                 flowController.toURI(normalized)
             }
         case .edit:
-            flowController.toEditPassword(passwordID: passwordData.passwordID)
+            flowController.toEditPassword(itemID: itemData.id)
         }
     }
     
@@ -214,7 +223,7 @@ extension PasswordsPresenter {
     }
 
     func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
-        interactor.countPasswordsForTag(tagID)
+        interactor.countItemsForTag(tagID)
     }
 }
 
@@ -244,7 +253,7 @@ extension PasswordsPresenter {
 
 private extension PasswordsPresenter {
     
-    func copyPassword(id: PasswordID) {
+    func copyPassword(id: ItemID) {
         if interactor.copyPassword(id) {
             toastPresenter.presentPasswordCopied()
         } else {
@@ -255,7 +264,7 @@ private extension PasswordsPresenter {
         }
     }
     
-    func item(at indexPath: IndexPath) -> PasswordData? {
+    func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
     
@@ -273,21 +282,22 @@ private extension PasswordsPresenter {
             if list.suggested.isEmpty {
                 listData[0] = list.rest
                 
-                let restCells = list.rest.map(makeCellData(for:))
+                let restCells = list.rest.compactMap(makeCellData(for:))
                 let section = PasswordSectionData()
                 
                 snapshot.appendSections([section])
                 snapshot.appendItems(restCells, toSection: section)
                 
                 cellsCount = list.rest.count
-
+                itemsCount = cellsCount
+                
             } else {
                 listData[0] = list.suggested
                 listData[1] = list.rest
                 hasSuggestedItems = true
 
-                let suggestedCells = list.suggested.map(makeCellData(for:))
-                let restCells = list.rest.map(makeCellData(for:))
+                let suggestedCells = list.suggested.compactMap(makeCellData(for:))
+                let restCells = list.rest.compactMap(makeCellData(for:))
                 let suggestedSection = PasswordSectionData(title: T.commonSuggested)
                 let section = PasswordSectionData(title: T.commonOther)
                 
@@ -297,6 +307,7 @@ private extension PasswordsPresenter {
                 snapshot.appendItems(restCells, toSection: section)
                 
                 cellsCount = suggestedCells.count + restCells.count
+                itemsCount = cellsCount
             }
             
             view?.reloadData(newSnapshot: snapshot)
@@ -304,18 +315,17 @@ private extension PasswordsPresenter {
         } else {
             let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
             listData[0] = list
-            let cells = list.map(makeCellData(for:))
+            let cells = list.compactMap(makeCellData(for:))
             let section = PasswordSectionData()
             var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
             snapshot.appendSections([section])
             snapshot.appendItems(cells, toSection: section)
+        
+            cellsCount = cells.count
+            itemsCount = cellsCount
             
             view?.reloadData(newSnapshot: snapshot)
-            
-            cellsCount = cells.count
         }
-        
-        itemsCount = cellsCount
         
         if cellsCount == 0 {
             if interactor.isSearching || selectedFilterTag != nil || contentTypeFilter.contentType != nil {
@@ -328,20 +338,25 @@ private extension PasswordsPresenter {
         }
     }
     
-    func makeCellData(for password: PasswordData) -> PasswordCellData {
-        PasswordCellData(
-            passwordID: password.passwordID,
-            name: password.name,
-            username: password.username,
-            iconType: password.iconType,
-            hasUsername: password.username != nil && password.username?.isEmpty == false,
-            hasPassword: password.password != nil,
-            uris: password.uris?.map { $0.uri } ?? [],
-            normalizeURI: { [weak self] uri in
-                guard let interactor = self?.interactor else { return nil }
-                return interactor.normalizedURL(for: uri)
-            }
-        )
+    func makeCellData(for itemData: ItemData) -> PasswordCellData? {
+        switch itemData {
+        case .login(let loginItem):
+            return PasswordCellData(
+                itemID: loginItem.id,
+                name: loginItem.name,
+                username: loginItem.content.username,
+                iconType: loginItem.content.iconType,
+                hasUsername: loginItem.content.username != nil && loginItem.content.username?.isEmpty == false,
+                hasPassword: loginItem.content.password != nil,
+                uris: loginItem.content.uris?.map { $0.uri } ?? [],
+                normalizeURI: { [weak self] uri in
+                    guard let interactor = self?.interactor else { return nil }
+                    return interactor.normalizedURL(for: uri)
+                }
+            )
+        default:
+            return nil
+        }
     }
     
     @objc

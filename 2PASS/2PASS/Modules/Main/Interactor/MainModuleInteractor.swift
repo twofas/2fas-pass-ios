@@ -12,6 +12,8 @@ protocol MainModuleInteracting: AnyObject {
     var updateBadge: ((Bool) -> Void)? { get set }
     var paymentScreen: Callback? { get set }
     var shouldShowQuickSetup: Bool { get }
+    var shouldRequestForBiometryToLogin: Bool { get }
+
     func viewIsVisible()
 }
 
@@ -25,6 +27,7 @@ final class MainModuleInteractor {
     private let cloudSyncInteractor: CloudSyncInteracting
     private let systemInteractor: SystemInteracting
     private let quickSetupInteractor: QuickSetupInteracting
+    private let loginInteractor: LoginInteracting
     private let notificationCenter: NotificationCenter
     
     private var syncErroredLately = false
@@ -37,7 +40,8 @@ final class MainModuleInteractor {
         webDAVStateInteractor: WebDAVStateInteracting,
         cloudSyncInteractor: CloudSyncInteracting,
         systemInteractor: SystemInteracting,
-        quickSetupInteractor: QuickSetupInteracting
+        quickSetupInteractor: QuickSetupInteracting,
+        loginInteractor: LoginInteracting
     ) {
         self.webDAVBackupInteractor = webDAVBackupInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -45,6 +49,7 @@ final class MainModuleInteractor {
         self.cloudSyncInteractor = cloudSyncInteractor
         self.systemInteractor = systemInteractor
         self.quickSetupInteractor = quickSetupInteractor
+        self.loginInteractor = loginInteractor
         self.notificationCenter = NotificationCenter.default
         
         cloudSyncInteractor.setup(takeoverVault: false)
@@ -92,6 +97,9 @@ final class MainModuleInteractor {
 }
 
 extension MainModuleInteractor: MainModuleInteracting {
+    var shouldRequestForBiometryToLogin: Bool {
+        loginInteractor.shouldRequestForBiometryToLogin
+    }
     
     var shouldShowQuickSetup: Bool {
         quickSetupInteractor.shouldShowQuickSetup

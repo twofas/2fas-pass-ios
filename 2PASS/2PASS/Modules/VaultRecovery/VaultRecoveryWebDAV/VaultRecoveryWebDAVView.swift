@@ -35,6 +35,7 @@ struct VaultRecoveryWebDAVView: View {
                     
                     Toggle(T.webdavAllowUntrustedCertificates.localizedKey, isOn: $presenter.allowTLSOff)
                         .frame(maxWidth: .infinity)
+                        .tint(.accentColor)
                 }
                 
                 
@@ -69,5 +70,8 @@ struct VaultRecoveryWebDAVView: View {
         }
         .background(Color(UIColor.systemGroupedBackground))
         .router(router: VaultRecoveryWebDAVRouter(), destination: $presenter.destination)
+        .onDisappear {
+            presenter.onDisappear()
+        }
     }
 }

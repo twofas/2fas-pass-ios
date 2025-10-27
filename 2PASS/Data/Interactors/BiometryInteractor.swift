@@ -99,9 +99,7 @@ extension BiometryInteractor: BiometryInteracting {
         
         Log("BiometryInteractor: Obtaining Biometry Key", module: .interactor)
         
-        mainRepository.blockAppLocking()
         getBiometryKey { [weak self] bioKey in
-            self?.mainRepository.unblockAppLocking()
             guard let bioKey = bioKey else {
                 Log("BiometryInteractor: No Biometry Key available", module: .interactor, severity: .error)
                 completion(false)

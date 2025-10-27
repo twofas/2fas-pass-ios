@@ -68,6 +68,10 @@ final class AddPasswordPresenter {
         interactor.hasPasswords
     }
     
+    var showRemoveItemButton: Bool {
+        isEdit && interactor.changeRequest == nil
+    }
+    
     var nameChanged: Bool {
         guard let initialPasswordData else {
             return false
@@ -135,7 +139,7 @@ final class AddPasswordPresenter {
     private let flowController: AddPasswordFlowControlling
     private let interactor: AddPasswordModuleInteracting
     private let notificationCenter: NotificationCenter
-    private let initialPasswordData: PasswordData?
+    private let initialPasswordData: LoginItemData?
     private let initialDecryptedPassword: String?
     
     init(flowController: AddPasswordFlowControlling, interactor: AddPasswordModuleInteracting) {
@@ -154,10 +158,10 @@ final class AddPasswordPresenter {
             }
             initialDecryptedPassword = decryptedPassword
             name = interactor.changeRequest?.name ?? passwordData.name ?? ""
-            username = interactor.changeRequest?.username ?? passwordData.username ?? ""
+            username = interactor.changeRequest?.username?.value ?? passwordData.username ?? ""
             
             switch interactor.changeRequest?.password {
-            case .generateNewPassword:
+            case .generate:
                 password = interactor.generatePassword()
             case .value(let passwordValue):
                 password = passwordValue
@@ -178,7 +182,7 @@ final class AddPasswordPresenter {
             }
             
             if case .domainIcon(let domain) = passwordData.iconType, let domain {
-                selectedURIIconIndex = passwordData.uris?.firstIndex(where: {
+                selectedURIIconIndex = (interactor.changeRequest?.uris ?? passwordData.uris)?.firstIndex(where: {
                     interactor.extractDomain(from: $0.uri) == domain
                 })
             }
@@ -199,7 +203,7 @@ final class AddPasswordPresenter {
             } else {
                 name = interactor.changeRequest?.name ?? ""
             }
-            username = interactor.changeRequest?.username ?? interactor.mostUsedUsernames().first ?? ""
+            username = interactor.changeRequest?.username?.value ?? interactor.mostUsedUsernames().first ?? ""
             protectionLevel = interactor.changeRequest?.protectionLevel ?? interactor.currentDefaultProtectionLevel
             uri = (interactor.changeRequest?.uris ?? []).map { URI(id: .init(), uri: $0.uri, match: $0.match) }
             isEdit = false
@@ -364,10 +368,10 @@ final class AddPasswordPresenter {
     }
     
     func onDelete() {
-        guard let passwordID = interactor.moveToTrash() else {
+        guard let itemID = interactor.moveToTrash() else {
             return
         }
-        flowController.close(with: .success(.deleted(passwordID)))
+        flowController.close(with: .success(.deleted(itemID)))
     }
     
     deinit {

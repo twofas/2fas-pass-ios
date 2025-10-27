@@ -7,18 +7,32 @@
 extension ConnectRequests {
     
     struct PullAction: ConnectRequestExpectedResponse {
-        
+
         let id: UUID = UUID()
+        let schemeVersion: ConnectSchemaVersion
+        let isFullSync: Bool
         let payload: Payload
         let action: ConnectMessageAction = .pullRequestAction
+
+        init(schemeVersion: ConnectSchemaVersion, isFullSync: Bool = false, payload: Payload) {
+            self.schemeVersion = schemeVersion
+            self.isFullSync = isFullSync
+            self.payload = payload
+        }
         
         struct Payload: ConnectMessagePayload {
             let dataEnc: Data
         }
         
         func validateResponse(_ message: ConnectMessage<ConnectMessagePayloadEmpty>) throws {
-            if message.action != .pullRequestCompleted {
-                throw ConnectWebSocketError.wrongResponseAction
+            if isFullSync {
+                if message.action != .initTransferConfirmed {
+                    throw ConnectWebSocketError.wrongResponseAction
+                }
+            } else {
+                if message.action != .pullRequestCompleted {
+                    throw ConnectWebSocketError.wrongResponseAction
+                }
             }
         }
     }

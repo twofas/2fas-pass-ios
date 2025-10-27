@@ -29,9 +29,11 @@ public enum ConnectError: Error {
     case missingSessionId
     case badData
     case itemsLimitReached(Int)
+    case unsuppotedContentType(String)
+    case unsupportedSchemeVersion
 }
 
-public typealias ConnectContinuation = (accepted: Bool, passwordID: PasswordID?)
+public typealias ConnectContinuation = (accepted: Bool, itemID: ItemID?)
 
 public protocol ConnectInteracting: AnyObject {
     
@@ -55,15 +57,15 @@ final class ConnectInteractor: ConnectInteracting {
     let mainRepository: MainRepository
     let webBrowsersInteractor: WebBrowsersInteracting
     let connectExportInteractor: ConnectExportInteracting
-    let passwordInteractor: PasswordInteracting
+    let itemsInteractor: ItemsInteracting
     let uriInteractor: URIInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(mainRepository: MainRepository, passwordInteractor: PasswordInteracting, webBrowsersInteractor: WebBrowsersInteracting, connectExportInteractor: ConnectExportInteracting, uriInteractor: URIInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, webBrowsersInteractor: WebBrowsersInteracting, connectExportInteractor: ConnectExportInteracting, uriInteractor: URIInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
         self.mainRepository = mainRepository
         self.webBrowsersInteractor = webBrowsersInteractor
         self.connectExportInteractor = connectExportInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.uriInteractor = uriInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
     }
@@ -112,5 +114,14 @@ final class ConnectInteractor: ConnectInteracting {
         } catch {
             throw ConnectError.createKeysFailure(error)
         }
+    }
+    
+    func deriveEncryptionDataKey(from keys: SessionKeys) -> SymmetricKey {
+        HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: keys.sessionKey,
+            salt: keys.hkdfSalt,
+            info: Keys.Connect.data.data(using: .utf8)!,
+            outputByteCount: 32
+        )
     }
 }

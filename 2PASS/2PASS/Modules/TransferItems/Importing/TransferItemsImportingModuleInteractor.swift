@@ -8,26 +8,26 @@ import Common
 import Data
 
 protocol TransferItemsImportingModuleInteracting {
-    func importPasswords() async
+    func importItems() async
 }
 
 final class TransferItemsImportingModuleInteractor: TransferItemsImportingModuleInteracting {
     
-    private let passwordImportInteractor: PasswordImportInteracting
+    private let itemsImportInteractor: ItemsImportInteracting
     
     let service: ExternalService
-    let passwords: [PasswordData]
+    let items: [ItemData]
     
-    init(service: ExternalService, passwords: [PasswordData], passwordImportInteractor: PasswordImportInteracting) {
+    init(service: ExternalService, items: [ItemData], itemsImportInteractor: ItemsImportInteracting) {
         self.service = service
-        self.passwords = passwords
-        self.passwordImportInteractor = passwordImportInteractor
+        self.items = items
+        self.itemsImportInteractor = itemsImportInteractor
     }
     
     @MainActor
-    func importPasswords() async {
+    func importItems() async {
         await withCheckedContinuation { continuation in
-            passwordImportInteractor.importPasswords(passwords, tags: []) { _ in
+            itemsImportInteractor.importItems(items, tags: []) { _ in
                 continuation.resume()
             }
         }

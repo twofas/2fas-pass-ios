@@ -14,14 +14,14 @@ extension ModuleInteractorFactory {
     func rootModuleInteractor() -> RootModuleInteracting {
         RootModuleInteractor(
             rootInteractor: InteractorFactory.shared.rootInteractor(),
-            appStateInteractor: InteractorFactory.shared.appStateInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             securityInteractor: InteractorFactory.shared.securityInteractor(),
-            loginInteractor: InteractorFactory.shared.loginInteractor(),
             syncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
-            paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor()
+            paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
+            onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
+            updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor()
         )
     }
     
@@ -52,7 +52,7 @@ extension ModuleInteractorFactory {
     
     func trashInteractor() -> TrashModuleInteracting {
         TrashModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
@@ -76,14 +76,6 @@ extension ModuleInteractorFactory {
             translations: .default,
             pdfConfig: .default
         ))
-    }
-    
-    func enterWordsModuleInteractor() -> EnterWordsModuleInteracting {
-        EnterWordsModuleInteractor(
-            cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
-            startupInteractor: InteractorFactory.shared.startupInteractor(),
-            importInteractor: InteractorFactory.shared.importInteractor()
-        )
     }
     
     func eventLogModuleInteractor() -> EventLogModuleInteracting {
@@ -114,7 +106,7 @@ extension ModuleInteractorFactory {
     func backupModuleInteractor() -> BackupModuleInteracting {
         BackupModuleInteractor(
             importInteractor: InteractorFactory.shared.backupImportInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             biometryInteractor: InteractorFactory.shared.biometryInteractor(),
             loginInteractor: InteractorFactory.shared.loginInteractor(),
             protectionInteractor: InteractorFactory.shared.protectionInteractor(),
@@ -124,7 +116,7 @@ extension ModuleInteractorFactory {
     
     func backupImportImportingModuleInteractor(input: BackupImportInput) -> BackupImportImportingModuleInteracting {
         BackupImportImportingModuleInteractor(
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor(),
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             input: input
         )
@@ -152,7 +144,8 @@ extension ModuleInteractorFactory {
         VaultRecoveryEnterPasswordModuleInteractor(
             entropy: entropy,
             recoveryData: recoveryData,
-            loginInteractor: InteractorFactory.shared.loginInteractor()
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            protectionInteractor: InteractorFactory.shared.protectionInteractor()
         )
     }
     
@@ -179,7 +172,8 @@ extension ModuleInteractorFactory {
             webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
-            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
+            quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
         )
     }
     
@@ -193,7 +187,7 @@ extension ModuleInteractorFactory {
     func vaultRecoveryRecoverModuleInteractor(kind: VaultRecoveryRecoverKind) -> VaultRecoveryRecoverModuleInteracting {
         VaultRecoveryRecoverModuleInteractor(
             kind: kind,
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor(),
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
@@ -322,7 +316,7 @@ extension ModuleInteractorFactory {
             identiconInteractor: InteractorFactory.shared.connectSecurityIconInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
@@ -336,17 +330,17 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, passwords: [PasswordData]) -> TransferItemsImportingModuleInteracting {
+    func transferItemsImportingModuleInteractor(service: ExternalService, items: [ItemData]) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
-            passwords: passwords,
-            passwordImportInteractor: InteractorFactory.shared.passwordImportInteractor()
+            items: items,
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
         )
     }
     
     func transferItemsServicesListInteractor() -> TransferItemsServicesListInteracting {
         TransferItemsServicesListInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
     }
@@ -363,7 +357,7 @@ extension ModuleInteractorFactory {
     @MainActor
     func manageSubscriptionInteractor() -> ManageSubscriptionModuleInteracting {
         ManageSubscriptionModuleInteractor(
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             webBrowsersInteractor: InteractorFactory.shared.webBrowsersInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor()
@@ -388,7 +382,7 @@ extension ModuleInteractorFactory {
     func manageTagsModuleInteractor() -> ManageTagsModuleInteracting {
         ManageTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
-            passwordInteractor: InteractorFactory.shared.passwordInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }

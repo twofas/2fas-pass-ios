@@ -13,9 +13,7 @@ public protocol SecurityInteracting: AnyObject {
     var unlockLogin: (() -> Void)? { get set }
     
     var logoutApp: (() -> Void)? { get set }
-    
-    var canLockApp: Bool { get }
-    
+        
     var isAppLocked: Bool { get }
     var appLockRemainingSeconds: Int? { get }
     
@@ -60,10 +58,6 @@ final class SecurityInteractor {
 
 extension SecurityInteractor: SecurityInteracting {
     // MARK: - Login
-    
-    var canLockApp: Bool {
-        mainRepository.canLockApp
-    }
     
     var isUserLoggedIn: Bool {
         mainRepository.isUserLoggedIn

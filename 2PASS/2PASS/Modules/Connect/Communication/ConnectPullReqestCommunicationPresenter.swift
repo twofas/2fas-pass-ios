@@ -14,8 +14,8 @@ enum ConnectPullReqestCommunicationError: Error {
 }
 
 enum ConnectPullReqestCommunicationDestination: RouterDestination {
-    case addItem(changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
-    case editItem(PasswordData, changeRequest: PasswordDataChangeRequest, onClose: (SavePasswordResult) -> Void)
+    case addItem(changeRequest: LoginDataChangeRequest, onClose: (SavePasswordResult) -> Void)
+    case editItem(LoginItemData, changeRequest: LoginDataChangeRequest, onClose: (SavePasswordResult) -> Void)
     
     var id: String {
         switch self {
@@ -45,15 +45,18 @@ final class ConnectPullReqestCommunicationPresenter {
     private(set) var state: State = .connecting {
         didSet {
             switch state {
-            case .action(.add(let changeRequest)):
+            case .action(.changeRequest(.addLogin(let changeRequest))):
                 if let uri = changeRequest.uris?.first?.uri, let domain = interactor.extractDomain(from: uri) {
                     setIconContent(iconType: .domainIcon(domain), name: changeRequest.name)
                 } else {
                     setIconContent(iconType: .domainIcon(nil), name: changeRequest.name)
                 }
             default:
-                if let passwordData = state.passwordData {
-                    setIconContent(iconType: passwordData.iconType, name: passwordData.name)
+                switch state.itemData {
+                case .login(let loginItemData):
+                    setIconContent(iconType: loginItemData.iconType, name: loginItemData.name)
+                default:
+                    break
                 }
             }
         }
@@ -100,23 +103,30 @@ final class ConnectPullReqestCommunicationPresenter {
         case .itemsLimitReached:
             NotificationCenter.default.post(name: .presentPaymentScreen, object: self)
             
-        case .action(.passwordRequest):
+        case .action(.sifRequest):
             state = .connecting
             actionContinuation?.resume(returning: (true, nil))
             actionContinuation = nil
             
-        case .action(.add(let changeRequest)):
-            destination = .addItem(changeRequest: changeRequest, onClose: { [weak self] result in
-                self?.onSavePassword(result: result)
-            })
+        case .action(.sync):
+            state = .connecting
+            actionContinuation?.resume(returning: (true, nil))
+            actionContinuation = nil
             
-        case .action(.update(let passwordData, let changeRequest)):
-            destination = .editItem(passwordData, changeRequest: changeRequest, onClose: { [weak self] result in
-                self?.onSavePassword(result: result)
-            })
+        case .action(.changeRequest(let changeRequest)):
+            switch changeRequest {
+            case .addLogin(let loginChangeRequest):
+                destination = .addItem(changeRequest: loginChangeRequest, onClose: { [weak self] result in
+                    self?.onSavePassword(result: result)
+                })
+            case .updateLogin(let loginItem, let loginChangeRequest):
+                destination = .editItem(loginItem, changeRequest: loginChangeRequest, onClose: { [weak self] result in
+                    self?.onSavePassword(result: result)
+                })
+            }
             
-        case .action(.delete(let passwordData)):
-            interactor.deletePassword(for: passwordData.passwordID)
+        case .action(.delete(let loginItem)):
+            interactor.deleteItem(for: loginItem.id)
             
             state = .connecting
             actionContinuation?.resume(returning: (true, nil))
@@ -180,7 +190,7 @@ final class ConnectPullReqestCommunicationPresenter {
                         await withCheckedContinuation { @MainActor continuation in
                             self?.action = action
                             
-                            if case .add = action, let interactor = self?.interactor, interactor.canAddItem == false {
+                            if case .changeRequest(let changeRequest) = action, changeRequest.isAdd, let interactor = self?.interactor, interactor.canAddItem == false {
                                 self?.state = .itemsLimitReached(interactor.currentPlanItemsLimit)
                             } else {
                                 self?.state = .action(action)
@@ -205,7 +215,7 @@ final class ConnectPullReqestCommunicationPresenter {
                 state = .finish(.failure(ConnectPullReqestCommunicationError.sendPasswordDataFailure))
             } else {
                 state = .connecting
-                actionContinuation?.resume(returning: (true, saveResult.passwordID))
+                actionContinuation?.resume(returning: (true, saveResult.itemID))
                 actionContinuation = nil
             }
             
@@ -250,18 +260,20 @@ extension ConnectPullReqestCommunicationPresenter {
             }
         }
         
-        var passwordData: PasswordData? {
+        var itemData: ItemData? {
             switch self {
             case .action(let action):
                 switch action {
-                case .passwordRequest(let passwordData):
-                    return passwordData
-                case .update(let currentPasswordData, _):
-                    return currentPasswordData
-                case .add:
+                case .sifRequest(let item):
+                    return item
+                case .changeRequest(.updateLogin(let currentPasswordData, _)):
+                    return .login(currentPasswordData)
+                case .changeRequest(.addLogin):
                     return nil
-                case .delete(let passwordData):
-                    return passwordData
+                case .delete(let item):
+                    return item
+                case .sync:
+                    return nil
                 }
             default:
                 return nil

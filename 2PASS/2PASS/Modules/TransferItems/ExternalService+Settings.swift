@@ -7,7 +7,7 @@
 import Common
 
 extension ExternalService {
-    
+
     var settingsIcon: SettingsIcon {
         switch self {
         case .onePassword: .onePassword
@@ -18,6 +18,10 @@ extension ExternalService {
         case .protonPass: .proton
         case .applePasswordsDesktop, .applePasswordsMobile: .applePasswords
         case .firefox: .firefox
+        case .keePass: .keePass
+        case .keePassXC: .keePassXC
+        case .microsoftEdge: .microsoftEdge
+        case .enpass: .enpass
         }
     }
 }

@@ -17,7 +17,7 @@ enum SettingsIcon {
     case pushNotifications
     case sync
     case importExport
-    case transferPasswords
+    case transferItems
     case about
     case help
     case discord
@@ -53,6 +53,10 @@ enum SettingsIcon {
     case applePasswords
     case twoFASAuth
     case firefox
+    case keePass
+    case keePassXC
+    case microsoftEdge
+    case enpass
 }
 
 enum SettingIconStyle {
@@ -128,10 +132,14 @@ struct SettingsIconView: View {
         case .pushNotifications:
             Image(systemName: "bell.badge.fill")
         case .sync:
-            Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+            if #available(iOS 18, *) {
+                Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+            } else {
+                Image(systemName: "clock.arrow.circlepath")
+            }
         case .importExport:
             Image(systemName: "rectangle.portrait.and.arrow.right")
-        case .transferPasswords:
+        case .transferItems:
             Image(systemName: "iphone.gen1")
         case .about:
             Image(systemName: "info.circle.fill")
@@ -205,6 +213,14 @@ struct SettingsIconView: View {
             Image(.twoFASAuth)
         case .firefox:
             Image(.firefoxIcon)
+        case .keePass:
+            Image(.keepassIcon)
+        case .keePassXC:
+            Image(.keepassxcIcon)
+        case .microsoftEdge:
+            Image(.microsoftedgeIcon)
+        case .enpass:
+            Image(.enpassIcon)
         }
     }
     
@@ -218,7 +234,7 @@ struct SettingsIconView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: size * 0.7, height: size * 0.7)
-        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox:
+        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePass, .keePassXC, .microsoftEdge, .enpass:
             image
                 .resizable()
                 .scaledToFit()

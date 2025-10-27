@@ -36,13 +36,9 @@ public final class InteractorFactory {
             protectionInteractor: protectionInteractor()
         )
     }
-    
-    public func appStateInteractor() -> AppStateInteracting {
-        AppStateInteractor(mainRepository: MainRepositoryImpl.shared)
-    }
-    
-    public func passwordInteractor() -> PasswordInteracting {
-        PasswordInteractor(
+
+    public func itemsInteractor() -> ItemsInteracting {
+        ItemsInteractor(
             mainRepository: MainRepositoryImpl.shared,
             protectionInteractor: protectionInteractor(),
             uriInteractor: uriInteractor(),
@@ -50,7 +46,21 @@ public final class InteractorFactory {
             tagInteractor: tagInteractor()
         )
     }
-    
+
+    public func secureNoteInteractor() -> SecureNoteItemInteracting {
+        SecureNoteItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
+    public func loginItemInteractor() -> LoginItemInteracting {
+        LoginItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
     public func systemInteractor() -> SystemInteracting {
         SystemInteractor(mainRepository: MainRepositoryImpl.shared)
     }
@@ -81,7 +91,8 @@ public final class InteractorFactory {
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
             onboardingInteractor: onboardingInteractor(),
-            migrationInteractor: migrationInteractor()
+            migrationInteractor: migrationInteractor(),
+            securityInteractor: securityInteractor()
         )
     }
     
@@ -102,14 +113,16 @@ public final class InteractorFactory {
     public func debugInteractor() -> DebugInteracting {
         DebugInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            passwordInteractor: InteractorFactory.shared.passwordInteractor()
+            itemsInteractor: itemsInteractor(),
+            loginItemInteractor: loginItemInteractor(),
+            secureNoteItemInteractor: secureNoteInteractor()
         )
     }
     
     public func importInteractor() -> ImportInteracting {
         ImportInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            passwordInteractor: passwordInteractor(),
+            itemsInteractor: itemsInteractor(),
             protectionInteractor: protectionInteractor(),
             uriInteractor: uriInteractor()
         )
@@ -118,7 +131,7 @@ public final class InteractorFactory {
     public func exportInteractor() -> ExportInteracting {
         ExportInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            passwordInteractor: passwordInteractor(),
+            itemsInteractor: itemsInteractor(),
             tagInteractor: tagInteractor(),
             uriInteractor: uriInteractor()
         )
@@ -138,7 +151,7 @@ public final class InteractorFactory {
     public func changePasswordInteractor() -> ChangePasswordInteracting {
         ChangePasswordInteractor(
             biometryInteractor: biometryInteractor(),
-            passwordInteractor: passwordInteractor(),
+            itemsInteractor: itemsInteractor(),
             protectionInteractor: protectionInteractor(),
             syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false)
         )
@@ -148,10 +161,10 @@ public final class InteractorFactory {
         BackupImportInteractor(importInteractor: importInteractor())
     }
     
-    public func passwordImportInteractor() -> PasswordImportInteracting {
-        PasswordImportInteractor(
+    public func itemsImportInteractor() -> ItemsImportInteracting {
+        ItemsImportInteractor(
             fileIconInteractor: fileIconInteractor(),
-            passwordInteractor: passwordInteractor(),
+            itemsInteractor: itemsInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
             syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false),
             tagInteractor: tagInteractor(),
@@ -182,8 +195,8 @@ public final class InteractorFactory {
     
     public func syncInteractor() -> SyncInteracting {
         SyncInteractor(
-            passwordInteractor: passwordInteractor(),
-            passwordImportInteractor: passwordImportInteractor(),
+            itemsInteractor: itemsInteractor(),
+            itemsImportInteractor: itemsImportInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
             tagInteractor: tagInteractor(),
             autoFillCredentialsInteractor: autoFillCredentialsInteractor()
@@ -210,10 +223,10 @@ public final class InteractorFactory {
             cloudCacheStorage: CloudCacheStorageImpl(mainRepository: MainRepositoryImpl.shared),
             encryptionHandler: EncryptionHandlerImpl(
                 mainRepository: MainRepositoryImpl.shared,
-                passwordInteractor: passwordInteractor()
+                itemsInteractor: itemsInteractor()
             ),
             localStorage: LocalStorageImpl(
-                passwordInteractor: passwordInteractor(),
+                itemsInteractor: itemsInteractor(),
                 deletedItemsInteractor: deletedItemsInteractor(),
                 tagInteractor: tagInteractor(),
                 mainRepository: MainRepositoryImpl.shared
@@ -234,7 +247,7 @@ public final class InteractorFactory {
     public func connectInteractor() -> ConnectInteracting {
         ConnectInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            passwordInteractor: passwordInteractor(),
+            itemsInteractor: itemsInteractor(),
             webBrowsersInteractor: webBrowsersInteractor(),
             connectExportInteractor: connectExportInteractor(),
             uriInteractor: uriInteractor(),
@@ -273,14 +286,17 @@ public final class InteractorFactory {
     func connectExportInteractor() -> ConnectExportInteracting {
         ConnectExportInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            passwordInteractor: passwordInteractor(),
+            itemsInteractor: itemsInteractor(),
             tagInteractor: tagInteractor(),
             uriInteractor: uriInteractor()
         )
     }
     
     public func appNotificationsInteractor() -> AppNotificationsInteracting {
-        AppNotificationsInteractor(mainRepository: MainRepositoryImpl.shared, connectInteractor: connectInteractor())
+        AppNotificationsInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            connectInteractor: connectInteractor()
+        )
     }
     
     public func paymentHandlingInteractor() -> PaymentHandlingInteracting {
@@ -316,6 +332,14 @@ public final class InteractorFactory {
     
     public func quickSetupInteractor() -> QuickSetupInteracting {
         QuickSetupInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+    
+    public func updateAppPromptInteractor() -> UpdateAppPromptInteracting {
+        UpdateAppPromptInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            systemInteractor: systemInteractor(),
+            cloudSyncInteractor: cloudSyncInteractor()
+        )
     }
 }
 

@@ -7,5 +7,11 @@
 import Common
 
 struct AppNotifications: Codable {
+    
+    struct Compatibility: Codable {
+        let minimalIosVersion: String
+    }
+    
     let notifications: [AppNotification]?
+    let compatibility: Compatibility?
 }

@@ -15,6 +15,7 @@ struct VaultRecoveryFlowContext {
     enum Kind {
         case onboarding
         case importVault
+        case restoreVault
     }
     
     let kind: Kind
@@ -26,6 +27,10 @@ struct VaultRecoveryFlowContext {
     
     static func importVault(onClose: @escaping Callback) -> Self {
         .init(kind: .importVault, onClose: onClose)
+    }
+    
+    static var restoreVault: Self {
+        .init(kind: .restoreVault, onClose: {})
     }
     
     private init(kind: Kind, onClose: @escaping Callback) {
@@ -198,7 +203,7 @@ private extension VaultRecoverySelectPresenter {
                 DispatchQueue.main.async {
                     if let masterKey = parseResult.masterKey {
                         switch self.flowContext.kind {
-                        case .onboarding:
+                        case .onboarding, .restoreVault:
                             self.destination = .vaultRecovery(
                                 entropy: parseResult.entropy,
                                 masterKey: masterKey,
@@ -208,6 +213,8 @@ private extension VaultRecoverySelectPresenter {
                             switch self.recoveryData {
                             case .cloud:
                                 fatalError("Unsupported importing vault from cloud")
+                            case .localVault:
+                                fatalError("Unsupported importing local vault")
                             case .file(let file):
                                 self.destination = .importVault(
                                     .encrypted(entropy: parseResult.entropy, masterKey: masterKey, vault: file),

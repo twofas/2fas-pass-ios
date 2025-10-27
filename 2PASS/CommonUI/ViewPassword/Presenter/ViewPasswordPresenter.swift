@@ -11,7 +11,7 @@ import SwiftUI
 
 @Observable
 final class ViewPasswordPresenter {
-    private let passwordID: PasswordID
+    private let itemID: ItemID
     private let flowController: ViewPasswordFlowControlling
     private let interactor: ViewPasswordModuleInteracting
     private let notificationCenter: NotificationCenter
@@ -48,12 +48,12 @@ final class ViewPasswordPresenter {
     var uri: [ViewPasswordURIPosition] = []
     
     init(
-        passwordID: PasswordID,
+        itemID: ItemID,
         flowController: ViewPasswordFlowControlling,
         interactor: ViewPasswordModuleInteracting,
         autoFillEnvironment: AutoFillEnvironment? = nil
     ) {
-        self.passwordID = passwordID
+        self.itemID = itemID
         self.flowController = flowController
         self.interactor = interactor
         self.notificationCenter = .default
@@ -88,7 +88,7 @@ extension ViewPasswordPresenter {
     }
     
     func onEdit() {
-        flowController.toEdit(passwordID)
+        flowController.toEdit(itemID)
     }
     
     func onSelectUsername() {
@@ -146,21 +146,29 @@ extension ViewPasswordPresenter {
 
 private extension ViewPasswordPresenter {
     func reload() {
-        guard let passwordData = interactor.fetchPassword(for: passwordID) else {
+        guard let passwordData = interactor.fetchPassword(for: itemID) else {
             flowController.close()
             return
         }
-        if passwordData.password != nil {
-            if let password = interactor.decryptPassword(for: passwordID) {
-                isPasswordAvailable = true
-                passwordDecrypted = password
-                self.password = AttributedString(passwordPlaceholder)
-            }
+        
+        if passwordData.password != nil, let password = interactor.decryptPassword(for: itemID) {
+            isPasswordAvailable = true
+            passwordDecrypted = password
+            self.password = AttributedString(passwordPlaceholder)
+        } else {
+            isPasswordAvailable = false
+            passwordDecrypted = nil
+            self.password = nil
         }
+        
         if let username = passwordData.username {
             isUsernameAvailable = true
             self.username = username
+        } else {
+            isUsernameAvailable = false
+            self.username = nil
         }
+        
         name = passwordData.name ?? ""
         notes = passwordData.notes
         protectionLevel = passwordData.protectionLevel

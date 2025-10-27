@@ -9,7 +9,7 @@ import Data
 
 protocol TransferItemsInstructionsModuleInteracting {
     var service: ExternalService { get }
-    func transfer(from url: URL) async throws(ExternalServiceImportError) -> [PasswordData]
+    func transfer(from url: URL) async throws(ExternalServiceImportError) -> [ItemData]
 }
 
 final class TransferItemsInstructionsModuleInteractor: TransferItemsInstructionsModuleInteracting {
@@ -22,13 +22,13 @@ final class TransferItemsInstructionsModuleInteractor: TransferItemsInstructions
         self.externalServiceImportInteractor = externalServiceImportInteractor
     }
     
-    func transfer(from url: URL) async throws(ExternalServiceImportError) -> [PasswordData] {
+    func transfer(from url: URL) async throws(ExternalServiceImportError) -> [ItemData] {
         let data = try await externalServiceImportInteractor.openFile(from: url)
         
         let result = await externalServiceImportInteractor.importService(service, content: data)
         switch result {
-        case .success(let passwords):
-            return passwords
+        case .success(let items):
+            return items
         case .failure(let error):
             throw error
         }

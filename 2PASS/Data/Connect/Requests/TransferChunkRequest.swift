@@ -7,9 +7,10 @@
 extension ConnectRequests {
     
     struct TransferChunk: ConnectRequestExpectedResponse {
-        
+
         let id: UUID = UUID()
-        let payload: Payload        
+        let schemeVersion: ConnectSchemaVersion
+        let payload: Payload
         let action: ConnectMessageAction = .transferChunk
         
         struct Payload: ConnectMessagePayload {

@@ -22,6 +22,7 @@ public protocol LoginModuleInteracting: AnyObject {
     var appLockRemainingSeconds: Int? { get }
     var hasAppReset: Bool { get }
     var shouldRequestForBiometryToLogin: Bool { get }
+    var isUserLoggedIn: Bool { get }
     
     func verifyPassword(
         _ masterPassword: MasterPassword,
@@ -64,15 +65,22 @@ final class LoginModuleInteractor {
         config.loginType == .restore
     }
 
+    var isUserLoggedIn: Bool {
+        securityInteractor.isUserLoggedIn
+    }
+    
     private let config: LoginModuleInteractorConfig
     private let loginInteractor: LoginInteracting
+    private let securityInteractor: SecurityInteracting
     
     init(
         config: LoginModuleInteractorConfig,
-        loginInteractor: LoginInteracting
+        loginInteractor: LoginInteracting,
+        securityInteractor: SecurityInteracting
     ) {
         self.config = config
         self.loginInteractor = loginInteractor
+        self.securityInteractor = securityInteractor
         
         loginInteractor.lockLogin = { [weak self] in
             self?.lockLogin?()

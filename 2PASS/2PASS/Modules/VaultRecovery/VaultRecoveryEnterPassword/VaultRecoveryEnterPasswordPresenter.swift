@@ -25,7 +25,7 @@ enum VaultRecoveryEnterPasswordDestination: Identifiable {
     case importVault(
         entropy: Entropy,
         masterKey: MasterKey,
-        vault: ExchangeVault,
+        vault: ExchangeVaultVersioned,
         onClose: Callback
     )
     
@@ -70,7 +70,7 @@ extension VaultRecoveryEnterPasswordPresenter {
             }
             
             switch flowContext.kind {
-            case .onboarding:
+            case .onboarding, .restoreVault:
                 destination = .recover(
                     entropy: interactor.entropy,
                     masterKey: masterKey,
@@ -82,6 +82,8 @@ extension VaultRecoveryEnterPasswordPresenter {
                     destination = .importVault(entropy: interactor.entropy, masterKey: masterKey, vault: vault, onClose: flowContext.onClose)
                 case .cloud:
                     fatalError("Unsupported import vault from cloud")
+                case .localVault:
+                    fatalError("Unsupported import vault from local database")
                 }
             }
         }

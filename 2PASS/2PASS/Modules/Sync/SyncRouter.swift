@@ -19,11 +19,13 @@ struct SyncRouter: Router {
         case .webDAV:
             .push
         case .iCloudNotAvailable(let reason):
-                .alert(title: T.generalNotAvailable, message: reason)
+            .alert(title: T.generalNotAvailable, message: reason)
+        case .iCloudSchemeNotSupported(let schemeVersion, _):
+            .alert(title: T.appUpdateModalTitle, message: T.cloudSyncInvalidSchemaErrorMsg(schemeVersion))
         case .disableWebDAVConfirmation:
-                .alert(title: T.webdavDisableIcloudConfirmTitle, message: T.webdavDisableWebdavConfirmBody)
+            .alert(title: T.webdavDisableIcloudConfirmTitle, message: T.webdavDisableWebdavConfirmBody)
         case .syncNotAllowed:
-                .sheet
+            .sheet
         case nil:
             nil
         }
@@ -35,6 +37,9 @@ struct SyncRouter: Router {
             BackupAddWebDAVRouter.buildView()
         case .iCloudNotAvailable:
             Button(T.commonOk.localizedKey) {}
+        case .iCloudSchemeNotSupported(_, let onUpdateApp):
+            Button(T.appUpdateModalCtaNegative.localizedKey, role: .cancel) {}
+            Button(T.appUpdateModalCtaPositive.localizedKey, action: onUpdateApp)
         case .disableWebDAVConfirmation(onConfirm: let onConfirm):
             Button(T.commonCancel.localizedKey, role: .cancel) {}
             Button(T.commonConfirm.localizedKey, role: .destructive, action: onConfirm)

@@ -7,8 +7,9 @@
 extension ConnectRequests {
     
     struct Pull: ConnectRequestExpectedResponse {
-        
+
         let id: UUID = UUID()
+        let schemeVersion: ConnectSchemaVersion
         let payload: Payload
         let action: ConnectMessageAction = .pullRequest
         

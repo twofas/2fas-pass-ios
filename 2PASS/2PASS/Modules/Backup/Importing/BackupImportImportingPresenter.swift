@@ -29,7 +29,7 @@ final class BackupImportImportingPresenter {
 extension BackupImportImportingPresenter {
     
     func onAppear() {
-        interactor.importPasswords { [weak self] result in
+        interactor.importItems { [weak self] result in
             switch result {
             case .success:
                 self?.state = .success

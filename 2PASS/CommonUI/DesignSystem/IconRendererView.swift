@@ -93,12 +93,11 @@ public struct IconRendererView: View {
         }
         .overlay {
             Text(verbatim: title)
-                .font(.bodyEmphasized)
                 .fontWeight(.bold)
+                .font(.body)
                 .foregroundStyle(textColor(forLabelColor: color))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
-                .padding(Spacing.s)
         }
     }
     

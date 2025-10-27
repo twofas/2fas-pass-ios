@@ -12,9 +12,6 @@ protocol UserDefaultsDataSource: AnyObject {
     func setDeviceID(_ deviceID: UUID)
     func clearDeviceID()
     
-    func setIntroductionAsShown()
-    var wasIntroductionShown: Bool { get }
-    
     func setCrashlyticsDisabled(_ disabled: Bool)
     var isCrashlyticsDisabled: Bool { get }
     
@@ -112,4 +109,8 @@ protocol UserDefaultsDataSource: AnyObject {
     
     var shouldShowQuickSetup: Bool { get }
     func setShouldShowQuickSetup(_ value: Bool)
+    
+    var lastAppUpdatePromptDate: Date? { get }
+    func setLastAppUpdatePromptDate(_ date: Date)
+    func clearLastAppUpdatePromptDate()
 }

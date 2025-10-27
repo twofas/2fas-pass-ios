@@ -9,12 +9,12 @@ import CommonUI
 
 struct TrashCell: View {
     
-    let data: TrashPasswordData
+    let data: TrashItemData
     let presenter: TrashPresenter
     
     var body: some View {
         HStack(alignment: .center, spacing: Spacing.l) {
-            IconRendererView(content: presenter.icons[data.passwordID])
+            IconRendererView(content: presenter.icons[data.itemID])
                 .controlSize(.small)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -40,7 +40,7 @@ struct TrashCell: View {
             
             Menu {
                 Button {
-                    presenter.onRestore(passwordID: data.passwordID)
+                    presenter.onRestore(itemID: data.itemID)
                 } label: {
                     HStack {
                         Image(systemName: "arrow.2.squarepath")
@@ -49,7 +49,7 @@ struct TrashCell: View {
                 }
                 
                 Button(role: ButtonRole.destructive) {
-                    presenter.onDelete(passwordID: data.passwordID)
+                    presenter.onDelete(itemID: data.itemID)
                 } label: {
                     HStack {
                         Image(systemName: "trash")

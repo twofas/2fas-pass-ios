@@ -8,8 +8,8 @@ import UIKit
 import Common
 
 public protocol PasswordsFlowControllerParent: AnyObject {
-    func passwordsToViewPassword(passwordID: PasswordID)
-    func selectPassword(passwordID: PasswordID)
+    func passwordsToViewPassword(itemID: ItemID)
+    func selectPassword(itemID: ItemID)
     func cancel()
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
@@ -20,11 +20,11 @@ public protocol PasswordsFlowControllerParent: AnyObject {
 
 protocol PasswordsFlowControlling: AnyObject {
     func toAddPassword()
-    func toEditPassword(passwordID: PasswordID)
-    func toViewPassword(passwordID: PasswordID)
+    func toEditPassword(itemID: ItemID)
+    func toViewPassword(itemID: ItemID)
     func toURI(_ selectedURI: URL)
     
-    func selectPassword(passwordID: PasswordID)
+    func selectPassword(itemID: ItemID)
     func cancel()
     
     func toQuickSetup()
@@ -64,9 +64,9 @@ public final class PasswordsFlowController: FlowController {
 
 extension PasswordsFlowController: PasswordsFlowControlling {
     func toAddPassword() {
-        let changeRequest: PasswordDataChangeRequest?
+        let changeRequest: LoginDataChangeRequest?
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers {
-            changeRequest = PasswordDataChangeRequest(uris: serviceIdentifiers.map { .init(uri: $0, match: .domain)} )
+            changeRequest = LoginDataChangeRequest(uris: serviceIdentifiers.map { .init(uri: $0, match: .domain)} )
         } else {
             changeRequest = nil
         }
@@ -74,29 +74,29 @@ extension PasswordsFlowController: PasswordsFlowControlling {
         AddPasswordNavigationFlowController.present(
             on: viewController,
             parent: self,
-            editPasswordID: nil,
+            editItemID: nil,
             changeRequest: changeRequest
         )
     }
     
-    func toEditPassword(passwordID: PasswordID) {
+    func toEditPassword(itemID: ItemID) {
         AddPasswordNavigationFlowController.present(
             on: viewController,
             parent: self,
-            editPasswordID: passwordID
+            editItemID: itemID
         )
     }
     
-    func toViewPassword(passwordID: PasswordID) {
-        parent?.passwordsToViewPassword(passwordID: passwordID)
+    func toViewPassword(itemID: ItemID) {
+        parent?.passwordsToViewPassword(itemID: itemID)
     }
     
     func toURI(_ selectedURI: URL) {
         UIApplication.shared.openInBrowser(selectedURI)
     }
     
-    func selectPassword(passwordID: PasswordID) {
-        parent?.selectPassword(passwordID: passwordID)
+    func selectPassword(itemID: ItemID) {
+        parent?.selectPassword(itemID: itemID)
     }
     
     func cancel() {

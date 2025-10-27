@@ -21,7 +21,7 @@ class PasswordsCellView: UICollectionViewCell {
         PasswordCellMenu.allCases
     }
     
-    var menuAction: ((PasswordCellMenu, PasswordID, URL?) -> Void)?
+    var menuAction: ((PasswordCellMenu, ItemID, URL?) -> Void)?
     
     private let nameLabel: UILabel = {
         let label = UILabel()
@@ -69,7 +69,7 @@ class PasswordsCellView: UICollectionViewCell {
     
     private let iconRenderer = IconRenderer()
     
-    private var passwordID: PasswordID?
+    private var itemID: ItemID?
     private var hasUsername = false
     private var hasPassword = false
     private var uris: [String] = []
@@ -107,7 +107,7 @@ class PasswordsCellView: UICollectionViewCell {
     ) {
         nameLabel.text = ItemNameFormatStyle().format(cellData.name)
         usernameLabel.text = cellData.username
-        self.passwordID = cellData.passwordID
+        self.itemID = cellData.itemID
         self.hasUsername = cellData.hasUsername
         self.hasPassword = cellData.hasPassword
         self.uris = cellData.uris
@@ -189,8 +189,8 @@ private extension PasswordsCellView {
                     title: PasswordCellMenu.view.label,
                     image: PasswordCellMenu.view.icon
                 ) { [weak self] _ in
-                    guard let self, let passwordID else { return }
-                    menuAction?(.view, passwordID, nil)
+                    guard let self, let itemID else { return }
+                    menuAction?(.view, itemID, nil)
                 }
             )
         }
@@ -201,8 +201,8 @@ private extension PasswordsCellView {
                     title: PasswordCellMenu.edit.label,
                     image: PasswordCellMenu.edit.icon
                 ) { [weak self] _ in
-                    guard let self, let passwordID else { return }
-                    menuAction?(.edit, passwordID, nil)
+                    guard let self, let itemID else { return }
+                    menuAction?(.edit, itemID, nil)
                 }
             )
         }
@@ -213,8 +213,8 @@ private extension PasswordsCellView {
                     title: PasswordCellMenu.copyUsername.label,
                     image: PasswordCellMenu.copyUsername.icon
                 ) { [weak self] _ in
-                    guard let self, let passwordID else { return }
-                    menuAction?(.copyUsername, passwordID, nil)
+                    guard let self, let itemID else { return }
+                    menuAction?(.copyUsername, itemID, nil)
                 }
             )
         }
@@ -224,8 +224,8 @@ private extension PasswordsCellView {
                     title: PasswordCellMenu.copyPassword.label,
                     image: PasswordCellMenu.copyPassword.icon
                 ) { [weak self] _ in
-                    guard let self, let passwordID else { return }
-                    menuAction?(.copyPassword, passwordID, nil)
+                    guard let self, let itemID else { return }
+                    menuAction?(.copyPassword, itemID, nil)
                 }
             )
         }
@@ -249,8 +249,8 @@ private extension PasswordsCellView {
                     image: PasswordCellMenu.moveToTrash.icon,
                     attributes: PasswordCellMenu.moveToTrash.attributes
                 ) { [weak self] _ in
-                    guard let self, let passwordID else { return }
-                    menuAction?(.moveToTrash, passwordID, nil)
+                    guard let self, let itemID else { return }
+                    menuAction?(.moveToTrash, itemID, nil)
                 }
             )
         }
@@ -263,8 +263,8 @@ private extension PasswordsCellView {
             UIAction(
                 title: "\(url)"
             ) { [weak self] _ in
-                guard let self, let passwordID, let normalized = normalizeURI(url) else { return }
-                menuAction?(.goToURI, passwordID, normalized)
+                guard let self, let itemID, let normalized = normalizeURI(url) else { return }
+                menuAction?(.goToURI, itemID, normalized)
             }
         }
     }

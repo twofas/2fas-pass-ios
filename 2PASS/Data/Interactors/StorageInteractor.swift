@@ -10,7 +10,7 @@ import CryptoKit
 import LocalAuthentication
 
 public protocol StorageInteracting: AnyObject {
-    func loadStore()
+    @MainActor func loadStore() async
     func initialize(completion: @escaping () -> Void)
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
     func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
@@ -40,8 +40,13 @@ final class StorageInteractor {
 
 extension StorageInteractor: StorageInteracting {
     
-    func loadStore() {
-        mainRepository.loadEncryptedStore()
+    @MainActor
+    func loadStore() async {
+        await withCheckedContinuation { continuation in
+            mainRepository.loadEncryptedStore {
+                continuation.resume()
+            }
+        }
     }
     
     func initialize(completion: @escaping () -> Void) {
@@ -51,10 +56,24 @@ extension StorageInteractor: StorageInteracting {
         )
         
         if migrationInteractor.requiresReencryptionMigration() {
-            migrationInteractor.performReencryptionMigration()
+            Task { @MainActor in
+                guard await migrationInteractor.loadStoreWithReencryptionMigration() else {
+                    fatalError("Failed to load Encrypted store with reencryption migration")
+                }
+                performInitialize(completion: completion)
+            }
+        } else {
+            performInitialize(completion: completion)
         }
+    }
+    
+    private func performInitialize(completion: @escaping () -> Void) {
+        Log(
+            "StorageInteractor - perform initialize",
+            module: .interactor
+        )
         
-        let vaults = mainRepository.listEncrypteVaults()
+        let vaults = mainRepository.listEncryptedVaults()
         guard let masterKey = mainRepository.empheralMasterKey else {
             Log(
                 "StorageInteractor - initialize. Can't continue without Master Key!",
@@ -89,7 +108,7 @@ extension StorageInteractor: StorageInteracting {
         mainRepository.selectVault(vaultID)
         
         mainRepository.createInMemoryStorage()
-        let passwords = mainRepository.listEncryptedItems(
+        let items = mainRepository.listEncryptedItems(
             in: vaultID,
             excludeProtectionLevels: mainRepository.isMainAppProcess ? [] : Config.autoFillExcludeProtectionLevels
         )
@@ -98,7 +117,7 @@ extension StorageInteractor: StorageInteracting {
         
         let group = DispatchGroup()
         
-        for encryptedData in passwords {
+        for encryptedData in items {
             group.enter()
             queue.async { [weak self] in
                 guard let self else {
@@ -106,27 +125,29 @@ extension StorageInteractor: StorageInteracting {
                     return
                 }
                 let protectionLevel = encryptedData.protectionLevel
-                guard let contentData = decryptContentData(
+                
+                let (name, contentData) = decryptContentData(
                     encryptedData.content,
                     protectionLevel: protectionLevel
-                ) else {
+                )
+                
+                guard let contentData else {
                     group.leave()
                     return
                 }
                 DispatchQueue.main.async {
-                    self.mainRepository.createPassword(
-                        passwordID: encryptedData.itemID,
-                        name: contentData.name,
-                        username: contentData.username,
-                        password: contentData.password,
-                        notes: contentData.notes,
+                    self.mainRepository.createItem(
+                        itemID: encryptedData.itemID,
+                        vaultID: encryptedData.vaultID,
                         creationDate: encryptedData.creationDate,
                         modificationDate: encryptedData.modificationDate,
-                        iconType: contentData.iconType,
                         trashedStatus: encryptedData.trashedStatus,
-                        protectionLevel: protectionLevel,
-                        uris: contentData.uris,
-                        tagIds: encryptedData.tagIds
+                        protectionLevel: encryptedData.protectionLevel,
+                        tagIds: encryptedData.tagIds,
+                        name: name,
+                        contentType: encryptedData.contentType,
+                        contentVersion: encryptedData.contentVersion,
+                        content: contentData
                     )
                     
                     group.leave()
@@ -192,33 +213,36 @@ extension StorageInteractor: StorageInteracting {
     
     func decryptContentData(
         _ data: Data?,
-        protectionLevel: ItemProtectionLevel) -> PasswordItemContent? {
-            guard let data else { return nil }
+        protectionLevel: ItemProtectionLevel) -> (name: String?, content: Data?) {
+            guard let data else { return (nil, nil) }
             guard let key = mainRepository.getKey(
                 isPassword: false,
                 protectionLevel: protectionLevel
             ) else {
                 Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
-                return nil
+                return (nil, nil)
             }
             
             guard let value = mainRepository.decrypt(data, key: key) else {
                 Log("StorageInteractor - can't decrypt data", module: .interactor, severity: .error)
-                return nil
+                return (nil, nil)
             }
-            return try? mainRepository.jsonDecoder.decode(PasswordItemContent.self, from: value)
+
+            return (mainRepository.extractItemName(fromContent: value), value)
         }
     
     func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {
-        let date = mainRepository.currentDate
-        let createdAt = creationDate ?? date
-        let updatedAt = modificationDate ?? date
-        
-        guard createdAt <= updatedAt else {
-            Log("StorageInteractor - initialize. Creation date should be earlier than or equal to the modification date!", module: .interactor, severity: .error)
-            return nil
-        }
-        
+        let currentDate = mainRepository.currentDate
+        let createdAt = creationDate ?? currentDate
+        let updatedAt = {
+            let date = modificationDate ?? currentDate
+            if createdAt <= date {
+                return date
+            } else {
+                return createdAt
+            }
+        }()
+                
         guard
             let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(
                 vaultID,

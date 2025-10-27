@@ -11,16 +11,16 @@ protocol ManageTagsModuleInteracting {
 final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     
     private let tagInteractor: TagInteracting
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     
     init(
         tagInteractor: TagInteracting,
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     ) {
         self.tagInteractor = tagInteractor
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
     
@@ -35,7 +35,7 @@ final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     }
     
     func getItemCountForTag(tagID: ItemTagID) -> Int {
-        passwordInteractor.getItemCountForTag(tagID: tagID)
+        itemsInteractor.getItemCountForTag(tagID: tagID)
     }
 }
 

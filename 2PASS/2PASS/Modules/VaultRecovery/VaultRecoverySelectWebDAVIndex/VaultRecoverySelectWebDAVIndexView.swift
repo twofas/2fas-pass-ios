@@ -49,7 +49,7 @@ struct VaultRecoverySelectWebDAVIndexView: View {
         }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(T.commonCancel.localizedKey) {
+                ToolbarCancelButton {
                     dismiss()
                 }
             }

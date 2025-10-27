@@ -9,20 +9,20 @@ import SwiftUI
 
 public struct AddPasswordRouter {
 
-    public static func buildView(id: PasswordID?, changeRequest: PasswordDataChangeRequest?, onClose: @escaping (SavePasswordResult) -> Void) -> some View {
-        AddPasswordView_UIKit(editPasswordID: id, changeRequest: changeRequest, onClose: onClose)
+    public static func buildView(id: ItemID?, changeRequest: LoginDataChangeRequest?, onClose: @escaping (SavePasswordResult) -> Void) -> some View {
+        AddPasswordView_UIKit(editItemID: id, changeRequest: changeRequest, onClose: onClose)
             .ignoresSafeArea()
     }
 }
 
 private struct AddPasswordView_UIKit: UIViewControllerRepresentable {
     
-    let editPasswordID: PasswordID?
-    let changeRequest: PasswordDataChangeRequest?
+    let editItemID: ItemID?
+    let changeRequest: LoginDataChangeRequest?
     let onClose: (SavePasswordResult) -> Void
     
     func makeUIViewController(context: Context) -> UIViewController {
-        AddPasswordNavigationFlowController.buildView(parent: context.coordinator, editPasswordID: editPasswordID, changeRequest: changeRequest)
+        AddPasswordNavigationFlowController.buildView(parent: context.coordinator, editItemID: editItemID, changeRequest: changeRequest)
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {

@@ -11,7 +11,7 @@ struct PasswordsCellViewPreview: UIViewRepresentable {
     
     func makeUIView(context: Context) -> PasswordsCellView {
         let view = PasswordsCellView()
-        view.update(cellData: PasswordCellData(passwordID: PasswordID(), name: "Name", username: "Username", iconType: .label(labelTitle: "EA", labelColor: .red), hasUsername: true, hasPassword: true, uris: [], normalizeURI: { URL(string: $0) }))
+        view.update(cellData: PasswordCellData(itemID: ItemID(), name: "Name", username: "Username", iconType: .label(labelTitle: "EA", labelColor: .red), hasUsername: true, hasPassword: true, uris: [], normalizeURI: { URL(string: $0) }))
         return view
     }
     

@@ -28,7 +28,10 @@ public final class CloudCacheStorageDataSourceImpl {
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.initilizingNewStore = { [weak self] in self?.initilizingNewStore?() }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
-        coreDataStack.loadStore()
+        coreDataStack.loadStore { success in
+            guard success else { fatalError("Failed to load CloudCache store") }
+            Log("CloudCache storage initialized")
+        }
     }
 }
 
@@ -92,8 +95,8 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
         )
     }
     
-    public func getCloudCachedItemEntity(passwordID: ItemID) -> CloudDataItem? {
-        guard let entity = ItemCachedEntity.getEntity(on: context, itemID: passwordID) else {
+    public func getCloudCachedItemEntity(itemID: ItemID) -> CloudDataItem? {
+        guard let entity = ItemCachedEntity.getEntity(on: context, itemID: itemID) else {
             return nil
         }
         return .init(item: entity.toData(), metadata: entity.metadata)

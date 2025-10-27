@@ -64,7 +64,7 @@ extension ItemRecord {
                 modificationDate: modificationDate,
                 trashedStatus: .no,
                 protectionLevel: protectionLevelParsed,
-                contentType: ItemContentType(rawValue: contentType) ?? .login,
+                contentType: .init(rawValue: contentType),
                 contentVersion: contentVersion,
                 content: content,
                 vaultID: vaultID,

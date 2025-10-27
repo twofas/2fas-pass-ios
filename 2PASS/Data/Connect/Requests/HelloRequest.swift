@@ -7,21 +7,28 @@
 extension ConnectRequests {
     
     struct Hello: ConnectRequestExpectedResponse {
-        
+
         let id: UUID = UUID()
-        let payload: Payload        
+        let schemeVersion: ConnectSchemaVersion
+        let payload: Payload
         let action: ConnectMessageAction = .hello
         
         struct Payload: ConnectMessagePayload {
             let deviceId: String
             let deviceName: String
             let deviceOs: String
+            
+            // V2
+            let supportedFeatures: [String]?
         }
         
         struct ResponsePayload: ConnectMessagePayload {
             let browserName: String
             let browserVersion: String
             let browserExtName: String
+            
+            // V2
+            let supportedFeatures: [String]?
         }
         
         func validateResponse(_ message: ConnectMessage<ResponsePayload>) throws {

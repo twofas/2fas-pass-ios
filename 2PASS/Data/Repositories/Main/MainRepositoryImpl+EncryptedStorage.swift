@@ -8,16 +8,12 @@ import Foundation
 import Common
 import Storage
 
-public enum MigrationError: Error {
-    case verificationFailed
-}
-
 extension MainRepositoryImpl {
     
-    // MARK: Passwords
+    // MARK: Items
     
     func createEncryptedItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -28,7 +24,7 @@ extension MainRepositoryImpl {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) {
-        encryptedStorage.createEncryptedPassword(
+        encryptedStorage.createEncryptedItem(
             itemID: itemID,
             creationDate: creationDate,
             modificationDate: modificationDate,
@@ -43,7 +39,7 @@ extension MainRepositoryImpl {
     }
     
     func updateEncryptedItem(
-        itemID: PasswordID,
+        itemID: ItemID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -53,7 +49,7 @@ extension MainRepositoryImpl {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) {
-        encryptedStorage.updateEncryptedPassword(
+        encryptedStorage.updateEncryptedItem(
             itemID: itemID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
@@ -66,12 +62,12 @@ extension MainRepositoryImpl {
         )
     }
     
-    func encryptedItemsBatchUpdate(_ passwords: [ItemEncryptedData]) {
-        encryptedStorage.batchUpdateRencryptedPasswords(passwords, date: currentDate)
+    func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData]) {
+        encryptedStorage.batchUpdateRencryptedItems(items, date: currentDate)
     }
     
-    func getEncryptedItemEntity(itemID: PasswordID) -> ItemEncryptedData? {
-        encryptedStorage.getEncryptedPasswordEntity(itemID: itemID)
+    func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
+        encryptedStorage.getEncryptedItemEntity(itemID: itemID)
     }
     
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
@@ -82,21 +78,21 @@ extension MainRepositoryImpl {
         encryptedStorage.listEncryptedItems(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
     }
     
-    func addEncryptedItem(_ passwordID: PasswordID, to vaultID: VaultID) {
-        encryptedStorage.addEncryptedPassword(passwordID, to: vaultID)
+    func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
+        encryptedStorage.addEncryptedItem(itemID, to: vaultID)
     }
     
-    func deleteEncryptedItem(itemID: PasswordID) {
-        encryptedStorage.deleteEncryptedPassword(itemID: itemID)
+    func deleteEncryptedItem(itemID: ItemID) {
+        encryptedStorage.deleteEncryptedItem(itemID: itemID)
     }
     
     func deleteAllEncryptedItems() {
-        encryptedStorage.deleteAllEncryptedPasswords(in: selectedVault?.vaultID)
+        encryptedStorage.deleteAllEncryptedItems(in: selectedVault?.vaultID)
     }
     
     // MARK: Encrypted Vaults
     
-    func listEncrypteVaults() -> [VaultEncryptedData] {
+    func listEncryptedVaults() -> [VaultEncryptedData] {
         encryptedStorage.listEncrypteVaults()
     }
     
@@ -137,7 +133,7 @@ extension MainRepositoryImpl {
     }
     
     func deleteAllVaults() {
-        listEncrypteVaults().forEach { vault in
+        listEncryptedVaults().forEach { vault in
             deleteEncryptedVault(vault.vaultID)
         }
         saveEncryptedStorage()
@@ -168,12 +164,15 @@ extension MainRepositoryImpl {
         hasEncryptionReference && encryptedStorage.migrationRequired
     }
     
-    func loadEncryptedStore() {
-        encryptedStorage.loadStore()
-        encryptedStorage.warmUp()
+    func loadEncryptedStore(completion: @escaping Callback) {
+        encryptedStorage.loadStore { [weak encryptedStorage] success in
+            guard success else { fatalError("Failed to load Encrypted store") }
+            encryptedStorage?.warmUp()
+            completion()
+        }
     }
     
-    func loadEncryptedStoreWithReencryptionMigration() {
+    func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void) {
         MigrationController.current = .init(
             setupKeys: { vaultID in
                 guard self.hasCachedKeys() == false else {
@@ -219,9 +218,10 @@ extension MainRepositoryImpl {
             }
         )
         
-        encryptedStorage.loadStore()
-        
-        MigrationController.current = nil
+        encryptedStorage.loadStore { success in
+            MigrationController.current = nil
+            completion(success)
+        }
     }
     
     // MARK: Deleted Items

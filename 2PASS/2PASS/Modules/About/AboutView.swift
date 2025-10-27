@@ -88,6 +88,7 @@ struct AboutView: View {
                 presenter.onSendLogs()
             }
             Toggle(T.aboutSendCrashReports.localizedKey, isOn: $presenter.anonymousCrashReports)
+                .tint(.accentColor)
         } header: {
             Text(T.aboutSectionCrashReporting.localizedKey)
         } footer: {

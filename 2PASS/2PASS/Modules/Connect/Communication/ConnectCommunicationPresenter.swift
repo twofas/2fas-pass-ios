@@ -80,6 +80,10 @@ final class ConnectCommunicationPresenter {
         }
     }
     
+    func onUpdateApp() {
+        UIApplication.shared.open(Config.appStoreURL)
+    }
+    
     private func connect() {
         state = .connecting
         currentTask = Task {

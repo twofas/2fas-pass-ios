@@ -13,11 +13,11 @@ protocol TransferItemsServicesListInteracting: AnyObject {
 
 final class TransferItemsServicesListInteractor: TransferItemsServicesListInteracting {
     
-    let passwordInteractor: PasswordInteracting
+    let itemsInteractor: ItemsInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(passwordInteractor: PasswordInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
-        self.passwordInteractor = passwordInteractor
+    init(itemsInteractor: ItemsInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+        self.itemsInteractor = itemsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
     }
     
@@ -25,7 +25,7 @@ final class TransferItemsServicesListInteractor: TransferItemsServicesListIntera
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {

@@ -16,26 +16,26 @@ protocol PasswordsModuleInteracting: AnyObject {
     var currentSortType: SortType { get }
     func setSortType(_ sortType: SortType)
     
-    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [PasswordData]
-    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData])
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [ItemData]
+    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData])
 
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
     
-    func moveToTrash(_ passwordID: PasswordID)
-    func copyUsername(_ passwordID: PasswordID) -> Bool
-    func copyPassword(_ passwordID: PasswordID) -> Bool
+    func moveToTrash(_ itemID: ItemID)
+    func copyUsername(_ itemID: ItemID) -> Bool
+    func copyPassword(_ itemID: ItemID) -> Bool
     
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
     
     func normalizedURL(for uri: String) -> URL?
     func listAllTags() -> [ItemTagData]
-    func countPasswordsForTag(_ tagID: ItemTagID) -> Int
+    func countItemsForTag(_ tagID: ItemTagID) -> Int
 }
 
 final class PasswordsModuleInteractor {
-    private let passwordInteractor: PasswordInteracting
+    private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let systemInteractor: SystemInteracting
     private let uriInteractor: URIInteracting
@@ -49,7 +49,7 @@ final class PasswordsModuleInteractor {
     private var searchPhrase: String?
     
     init(
-        passwordInteractor: PasswordInteracting,
+        itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
         systemInteractor: SystemInteracting,
         uriInteractor: URIInteracting,
@@ -60,7 +60,7 @@ final class PasswordsModuleInteractor {
         passwordListInteractor: PasswordListInteracting,
         tagInteractor: TagInteracting
     ) {
-        self.passwordInteractor = passwordInteractor
+        self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.systemInteractor = systemInteractor
         self.uriInteractor = uriInteractor
@@ -79,7 +79,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {
             return true
         }
-        return passwordInteractor.passwordsCount < limit
+        return itemsInteractor.itemsCount < limit
     }
     
     var currentPlanItemsLimit: Int {
@@ -90,40 +90,60 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         configInteractor.defaultPassswordListAction
     }
     
-    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [PasswordData] {
-        passwordInteractor.listPasswords(
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [ItemData] {
+        let contentTypes: [ItemContentType]? = {
+            if let contentType {
+                return [contentType]
+            } else {
+                return nil
+            }
+        }()
+        
+        return itemsInteractor.listItems(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
-            contentType: contentType,
+            vaultId: nil,
+            contentTypes: contentTypes,
             sortBy: currentSortType,
             trashed: .no
         )
+        .filter { $0.asLoginItem != nil }
     }
     
-    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [PasswordData], rest: [PasswordData]) {
-        let allPasswords = passwordInteractor.listPasswords(searchPhrase: nil, tagId: tag?.tagID, contentType: contentType, sortBy: currentSortType, trashed: .no)
+    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {
+        let contentTypes: [ItemContentType]? = {
+            if let contentType {
+                return [contentType]
+            } else {
+                return nil
+            }
+        }()
+        
+        let allPasswords = itemsInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, sortBy: currentSortType, trashed: .no)
         
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)
         }
         
-        var suggested: [PasswordData] = []
-        var rest: [PasswordData] = []
+        var suggested: [ItemData] = []
+        var rest: [ItemData] = []
         
         for autofillService in serviceIdentifiers {
             for element in allPasswords where Config.autoFillExcludeProtectionLevels.contains(element.protectionLevel) == false {
-                if let uris = element.uris {
-                    let isMatch = uris.contains(where: { uri in
-                        uriInteractor.isMatch(uri.uri, to: autofillService, rule: uri.match)
-                    })
-                    
-                    if isMatch {
-                        suggested.append(element)
+                if case let .login(loginItem) = element {
+                    if let uris = loginItem.content.uris {
+                        let isMatch = uris.contains(where: { uri in
+                            uriInteractor.isMatch(uri.uri, to: autofillService, rule: uri.match)
+                        })
+                        
+                        if isMatch {
+                            suggested.append(element)
+                        } else {
+                            rest.append(element)
+                        }
                     } else {
                         rest.append(element)
                     }
-                } else {
-                    rest.append(element)
                 }
             }
         }
@@ -150,22 +170,22 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         passwordListInteractor.setSortType(sortType)
     }
     
-    func moveToTrash(_ passwordID: PasswordID) {
-        Log("PasswordsModuleInteractor: Move to trash: \(passwordID)", module: .moduleInteractor)
-        let deletedPassword = passwordInteractor.getPassword(for: passwordID, checkInTrash: false)
-        passwordInteractor.markAsTrashed(for: passwordID)
-        passwordInteractor.saveStorage()
+    func moveToTrash(_ itemID: ItemID) {
+        Log("PasswordsModuleInteractor: Move to trash: \(itemID)", module: .moduleInteractor)
+        let deletedPassword = itemsInteractor.getItem(for: itemID, checkInTrash: false)
+        itemsInteractor.markAsTrashed(for: itemID)
+        itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
-        if let deletedPassword {
+        if let loginItem = deletedPassword?.asLoginItem {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
-                try await autoFillCredentialsInteractor.removeSuggestions(for: deletedPassword)
+                try await autoFillCredentialsInteractor.removeSuggestions(for: loginItem)
             }
         }
     }
     
-    func copyUsername(_ passwordID: PasswordID) -> Bool {
-        guard let password = passwordInteractor.getPassword(for: passwordID, checkInTrash: false),
-              let username = password.username
+    func copyUsername(_ itemID: ItemID) -> Bool {
+        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem,
+              let username = loginItem.username
         else {
             return false
         }
@@ -173,8 +193,8 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         return true
     }
     
-    func copyPassword(_ passwordID: PasswordID) -> Bool {
-        let passwordResult = passwordInteractor.getPasswordEncryptedContents(for: passwordID, checkInTrash: false)
+    func copyPassword(_ itemID: ItemID) -> Bool {
+        let passwordResult = itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false)
 
         switch passwordResult {
         case .success(let password):
@@ -209,7 +229,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             .sorted(by: { $0.name < $1.name })
     }
     
-    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
-        passwordInteractor.getItemCountForTag(tagID: tagID)
+    func countItemsForTag(_ tagID: ItemTagID) -> Int {
+        itemsInteractor.getItemCountForTag(tagID: tagID)
     }
 }

@@ -62,51 +62,68 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
         
         let protectionLevel = ItemProtectionLevel(level: protectionLevelValue)
 
-        let name = {
-            if let nameEnc = sInstance.primitiveValue(forKey: PasswordKeys.name.rawValue) as? Data, let nameData = migrationController.decrypt(nameEnc, protectionLevel: protectionLevel) {
+        let name: String? = try {
+            if let nameEnc = sInstance.primitiveValue(forKey: PasswordKeys.name.rawValue) as? Data {
+                guard let nameData = migrationController.decrypt(nameEnc, protectionLevel: protectionLevel) else {
+                    throw MigrationError.decryptionFailed
+                }
                 return String(data: nameData, encoding: .utf8)
             }
             return nil
         }()
         
-        let username = {
-            if let usernameEnc = sInstance.primitiveValue(forKey: PasswordKeys.username.rawValue) as? Data, let usernameData = migrationController.decrypt(usernameEnc, protectionLevel: protectionLevel) {
+        let username: String? = try {
+            if let usernameEnc = sInstance.primitiveValue(forKey: PasswordKeys.username.rawValue) as? Data {
+                guard let usernameData = migrationController.decrypt(usernameEnc, protectionLevel: protectionLevel) else {
+                    throw MigrationError.decryptionFailed
+                }
                 return String(data: usernameData, encoding: .utf8)
             }
             return nil
         }()
         
-        let notes = {
-            if let notesEnc = sInstance.primitiveValue(forKey: PasswordKeys.notes.rawValue) as? Data, let notesData = migrationController.decrypt(notesEnc, protectionLevel: protectionLevel) {
+        let notes: String? = try {
+            if let notesEnc = sInstance.primitiveValue(forKey: PasswordKeys.notes.rawValue) as? Data {
+                guard let notesData = migrationController.decrypt(notesEnc, protectionLevel: protectionLevel) else {
+                    throw MigrationError.decryptionFailed
+                }
                 return String(data: notesData, encoding: .utf8)
             }
             return nil
         }()
         
         
-        let iconType: PasswordIconType = {
+        let iconType: PasswordIconType = try {
             if let iconType = sInstance.primitiveValue(forKey: PasswordKeys.iconType.rawValue) as? String {
-                let domain: String? = {
-                    guard let domainDataEnc = sInstance.primitiveValue(forKey: PasswordKeys.iconDomain.rawValue) as? Data,
-                          let domainData = migrationController.decrypt(domainDataEnc, protectionLevel: protectionLevel) else {
+                let domain: String? = try {
+                    guard let domainDataEnc = sInstance.primitiveValue(forKey: PasswordKeys.iconDomain.rawValue) as? Data else {
                         return nil
+                    }
+                    guard let domainData = migrationController.decrypt(domainDataEnc, protectionLevel: protectionLevel) else {
+                        throw MigrationError.decryptionFailed
                     }
                     return String(data: domainData, encoding: .utf8)
                 }()
                 
-                let customURL: URL? = {
-                    guard let cutomURLDataEnc = sInstance.primitiveValue(forKey: PasswordKeys.iconCustomURL.rawValue) as? Data,
-                          let customURLData = migrationController.decrypt(cutomURLDataEnc, protectionLevel: protectionLevel),
-                          let customURLString = String(data: customURLData, encoding: .utf8) else {
+                let customURL: URL? = try {
+                    guard let cutomURLDataEnc = sInstance.primitiveValue(forKey: PasswordKeys.iconCustomURL.rawValue) as? Data else {
+                        return nil
+                    }
+                    guard let customURLData = migrationController.decrypt(cutomURLDataEnc, protectionLevel: protectionLevel) else {
+                        throw MigrationError.decryptionFailed
+                    }
+                    guard let customURLString = String(data: customURLData, encoding: .utf8) else {
                         return nil
                     }
                     return URL(string: customURLString)
                 }()
                 
-                let labelTitle: String? = {
-                    guard let labelTitleEnc = sInstance.primitiveValue(forKey: PasswordKeys.labelTitle.rawValue) as? Data,
-                          let labelTitleData = migrationController.decrypt(labelTitleEnc, protectionLevel: protectionLevel) else {
+                let labelTitle: String? = try {
+                    guard let labelTitleEnc = sInstance.primitiveValue(forKey: PasswordKeys.labelTitle.rawValue) as? Data else {
                         return nil
+                    }
+                    guard let labelTitleData = migrationController.decrypt(labelTitleEnc, protectionLevel: protectionLevel) else {
+                        throw MigrationError.decryptionFailed
                     }
                     return String(data: labelTitleData, encoding: .utf8)
                 }()
@@ -124,10 +141,14 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
             return .default
         }()
         
-        let uris: [PasswordURI]? = {
-            guard let urisEnc = sInstance.primitiveValue(forKey: PasswordKeys.uris.rawValue) as? Data,
-                  let urisData = migrationController.decrypt(urisEnc, protectionLevel: protectionLevel),
-                  let uris = try? JSONDecoder().decode([String].self, from: urisData) else {
+        let uris: [PasswordURI]? = try {
+            guard let urisEnc = sInstance.primitiveValue(forKey: PasswordKeys.uris.rawValue) as? Data else {
+                return nil
+            }
+            guard let urisData = migrationController.decrypt(urisEnc, protectionLevel: protectionLevel) else {
+                throw MigrationError.decryptionFailed
+            }
+            guard let uris = try? JSONDecoder().decode([String].self, from: urisData) else {
                 return nil
             }
             guard let uriMatching = sInstance.primitiveValue(forKey: PasswordKeys.urisMatching.rawValue) as? [String] else {
@@ -138,7 +159,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
             }
         }()
         
-        let content = PasswordItemContent(
+        let content = LoginItemData.Content(
             name: name,
             username: username,
             password: sInstance.primitiveValue(forKey: PasswordKeys.password.rawValue) as? Data,

@@ -9,7 +9,7 @@ import Foundation
 import CloudKit
 
 public enum MergeHandlerError: Error {
-    case newerVersion
+    case schemaNotSupported(Int)
     case noLocalVault
     case incorrectEncryption
     case mergeError
@@ -17,7 +17,7 @@ public enum MergeHandlerError: Error {
 }
 
 final class MergeHandler {
-    var newerVersion: Callback?
+    var schemaNotSupported: ((Int) -> Void)?
     var incorrectEncryption: Callback?
     var syncNotAllowed: Callback?
     
@@ -66,7 +66,7 @@ final class MergeHandler {
     private var cloudStorageTagIDsForDeletition: [ItemTagID] = []
     
     // cloud migration
-    private var passwordIDsForDeletition: [CKRecord.ID] = []
+    private var recordItemIDsForDeletition: [CKRecord.ID] = []
     
     init(
         localStorage: LocalStorage,
@@ -90,8 +90,8 @@ extension MergeHandler {
         isMultiDeviceSyncEnabled = enabled
     }
     
-    func setPasswordIDsForDeletition(_ passwordIDsForDeletition: [CKRecord.ID]) {
-        self.passwordIDsForDeletition = passwordIDsForDeletition
+    func setItemIDsForDeletition(_ itemIDsForDeletition: [CKRecord.ID]) {
+        self.recordItemIDsForDeletition = itemIDsForDeletition
     }
     
     var hasChanges: Bool {
@@ -222,8 +222,8 @@ extension MergeHandler {
         if var cloudVault = cloudVaults.first(where: { $0.id == localVault.vaultID }) {
             if cloudVault.schemaVersion != encryptionHandler.currentCloudSchemaVersion {
                 if cloudVault.schemaVersion > encryptionHandler.currentCloudSchemaVersion {
-                    newerVersion?()
-                    completion(.failure(.newerVersion))
+                    schemaNotSupported?(cloudVault.schemaVersion)
+                    completion(.failure(.schemaNotSupported(cloudVault.schemaVersion)))
                     return
                 }
                 // migration
@@ -305,7 +305,7 @@ extension MergeHandler {
         }
         
         // Deleting unused Password records if found
-        recordIDsForRemoval.append(contentsOf: passwordIDsForDeletition)
+        recordIDsForRemoval.append(contentsOf: recordItemIDsForDeletition)
     
         LogZoneEnd()
         completion(.success(()))

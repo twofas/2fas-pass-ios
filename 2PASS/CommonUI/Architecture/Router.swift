@@ -262,15 +262,6 @@ struct RoutingModifier<R: Router>: ViewModifier {
             .fullScreenCover(isPresented: fullScreenCoverProxy) {
                 router.view(for: destination!)
             }
-            .alert(alertTitle ?? "", isPresented: alertProxy, actions: {
-                if let activeNavigation = destination, case .alert = router.routingType(for: activeNavigation) {
-                    router.view(for: activeNavigation)
-                }
-            }, message: {
-                if let alertMessage {
-                    Text(verbatim: alertMessage)
-                }
-            })
             .fileImporter(
                 isPresented: fileImporterProxy,
                 allowedContentTypes: fileImportOpenTypes,
@@ -278,6 +269,19 @@ struct RoutingModifier<R: Router>: ViewModifier {
                 onCompletion: fileImportOnCompletion,
                 onCancellation: fileImportOnCancellation
             )
+            .background {
+                EmptyView()
+                    .alert(alertTitle ?? "", isPresented: alertProxy, actions: {
+                        if let activeNavigation = destination, case .alert = router.routingType(for: activeNavigation) {
+                            router.view(for: activeNavigation)
+                        }
+                    }, message: {
+                        if let alertMessage {
+                            Text(verbatim: alertMessage)
+                        }
+                    })
+                    .tint(nil)
+            }
     }
 }
 

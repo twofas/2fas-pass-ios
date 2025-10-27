@@ -60,7 +60,7 @@ final class VaultRecoveryScanQRCodeIntroPresenter {
                 
                 if let masterKey {
                     switch self.flowContext.kind {
-                    case .onboarding:
+                    case .onboarding, .restoreVault:
                         self.destination = .vaultRecovery(
                             entropy: entropy,
                             masterKey: masterKey,
@@ -70,6 +70,8 @@ final class VaultRecoveryScanQRCodeIntroPresenter {
                         switch self.recoveryData {
                         case .cloud:
                             fatalError("Unsupported importing vault from cloud")
+                        case .localVault:
+                            fatalError("Unsupported importing vault from local database")
                         case .file(let vault):
                             self.destination = .importVault(.encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: self.flowContext.onClose)
                         }

@@ -11,7 +11,7 @@ import CommonUI
 import Common
 
 final class CredentialProviderViewController: ASCredentialProviderViewController {
-
+    private let startupInteractor = InteractorFactory.shared.startupInteractor()
     var presenter: AutoFillRootPresenter!
     
     override func viewDidLoad() {
@@ -19,20 +19,21 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
 
         view.backgroundColor = UIColor(named: "MainBackgroundColor")
         
-        let startup = InteractorFactory.shared.startupInteractor()
-        startup.initialize()
-        let startupResult = startup.start()
-        addRootView(for: startupResult)
+        Task { @MainActor in
+            startupInteractor.initialize()
+            addRootView()
+        }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
-        presenter.startBiometryIfAvailable()
+        presenter.viewDidAppear()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)        
+        super.viewWillDisappear(animated)
+        presenter.viewWillDisappear()
         LogSave()
     }
 
@@ -54,11 +55,9 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
 }
 
 private extension CredentialProviderViewController {
-    
-    func addRootView(for startupResult: StartupInteractorStartResult) {
+    func addRootView() {
         presenter = AutoFillRootPresenter(
             extensionContext: extensionContext,
-            startupResult: startupResult,
             interactor: ModuleInteractorFactory.shared.autoFillInteractor()
         )
         
