@@ -220,7 +220,8 @@ extension ConnectInteractor {
                         return nil
                     }
                     return PasswordURI(uri: $0.text, match: match)
-                }
+                },
+                tags: loginRequest.data.tags
             ))
         case .secureNote:
             throw ConnectError.unsuppotedContentType(ItemContentType.secureNote.rawValue)

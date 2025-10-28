@@ -11,6 +11,7 @@ public struct LoginDataChangeRequest: Hashable {
     public let notes: String?
     public let protectionLevel: ItemProtectionLevel?
     public let uris: [PasswordURI]?
+    public let tags: [ItemTagID]?
     
     public enum Field: Hashable {
         case value(String)
@@ -26,12 +27,13 @@ public struct LoginDataChangeRequest: Hashable {
         }
     }
     
-    public init(name: String? = nil, username: Field? = nil, password: Field? = nil, notes: String? = nil, protectionLevel: ItemProtectionLevel? = nil, uris: [PasswordURI]? = nil) {
+    public init(name: String? = nil, username: Field? = nil, password: Field? = nil, notes: String? = nil, protectionLevel: ItemProtectionLevel? = nil, uris: [PasswordURI]? = nil, tags: [ItemTagID]? = nil) {
         self.name = name
         self.username = username
         self.password = password
         self.notes = notes
         self.protectionLevel = protectionLevel
         self.uris = uris
+        self.tags = tags
     }
 }
