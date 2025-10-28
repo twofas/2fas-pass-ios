@@ -6,6 +6,7 @@
 
 import SwiftUI
 import CommonUI
+import Common
 import Data
 
 private struct Constants {
@@ -25,19 +26,18 @@ struct ConnectCommunicationSheetView<Content>: View where Content: View {
     let webBrowser: WebBrowser?
     
     let content: Content
+    let onClose: Callback?
     
-    init(title: Text, identicon: String?, webBrowser: WebBrowser?, @ViewBuilder content: () -> Content) {
+    init(title: Text, identicon: String?, webBrowser: WebBrowser?, onClose: Callback? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
         self.identicon = identicon
         self.webBrowser = webBrowser
+        self.onClose = onClose
         self.content = content()
     }
     
     @Environment(\.colorScheme)
     private var colorScheme
-    
-    @Environment(\.dismiss)
-    private var dismiss
     
     @State
     private var contentHeight = Constants.initialSheetHeight
@@ -101,7 +101,7 @@ struct ConnectCommunicationSheetView<Content>: View where Content: View {
                 })
                 .overlay(alignment: .topTrailing) {
                     CloseButton {
-                        dismiss()
+                        onClose?()
                     }
                     .padding(Spacing.l)
                 }

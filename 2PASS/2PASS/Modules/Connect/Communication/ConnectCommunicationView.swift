@@ -40,6 +40,7 @@ struct ConnectCommunicationView: View {
             title: Text(T.connectConnectionHeader.localizedKey),
             identicon: presenter.identicon,
             webBrowser: presenter.webBrowser,
+            onClose: { dismiss() },
             content: {
                 content
             }
