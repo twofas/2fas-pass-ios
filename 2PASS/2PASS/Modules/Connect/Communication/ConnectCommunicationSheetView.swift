@@ -107,7 +107,14 @@ struct ConnectCommunicationSheetView<Content>: View where Content: View {
                 }
             }
         }
+        .onAppear {
+            hideKeyboard()
+        }
         .presentationDetents(presentationDetents, selection: $presentationDetent)
         .presentationDragIndicator(.hidden)
+    }
+    
+    private func hideKeyboard() {
+        UIApplication.shared.hideKeyboard()
     }
 }
