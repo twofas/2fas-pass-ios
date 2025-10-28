@@ -318,12 +318,18 @@ extension ItemsInteractor: ItemsInteracting {
                     return true
                 }
 
-                if case .login(let loginItem) = item, let uris = loginItem.uris {
-                    let uriMatches = uris.contains { uri in
-                        uri.uri.localizedCaseInsensitiveContains(searchPhrase)
-                    }
-                    if uriMatches {
+                if case .login(let loginItem) = item {
+                    if let username = loginItem.username, username.localizedCaseInsensitiveContains(searchPhrase) {
                         return true
+                    }
+
+                    if let uris = loginItem.uris {
+                        let uriMatches = uris.contains { uri in
+                            uri.uri.localizedCaseInsensitiveContains(searchPhrase)
+                        }
+                        if uriMatches {
+                            return true
+                        }
                     }
                 }
 
