@@ -279,7 +279,20 @@ extension ItemsInteractor: ItemsInteracting {
             return nil
         }()
 
-        let items = mainRepository.listItems(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
+        let items = mainRepository.listItems(options: .filterByPhrase(nil, sortBy: sortBy, trashed: trashed))
+
+        let searchPhraseMatchingTagIds: Set<ItemTagID> = {
+            if let searchPhrase, !searchPhrase.isEmpty {
+                let allTags = tagInteractor.listAllTags()
+                return Set(allTags
+                    .filter { tag in
+                        tag.name.localizedCaseInsensitiveContains(searchPhrase)
+                    }
+                    .map { $0.id }
+                )
+            }
+            return []
+        }()
 
         return items.filter { item in
             if let tagId {
@@ -298,6 +311,33 @@ extension ItemsInteractor: ItemsInteracting {
                 guard contentTypes.contains(item.contentType) else {
                     return false
                 }
+            }
+
+            if let searchPhrase, !searchPhrase.isEmpty {
+                if let itemName = item.name, itemName.localizedCaseInsensitiveContains(searchPhrase) {
+                    return true
+                }
+
+                if case .login(let loginItem) = item, let uris = loginItem.uris {
+                    let uriMatches = uris.contains { uri in
+                        uri.uri.localizedCaseInsensitiveContains(searchPhrase)
+                    }
+                    if uriMatches {
+                        return true
+                    }
+                }
+
+                if tagId == nil, let itemTagIds = item.tagIds, !itemTagIds.isEmpty {
+                    let hasMatchingTag = itemTagIds.contains { tagId in
+                        searchPhraseMatchingTagIds.contains(tagId)
+                    }
+
+                    if hasMatchingTag {
+                        return true
+                    }
+                }
+
+                return false
             }
 
             return true
