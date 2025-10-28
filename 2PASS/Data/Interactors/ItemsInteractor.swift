@@ -130,7 +130,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .login(let loginItem):
             mainRepository.createLoginItem(
                 itemID: loginItem.id,
-                vaultID: loginItem.vaultId,
+                vaultID: selectedVault.id,
                 creationDate: loginItem.creationDate,
                 modificationDate: loginItem.modificationDate,
                 trashedStatus: loginItem.trashedStatus,
@@ -146,7 +146,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .secureNote(let secureNoteItem):
             mainRepository.createSecureNoteItem(
                 itemID: secureNoteItem.id,
-                vaultID: secureNoteItem.vaultId,
+                vaultID: selectedVault.id,
                 creationDate: secureNoteItem.creationDate,
                 modificationDate: secureNoteItem.modificationDate,
                 trashedStatus: secureNoteItem.trashedStatus,
@@ -158,7 +158,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
-                vaultID: item.vaultId,
+                vaultID: selectedVault.id,
                 creationDate: item.creationDate,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
@@ -205,7 +205,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .login(let loginItem):
             mainRepository.updateLoginItem(
                 itemID: loginItem.id,
-                vaultID: loginItem.vaultId,
+                vaultID: selectedVault.id,
                 modificationDate: loginItem.modificationDate,
                 trashedStatus: loginItem.trashedStatus,
                 protectionLevel: loginItem.protectionLevel,
@@ -220,7 +220,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .secureNote(let secureNoteItem):
             mainRepository.updateSecureNoteItem(
                 itemID: secureNoteItem.id,
-                vaultID: secureNoteItem.vaultId,
+                vaultID: selectedVault.id,
                 modificationDate: secureNoteItem.modificationDate,
                 trashedStatus: secureNoteItem.trashedStatus,
                 protectionLevel: secureNoteItem.protectionLevel,
@@ -231,7 +231,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .raw:
             mainRepository.updateItem(
                 itemID: item.id,
-                vaultID: item.vaultId,
+                vaultID: selectedVault.id,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
                 protectionLevel: item.protectionLevel,

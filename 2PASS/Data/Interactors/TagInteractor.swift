@@ -128,7 +128,7 @@ extension TagInteractor: TagInteracting {
         mainRepository.updateEncryptedTag(
             ItemTagEncryptedData(
                 tagID: data.id,
-                vaultID: data.vaultID,
+                vaultID: selectedVault.vaultID,
                 name: nameEnc,
                 color: data.color?.hexString,
                 position: data.position,
@@ -227,7 +227,7 @@ extension TagInteractor: TagInteracting {
             encryptedTags.append(
                 ItemTagEncryptedData(
                     tagID: tag.id,
-                    vaultID: vaultID,
+                    vaultID: tag.vaultID,
                     name: nameEnc,
                     color: tag.color?.hexString,
                     position: tag.position,
