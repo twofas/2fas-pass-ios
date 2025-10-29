@@ -30,7 +30,7 @@ struct ConnectPullReqestCommunicationView: View {
     private var questionSensoryFeedback: Bool = false
     
     var body: some View {
-        ConnectCommunicationSheetView(title: Text(T.requestModalHeaderTitle), identicon: presenter.identicon, webBrowser: presenter.webBrowser) {
+        ConnectCommunicationSheetView(title: Text(T.requestModalHeaderTitle), identicon: presenter.identicon, webBrowser: presenter.webBrowser, onClose: onClose) {
             ZStack {
                 switch presenter.state {
                 case .connecting, .finish(.success):
@@ -123,6 +123,15 @@ struct ConnectPullReqestCommunicationView: View {
             Text(T.requestModalToastSuccessFullSync.localizedKey)
         case nil:
             Text("")
+        }
+    }
+    
+    private func onClose() {
+        switch presenter.state {
+        case .action:
+            presenter.onCancel()
+        default:
+            dismiss()
         }
     }
     

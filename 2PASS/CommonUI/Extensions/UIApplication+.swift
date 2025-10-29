@@ -14,4 +14,9 @@ extension UIApplication {
             open(addedScheme)
         }
     }
+    
+    public func hideKeyboard() {
+        let windowScene = connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+        windowScene?.keyWindow?.endEditing(true)
+    }
 }

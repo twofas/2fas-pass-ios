@@ -132,6 +132,7 @@ extension ConnectSchemaV2 {
         
         struct ItemData<T>: Decodable where T: Decodable {
             let content: T
+            let tags: [UUID]?
         }
     }
     

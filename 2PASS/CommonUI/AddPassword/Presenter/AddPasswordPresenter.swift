@@ -174,7 +174,9 @@ final class AddPasswordPresenter {
             protectionLevel = interactor.changeRequest?.protectionLevel ?? passwordData.protectionLevel
             iconType = passwordData.iconType
             
-            if let tagIds = passwordData.tagIds, !tagIds.isEmpty {
+            let tagIds = interactor.changeRequest?.tags ?? passwordData.tagIds
+            
+            if let tagIds, !tagIds.isEmpty {
                 let tags = interactor.getTags(for: tagIds)
                 selectedTags = tags
             } else {
