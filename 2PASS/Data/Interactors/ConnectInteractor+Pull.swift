@@ -8,7 +8,7 @@ import Common
 import CryptoKit
 
 extension ConnectInteractor {
-
+    
     func performPullConnecting(
         using webSocketSession: ConnectWebSocketSession,
         schemeVersion: ConnectSchemaVersion,
@@ -26,7 +26,7 @@ extension ConnectInteractor {
             )
 
             do {
-                try await pullSession.helloHandshake(deviceID: deviceId, deviceName: mainRepository.deviceName)
+                let helloResponse = try await pullSession.helloHandshake(deviceID: deviceId, deviceName: mainRepository.deviceName)
 
                 progress(0.25)
 
@@ -147,9 +147,7 @@ extension ConnectInteractor {
 
                 progress(0.9)
 
-                var webBrowser = webBrowser
-                webBrowser.nextSessionID = newSessionId
-                await webBrowsersInteractor.update(webBrowser)
+                await saveBrowser(webBrowser, helloResponse: helloResponse, newSessionId: newSessionId)
 
                 try await pullSession.closeConnectionWithSuccess()
 
@@ -210,5 +208,15 @@ extension ConnectInteractor {
         }
 
         try await pullSession.sendPullActionResponse(dataEnc: dateEnc)
+    }
+    
+    private func saveBrowser(_ webBrowser: WebBrowser, helloResponse: ConnectRequests.Hello.ResponsePayload, newSessionId: Data) async {
+        var webBrowser = webBrowser
+        webBrowser.name = helloResponse.browserName
+        webBrowser.version = helloResponse.browserVersion
+        webBrowser.extName = helloResponse.browserExtName
+        webBrowser.lastConnectionDate = mainRepository.currentDate
+        webBrowser.nextSessionID = newSessionId
+        await webBrowsersInteractor.update(webBrowser)
     }
 }

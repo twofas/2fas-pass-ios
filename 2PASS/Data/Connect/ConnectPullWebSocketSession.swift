@@ -13,7 +13,7 @@ struct ConnectPullWebSocketSession {
 
     // MARK: - Hello Handshake
 
-    func helloHandshake(deviceID: UUID, deviceName: String) async throws {
+    func helloHandshake(deviceID: UUID, deviceName: String) async throws -> ConnectRequests.Hello.ResponsePayload {
         let helloRequest = ConnectRequests.Hello(
             schemeVersion: schemeVersion,
             payload: .init(
@@ -24,9 +24,11 @@ struct ConnectPullWebSocketSession {
             )
         )
 
-        _ = try await webSocketSession.send(helloRequest)
+        let helloResponse = try await webSocketSession.send(helloRequest)
 
         Log("Connect - Hello response received", module: .connect, severity: .info)
+        
+        return helloResponse
     }
 
     // MARK: - Challenge Exchange
