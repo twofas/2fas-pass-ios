@@ -201,10 +201,16 @@ extension ConnectInteractor {
             }
 
             let newPassword: String?
-            if let newPasswordDataEnc = loginRequest.data.content.password?.value,
-               let encryptionKey = encryptionPasswordKey(loginItem.protectionLevel),
-                let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionKey) {
-                newPassword = String(data: newPasswordData, encoding: .utf8)
+                        
+            if let newPasswordDataEnc = loginRequest.data.content.password?.value {
+                if newPasswordDataEnc.isEmpty {
+                    newPassword = ""
+                } else if let encryptionKey = encryptionPasswordKey(loginItem.protectionLevel),
+                          let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionKey) {
+                    newPassword = String(data: newPasswordData, encoding: .utf8)
+                } else {
+                    newPassword = nil
+                }
             } else {
                 newPassword = nil
             }
