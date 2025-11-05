@@ -433,8 +433,8 @@ internal enum T {
   internal static let decryptionKitSaveModalCta1 = T.tr("Localizable", "decryption_kit_save_modal_cta1", fallback: "Share")
   /// Save to file
   internal static let decryptionKitSaveModalCta2 = T.tr("Localizable", "decryption_kit_save_modal_cta2", fallback: "Save to file")
-  /// Keep your Decryption Kit in a secure place. Never share it with anyone to protect your data.
-  internal static let decryptionKitSaveModalDescription = T.tr("Localizable", "decryption_kit_save_modal_description", fallback: "Keep your Decryption Kit in a secure place. Never share it with anyone to protect your data.")
+  /// Keep your Decryption Kit in a safe place. Never share it with anyone to protect your data.
+  internal static let decryptionKitSaveModalDescription = T.tr("Localizable", "decryption_kit_save_modal_description", fallback: "Keep your Decryption Kit in a safe place. Never share it with anyone to protect your data.")
   /// Save Decryption Kit
   internal static let decryptionKitSaveModalTitle = T.tr("Localizable", "decryption_kit_save_modal_title", fallback: "Save Decryption Kit")
   /// Decryption Kit saved!
@@ -453,8 +453,8 @@ internal enum T {
   internal static let decryptionKitSettingsSecretWordsIos = T.tr("Localizable", "decryption_kit_settings_secret_words_ios", fallback: "**Secret Words** (15-word phrase),")
   /// Decryption Kit Settings
   internal static let decryptionKitSettingsTitle = T.tr("Localizable", "decryption_kit_settings_title", fallback: "Decryption Kit Settings")
-  /// to avoid entering the Master Password to recover my Vault.
-  internal static let decryptionKitSettingsToggleMsg = T.tr("Localizable", "decryption_kit_settings_toggle_msg", fallback: "to avoid entering the Master Password to recover my Vault.")
+  /// to avoid entering the Master Password when recovering my Vault.
+  internal static let decryptionKitSettingsToggleMsg = T.tr("Localizable", "decryption_kit_settings_toggle_msg", fallback: "to avoid entering the Master Password when recovering my Vault.")
   /// Include the Master Password hash 
   internal static let decryptionKitSettingsToggleTitle = T.tr("Localizable", "decryption_kit_settings_toggle_title", fallback: "Include the Master Password hash ")
   /// Download this PDF
@@ -617,8 +617,8 @@ internal enum T {
   internal static let loginAddTitle = T.tr("Localizable", "login_add_title", fallback: "Add Item")
   /// +  Add URL
   internal static let loginAddUriCta = T.tr("Localizable", "login_add_uri_cta", fallback: "+  Add URL")
-  /// Are you sure you want to remove this Item? You can restore it later.
-  internal static let loginDeleteConfirmBody = T.tr("Localizable", "login_delete_confirm_body", fallback: "Are you sure you want to remove this Item? You can restore it later.")
+  /// Are you sure you want to remove this Item? You can recover it later.
+  internal static let loginDeleteConfirmBody = T.tr("Localizable", "login_delete_confirm_body", fallback: "Are you sure you want to remove this Item? You can recover it later.")
   /// Remove Item?
   internal static let loginDeleteConfirmTitle = T.tr("Localizable", "login_delete_confirm_title", fallback: "Remove Item?")
   /// Remove Item
@@ -1027,8 +1027,8 @@ internal enum T {
   internal static let requestModalPasswordRequestCtaNegative = T.tr("Localizable", "request_modal_password_request_cta_negative", fallback: "Cancel")
   /// Send
   internal static let requestModalPasswordRequestCtaPositive = T.tr("Localizable", "request_modal_password_request_cta_positive", fallback: "Send")
-  /// Browser extension requests the password of this Item for 3 minutes
-  internal static let requestModalPasswordRequestSubtitle = T.tr("Localizable", "request_modal_password_request_subtitle", fallback: "Browser extension requests the password of this Item for 3 minutes")
+  /// Browser extension requests this Item's password
+  internal static let requestModalPasswordRequestSubtitle = T.tr("Localizable", "request_modal_password_request_subtitle", fallback: "Browser extension requests this Item's password")
   /// Password Request
   internal static let requestModalPasswordRequestTitle = T.tr("Localizable", "request_modal_password_request_title", fallback: "Password Request")
   /// Cancel
@@ -1059,8 +1059,8 @@ internal enum T {
   internal static let requestModalUpdateItemSubtitle = T.tr("Localizable", "request_modal_update_item_subtitle", fallback: "Browser Extension requests the update of the following fields of this Item.")
   /// Update Item
   internal static let requestModalUpdateItemTitle = T.tr("Localizable", "request_modal_update_item_title", fallback: "Update Item")
-  /// Below, you can see a list of files from various devices. Click on the one that interests you to select it.
-  internal static let restoreCloudFilesDescription = T.tr("Localizable", "restore_cloud_files_description", fallback: "Below, you can see a list of files from various devices. Click on the one that interests you to select it.")
+  /// Below, you can see a list of 2FAS Pass Vaults. Select the one you want to restore.
+  internal static let restoreCloudFilesDescription = T.tr("Localizable", "restore_cloud_files_description", fallback: "Below, you can see a list of 2FAS Pass Vaults. Select the one you want to restore.")
   /// No Vaults found in your cloud storage
   internal static let restoreCloudFilesEmptyDescription = T.tr("Localizable", "restore_cloud_files_empty_description", fallback: "No Vaults found in your cloud storage")
   /// Your files
@@ -1145,8 +1145,8 @@ internal enum T {
   internal static let restoreReadingFileText = T.tr("Localizable", "restore_reading_file_text", fallback: "Reading backup file…")
   /// Start using app
   internal static let restoreSuccessCta = T.tr("Localizable", "restore_success_cta", fallback: "Start using app")
-  /// Start using the 2FAS Pass app on this device.
-  internal static let restoreSuccessDescription = T.tr("Localizable", "restore_success_description", fallback: "Start using the 2FAS Pass app on this device.")
+  /// Start using the 2FAS Pass on this device.
+  internal static let restoreSuccessDescription = T.tr("Localizable", "restore_success_description", fallback: "Start using the 2FAS Pass on this device.")
   /// Your Vault is restored!
   internal static let restoreSuccessTitle = T.tr("Localizable", "restore_success_title", fallback: "Your Vault is restored!")
   /// To import it, create a new Vault and navigate to **Settings → Import/Export**.
@@ -1161,8 +1161,8 @@ internal enum T {
   internal static let restoreUseRecoveryKeyTitle = T.tr("Localizable", "restore_use_recovery_key_title", fallback: "Use the Decryption Kit")
   /// You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items.
   internal static let restoreVaultMessage = T.tr("Localizable", "restore_vault_message", fallback: "You've successfully restored your encrypted 2FAS Pass Vault. However, you must decrypt it to restore access to your Items.")
-  /// To recover or sync your 2FAS Pass Vault, select one of the available backup methods:
-  internal static let restoreVaultSourceDescription = T.tr("Localizable", "restore_vault_source_description", fallback: "To recover or sync your 2FAS Pass Vault, select one of the available backup methods:")
+  /// To recover your 2FAS Pass Vault, select one of the available backup methods:
+  internal static let restoreVaultSourceDescription = T.tr("Localizable", "restore_vault_source_description", fallback: "To recover your 2FAS Pass Vault, select one of the available backup methods:")
   /// Local file
   internal static let restoreVaultSourceOptionFile = T.tr("Localizable", "restore_vault_source_option_file", fallback: "Local file")
   /// Import a backup file
@@ -1187,8 +1187,8 @@ internal enum T {
   internal static let restoreVaultVerifyMasterPasswordDescription = T.tr("Localizable", "restore_vault_verify_master_password_description", fallback: "Enter your Master Password for this Vault")
   /// Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items.
   internal static let restoreVaultWarning = T.tr("Localizable", "restore_vault_warning", fallback: "Do not uninstall 2FAS Pass without decrypting your Vault, as you will lose access to your Items.")
-  /// Restore your 2FAS Pass Vault data from a WebDAV server
-  internal static let restoreWebdavDescription = T.tr("Localizable", "restore_webdav_description", fallback: "Restore your 2FAS Pass Vault data from a WebDAV server")
+  /// Restore your 2FAS Pass Vault from a WebDAV server.
+  internal static let restoreWebdavDescription = T.tr("Localizable", "restore_webdav_description", fallback: "Restore your 2FAS Pass Vault from a WebDAV server.")
   /// WebDAV
   internal static let restoreWebdavTitle = T.tr("Localizable", "restore_webdav_title", fallback: "WebDAV")
   /// Point your camera at the QR code found in your Decryption Kit.
@@ -1203,10 +1203,10 @@ internal enum T {
   internal static let securityBiometricsEnableTitle = T.tr("Localizable", "security_biometrics_enable_title", fallback: "Enable Biometrics")
   /// Authenticate
   internal static let securityDecryptionKitAccessCta = T.tr("Localizable", "security_decryption_kit_access_cta", fallback: "Authenticate")
-  /// Master Password is required to access the Decryption Kit
-  internal static let securityDecryptionKitAccessDescription = T.tr("Localizable", "security_decryption_kit_access_description", fallback: "Master Password is required to access the Decryption Kit")
-  /// Access Decryption Kit
-  internal static let securityDecryptionKitAccessTitle = T.tr("Localizable", "security_decryption_kit_access_title", fallback: "Access Decryption Kit")
+  /// Master Password is required to download a new Decryption Kit
+  internal static let securityDecryptionKitAccessDescription = T.tr("Localizable", "security_decryption_kit_access_description", fallback: "Master Password is required to download a new Decryption Kit")
+  /// New Decryption Kit
+  internal static let securityDecryptionKitAccessTitle = T.tr("Localizable", "security_decryption_kit_access_title", fallback: "New Decryption Kit")
   /// Authenticate
   internal static let securityLockoutSettingsCta = T.tr("Localizable", "security_lockout_settings_cta", fallback: "Authenticate")
   /// Authentication is required to change lockout settings
@@ -1235,8 +1235,8 @@ internal enum T {
   internal static let securityTiersHelpTiersLayersAdpSubtitle = T.tr("Localizable", "security_tiers_help_tiers_layers_adp_subtitle", fallback: "When you enable ADP and iCloud sync, your data is encrypted twice — first with your E2EE and then with Apple's encryption keys. Even if someone gains access to your iCloud, they will only find fully encrypted E2EE data, keeping it secure.")
   /// Apple Advanced Data Protection
   internal static let securityTiersHelpTiersLayersAdpTitle = T.tr("Localizable", "security_tiers_help_tiers_layers_adp_title", fallback: "Apple Advanced Data Protection")
-  /// When setting up a new device, you'll need a 15-word recovery list to restore your SEED. It's securely stored in Apple's Secure Enclave — a dedicated, tamper-resistant chip - ensuring your encryption keys never leave your device.
-  internal static let securityTiersHelpTiersLayersSecureEnclaveSubtitle = T.tr("Localizable", "security_tiers_help_tiers_layers_secure_enclave_subtitle", fallback: "When setting up a new device, you'll need a 15-word recovery list to restore your SEED. It's securely stored in Apple's Secure Enclave — a dedicated, tamper-resistant chip - ensuring your encryption keys never leave your device.")
+  /// When setting up a new device, you'll need a 15-word recovery phrase to restore your SEED. It's securely stored in Apple's Secure Enclave, a dedicated, tamper-resistant chip, ensuring your encryption keys never leave your device.
+  internal static let securityTiersHelpTiersLayersSecureEnclaveSubtitle = T.tr("Localizable", "security_tiers_help_tiers_layers_secure_enclave_subtitle", fallback: "When setting up a new device, you'll need a 15-word recovery phrase to restore your SEED. It's securely stored in Apple's Secure Enclave, a dedicated, tamper-resistant chip, ensuring your encryption keys never leave your device.")
   /// Apple Secure Enclave
   internal static let securityTiersHelpTiersLayersSecureEnclaveTitle = T.tr("Localizable", "security_tiers_help_tiers_layers_secure_enclave_title", fallback: "Apple Secure Enclave")
   /// Items assigned to the Secret Tier are stored securely on your mobile device. They are available in Autofill and the 2FAS Pass Browser Extension whenever you need them.
@@ -1337,12 +1337,12 @@ internal enum T {
   internal static let settingsEntryAutofillDescription = T.tr("Localizable", "settings_entry_autofill_description", fallback: "Enable autofill to automatically fill in Item details.")
   /// Autofill lockout time
   internal static let settingsEntryAutofillLockTime = T.tr("Localizable", "settings_entry_autofill_lock_time", fallback: "Autofill lockout time")
-  /// Set the duration after which the autofill service will require the Master Password again. This is only relevant for services assigned to the Secret Tier.
-  internal static let settingsEntryAutofillLockTimeDescription = T.tr("Localizable", "settings_entry_autofill_lock_time_description", fallback: "Set the duration after which the autofill service will require the Master Password again. This is only relevant for services assigned to the Secret Tier.")
+  /// Set the duration after which the autofill service will require the Master Password again. This is only relevant for Items assigned to the Secret Tier.
+  internal static let settingsEntryAutofillLockTimeDescription = T.tr("Localizable", "settings_entry_autofill_lock_time_description", fallback: "Set the duration after which the autofill service will require the Master Password again. This is only relevant for Items assigned to the Secret Tier.")
   /// Biometrics
   internal static let settingsEntryBiometrics = T.tr("Localizable", "settings_entry_biometrics", fallback: "Biometrics")
-  /// Use your biometric data to unlock the app instead of using a Master Password.
-  internal static let settingsEntryBiometricsDescription = T.tr("Localizable", "settings_entry_biometrics_description", fallback: "Use your biometric data to unlock the app instead of using a Master Password.")
+  /// Use biometrics to unlock the app instead of using a Master Password.
+  internal static let settingsEntryBiometricsDescription = T.tr("Localizable", "settings_entry_biometrics_description", fallback: "Use biometrics to unlock the app instead of using a Master Password.")
   /// Biometric authentication is not available.
   internal static let settingsEntryBiometricsNotAvailable = T.tr("Localizable", "settings_entry_biometrics_not_available", fallback: "Biometric authentication is not available.")
   /// Unlock app with Biometrics
@@ -1375,8 +1375,8 @@ internal enum T {
   internal static let settingsEntryDiscord = T.tr("Localizable", "settings_entry_discord", fallback: "Our Discord Community")
   /// Dynamic Theme
   internal static let settingsEntryDynamicColors = T.tr("Localizable", "settings_entry_dynamic_colors", fallback: "Dynamic Theme")
-  /// Change the app theme based on your wallpaper for a more dynamic experience.
-  internal static let settingsEntryDynamicColorsDescription = T.tr("Localizable", "settings_entry_dynamic_colors_description", fallback: "Change the app theme based on your wallpaper for a more dynamic experience.")
+  /// Dynamically change the app theme based on your wallpaper.
+  internal static let settingsEntryDynamicColorsDescription = T.tr("Localizable", "settings_entry_dynamic_colors_description", fallback: "Dynamically change the app theme based on your wallpaper.")
   /// Export to file
   internal static let settingsEntryExport2pass = T.tr("Localizable", "settings_entry_export_2pass", fallback: "Export to file")
   /// Google Drive
@@ -1463,10 +1463,10 @@ internal enum T {
   internal static let settingsEntrySyncLast = T.tr("Localizable", "settings_entry_sync_last", fallback: "Last synchronization")
   /// Theme
   internal static let settingsEntryTheme = T.tr("Localizable", "settings_entry_theme", fallback: "Theme")
-  /// Transfer from Other Apps
-  internal static let settingsEntryTransferFromOtherApps = T.tr("Localizable", "settings_entry_transfer_from_other_apps", fallback: "Transfer from Other Apps")
-  /// Easily transfer your data from another password manager and quickly set it up in 2FAS Pass.
-  internal static let settingsEntryTransferFromOtherAppsDescription = T.tr("Localizable", "settings_entry_transfer_from_other_apps_description", fallback: "Easily transfer your data from another password manager and quickly set it up in 2FAS Pass.")
+  /// Transfer from other Apps
+  internal static let settingsEntryTransferFromOtherApps = T.tr("Localizable", "settings_entry_transfer_from_other_apps", fallback: "Transfer from other Apps")
+  /// Easily transfer your data from another password manager and set it up in 2FAS Pass.
+  internal static let settingsEntryTransferFromOtherAppsDescription = T.tr("Localizable", "settings_entry_transfer_from_other_apps_description", fallback: "Easily transfer your data from another password manager and set it up in 2FAS Pass.")
   /// Removed Items
   internal static let settingsEntryTrash = T.tr("Localizable", "settings_entry_trash", fallback: "Removed Items")
   /// Recover or permanently delete Items you've removed from the app.
@@ -1743,6 +1743,8 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below.
   internal static let transferInstructionsKeepassxc = T.tr("Localizable", "transfer_instructions_keepassxc", fallback: "Open KeePassXC on your PC and log in to your database.\n\nClick **Database** in the menu bar, and select **Export**.\n\nChoose the **CSV format**, confirm and choose the export location and click **OK**.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
+  /// Open
+  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open")
   /// Log in to LastPass on your browser and go to **Advanced Options**.
   /// 
   /// Under **Manage Your Vault**, select **Export**. This will send you a verification email.

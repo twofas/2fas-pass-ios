@@ -25,6 +25,7 @@ public extension ExternalService {
         case .keePass: "KeePass"
         case .microsoftEdge: "Microsoft Edge"
         case .enpass: "Enpass"
+        case .keeper: "Keeper"
         }
     }
 
@@ -44,6 +45,7 @@ public extension ExternalService {
         case .keePass: UTType.commaSeparatedText
         case .microsoftEdge: UTType.commaSeparatedText
         case .enpass: UTType.json
+        case .keeper: UTType.json
         }
     }
 }
