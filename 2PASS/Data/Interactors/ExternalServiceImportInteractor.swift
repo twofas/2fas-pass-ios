@@ -1175,7 +1175,6 @@ private struct Enpass: Decodable {
 
 private struct Keeper: Decodable {
     struct Record: Decodable {
-        let uid: Int?
         let title: String?
         let notes: String?
         let type: String?
@@ -1184,7 +1183,6 @@ private struct Keeper: Decodable {
         let loginUrl: String?
 
         enum CodingKeys: String, CodingKey {
-            case uid
             case title
             case notes
             case type = "$type"

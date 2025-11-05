@@ -8726,7 +8726,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open"
+            "value" : "Open Keeper on your PC.\n\nClick on your account in the top right corner, select **Settings**, and go to **Export**\n\nUnder **Export file**, select JSON as the format and click **Export**.\n\nEnter your Master Password and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. "
           }
         }
       }

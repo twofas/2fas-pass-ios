@@ -1743,8 +1743,16 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below.
   internal static let transferInstructionsKeepassxc = T.tr("Localizable", "transfer_instructions_keepassxc", fallback: "Open KeePassXC on your PC and log in to your database.\n\nClick **Database** in the menu bar, and select **Export**.\n\nChoose the **CSV format**, confirm and choose the export location and click **OK**.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
-  /// Open
-  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open")
+  /// Open Keeper on your PC.
+  /// 
+  /// Click on your account in the top right corner, select **Settings**, and go to **Export**
+  /// 
+  /// Under **Export file**, select JSON as the format and click **Export**.
+  /// 
+  /// Enter your Master Password and confirm the export.
+  /// 
+  /// Copy the exported file to this device and tap **Upload JSON file** below. 
+  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open Keeper on your PC.\n\nClick on your account in the top right corner, select **Settings**, and go to **Export**\n\nUnder **Export file**, select JSON as the format and click **Export**.\n\nEnter your Master Password and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Log in to LastPass on your browser and go to **Advanced Options**.
   /// 
   /// Under **Manage Your Vault**, select **Export**. This will send you a verification email.
