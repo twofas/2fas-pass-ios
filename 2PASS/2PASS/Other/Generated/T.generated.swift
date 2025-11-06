@@ -16,6 +16,8 @@ internal enum T {
   internal static let cameraErrorSplitMode = T.tr("Localizable", " camera_error_split_mode", fallback: "Can't initialize the camera in Split View mode. Open the app in full screen and try again.")
   /// The camera is unavailable because the system is overloaded. Please reboot the device.
   internal static let cameraErrorSystemOverload = T.tr("Localizable", " camera_error_system_overload", fallback: "The camera is unavailable because the system is overloaded. Please reboot the device.")
+  /// Try again
+  internal static let connectModalErrorNoInternetCta = T.tr("Localizable", " connect_modal_error_no_internet_cta", fallback: "Try again")
   /// Customize icon
   internal static let customizeIcon = T.tr("Localizable", " customize_icon", fallback: "Customize icon")
   /// You have reached your %d Item limit. Upgrade your plan for unlimited Items.
@@ -129,8 +131,8 @@ internal enum T {
   internal static let authUseBiometrics = T.tr("Localizable", "auth_use_biometrics", fallback: "Use Biometrics")
   /// Do you want to autofill 
   internal static let autofillLoginDialogBodyPrefix = T.tr("Localizable", "autofill_login_dialog_body_prefix", fallback: "Do you want to autofill ")
-  /// Item information for this app or website?
-  internal static let autofillLoginDialogBodySuffix = T.tr("Localizable", "autofill_login_dialog_body_suffix", fallback: "Item information for this app or website?")
+  /// Item details for this app or website?
+  internal static let autofillLoginDialogBodySuffix = T.tr("Localizable", "autofill_login_dialog_body_suffix", fallback: "Item details for this app or website?")
   /// Fill once
   internal static let autofillLoginDialogNeutral = T.tr("Localizable", "autofill_login_dialog_neutral", fallback: "Fill once")
   /// Fill and remember
@@ -141,8 +143,8 @@ internal enum T {
   internal static let autofillNoVaultMessage = T.tr("Localizable", "autofill_no_vault_message", fallback: "Go to the app for Vault setup.")
   /// Authenticate
   internal static let autofillPromptCta = T.tr("Localizable", "autofill_prompt_cta", fallback: "Authenticate")
-  /// Authentication is required to decrypt the Item password for the autofill request
-  internal static let autofillPromptDescription = T.tr("Localizable", "autofill_prompt_description", fallback: "Authentication is required to decrypt the Item password for the autofill request")
+  /// Authentication is required to decrypt the Item’s password for autofill.
+  internal static let autofillPromptDescription = T.tr("Localizable", "autofill_prompt_description", fallback: "Authentication is required to decrypt the Item’s password for autofill.")
   /// Autofill Request
   internal static let autofillPromptTitle = T.tr("Localizable", "autofill_prompt_title", fallback: "Autofill Request")
   /// Export
@@ -341,6 +343,10 @@ internal enum T {
   internal static let connectModalErrorGenericSubtitle = T.tr("Localizable", "connect_modal_error_generic_subtitle", fallback: "Something went wrong while connecting. Please try again.")
   /// Error occurred
   internal static let connectModalErrorGenericTitle = T.tr("Localizable", "connect_modal_error_generic_title", fallback: "Error occurred")
+  /// No Internet connection. Please try again.
+  internal static let connectModalErrorNoInternetSubtitle = T.tr("Localizable", "connect_modal_error_no_internet_subtitle", fallback: "No Internet connection. Please try again.")
+  /// Connection error
+  internal static let connectModalErrorNoInternetTitle = T.tr("Localizable", "connect_modal_error_no_internet_title", fallback: "Connection error")
   /// Connecting with Browser Extension
   internal static let connectModalHeaderTitle = T.tr("Localizable", "connect_modal_header_title", fallback: "Connecting with Browser Extension")
   /// Connecting…
@@ -1343,8 +1349,8 @@ internal enum T {
   internal static let settingsEntryBiometrics = T.tr("Localizable", "settings_entry_biometrics", fallback: "Biometrics")
   /// Use biometrics to unlock the app instead of using a Master Password.
   internal static let settingsEntryBiometricsDescription = T.tr("Localizable", "settings_entry_biometrics_description", fallback: "Use biometrics to unlock the app instead of using a Master Password.")
-  /// Biometric authentication is not available.
-  internal static let settingsEntryBiometricsNotAvailable = T.tr("Localizable", "settings_entry_biometrics_not_available", fallback: "Biometric authentication is not available.")
+  /// Biometrics unavailable.
+  internal static let settingsEntryBiometricsNotAvailable = T.tr("Localizable", "settings_entry_biometrics_not_available", fallback: "Biometrics unavailable.")
   /// Unlock app with Biometrics
   internal static let settingsEntryBiometricsToggle = T.tr("Localizable", "settings_entry_biometrics_toggle", fallback: "Unlock app with Biometrics")
   /// Change Master Password

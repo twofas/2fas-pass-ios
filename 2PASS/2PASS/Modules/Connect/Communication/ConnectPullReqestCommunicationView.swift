@@ -297,6 +297,18 @@ struct ConnectPullReqestCommunicationView: View {
                     .buttonStyle(.bezeled)
                 }
             )
+        case URLError.notConnectedToInternet:
+            ConnectCommunicationContentView(
+                iconColor: .danger500,
+                title: Label(T.connectModalErrorNoInternetTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
+                description: Text(T.connectModalErrorNoInternetSubtitle.localizedKey),
+                actions: {
+                    Button(T.requestModalErrorGenericCta) {
+                        dismiss()
+                    }
+                    .buttonStyle(.bezeled)
+                }
+            )
         default:
             ConnectCommunicationContentView(
                 iconColor: .danger500,

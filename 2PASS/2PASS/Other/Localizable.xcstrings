@@ -37,6 +37,17 @@
         }
       }
     },
+    " connect_modal_error_no_internet_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
     " customize_icon" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -619,7 +630,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Item information for this app or website?"
+            "value" : "Item details for this app or website?"
           }
         }
       }
@@ -685,7 +696,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Authentication is required to decrypt the Item password for the autofill request"
+            "value" : "Authentication is required to decrypt the Item’s password for autofill."
           }
         }
       }
@@ -1753,6 +1764,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Error occurred"
+          }
+        }
+      }
+    },
+    "connect_modal_error_no_internet_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Internet connection. Please try again."
+          }
+        }
+      }
+    },
+    "connect_modal_error_no_internet_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection error"
           }
         }
       }
@@ -7065,7 +7098,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biometric authentication is not available."
+            "value" : "Biometrics unavailable."
           }
         }
       }
