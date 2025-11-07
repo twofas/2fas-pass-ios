@@ -48,7 +48,7 @@ extension RecoveryKitInteractor: RecoveryKitInteracting {
                 ) { [weak self] result in
                     let tempDir = FileManager.default.temporaryDirectory
                     let currentDate = self?.mainRepository.currentDate ?? Date()
-                    let fileName = "2PASS_RecoveryKit_\(currentDate.fileDateAndTime()).pdf"
+                    let fileName = "2FAS_Pass_DecryptionKit_\(currentDate.fileDateAndTime()).pdf"
                     let fileURL = tempDir.appendingPathComponent(fileName)
                     self?.fileURL = fileURL
                     do {
