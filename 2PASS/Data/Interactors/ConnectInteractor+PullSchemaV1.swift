@@ -31,7 +31,7 @@ extension ConnectInteractor {
         let changeRequst = LoginDataChangeRequest(
             name: name,
             username: actionRequestData.data.username == nil ? .generate : .value(actionRequestData.data.username.value),
-            password: actionRequestData.data.usernamePasswordMobile ? .generate : newPassword.map { .value($0) },
+            password: actionRequestData.data.usernamePasswordMobile == true ? .generate : newPassword.map { .value($0) },
             uris: [PasswordURI(uri: actionRequestData.data.url, match: .domain)]
         )
 
