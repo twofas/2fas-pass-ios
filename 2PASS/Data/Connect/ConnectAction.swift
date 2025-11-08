@@ -55,7 +55,7 @@ extension ConnectSchemaV1 {
         let url: String
         let username: String?
         let passwordEnc: Data?
-        let usernamePasswordMobile: Bool
+        let usernamePasswordMobile: Bool?
     }
 
     struct ConnectActionUpdateRequestData: Codable {
