@@ -13,13 +13,14 @@ struct ConnectPullWebSocketSession {
 
     // MARK: - Hello Handshake
 
-    func helloHandshake(deviceID: UUID, deviceName: String) async throws -> ConnectRequests.Hello.ResponsePayload {
+    func helloHandshake(deviceID: UUID, deviceName: String, deviceType: ConnectDeviceType) async throws -> ConnectRequests.Hello.ResponsePayload {
         let helloRequest = ConnectRequests.Hello(
             schemeVersion: schemeVersion,
             payload: .init(
                 deviceId: deviceID.uuidString,
                 deviceName: deviceName,
                 deviceOs: "ios",
+                deviceType: deviceType,
                 supportedFeatures: schemeVersion < .v2 ? nil : []
             )
         )

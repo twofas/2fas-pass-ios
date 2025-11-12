@@ -83,6 +83,17 @@ extension MainRepositoryImpl {
         }
     }
     
+    var deviceType: DeviceType {
+        let device = Device.current
+        if device.isPhone {
+            return .phone
+        } else if device.isPad {
+            return .pad
+        } else {
+            return .unknown
+        }
+    }
+    
     var systemVersion: String {
         "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
     }
