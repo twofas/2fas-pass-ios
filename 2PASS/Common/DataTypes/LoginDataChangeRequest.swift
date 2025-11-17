@@ -4,14 +4,16 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-public struct LoginDataChangeRequest: Hashable {
-    public let name: String?
-    public let username: Field?
-    public let password: Field?
-    public let notes: String?
-    public let protectionLevel: ItemProtectionLevel?
-    public let uris: [PasswordURI]?
-    public let tags: [ItemTagID]?
+public struct LoginDataChangeRequest: ItemDataChangeRequest {
+    public let contentType: ItemContentType = .login
+    
+    public var name: String?
+    public var username: Field?
+    public var password: Field?
+    public var notes: String?
+    public var protectionLevel: ItemProtectionLevel?
+    public var uris: [PasswordURI]?
+    public var tags: [ItemTagID]?
     
     public enum Field: Hashable {
         case value(String)

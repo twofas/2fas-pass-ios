@@ -95,11 +95,10 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             searchPhrase: searchPhrase,
             tagId: tag?.id,
             vaultId: nil,
-            contentTypes: nil,
+            contentTypes: ItemContentType.allKnownTypes,
             sortBy: currentSortType,
             trashed: .no
         )
-        .filter { $0.asLoginItem != nil }
     }
     
     func loadList(forServiceIdentifiers serviceIdentifiers: [String], tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {

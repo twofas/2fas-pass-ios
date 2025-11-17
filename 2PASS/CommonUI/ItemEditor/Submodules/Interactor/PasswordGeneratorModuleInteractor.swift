@@ -8,7 +8,7 @@ import UIKit
 import Data
 import Common
 
-protocol AddPasswordGenerateModuleInteracting: AnyObject {
+protocol PasswordGeneratorModuleInteracting: AnyObject {
     var configuration: PasswordGenerateConfig? { get }
     var minPasswordLength: Int { get }
     var maxPasswordLength: Int { get }
@@ -19,7 +19,7 @@ protocol AddPasswordGenerateModuleInteracting: AnyObject {
     func copyPassword(_ password: String)
 }
 
-final class AddPasswordGenerateModuleInteractor {
+final class PasswordGeneratorModuleInteractor {
     
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let systemInteractor: SystemInteracting
@@ -32,7 +32,7 @@ final class AddPasswordGenerateModuleInteractor {
     }
 }
 
-extension AddPasswordGenerateModuleInteractor: AddPasswordGenerateModuleInteracting {
+extension PasswordGeneratorModuleInteractor: PasswordGeneratorModuleInteracting {
     
     var minPasswordLength: Int {
         passwordGeneratorInteractor.minPasswordLength

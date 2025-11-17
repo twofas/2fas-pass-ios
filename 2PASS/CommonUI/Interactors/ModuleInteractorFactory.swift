@@ -25,10 +25,11 @@ public final class ModuleInteractorFactory {
         )
     }
     
-    func addPasswordInteractor(editItemID: ItemID?, changeRequest: LoginDataChangeRequest? = nil) -> AddPasswordModuleInteracting {
-        AddPasswordModuleInteractor(
+    func itemEditorInteractor(editItemID: ItemID?, changeRequest: LoginDataChangeRequest? = nil) -> ItemEditorModuleInteracting {
+        ItemEditorModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),
+            secureNoteItemInteractor: InteractorFactory.shared.secureNoteInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
@@ -58,8 +59,8 @@ public final class ModuleInteractorFactory {
         )
     }
     
-    func addPasswordGenerateModuleInteractor() -> AddPasswordGenerateModuleInteracting {
-        AddPasswordGenerateModuleInteractor(
+    func passwordGeneratorModuleInteractor() -> PasswordGeneratorModuleInteracting {
+        PasswordGeneratorModuleInteractor(
             passwordGenerator: InteractorFactory.shared.passwordGeneratorInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor()

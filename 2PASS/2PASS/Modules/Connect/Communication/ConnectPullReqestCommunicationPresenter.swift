@@ -14,8 +14,8 @@ enum ConnectPullReqestCommunicationError: Error {
 }
 
 enum ConnectPullReqestCommunicationDestination: RouterDestination {
-    case addItem(changeRequest: LoginDataChangeRequest, onClose: (SavePasswordResult) -> Void)
-    case editItem(LoginItemData, changeRequest: LoginDataChangeRequest, onClose: (SavePasswordResult) -> Void)
+    case addItem(changeRequest: LoginDataChangeRequest, onClose: (SaveItemResult) -> Void)
+    case editItem(LoginItemData, changeRequest: LoginDataChangeRequest, onClose: (SaveItemResult) -> Void)
     
     var id: String {
         switch self {
@@ -206,7 +206,7 @@ final class ConnectPullReqestCommunicationPresenter {
         }
     }
     
-    private func onSavePassword(result: SavePasswordResult) {
+    private func onSavePassword(result: SaveItemResult) {
         destination = nil
         
         switch result {

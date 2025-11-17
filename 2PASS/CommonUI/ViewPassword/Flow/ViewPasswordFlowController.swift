@@ -28,13 +28,13 @@ final class ViewPasswordFlowController: FlowController {
         parent: ViewPasswordFlowControllerParent,
         itemID: ItemID,
         autoFillEnvironment: AutoFillEnvironment? = nil
-    ) {
+    ) {        
         let view = ViewPasswordViewController()
         view.hidesBottomBarWhenPushed = true
         let flowController = ViewPasswordFlowController(viewController: view)
         flowController.parent = parent
         let interactor = ModuleInteractorFactory.shared.viewPasswordInteractor()
-                
+        
         let presenter = ViewPasswordPresenter(
             itemID: itemID,
             flowController: flowController,
@@ -53,7 +53,7 @@ final class ViewPasswordFlowController: FlowController {
 
 extension ViewPasswordFlowController: ViewPasswordFlowControlling {
     func toEdit(_ itemID: ItemID) {
-        AddPasswordNavigationFlowController.present(
+        ItemEditorNavigationFlowController.present(
             on: viewController,
             parent: self,
             editItemID: itemID
@@ -73,8 +73,8 @@ extension ViewPasswordFlowController: ViewPasswordFlowControlling {
     }
 }
 
-extension ViewPasswordFlowController: AddPasswordNavigationFlowControllerParent {
-    func closeAddPassword(with result: SavePasswordResult) {
+extension ViewPasswordFlowController: ItemEditorNavigationFlowControllerParent {
+    func closeItemEditor(with result: SaveItemResult) {
         _viewController.dismiss(animated: true)
     }
 }

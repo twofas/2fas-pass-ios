@@ -8,7 +8,7 @@ import Foundation
 import Common
 
 @Observable
-final class AddPasswordGeneratePresenter {
+final class PasswordGeneratorPresenter {
     
     let minPasswordLength: Int
     let maxPasswordLength: Int
@@ -44,12 +44,12 @@ final class AddPasswordGeneratePresenter {
     
     private let close: Callback
     private let closeUsePassword: (String) -> Void
-    private let interactor: AddPasswordGenerateModuleInteracting
-        
+    private let interactor: PasswordGeneratorModuleInteracting
+
     init(
         close: @escaping Callback,
         closeUsePassword: @escaping (String) -> Void,
-        interactor: AddPasswordGenerateModuleInteracting
+        interactor: PasswordGeneratorModuleInteracting
     ) {
         self.close = close
         self.closeUsePassword = closeUsePassword
@@ -61,7 +61,7 @@ final class AddPasswordGeneratePresenter {
     }
 }
 
-extension AddPasswordGeneratePresenter {
+extension PasswordGeneratorPresenter {
     
     func onAppear() {
         if let config = interactor.configuration {
@@ -93,7 +93,7 @@ extension AddPasswordGeneratePresenter {
     }
 }
 
-private extension AddPasswordGeneratePresenter {
+private extension PasswordGeneratorPresenter {
     
     private func generate() {
         let pass = interactor.generatePassword(using: config)

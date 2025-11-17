@@ -92,7 +92,7 @@ extension PasswordsPresenter {
     
     func onAdd() {
         if interactor.canAddPassword {
-            flowController.toAddPassword()
+            flowController.toItemEditor()
         } else {
             flowController.toPremiumPlanPrompt(itemsLimit: interactor.currentPlanItemsLimit)
         }
@@ -131,7 +131,7 @@ extension PasswordsPresenter {
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
         switch action {
         case .view: flowController.toViewPassword(itemID: itemID)
-        case .edit: flowController.toEditPassword(itemID: itemID)
+        case .edit: flowController.toEditItem(itemID: itemID)
         case .copyUsername:
             if interactor.copyUsername(itemID) {
                 toastPresenter.presentUsernameCopied()
@@ -172,7 +172,7 @@ extension PasswordsPresenter {
                 flowController.toURI(normalized)
             }
         case .edit:
-            flowController.toEditPassword(itemID: itemData.id)
+            flowController.toEditItem(itemID: itemData.id)
         }
     }
     
@@ -316,7 +316,21 @@ private extension PasswordsPresenter {
                     return interactor.normalizedURL(for: uri)
                 }
             )
-        default:
+        case .secureNote(let secureNoteItem):
+            return PasswordCellData(
+                itemID: secureNoteItem.id,
+                name: secureNoteItem.name,
+                username: nil,
+                iconType: .label(labelTitle: "AA", labelColor: nil),
+                hasUsername: false,
+                hasPassword: false,
+                uris: [],
+                normalizeURI: { [weak self] uri in
+                    guard let interactor = self?.interactor else { return nil }
+                    return interactor.normalizedURL(for: uri)
+                }
+            )
+        case .raw:
             return nil
         }
     }

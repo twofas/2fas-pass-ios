@@ -3057,7 +3057,7 @@
 			repositoryURL = "https://github.com/siteline/swiftui-introspect.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = "1.4.0-beta.4";
+				minimumVersion = 26.0.0;
 			};
 		};
 		8F1D89FD2D2DEE6400960ABF /* XCRemoteSwiftPackageReference "lottie-spm" */ = {

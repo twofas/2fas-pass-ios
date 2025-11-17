@@ -8,9 +8,9 @@ import Foundation
 import Data
 import Common
 
-public typealias SavePasswordResult = Result<SavePasswordSuccess, SavePasswordError>
+public typealias SaveItemResult = Result<SaveItemSuccess, SaveItemError>
 
-public enum SavePasswordSuccess {
+public enum SaveItemSuccess {
     case saved(ItemID)
     case deleted(ItemID)
     
@@ -24,28 +24,29 @@ public enum SavePasswordSuccess {
     }
 }
 
-public enum SavePasswordError: Error {
+public enum SaveItemError: Error {
     case userCancelled
+    case uriNormalizationFailed
     case interactorError(ItemsInteractorSaveError)
 }
 
-enum AddPasswordModuleInteractorCheckState {
+enum ItemEditorModuleInteractorCheckState {
     case noChange
     case deleted
     case edited
 }
 
-protocol AddPasswordModuleInteracting: AnyObject {
-    var hasPasswords: Bool { get }
-    var changeRequest: LoginDataChangeRequest? { get }
+protocol ItemEditorModuleInteracting: AnyObject {
+    var hasItems: Bool { get }
     
+    var changeRequest: (any ItemDataChangeRequest)? { get }
+
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
-    
-    func getEditPassword() -> LoginItemData?
-    func getDecryptedPassword() -> String?
+
+    func getEditItem() -> ItemData?
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
-    
-    func savePassword(
+
+    func saveLogin(
         name: String?,
         username: String?,
         password: String?,
@@ -54,22 +55,33 @@ protocol AddPasswordModuleInteracting: AnyObject {
         protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
-    ) -> SavePasswordResult
+    ) -> SaveItemResult
+
+    func saveSecureNote(
+        name: String?,
+        text: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult
+
+    func decryptPassword(in login: LoginItemData) -> String?
+    func decryptNote(in note: SecureNoteItemData) -> String?
     
     func mostUsedUsernames() -> [String]
     func normalizeURLString(_ str: String) -> String?
     func extractDomain(from urlString: String) -> String?
     func generatePassword() -> String
     func fetchIconImage(from url: URL) async throws -> Data
-    func checkCurrentPasswordState() -> AddPasswordModuleInteractorCheckState
+    func checkCurrentPasswordState() -> ItemEditorModuleInteractorCheckState
     func moveToTrash() -> ItemID?
 }
 
-final class AddPasswordModuleInteractor {
-    public let changeRequest: LoginDataChangeRequest?
+final class ItemEditorModuleInteractor {
+    public let changeRequest: (any ItemDataChangeRequest)?
 
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
+    private let secureNoteItemInteractor: SecureNoteItemInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
@@ -80,12 +92,13 @@ final class AddPasswordModuleInteractor {
     private let passwordListInteractor: PasswordListInteracting
     private let tagInteractor: TagInteracting
     private let editItemID: ItemID?
-    
+
     private var modificationDate: Date?
-    
+
     init(
         itemsInteractor: ItemsInteracting,
         loginItemInteractor: LoginItemInteracting,
+        secureNoteItemInteractor: SecureNoteItemInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
@@ -100,6 +113,7 @@ final class AddPasswordModuleInteractor {
     ) {
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor
+        self.secureNoteItemInteractor = secureNoteItemInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -114,9 +128,9 @@ final class AddPasswordModuleInteractor {
     }
 }
 
-extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
+extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         
-    var hasPasswords: Bool {
+    var hasItems: Bool {
         itemsInteractor.hasItems
     }
     
@@ -124,28 +138,34 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         configInteractor.currentDefaultProtectionLevel
     }
     
-    func getEditPassword() -> LoginItemData? {
+    func getEditItem() -> ItemData? {
         guard let editItemID else {
             return nil
         }
-        let pass = itemsInteractor.getItem(for: editItemID, checkInTrash: false)?.asLoginItem
-        modificationDate = pass?.modificationDate
-        return pass
+        let item = itemsInteractor.getItem(for: editItemID, checkInTrash: false)
+        modificationDate = item?.modificationDate
+        return item
     }
     
-    func getDecryptedPassword() -> String? {
-        guard let editItemID else {
+    func decryptPassword(in login: LoginItemData) -> String? {
+        guard let encryptedPassword = login.password else {
             return nil
         }
-        return itemsInteractor.getPasswordEncryptedContents(for: editItemID, checkInTrash: false)
-            .unpack() ?? nil
+        return itemsInteractor.decrypt(encryptedPassword, isSecureField: true, protectionLevel: login.protectionLevel)
+    }
+
+    func decryptNote(in note: SecureNoteItemData) -> String? {
+        guard let encyptedText = note.content.text else {
+            return nil
+        }
+        return itemsInteractor.decrypt(encyptedText, isSecureField: true, protectionLevel: note.protectionLevel)
     }
     
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {
         tagInteractor.getTags(by: tagIds).sorted(by: { $0.name < $1.name })
     }
     
-    func savePassword(
+    func saveLogin(
         name: String?,
         username: String?,
         password: String?,
@@ -154,9 +174,9 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         protectionLevel: ItemProtectionLevel,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
-    ) -> SavePasswordResult {
+    ) -> SaveItemResult {
         let date = currentDateInteractor.currentDate
-        if let current = getEditPassword() {
+        if let current = getEditItem()?.asLoginItem {
             do {
                 try loginItemInteractor.updateLogin(
                     id: current.id,
@@ -175,9 +195,8 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                     uris: uris
                 )
                 
-                Log("AddPasswordModuleInteractor - success while updating password. Saving storage")
-                itemsInteractor.saveStorage()
-                syncChangeTriggerInteractor.trigger()
+                Log("ItemEditorModuleInteractor - success while updating password. Saving storage")
+                didSaveItem()
                 
                 Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                     try await autoFillCredentialsInteractor.replaceSuggestions(
@@ -214,10 +233,9 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
                     uris: uris
                 )
                 
-                Log("AddPasswordModuleInteractor - success while adding password. Saving storage")
+                Log("ItemEditorModuleInteractor - success while adding password. Saving storage")
                 
-                itemsInteractor.saveStorage()
-                syncChangeTriggerInteractor.trigger()
+                didSaveItem()
             
                 Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                     try await autoFillCredentialsInteractor.addSuggestions(
@@ -235,7 +253,64 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
             }
         }
     }
-    
+
+    func saveSecureNote(
+        name: String?,
+        text: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult {
+        let date = currentDateInteractor.currentDate
+        if let current = getEditItem()?.asSecureNote {
+            do {
+                try secureNoteItemInteractor.updateSecureNote(
+                    id: current.id,
+                    metadata: .init(
+                        creationDate: current.creationDate,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds ?? current.tagIds
+                    ),
+                    name: name ?? "",
+                    text: text
+                )
+
+                Log("ItemEditorModuleInteractor - success while updating secure note. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(current.id))
+
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        } else {
+            let itemID = UUID()
+            do {
+                try secureNoteItemInteractor.createSecureNote(
+                    id: itemID,
+                    metadata: .init(
+                        creationDate: date,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds
+                    ),
+                    name: name ?? "",
+                    text: text
+                )
+
+                Log("ItemEditorModuleInteractor - success while adding secure note. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(itemID))
+
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        }
+    }
+
     func mostUsedUsernames() -> [String] {
         passwordListInteractor.mostUsedUsernames()
     }
@@ -257,7 +332,7 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         try await fileIconInteractor.fetchImage(from: url)
     }
     
-    func checkCurrentPasswordState() -> AddPasswordModuleInteractorCheckState {
+    func checkCurrentPasswordState() -> ItemEditorModuleInteractorCheckState {
         guard let editItemID, let modificationDate else { return .noChange }
         guard let pass = itemsInteractor.getItem(for: editItemID, checkInTrash: false) else {
             return .deleted
@@ -276,5 +351,10 @@ extension AddPasswordModuleInteractor: AddPasswordModuleInteracting {
         itemsInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
         return editItemID
+    }
+    
+    private func didSaveItem() {
+        itemsInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
     }
 }

@@ -62,6 +62,14 @@ public extension View {
             onChange(size.width)
         }
     }
+    
+    func limitText(_ text: Binding<String>, to characterLimit: Int) -> some View {
+        self.onChange(of: text.wrappedValue) { _, newValue in
+            if newValue.count > characterLimit {
+                text.wrappedValue = String(text.wrappedValue.prefix(characterLimit))
+            }
+        }
+    }
 }
 
 private struct SizeReaderPreferenceKey: PreferenceKey {

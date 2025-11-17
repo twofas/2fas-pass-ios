@@ -7,14 +7,14 @@
 import SwiftUI
 import Common
 
-struct AddPasswordGenerateRouter {
+struct PasswordGeneratorRouter {
     @ViewBuilder
     static func buildView(close: @escaping Callback, closeUsePassword: @escaping (String) -> Void) -> some View {
-        AddPasswordGenerateView(
-            presenter: AddPasswordGeneratePresenter(
+        PasswordGeneratorView(
+            presenter: PasswordGeneratorPresenter(
                 close: close,
                 closeUsePassword: closeUsePassword,
-                interactor: ModuleInteractorFactory.shared.addPasswordGenerateModuleInteractor()
+                interactor: ModuleInteractorFactory.shared.passwordGeneratorModuleInteractor()
             )
         )
     }

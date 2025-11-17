@@ -19,8 +19,8 @@ public protocol PasswordsFlowControllerParent: AnyObject {
 }
 
 protocol PasswordsFlowControlling: AnyObject {
-    func toAddPassword()
-    func toEditPassword(itemID: ItemID)
+    func toItemEditor()
+    func toEditItem(itemID: ItemID)
     func toViewPassword(itemID: ItemID)
     func toURI(_ selectedURI: URL)
     
@@ -63,24 +63,24 @@ public final class PasswordsFlowController: FlowController {
 }
 
 extension PasswordsFlowController: PasswordsFlowControlling {
-    func toAddPassword() {
+    func toItemEditor() {
         let changeRequest: LoginDataChangeRequest?
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers {
             changeRequest = LoginDataChangeRequest(uris: serviceIdentifiers.map { .init(uri: $0, match: .domain)} )
         } else {
             changeRequest = nil
         }
-        
-        AddPasswordNavigationFlowController.present(
+
+        ItemEditorNavigationFlowController.present(
             on: viewController,
             parent: self,
             editItemID: nil,
             changeRequest: changeRequest
         )
     }
-    
-    func toEditPassword(itemID: ItemID) {
-        AddPasswordNavigationFlowController.present(
+
+    func toEditItem(itemID: ItemID) {
+        ItemEditorNavigationFlowController.present(
             on: viewController,
             parent: self,
             editItemID: itemID
@@ -121,9 +121,9 @@ extension PasswordsFlowController {
     var viewController: PasswordsViewController { _viewController as! PasswordsViewController }
 }
 
-extension PasswordsFlowController: AddPasswordNavigationFlowControllerParent {
-    
-    func closeAddPassword(with result: SavePasswordResult) {
+extension PasswordsFlowController: ItemEditorNavigationFlowControllerParent {
+
+    func closeItemEditor(with result: SaveItemResult) {
         viewController.presenter.handleRefresh()
         viewController.dismiss(animated: true)
     }

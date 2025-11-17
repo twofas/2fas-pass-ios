@@ -21,6 +21,7 @@ public enum IconContent {
     case icon(UIImage)
     case label(String, color: UIColor?)
     case placeholder
+    case contentType(ItemContentType)
 }
 
 extension IconContent {
@@ -52,6 +53,8 @@ public struct IconRendererView: View {
                 ProgressView()
             case .icon(let icon):
                 IconView(icon: icon)
+            case .contentType(let contentType):
+                ContentTypeIconView(contentType: contentType)
             case .label(let title, let color):
                 labelView(title: title, color: color)
             case .placeholder:
@@ -115,6 +118,7 @@ public struct IconRendererView: View {
     IconRendererView(content: .label("AB", color: nil))
     IconRendererView(content: .label("AB", color: .red))
     IconRendererView(content: .icon(UIImage(named: "2PASSShield")!))
+    IconRendererView(content: .contentType(.secureNote))
 }
 
 private struct IconView: View {
@@ -130,6 +134,24 @@ private struct IconView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
                 .clipShape(RoundedRectangle(cornerRadius: Constants.innerIconCornerRadius))
+        }
+    }
+}
+
+private struct ContentTypeIconView: View {
+    
+    let contentType: ItemContentType
+    
+    var body: some View {
+        ZStack {
+            if let backgroundColor = contentType.iconBackgroundColor {
+                Color(uiColor: backgroundColor)
+            }
+            
+            if let icon = contentType.icon {
+                Image(uiImage: icon)
+                    .foregroundStyle(contentType.iconColor.map { Color(uiColor: $0) } ?? .black)
+            }
         }
     }
 }

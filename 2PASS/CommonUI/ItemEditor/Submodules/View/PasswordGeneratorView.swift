@@ -13,10 +13,10 @@ private struct Constants {
     static let sheetHeightLiquidGlass: CGFloat = 550
 }
 
-struct AddPasswordGenerateView: View {
+struct PasswordGeneratorView: View {
 
     @State
-    var presenter: AddPasswordGeneratePresenter
+    var presenter: PasswordGeneratorPresenter
     
     var body: some View {
         NavigationStack {
@@ -115,6 +115,6 @@ struct AddPasswordGenerateView: View {
 #Preview {
     Color.white
         .sheet(isPresented: .constant(true)) {
-            AddPasswordGenerateRouter.buildView(close: {}, closeUsePassword: { _ in })
+            PasswordGeneratorRouter.buildView(close: {}, closeUsePassword: { _ in })
         }
 }

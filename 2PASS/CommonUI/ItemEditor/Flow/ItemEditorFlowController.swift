@@ -8,47 +8,47 @@ import UIKit
 import SwiftUI
 import Common
 
-protocol AddPasswordFlowControllerParent: AnyObject {
-    func closeAddPassword(with result: SavePasswordResult)
-    func addPasswordChangeProtectionLevel(
+protocol ItemEditorFlowControllerParent: AnyObject {
+    func closeItemEditor(with result: SaveItemResult)
+    func itemEditorChangeProtectionLevel(
         current: ItemProtectionLevel,
         completion: @escaping (ItemProtectionLevel) -> Void
     )
-    func addPasswordToCustomizeIcon(
+    func itemEditorToCustomizeIcon(
         data: CustomizeIconData,
         completion: @escaping (PasswordIconType) -> Void
     )
-    func addPasswordToSelectTags(
+    func itemEditorToSelectTags(
         selectedTags: [ItemTagData],
         onChange: @escaping ([ItemTagData]) -> Void
     )
 }
 
-protocol AddPasswordFlowControlling: AnyObject {
-    func close(with result: SavePasswordResult)
+protocol ItemEditorFlowControlling: AnyObject {
+    func close(with result: SaveItemResult)
     func toChangeProtectionLevel(current: ItemProtectionLevel)
     func toCustomizeIcon(data: CustomizeIconData)
     func toSelectTags(selectedTags: [ItemTagData], onChange: @escaping ([ItemTagData]) -> Void)
 }
 
-final class AddPasswordFlowController: FlowController {
-    private weak var parent: AddPasswordFlowControllerParent?
+final class ItemEditorFlowController: FlowController {
+    private weak var parent: ItemEditorFlowControllerParent?
     
     static func setAsRoot(
         on navigationController: UINavigationController,
-        parent: AddPasswordFlowControllerParent,
+        parent: ItemEditorFlowControllerParent,
         editItemID: ItemID?,
         changeRequest: LoginDataChangeRequest? = nil
     ) {
-        let view = AddPasswordViewController()
-        let flowController = AddPasswordFlowController(viewController: view)
+        let view = ItemEditorViewController()
+        let flowController = ItemEditorFlowController(viewController: view)
         flowController.parent = parent
-        let interactor = ModuleInteractorFactory.shared.addPasswordInteractor(
+        let interactor = ModuleInteractorFactory.shared.itemEditorInteractor(
             editItemID: editItemID,
             changeRequest: changeRequest
         )
-        
-        let presenter = AddPasswordPresenter(
+
+        let presenter = ItemEditorPresenter(
             flowController: flowController,
             interactor: interactor
         )
@@ -58,31 +58,31 @@ final class AddPasswordFlowController: FlowController {
     }
 }
 
-extension AddPasswordFlowController: AddPasswordFlowControlling {
-    
-    func close(with result: SavePasswordResult) {
-        parent?.closeAddPassword(with: result)
+extension ItemEditorFlowController: ItemEditorFlowControlling {
+
+    func close(with result: SaveItemResult) {
+        parent?.closeItemEditor(with: result)
     }
-    
+
     func toChangeProtectionLevel(
         current: ItemProtectionLevel
     ) {
-        parent?.addPasswordChangeProtectionLevel(current: current) { [weak viewController] newValue in
+        parent?.itemEditorChangeProtectionLevel(current: current) { [weak viewController] newValue in
             viewController?.presenter.handleChangeProtectionLevel(newValue)
         }
     }
-    
+
     func toCustomizeIcon(data: CustomizeIconData) {
-        parent?.addPasswordToCustomizeIcon(data: data, completion: { [weak viewController] icon in
+        parent?.itemEditorToCustomizeIcon(data: data, completion: { [weak viewController] icon in
             viewController?.presenter.handleIconChange(icon)
         })
     }
-    
+
     func toSelectTags(selectedTags: [ItemTagData], onChange: @escaping ([ItemTagData]) -> Void) {
-        parent?.addPasswordToSelectTags(selectedTags: selectedTags, onChange: onChange)
+        parent?.itemEditorToSelectTags(selectedTags: selectedTags, onChange: onChange)
     }
 }
 
-extension AddPasswordFlowController {
-    var viewController: AddPasswordViewController { _viewController as! AddPasswordViewController }
+extension ItemEditorFlowController {
+    var viewController: ItemEditorViewController { _viewController as! ItemEditorViewController }
 }

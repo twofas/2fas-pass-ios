@@ -8,66 +8,66 @@ import UIKit
 import SwiftUI
 import Common
 
-protocol AddPasswordNavigationFlowControllerParent: AnyObject {
-    func closeAddPassword(with result: SavePasswordResult)
+protocol ItemEditorNavigationFlowControllerParent: AnyObject {
+    func closeItemEditor(with result: SaveItemResult)
 }
 
-final class AddPasswordNavigationFlowController: NavigationFlowController {
-    private weak var parent: AddPasswordNavigationFlowControllerParent?
+final class ItemEditorNavigationFlowController: NavigationFlowController {
+    private weak var parent: ItemEditorNavigationFlowControllerParent?
 
     static func present(
         on viewController: UIViewController,
-        parent: AddPasswordNavigationFlowControllerParent,
+        parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
         changeRequest: LoginDataChangeRequest? = nil
     ) {
-        let flowController = AddPasswordNavigationFlowController()
+        let flowController = ItemEditorNavigationFlowController()
         flowController.parent = parent
 
         let navi = CommonNavigationControllerFlow(flowController: flowController)
-        
+
         flowController.navigationController = navi
 
-        AddPasswordFlowController.setAsRoot(
+        ItemEditorFlowController.setAsRoot(
             on: navi,
             parent: flowController,
             editItemID: editItemID,
             changeRequest: changeRequest
         )
-        
+
         navi.configureAsPhoneFullScreenModal()
         viewController.present(navi, animated: true)
     }
-    
+
     static func buildView(
-        parent: AddPasswordNavigationFlowControllerParent,
+        parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
         changeRequest: LoginDataChangeRequest?
     ) -> UIViewController {
-        let flowController = AddPasswordNavigationFlowController()
+        let flowController = ItemEditorNavigationFlowController()
         flowController.parent = parent
 
         let navi = CommonNavigationControllerFlow(flowController: flowController)
-        
+
         flowController.navigationController = navi
 
-        AddPasswordFlowController.setAsRoot(
+        ItemEditorFlowController.setAsRoot(
             on: navi,
             parent: flowController,
             editItemID: editItemID,
             changeRequest: changeRequest,
         )
-        
+
         return navi
     }
 }
 
-extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
-    func closeAddPassword(with result: SavePasswordResult) {
-        parent?.closeAddPassword(with: result)
+extension ItemEditorNavigationFlowController: ItemEditorFlowControllerParent {
+    func closeItemEditor(with result: SaveItemResult) {
+        parent?.closeItemEditor(with: result)
     }
-    
-    func addPasswordChangeProtectionLevel(
+
+    func itemEditorChangeProtectionLevel(
         current: ItemProtectionLevel,
         completion: @escaping (ItemProtectionLevel) -> Void
     ) {
@@ -78,8 +78,8 @@ extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
             completion: completion
         )
     }
-    
-    func addPasswordToCustomizeIcon(
+
+    func itemEditorToCustomizeIcon(
         data: CustomizeIconData,
         completion: @escaping (PasswordIconType) -> Void
     ) {
@@ -90,8 +90,8 @@ extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
             completion: completion
         )
     }
-    
-    func addPasswordToSelectTags(
+
+    func itemEditorToSelectTags(
         selectedTags: [ItemTagData],
         onChange: @escaping ([ItemTagData]) -> Void
     ) {
@@ -99,20 +99,20 @@ extension AddPasswordNavigationFlowController: AddPasswordFlowControllerParent {
             selectedTags: selectedTags,
             onChanged: onChange
         )
-        
+
         let hostingController = UIHostingController(rootView: selectTagsView)
         hostingController.title = T.selectTagsTitle
         navigationController.pushViewController(hostingController, animated: true)
     }
 }
 
-extension AddPasswordNavigationFlowController: ChangeProtectionLevelFlowControllerParent {
+extension ItemEditorNavigationFlowController: ChangeProtectionLevelFlowControllerParent {
     func closeProtectionLevel() {
         navigationController.popToRootViewController(animated: true)
     }
 }
 
-extension AddPasswordNavigationFlowController: CustomizeIconFlowControllerParent {
+extension ItemEditorNavigationFlowController: CustomizeIconFlowControllerParent {
     func closeCustomizeIcon() {
         navigationController.popToRootViewController(animated: true)
     }

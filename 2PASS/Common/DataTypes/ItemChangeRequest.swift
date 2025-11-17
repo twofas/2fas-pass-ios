@@ -4,6 +4,13 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
+public protocol ItemDataChangeRequest: Hashable {
+    var contentType: ItemContentType { get }
+    var name: String? { get }
+    var protectionLevel: ItemProtectionLevel? { get }
+    var tags: [ItemTagID]? { get }
+}
+
 public enum ItemChangeRequest: Hashable {
     case addLogin(LoginDataChangeRequest)
     case updateLogin(LoginItemData, LoginDataChangeRequest)
@@ -19,6 +26,13 @@ public enum ItemChangeRequest: Hashable {
         switch self {
         case .addLogin: false
         case .updateLogin: true
+        }
+    }
+    
+    public var contentType: ItemContentType {
+        switch self {
+        case .addLogin, .updateLogin:
+            return .login
         }
     }
 }
