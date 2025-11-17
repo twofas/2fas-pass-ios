@@ -71,7 +71,7 @@ final class ItemEditorPresenter {
         
         let contentType = changeRequest?.contentType ?? initalData?.contentType ?? .login
         self.isEdit = initalData != nil
-        self.allowChangeContentType = initalData == nil
+        self.allowChangeContentType = initalData == nil && changeRequest == nil
 
         switch contentType {
         case .login:
