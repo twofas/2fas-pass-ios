@@ -6,7 +6,8 @@
 
 public struct LoginDataChangeRequest: ItemDataChangeRequest {
     public let contentType: ItemContentType = .login
-    
+    public let allowChangeContentType: Bool
+
     public var name: String?
     public var username: Field?
     public var password: Field?
@@ -29,7 +30,7 @@ public struct LoginDataChangeRequest: ItemDataChangeRequest {
         }
     }
     
-    public init(name: String? = nil, username: Field? = nil, password: Field? = nil, notes: String? = nil, protectionLevel: ItemProtectionLevel? = nil, uris: [PasswordURI]? = nil, tags: [ItemTagID]? = nil) {
+    public init(name: String? = nil, username: Field? = nil, password: Field? = nil, notes: String? = nil, protectionLevel: ItemProtectionLevel? = nil, uris: [PasswordURI]? = nil, tags: [ItemTagID]? = nil, allowChangeContentType: Bool = false) {
         self.name = name
         self.username = username
         self.password = password
@@ -37,5 +38,6 @@ public struct LoginDataChangeRequest: ItemDataChangeRequest {
         self.protectionLevel = protectionLevel
         self.uris = uris
         self.tags = tags
+        self.allowChangeContentType = allowChangeContentType
     }
 }

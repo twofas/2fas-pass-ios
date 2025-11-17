@@ -92,7 +92,7 @@ extension PasswordsPresenter {
     
     func onAdd() {
         if interactor.canAddPassword {
-            flowController.toItemEditor()
+            flowController.toContentTypeSelection()
         } else {
             flowController.toPremiumPlanPrompt(itemsLimit: interactor.currentPlanItemsLimit)
         }

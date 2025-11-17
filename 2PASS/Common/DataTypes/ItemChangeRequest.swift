@@ -6,6 +6,8 @@
 
 public protocol ItemDataChangeRequest: Hashable {
     var contentType: ItemContentType { get }
+    var allowChangeContentType: Bool { get }
+    
     var name: String? { get }
     var protectionLevel: ItemProtectionLevel? { get }
     var tags: [ItemTagID]? { get }
