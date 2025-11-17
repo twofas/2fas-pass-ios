@@ -9,7 +9,7 @@ import SwiftUI
 
 public struct ItemEditorRouter {
 
-    public static func buildView(id: ItemID?, changeRequest: LoginDataChangeRequest?, onClose: @escaping (SaveItemResult) -> Void) -> some View {
+    public static func buildView(id: ItemID?, changeRequest: (any ItemDataChangeRequest)?, onClose: @escaping (SaveItemResult) -> Void) -> some View {
         ItemEditorView_UIKit(editItemID: id, changeRequest: changeRequest, onClose: onClose)
             .ignoresSafeArea()
     }
@@ -18,7 +18,7 @@ public struct ItemEditorRouter {
 private struct ItemEditorView_UIKit: UIViewControllerRepresentable {
 
     let editItemID: ItemID?
-    let changeRequest: LoginDataChangeRequest?
+    let changeRequest: (any ItemDataChangeRequest)?
     let onClose: (SaveItemResult) -> Void
 
     func makeUIViewController(context: Context) -> UIViewController {

@@ -109,7 +109,7 @@ final class ItemEditorModuleInteractor {
         passwordListInteractor: PasswordListInteracting,
         tagInteractor: TagInteracting,
         editItemID: ItemID?,
-        changeRequest: LoginDataChangeRequest? = nil
+        changeRequest: (any ItemDataChangeRequest)? = nil
     ) {
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor

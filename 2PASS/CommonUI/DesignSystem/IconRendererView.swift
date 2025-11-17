@@ -130,8 +130,6 @@ private struct IconView: View {
             IconBackgroundBlurView(icon: icon)
             
             Image(uiImage: icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
                 .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
                 .clipShape(RoundedRectangle(cornerRadius: Constants.innerIconCornerRadius))
         }
@@ -150,6 +148,7 @@ private struct ContentTypeIconView: View {
             
             if let icon = contentType.icon {
                 Image(uiImage: icon)
+                    .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
                     .foregroundStyle(contentType.iconColor.map { Color(uiColor: $0) } ?? .black)
             }
         }

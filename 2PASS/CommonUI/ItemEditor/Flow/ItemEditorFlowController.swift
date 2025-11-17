@@ -38,7 +38,7 @@ final class ItemEditorFlowController: FlowController {
         on navigationController: UINavigationController,
         parent: ItemEditorFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: LoginDataChangeRequest? = nil
+        changeRequest: (any ItemDataChangeRequest)? = nil
     ) {
         let view = ItemEditorViewController()
         let flowController = ItemEditorFlowController(viewController: view)

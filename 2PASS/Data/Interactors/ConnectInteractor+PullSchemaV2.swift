@@ -96,7 +96,21 @@ extension ConnectInteractor {
                 )
             )
         case .secureNote:
-            throw ConnectError.unsuppotedContentType(ItemContentType.secureNote.rawValue)
+            guard let secureNoteContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddSecureNoteRequest.self, from: data) else {
+                throw ConnectError.badData
+            }
+
+            var newText: String?
+            if let newTextData = mainRepository.decrypt(secureNoteContent.data.content.text, key: encryptionNewPasswordKey) {
+                newText = String(data: newTextData, encoding: .utf8)
+            }
+
+            itemChangeRequest = .addSecureNote(
+                SecureNoteDataChangeRequest(
+                    name: secureNoteContent.data.content.name,
+                    text: newText
+                )
+            )
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)
         }
@@ -230,7 +244,35 @@ extension ConnectInteractor {
                 tags: loginRequest.data.tags
             ))
         case .secureNote:
-            throw ConnectError.unsuppotedContentType(ItemContentType.secureNote.rawValue)
+            guard let secureNoteRequest = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionUpdateSecureNoteRequest.self, from: data) else {
+                throw ConnectError.badData
+            }
+
+            guard let secureNoteItem = item.asSecureNote else {
+                throw ConnectError.badData
+            }
+
+            let newText: String?
+
+            if let newTextDataEnc = secureNoteRequest.data.content.text {
+                if newTextDataEnc.isEmpty {
+                    newText = ""
+                } else if let encryptionKey = encryptionPasswordKey(secureNoteItem.protectionLevel),
+                          let newTextData = mainRepository.decrypt(newTextDataEnc, key: encryptionKey) {
+                    newText = String(data: newTextData, encoding: .utf8)
+                } else {
+                    newText = nil
+                }
+            } else {
+                newText = nil
+            }
+
+            itemChangeRequest = .updateSecureNote(secureNoteItem, SecureNoteDataChangeRequest(
+                name: secureNoteRequest.data.content.name,
+                text: newText,
+                protectionLevel: newProtectionLevel,
+                tags: secureNoteRequest.data.tags
+            ))
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)
         }

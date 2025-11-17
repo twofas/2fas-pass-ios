@@ -102,6 +102,8 @@ extension ConnectSchemaV2 {
     
     typealias ConnectActionAddLoginRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.AddLogin>>
     typealias ConnectActionUpdateLoginRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateLogin>>
+    typealias ConnectActionAddSecureNoteRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.AddSecureNote>>
+    typealias ConnectActionUpdateSecureNoteRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateSecureNote>>
 
     struct ConnectActioRequestType: Decodable {
         let type: ConnectActionType
@@ -184,6 +186,26 @@ extension ConnectSchemaV2 {
             let password: SecureField?
             let notes: String?
             let uris: [ConnectURI]?
+        }
+
+        struct AddSecureNote: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case name
+                case text = "s_text"
+            }
+
+            let name: String
+            let text: Data
+        }
+
+        struct UpdateSecureNote: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case name
+                case text = "s_text"
+            }
+
+            let name: String?
+            let text: Data?
         }
     }
     

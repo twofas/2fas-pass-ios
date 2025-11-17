@@ -25,7 +25,7 @@ public final class ModuleInteractorFactory {
         )
     }
     
-    func itemEditorInteractor(editItemID: ItemID?, changeRequest: LoginDataChangeRequest? = nil) -> ItemEditorModuleInteracting {
+    func itemEditorInteractor(editItemID: ItemID?, changeRequest: (any ItemDataChangeRequest)? = nil) -> ItemEditorModuleInteracting {
         ItemEditorModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),

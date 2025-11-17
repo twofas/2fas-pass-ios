@@ -14,25 +14,29 @@ public protocol ItemDataChangeRequest: Hashable {
 public enum ItemChangeRequest: Hashable {
     case addLogin(LoginDataChangeRequest)
     case updateLogin(LoginItemData, LoginDataChangeRequest)
-    
+    case addSecureNote(SecureNoteDataChangeRequest)
+    case updateSecureNote(SecureNoteItemData, SecureNoteDataChangeRequest)
+
     public var isAdd: Bool {
         switch self {
-        case .addLogin: true
-        case .updateLogin: false
+        case .addLogin, .addSecureNote: true
+        case .updateLogin, .updateSecureNote: false
         }
     }
-    
+
     public var isUpdate: Bool {
         switch self {
-        case .addLogin: false
-        case .updateLogin: true
+        case .addLogin, .addSecureNote: false
+        case .updateLogin, .updateSecureNote: true
         }
     }
-    
+
     public var contentType: ItemContentType {
         switch self {
         case .addLogin, .updateLogin:
             return .login
+        case .addSecureNote, .updateSecureNote:
+            return .secureNote
         }
     }
 }

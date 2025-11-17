@@ -31,21 +31,22 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
         initialData as? SecureNoteItemData
     }
     
-    init(interactor: ItemEditorModuleInteracting, flowController: ItemEditorFlowControlling, initialData: SecureNoteItemData? = nil) {
+    init(interactor: ItemEditorModuleInteracting, flowController: ItemEditorFlowControlling, initialData: SecureNoteItemData? = nil, changeRequest: SecureNoteDataChangeRequest? = nil) {
         if let initialData {
-            if initialData.protectionLevel == .normal {
+            if initialData.protectionLevel == .normal || changeRequest != nil {
                 let text = interactor.decryptNote(in: initialData) ?? ""
-                self.text = text
+                self.text = changeRequest?.text ?? text
                 self.initialText = text
                 self.isReveal = true
             } else {
                 self.isReveal = false
             }
         } else {
+            self.text = changeRequest?.text ?? ""
             self.isReveal = true
         }
         
-        super.init(interactor: interactor, flowController: flowController, initialData: initialData)
+        super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
     }
     
     override func onSave() -> SaveItemResult {

@@ -19,7 +19,7 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
         on viewController: UIViewController,
         parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: LoginDataChangeRequest? = nil
+        changeRequest: (any ItemDataChangeRequest)? = nil
     ) {
         let flowController = ItemEditorNavigationFlowController()
         flowController.parent = parent
@@ -42,7 +42,7 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
     static func buildView(
         parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: LoginDataChangeRequest?
+        changeRequest: (any ItemDataChangeRequest)?
     ) -> UIViewController {
         let flowController = ItemEditorNavigationFlowController()
         flowController.parent = parent

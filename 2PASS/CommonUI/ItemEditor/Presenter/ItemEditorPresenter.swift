@@ -88,7 +88,8 @@ final class ItemEditorPresenter {
             let formPresenter = SecureNoteEditorFormPresenter(
                 interactor: interactor,
                 flowController: flowController,
-                initialData: initalData?.asSecureNote
+                initialData: initalData?.asSecureNote,
+                changeRequest: interactor.changeRequest as? SecureNoteDataChangeRequest
             )
             self.secureNotePresenter = formPresenter
             self.form = .secureNote(formPresenter)
