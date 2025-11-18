@@ -129,6 +129,7 @@ protocol MainRepository: AnyObject {
     
     var deviceName: String { get }
     var deviceModelName: String { get }
+    var deviceType: DeviceType { get }
     var systemVersion: String { get }
     
     func checkFileSize(for url: URL) -> Int?

@@ -19,6 +19,7 @@ extension ConnectRequests {
             let deviceOs: String
             
             // V2
+            let deviceType: ConnectDeviceType
             let supportedFeatures: [String]?
         }
         

@@ -14,6 +14,11 @@ enum ConnectSchemaV2 {
     typealias ConnectURI = ConnectSchemaV1.ConnectURI
     typealias ConnectTag = ConnectSchemaV1.ConnectTag
     
+    enum DeviceType: String, Codable {
+        case mobile
+        case tablet
+    }
+    
     struct ConnectVault: Codable {
         let id: String
         let name: String
