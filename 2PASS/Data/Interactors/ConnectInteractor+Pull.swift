@@ -26,7 +26,11 @@ extension ConnectInteractor {
             )
 
             do {
-                let helloResponse = try await pullSession.helloHandshake(deviceID: deviceId, deviceName: mainRepository.deviceName)
+                let helloResponse = try await pullSession.helloHandshake(
+                    deviceID: deviceId,
+                    deviceName: mainRepository.deviceName,
+                    deviceType: .init(mainRepository.deviceType)
+                )
 
                 progress(0.25)
 

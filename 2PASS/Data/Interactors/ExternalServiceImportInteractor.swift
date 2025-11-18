@@ -262,7 +262,7 @@ private extension ExternalServiceImportInteractor {
                     let uri = PasswordURI(uri: urlString, match: .domain)
                     return [uri]
                 }()
-                let username = dict["username"]?.nilIfEmpty
+                let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
                        let password = self?.encryptPassword(passwordString, for: protectionLevel) {
@@ -325,7 +325,7 @@ private extension ExternalServiceImportInteractor {
                     let uri = PasswordURI(uri: urlString, match: .domain)
                     return [uri]
                 }()
-                let username = dict["username"]?.nilIfEmpty
+                let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
                        let password = self?.encryptPassword(passwordString, for: protectionLevel) {
