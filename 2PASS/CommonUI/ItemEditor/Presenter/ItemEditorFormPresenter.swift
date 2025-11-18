@@ -6,8 +6,14 @@
 
 import Common
 
+protocol ItemEditorFormPresenting {
+    func onSave() -> SaveItemResult
+}
+
+typealias ItemEditorFormPresenter = _ItemEditorFormPresenter & ItemEditorFormPresenting
+
 @Observable
-class ItemEditorFormPresenter {
+class _ItemEditorFormPresenter {
     
     var name: String
     var protectionLevel: ItemProtectionLevel
@@ -57,10 +63,6 @@ class ItemEditorFormPresenter {
         } else {
             selectedTags = []
         }
-    }
-    
-    func onSave() -> SaveItemResult {
-        fatalError("Should be overridden")
     }
     
     func onChangeProtectionLevel() {

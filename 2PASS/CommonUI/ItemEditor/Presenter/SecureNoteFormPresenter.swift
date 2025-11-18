@@ -49,7 +49,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
         super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
     }
     
-    override func onSave() -> SaveItemResult {
+    func onSave() -> SaveItemResult {
         let text = {
             if isReveal {
                 return self.text

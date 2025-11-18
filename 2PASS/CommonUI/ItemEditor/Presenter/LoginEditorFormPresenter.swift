@@ -222,7 +222,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
         flowController.toCustomizeIcon(data: data)
     }
     
-    override func onSave() -> SaveItemResult {
+    func onSave() -> SaveItemResult {
         var incorrectURI: [String] = []
 
         let checkedURIs: [(original: String, match: PasswordURI.Match)] = uri
