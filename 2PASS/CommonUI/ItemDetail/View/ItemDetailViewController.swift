@@ -7,8 +7,8 @@
 import UIKit
 import SwiftUI
 
-final class ViewPasswordViewController: UIViewController {
-    var presenter: ViewPasswordPresenter!
+final class ItemDetailViewController: UIViewController {
+    var presenter: ItemDetailPresenter!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,7 +23,7 @@ final class ViewPasswordViewController: UIViewController {
         navigationItem.backButtonDisplayMode = .minimal
         
         let vc = UIHostingController(
-            rootView: ViewPasswordView(presenter: presenter)
+            rootView: ItemDetailView(presenter: presenter)
         )
         placeChild(vc)
     }

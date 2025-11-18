@@ -7,35 +7,35 @@
 import UIKit
 import Common
 
-protocol ViewPasswordFlowControllerParent: AnyObject {
-    func viewPasswordClose()
-    func viewPasswordAutoFillTextToInsert(_ text: String)
+protocol ItemDetailFlowControllerParent: AnyObject {
+    func itemDetailClose()
+    func itemDetailAutoFillTextToInsert(_ text: String)
 }
 
-protocol ViewPasswordFlowControlling: AnyObject {
+protocol ItemDetailFlowControlling: AnyObject {
     func toEdit(_ itemID: ItemID)
     func toOpenURI(_ url: URL)
     func close()
     func autoFillTextToInsert(_ text: String)
 }
 
-final class ViewPasswordFlowController: FlowController {
-    private weak var parent: ViewPasswordFlowControllerParent?
+final class ItemDetailFlowController: FlowController {
+    private weak var parent: ItemDetailFlowControllerParent?
     private var completion: ((ItemProtectionLevel) -> Void)?
     
     static func push(
         on navigationController: UINavigationController,
-        parent: ViewPasswordFlowControllerParent,
+        parent: ItemDetailFlowControllerParent,
         itemID: ItemID,
         autoFillEnvironment: AutoFillEnvironment? = nil
-    ) {        
-        let view = ViewPasswordViewController()
+    ) {
+        let view = ItemDetailViewController()
         view.hidesBottomBarWhenPushed = true
-        let flowController = ViewPasswordFlowController(viewController: view)
+        let flowController = ItemDetailFlowController(viewController: view)
         flowController.parent = parent
-        let interactor = ModuleInteractorFactory.shared.viewPasswordInteractor()
-        
-        let presenter = ViewPasswordPresenter(
+        let interactor = ModuleInteractorFactory.shared.itemDetailInteractor()
+
+        let presenter = ItemDetailPresenter(
             itemID: itemID,
             flowController: flowController,
             interactor: interactor,
@@ -46,12 +46,12 @@ final class ViewPasswordFlowController: FlowController {
         navigationController.pushViewController(view, animated: true)
     }
     
-    var viewController: ViewPasswordViewController {
-        _viewController as! ViewPasswordViewController
+    var viewController: ItemDetailViewController {
+        _viewController as! ItemDetailViewController
     }
 }
 
-extension ViewPasswordFlowController: ViewPasswordFlowControlling {
+extension ItemDetailFlowController: ItemDetailFlowControlling {
     func toEdit(_ itemID: ItemID) {
         ItemEditorNavigationFlowController.present(
             on: viewController,
@@ -65,15 +65,15 @@ extension ViewPasswordFlowController: ViewPasswordFlowControlling {
     }
     
     func close() {
-        parent?.viewPasswordClose()
+        parent?.itemDetailClose()
     }
-    
+
     func autoFillTextToInsert(_ text: String) {
-        parent?.viewPasswordAutoFillTextToInsert(text)
+        parent?.itemDetailAutoFillTextToInsert(text)
     }
 }
 
-extension ViewPasswordFlowController: ItemEditorNavigationFlowControllerParent {
+extension ItemDetailFlowController: ItemEditorNavigationFlowControllerParent {
     func closeItemEditor(with result: SaveItemResult) {
         _viewController.dismiss(animated: true)
     }

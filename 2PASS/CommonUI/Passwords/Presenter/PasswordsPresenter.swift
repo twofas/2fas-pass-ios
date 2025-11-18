@@ -130,7 +130,7 @@ extension PasswordsPresenter {
     
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
         switch action {
-        case .view: flowController.toViewPassword(itemID: itemID)
+        case .view: flowController.toItemDetail(itemID: itemID)
         case .edit: flowController.toEditItem(itemID: itemID)
         case .copyUsername:
             if interactor.copyUsername(itemID) {

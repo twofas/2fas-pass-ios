@@ -7,16 +7,16 @@
 import SwiftUI
 import Common
 
-struct ViewPasswordView: View {
-    
+struct ItemDetailView: View {
+
     enum SelectedField: Hashable {
         case username
         case password
         case url(UUID)
     }
-    
+
     @State
-    var presenter: ViewPasswordPresenter
+    var presenter: ItemDetailPresenter
 
     @State
     var selectedField: SelectedField?
@@ -147,14 +147,14 @@ struct ViewPasswordView: View {
 }
 
 #Preview {
-    ViewPasswordView(presenter: .init(
+    ItemDetailView(presenter: .init(
         itemID: ItemID(),
-        flowController: ViewPasswordFlowController(viewController: UIViewController()),
-        interactor: ViewPasswordModulePreviewInteractor())
+        flowController: ItemDetailFlowController(viewController: UIViewController()),
+        interactor: ItemDetailModulePreviewInteractor())
     )
 }
 
-private class ViewPasswordModulePreviewInteractor: ViewPasswordModuleInteracting {
+private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
     
     func fetchPassword(for itemID: ItemID) -> LoginItemData? {
         LoginItemData(

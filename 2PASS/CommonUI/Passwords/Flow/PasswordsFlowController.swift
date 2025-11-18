@@ -9,7 +9,7 @@ import Common
 import SwiftUI
 
 public protocol PasswordsFlowControllerParent: AnyObject {
-    func passwordsToViewPassword(itemID: ItemID)
+    func passwordsToItemDetail(itemID: ItemID)
     func selectPassword(itemID: ItemID)
     func cancel()
     func toQuickSetup()
@@ -22,7 +22,7 @@ public protocol PasswordsFlowControllerParent: AnyObject {
 protocol PasswordsFlowControlling: AnyObject {
     func toContentTypeSelection()
     func toEditItem(itemID: ItemID)
-    func toViewPassword(itemID: ItemID)
+    func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
 
     func selectPassword(itemID: ItemID)
@@ -80,8 +80,8 @@ extension PasswordsFlowController: PasswordsFlowControlling {
         )
     }
     
-    func toViewPassword(itemID: ItemID) {
-        parent?.passwordsToViewPassword(itemID: itemID)
+    func toItemDetail(itemID: ItemID) {
+        parent?.passwordsToItemDetail(itemID: itemID)
     }
     
     func toURI(_ selectedURI: URL) {

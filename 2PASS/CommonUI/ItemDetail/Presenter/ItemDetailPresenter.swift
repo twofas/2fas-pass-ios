@@ -10,10 +10,10 @@ import Data
 import SwiftUI
 
 @Observable
-final class ViewPasswordPresenter {
+final class ItemDetailPresenter {
     private let itemID: ItemID
-    private let flowController: ViewPasswordFlowControlling
-    private let interactor: ViewPasswordModuleInteracting
+    private let flowController: ItemDetailFlowControlling
+    private let interactor: ItemDetailModuleInteracting
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private let autoFillEnvironment: AutoFillEnvironment?
@@ -44,13 +44,13 @@ final class ViewPasswordPresenter {
     var tags: String?
     
     private var fetchingIconTask: Task<Void, Error>?
-    
-    var uri: [ViewPasswordURIPosition] = []
-    
+
+    var uri: [ItemDetailURIPosition] = []
+
     init(
         itemID: ItemID,
-        flowController: ViewPasswordFlowControlling,
-        interactor: ViewPasswordModuleInteracting,
+        flowController: ItemDetailFlowControlling,
+        interactor: ItemDetailModuleInteracting,
         autoFillEnvironment: AutoFillEnvironment? = nil
     ) {
         self.itemID = itemID
@@ -69,7 +69,7 @@ final class ViewPasswordPresenter {
     }
 }
 
-extension ViewPasswordPresenter {
+extension ItemDetailPresenter {
     func onAppear() {
         reload()
     }
@@ -144,7 +144,7 @@ extension ViewPasswordPresenter {
     }
 }
 
-private extension ViewPasswordPresenter {
+private extension ItemDetailPresenter {
     func reload() {
         guard let passwordData = interactor.fetchPassword(for: itemID) else {
             flowController.close()
@@ -173,7 +173,7 @@ private extension ViewPasswordPresenter {
         notes = passwordData.notes
         protectionLevel = passwordData.protectionLevel
         uri = passwordData.uris?.map {
-            ViewPasswordURIPosition(
+            ItemDetailURIPosition(
                 id: .init(),
                 uri: $0.uri,
                 uriNormalized: interactor.normalizedURL(for: $0),
@@ -231,7 +231,7 @@ private extension ViewPasswordPresenter {
     }
 }
 
-struct ViewPasswordURIPosition: Hashable, Identifiable {
+struct ItemDetailURIPosition: Hashable, Identifiable {
     let id: UUID
     var uri: String
     var uriNormalized: URL?

@@ -8,7 +8,7 @@ import Foundation
 import Data
 import Common
 
-protocol ViewPasswordModuleInteracting: AnyObject {
+protocol ItemDetailModuleInteracting: AnyObject {
     func fetchPassword(for itemID: ItemID) -> LoginItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
     func decryptPassword(for itemID: ItemID) -> String?
@@ -17,7 +17,7 @@ protocol ViewPasswordModuleInteracting: AnyObject {
     func normalizedURL(for uri: PasswordURI) -> URL?
 }
 
-final class ViewPasswordModuleInteractor {
+final class ItemDetailModuleInteractor {
     private let itemsInteractor: ItemsInteracting
     private let systemInteractor: SystemInteracting
     private let fileIconInteractor: FileIconInteracting
@@ -39,7 +39,7 @@ final class ViewPasswordModuleInteractor {
     }
 }
 
-extension ViewPasswordModuleInteractor: ViewPasswordModuleInteracting {
+extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
     func fetchPassword(for itemID: ItemID) -> LoginItemData? {
         itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem
     }
