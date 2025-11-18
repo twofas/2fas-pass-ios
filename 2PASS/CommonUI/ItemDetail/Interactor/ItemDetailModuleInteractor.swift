@@ -9,9 +9,10 @@ import Data
 import Common
 
 protocol ItemDetailModuleInteracting: AnyObject {
-    func fetchPassword(for itemID: ItemID) -> LoginItemData?
+    func fetchItem(for itemID: ItemID) -> ItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
     func decryptPassword(for itemID: ItemID) -> String?
+    func decryptNote(in note: SecureNoteItemData) -> String?
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
@@ -40,8 +41,8 @@ final class ItemDetailModuleInteractor {
 }
 
 extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
-    func fetchPassword(for itemID: ItemID) -> LoginItemData? {
-        itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem
+    func fetchItem(for itemID: ItemID) -> ItemData? {
+        itemsInteractor.getItem(for: itemID, checkInTrash: false)
     }
     
     func decryptPassword(for itemID: ItemID) -> String? {
@@ -49,6 +50,13 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
         case .success(let password): return password
         case .failure: return nil
         }
+    }
+    
+    func decryptNote(in note: SecureNoteItemData) -> String? {
+        guard let encyptedText = note.content.text else {
+            return nil
+        }
+        return itemsInteractor.decrypt(encyptedText, isSecureField: true, protectionLevel: note.protectionLevel)
     }
     
     func copy(_ str: String) {

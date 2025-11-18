@@ -9,110 +9,40 @@ import Common
 
 struct ItemDetailView: View {
 
-    enum SelectedField: Hashable {
-        case username
-        case password
-        case url(UUID)
-    }
-
     @State
     var presenter: ItemDetailPresenter
-
-    @State
-    var selectedField: SelectedField?
         
     var body: some View {
         VStack {
             Form {
                 Section {
-                    HStack(spacing: Spacing.m) {
-                        IconRendererView(content: presenter.iconContent)
-                        
-                        Text(presenter.name, format: .itemName)
-                            .font(.title3Emphasized)
-                            .foregroundStyle(.neutral950)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-                    .padding([.vertical], Spacing.xs)
-                    
-                    if presenter.isUsernameAvailable, let username = presenter.username {
-                        row(key: T.loginUsernameLabel.localizedKey, value: Text(username), field: .username) {
-                            UIAction(title: T.loginViewActionCopyUsername, handler: { _ in
-                                presenter.onCopyUsername()
-                            })
-                        }
-                        .onChange(of: selectedField == .username) { oldValue, newValue in
-                            if newValue {
-                                presenter.onSelectUsername()
-                            }
-                        }
-                    }
-                    
-                    if presenter.isPasswordAvailable, let password = presenter.password {
-                        row(
-                            key: T.loginPasswordLabel.localizedKey,
-                            value: SecureContainerView {
-                                HStack {
-                                    Spacer()
-                                    Text(password).monospaced()
-                                }
-                            },
-                            lineLimit: nil,
-                            field: .password
-                        ) {
-                            UIAction(title: T.loginViewActionCopyPassword, handler: { _ in
-                                presenter.onCopyPassword()
-                            })
-                        }
-                        .onChange(of: selectedField == .password) { oldValue, newValue in
-                            if newValue {
-                                presenter.onSelectPassword()
-                            }
-                        }
-                    }
-                    
-                    ForEach(Array(presenter.uri.filter({ $0.uriNormalized != nil }).enumerated()), id: \.element.id) { index, uri in
-                        if let uriNormalized = uri.uriNormalized {
-                            row(key: presenter.uriKey(at: index), value: Text(uri.uri.withZeroWidthSpaces), field: .url(uri.id)) {
-                                UIAction(title: T.loginViewActionOpenUri) { _ in
-                                    presenter.onOpenURI(uriNormalized)
-                                }
-                            }
-                        }
-                    }
-                    
-                    LabeledContent(T.loginSecurityLevelLabel.localizedKey, value: presenter.protectionLevel.title)
-                        .labeledContentStyle(.listCell)
-                    
-                    if let tags = presenter.tags {
-                        LabeledContent(T.loginTags.localizedKey, value: tags)
-                            .labeledContentStyle(.listCell(lineLimit: nil))
-                    }
-                    
-                    if let notes = presenter.notes, !notes.isEmpty {
-                        Text(notes)
-                            .multilineTextAlignment(.leading)
-                            .font(.body)
-                            .foregroundStyle(.neutral400)
+                    switch presenter.form {
+                    case .login(let presenter):
+                        LoginDetailFormView(presenter: presenter)
+                    case .secureNote(let presenter):
+                        SecureNoteDetailFormView(presenter: presenter)
+                    default:
+                        EmptyView()
                     }
                 } footer: {
-                    HStack(alignment: .center, spacing: Spacing.xs) {
-                        let verticalSpacing = Spacing.xs
-                        
-                        VStack(alignment: .leading, spacing: verticalSpacing) {
-                            Text(T.commonModified)
-                            Text(T.commonCreated)
+                    if let createdAt = presenter.createdAt, let modifiedAt = presenter.modifiedAt {
+                        HStack(alignment: .center, spacing: Spacing.xs) {
+                            let verticalSpacing = Spacing.xs
+                            
+                            VStack(alignment: .leading, spacing: verticalSpacing) {
+                                Text(T.commonModified)
+                                Text(T.commonCreated)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: verticalSpacing) {
+                                Text(modifiedAt)
+                                Text(createdAt)
+                            }
                         }
-                        
-                        VStack(alignment: .leading, spacing: verticalSpacing) {
-                            Text(presenter.modifiedAt)
-                            Text(presenter.createdAt)
-                        }
+                        .font(.caption2)
+                        .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                        .padding(.top, Spacing.xs)
                     }
-                    .font(.caption2)
-                    .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
-                    .padding(.top, Spacing.xs)
                 }
             }
             .scrollReadableContentMargins()
@@ -122,27 +52,6 @@ struct ItemDetailView: View {
         .onAppear {
             presenter.onAppear()
         }
-        .onDisappear {
-            presenter.onDisappear()
-        }
-    }
-    
-    @ViewBuilder
-    private func row(key: LocalizedStringKey, value: some View, lineLimit: Int? = 2, field: SelectedField, action: () -> UIAction) -> some View {
-        Button {
-            selectedField = field
-        } label: {
-            LabeledContent(key) {
-                value
-            }
-            .contentShape(Rectangle())
-            .labeledContentStyle(.listCell(lineLimit: lineLimit))
-        }
-        .buttonStyle(.twofasPlain)
-        .listRowBackground(selectedField == field ? Color.neutral100 : nil)
-        .editMenu($selectedField, equals: field, actions: [
-            action()
-        ])
     }
 }
 
@@ -155,9 +64,9 @@ struct ItemDetailView: View {
 }
 
 private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
-    
-    func fetchPassword(for itemID: ItemID) -> LoginItemData? {
-        LoginItemData(
+
+    func fetchItem(for itemID: ItemID) -> ItemData? {
+        .login(LoginItemData(
             id: itemID,
             vaultId: UUID(),
             metadata: .init(
@@ -176,11 +85,15 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                 iconType: .label(labelTitle: "PR", labelColor: .red),
                 uris: nil
             )
-        )
+        ))
     }
     
     func decryptPassword(for itemID: ItemID) -> String? {
         "Password"
+    }
+    
+    func decryptNote(in note: SecureNoteItemData) -> String? {
+        "Note"
     }
     
     func copy(_ str: String) {}
