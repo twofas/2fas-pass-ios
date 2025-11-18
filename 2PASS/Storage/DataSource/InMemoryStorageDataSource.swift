@@ -16,6 +16,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func createItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -40,6 +41,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func updateItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -101,6 +103,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func createLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -116,6 +119,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func updateLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -141,6 +145,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func createSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -152,6 +157,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
     
     func updateSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,

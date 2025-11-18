@@ -214,17 +214,20 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func extractUnencryptedItems(from file: ExchangeVaultVersioned) -> [ItemData] {
+        guard let vaultID = UUID(uuidString: file.vaultID) else {
+            return []
+        }
         switch file {
         case .v1(let v1Vault):
             guard let logins = v1Vault.vault.logins else {
                 return []
             }
-            return logins.compactMap({ self.exchangeV1LoginToItemData($0) })
+            return logins.compactMap({ self.exchangeV1LoginToItemData($0, vaultID: vaultID) })
         case .v2(let v2Vault):
             guard let items = v2Vault.vault.items else {
                 return []
             }
-            return items.compactMap({ self.exchangeItemToItemData($0, encryption: .unencrypted) })
+            return items.compactMap({ self.exchangeItemToItemData($0, vaultID: vaultID, encryption: .unencrypted) })
         }
     }
 
@@ -527,7 +530,7 @@ private extension ImportInteractor {
                             ExchangeVault.ExchangeVaultItem.ExchangeItem.self,
                             from: jsonData
                         )
-                        if let pass = self.exchangeItemToItemData(exchangeLogin, encryption: encryption) {
+                        if let pass = self.exchangeItemToItemData(exchangeLogin, vaultID: vaultID, encryption: encryption) {
                             return pass
                         } else {
                             Log("Import Interactor - Error creating Password Data", severity: .error)
@@ -693,7 +696,7 @@ private extension ImportInteractor {
         }
     }
     
-    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem, encryption: ItemEncryption) -> ItemData? {
+    func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem, vaultID: VaultID, encryption: ItemEncryption) -> ItemData? {
         guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
         }
@@ -823,6 +826,7 @@ private extension ImportInteractor {
             
             return .login(.init(
                 id: itemID,
+                vaultId: vaultID,
                 metadata: itemMetadata,
                 name: content.name,
                 content: loginContent
@@ -859,6 +863,7 @@ private extension ImportInteractor {
 
             let rawItem = RawItemData(
                 id: itemID,
+                vaultId: vaultID,
                 metadata: itemMetadata,
                 name: exchangeLogin.content[ExchangeVault.contentNameKey] as? String,
                 contentType: contentType,
@@ -920,7 +925,7 @@ private extension ImportInteractor {
 
     // MARK: - V1 Schema Support
 
-    func exchangeV1LoginToItemData(_ exchangeLogin: ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin) -> ItemData? {
+    func exchangeV1LoginToItemData(_ exchangeLogin: ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin, vaultID: VaultID) -> ItemData? {
         guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
         }
@@ -1008,6 +1013,7 @@ private extension ImportInteractor {
 
         return .login(.init(
             id: itemID,
+            vaultId: vaultID,
             metadata: itemMetadata,
             name: exchangeLogin.name,
             content: loginContent
@@ -1039,7 +1045,7 @@ private extension ImportInteractor {
                     ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self,
                     from: jsonData
                 )
-                if let pass = self.exchangeV1LoginToItemData(exchangeLogin) {
+                if let pass = self.exchangeV1LoginToItemData(exchangeLogin, vaultID: vaultID) {
                     return pass
                 } else {
                     Log("Import Interactor - Error creating Password Data from V1 Login", severity: .error)
@@ -1096,5 +1102,4 @@ private extension ImportInteractor {
             }
         }
     }
-
 }

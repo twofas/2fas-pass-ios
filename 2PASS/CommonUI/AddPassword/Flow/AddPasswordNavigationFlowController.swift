@@ -19,7 +19,7 @@ final class AddPasswordNavigationFlowController: NavigationFlowController {
         on viewController: UIViewController,
         parent: AddPasswordNavigationFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: PasswordDataChangeRequest? = nil
+        changeRequest: LoginDataChangeRequest? = nil
     ) {
         let flowController = AddPasswordNavigationFlowController()
         flowController.parent = parent
@@ -42,7 +42,7 @@ final class AddPasswordNavigationFlowController: NavigationFlowController {
     static func buildView(
         parent: AddPasswordNavigationFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: PasswordDataChangeRequest?
+        changeRequest: LoginDataChangeRequest?
     ) -> UIViewController {
         let flowController = AddPasswordNavigationFlowController()
         flowController.parent = parent

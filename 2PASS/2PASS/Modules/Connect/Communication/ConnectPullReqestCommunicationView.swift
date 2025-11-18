@@ -30,23 +30,38 @@ struct ConnectPullReqestCommunicationView: View {
     private var questionSensoryFeedback: Bool = false
     
     var body: some View {
-        ConnectCommunicationSheetView(title: Text(T.requestModalHeaderTitle), identicon: presenter.identicon, webBrowser: presenter.webBrowser) {
+        ConnectCommunicationSheetView(title: Text(T.requestModalHeaderTitle), identicon: presenter.identicon, webBrowser: presenter.webBrowser, onClose: onClose) {
             ZStack {
                 switch presenter.state {
                 case .connecting, .finish(.success):
                     progressView
-
-                case .action(.passwordRequest(let item)):
-                    passwordRequestView(item: item)
-                    
-                case .action(.update(let item, _)):
-                    updatePasswordView(item: item)
                 
-                case .action(.add(let changeRequest)):
-                   addPasswordView(changeRequest: changeRequest)
+                case .action(.changeRequest(let changeRequest)):
+                    switch changeRequest {
+                    case .addLogin(let passwordDataChangeRequest):
+                        addPasswordView(changeRequest: passwordDataChangeRequest)
+                    case .updateLogin(let loginItem, _):
+                        updatePasswordView(item: loginItem)
+                    }
                     
-                case .action(.delete(let passwordData)):
-                    deletePasswordView(item: passwordData)
+                case .action(.delete(let item)):
+                    switch item {
+                    case .login(let loginItem):
+                        deletePasswordView(item: loginItem)
+                    default:
+                        fatalError("Unsupported item content type")
+                    }
+                    
+                case .action(.sifRequest(let item)):
+                    switch item {
+                    case .login(let loginItem):
+                        passwordRequestView(item: loginItem)
+                    default:
+                        fatalError("Unsupported item content type")
+                    }
+                    
+                case .action(.sync):
+                    syncView()
                     
                 case .finish(.failure(let error)):
                    failureView(error: error)
@@ -92,16 +107,31 @@ struct ConnectPullReqestCommunicationView: View {
     
     private var toastText: Text {
         switch presenter.action {
-        case .passwordRequest:
-            Text(T.requestModalToastSuccessPasswordRequest.localizedKey)
-        case .update:
+        case .changeRequest(.updateLogin):
             Text(T.requestModalToastSuccessUpdateLogin.localizedKey)
-        case .add:
+        case .changeRequest(.addLogin):
             Text(T.requestModalToastSuccessAddLogin.localizedKey)
         case .delete:
             Text(T.requestModalToastSuccessDeleteLogin.localizedKey)
+        case .sifRequest(let item):
+            if item.contentType == .login {
+                Text(T.requestModalToastSuccessPasswordRequest.localizedKey)
+            } else {
+                fatalError("Unsupported item content type")
+            }
+        case .sync:
+            Text(T.requestModalToastSuccessFullSync.localizedKey)
         case nil:
             Text("")
+        }
+    }
+    
+    private func onClose() {
+        switch presenter.state {
+        case .action:
+            presenter.onCancel()
+        default:
+            dismiss()
         }
     }
     
@@ -137,11 +167,11 @@ struct ConnectPullReqestCommunicationView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
     
-    private func addPasswordView(changeRequest: PasswordDataChangeRequest) -> some View {
+    private func addPasswordView(changeRequest: LoginDataChangeRequest) -> some View {
         ConnectPullReqestContentView(
             title: Text(T.requestModalNewItemTitle.localizedKey),
             description: Text(T.requestModalNewItemSubtitle.localizedKey),
-            item: .init(name: changeRequest.name ?? "", username: changeRequest.username, iconContent: presenter.iconContent),
+            item: .init(name: changeRequest.name ?? "", username: changeRequest.username?.value, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "arrow.clockwise.circle.fill")
                     .foregroundStyle(.brand500)
@@ -209,6 +239,30 @@ struct ConnectPullReqestCommunicationView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
     
+    private func syncView() -> some View {
+        ConnectPullReqestContentView(
+            title: Text(T.requestModalFullSyncTitle.localizedKey),
+            description: Text(T.requestModalFullSyncSubtitle.localizedKey),
+            item: nil,
+            icon: {
+                Image(systemName: "arrow.down.circle.fill")
+                    .foregroundStyle(.brand500)
+            },
+            actions: {
+                Button(T.requestModalFullSyncCtaNegative) {
+                    presenter.onCancel()
+                }
+                .buttonStyle(.bezeledGray)
+                
+                Button(T.requestModalFullSyncCtaPositive) {
+                    presenter.onContinue()
+                }
+                .buttonStyle(.bezeled)
+            }
+        )
+        .fixedSize(horizontal: false, vertical: true)
+    }
+    
     @ViewBuilder
     private func failureView(error: Error) -> some View {
         switch error {
@@ -236,6 +290,18 @@ struct ConnectPullReqestCommunicationView: View {
                 iconColor: .warning500,
                 title: Label(T.requestModalErrorSendDataTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
                 description: Text(T.requestModalErrorSendDataSubtitle.localizedKey),
+                actions: {
+                    Button(T.requestModalErrorGenericCta) {
+                        dismiss()
+                    }
+                    .buttonStyle(.bezeled)
+                }
+            )
+        case URLError.notConnectedToInternet:
+            ConnectCommunicationContentView(
+                iconColor: .danger500,
+                title: Label(T.connectModalErrorNoInternetTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
+                description: Text(T.connectModalErrorNoInternetSubtitle.localizedKey),
                 actions: {
                     Button(T.requestModalErrorGenericCta) {
                         dismiss()

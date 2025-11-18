@@ -40,6 +40,7 @@ struct ConnectCommunicationView: View {
             title: Text(T.connectConnectionHeader.localizedKey),
             identicon: presenter.identicon,
             webBrowser: presenter.webBrowser,
+            onClose: { dismiss() },
             content: {
                 content
             }
@@ -144,6 +145,20 @@ struct ConnectCommunicationView: View {
                         }
                     }
                 )
+
+            case .finish(.failure(URLError.notConnectedToInternet)):
+                ConnectCommunicationContentView(
+                    iconColor: .danger500,
+                    title: Label(T.connectModalErrorNoInternetTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(T.connectModalErrorNoInternetSubtitle.localizedKey),
+                    actions: {
+                        Button(T.connectConnectionFailedCta.localizedKey) {
+                            dismiss()
+                            presenter.onScanAgain()
+                        }
+                        .buttonStyle(.filled)
+                    }
+                )
                 
             case .finish(.failure):
                 ConnectCommunicationContentView(
@@ -165,7 +180,7 @@ struct ConnectCommunicationView: View {
 }
 
 #Preview {
-    let session = ConnectSession(version: 1, sessionId: "", pkPersBeHex: "", pkEpheBeHex: "", signatureHex: "")
+    let session = ConnectSession(version: .v2, sessionId: "", pkPersBeHex: "", pkEpheBeHex: "", signatureHex: "")
     
     Color.white
         .sheet(isPresented: .constant(true)) {

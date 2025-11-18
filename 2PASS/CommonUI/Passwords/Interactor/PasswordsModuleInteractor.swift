@@ -94,6 +94,8 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         itemsInteractor.listItems(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
+            vaultId: nil,
+            contentTypes: nil,
             sortBy: currentSortType,
             trashed: .no
         )
@@ -101,7 +103,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
     
     func loadList(forServiceIdentifiers serviceIdentifiers: [String], tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {
-        let allPasswords = itemsInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, sortBy: currentSortType, trashed: .no)
+        let allPasswords = itemsInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, vaultId: nil, contentTypes: nil, sortBy: currentSortType, trashed: .no)
         
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)

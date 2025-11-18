@@ -15,6 +15,7 @@ final class SecureNoteEntity: ItemMetadataEntity {
     override class func create(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -28,10 +29,11 @@ final class SecureNoteEntity: ItemMetadataEntity {
         do {
             let decoder = JSONDecoder()
             let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: content)
-            
+
             createSecureNote(
                 on: context,
                 itemID: itemID,
+                vaultID: vaultID,
                 creationDate: creationDate,
                 modificationDate: modificationDate,
                 trashedStatus: trashedStatus,
@@ -48,6 +50,7 @@ final class SecureNoteEntity: ItemMetadataEntity {
     @nonobjc override static func update(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -60,10 +63,11 @@ final class SecureNoteEntity: ItemMetadataEntity {
         do {
             let decoder = JSONDecoder()
             let secureNoteContent = try decoder.decode(SecureNoteContent.self, from: content)
-            
+
             updateSecureNote(
                 on: context,
                 for: itemID,
+                vaultID: vaultID,
                 modificationDate: modificationDate,
                 trashedStatus: trashedStatus,
                 protectionLevel: protectionLevel,
@@ -79,6 +83,7 @@ final class SecureNoteEntity: ItemMetadataEntity {
     @nonobjc static func createSecureNote(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -88,14 +93,15 @@ final class SecureNoteEntity: ItemMetadataEntity {
         text: Data?
     ) {
         let entity = NSEntityDescription.insertNewObject(forEntityName: secureNoteEntityName, into: context) as! SecureNoteEntity
-        
+
         entity.itemID = itemID
+        entity.vaultID = vaultID
         entity.name = name
         entity.creationDate = creationDate
         entity.modificationDate = modificationDate
         entity.contentType = ItemContentType.secureNote.rawValue
         entity.contentVersion = Int16(SecureNoteContent.contentVersion)
-        
+
         switch trashedStatus {
         case .no:
             entity.isTrashed = false
@@ -103,21 +109,22 @@ final class SecureNoteEntity: ItemMetadataEntity {
             entity.isTrashed = true
             entity.trashingDate = trashingDate
         }
-        
+
         entity.level = protectionLevel.rawValue
-        
+
         if let tagIds, tagIds.isEmpty == false {
             entity.tagIds = tagIds
         } else {
             entity.tagIds = nil
         }
-        
+
         entity.text = text
     }
     
     @nonobjc static func updateSecureNote(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -129,10 +136,11 @@ final class SecureNoteEntity: ItemMetadataEntity {
             Log("Can't find secure note entity for itemID: \(itemID)", module: .storage)
             return
         }
-        
+
         updateSecureNote(
             on: context,
             entity: entity,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -145,6 +153,7 @@ final class SecureNoteEntity: ItemMetadataEntity {
     @nonobjc static func updateSecureNote(
         on context: NSManagedObjectContext,
         entity: SecureNoteEntity,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -152,9 +161,10 @@ final class SecureNoteEntity: ItemMetadataEntity {
         name: String?,
         text: Data?
     ) {
+        entity.vaultID = vaultID
         entity.modificationDate = modificationDate
         entity.name = name
-        
+
         switch trashedStatus {
         case .no:
             entity.isTrashed = false
@@ -162,15 +172,15 @@ final class SecureNoteEntity: ItemMetadataEntity {
             entity.isTrashed = true
             entity.trashingDate = trashingDate
         }
-        
+
         entity.level = protectionLevel.rawValue
-        
+
         if let tagIds, tagIds.isEmpty == false {
             entity.tagIds = tagIds
         } else {
             entity.tagIds = nil
         }
-        
+
         entity.text = text
     }
     
@@ -222,6 +232,7 @@ final class SecureNoteEntity: ItemMetadataEntity {
         
         return .secureNote(SecureNoteItemData(
             id: itemID,
+            vaultId: vaultID,
             metadata: metadata,
             name: name,
             content: content

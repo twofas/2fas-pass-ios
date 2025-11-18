@@ -14,6 +14,7 @@ public enum ExportError: Error {
     case missingExternalKey
     case encryptionDef
     case jsonEncode(error: Error)
+    case jsonDecode(error: Error?)
 }
 
 public protocol ExportInteracting: AnyObject {

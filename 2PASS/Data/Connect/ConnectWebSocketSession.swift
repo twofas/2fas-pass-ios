@@ -99,9 +99,9 @@ final class ConnectWebSocketSession: NSObject {
     }
     
     func validateSchemeVersion(_ version: Int) throws(ConnectWebSocketError) {
-        if version > Config.connectSchemaVersion {
+        if version > Config.Connect.schemaVersion {
             throw ConnectWebSocketError.appUpdateRequired
-        } else if version < Config.connectSchemaVersion - 1 { // support 2 scheme versions of browser extension
+        } else if version < Config.Connect.schemaVersion - 1 { // support 2 scheme versions of browser extension
             throw ConnectWebSocketError.browserExtensionUpdateRequired
         }
     }
@@ -184,7 +184,7 @@ final class ConnectWebSocketSession: NSObject {
     
     private func makeMessage<Request>(for request: Request) -> ConnectMessage<Request.Payload> where Request: ConnectRequest {
         ConnectMessage(
-            scheme: Config.Connect.schemaVersion,
+            scheme: request.schemeVersion.rawValue,
             origin: deviceName,
             originVersion: appVersion,
             id: request.id,

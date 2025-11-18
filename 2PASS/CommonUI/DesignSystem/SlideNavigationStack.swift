@@ -129,9 +129,7 @@ public struct SlideNavigationStack<RootView: View>: View {
     }
     
     private func hideKeyboard() {
-        let connectedScenes = UIApplication.shared.connectedScenes
-        let windowScene = connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
-        windowScene?.keyWindow?.endEditing(true)
+        UIApplication.shared.hideKeyboard()
     }
 }
 

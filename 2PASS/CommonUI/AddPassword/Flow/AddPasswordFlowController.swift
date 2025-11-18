@@ -38,7 +38,7 @@ final class AddPasswordFlowController: FlowController {
         on navigationController: UINavigationController,
         parent: AddPasswordFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: PasswordDataChangeRequest? = nil
+        changeRequest: LoginDataChangeRequest? = nil
     ) {
         let view = AddPasswordViewController()
         let flowController = AddPasswordFlowController(viewController: view)

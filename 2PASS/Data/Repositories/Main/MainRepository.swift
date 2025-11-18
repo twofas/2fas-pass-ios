@@ -281,6 +281,7 @@ protocol MainRepository: AnyObject {
     
     func createItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -294,6 +295,7 @@ protocol MainRepository: AnyObject {
 
     func createLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -309,6 +311,7 @@ protocol MainRepository: AnyObject {
 
     func createSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -331,6 +334,7 @@ protocol MainRepository: AnyObject {
     
     func updateItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -343,6 +347,7 @@ protocol MainRepository: AnyObject {
 
     func updateLoginItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -357,6 +362,7 @@ protocol MainRepository: AnyObject {
 
     func updateSecureNoteItem(
         itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,

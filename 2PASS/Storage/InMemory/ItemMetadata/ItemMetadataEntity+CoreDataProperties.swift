@@ -14,6 +14,7 @@ extension ItemMetadataEntity {
     }
     
     @NSManaged var itemID: ItemID
+    @NSManaged var vaultID: VaultID
 
     @NSManaged var creationDate: Date
     @NSManaged var modificationDate: Date

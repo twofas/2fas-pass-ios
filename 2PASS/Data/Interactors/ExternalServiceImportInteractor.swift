@@ -90,6 +90,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             return await importMicrosoftEdge(content: content)
         case .enpass:
             return await importEnpass(content: content)
+        case .keeper:
+            return await importKeeper(content: content)
         }
     }
 }
@@ -103,6 +105,10 @@ private extension ExternalServiceImportInteractor {
         }
         return password
     }
+
+    var selectedVaultId: VaultID? {
+        mainRepository.selectedVault?.vaultID
+    }
 }
 
 private extension ExternalServiceImportInteractor {
@@ -110,9 +116,12 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["Title", "Url", "Username", "Password", "Notes"]) else {
@@ -134,10 +143,11 @@ private extension ExternalServiceImportInteractor {
                     return nil
                 }()
                 let notes = dict["Notes"]?.nilIfEmpty
-                
+
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: .importPasswordPlaceholder,
                             modificationDate: .importPasswordPlaceholder,
@@ -160,7 +170,7 @@ private extension ExternalServiceImportInteractor {
         } catch {
             return .failure(.wrongFormat)
         }
-        
+
         return .success(items)
     }
     
@@ -170,9 +180,12 @@ private extension ExternalServiceImportInteractor {
         else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         parsedJSON.items?.forEach { item in
             let name = item.name.formattedName
             let notes = item.notes
@@ -199,10 +212,11 @@ private extension ExternalServiceImportInteractor {
                 }
                 return urisList
             }()
-            
+
             items.append(
                 .login(.init(
                     id: .init(),
+                    vaultId: vaultID,
                     metadata: .init(
                         creationDate: Date.importPasswordPlaceholder,
                         modificationDate: Date.importPasswordPlaceholder,
@@ -222,13 +236,16 @@ private extension ExternalServiceImportInteractor {
                 ))
             )
         }
-        
+
         return .success(items)
     }
     
     func importChrome(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
@@ -258,6 +275,7 @@ private extension ExternalServiceImportInteractor {
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: Date.importPasswordPlaceholder,
                             modificationDate: Date.importPasswordPlaceholder,
@@ -288,6 +306,9 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
@@ -317,6 +338,7 @@ private extension ExternalServiceImportInteractor {
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: Date.importPasswordPlaceholder,
                             modificationDate: Date.importPasswordPlaceholder,
@@ -346,6 +368,9 @@ private extension ExternalServiceImportInteractor {
     
     func importDashlaneDesktop(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
+            return .failure(.wrongFormat)
+        }
+        guard let vaultID = selectedVaultId else {
             return .failure(.wrongFormat)
         }
         var items: [ItemData] = []
@@ -386,7 +411,8 @@ private extension ExternalServiceImportInteractor {
                     items.append(
                         .login(.init(
                             id: .init(),
-                            metadata: .init(
+                        vaultId: vaultID,
+                        metadata: .init(
                                 creationDate: Date.importPasswordPlaceholder,
                                 modificationDate: Date.importPasswordPlaceholder,
                                 protectionLevel: protectionLevel,
@@ -433,6 +459,7 @@ private extension ExternalServiceImportInteractor {
                     items.append(
                         .login(.init(
                             id: .init(),
+                            vaultId: vaultID,
                             metadata: .init(
                                 creationDate: Date.importPasswordPlaceholder,
                                 modificationDate: Date.importPasswordPlaceholder,
@@ -464,6 +491,9 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
@@ -492,6 +522,7 @@ private extension ExternalServiceImportInteractor {
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: Date.importPasswordPlaceholder,
                             modificationDate: Date.importPasswordPlaceholder,
@@ -522,6 +553,9 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
@@ -550,6 +584,7 @@ private extension ExternalServiceImportInteractor {
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: Date.importPasswordPlaceholder,
                             modificationDate: Date.importPasswordPlaceholder,
@@ -610,6 +645,9 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
@@ -648,6 +686,7 @@ private extension ExternalServiceImportInteractor {
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: timeCreated.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
                             modificationDate: timePasswordChanged.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
@@ -675,6 +714,9 @@ private extension ExternalServiceImportInteractor {
     }
     
     private func importApplePasswords(csvContent: String) async -> Result<[ItemData], ExternalServiceImportError> {
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
@@ -712,6 +754,7 @@ private extension ExternalServiceImportInteractor {
                 items.append(
                     .login(.init(
                         id: .init(),
+                        vaultId: vaultID,
                         metadata: .init(
                             creationDate: Date.importPasswordPlaceholder,
                             modificationDate: Date.importPasswordPlaceholder,
@@ -742,6 +785,9 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
         
@@ -771,6 +817,7 @@ private extension ExternalServiceImportInteractor {
                     .login(
                         .init(
                             id: .init(),
+                            vaultId: vaultID,
                             metadata: .init(
                                 creationDate: Date.importPasswordPlaceholder,
                                 modificationDate: Date.importPasswordPlaceholder,
@@ -801,6 +848,9 @@ private extension ExternalServiceImportInteractor {
     func importKeePassXC(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
         }
         var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
@@ -835,6 +885,7 @@ private extension ExternalServiceImportInteractor {
                     .login(
                         .init(
                             id: .init(),
+                            vaultId: vaultID,
                             metadata: .init(
                                 creationDate: creationDate ?? Date.importPasswordPlaceholder,
                                 modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
@@ -866,6 +917,9 @@ private extension ExternalServiceImportInteractor {
         guard let csvString = String(data: content, encoding: .utf8) else {
             return .failure(ExternalServiceImportError.wrongFormat)
         }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
         var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
 
@@ -895,6 +949,7 @@ private extension ExternalServiceImportInteractor {
                     .login(
                         .init(
                             id: .init(),
+                            vaultId: vaultID,
                             metadata: .init(
                                 creationDate: Date.importPasswordPlaceholder,
                                 modificationDate: Date.importPasswordPlaceholder,
@@ -925,6 +980,9 @@ private extension ExternalServiceImportInteractor {
     func importEnpass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
         guard let parsedJSON = try? mainRepository.jsonDecoder.decode(Enpass.self, from: content) else {
             return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
@@ -965,6 +1023,64 @@ private extension ExternalServiceImportInteractor {
             items.append(
                 .login(.init(
                     id: .init(),
+                        vaultId: vaultID,
+                        metadata: .init(
+                        creationDate: Date.importPasswordPlaceholder,
+                        modificationDate: Date.importPasswordPlaceholder,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: name,
+                    content: .init(
+                        name: name,
+                        username: username,
+                        password: password,
+                        notes: notes,
+                        iconType: makeIconType(uri: uris?.first?.uri),
+                        uris: uris
+                    )
+                ))
+            )
+        }
+
+        return .success(items)
+    }
+
+    func importKeeper(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
+        guard let parsedJSON = try? mainRepository.jsonDecoder.decode(Keeper.self, from: content) else {
+            return .failure(ExternalServiceImportError.wrongFormat)
+        }
+        guard let vaultID = selectedVaultId else {
+            return .failure(.wrongFormat)
+        }
+        var items: [ItemData] = []
+        let protectionLevel = mainRepository.currentDefaultProtectionLevel
+
+        parsedJSON.records?.forEach { record in
+            // Import login and encryptedNotes type records
+            guard record.type == "login" || record.type == "encryptedNotes" else { return }
+
+            let name = record.title.formattedName
+            let notes = record.notes?.nilIfEmpty
+            let username = record.login?.nilIfEmpty
+            let password: Data? = {
+                if let passwordString = record.password?.nilIfEmpty {
+                    return encryptPassword(passwordString, for: protectionLevel)
+                }
+                return nil
+            }()
+
+            let uris: [PasswordURI]? = {
+                guard let urlString = record.loginUrl?.nilIfEmpty else { return nil }
+                let uri = PasswordURI(uri: urlString, match: .domain)
+                return [uri]
+            }()
+
+            items.append(
+                .login(.init(
+                    id: .init(),
+                    vaultId: vaultID,
                     metadata: .init(
                         creationDate: Date.importPasswordPlaceholder,
                         modificationDate: Date.importPasswordPlaceholder,
@@ -1055,4 +1171,26 @@ private struct Enpass: Decodable {
     }
 
     let items: [Item]?
+}
+
+private struct Keeper: Decodable {
+    struct Record: Decodable {
+        let title: String?
+        let notes: String?
+        let type: String?
+        let login: String?
+        let password: String?
+        let loginUrl: String?
+
+        enum CodingKeys: String, CodingKey {
+            case title
+            case notes
+            case type = "$type"
+            case login
+            case password
+            case loginUrl = "login_url"
+        }
+    }
+
+    let records: [Record]?
 }

@@ -36,6 +36,8 @@ public protocol ItemsInteracting: AnyObject {
     func listItems(
         searchPhrase: String?,
         tagId: ItemTagID?,
+        vaultId: VaultID?,
+        contentTypes: [ItemContentType]?,
         sortBy: SortType,
         trashed: ItemsListOptions.TrashOptions
     ) -> [ItemData]
@@ -128,6 +130,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .login(let loginItem):
             mainRepository.createLoginItem(
                 itemID: loginItem.id,
+                vaultID: selectedVault.id,
                 creationDate: loginItem.creationDate,
                 modificationDate: loginItem.modificationDate,
                 trashedStatus: loginItem.trashedStatus,
@@ -143,6 +146,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .secureNote(let secureNoteItem):
             mainRepository.createSecureNoteItem(
                 itemID: secureNoteItem.id,
+                vaultID: selectedVault.id,
                 creationDate: secureNoteItem.creationDate,
                 modificationDate: secureNoteItem.modificationDate,
                 trashedStatus: secureNoteItem.trashedStatus,
@@ -154,6 +158,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
+                vaultID: selectedVault.id,
                 creationDate: item.creationDate,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
@@ -200,6 +205,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .login(let loginItem):
             mainRepository.updateLoginItem(
                 itemID: loginItem.id,
+                vaultID: selectedVault.id,
                 modificationDate: loginItem.modificationDate,
                 trashedStatus: loginItem.trashedStatus,
                 protectionLevel: loginItem.protectionLevel,
@@ -214,6 +220,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .secureNote(let secureNoteItem):
             mainRepository.updateSecureNoteItem(
                 itemID: secureNoteItem.id,
+                vaultID: selectedVault.id,
                 modificationDate: secureNoteItem.modificationDate,
                 trashedStatus: secureNoteItem.trashedStatus,
                 protectionLevel: secureNoteItem.protectionLevel,
@@ -224,6 +231,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .raw:
             mainRepository.updateItem(
                 itemID: item.id,
+                vaultID: selectedVault.id,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
                 protectionLevel: item.protectionLevel,
@@ -256,6 +264,8 @@ extension ItemsInteractor: ItemsInteracting {
     func listItems(
         searchPhrase: String?,
         tagId: ItemTagID? = nil,
+        vaultId: VaultID? = nil,
+        contentTypes: [ItemContentType]? = nil,
         sortBy: SortType = .newestFirst,
         trashed: ItemsListOptions.TrashOptions = .no
     ) -> [ItemData] {
@@ -268,14 +278,29 @@ extension ItemsInteractor: ItemsInteracting {
             }
             return nil
         }()
+
         let items = mainRepository.listItems(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
-        
-        if let tagId {
-            return items.filter { item in
-                item.tagIds?.contains(tagId) ?? false
+
+        return items.filter { item in
+            if let tagId {
+                guard item.tagIds?.contains(tagId) ?? false else {
+                    return false
+                }
             }
-        } else {
-            return items
+
+            if let vaultId {
+                guard item.vaultId == vaultId else {
+                    return false
+                }
+            }
+
+            if let contentTypes, !contentTypes.isEmpty {
+                guard contentTypes.contains(item.contentType) else {
+                    return false
+                }
+            }
+
+            return true
         }
     }
     
@@ -284,7 +309,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func listAllItems() -> [ItemData] {
-        listItems(searchPhrase: nil, sortBy: .newestFirst, trashed: .all)
+        listItems(searchPhrase: nil, vaultId: nil, contentTypes: nil, sortBy: .newestFirst, trashed: .all)
     }
     
     func getPasswordEncryptedContents(for itemID: ItemID, checkInTrash: Bool = false) -> Result<String?, ItemsInteractorGetError> {
@@ -336,6 +361,7 @@ extension ItemsInteractor: ItemsInteracting {
         try? createItem(.raw(
             .init(
                 id: item.itemID,
+                vaultId: item.vaultID,
                 metadata: .init(
                     creationDate: item.creationDate,
                     modificationDate: item.modificationDate,
@@ -362,6 +388,7 @@ extension ItemsInteractor: ItemsInteracting {
         try? updateItem(.raw(
             .init(
                 id: item.itemID,
+                vaultId: item.vaultID,
                 metadata: .init(
                     creationDate: item.creationDate,
                     modificationDate: item.modificationDate,
@@ -522,6 +549,7 @@ extension ItemsInteractor: ItemsInteracting {
                         let newContent = try mainRepository.jsonEncoder.encode(AnyCodable(newContentDict))
                         return RawItemData(
                             id: entity.id,
+                            vaultId: entity.vaultID,
                             metadata: .init(
                                 creationDate: entity.creationDate,
                                 modificationDate: entity.modificationDate,

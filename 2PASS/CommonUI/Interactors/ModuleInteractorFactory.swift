@@ -25,7 +25,7 @@ public final class ModuleInteractorFactory {
         )
     }
     
-    func addPasswordInteractor(editItemID: ItemID?, changeRequest: PasswordDataChangeRequest? = nil) -> AddPasswordModuleInteracting {
+    func addPasswordInteractor(editItemID: ItemID?, changeRequest: LoginDataChangeRequest? = nil) -> AddPasswordModuleInteracting {
         AddPasswordModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),

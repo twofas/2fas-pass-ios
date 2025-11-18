@@ -8,8 +8,9 @@ extension ConnectRequests {
     
     struct CloseWithSuccess: ConnectRequestWithoutResponse {
         typealias Payload = ConnectMessagePayloadEmpty
-        
+
         let id: UUID = UUID()
+        let schemeVersion: ConnectSchemaVersion
         let payload: Payload = ConnectMessagePayloadEmpty()
         
         let action: ConnectMessageAction = .closeWithSuccess

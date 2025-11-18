@@ -29,6 +29,8 @@ public enum ConnectError: Error {
     case missingSessionId
     case badData
     case itemsLimitReached(Int)
+    case unsuppotedContentType(String)
+    case unsupportedSchemeVersion
 }
 
 public typealias ConnectContinuation = (accepted: Bool, itemID: ItemID?)
@@ -112,5 +114,14 @@ final class ConnectInteractor: ConnectInteracting {
         } catch {
             throw ConnectError.createKeysFailure(error)
         }
+    }
+    
+    func deriveEncryptionDataKey(from keys: SessionKeys) -> SymmetricKey {
+        HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: keys.sessionKey,
+            salt: keys.hkdfSalt,
+            info: Keys.Connect.data.data(using: .utf8)!,
+            outputByteCount: 32
+        )
     }
 }

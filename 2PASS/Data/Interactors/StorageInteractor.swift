@@ -138,6 +138,7 @@ extension StorageInteractor: StorageInteracting {
                 DispatchQueue.main.async {
                     self.mainRepository.createItem(
                         itemID: encryptedData.itemID,
+                        vaultID: encryptedData.vaultID,
                         creationDate: encryptedData.creationDate,
                         modificationDate: encryptedData.modificationDate,
                         trashedStatus: encryptedData.trashedStatus,

@@ -16,6 +16,7 @@ final class LoginEntity: ItemMetadataEntity {
     @nonobjc override static func create(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -33,6 +34,7 @@ final class LoginEntity: ItemMetadataEntity {
             createLogin(
                 on: context,
                 itemID: itemID,
+                vaultID: vaultID,
                 creationDate: creationDate,
                 modificationDate: modificationDate,
                 trashedStatus: trashedStatus,
@@ -53,6 +55,7 @@ final class LoginEntity: ItemMetadataEntity {
     @nonobjc override static func update(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -69,6 +72,7 @@ final class LoginEntity: ItemMetadataEntity {
             updateLogin(
                 on: context,
                 for: itemID,
+                vaultID: vaultID,
                 modificationDate: modificationDate,
                 trashedStatus: trashedStatus,
                 protectionLevel: protectionLevel,
@@ -88,6 +92,7 @@ final class LoginEntity: ItemMetadataEntity {
     @nonobjc static func createLogin(
         on context: NSManagedObjectContext,
         itemID: ItemID,
+        vaultID: VaultID,
         creationDate: Date,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -103,6 +108,7 @@ final class LoginEntity: ItemMetadataEntity {
         let entity = NSEntityDescription.insertNewObject(forEntityName: loginEntityName, into: context) as! LoginEntity
         
         entity.itemID = itemID
+        entity.vaultID = vaultID
         entity.name = name
         entity.creationDate = creationDate
         entity.modificationDate = modificationDate
@@ -160,6 +166,7 @@ final class LoginEntity: ItemMetadataEntity {
     @nonobjc static func updateLogin(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -179,6 +186,7 @@ final class LoginEntity: ItemMetadataEntity {
         updateLogin(
             on: context,
             entity: entity,
+            vaultID: vaultID,
             modificationDate: modificationDate,
             trashedStatus: trashedStatus,
             protectionLevel: protectionLevel,
@@ -195,6 +203,7 @@ final class LoginEntity: ItemMetadataEntity {
     @nonobjc static func updateLogin(
         on context: NSManagedObjectContext,
         entity: LoginEntity,
+        vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
         protectionLevel: ItemProtectionLevel,
@@ -343,6 +352,7 @@ final class LoginEntity: ItemMetadataEntity {
         
         return .login(LoginItemData(
             id: itemID,
+            vaultId: vaultID,
             metadata: metadata,
             name: name,
             content: content
