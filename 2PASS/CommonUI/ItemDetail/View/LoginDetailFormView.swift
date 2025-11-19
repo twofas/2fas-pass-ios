@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct LoginDetailFormView: View {
-    
+
     enum SelectedField: Hashable {
         case username
         case password
@@ -15,14 +15,14 @@ struct LoginDetailFormView: View {
     }
 
     let presenter: LoginDetailFormPresenter
-    
+
     @State
     var selectedField: SelectedField?
-    
+
     var body: some View {
         Group {
             ItemDetalFormTitle(name: presenter.name, icon: presenter.iconContent)
-            
+
             if let username = presenter.username {
                 ItemDetailFormActionsRow(
                     key: T.loginUsernameLabel.localizedKey,
@@ -40,7 +40,7 @@ struct LoginDetailFormView: View {
                     }
                 }
             }
-            
+
             if presenter.isPasswordAvailable, let password = presenter.password {
                 ItemDetailFormActionsRow(
                     key: T.loginPasswordLabel.localizedKey,
@@ -65,7 +65,7 @@ struct LoginDetailFormView: View {
                     }
                 }
             }
-            
+
             ForEach(Array(presenter.uri.filter({ $0.uriNormalized != nil }).enumerated()), id: \.element.id) { index, uri in
                 if let uriNormalized = uri.uriNormalized {
                     ItemDetailFormActionsRow(
@@ -80,15 +80,20 @@ struct LoginDetailFormView: View {
                     .selected($selectedField, equals: .url(uri.id))
                 }
             }
-            
+
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
+
             ItemDetailFormTags(presenter.tags)
-            
+
             if let notes = presenter.notes, !notes.isEmpty {
-                Text(notes)
-                    .multilineTextAlignment(.leading)
-                    .font(.body)
-                    .foregroundStyle(.neutral400)
+                HStack {
+                    Text(notes)
+                        .multilineTextAlignment(.leading)
+                        .font(.body)
+                        .foregroundStyle(.neutral400)
+
+                    Spacer(minLength: 0)
+                }
             }
         }
         .onDisappear {

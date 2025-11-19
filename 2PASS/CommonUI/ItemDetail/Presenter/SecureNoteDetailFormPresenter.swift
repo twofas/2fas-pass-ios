@@ -13,11 +13,7 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     private(set) var secureNoteItem: SecureNoteItemData
     
     var isReveal = false
-    
-    var hasNote: Bool {
-        secureNoteItem.content.text != nil
-    }
-    
+
     private(set) var note: String?
     
     init(item: SecureNoteItemData, configuration: ItemDetailFormConfiguration) {
@@ -36,14 +32,11 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     
     func onViewNote() {
         note = interactor.decryptNote(in: secureNoteItem)
-        
-        withAnimation {
-            isReveal = true
-        }
+        isReveal = true
     }
     
     private func refreshValues() {
-        isReveal = hasNote && (isReveal || protectionLevel == .normal)
+        isReveal = (isReveal || protectionLevel == .normal)
         
         if isReveal {
             note = interactor.decryptNote(in: secureNoteItem)

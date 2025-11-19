@@ -8,8 +8,6 @@ import UIKit
 import Common
 import SwiftUI
 
-
-
 final class ItemEditorViewController: UIViewController {
     var presenter: ItemEditorPresenter!
     

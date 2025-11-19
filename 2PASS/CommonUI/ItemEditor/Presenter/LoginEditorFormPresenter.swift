@@ -133,6 +133,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
         super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
         
         updateURIState()
+        updateIcon()
     }
 
     func randomPassword() {

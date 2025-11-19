@@ -28,7 +28,13 @@ extension ItemContentType {
         case .login, .unknown:
             return nil
         case .secureNote:
-            return UIColor(hexString: "#00B2E1")
+            return UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return UIColor(hexString: "#3CD3FE")!
+                } else {
+                    return UIColor(hexString: "#00B2E1")!
+                }
+            }
         }
     }
     
@@ -37,7 +43,13 @@ extension ItemContentType {
         case .login, .unknown:
             return nil
         case .secureNote:
-            return UIColor(hexString: "#DCF0FB")
+            return UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return UIColor(hexString: "#1E455B")!
+                } else {
+                    return UIColor(hexString: "#DCF0FB")!
+                }
+            }
         }
     }
 }

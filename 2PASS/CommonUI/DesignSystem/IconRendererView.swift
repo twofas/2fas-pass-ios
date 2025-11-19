@@ -130,6 +130,8 @@ private struct IconView: View {
             IconBackgroundBlurView(icon: icon)
             
             Image(uiImage: icon)
+                .resizable()
+                .scaledToFit()
                 .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
                 .clipShape(RoundedRectangle(cornerRadius: Constants.innerIconCornerRadius))
         }

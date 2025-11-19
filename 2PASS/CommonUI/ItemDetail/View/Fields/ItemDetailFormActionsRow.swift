@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
 
 struct ItemDetailFormActionsRow<Value>: View where Value: View {
     
@@ -13,6 +14,7 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
     let actions: [UIAction]
 
     private var lineLimit: Int?
+    private var onSelect: (() -> Void)?
     
     @State
     private var isSelected = false
@@ -26,19 +28,18 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
     var body: some View {
         Button {
             isSelected = true
+            onSelect?()
         } label: {
             content
         }
         .buttonStyle(.twofasPlain)
-        .listRowBackground(isSelected ? Color.neutral100 : nil)
+        .itemDetailFormRowBackground(isSelected ? Color.neutral100 : nil)
         .editMenu($isSelected, actions: actions)
     }
     
     func selected<SelectedValue>(_ binding: Binding<SelectedValue>, equals: SelectedValue) -> some View where SelectedValue: Hashable {
-        onChange(of: isSelected) { _, newValue in
-            if isSelected {
-                binding.wrappedValue = equals
-            }
+        onSelect {
+            binding.wrappedValue = equals
         }
         .onChange(of: binding.wrappedValue) { _, newValue in
             isSelected = (newValue == equals)
@@ -58,5 +59,10 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
         .contentShape(Rectangle())
         .labeledContentStyle(.listCell(lineLimit: lineLimit))
     }
+    
+    private func onSelect(_ action: @escaping Callback) -> Self {
+        var instance = self
+        instance.onSelect = action
+        return instance
+    }
 }
-
