@@ -12,6 +12,9 @@ struct ItemDetailView: View {
     @State
     var presenter: ItemDetailPresenter
         
+    @State
+    private var datesExpanded = false
+    
     var body: some View {
         VStack {
             ItemDetailForm {
@@ -25,24 +28,7 @@ struct ItemDetailView: View {
                         EmptyView()
                     }
                 } footer: {
-                    if let createdAt = presenter.createdAt, let modifiedAt = presenter.modifiedAt {
-                        HStack(alignment: .center, spacing: Spacing.xs) {
-                            let verticalSpacing = Spacing.xs
-
-                            VStack(alignment: .leading, spacing: verticalSpacing) {
-                                Text(T.commonModified)
-                                Text(T.commonCreated)
-                            }
-
-                            VStack(alignment: .leading, spacing: verticalSpacing) {
-                                Text(modifiedAt)
-                                Text(createdAt)
-                            }
-                        }
-                        .font(.caption2)
-                        .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
-                        .padding(.top, Spacing.xs)
-                    }
+                    modificationDatesView
                 }
             }
             .scrollReadableContentMargins()
@@ -51,6 +37,49 @@ struct ItemDetailView: View {
         .scrollBounceBehavior(.basedOnSize)
         .onAppear {
             presenter.onAppear()
+        }
+    }
+    
+    @ViewBuilder
+    private var modificationDatesView: some View {
+        if let createdAt = presenter.createdAt, let modifiedAt = presenter.modifiedAt {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(T.commonModified)
+                            .fontWeight(.semibold)
+                        Text(modifiedAt)
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            datesExpanded.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 20))
+                            .rotationEffect(.degrees(datesExpanded ? 180 : 0))
+                    }
+                    .foregroundStyle(.accent)
+                }
+                
+                if datesExpanded {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(T.commonCreated)
+                                .fontWeight(.semibold)
+                            Text(createdAt)
+                        }
+                        
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.neutral500)
+            .padding(.top, Spacing.xs)
         }
     }
 }
@@ -111,7 +140,7 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         text: nil
                     )
                 ))
-        case .unknown(let string):
+        case .unknown:
             fatalError()
         }
     }

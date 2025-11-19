@@ -76,7 +76,7 @@ struct ItemDetailSection<Content: View, Footer: View>: View {
                     .font(.footnote)
                     .foregroundColor(Color(.secondaryLabel))
                     .padding(.horizontal, Spacing.xll3)
-                    .padding(.top, Spacing.s)
+                    .padding(.top, Spacing.m)
                     .padding(.bottom, Spacing.xs)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -139,4 +139,4 @@ private struct ItemDetailFormRowLayout: _VariadicView_UnaryViewRoot {
             }
         }
     }
-} 
+}
