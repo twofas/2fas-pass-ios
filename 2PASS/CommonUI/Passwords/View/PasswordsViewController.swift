@@ -54,10 +54,8 @@ final class PasswordsViewController: UIViewController {
                 action: #selector(addAction)
             )
 
-            if presenter.fillAddButton {
-                addButton.tintColor = .brand500
-                addButton.style = .prominent
-            }
+            addButton.tintColor = UIColor(hexString: "#007CF9", transparency: 0.8)
+            addButton.style = .prominent
 
             let filterButton = UIBarButtonItem(
                 image: UIImage(systemName: "line.3.horizontal.decrease"),
@@ -77,7 +75,7 @@ final class PasswordsViewController: UIViewController {
             : "line.3.horizontal.decrease.circle"
 
             let addButton = UIBarButtonItem(
-                image: UIImage(systemName: presenter.fillAddButton ? "plus.circle.fill" : "plus.circle"),
+                image: UIImage(systemName: "plus.circle.fill"),
                 style: .plain,
                 target: self,
                 action: #selector(addAction)
