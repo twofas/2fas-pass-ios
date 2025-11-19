@@ -38,10 +38,18 @@ extension ItemContentType {
         }
     }
     
-    public var iconBackgroundColor: UIColor? {
+    public var iconBackgroundColor: UIColor {
         switch self {
-        case .login, .unknown:
-            return nil
+        case .login:
+            return UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return UIColor(hexString: "#E97900")!
+                } else {
+                    return UIColor(hexString: "#E97900")!
+                }
+            }
+        case .unknown:
+            return .black
         case .secureNote:
             return UIColor { traitCollection in
                 if traitCollection.userInterfaceStyle == .dark {

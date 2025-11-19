@@ -20,7 +20,7 @@ public protocol PasswordsFlowControllerParent: AnyObject {
 }
 
 protocol PasswordsFlowControlling: AnyObject {
-    func toContentTypeSelection()
+    func toContentTypeSelection(sourceItem: (any UIPopoverPresentationControllerSourceItem)?)
     func toEditItem(itemID: ItemID)
     func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
@@ -64,11 +64,12 @@ public final class PasswordsFlowController: FlowController {
 }
 
 extension PasswordsFlowController: PasswordsFlowControlling {
-    
-    func toContentTypeSelection() {
+
+    func toContentTypeSelection(sourceItem: (any UIPopoverPresentationControllerSourceItem)?) {
         ContentTypeSelectionFlowController.present(
             on: viewController,
-            parent: self
+            parent: self,
+            sourceItem: sourceItem
         )
     }
 

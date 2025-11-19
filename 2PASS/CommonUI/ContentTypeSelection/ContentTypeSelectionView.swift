@@ -12,57 +12,16 @@ struct ContentTypeSelectionView: View {
     let onSelect: (ItemContentType) -> Void
     let onClose: () -> Void
 
-    @Environment(\.colorScheme)
-    private var colorScheme
-
-    private let contentTypes: [ContentTypeOption] = [
-        ContentTypeOption(
-            contentType: .login,
-            title: "Login",
-            description: "Store your password and login details.",
-            iconBackgroundColor: UIColor(hexString: "#FFE4CB")!
-        ),
-        ContentTypeOption(
-            contentType: .secureNote,
-            title: "Secure Note",
-            description: "Store your secure notes.",
-            iconBackgroundColor: UIColor(hexString: "#DCF0FB")!
-        )
-    ]
-
     var body: some View {
         VStack(spacing: 0) {
-            // Title and Close button header
-            HStack {
-                Text("Add")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(Asset.mainTextColor.swiftUIColor)
-
-                Spacer()
-
-                CloseButton(closeAction: onClose)
-            }
-            .padding(.horizontal, Spacing.l)
-            .padding(.top, Spacing.m)
-            .padding(.bottom, Spacing.m)
-
-            VStack(spacing: 0) {
-                ForEach(Array(contentTypes.enumerated()), id: \.offset) { index, option in
-                    ContentTypeRow(option: option) {
-                        onSelect(option.contentType)
-                    }
-
-                    if index < contentTypes.count - 1 {
-                        Divider()
-                            .padding(.leading, Spacing.l + 40 + Spacing.m)
-                    }
+            ForEach(ItemContentType.allKnownTypes, id: \.rawValue) { option in
+                ContentTypeRow(option: option) {
+                    onSelect(option)
                 }
             }
-            .background(colorScheme == .dark ? Asset.backroundSecondary.swiftUIColor : Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding(.horizontal, Spacing.l)
-            .padding(.bottom, Spacing.l)
         }
+        .padding(.horizontal, Spacing.s)
+        .padding(.vertical, Spacing.l)
     }
 }
 
@@ -78,52 +37,54 @@ struct ContentTypeSelectionView: View {
 private struct ContentTypeOption {
     let contentType: ItemContentType
     let title: String
-    let description: String
-    let iconBackgroundColor: UIColor
 }
 
 private struct ContentTypeRow: View {
-    let option: ContentTypeOption
-    let onTap: () -> Void
+    let option: ItemContentType
+    let onSelect: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        Button(action: onSelect) {
             HStack(spacing: Spacing.m) {
-                // Icon
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    Circle()
                         .fill(Color(option.iconBackgroundColor))
                         .frame(width: 40, height: 40)
-
-                    if let icon = option.contentType.icon {
+                    
+                    if let icon = option.icon {
                         Image(uiImage: icon)
                             .renderingMode(.template)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 20, height: 20)
                             .foregroundStyle(
-                                option.contentType.iconColor.map { Color(uiColor: $0) } ?? Asset.mainTextColor.swiftUIColor
+                                option.iconColor.map { Color(uiColor: $0) } ?? Asset.mainTextColor.swiftUIColor
                             )
                     }
                 }
-
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(option.title)
-                        .font(.system(size: 17))
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
-
-                    Text(option.description)
-                        .font(.system(size: 13))
-                        .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
-                        .lineLimit(2)
-                }
-
+                
+                Text(option, format: .itemContentType)
+                    .font(.system(size: 17))
+                    .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                
                 Spacer()
             }
-            .padding(.horizontal, Spacing.m)
-            .padding(.vertical, Spacing.s)
+            .padding(.horizontal, Spacing.l)
+            .padding(.vertical, Spacing.m)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MenuButtonStyle())
+    }
+}
+
+private struct MenuButtonStyle: ButtonStyle {
+    
+    func makeBody(configuration: Configuration) -> some View {
+        if #available(iOS 26.0, *) {
+            configuration.label
+                .glassEffect(configuration.isPressed ? .regular.interactive() : .identity.interactive())
+        } else {
+            configuration.label
+        }
     }
 }

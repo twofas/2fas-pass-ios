@@ -25,7 +25,7 @@ final class ContentTypeSelectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupContentTypeSelectionView()
-        configurePresentation()
+        configurePopoverSize()
     }
 
     private func setupContentTypeSelectionView() {
@@ -39,25 +39,24 @@ final class ContentTypeSelectionViewController: UIViewController {
         )
 
         let hostingController = UIHostingController(rootView: contentTypeSelectionView)
+        hostingController.view.backgroundColor = .clear
         placeChild(hostingController)
     }
 
-    private func configurePresentation() {
-        modalPresentationStyle = .pageSheet
+    private func configurePopoverSize() {
+        let rowHeight: CGFloat = 40 + (Spacing.s * 2)
+        let numberOfRows = ItemContentType.allKnownTypes.count
+        let horizontalPadding = Spacing.l * 2
 
-        if let sheet = sheetPresentationController {
-            sheet.prefersGrabberVisible = true
+        let width: CGFloat = 250
+        let height = rowHeight * CGFloat(numberOfRows) + horizontalPadding
 
-            // Calculate height dynamically based on content
-            let headerHeight: CGFloat = 20 + Spacing.m + Spacing.m
-            let rowHeight: CGFloat = 40 + (Spacing.s * 2)
-            let numberOfRows: CGFloat = 2 // Login and Secure Note
-            let contentListHeight = rowHeight * numberOfRows
-            let horizontalPadding = Spacing.l * 2
-            let dragIndicatorSpace: CGFloat = 20
-            let calculatedHeight = headerHeight + contentListHeight + horizontalPadding + dragIndicatorSpace
+        preferredContentSize = CGSize(width: width, height: height)
+    }
+}
 
-            sheet.detents = [.custom { _ in calculatedHeight }]
-        }
+extension ContentTypeSelectionViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
+        return .none
     }
 }

@@ -90,9 +90,9 @@ extension PasswordsPresenter {
         flowController.toQuickSetup()
     }
     
-    func onAdd() {
+    func onAdd(sourceItem: (any UIPopoverPresentationControllerSourceItem)?) {
         if interactor.canAddPassword {
-            flowController.toContentTypeSelection()
+            flowController.toContentTypeSelection(sourceItem: sourceItem)
         } else {
             flowController.toPremiumPlanPrompt(itemsLimit: interactor.currentPlanItemsLimit)
         }

@@ -22,7 +22,8 @@ final class ContentTypeSelectionFlowController: FlowController {
 
     static func present(
         on viewController: UIViewController,
-        parent: ContentTypeSelectionFlowControllerParent
+        parent: ContentTypeSelectionFlowControllerParent,
+        sourceItem: (any UIPopoverPresentationControllerSourceItem)? = nil
     ) {
         let view = ContentTypeSelectionViewController()
         let flowController = ContentTypeSelectionFlowController(viewController: view)
@@ -35,6 +36,15 @@ final class ContentTypeSelectionFlowController: FlowController {
 
         view.onClose = { [weak flowController] in
             flowController?.close()
+        }
+
+        if let sourceItem {
+            view.modalPresentationStyle = .popover
+
+            if let popover = view.popoverPresentationController {
+                popover.sourceItem = sourceItem
+                popover.delegate = view
+            }
         }
 
         viewController.present(view, animated: true)

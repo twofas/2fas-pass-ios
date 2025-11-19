@@ -11,7 +11,7 @@ private struct Constants {
     static let minHeightNotes: CGFloat = noteFont.lineHeight * 11
     static let revealAnimationDuration: TimeInterval = 0.15
     static let expandAnimationDuration: TimeInterval = 0.2
-    static let moreGradientWidth: CGFloat = 10
+    static let moreGradientWidth: CGFloat = 32
 }
 
 struct SecureNoteDetailFormView: View {

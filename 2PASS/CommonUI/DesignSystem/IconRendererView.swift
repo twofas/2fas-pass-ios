@@ -144,9 +144,7 @@ private struct ContentTypeIconView: View {
     
     var body: some View {
         ZStack {
-            if let backgroundColor = contentType.iconBackgroundColor {
-                Color(uiColor: backgroundColor)
-            }
+            Color(uiColor: contentType.iconBackgroundColor)
             
             if let icon = contentType.icon {
                 Image(uiImage: icon)

@@ -10,12 +10,12 @@ import Common
 
 final class PasswordsViewController: UIViewController {
     var presenter: PasswordsPresenter!
-    
+
     private let searchController = CommonSearchController()
     private var layout: UICollectionViewCompositionalLayout!
     private(set) var passwordsList: PasswordsListView?
     private(set) var dataSource: UICollectionViewDiffableDataSource<PasswordSectionData, PasswordCellData>?
-    
+
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
     
@@ -53,19 +53,19 @@ final class PasswordsViewController: UIViewController {
                 target: self,
                 action: #selector(addAction)
             )
-            
+
             if presenter.fillAddButton {
                 addButton.tintColor = .brand500
                 addButton.style = .prominent
             }
-            
+
             let filterButton = UIBarButtonItem(
                 image: UIImage(systemName: "line.3.horizontal.decrease"),
                 menu: filterMenu()
             )
             filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
             filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
-            
+
             navigationItem.rightBarButtonItems = [
                 addButton,
                 .fixedSpace(0),
@@ -75,14 +75,16 @@ final class PasswordsViewController: UIViewController {
             let filterIconName = presenter.selectedFilterTag != nil
             ? "line.3.horizontal.decrease.circle.fill"
             : "line.3.horizontal.decrease.circle"
-            
+
+            let addButton = UIBarButtonItem(
+                image: UIImage(systemName: presenter.fillAddButton ? "plus.circle.fill" : "plus.circle"),
+                style: .plain,
+                target: self,
+                action: #selector(addAction)
+            )
+
             navigationItem.rightBarButtonItems = [
-                UIBarButtonItem(
-                    image: UIImage(systemName: presenter.fillAddButton ? "plus.circle.fill" : "plus.circle"),
-                    style: .plain,
-                    target: self,
-                    action: #selector(addAction)
-                ),
+                addButton,
                 UIBarButtonItem(
                     image: UIImage(systemName: filterIconName),
                     menu: filterMenu()
@@ -93,9 +95,10 @@ final class PasswordsViewController: UIViewController {
 }
 
 private extension PasswordsViewController {
+    
     @objc
-    func addAction() {  
-        presenter.onAdd()
+    func addAction(sender: UIBarButtonItem) {
+        presenter.onAdd(sourceItem: sender)
     }
     
     @objc
