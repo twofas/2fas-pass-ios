@@ -44,26 +44,28 @@ struct ItemDetailView: View {
     private var modificationDatesView: some View {
         if let createdAt = presenter.createdAt, let modifiedAt = presenter.modifiedAt {
             VStack(alignment: .leading, spacing: Spacing.s) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(T.commonModified)
-                            .fontWeight(.semibold)
-                        Text(modifiedAt)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        datesExpanded.toggle()
                     }
-                    
-                    Spacer()
-                    
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            datesExpanded.toggle()
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(T.commonModified)
+                                .fontWeight(.semibold)
+                            Text(modifiedAt)
                         }
-                    } label: {
+                        
+                        Spacer()
+                        
                         Image(systemName: "chevron.down")
                             .font(.system(size: 20))
+                            .foregroundStyle(.accent)
                             .rotationEffect(.degrees(datesExpanded ? 180 : 0))
                     }
-                    .foregroundStyle(.accent)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.twofasPlain)
                 
                 if datesExpanded {
                     HStack {
