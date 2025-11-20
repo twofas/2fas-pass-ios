@@ -105,6 +105,10 @@ extension ConnectSchemaV2 {
     typealias ConnectActionAddSecureNoteRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.AddSecureNote>>
     typealias ConnectActionUpdateSecureNoteRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateSecureNote>>
 
+    enum SupportedFeatures: String {
+        case secureNote = "items.secureNote"
+    }
+    
     struct ConnectActioRequestType: Decodable {
         let type: ConnectActionType
     }
