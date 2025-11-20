@@ -8,7 +8,7 @@ import SwiftUI
 
 private struct Constants {
     static let noteFont = UIFont.preferredFont(forTextStyle: .body)
-    static let minHeightNotes: CGFloat = noteFont.lineHeight * 11
+    static let minHeightNotes: CGFloat = (noteFont.ascender - noteFont.descender + noteFont.leading) * 12
     static let revealAnimationDuration: TimeInterval = 0.15
     static let expandAnimationDuration: TimeInterval = 0.2
     static let moreGradientWidth: CGFloat = 32
@@ -68,7 +68,7 @@ struct SecureNoteDetailFormView: View {
                 } label: {
                     Text("more")
                         .padding(.leading, Constants.moreGradientWidth)
-                        .padding(.bottom, 4)
+                        .padding(.bottom, 1)
                 }
                 .buttonStyle(.borderless)
                 .matchedGeometryEffect(id: "more", in: namespace, isSource: true)
