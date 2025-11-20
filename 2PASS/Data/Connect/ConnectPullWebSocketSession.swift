@@ -17,7 +17,7 @@ struct ConnectPullWebSocketSession {
         let helloRequest = ConnectRequests.Hello(
             schemeVersion: schemeVersion,
             payload: .init(
-                deviceId: deviceID.uuidString,
+                deviceId: deviceID.exportString(),
                 deviceName: deviceName,
                 deviceOs: "ios",
                 deviceType: deviceType,
