@@ -22,12 +22,12 @@ struct ItemEditorFormView: View {
         Form {
             switch presenter.form {
             case .login(let presenter):
-                LoginFormView(
+                LoginEditorFormView(
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )
             case .secureNote(let presenter):
-                SecureNoteFormView(
+                SecureNoteEditorFormView(
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )

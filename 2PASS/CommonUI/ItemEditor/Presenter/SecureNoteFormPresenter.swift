@@ -11,6 +11,8 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
     
     var isReveal: Bool {
         didSet {
+            guard isReveal else { return }
+            
             let text = decryptNote()
             self.text = text
             self.initialText = text

@@ -11,7 +11,7 @@ private struct Constants {
     static let minHeightNotes: CGFloat = 80
 }
 
-struct SecureNoteFormView: View {
+struct SecureNoteEditorFormView: View {
     
     enum Field: Hashable {
         case notes
@@ -72,6 +72,9 @@ struct SecureNoteFormView: View {
             Text(T.secureNoteTextLabel.localizedKey)
         }
         .listSectionSpacing(Spacing.l)
+        .sensoryFeedback(.selection, trigger: presenter.isReveal) { _, newValue in
+            newValue
+        }
         
         ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
         

@@ -59,7 +59,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
     
     var showGeneratePassword = false
     var showMostUsed = false
-    var onFocusField: ((LoginFormView.Field?) -> Void)?
+    var onFocusField: ((LoginEditorFormView.Field?) -> Void)?
     
     var uriError: String?
 

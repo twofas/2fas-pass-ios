@@ -34,51 +34,54 @@ struct SecureNoteDetailFormView: View {
     @ViewBuilder
     private var noteView: some View {
         ZStack {
-        Color.clear
-            .overlay(alignment: .top) {
-                SecureNoteTextView(text: presenter.note ?? "", height: $noteHeight)
-                    .frame(height: noteHeight)
-            }
-            .clipped()
-            .opacity(presenter.isReveal ? 1 : 0)
-            .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: presenter.isReveal)
-            .overlay(alignment: .bottomTrailing, content: {
-                if presenter.isNoteExpanded == false {
-                    HStack(spacing: 0) {
-                        LinearGradient(
-                            colors: [.clear, Color(.secondarySystemGroupedBackground)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                        .frame(width: Constants.moreGradientWidth)
-                        
-                        Color(.secondarySystemGroupedBackground)
-                    }
-                    .matchedGeometryEffect(id: "more", in: namespace, isSource: false)
+            Color.clear
+                .overlay(alignment: .top) {
+                    SecureNoteTextView(text: presenter.note ?? "", height: $noteHeight)
+                        .frame(height: noteHeight)
                 }
-            })
-            .overlay(alignment: .bottomTrailing) {
-                Button {
-                    withAnimation(.smooth(duration: Constants.expandAnimationDuration)) {
-                        presenter.isNoteExpanded.toggle()
-                    }
-                } label: {
-                    Text(T.secureNoteTextMoreAction.localizedKey)
-                        .padding(.leading, Constants.moreGradientWidth)
-                        .padding(.bottom, 1)
-                }
-                .buttonStyle(.borderless)
-                .matchedGeometryEffect(id: "more", in: namespace, isSource: true)
-                .opacity(presenter.isNoteExpanded == false && noteHeight > Constants.minHeightNotes && presenter.isReveal ? 1 : 0)
-                .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: noteHeight > Constants.minHeightNotes)
+                .clipped()
+                .opacity(presenter.isReveal ? 1 : 0)
                 .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: presenter.isReveal)
-            }
-            .frame(height: presenter.isReveal ? (presenter.isNoteExpanded ? noteHeight : Constants.minHeightNotes) : Constants.minHeightNotes, alignment: .top)
-            .frame(maxWidth: .infinity)
-        
+                .overlay(alignment: .bottomTrailing, content: {
+                    if presenter.isNoteExpanded == false {
+                        HStack(spacing: 0) {
+                            LinearGradient(
+                                colors: [.clear, Color(.secondarySystemGroupedBackground)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .frame(width: Constants.moreGradientWidth)
+                            
+                            Color(.secondarySystemGroupedBackground)
+                        }
+                        .matchedGeometryEffect(id: "more", in: namespace, isSource: false)
+                    }
+                })
+                .overlay(alignment: .bottomTrailing) {
+                    Button {
+                        withAnimation(.smooth(duration: Constants.expandAnimationDuration)) {
+                            presenter.isNoteExpanded.toggle()
+                        }
+                    } label: {
+                        Text(T.secureNoteTextMoreAction.localizedKey)
+                            .padding(.leading, Constants.moreGradientWidth)
+                            .padding(.bottom, 1)
+                    }
+                    .buttonStyle(.borderless)
+                    .matchedGeometryEffect(id: "more", in: namespace, isSource: true)
+                    .opacity(presenter.isNoteExpanded == false && noteHeight > Constants.minHeightNotes && presenter.isReveal ? 1 : 0)
+                    .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: noteHeight > Constants.minHeightNotes)
+                    .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: presenter.isReveal)
+                }
+                .frame(height: presenter.isReveal ? (presenter.isNoteExpanded ? noteHeight : Constants.minHeightNotes) : Constants.minHeightNotes, alignment: .top)
+                .frame(maxWidth: .infinity)
+            
             if presenter.isReveal == false {
                 lockedNoteView
             }
+        }
+        .sensoryFeedback(.selection, trigger: presenter.isReveal) { _, newValue in
+            newValue
         }
     }
     

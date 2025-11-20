@@ -18,7 +18,7 @@ private struct Constants {
     static let matchingRuleSheetHeightLiquidGlass: CGFloat = 460
 }
 
-struct LoginFormView: View {
+struct LoginEditorFormView: View {
 
     enum Field: Hashable {
         case username
