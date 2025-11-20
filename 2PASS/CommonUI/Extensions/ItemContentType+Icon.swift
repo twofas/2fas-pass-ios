@@ -15,7 +15,7 @@ extension ItemContentType {
             
             switch self {
             case .login, .unknown:
-                return UIImage(systemName: "lock.fill", withConfiguration: configuration)
+                return UIImage(systemName: "person.crop.circle", withConfiguration: configuration)
             case .secureNote:
                 return UIImage(systemName: "note.text", withConfiguration: configuration)
             }
