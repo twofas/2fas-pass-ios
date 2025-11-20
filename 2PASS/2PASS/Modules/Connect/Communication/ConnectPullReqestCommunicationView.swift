@@ -126,7 +126,14 @@ struct ConnectPullReqestCommunicationView: View {
         case .delete:
             Text(T.requestModalToastSuccessDeleteLogin.localizedKey)
         case .sifRequest(let item):
-            Text(T.requestModalToastSuccessPasswordRequest.localizedKey)
+            switch item {
+            case .login:
+                Text(T.requestModalToastSuccessPasswordRequest.localizedKey)
+            case .secureNote:
+                Text(T.requestModalToastSuccessSecureNoteRequest.localizedKey)
+            case .raw:
+                Text("")
+            }
         case .sync:
             Text(T.requestModalToastSuccessFullSync.localizedKey)
         case nil:
@@ -163,8 +170,8 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func noteRequestView(item: SecureNoteItemData) -> some View {
         itemRequestView(
-            title: Text(T.requestModalPasswordRequestTitle.localizedKey),
-            subtitle: Text(T.requestModalPasswordRequestSubtitle.localizedKey),
+            title: Text(T.requestModalSecureNoteRequestTitle.localizedKey),
+            subtitle: Text(T.requestModalSecureNoteRequestSubtitle.localizedKey),
             name: item.name ?? "",
             description: nil,
             iconContent: .contentType(.secureNote)
@@ -203,6 +210,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func addLoginView(changeRequest: LoginDataChangeRequest) -> some View {
         addItemView(
+            title: Text(T.requestModalNewLoginTitle.localizedKey),
             name: changeRequest.name ?? "",
             description: changeRequest.username?.value,
             iconContent: presenter.iconContent
@@ -211,6 +219,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func addSecureNoteView(changeRequest: SecureNoteDataChangeRequest) -> some View {
         addItemView(
+            title: Text(T.requestModalNewSecureNoteTitle.localizedKey),
             name: changeRequest.name ?? "",
             description: nil,
             iconContent: .contentType(.secureNote)
@@ -218,12 +227,13 @@ struct ConnectPullReqestCommunicationView: View {
     }
 
     private func addItemView(
+        title: Text,
         name: String,
         description: String?,
         iconContent: IconContent?
     ) -> some View {
         ConnectPullReqestContentView(
-            title: Text(T.requestModalNewItemTitle.localizedKey),
+            title: title,
             description: Text(T.requestModalNewItemSubtitle.localizedKey),
             item: .init(name: name, description: description, iconContent: iconContent),
             icon: {
@@ -247,6 +257,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func updateLoginView(item: LoginItemData) -> some View {
         updateItemView(
+            title: Text(T.requestModalUpdateLoginTitle.localizedKey),
             name: item.name ?? "",
             description: item.username,
             iconContent: presenter.iconContent
@@ -255,6 +266,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func updateSecureNoteView(item: SecureNoteItemData) -> some View {
         updateItemView(
+            title: Text(T.requestModalUpdateSecureNoteTitle.localizedKey),
             name: item.name ?? "",
             description: nil,
             iconContent: .contentType(.secureNote)
@@ -262,12 +274,13 @@ struct ConnectPullReqestCommunicationView: View {
     }
 
     private func updateItemView(
+        title: Text,
         name: String,
         description: String?,
         iconContent: IconContent?
     ) -> some View {
         ConnectPullReqestContentView(
-            title: Text(T.requestModalUpdateItemTitle.localizedKey),
+            title: title,
             description: Text(T.requestModalUpdateItemSubtitle.localizedKey),
             item: .init(name: name, description: description, iconContent: iconContent),
             icon: {
@@ -291,6 +304,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func deleteLoginView(item: LoginItemData) -> some View {
         deleteItemView(
+            title: Text(T.requestModalRemoveLoginTitle.localizedKey),
             name: item.name ?? "",
             description: item.username,
             iconContent: presenter.iconContent
@@ -299,6 +313,7 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func deleteSecureNoteView(item: SecureNoteItemData) -> some View {
         deleteItemView(
+            title: Text(T.requestModalRemoveSecureNoteTitle.localizedKey),
             name: item.name ?? "",
             description: nil,
             iconContent: .contentType(.secureNote)
@@ -306,12 +321,13 @@ struct ConnectPullReqestCommunicationView: View {
     }
 
     private func deleteItemView(
+        title: Text,
         name: String,
         description: String?,
         iconContent: IconContent?
     ) -> some View {
         ConnectPullReqestContentView(
-            title: Text(T.requestModalRemoveItemTitle.localizedKey),
+            title: title,
             description: Text(T.requestModalRemoveItemSubtitle.localizedKey),
             item: .init(name: name, description: description, iconContent: iconContent),
             icon: {

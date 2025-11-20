@@ -36,7 +36,7 @@ struct SecureNoteFormView: View {
         .listRowBackground(Color.clear)
         
         Section {
-            LabeledInput(label: T.loginNameLabel.localizedKey, fieldWidth: $fieldWidth) {
+            LabeledInput(label: T.secureNoteNameLabel.localizedKey, fieldWidth: $fieldWidth) {
                 TextField(T.loginNameLabel.localizedKey, text: $presenter.name)
             }
             .formFieldChanged(presenter.nameChanged)
@@ -59,25 +59,17 @@ struct SecureNoteFormView: View {
                         focusField = .notes
                     }
             } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.neutral200)
-                    
-                    Button("Tap to edit") {
-                        withAnimation {
-                            presenter.isReveal = true
-                            focusField = .notes
-                        }
+                LockButton(text: Text(T.secureNoteTextRevealEditAction.localizedKey)) {
+                    withAnimation {
+                        presenter.isReveal = true
+                        focusField = .notes
                     }
-                    .contentShape(Rectangle())
-                    .padding(.bottom, Spacing.xs)
                 }
                 .frame(maxWidth: .infinity, minHeight: Constants.minHeightNotes, alignment: .center)
             }
 
         } header: {
-            Text("Secure Note")
+            Text(T.secureNoteTextLabel.localizedKey)
         }
         .listSectionSpacing(Spacing.l)
         

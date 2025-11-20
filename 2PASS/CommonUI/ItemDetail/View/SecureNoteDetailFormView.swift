@@ -21,9 +21,6 @@ struct SecureNoteDetailFormView: View {
     @State
     private var noteHeight: CGFloat = 0
     
-    @State
-    private var isNoteExpanded = false
-    
     @Namespace
     private var namespace
     
@@ -46,7 +43,7 @@ struct SecureNoteDetailFormView: View {
             .opacity(presenter.isReveal ? 1 : 0)
             .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: presenter.isReveal)
             .overlay(alignment: .bottomTrailing, content: {
-                if isNoteExpanded == false {
+                if presenter.isNoteExpanded == false {
                     HStack(spacing: 0) {
                         LinearGradient(
                             colors: [.clear, Color(.secondarySystemGroupedBackground)],
@@ -63,20 +60,20 @@ struct SecureNoteDetailFormView: View {
             .overlay(alignment: .bottomTrailing) {
                 Button {
                     withAnimation(.smooth(duration: Constants.expandAnimationDuration)) {
-                        isNoteExpanded.toggle()
+                        presenter.isNoteExpanded.toggle()
                     }
                 } label: {
-                    Text("more")
+                    Text(T.secureNoteTextMoreAction.localizedKey)
                         .padding(.leading, Constants.moreGradientWidth)
                         .padding(.bottom, 1)
                 }
                 .buttonStyle(.borderless)
                 .matchedGeometryEffect(id: "more", in: namespace, isSource: true)
-                .opacity(isNoteExpanded == false && noteHeight > Constants.minHeightNotes && presenter.isReveal ? 1 : 0)
+                .opacity(presenter.isNoteExpanded == false && noteHeight > Constants.minHeightNotes && presenter.isReveal ? 1 : 0)
                 .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: noteHeight > Constants.minHeightNotes)
                 .animation(.easeInOut(duration: Constants.revealAnimationDuration), value: presenter.isReveal)
             }
-            .frame(height: presenter.isReveal ? (isNoteExpanded ? noteHeight : Constants.minHeightNotes) : Constants.minHeightNotes, alignment: .top)
+            .frame(height: presenter.isReveal ? (presenter.isNoteExpanded ? noteHeight : Constants.minHeightNotes) : Constants.minHeightNotes, alignment: .top)
             .frame(maxWidth: .infinity)
         
             if presenter.isReveal == false {
@@ -86,20 +83,9 @@ struct SecureNoteDetailFormView: View {
     }
     
     private var lockedNoteView: some View {
-        Button {
+        LockButton(text: Text(T.secureNoteTextRevealViewAction.localizedKey)) {
             presenter.onViewNote()
-        } label: {
-            VStack(spacing: Spacing.m) {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(.neutral200)
-                
-                Text("Tap to view")
-            }
         }
-        .contentShape(Rectangle())
-        .padding(.bottom, Spacing.xs)
-        .buttonStyle(.borderless)
         .frame(maxWidth: .infinity, minHeight: Constants.minHeightNotes, alignment: .center)
         .transition(.identity)
     }

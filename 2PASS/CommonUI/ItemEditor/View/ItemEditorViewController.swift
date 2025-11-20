@@ -63,22 +63,21 @@ final class ItemEditorViewController: UIViewController {
     }
     
     private func addContentTypePicker() {
-        let contentTypePrefix = presenter.isEdit ? "Edit" : "Add"
         let contentTypeName = ItemContentTypeFormatStyle().format(presenter.contentType)
         
         if presenter.allowChangeContentType {
-            contentTypePicker.selectedTitle = "\(contentTypePrefix) \(contentTypeName)"
+            contentTypePicker.selectedTitle = presenter.title
             contentTypePicker.menuItems = ItemContentType.allKnownTypes.map { contentType in
                 let name = ItemContentTypeFormatStyle().format(contentType)
                 let action = UIAction(title: name, image: contentType.icon, state: presenter.contentType == contentType ? .on : .off) { [weak self] _ in
-                    self?.contentTypePicker.selectedTitle = "\(contentTypePrefix) \(name)"
                     self?.presenter.setContentType(contentType)
+                    self?.contentTypePicker.selectedTitle = self?.presenter.title ?? ""
                 }
                 return action
             }
             navigationItem.titleView = contentTypePicker
         } else {
-            navigationItem.title = "\(contentTypePrefix) \(contentTypeName)"
+            navigationItem.title = presenter.title
         }
         
         navigationItem.largeTitleDisplayMode = .never

@@ -13,7 +13,8 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     private(set) var secureNoteItem: SecureNoteItemData
     
     var isReveal = false
-
+    var isNoteExpanded = false
+    
     private(set) var note: String?
     
     init(item: SecureNoteItemData, configuration: ItemDetailFormConfiguration) {

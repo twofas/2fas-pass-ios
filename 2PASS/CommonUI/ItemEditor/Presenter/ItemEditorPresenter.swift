@@ -26,6 +26,21 @@ final class ItemEditorPresenter {
         }
     }
     
+    var title: String {
+        switch (contentType, isEdit) {
+        case (.login, false):
+            T.loginAddTitle
+        case (.login, true):
+            T.loginEditTitle
+        case (.secureNote, false):
+            T.secureNoteAddTitle
+        case (.secureNote, true):
+            T.secureNoteEditTitle
+        case (.unknown, _):
+            ""
+        }
+    }
+    
     private(set) var form: Form
     
     var saveEnabled: ((Bool) -> Void)?

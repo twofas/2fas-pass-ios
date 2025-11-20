@@ -47,7 +47,7 @@ final class DropdownPicker: UIView {
         }
     }
 
-    var selectedTitle: String = T.loginAddTitle {
+    var selectedTitle: String = "" {
         didSet {
             label.text = selectedTitle
         }
@@ -64,14 +64,12 @@ final class DropdownPicker: UIView {
     }
 
     private func setupView() {
-        // Add subviews
         addSubview(stackView)
         addSubview(button)
 
         stackView.addArrangedSubview(label)
         stackView.addArrangedSubview(iconImageView)
 
-        // Set initial label text
         label.text = selectedTitle
 
         NSLayoutConstraint.activate([

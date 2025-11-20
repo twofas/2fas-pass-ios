@@ -17,9 +17,9 @@ public struct ItemContentTypeFormatStyle: FormatStyle {
     public func format(_ contentType: ItemContentType) -> String {
         switch contentType {
         case .login:
-            return "Login"
+            return T.contentTypeLoginName
         case .secureNote:
-            return "Secure Note"
+            return T.contentTypeSecureNoteName
         case .unknown:
             return "Unknown"
         }
