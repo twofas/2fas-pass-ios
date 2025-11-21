@@ -16,7 +16,7 @@ struct ConnectPairingWebSocketSession {
         let helloRequest = ConnectRequests.Hello(
             schemeVersion: schemeVersion,
             payload: .init(
-                deviceId: deviceID.exportString(),
+                deviceId: deviceID.uuidString,
                 deviceName: deviceName,
                 deviceOs: "ios",
                 deviceType: deviceType,
