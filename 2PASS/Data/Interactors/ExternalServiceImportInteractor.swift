@@ -128,6 +128,8 @@ private extension ExternalServiceImportInteractor {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["Url"]?.nilIfEmpty else { return nil }
@@ -249,13 +251,15 @@ private extension ExternalServiceImportInteractor {
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["name"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -311,14 +315,16 @@ private extension ExternalServiceImportInteractor {
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["username", "title", "password", "note", "url"]) else {
                 return .failure(.wrongFormat)
             }
-            
+
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -390,8 +396,10 @@ private extension ExternalServiceImportInteractor {
                 guard csv.validateHeader(["username", "title", "password", "note", "url"]) else {
                     return .failure(.wrongFormat)
                 }
-                
+
                 try csv.enumerateAsDict { [weak self] dict in
+                    guard dict.allValuesEmpty == false else { return }
+
                     let name = dict["title"].formattedName
                     let uris: [PasswordURI]? = {
                         guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -451,8 +459,10 @@ private extension ExternalServiceImportInteractor {
                 guard csv.validateHeader(["title", "note"]) else {
                     return .failure(.wrongFormat)
                 }
-                
+
                 try csv.enumerateAsDict { dict in
+                    guard dict.allValuesEmpty == false else { return }
+
                     let name = dict["title"].formattedName
                     let notes = dict["note"]?.nilIfEmpty
                     
@@ -496,13 +506,15 @@ private extension ExternalServiceImportInteractor {
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["name", "url", "username", "password", "extra"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["name"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -558,13 +570,15 @@ private extension ExternalServiceImportInteractor {
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["name"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -665,7 +679,8 @@ private extension ExternalServiceImportInteractor {
                 guard offset > 0 else { // ignore first line with firefox accont configuration
                     return
                 }
-                
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["url"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -719,13 +734,15 @@ private extension ExternalServiceImportInteractor {
         }
         var items: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvContent, delimiter: .comma)
             guard csv.validateHeader(["Title", "URL", "Username", "Password", "Notes"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let username = dict["Username"]?.nilIfEmpty
                 let name: String? = {
                     let name = dict["Title"].formattedName
@@ -790,13 +807,15 @@ private extension ExternalServiceImportInteractor {
         }
         var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["Account", "Login Name", "Password", "Web Site", "Comments"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["Account"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["Web Site"]?.nilIfEmpty else { return nil }
@@ -854,13 +873,15 @@ private extension ExternalServiceImportInteractor {
         }
         var passwords: [ItemData] = []
         let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
             guard csv.validateHeader(["Title", "Username", "Password", "URL", "Notes", "Last Modified", "Created"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["URL"]?.nilIfEmpty else { return nil }
@@ -929,6 +950,8 @@ private extension ExternalServiceImportInteractor {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
+                guard dict.allValuesEmpty == false else { return }
+
                 let name = dict["name"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
@@ -1119,6 +1142,13 @@ private extension CSV {
         headerRow.reduce(into: true) { result, headerEntry in
             result = result && self.header.contains(where: { $0 == headerEntry })
         }
+    }
+}
+
+private extension Dictionary where Key == String, Value == String {
+
+    var allValuesEmpty: Bool {
+        return allSatisfy { $0.value.isEmpty }
     }
 }
 
