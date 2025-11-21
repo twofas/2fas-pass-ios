@@ -26,7 +26,7 @@ extension ItemContentType {
     public var iconColor: UIColor? {
         switch self {
         case .login, .unknown:
-            return nil
+            return .baseStatic0
         case .secureNote:
             return UIColor { traitCollection in
                 if traitCollection.userInterfaceStyle == .dark {
@@ -43,7 +43,7 @@ extension ItemContentType {
         case .login:
             return UIColor { traitCollection in
                 if traitCollection.userInterfaceStyle == .dark {
-                    return UIColor(hexString: "#E97900")!
+                    return UIColor(hexString: "#FF8400")!
                 } else {
                     return UIColor(hexString: "#E97900")!
                 }
