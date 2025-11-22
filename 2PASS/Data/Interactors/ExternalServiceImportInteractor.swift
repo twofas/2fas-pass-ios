@@ -573,13 +573,13 @@ private extension ExternalServiceImportInteractor {
 
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
+            guard csv.validateHeader(["name", "url", "email", "username", "password", "note"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let name = dict["name"].formattedName
+                let name = dict["name"].formattedName ?? dict["email"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
                     let uri = PasswordURI(uri: urlString, match: .domain)
