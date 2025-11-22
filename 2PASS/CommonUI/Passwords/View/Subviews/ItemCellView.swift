@@ -18,9 +18,10 @@ class ItemCellView: UICollectionViewListCell {
 
     private let iconRenderer = IconRenderer()
     private let listContentView = UIListContentView(configuration: .cell())
-    
+
     private var cellData: ItemCellData?
     private var loginIconImage: UIImage?
+    private var isMenuButtonHidden: Bool = false
 
     private lazy var menuButton: UIButton = {
         let button = UIButton()
@@ -64,6 +65,7 @@ class ItemCellView: UICollectionViewListCell {
         var state = super.configurationState
         state.itemCellData = cellData
         state.loginIconImage = loginIconImage
+        state.isMenuButtonHidden = isMenuButtonHidden
         return state
     }
 
@@ -73,9 +75,7 @@ class ItemCellView: UICollectionViewListCell {
     }
     
     private func setupBackground(with state: UICellConfigurationState) {
-        var backgroundConfig = defaultBackgroundConfiguration().updated(for: state)
-        backgroundConfig.backgroundColor = state.isHighlighted ? .neutral100 : Asset.mainBackgroundColor.color
-        backgroundConfiguration = backgroundConfig
+        backgroundConfiguration = defaultBackgroundConfiguration().updated(for: state)
     }
     
     private func setupContent(with state: UICellConfigurationState) {
@@ -105,7 +105,7 @@ class ItemCellView: UICollectionViewListCell {
         }
 
         accessories = [
-            .customView(configuration: menuAccessoryConfiguration(for: cellData))
+            .customView(configuration: menuAccessoryConfiguration(for: cellData, isHidden: state.isMenuButtonHidden)),
         ]
     }
 
@@ -128,36 +128,11 @@ class ItemCellView: UICollectionViewListCell {
         self.loginIconImage = image
         setNeedsUpdateConfiguration()
     }
-}
 
-private extension UIConfigurationStateCustomKey {
-    static let itemCellData = UIConfigurationStateCustomKey("com.twofas.twopass.ItemCellData")
-    static let loginIcon = UIConfigurationStateCustomKey("com.twofas.twopass.LoginIcon")
-}
-
-private extension UICellConfigurationState {
-    var itemCellData: ItemCellData? {
-        get { return self[.itemCellData] as? ItemCellData }
-        set { self[.itemCellData] = newValue }
-    }
-    
-    var loginIconImage: UIImage? {
-        get { return self[.loginIcon] as? UIImage }
-        set { self[.loginIcon] = newValue }
-    }
-}
-
-private extension ItemCellView {
-    
-    func menuAccessoryConfiguration(for cellData: ItemCellData) -> UICellAccessory.CustomViewConfiguration {
-        menuButton.menu = menu(for: cellData)
-
-        let configuration = UICellAccessory.CustomViewConfiguration(
-            customView: menuButton,
-            placement: .trailing()
-        )
-
-        return configuration
+    func setMenuButtonHidden(_ hidden: Bool) {
+        guard isMenuButtonHidden != hidden else { return }
+        isMenuButtonHidden = hidden
+        setNeedsUpdateConfiguration()
     }
 
     func menu(for cellData: ItemCellData) -> UIMenu {
@@ -167,6 +142,44 @@ private extension ItemCellView {
                 completion(self?.menuItems(for: cellData) ?? [])
             }]
         )
+    }
+}
+
+private extension UIConfigurationStateCustomKey {
+    static let itemCellData = UIConfigurationStateCustomKey("com.twofas.twopass.ItemCellData")
+    static let loginIcon = UIConfigurationStateCustomKey("com.twofas.twopass.LoginIcon")
+    static let isMenuButtonHidden = UIConfigurationStateCustomKey("com.twofas.twopass.IsMenuButtonHidden")
+}
+
+private extension UICellConfigurationState {
+    var itemCellData: ItemCellData? {
+        get { return self[.itemCellData] as? ItemCellData }
+        set { self[.itemCellData] = newValue }
+    }
+
+    var loginIconImage: UIImage? {
+        get { return self[.loginIcon] as? UIImage }
+        set { self[.loginIcon] = newValue }
+    }
+
+    var isMenuButtonHidden: Bool {
+        get { return self[.isMenuButtonHidden] as? Bool ?? false }
+        set { self[.isMenuButtonHidden] = newValue }
+    }
+}
+
+private extension ItemCellView {
+    
+    func menuAccessoryConfiguration(for cellData: ItemCellData, isHidden: Bool) -> UICellAccessory.CustomViewConfiguration {
+        menuButton.menu = menu(for: cellData)
+
+        let configuration = UICellAccessory.CustomViewConfiguration(
+            customView: menuButton,
+            placement: .trailing(),
+            isHidden: isHidden
+        )
+
+        return configuration
     }
 
     func menuItems(for cellData: ItemCellData) -> [UIMenuElement] {
