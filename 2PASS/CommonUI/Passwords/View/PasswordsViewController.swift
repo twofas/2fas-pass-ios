@@ -14,7 +14,7 @@ final class PasswordsViewController: UIViewController {
     private let searchController = CommonSearchController()
     private var layout: UICollectionViewCompositionalLayout!
     private(set) var passwordsList: PasswordsListView?
-    private(set) var dataSource: UICollectionViewDiffableDataSource<PasswordSectionData, PasswordCellData>?
+    private(set) var dataSource: UICollectionViewDiffableDataSource<ItemSectionData, ItemCellData>?
 
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
@@ -172,12 +172,28 @@ private extension PasswordsViewController {
     
     func setupDataSource() {
         guard let passwordsList else { return }
+
+        let cellRegistration = UICollectionView.CellRegistration<ItemCellView, ItemCellData> { [weak self] cell, indexPath, item in
+            cell.update(with: item)
+            
+            if let url = item.iconType.iconURL, let cachedData = self?.presenter.cachedImage(from: url) {
+                cell.updateIcon(wirh: cachedData)
+            }
+            
+            cell.normalizeURI = { [weak self] uri in
+                self?.presenter.normalizedURL(for: uri)
+            }
+            cell.menuAction = { [weak self] action, itemID, selectedURI in
+                self?.presenter.onCellMenuAction(action, itemID: itemID, selectedURI: selectedURI)
+            }
+        }
+        
         dataSource = UICollectionViewDiffableDataSource(
             collectionView: passwordsList,
-            cellProvider: { [weak self] collectionView, indexPath, item -> UICollectionViewCell? in
-                self?.getCell(for: collectionView, indexPath: indexPath, item: item)
+            cellProvider: { collectionView, indexPath, item -> UICollectionViewCell? in
+                collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
             })
-        
+
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
             switch kind {
             case SelectedTagBannerView.elementKind:
@@ -205,7 +221,7 @@ private extension PasswordsViewController {
                     for: indexPath
                 ) as? AutoFillPasswordsSectionView
                 
-                let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? PasswordSectionData
+                let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? ItemSectionData
                 headerView?.titleLabel.text = passwordSection?.title
                 
                 return headerView
@@ -216,12 +232,13 @@ private extension PasswordsViewController {
         }
         
         presenter.onImageFetchResult = { [weak self] password, url, result in
-            guard let indexPath = self?.dataSource?.indexPath(for: password) else { return }
-            guard let cell = self?.passwordsList?.cellForItem(at: indexPath) as? PasswordsCellView else { return }
+            guard let dataSource = self?.dataSource else { return }
             
             switch result {
-            case .success(let data):
-                cell.updateIcon(wirh: data)
+            case .success:
+                var snapshot = dataSource.snapshot()
+                snapshot.reconfigureItems([password])
+                dataSource.apply(snapshot, animatingDifferences: false)
             case .failure:
                 break
             }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-struct PasswordSectionData: Hashable {
+struct ItemSectionData: Hashable {
     let sectionID = UUID()
     let title: String?
     

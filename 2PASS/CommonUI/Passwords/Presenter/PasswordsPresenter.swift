@@ -46,7 +46,7 @@ final class PasswordsPresenter {
     private(set) var hasSuggestedItems = false
 
     private let autoFillEnvironment: AutoFillEnvironment?
-    private let iconsDataSource: RemoteImageCollectionDataSource<PasswordCellData>
+    private let iconsDataSource: RemoteImageCollectionDataSource<ItemCellData>
     private let flowController: PasswordsFlowControlling
     private let interactor: PasswordsModuleInteracting
     private let notificationCenter: NotificationCenter
@@ -127,7 +127,7 @@ extension PasswordsPresenter {
         switch action {
         case .view: flowController.toItemDetail(itemID: itemID)
         case .edit: flowController.toEditItem(itemID: itemID)
-        case .copyUsername:
+        case .copy(.loginUsername):
             if interactor.copyUsername(itemID) {
                 toastPresenter.presentUsernameCopied()
             } else {
@@ -136,8 +136,11 @@ extension PasswordsPresenter {
                     style: .info
                 )
             }
-        case .copyPassword:
+        case .copy(.loginPassword):
             copyPassword(id: itemID)
+            
+        case .copy(.secureNoteText):
+            copySecureNote(id: itemID)
             
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
@@ -160,8 +163,16 @@ extension PasswordsPresenter {
         switch interactor.selectAction {
         case .viewDetails:
             flowController.selectPassword(itemID: itemData.id)
-        case .copyPassword:
-            copyPassword(id: itemData.id)
+        case .copy:
+            switch itemData {
+            case .login:
+                copyPassword(id: itemData.id)
+            case .secureNote:
+                copySecureNote(id: itemData.id)
+            case .raw:
+                break
+            }
+            
         case .goToURI:
             if let uri = itemData.asLoginItem?.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
                 flowController.toURI(normalized)
@@ -169,6 +180,10 @@ extension PasswordsPresenter {
         case .edit:
             flowController.toEditItem(itemID: itemData.id)
         }
+    }
+    
+    func normalizedURL(for uri: String) -> URL? {
+        interactor.normalizedURL(for: uri)
     }
     
     func handleRefresh() {
@@ -187,23 +202,23 @@ extension PasswordsPresenter {
 extension PasswordsPresenter {
 
     @MainActor
-    var onImageFetchResult: (PasswordCellData, URL, Result<Data, Error>) -> Void {
+    var onImageFetchResult: (ItemCellData, URL, Result<Data, Error>) -> Void {
         get { iconsDataSource.onImageFetchResult }
         set { iconsDataSource.onImageFetchResult = newValue }
     }
-    
+
     @MainActor
     func cachedImage(from url: URL) -> Data? {
         iconsDataSource.cachedImage(from: url)
     }
-    
+
     @MainActor
-    func fetchImage(from url: URL, for password: PasswordCellData) {
+    func fetchImage(from url: URL, for password: ItemCellData) {
         iconsDataSource.fetchImage(from: url, for: password)
     }
-    
+
     @MainActor
-    func cancelFetches(for password: PasswordCellData) {
+    func cancelFetches(for password: ItemCellData) {
         iconsDataSource.cancelFetches(for: password)
     }
 }
@@ -221,6 +236,17 @@ private extension PasswordsPresenter {
         }
     }
     
+    func copySecureNote(id: ItemID) {
+        if interactor.copySecureNote(id) {
+            toastPresenter.presentSecureNoteCopied()
+        } else {
+            toastPresenter.present(
+                T.secureNoteErrorCopy,
+                style: .failure
+            )
+        }
+    }
+    
     func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
@@ -233,14 +259,14 @@ private extension PasswordsPresenter {
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
             let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
-            
-            var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
+
+            var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             
             if list.suggested.isEmpty {
                 listData[0] = list.rest
                 
                 let restCells = list.rest.compactMap(makeCellData(for:))
-                let section = PasswordSectionData()
+                let section = ItemSectionData()
                 
                 snapshot.appendSections([section])
                 snapshot.appendItems(restCells, toSection: section)
@@ -255,8 +281,8 @@ private extension PasswordsPresenter {
 
                 let suggestedCells = list.suggested.compactMap(makeCellData(for:))
                 let restCells = list.rest.compactMap(makeCellData(for:))
-                let suggestedSection = PasswordSectionData(title: T.commonSuggested)
-                let section = PasswordSectionData(title: T.commonOther)
+                let suggestedSection = ItemSectionData(title: T.commonSuggested)
+                let section = ItemSectionData(title: T.commonOther)
                 
                 snapshot.appendSections([suggestedSection])
                 snapshot.appendItems(suggestedCells, toSection: suggestedSection)
@@ -273,8 +299,8 @@ private extension PasswordsPresenter {
             let list = interactor.loadList(tag: selectedFilterTag)
             listData[0] = list
             let cells = list.compactMap(makeCellData(for:))
-            let section = PasswordSectionData()
-            var snapshot = NSDiffableDataSourceSnapshot<PasswordSectionData, PasswordCellData>()
+            let section = ItemSectionData()
+            var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             snapshot.appendSections([section])
             snapshot.appendItems(cells, toSection: section)
         
@@ -295,35 +321,37 @@ private extension PasswordsPresenter {
         }
     }
     
-    func makeCellData(for itemData: ItemData) -> PasswordCellData? {
+    func makeCellData(for itemData: ItemData) -> ItemCellData? {
         switch itemData {
         case .login(let loginItem):
-            return PasswordCellData(
+            return ItemCellData(
                 itemID: loginItem.id,
                 name: loginItem.name,
-                username: loginItem.content.username,
-                iconType: loginItem.content.iconType,
-                hasUsername: loginItem.content.username != nil && loginItem.content.username?.isEmpty == false,
-                hasPassword: loginItem.content.password != nil,
-                uris: loginItem.content.uris?.map { $0.uri } ?? [],
-                normalizeURI: { [weak self] uri in
-                    guard let interactor = self?.interactor else { return nil }
-                    return interactor.normalizedURL(for: uri)
-                }
+                description: loginItem.content.username,
+                iconType: .login(loginItem.content.iconType),
+                actions: [
+                    .view,
+                    .edit,
+                    .copy(.loginUsername),
+                    .copy(.loginPassword),
+                    isAutoFillExtension ? nil : .goToURI(uris: loginItem.content.uris?.map { $0.uri } ?? []),
+                    isAutoFillExtension ? nil : .moveToTrash
+                ]
+                .compactMap { $0 }
             )
         case .secureNote(let secureNoteItem):
-            return PasswordCellData(
+            return ItemCellData(
                 itemID: secureNoteItem.id,
                 name: secureNoteItem.name,
-                username: nil,
-                iconType: .label(labelTitle: "AA", labelColor: nil),
-                hasUsername: false,
-                hasPassword: false,
-                uris: [],
-                normalizeURI: { [weak self] uri in
-                    guard let interactor = self?.interactor else { return nil }
-                    return interactor.normalizedURL(for: uri)
-                }
+                description: nil,
+                iconType: .contentType(itemData.contentType),
+                actions: [
+                    .view,
+                    .edit,
+                    .copy(.secureNoteText),
+                    isAutoFillExtension ? nil : .moveToTrash
+                ]
+                .compactMap { $0 }
             )
         case .raw:
             return nil

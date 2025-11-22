@@ -120,7 +120,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove Secure note"
+            "value" : "Remove Secure Note"
           }
         }
       }
@@ -2093,7 +2093,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Secure note"
+            "value" : "Secure Note"
           }
         }
       }
@@ -5558,7 +5558,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New Secure note"
+            "value" : "New Secure Note"
           }
         }
       }
@@ -5657,7 +5657,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Browser Extension requests this Secure note"
+            "value" : "Browser Extension requests this Note"
           }
         }
       }
@@ -5668,7 +5668,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Secure note Request"
+            "value" : "Secure Note Request"
           }
         }
       }
@@ -5811,7 +5811,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Update Secure note"
+            "value" : "Update Secure Note"
           }
         }
       }
@@ -6537,7 +6537,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add Secure note"
+            "value" : "Add Secure Note"
           }
         }
       }
@@ -6548,7 +6548,18 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Secure note"
+            "value" : "Edit Secure Note"
+          }
+        }
+      }
+    },
+    "secure_note_error_copy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error while copying the note"
           }
         }
       }
@@ -6604,6 +6615,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tap to view"
+          }
+        }
+      }
+    },
+    "secure_note_view_action_copy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy note"
           }
         }
       }
@@ -8782,6 +8804,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Password copied"
+          }
+        }
+      }
+    },
+    "toast_secure_note_copied" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note copied"
           }
         }
       }

@@ -29,7 +29,7 @@ public enum Config {
 
     public static let maxIdentifierLength: Int = 128
     public static let minMasterPasswordLength = 9
-    public static let iconDimension = 42
+    public static let iconDimension = 52
     public static let defaultIconLabel = ""
     public static let maxLabelLength = 2
     public static let scaleImageSize = CGSize(width: 128, height: 128)

@@ -11,7 +11,7 @@ struct PasswordListActionFormatStyle: FormatStyle {
     
     func format(_ action: PasswordListAction) -> String {
         switch action {
-        case .copyPassword:
+        case .copy:
             T.loginViewActionCopyPassword
         case .edit:
             T.loginEdit

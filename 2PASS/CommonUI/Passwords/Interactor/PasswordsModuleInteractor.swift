@@ -25,6 +25,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     func moveToTrash(_ itemID: ItemID)
     func copyUsername(_ itemID: ItemID) -> Bool
     func copyPassword(_ itemID: ItemID) -> Bool
+    func copySecureNote(_ itemID: ItemID) -> Bool
     
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
@@ -190,6 +191,17 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         case .failure:
             return false
         }
+    }
+    
+    func copySecureNote(_ itemID: ItemID) -> Bool {
+        guard let secureNoteItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asSecureNote,
+              let noteText = secureNoteItem.content.text,
+              let decryptedText = itemsInteractor.decrypt(noteText, isSecureField: true, protectionLevel: secureNoteItem.protectionLevel)
+        else {
+            return false
+        }
+        systemInteractor.copyToClipboard(decryptedText)
+        return true
     }
     
     func cachedImage(from url: URL) -> Data? {

@@ -9,8 +9,8 @@ import UIKit
 protocol PasswordsViewControlling: AnyObject {
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
-            PasswordSectionData,
-            PasswordCellData
+            ItemSectionData,
+            ItemCellData
         >
     )
     func showList()
@@ -21,8 +21,8 @@ protocol PasswordsViewControlling: AnyObject {
 extension PasswordsViewController: PasswordsViewControlling {
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
-            PasswordSectionData,
-            PasswordCellData
+            ItemSectionData,
+            ItemCellData
         >
     ) {
         dataSource?.apply(newSnapshot, animatingDifferences: true)

@@ -7,7 +7,7 @@
 import UIKit
 
 private struct Constants {
-    static let cellHeight: CGFloat = 82
+    static let gridCellHeight: CGFloat = 82
     static let tagBannerHeight: CGFloat = 52
     static let headerHeight: CGFloat = 28
 }
@@ -22,7 +22,7 @@ extension PasswordsViewController {
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .absolute(Constants.tagBannerHeight)
             )
-            
+
             let banner = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: bannerSize,
                 elementKind: SelectedTagBannerView.elementKind,
@@ -31,81 +31,76 @@ extension PasswordsViewController {
             banner.pinToVisibleBounds = true
             banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
             banner.zIndex = 2
-            
+
             config.boundarySupplementaryItems = [banner]
         }
-        
+
         let layout = UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionOffset, enviroment in
             self?.getLayout(sectionOffset: sectionOffset, enviroment: enviroment)
         }, configuration: config)
-                
+
         return layout
     }
 
-    func getCell(
-        for collectionView: UICollectionView,
-        indexPath: IndexPath,
-        item: PasswordCellData
-    ) -> UICollectionViewCell? {
-        let cell: PasswordsCellView? = collectionView.dequeueReusableCell(
-            withReuseIdentifier: PasswordsCellView.reuseIdentifier,
-            for: indexPath
-        ) as? PasswordsCellView
-        cell?.update(cellData: item)
-
-        if let url = item.iconType.iconURL, let cachedData = presenter.cachedImage(from: url) {
-            cell?.updateIcon(wirh: cachedData)
-        }
-
-        cell?.menuAction = { [weak self] action, itemID, selectedURI in
-            self?.presenter.onCellMenuAction(action, itemID: itemID, selectedURI: selectedURI)
-        }
-        return cell
-    }
-
     func getLayout(sectionOffset: Int, enviroment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? {
-        let minimumCellWidth: CGFloat = 310
-        let itemsInRow: Int = {
-            let availableWidth = enviroment.container.effectiveContentSize.width
-            var columns = Int(availableWidth / minimumCellWidth)
-            let layoutMultiplier = enviroment.traitCollection.preferredContentSizeCategory.layoutMultiplier
-            if columns > 1 && layoutMultiplier != 1.0 {
-                let newSize = minimumCellWidth * layoutMultiplier
-                columns = Int(availableWidth / newSize)
+        let section: NSCollectionLayoutSection
+        if traitCollection.horizontalSizeClass == .compact {
+            var listConfig = UICollectionLayoutListConfiguration(appearance: .plain)
+            listConfig.backgroundColor = Asset.mainBackgroundColor.color
+            listConfig.showsSeparators = false
+            
+            if presenter.hasSuggestedItems {
+                listConfig.headerMode = .supplementary
+            } else {
+                listConfig.headerMode = .none
             }
-            if columns < 1 {
-                columns = 1
-            }
-            return columns
-        }()
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: cellHeight()
-        )
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
-            heightDimension: cellHeight()
-        )
-
-        let group = NSCollectionLayoutGroup.horizontal(
-            layoutSize: groupSize,
-            repeatingSubitem: item,
-            count: itemsInRow
-        )
-
-        let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .zero
-
+            
+            section = NSCollectionLayoutSection.list(using: listConfig, layoutEnvironment: enviroment)
+            section.interGroupSpacing = Spacing.xs
+        } else {
+            let minimumCellWidth: CGFloat = 310
+            let itemsInRow: Int = {
+                let availableWidth = enviroment.container.effectiveContentSize.width
+                var columns = Int(availableWidth / minimumCellWidth)
+                let layoutMultiplier = enviroment.traitCollection.preferredContentSizeCategory.layoutMultiplier
+                if columns > 1 && layoutMultiplier != 1.0 {
+                    let newSize = minimumCellWidth * layoutMultiplier
+                    columns = Int(availableWidth / newSize)
+                }
+                if columns < 1 {
+                    columns = 1
+                }
+                return columns
+            }()
+            let itemSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: gridCellHeight()
+            )
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            
+            let groupSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
+                heightDimension: gridCellHeight()
+            )
+            
+            let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: groupSize,
+                repeatingSubitem: item,
+                count: itemsInRow
+            )
+            
+            section = NSCollectionLayoutSection(group: group)
+            section.contentInsets = .zero
+        }
+        
         if presenter.hasSuggestedItems {
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(Constants.headerHeight),
+                heightDimension: .absolute(Constants.headerHeight)
             )
-            
+
             let topPadding: CGFloat = sectionOffset == 0 ? (presenter.selectedFilterTag != nil ? 48 : 36) : 0
-            
+
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -115,15 +110,14 @@ extension PasswordsViewController {
             header.pinToVisibleBounds = true
             section.contentInsets.top = topPadding
             section.boundarySupplementaryItems = [header]
-            return section
         }
-        
+
         return section
     }
-
-    func cellHeight() -> NSCollectionLayoutDimension {
-        .absolute(Constants.cellHeight)
-    }
+    
+    func gridCellHeight() -> NSCollectionLayoutDimension {
+         .absolute(Constants.gridCellHeight)
+     }
 }
 
 private extension UIContentSizeCategory {

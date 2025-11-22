@@ -11,7 +11,7 @@ final class LabelRenderer: UIView {
     
     private let roundedRectangle: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 12
+        view.layer.cornerRadius = 16
         view.clipsToBounds = true
         return view
     }()

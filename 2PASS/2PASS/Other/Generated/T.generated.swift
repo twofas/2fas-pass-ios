@@ -36,8 +36,8 @@ internal enum T {
   internal static let requestModalFullSyncTitle = T.tr("Localizable", " request_modal_full_sync_title", fallback: "Vault Request")
   /// Remove Login
   internal static let requestModalRemoveLoginTitle = T.tr("Localizable", " request_modal_remove_login_title", fallback: "Remove Login")
-  /// Remove Secure note
-  internal static let requestModalRemoveSecureNoteTitle = T.tr("Localizable", " request_modal_remove_secure_note_title", fallback: "Remove Secure note")
+  /// Remove Secure Note
+  internal static let requestModalRemoveSecureNoteTitle = T.tr("Localizable", " request_modal_remove_secure_note_title", fallback: "Remove Secure Note")
   /// Select decryption method:
   internal static let restoreDecryptVaultOptionTitle = T.tr("Localizable", " restore_decrypt_vault_option_title", fallback: "Select decryption method:")
   /// 3. Multi-Layer Encryption
@@ -405,8 +405,8 @@ internal enum T {
   internal static let connectTitle = T.tr("Localizable", "connect_title", fallback: "Connect")
   /// Login
   internal static let contentTypeLoginName = T.tr("Localizable", "content_type_login_name", fallback: "Login")
-  /// Secure note
-  internal static let contentTypeSecureNoteName = T.tr("Localizable", "content_type_secure_note_name", fallback: "Secure note")
+  /// Secure Note
+  internal static let contentTypeSecureNoteName = T.tr("Localizable", "content_type_secure_note_name", fallback: "Secure Note")
   /// Cardholder
   internal static let creditCardCardholderLabel = T.tr("Localizable", "credit_card_cardholder_label", fallback: "Cardholder")
   /// CVV
@@ -1059,8 +1059,8 @@ internal enum T {
   internal static let requestModalNewItemTitle = T.tr("Localizable", "request_modal_new_item_title", fallback: "New Item")
   /// New Login
   internal static let requestModalNewLoginTitle = T.tr("Localizable", "request_modal_new_login_title", fallback: "New Login")
-  /// New Secure note
-  internal static let requestModalNewSecureNoteTitle = T.tr("Localizable", "request_modal_new_secure_note_title", fallback: "New Secure note")
+  /// New Secure Note
+  internal static let requestModalNewSecureNoteTitle = T.tr("Localizable", "request_modal_new_secure_note_title", fallback: "New Secure Note")
   /// Cancel
   internal static let requestModalPasswordRequestCtaNegative = T.tr("Localizable", "request_modal_password_request_cta_negative", fallback: "Cancel")
   /// Send
@@ -1077,10 +1077,10 @@ internal enum T {
   internal static let requestModalRemoveItemSubtitle = T.tr("Localizable", "request_modal_remove_item_subtitle", fallback: "Browser Extension asks you to remove the following Item from your Vault")
   /// Remove Item
   internal static let requestModalRemoveItemTitle = T.tr("Localizable", "request_modal_remove_item_title", fallback: "Remove Item")
-  /// Browser Extension requests this Secure note
-  internal static let requestModalSecureNoteRequestSubtitle = T.tr("Localizable", "request_modal_secure_note_request_subtitle", fallback: "Browser Extension requests this Secure note")
-  /// Secure note Request
-  internal static let requestModalSecureNoteRequestTitle = T.tr("Localizable", "request_modal_secure_note_request_title", fallback: "Secure note Request")
+  /// Browser Extension requests this Note
+  internal static let requestModalSecureNoteRequestSubtitle = T.tr("Localizable", "request_modal_secure_note_request_subtitle", fallback: "Browser Extension requests this Note")
+  /// Secure Note Request
+  internal static let requestModalSecureNoteRequestTitle = T.tr("Localizable", "request_modal_secure_note_request_title", fallback: "Secure Note Request")
   /// Request canceled!
   internal static let requestModalToastCancel = T.tr("Localizable", "request_modal_toast_cancel", fallback: "Request canceled!")
   /// Item added successfully!
@@ -1105,8 +1105,8 @@ internal enum T {
   internal static let requestModalUpdateItemTitle = T.tr("Localizable", "request_modal_update_item_title", fallback: "Update Item")
   /// Update Login
   internal static let requestModalUpdateLoginTitle = T.tr("Localizable", "request_modal_update_login_title", fallback: "Update Login")
-  /// Update Secure note
-  internal static let requestModalUpdateSecureNoteTitle = T.tr("Localizable", "request_modal_update_secure_note_title", fallback: "Update Secure note")
+  /// Update Secure Note
+  internal static let requestModalUpdateSecureNoteTitle = T.tr("Localizable", "request_modal_update_secure_note_title", fallback: "Update Secure Note")
   /// Below, you can see a list of 2FAS Pass Vaults. Select the one you want to restore.
   internal static let restoreCloudFilesDescription = T.tr("Localizable", "restore_cloud_files_description", fallback: "Below, you can see a list of 2FAS Pass Vaults. Select the one you want to restore.")
   /// No Vaults found in your cloud storage
@@ -1243,10 +1243,12 @@ internal enum T {
   internal static let scanDecryptionKitDescription = T.tr("Localizable", "scan_decryption_kit_description", fallback: "Point your camera at the QR code found in your Decryption Kit.")
   /// Scan the QR code
   internal static let scanDecryptionKitTitle = T.tr("Localizable", "scan_decryption_kit_title", fallback: "Scan the QR code")
-  /// Add Secure note
-  internal static let secureNoteAddTitle = T.tr("Localizable", "secure_note_add_title", fallback: "Add Secure note")
-  /// Edit Secure note
-  internal static let secureNoteEditTitle = T.tr("Localizable", "secure_note_edit_title", fallback: "Edit Secure note")
+  /// Add Secure Note
+  internal static let secureNoteAddTitle = T.tr("Localizable", "secure_note_add_title", fallback: "Add Secure Note")
+  /// Edit Secure Note
+  internal static let secureNoteEditTitle = T.tr("Localizable", "secure_note_edit_title", fallback: "Edit Secure Note")
+  /// Error while copying the note
+  internal static let secureNoteErrorCopy = T.tr("Localizable", "secure_note_error_copy", fallback: "Error while copying the note")
   /// Name
   internal static let secureNoteNameLabel = T.tr("Localizable", "secure_note_name_label", fallback: "Name")
   /// Note
@@ -1257,6 +1259,8 @@ internal enum T {
   internal static let secureNoteTextRevealEditAction = T.tr("Localizable", "secure_note_text_reveal_edit_action", fallback: "Tap to edit")
   /// Tap to view
   internal static let secureNoteTextRevealViewAction = T.tr("Localizable", "secure_note_text_reveal_view_action", fallback: "Tap to view")
+  /// Copy note
+  internal static let secureNoteViewActionCopy = T.tr("Localizable", "secure_note_view_action_copy", fallback: "Copy note")
   /// Enable Biometrics
   internal static let securityBiometricsEnableCta = T.tr("Localizable", "security_biometrics_enable_cta", fallback: "Enable Biometrics")
   /// Master Password is required to enable biometrics.
@@ -1675,6 +1679,8 @@ internal enum T {
   internal static let tagsTitle = T.tr("Localizable", "tags_title", fallback: "Manage Tags")
   /// Password copied
   internal static let toastPasswordCopied = T.tr("Localizable", "toast_password_copied", fallback: "Password copied")
+  /// Note copied
+  internal static let toastSecureNoteCopied = T.tr("Localizable", "toast_secure_note_copied", fallback: "Note copied")
   /// Username copied
   internal static let toastUsernameCopied = T.tr("Localizable", "toast_username copied", fallback: "Username copied")
   /// Passwords transferred
