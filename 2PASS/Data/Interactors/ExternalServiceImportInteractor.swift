@@ -1017,6 +1017,7 @@ private extension ExternalServiceImportInteractor {
             let notes = item.note?.nilIfEmpty
 
             var username: String?
+            var email: String?
             var password: Data?
             var urlString: String?
 
@@ -1026,6 +1027,8 @@ private extension ExternalServiceImportInteractor {
                 switch field.type {
                 case "username":
                     username = field.value?.nilIfEmpty
+                case "email":
+                    email = field.value?.nilIfEmpty
                 case "password":
                     if let passwordString = field.value?.nilIfEmpty {
                         password = encryptPassword(passwordString, for: protectionLevel)
@@ -1036,6 +1039,8 @@ private extension ExternalServiceImportInteractor {
                     break
                 }
             }
+            
+            username = username ?? email
 
             let uris: [PasswordURI]? = {
                 guard let urlString else { return nil }
