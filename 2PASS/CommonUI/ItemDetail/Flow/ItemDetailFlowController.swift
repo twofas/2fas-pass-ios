@@ -30,7 +30,7 @@ final class ItemDetailFlowController: FlowController {
         autoFillEnvironment: AutoFillEnvironment? = nil
     ) {
         let view = ItemDetailViewController()
-        view.hidesBottomBarWhenPushed = true
+        view.hidesBottomBarWhenPushed = navigationController.traitCollection.horizontalSizeClass == .compact
         let flowController = ItemDetailFlowController(viewController: view)
         flowController.parent = parent
         let interactor = ModuleInteractorFactory.shared.itemDetailInteractor()
