@@ -174,7 +174,8 @@ private extension ItemCellView {
         let configuration = UICellAccessory.CustomViewConfiguration(
             customView: menuButton,
             placement: .trailing(),
-            isHidden: isHidden
+            isHidden: isHidden,
+            reservedLayoutWidth: .custom(40)
         )
 
         return configuration
