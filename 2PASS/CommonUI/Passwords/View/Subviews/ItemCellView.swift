@@ -50,14 +50,12 @@ class ItemCellView: UICollectionViewListCell {
         
         iconRenderer.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(iconRenderer)
-
+        
         NSLayoutConstraint.activate([
             iconRenderer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Spacing.l),
             iconRenderer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             iconRenderer.widthAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
             iconRenderer.heightAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
-            
-            contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: Constants.minimalCellHeight)
         ])
     }
     

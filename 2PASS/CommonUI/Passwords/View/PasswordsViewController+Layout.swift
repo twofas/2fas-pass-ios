@@ -7,7 +7,7 @@
 import UIKit
 
 private struct Constants {
-    static let gridCellHeight: CGFloat = 82
+    static let gridCellHeight: CGFloat = 68
     static let tagBannerHeight: CGFloat = 52
     static let headerHeight: CGFloat = 28
 }
@@ -44,54 +44,41 @@ extension PasswordsViewController {
 
     func getLayout(sectionOffset: Int, enviroment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? {
         let section: NSCollectionLayoutSection
-        if traitCollection.horizontalSizeClass == .compact {
-            var listConfig = UICollectionLayoutListConfiguration(appearance: .plain)
-            listConfig.backgroundColor = Asset.mainBackgroundColor.color
-            listConfig.showsSeparators = false
-            
-            if presenter.hasSuggestedItems {
-                listConfig.headerMode = .supplementary
-            } else {
-                listConfig.headerMode = .none
+        let minimumCellWidth: CGFloat = 310
+        let itemsInRow: Int = {
+            let availableWidth = enviroment.container.effectiveContentSize.width
+            var columns = Int(availableWidth / minimumCellWidth)
+            let layoutMultiplier = enviroment.traitCollection.preferredContentSizeCategory.layoutMultiplier
+            if columns > 1 && layoutMultiplier != 1.0 {
+                let newSize = minimumCellWidth * layoutMultiplier
+                columns = Int(availableWidth / newSize)
             }
-            
-            section = NSCollectionLayoutSection.list(using: listConfig, layoutEnvironment: enviroment)
-            section.interGroupSpacing = Spacing.xs
-        } else {
-            let minimumCellWidth: CGFloat = 310
-            let itemsInRow: Int = {
-                let availableWidth = enviroment.container.effectiveContentSize.width
-                var columns = Int(availableWidth / minimumCellWidth)
-                let layoutMultiplier = enviroment.traitCollection.preferredContentSizeCategory.layoutMultiplier
-                if columns > 1 && layoutMultiplier != 1.0 {
-                    let newSize = minimumCellWidth * layoutMultiplier
-                    columns = Int(availableWidth / newSize)
-                }
-                if columns < 1 {
-                    columns = 1
-                }
-                return columns
-            }()
-            let itemSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1.0),
-                heightDimension: gridCellHeight()
-            )
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            
-            let groupSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
-                heightDimension: gridCellHeight()
-            )
-            
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: groupSize,
-                repeatingSubitem: item,
-                count: itemsInRow
-            )
-            
-            section = NSCollectionLayoutSection(group: group)
-            section.contentInsets = .zero
-        }
+            if columns < 1 {
+                columns = 1
+            }
+            return columns
+        }()
+                
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: gridCellHeight()
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
+            heightDimension: gridCellHeight()
+        )
+        
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: groupSize,
+            repeatingSubitem: item,
+            count: itemsInRow
+        )
+        
+        section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = .zero
+        section.interGroupSpacing = Spacing.xs
         
         if presenter.hasSuggestedItems {
             let headerSize = NSCollectionLayoutSize(
