@@ -2076,6 +2076,39 @@
         }
       }
     },
+    "content_type_filter_all_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All items"
+          }
+        }
+      }
+    },
+    "content_type_filter_login_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logins"
+          }
+        }
+      }
+    },
+    "content_type_filter_secure_note_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secure Notes"
+          }
+        }
+      }
+    },
     "content_type_login_name" : {
       "extractionState" : "manual",
       "localizations" : {

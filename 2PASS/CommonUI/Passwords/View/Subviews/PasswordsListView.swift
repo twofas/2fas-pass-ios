@@ -11,5 +11,6 @@ final class PasswordsListView: UICollectionView {
         backgroundColor = Asset.mainBackgroundColor.color
         
         register(SelectedTagBannerView.self, forSupplementaryViewOfKind: SelectedTagBannerView.elementKind, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
+        register(ItemContentTypeFilterPickerView.self, forSupplementaryViewOfKind: ItemContentTypeFilterPickerView.elementKind, withReuseIdentifier: ItemContentTypeFilterPickerView.reuseIdentifier)
     }
 }

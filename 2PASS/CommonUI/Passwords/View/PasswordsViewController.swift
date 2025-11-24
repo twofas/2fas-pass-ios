@@ -24,6 +24,7 @@ final class PasswordsViewController: UIViewController {
         
         view.backgroundColor = Asset.mainBackgroundColor.color
 
+        setupNavigationBar()
         setupPasswordsList()
         setupNavigationItems()
         setupDelegates()
@@ -116,7 +117,7 @@ private extension PasswordsViewController {
     func setupNavigationItems() {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
-        navigationItem.largeTitleDisplayMode = .always
+        navigationItem.largeTitleDisplayMode = .never
         title = T.homeTitle
         
         updateNavigationBarButtons()
@@ -124,6 +125,16 @@ private extension PasswordsViewController {
         if presenter.isAutoFillExtension {
             navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
         }
+    }
+    
+    func setupNavigationBar() {
+        guard let navigationBar = navigationController?.navigationBar else {
+            return
+        }
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
     }
     
     func setupDelegates() {
@@ -196,6 +207,19 @@ private extension PasswordsViewController {
 
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
             switch kind {
+            case ItemContentTypeFilterPickerView.elementKind:
+                let pickerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: ItemContentTypeFilterPickerView.reuseIdentifier,
+                    for: indexPath
+                ) as? ItemContentTypeFilterPickerView
+                
+                pickerView?.onChange = { [weak self] filter in
+                    self?.presenter.onSetContentTypeFilter(filter)
+                }
+
+                return pickerView
+                
             case SelectedTagBannerView.elementKind:
                 let bannerView = collectionView.dequeueReusableSupplementaryView(
                     ofKind: kind,

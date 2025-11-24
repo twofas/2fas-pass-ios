@@ -42,6 +42,12 @@ final class PasswordsPresenter {
         }
     }
     
+    private(set) var contentTypeFilter: ItemContentTypeFilter = .all {
+        didSet {
+            reload()
+        }
+    }
+    
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
 
@@ -105,6 +111,10 @@ extension PasswordsPresenter {
     func onSetSearchPhrase(_ searchPhrase: String?) {
         interactor.setSearchPhrase(searchPhrase)
         reload()
+    }
+    
+    func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
+        contentTypeFilter = filter
     }
 
     func onClearSearchPhrase() {
@@ -258,8 +268,8 @@ private extension PasswordsPresenter {
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, tag: selectedFilterTag)
-
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
+            
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             
             if list.suggested.isEmpty {
@@ -296,7 +306,7 @@ private extension PasswordsPresenter {
             view?.reloadData(newSnapshot: snapshot)
             
         } else {
-            let list = interactor.loadList(tag: selectedFilterTag)
+            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
             listData[0] = list
             let cells = list.compactMap(makeCellData(for:))
             let section = ItemSectionData()
@@ -311,7 +321,7 @@ private extension PasswordsPresenter {
         }
         
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil {
+            if interactor.isSearching || selectedFilterTag != nil || contentTypeFilter.contentType != nil {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()

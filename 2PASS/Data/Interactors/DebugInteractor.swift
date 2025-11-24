@@ -348,13 +348,14 @@ extension DebugInteractor: DebugInteracting {
             completion()
             return
         }
-        
+
         for i in 0..<count {
             let name = words.randomElement() ?? "Test\(i)"
             let username = "\(words.randomElement() ?? "one")\(i)@\(words.randomElement() ?? "second").com"
             let password = words.randomElement() ?? "SomePass123\(i)"
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
+
             try? loginItemInteractor.createLogin(
                 id: .init(),
                 metadata: .init(
@@ -364,7 +365,7 @@ extension DebugInteractor: DebugInteracting {
                                       ItemProtectionLevel.normal,
                                       ItemProtectionLevel.topSecret].randomElement() ?? .normal,
                     trashedStatus: .no,
-                    tagIds: nil
+                    tagIds: randomTagIds()
                 ),
                 name: name,
                 username: username,
@@ -395,6 +396,7 @@ extension DebugInteractor: DebugInteracting {
             let name = words.randomElement() ?? "Note\(i)"
             let text = Array(repeating: "", count: Int.random(in: 10..<150)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
+
             try? secureNoteItemInteractor.createSecureNote(
                 id: .init(),
                 metadata: .init(
@@ -404,7 +406,7 @@ extension DebugInteractor: DebugInteracting {
                                       ItemProtectionLevel.normal,
                                       ItemProtectionLevel.topSecret].randomElement() ?? .normal,
                     trashedStatus: .no,
-                    tagIds: nil
+                    tagIds: randomTagIds()
                 ),
                 name: name,
                 text: text
@@ -444,7 +446,7 @@ extension DebugInteractor: DebugInteracting {
                     modificationDate: date,
                     protectionLevel: protectionLevel,
                     trashedStatus: .no,
-                    tagIds: nil
+                    tagIds: randomTagIds()
                 ),
                 name: name,
                 contentType: .unknown("customType"),
@@ -487,6 +489,19 @@ extension DebugInteractor: DebugInteracting {
     }
 }
 private extension DebugInteractor {
+    
+    func randomTagIds() -> [ItemTagID]? {
+        let allTags = mainRepository.listTags(options: .all)
+        return randomTagIds(from: allTags)
+    }
+    
+    func randomTagIds(from allTags: [ItemTagData], maxCount: Int = 3) -> [ItemTagID]? {
+        guard !allTags.isEmpty else { return nil }
+        let tagCount = Int.random(in: 0...min(maxCount, allTags.count))
+        guard tagCount > 0 else { return nil }
+        return Array(allTags.shuffled().prefix(tagCount).map { $0.tagID })
+    }
+
     func randomDate() -> Date {
         let date = mainRepository.currentDate
         let calendar = Calendar.current

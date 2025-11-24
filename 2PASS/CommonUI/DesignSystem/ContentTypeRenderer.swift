@@ -52,12 +52,9 @@ final class ContentTypeRenderer: UIView {
             return
         }
         
-        backgroundColor = contentType.iconBackgroundColor
+        backgroundColor = contentType.secondaryColor
         iconImageView.image = contentType.icon
-
-        if let iconColor = contentType.iconColor {
-            iconImageView.tintColor = iconColor
-        }
+        iconImageView.tintColor = contentType.primaryColor
     }
 
     override var intrinsicContentSize: CGSize {

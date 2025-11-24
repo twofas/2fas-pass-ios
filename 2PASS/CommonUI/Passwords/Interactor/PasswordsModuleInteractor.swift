@@ -16,8 +16,8 @@ protocol PasswordsModuleInteracting: AnyObject {
     var currentSortType: SortType { get }
     func setSortType(_ sortType: SortType)
     
-    func loadList(tag: ItemTagData?) -> [ItemData]
-    func loadList(forServiceIdentifiers serviceURIs: [String], tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData])
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [ItemData]
+    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData])
 
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
@@ -91,19 +91,35 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         configInteractor.defaultPassswordListAction
     }
     
-    func loadList(tag: ItemTagData?) -> [ItemData] {
-        itemsInteractor.listItems(
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [ItemData] {
+        let contentTypes: [ItemContentType]? = {
+            if let contentType {
+                return [contentType]
+            } else {
+                return nil
+            }
+        }()
+        
+        return itemsInteractor.listItems(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
             vaultId: nil,
-            contentTypes: ItemContentType.allKnownTypes,
+            contentTypes: contentTypes,
             sortBy: currentSortType,
             trashed: .no
         )
     }
     
-    func loadList(forServiceIdentifiers serviceIdentifiers: [String], tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {
-        let allPasswords = itemsInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, vaultId: nil, contentTypes: nil, sortBy: currentSortType, trashed: .no)
+    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {
+        let contentTypes: [ItemContentType]? = {
+            if let contentType {
+                return [contentType]
+            } else {
+                return nil
+            }
+        }()
+        
+        let allPasswords = itemsInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, sortBy: currentSortType, trashed: .no)
         
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)

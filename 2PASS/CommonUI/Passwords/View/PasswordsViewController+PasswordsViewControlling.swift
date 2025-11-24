@@ -26,7 +26,6 @@ extension PasswordsViewController: PasswordsViewControlling {
         >
     ) {
         dataSource?.apply(newSnapshot, animatingDifferences: true)
-        updateNavigationBarButtons()
     }
     
     // MARK: - Empty screen or list

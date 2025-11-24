@@ -56,7 +56,7 @@ public struct IconRendererView: View {
             case .contentType(let contentType):
                 ContentTypeIconView(contentType: contentType)
             case .label(let title, let color):
-                labelView(title: title, color: color)
+                loginLabelView(title: title, color: color)
             case .placeholder:
                 RoundedRectangle(cornerRadius: Constants.iconCornerRadius)
                     .foregroundStyle(Asset.inactiveControlColor.swiftUIColor)
@@ -86,29 +86,23 @@ public struct IconRendererView: View {
         }
     }
     
-    private func labelView(title: String, color: UIColor?) -> some View {
-        Group {
-            if let color {
-                Color(color)
-            } else {
-                IconGradientView_SwiftUI()
+    private func loginLabelView(title: String, color: UIColor?) -> some View {
+        Color(color ?? ItemContentType.login.secondaryColor)
+            .overlay {
+                Text(verbatim: title)
+                    .fontWeight(.bold)
+                    .font(.body)
+                    .foregroundStyle(textColor(forLabelColor: color))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
-        }
-        .overlay {
-            Text(verbatim: title)
-                .fontWeight(.bold)
-                .font(.body)
-                .foregroundStyle(textColor(forLabelColor: color))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-        }
     }
     
     private func textColor(forLabelColor color: UIColor?) -> Color {
         if let color {
             return color.isDark ? .white : .black
         } else {
-            return .brand500
+            return Color(ItemContentType.login.primaryColor)
         }
     }
 }
@@ -144,24 +138,15 @@ private struct ContentTypeIconView: View {
     
     var body: some View {
         ZStack {
-            Color(uiColor: contentType.iconBackgroundColor)
+            Color(uiColor: contentType.secondaryColor)
             
             if let icon = contentType.icon {
                 Image(uiImage: icon)
                     .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
-                    .foregroundStyle(contentType.iconColor.map { Color(uiColor: $0) } ?? .black)
+                    .foregroundStyle(Color(contentType.primaryColor))
             }
         }
     }
-}
-
-private struct IconGradientView_SwiftUI: UIViewRepresentable {
-    
-    func makeUIView(context: Context) -> IconGradientView {
-        IconGradientView()
-    }
-    
-    func updateUIView(_ uiView: IconGradientView, context: Context) {}
 }
 
 private struct IconBackgroundBlurView: UIViewRepresentable {

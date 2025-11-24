@@ -48,7 +48,7 @@ private struct ContentTypeRow: View {
             HStack(spacing: Spacing.m) {
                 ZStack {
                     Circle()
-                        .fill(Color(option.iconBackgroundColor))
+                        .fill(Color(option.primaryColor))
                         .frame(width: 40, height: 40)
                     
                     if let icon = option.icon {
@@ -57,9 +57,7 @@ private struct ContentTypeRow: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 20, height: 20)
-                            .foregroundStyle(
-                                option.iconColor.map { Color(uiColor: $0) } ?? Asset.mainTextColor.swiftUIColor
-                            )
+                            .foregroundStyle(.white)
                     }
                 }
                 

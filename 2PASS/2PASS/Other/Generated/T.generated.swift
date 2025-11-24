@@ -403,6 +403,12 @@ internal enum T {
   internal static let connectSetupStepsHeader = T.tr("Localizable", "connect_setup_steps_header", fallback: "2FAS Pass Browser Extension setup")
   /// Connect
   internal static let connectTitle = T.tr("Localizable", "connect_title", fallback: "Connect")
+  /// All items
+  internal static let contentTypeFilterAllName = T.tr("Localizable", "content_type_filter_all_name", fallback: "All items")
+  /// Logins
+  internal static let contentTypeFilterLoginName = T.tr("Localizable", "content_type_filter_login_name", fallback: "Logins")
+  /// Secure Notes
+  internal static let contentTypeFilterSecureNoteName = T.tr("Localizable", "content_type_filter_secure_note_name", fallback: "Secure Notes")
   /// Login
   internal static let contentTypeLoginName = T.tr("Localizable", "content_type_login_name", fallback: "Login")
   /// Secure Note

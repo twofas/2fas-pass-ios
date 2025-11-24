@@ -6,7 +6,33 @@
 
 import UIKit
 
+private struct Constants {
+    static let contentTypePickerHideOffset: CGFloat = 50
+}
+
 extension PasswordsViewController: UICollectionViewDelegate {
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        
+        if let contentTypePicker = passwordsList?.visibleSupplementaryViews(ofKind: ItemContentTypeFilterPickerView.elementKind).first {
+            contentTypePicker.alpha = 1 - (offset / Constants.contentTypePickerHideOffset)
+            contentTypePicker.transform = .init(translationX: 0, y: offset < 0 ? offset : 0)
+        }
+    }
+    
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let topInset = -scrollView.adjustedContentInset.top
+        
+        switch targetContentOffset.pointee.y {
+        case (topInset..<topInset + Constants.contentTypePickerHideOffset/2):
+            targetContentOffset.pointee.y = topInset
+        case (topInset + Constants.contentTypePickerHideOffset/2..<topInset + Constants.contentTypePickerHideOffset):
+            targetContentOffset.pointee.y = topInset + Constants.contentTypePickerHideOffset
+        default:
+            break
+        }
+    }
     
     // MARK: - Select
     
