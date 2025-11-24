@@ -52,39 +52,41 @@ extension PasswordsViewController {
     func makeLayout() -> UICollectionViewCompositionalLayout {
         let config = UICollectionViewCompositionalLayoutConfiguration()
         
-        let pickerSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(Constants.contentTypePickerHeight)
-        )
-
-        let picker = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: pickerSize,
-            elementKind: ItemContentTypeFilterPickerView.elementKind,
-            alignment: .top,
-        )
-        picker.pinToVisibleBounds = false
-        picker.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        picker.zIndex = 3
-        
-        if presenter.selectedFilterTag != nil {
-            let bannerSize = NSCollectionLayoutSize(
+        if presenter.hasItems {
+            let pickerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(Constants.tagBannerHeight)
+                heightDimension: .absolute(Constants.contentTypePickerHeight)
             )
-
-            let banner = NSCollectionLayoutBoundarySupplementaryItem(
-                layoutSize: bannerSize,
-                elementKind: SelectedTagBannerView.elementKind,
+            
+            let picker = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: pickerSize,
+                elementKind: ItemContentTypeFilterPickerView.elementKind,
                 alignment: .top,
-//                absoluteOffset: CGPoint(x: 0, y: Constants.contentTypePickerHeight)
             )
-            picker.pinToVisibleBounds = true
-            banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
-            banner.zIndex = 2
-
-            config.boundarySupplementaryItems = [picker, banner]
-        } else {
-            config.boundarySupplementaryItems = [picker]
+            picker.pinToVisibleBounds = false
+            picker.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            picker.zIndex = 3
+            
+            if presenter.selectedFilterTag != nil {
+                let bannerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(Constants.tagBannerHeight)
+                )
+                
+                let banner = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: bannerSize,
+                    elementKind: SelectedTagBannerView.elementKind,
+                    alignment: .top,
+                    absoluteOffset: CGPoint(x: 0, y: Constants.contentTypePickerHeight + 32)
+                )
+                banner.pinToVisibleBounds = true
+                banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
+                banner.zIndex = 2
+                
+                config.boundarySupplementaryItems = [picker, banner]
+            } else {
+                config.boundarySupplementaryItems = [picker]
+            }
         }
 
         let layout = UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionOffset, enviroment in
@@ -129,7 +131,7 @@ extension PasswordsViewController {
         )
         
         section = NSCollectionLayoutSection(group: group)
-        section.contentInsets.top = presenter.selectedFilterTag != nil ? Constants.tagBannerHeight + 16 : 16
+        section.contentInsets.top = presenter.selectedFilterTag != nil ? Constants.tagBannerHeight + 32 : 24
         section.interGroupSpacing = Spacing.xs
         
         if presenter.hasSuggestedItems {

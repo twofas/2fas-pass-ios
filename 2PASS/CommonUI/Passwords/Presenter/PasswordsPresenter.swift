@@ -50,6 +50,7 @@ final class PasswordsPresenter {
     
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
+    private(set) var hasItems = false
 
     private let autoFillEnvironment: AutoFillEnvironment?
     private let iconsDataSource: RemoteImageCollectionDataSource<ItemCellData>
@@ -84,6 +85,9 @@ final class PasswordsPresenter {
 
 extension PasswordsPresenter {
     func viewWillAppear() {
+        hasItems = interactor.hasItems
+        view?.showContentTypeFilterPicker(interactor.hasItems)
+        
         reload()
     }
     
@@ -264,6 +268,12 @@ private extension PasswordsPresenter {
     func reload() {
         listData.removeAll()
         hasSuggestedItems = false
+        
+        let oldHasItems = hasItems
+        hasItems = interactor.hasItems
+        if oldHasItems != hasItems {
+            view?.showContentTypeFilterPicker(hasItems)
+        }
         
         let cellsCount: Int
         

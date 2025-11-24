@@ -91,6 +91,11 @@ final class PasswordsViewController: UIViewController {
             ]
         }
     }
+    
+    func reloadLayout() {
+        layout = makeLayout()
+        passwordsList?.setCollectionViewLayout(layout, animated: true)
+    }
 }
 
 private extension PasswordsViewController {
@@ -348,8 +353,7 @@ private extension PasswordsViewController {
         updateNavigationBarButtons()
         
         // Update the layout to show/hide the banner
-        layout = makeLayout()
-        passwordsList?.setCollectionViewLayout(layout, animated: true)
+        reloadLayout()
     }
 }
 

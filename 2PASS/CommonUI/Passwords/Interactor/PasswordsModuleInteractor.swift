@@ -9,6 +9,8 @@ import Data
 import Common
 
 protocol PasswordsModuleInteracting: AnyObject {
+    var hasItems: Bool { get }
+    
     var currentPlanItemsLimit: Int { get }
     var canAddPassword: Bool { get }
     var selectAction: PasswordListAction { get }
@@ -75,6 +77,10 @@ final class PasswordsModuleInteractor {
 }
 
 extension PasswordsModuleInteractor: PasswordsModuleInteracting {
+    
+    var hasItems: Bool {
+        itemsInteractor.hasItems
+    }
     
     var canAddPassword: Bool {
         guard let limit = paymentStatusInteractor.entitlements.itemsLimit else {

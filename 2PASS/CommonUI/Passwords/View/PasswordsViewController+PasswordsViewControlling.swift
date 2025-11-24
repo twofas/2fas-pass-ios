@@ -13,12 +13,18 @@ protocol PasswordsViewControlling: AnyObject {
             ItemCellData
         >
     )
+    func showContentTypeFilterPicker(_ flag: Bool)
     func showList()
     func showEmptyScreen()
     func showSearchEmptyScreen()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {
+    
+    func showContentTypeFilterPicker(_ flag: Bool) {
+        reloadLayout()
+    }
+    
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
             ItemSectionData,
