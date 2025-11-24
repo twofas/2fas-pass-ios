@@ -24,7 +24,12 @@ extension MainRepositoryImpl {
     }
     
     var defaultPassswordListAction: PasswordListAction {
-        userDefaultsDataSource.defaultPassswordListAction
+        let action = userDefaultsDataSource.defaultPassswordListAction
+        if action == .goToURI {
+            return .viewDetails
+        } else {
+            return action
+        }
     }
     
     func setDefaultPassswordListAction(_ action: PasswordListAction) {

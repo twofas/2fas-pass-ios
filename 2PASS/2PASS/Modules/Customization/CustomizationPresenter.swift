@@ -43,7 +43,7 @@ final class CustomizationPresenter {
 
     func onChangeDefaultAction() {
         destination = .defaultPasswordsListAction(picker: .init(
-            options: PasswordListAction.allCases,
+            options: [.viewDetails, .copy, .edit],
             selected: Binding(get: {
                 self.selectedDefaultAction
             }, set: { action in
