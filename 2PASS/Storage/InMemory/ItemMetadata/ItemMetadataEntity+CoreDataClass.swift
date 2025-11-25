@@ -16,6 +16,7 @@ class ItemMetadataEntity: NSManagedObject {
         switch contentType {
         case .login: LoginEntity.self
         case .secureNote: SecureNoteEntity.self
+        case .card: CardEntity.self
         case .unknown: RawEntity.self
         }
     }

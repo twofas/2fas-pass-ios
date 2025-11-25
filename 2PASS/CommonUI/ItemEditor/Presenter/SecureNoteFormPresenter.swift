@@ -36,7 +36,9 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
     init(interactor: ItemEditorModuleInteracting, flowController: ItemEditorFlowControlling, initialData: SecureNoteItemData? = nil, changeRequest: SecureNoteDataChangeRequest? = nil) {
         if let initialData {
             if initialData.protectionLevel == .normal || changeRequest != nil {
-                let text = interactor.decryptNote(in: initialData) ?? ""
+                let text = initialData.content.text.flatMap {
+                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                } ?? ""
                 self.text = changeRequest?.text ?? text
                 self.initialText = text
                 self.isReveal = true
@@ -47,7 +49,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
             self.text = changeRequest?.text ?? ""
             self.isReveal = true
         }
-        
+
         super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
     }
     
@@ -69,7 +71,8 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     private func decryptNote() -> String {
-        guard let initialSecureNoteItem  else { return "" }
-        return interactor.decryptNote(in: initialSecureNoteItem) ?? ""
+        guard let initialSecureNoteItem,
+              let encrypted = initialSecureNoteItem.content.text else { return "" }
+        return interactor.decryptSecureField(encrypted, protectionLevel: initialSecureNoteItem.protectionLevel) ?? ""
     }
 }

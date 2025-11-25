@@ -24,6 +24,8 @@ struct ItemDetailView: View {
                         LoginDetailFormView(presenter: formPresenter)
                     case .secureNote(let formPresenter):
                         SecureNoteDetailFormView(presenter: formPresenter)
+                    case .card(let formPresenter):
+                        CardDetailFormView(presenter: formPresenter)
                     default:
                         EmptyView()
                     }
@@ -142,29 +144,52 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         text: nil
                     )
                 ))
+        case .card:
+                .card(CardItemData(
+                    id: itemID,
+                    vaultId: UUID(),
+                    metadata: .init(
+                        creationDate: Date(),
+                        modificationDate: Date(),
+                        protectionLevel: .topSecret,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: "Preview Card",
+                    content: .init(
+                        name: "Preview Card",
+                        cardHolder: "John Doe",
+                        cardIssuer: "Visa",
+                        cardNumber: nil,
+                        cardNumberMask: "1234",
+                        expirationDate: nil,
+                        securityCode: nil,
+                        notes: "Notes"
+                    )
+                ))
         case .unknown:
             fatalError()
         }
     }
-    
+
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
+        String(data: data, encoding: .utf8)
+    }
+
     func decryptPassword(for itemID: ItemID) -> String? {
         "Password"
     }
-    
-    func decryptNote(in note: SecureNoteItemData) -> String? {
-        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
-    }
-    
+
     func copy(_ str: String) {}
-    
+
     func fetchIconImage(from url: URL) async throws -> Data {
         Data()
     }
-    
+
     func normalizedURL(for uri: PasswordURI) -> URL? {
         nil
     }
-    
+
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         []
     }

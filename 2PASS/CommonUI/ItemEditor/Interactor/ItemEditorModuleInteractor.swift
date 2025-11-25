@@ -64,9 +64,20 @@ protocol ItemEditorModuleInteracting: AnyObject {
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
-    func decryptPassword(in login: LoginItemData) -> String?
-    func decryptNote(in note: SecureNoteItemData) -> String?
-    
+    func saveCard(
+        name: String?,
+        cardHolder: String?,
+        cardNumber: String?,
+        expirationDate: String?,
+        securityCode: String?,
+        notes: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult
+
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
+    func detectCardIssuer(from cardNumber: String?) -> CardIssuer?
+
     func mostUsedUsernames() -> [String]
     func normalizeURLString(_ str: String) -> String?
     func extractDomain(from urlString: String) -> String?
@@ -82,6 +93,7 @@ final class ItemEditorModuleInteractor {
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
     private let secureNoteItemInteractor: SecureNoteItemInteracting
+    private let cardItemInteractor: CardItemInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
@@ -99,6 +111,7 @@ final class ItemEditorModuleInteractor {
         itemsInteractor: ItemsInteracting,
         loginItemInteractor: LoginItemInteracting,
         secureNoteItemInteractor: SecureNoteItemInteracting,
+        cardItemInteractor: CardItemInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
@@ -114,6 +127,7 @@ final class ItemEditorModuleInteractor {
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor
         self.secureNoteItemInteractor = secureNoteItemInteractor
+        self.cardItemInteractor = cardItemInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -147,20 +161,14 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         return item
     }
     
-    func decryptPassword(in login: LoginItemData) -> String? {
-        guard let encryptedPassword = login.password else {
-            return nil
-        }
-        return itemsInteractor.decrypt(encryptedPassword, isSecureField: true, protectionLevel: login.protectionLevel)
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
+        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
     }
 
-    func decryptNote(in note: SecureNoteItemData) -> String? {
-        guard let encyptedText = note.content.text else {
-            return nil
-        }
-        return itemsInteractor.decrypt(encyptedText, isSecureField: true, protectionLevel: note.protectionLevel)
+    func detectCardIssuer(from cardNumber: String?) -> CardIssuer? {
+        cardItemInteractor.detectCardIssuer(from: cardNumber)
     }
-    
+
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {
         tagInteractor.getTags(by: tagIds).sorted(by: { $0.name < $1.name })
     }
@@ -301,6 +309,75 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
                 )
 
                 Log("ItemEditorModuleInteractor - success while adding secure note. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(itemID))
+
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        }
+    }
+
+    func saveCard(
+        name: String?,
+        cardHolder: String?,
+        cardNumber: String?,
+        expirationDate: String?,
+        securityCode: String?,
+        notes: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult {
+        let date = currentDateInteractor.currentDate
+        if let current = getEditItem()?.asCard {
+            do {
+                try cardItemInteractor.updateCard(
+                    id: current.id,
+                    metadata: .init(
+                        creationDate: current.creationDate,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds ?? current.tagIds
+                    ),
+                    name: name ?? "",
+                    cardHolder: cardHolder,
+                    cardNumber: cardNumber,
+                    expirationDate: expirationDate,
+                    securityCode: securityCode,
+                    notes: notes
+                )
+
+                Log("ItemEditorModuleInteractor - success while updating card. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(current.id))
+
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        } else {
+            let itemID = UUID()
+            do {
+                try cardItemInteractor.createCard(
+                    id: itemID,
+                    metadata: .init(
+                        creationDate: date,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds
+                    ),
+                    name: name ?? "",
+                    cardHolder: cardHolder,
+                    cardNumber: cardNumber,
+                    expirationDate: expirationDate,
+                    securityCode: securityCode,
+                    notes: notes
+                )
+
+                Log("ItemEditorModuleInteractor - success while adding card. Saving storage")
                 didSaveItem()
 
                 return .success(.saved(itemID))

@@ -30,8 +30,9 @@ final class ItemDetailPresenter {
     enum Form {
         case login(LoginDetailFormPresenter)
         case secureNote(SecureNoteFormPresenter)
+        case card(CardDetailFormPresenter)
     }
-    
+
     private(set) var form: Form?
 
     private var formPresenter: ItemDetailFormPresenter? {
@@ -39,6 +40,8 @@ final class ItemDetailPresenter {
         case .login(let presenter):
             return presenter
         case .secureNote(let presenter):
+            return presenter
+        case .card(let presenter):
             return presenter
         case nil:
             return nil
@@ -90,6 +93,10 @@ extension ItemDetailPresenter {
         case .secureNote(let item):
             form = .secureNote(
                 SecureNoteFormPresenter(item: item, configuration: configuration)
+            )
+        case .card(let item):
+            form = .card(
+                CardDetailFormPresenter(item: item, configuration: configuration)
             )
         case .raw:
             fatalError("Unsupported content type")

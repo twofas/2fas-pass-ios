@@ -61,6 +61,13 @@ public final class InteractorFactory {
         )
     }
 
+    public func cardItemInteractor() -> CardItemInteracting {
+        CardItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
     public func systemInteractor() -> SystemInteracting {
         SystemInteractor(mainRepository: MainRepositoryImpl.shared)
     }

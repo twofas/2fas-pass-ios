@@ -85,8 +85,8 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
             username = changeRequest?.username?.value ?? initialData.username ?? ""
 
             let decryptedPassword: String
-            if initialData.password != nil {
-                decryptedPassword = interactor.decryptPassword(in: initialData) ?? ""
+            if let encrypted = initialData.password {
+                decryptedPassword = interactor.decryptSecureField(encrypted, protectionLevel: initialData.protectionLevel) ?? ""
             } else {
                 decryptedPassword = ""
             }

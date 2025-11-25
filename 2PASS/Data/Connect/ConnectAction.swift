@@ -104,9 +104,12 @@ extension ConnectSchemaV2 {
     typealias ConnectActionUpdateLoginRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateLogin>>
     typealias ConnectActionAddSecureNoteRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.AddSecureNote>>
     typealias ConnectActionUpdateSecureNoteRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateSecureNote>>
+    typealias ConnectActionAddCardRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.Card>>
+    typealias ConnectActionUpdateCardRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.Card>>
 
     enum SupportedFeatures: String {
         case secureNote = "items.secureNote"
+        case card = "items.card"
     }
     
     struct ConnectActioRequestType: Decodable {
@@ -210,6 +213,24 @@ extension ConnectSchemaV2 {
 
             let name: String?
             let text: Data?
+        }
+
+        struct Card: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case name
+                case cardHolder
+                case cardNumber = "s_cardNumber"
+                case expirationDate = "s_expirationDate"
+                case securityCode = "s_securityCode"
+                case notes
+            }
+
+            let name: String?
+            let cardHolder: String?
+            let cardNumber: Data?
+            let expirationDate: Data?
+            let securityCode: Data?
+            let notes: String?
         }
     }
     

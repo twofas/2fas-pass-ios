@@ -209,6 +209,38 @@ internal enum T {
   internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app is using the camera. If closing other apps doesn't help, please reboot the device.")
   /// Error while scanning the QR Code
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning the QR Code")
+  /// Add Card
+  internal static let cardAddTitle = T.tr("Localizable", "card_add_title", fallback: "Add Card")
+  /// Card Details
+  internal static let cardDetailsHeader = T.tr("Localizable", "card_details_header", fallback: "Card Details")
+  /// Edit Card
+  internal static let cardEditTitle = T.tr("Localizable", "card_edit_title", fallback: "Edit Card")
+  /// Error while copying card number
+  internal static let cardErrorCopyNumber = T.tr("Localizable", "card_error_copy_number", fallback: "Error while copying card number")
+  /// Error while copying security code
+  internal static let cardErrorCopySecurityCode = T.tr("Localizable", "card_error_copy_security_code", fallback: "Error while copying security code")
+  /// Expiration Date
+  internal static let cardExpirationDateLabel = T.tr("Localizable", "card_expiration_date_label", fallback: "Expiration Date")
+  /// MM/YY
+  internal static let cardExpirationDatePlaceholder = T.tr("Localizable", "card_expiration_date_placeholder", fallback: "MM/YY")
+  /// Cardholder
+  internal static let cardHolderLabel = T.tr("Localizable", "card_holder_label", fallback: "Cardholder")
+  /// Name
+  internal static let cardNameLabel = T.tr("Localizable", "card_name_label", fallback: "Name")
+  /// Notes
+  internal static let cardNotesLabel = T.tr("Localizable", "card_notes_label", fallback: "Notes")
+  /// Card Number
+  internal static let cardNumberLabel = T.tr("Localizable", "card_number_label", fallback: "Card Number")
+  /// Security Code
+  internal static let cardSecurityCodeLabel = T.tr("Localizable", "card_security_code_label", fallback: "Security Code")
+  /// Copy cardholder
+  internal static let cardViewActionCopyCardHolder = T.tr("Localizable", "card_view_action_copy_card_holder", fallback: "Copy cardholder")
+  /// Copy card number
+  internal static let cardViewActionCopyCardNumber = T.tr("Localizable", "card_view_action_copy_card_number", fallback: "Copy card number")
+  /// Copy expiration date
+  internal static let cardViewActionCopyExpirationDate = T.tr("Localizable", "card_view_action_copy_expiration_date", fallback: "Copy expiration date")
+  /// Copy security code
+  internal static let cardViewActionCopySecurityCode = T.tr("Localizable", "card_view_action_copy_security_code", fallback: "Copy security code")
   /// Update app
   internal static let cloudSyncInvalidSchemaErrorCta = T.tr("Localizable", "cloud_sync_invalid_schema_error_cta", fallback: "Update app")
   /// Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.
@@ -403,8 +435,12 @@ internal enum T {
   internal static let connectSetupStepsHeader = T.tr("Localizable", "connect_setup_steps_header", fallback: "2FAS Pass Browser Extension setup")
   /// Connect
   internal static let connectTitle = T.tr("Localizable", "connect_title", fallback: "Connect")
+  /// Card
+  internal static let contentTypeCardName = T.tr("Localizable", "content_type_card_name", fallback: "Card")
   /// All items
   internal static let contentTypeFilterAllName = T.tr("Localizable", "content_type_filter_all_name", fallback: "All items")
+  /// Cards
+  internal static let contentTypeFilterCardName = T.tr("Localizable", "content_type_filter_card_name", fallback: "Cards")
   /// Logins
   internal static let contentTypeFilterLoginName = T.tr("Localizable", "content_type_filter_login_name", fallback: "Logins")
   /// Secure Notes
@@ -1023,6 +1059,10 @@ internal enum T {
   internal static let recoveryKitTitle = T.tr("Localizable", "recovery_kit_title", fallback: "2FAS Pass Decryption Kit")
   /// Write down the Master Password:
   internal static let recoveryKitWriteDown = T.tr("Localizable", "recovery_kit_write_down", fallback: "Write down the Master Password:")
+  /// Browser Extension requests this Card
+  internal static let requestModalCardRequestSubtitle = T.tr("Localizable", "request_modal_card_request_subtitle", fallback: "Browser Extension requests this Card")
+  /// Card Request
+  internal static let requestModalCardRequestTitle = T.tr("Localizable", "request_modal_card_request_title", fallback: "Card Request")
   /// Close
   internal static let requestModalErrorGenericCta = T.tr("Localizable", "request_modal_error_generic_cta", fallback: "Close")
   /// Something went wrong. Please try again.
@@ -1055,6 +1095,8 @@ internal enum T {
   internal static let requestModalHeaderTitle = T.tr("Localizable", "request_modal_header_title", fallback: "Request from 2FAS Pass")
   /// Connecting…
   internal static let requestModalLoading = T.tr("Localizable", "request_modal_loading", fallback: "Connecting…")
+  /// New Card
+  internal static let requestModalNewCardTitle = T.tr("Localizable", "request_modal_new_card_title", fallback: "New Card")
   /// Cancel
   internal static let requestModalNewItemCtaNegative = T.tr("Localizable", "request_modal_new_item_cta_negative", fallback: "Cancel")
   /// Continue
@@ -1075,6 +1117,8 @@ internal enum T {
   internal static let requestModalPasswordRequestSubtitle = T.tr("Localizable", "request_modal_password_request_subtitle", fallback: "Browser extension requests this Item's password")
   /// Password Request
   internal static let requestModalPasswordRequestTitle = T.tr("Localizable", "request_modal_password_request_title", fallback: "Password Request")
+  /// Remove Card
+  internal static let requestModalRemoveCardTitle = T.tr("Localizable", "request_modal_remove_card_title", fallback: "Remove Card")
   /// Cancel
   internal static let requestModalRemoveItemCtaNegative = T.tr("Localizable", "request_modal_remove_item_cta_negative", fallback: "Cancel")
   /// Remove
@@ -1091,6 +1135,8 @@ internal enum T {
   internal static let requestModalToastCancel = T.tr("Localizable", "request_modal_toast_cancel", fallback: "Request canceled!")
   /// Item added successfully!
   internal static let requestModalToastSuccessAddLogin = T.tr("Localizable", "request_modal_toast_success_add_login", fallback: "Item added successfully!")
+  /// Card sent successfully
+  internal static let requestModalToastSuccessCardRequest = T.tr("Localizable", "request_modal_toast_success_card_request", fallback: "Card sent successfully")
   /// Item deleted successfully!
   internal static let requestModalToastSuccessDeleteLogin = T.tr("Localizable", "request_modal_toast_success_delete_login", fallback: "Item deleted successfully!")
   /// Synced successfully
@@ -1101,6 +1147,8 @@ internal enum T {
   internal static let requestModalToastSuccessSecureNoteRequest = T.tr("Localizable", "request_modal_toast_success_secure_note_request", fallback: "Note sent successfully")
   /// Item updated successfully!
   internal static let requestModalToastSuccessUpdateLogin = T.tr("Localizable", "request_modal_toast_success_update_login", fallback: "Item updated successfully!")
+  /// Update Card
+  internal static let requestModalUpdateCardTitle = T.tr("Localizable", "request_modal_update_card_title", fallback: "Update Card")
   /// Cancel
   internal static let requestModalUpdateItemCtaNegative = T.tr("Localizable", "request_modal_update_item_cta_negative", fallback: "Cancel")
   /// Continue
@@ -1683,6 +1731,10 @@ internal enum T {
   internal static let tagsEmptyList = T.tr("Localizable", "tags_empty_list", fallback: "You don't have any Tags yet")
   /// Manage Tags
   internal static let tagsTitle = T.tr("Localizable", "tags_title", fallback: "Manage Tags")
+  /// Card number copied
+  internal static let toastCardNumberCopied = T.tr("Localizable", "toast_card_number_copied", fallback: "Card number copied")
+  /// Security code copied
+  internal static let toastCardSecurityCodeCopied = T.tr("Localizable", "toast_card_security_code_copied", fallback: "Security code copied")
   /// Password copied
   internal static let toastPasswordCopied = T.tr("Localizable", "toast_password_copied", fallback: "Password copied")
   /// Note copied

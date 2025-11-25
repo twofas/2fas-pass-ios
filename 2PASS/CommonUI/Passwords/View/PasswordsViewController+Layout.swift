@@ -22,7 +22,7 @@ class ItemContentTypeFilterPickerView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        let filters: [ItemContentTypeFilter] = [.all, .contentType(.login), .contentType(.secureNote)]
+        let filters = ItemContentTypeFilter.allKnown
 
         let categoryPicker = UIHostingController(rootView: ItemContentTypePickerUIKitWrapper(
             initialFilter: filters[0],

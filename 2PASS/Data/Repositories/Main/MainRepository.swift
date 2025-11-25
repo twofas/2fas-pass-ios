@@ -322,6 +322,24 @@ protocol MainRepository: AnyObject {
         text: Data?
     )
 
+    func createCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    )
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -371,7 +389,24 @@ protocol MainRepository: AnyObject {
         name: String?,
         text: Data?
     )
-    
+
+    func updateCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    )
+
     func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func getItemEntity(

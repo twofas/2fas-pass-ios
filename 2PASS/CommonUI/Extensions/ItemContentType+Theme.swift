@@ -12,12 +12,14 @@ extension ItemContentType {
     public var icon: UIImage? {
         let image: UIImage? = {
             let configuration = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
-            
+
             switch self {
             case .login, .unknown:
                 return UIImage(systemName: "person.crop.circle", withConfiguration: configuration)
             case .secureNote:
                 return UIImage(systemName: "note.text", withConfiguration: configuration)
+            case .card:
+                return UIImage(systemName: "creditcard", withConfiguration: configuration)
             }
         }()
         return image?.withRenderingMode(.alwaysTemplate)
@@ -29,6 +31,8 @@ extension ItemContentType {
             UIColor(hexString: "#0088FF")!
         case .secureNote:
             UIColor(hexString: "#FF8D28")!
+        case .card:
+            UIColor(hexString: "#34C759")!
         case .unknown:
             .black
         }
@@ -45,6 +49,11 @@ extension ItemContentType {
             UIColor(
                 light: UIColor(hexString: "#FFF1E4")!,
                 dark: UIColor(hexString: "#482709")!
+            )
+        case .card:
+            UIColor(
+                light: UIColor(hexString: "#D6FFE0")!,
+                dark: UIColor(hexString: "#043B12")!
             )
         case .unknown:
             .black.withAlphaComponent(0.5)

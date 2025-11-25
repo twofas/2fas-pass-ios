@@ -122,7 +122,7 @@ private struct IconView: View {
     var body: some View {
         ZStack {
             IconBackgroundBlurView(icon: icon)
-            
+
             Image(uiImage: icon)
                 .resizable()
                 .scaledToFit()

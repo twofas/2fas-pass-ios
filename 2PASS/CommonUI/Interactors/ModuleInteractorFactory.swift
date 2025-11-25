@@ -30,6 +30,7 @@ public final class ModuleInteractorFactory {
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),
             secureNoteItemInteractor: InteractorFactory.shared.secureNoteInteractor(),
+            cardItemInteractor: InteractorFactory.shared.cardItemInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),

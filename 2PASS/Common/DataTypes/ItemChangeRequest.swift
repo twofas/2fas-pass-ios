@@ -18,18 +18,20 @@ public enum ItemChangeRequest: Hashable {
     case updateLogin(LoginItemData, LoginDataChangeRequest)
     case addSecureNote(SecureNoteDataChangeRequest)
     case updateSecureNote(SecureNoteItemData, SecureNoteDataChangeRequest)
+    case addCard(CardDataChangeRequest)
+    case updateCard(CardItemData, CardDataChangeRequest)
 
     public var isAdd: Bool {
         switch self {
-        case .addLogin, .addSecureNote: true
-        case .updateLogin, .updateSecureNote: false
+        case .addLogin, .addSecureNote, .addCard: true
+        case .updateLogin, .updateSecureNote, .updateCard: false
         }
     }
 
     public var isUpdate: Bool {
         switch self {
-        case .addLogin, .addSecureNote: false
-        case .updateLogin, .updateSecureNote: true
+        case .addLogin, .addSecureNote, .addCard: false
+        case .updateLogin, .updateSecureNote, .updateCard: true
         }
     }
 
@@ -39,6 +41,8 @@ public enum ItemChangeRequest: Hashable {
             return .login
         case .addSecureNote, .updateSecureNote:
             return .secureNote
+        case .addCard, .updateCard:
+            return .card
         }
     }
 }

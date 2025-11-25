@@ -65,7 +65,7 @@ extension ConnectInteractor {
 
         let contentType = ItemContentType(rawValue: actionRequestData.data.contentType)
 
-        let encryptionNewPasswordKey = HKDF<SHA256>.deriveKey(
+        let encryptionNewItemKey = HKDF<SHA256>.deriveKey(
             inputKeyMaterial: keys.sessionKey,
             salt: keys.hkdfSalt,
             info: Keys.Connect.newItem.data(using: .utf8)!,
@@ -81,7 +81,7 @@ extension ConnectInteractor {
             }
 
             var newPassword: String?
-            if let newPasswordDataEnc = loginContent.data.content.password.value, let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewPasswordKey) {
+            if let newPasswordDataEnc = loginContent.data.content.password.value, let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewItemKey) {
                 newPassword = String(data: newPasswordData, encoding: .utf8)
             }
 
@@ -101,7 +101,7 @@ extension ConnectInteractor {
             }
 
             var newText: String?
-            if let newTextData = mainRepository.decrypt(secureNoteContent.data.content.text, key: encryptionNewPasswordKey) {
+            if let newTextData = mainRepository.decrypt(secureNoteContent.data.content.text, key: encryptionNewItemKey) {
                 newText = String(data: newTextData, encoding: .utf8)
             }
 
@@ -109,6 +109,39 @@ extension ConnectInteractor {
                 SecureNoteDataChangeRequest(
                     name: secureNoteContent.data.content.name,
                     text: newText
+                )
+            )
+        case .card:
+            guard let cardContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddCardRequest.self, from: data) else {
+                throw ConnectError.badData
+            }
+
+            var newCardNumber: String?
+            if let cardNumberDataEnc = cardContent.data.content.cardNumber,
+               let cardNumberData = mainRepository.decrypt(cardNumberDataEnc, key: encryptionNewItemKey) {
+                newCardNumber = String(data: cardNumberData, encoding: .utf8)
+            }
+
+            var newExpirationDate: String?
+            if let expirationDateDataEnc = cardContent.data.content.expirationDate,
+               let expirationDateData = mainRepository.decrypt(expirationDateDataEnc, key: encryptionNewItemKey) {
+                newExpirationDate = String(data: expirationDateData, encoding: .utf8)
+            }
+
+            var newSecurityCode: String?
+            if let securityCodeDataEnc = cardContent.data.content.securityCode,
+               let securityCodeData = mainRepository.decrypt(securityCodeDataEnc, key: encryptionNewItemKey) {
+                newSecurityCode = String(data: securityCodeData, encoding: .utf8)
+            }
+
+            itemChangeRequest = .addCard(
+                CardDataChangeRequest(
+                    name: cardContent.data.content.name,
+                    cardHolder: cardContent.data.content.cardHolder,
+                    cardNumber: newCardNumber,
+                    expirationDate: newExpirationDate,
+                    securityCode: newSecurityCode,
+                    notes: cardContent.data.content.notes
                 )
             )
         case .unknown(let contentType):
@@ -272,6 +305,67 @@ extension ConnectInteractor {
                 text: newText,
                 protectionLevel: newProtectionLevel,
                 tags: secureNoteRequest.data.tags
+            ))
+        case .card:
+            guard let cardRequest = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionUpdateCardRequest.self, from: data) else {
+                throw ConnectError.badData
+            }
+
+            guard let cardItem = item.asCard else {
+                throw ConnectError.badData
+            }
+
+            let newCardNumber: String?
+            if let cardNumberDataEnc = cardRequest.data.content.cardNumber {
+                if cardNumberDataEnc.isEmpty {
+                    newCardNumber = ""
+                } else if let encryptionKey = encryptionPasswordKey(cardItem.protectionLevel),
+                          let cardNumberData = mainRepository.decrypt(cardNumberDataEnc, key: encryptionKey) {
+                    newCardNumber = String(data: cardNumberData, encoding: .utf8)
+                } else {
+                    newCardNumber = nil
+                }
+            } else {
+                newCardNumber = nil
+            }
+
+            let newExpirationDate: String?
+            if let expirationDateDataEnc = cardRequest.data.content.expirationDate {
+                if expirationDateDataEnc.isEmpty {
+                    newExpirationDate = ""
+                } else if let encryptionKey = encryptionPasswordKey(cardItem.protectionLevel),
+                          let expirationDateData = mainRepository.decrypt(expirationDateDataEnc, key: encryptionKey) {
+                    newExpirationDate = String(data: expirationDateData, encoding: .utf8)
+                } else {
+                    newExpirationDate = nil
+                }
+            } else {
+                newExpirationDate = nil
+            }
+
+            let newSecurityCode: String?
+            if let securityCodeDataEnc = cardRequest.data.content.securityCode {
+                if securityCodeDataEnc.isEmpty {
+                    newSecurityCode = ""
+                } else if let encryptionKey = encryptionPasswordKey(cardItem.protectionLevel),
+                          let securityCodeData = mainRepository.decrypt(securityCodeDataEnc, key: encryptionKey) {
+                    newSecurityCode = String(data: securityCodeData, encoding: .utf8)
+                } else {
+                    newSecurityCode = nil
+                }
+            } else {
+                newSecurityCode = nil
+            }
+
+            itemChangeRequest = .updateCard(cardItem, CardDataChangeRequest(
+                name: cardRequest.data.content.name,
+                cardHolder: cardRequest.data.content.cardHolder,
+                cardNumber: newCardNumber,
+                expirationDate: newExpirationDate,
+                securityCode: newSecurityCode,
+                notes: cardRequest.data.content.notes,
+                protectionLevel: newProtectionLevel,
+                tags: cardRequest.data.tags
             ))
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)

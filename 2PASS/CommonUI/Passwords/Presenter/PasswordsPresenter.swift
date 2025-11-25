@@ -155,7 +155,13 @@ extension PasswordsPresenter {
             
         case .copy(.secureNoteText):
             copySecureNote(id: itemID)
-            
+
+        case .copy(.cardNumber):
+            copyCardNumber(id: itemID)
+
+        case .copy(.cardSecurityCode):
+            copyCardSecurityCode(id: itemID)
+
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
         }
@@ -183,6 +189,8 @@ extension PasswordsPresenter {
                 copyPassword(id: itemData.id)
             case .secureNote:
                 copySecureNote(id: itemData.id)
+            case .card:
+                copyCardNumber(id: itemData.id)
             case .raw:
                 break
             }
@@ -260,7 +268,29 @@ private extension PasswordsPresenter {
             )
         }
     }
-    
+
+    func copyCardNumber(id: ItemID) {
+        if interactor.copyCardNumber(id) {
+            toastPresenter.presentCardNumberCopied()
+        } else {
+            toastPresenter.present(
+                T.cardErrorCopyNumber,
+                style: .failure
+            )
+        }
+    }
+
+    func copyCardSecurityCode(id: ItemID) {
+        if interactor.copyCardSecurityCode(id) {
+            toastPresenter.presentCardSecurityCodeCopied()
+        } else {
+            toastPresenter.present(
+                T.cardErrorCopySecurityCode,
+                style: .failure
+            )
+        }
+    }
+
     func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
@@ -369,6 +399,26 @@ private extension PasswordsPresenter {
                     .view,
                     .edit,
                     .copy(.secureNoteText),
+                    isAutoFillExtension ? nil : .moveToTrash
+                ]
+                .compactMap { $0 }
+            )
+        case .card(let cardItem):
+            let description: String? = if let mask = cardItem.content.cardNumberMask {
+                CardNumberMaskFormatStyle().format(mask)
+            } else {
+                cardItem.content.cardHolder
+            }
+            return ItemCellData(
+                itemID: cardItem.id,
+                name: cardItem.name,
+                description: description,
+                iconType: .card(issuer: cardItem.content.cardIssuer),
+                actions: [
+                    .view,
+                    .edit,
+                    .copy(.cardNumber),
+                    .copy(.cardSecurityCode),
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

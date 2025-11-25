@@ -155,6 +155,24 @@ extension ItemsInteractor: ItemsInteracting {
                 name: secureNoteItem.name,
                 text: secureNoteItem.content.text
             )
+        case .card(let cardItem):
+            mainRepository.createCardItem(
+                itemID: cardItem.id,
+                vaultID: selectedVault.id,
+                creationDate: cardItem.creationDate,
+                modificationDate: cardItem.modificationDate,
+                trashedStatus: cardItem.trashedStatus,
+                protectionLevel: cardItem.protectionLevel,
+                tagIds: cardItem.tagIds,
+                name: cardItem.name,
+                cardHolder: cardItem.content.cardHolder,
+                cardNumber: cardItem.content.cardNumber,
+                expirationDate: cardItem.content.expirationDate,
+                securityCode: cardItem.content.securityCode,
+                notes: cardItem.content.notes,
+                cardNumberMask: cardItem.content.cardNumberMask,
+                cardIssuer: cardItem.content.cardIssuer
+            )
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
@@ -227,6 +245,23 @@ extension ItemsInteractor: ItemsInteracting {
                 tagIds: secureNoteItem.tagIds,
                 name: secureNoteItem.name,
                 text: secureNoteItem.content.text
+            )
+        case .card(let cardItem):
+            mainRepository.updateCardItem(
+                itemID: cardItem.id,
+                vaultID: selectedVault.id,
+                modificationDate: cardItem.modificationDate,
+                trashedStatus: cardItem.trashedStatus,
+                protectionLevel: cardItem.protectionLevel,
+                tagIds: cardItem.tagIds,
+                name: cardItem.name,
+                cardHolder: cardItem.content.cardHolder,
+                cardNumber: cardItem.content.cardNumber,
+                expirationDate: cardItem.content.expirationDate,
+                securityCode: cardItem.content.securityCode,
+                notes: cardItem.content.notes,
+                cardNumberMask: cardItem.content.cardNumberMask,
+                cardIssuer: cardItem.content.cardIssuer
             )
         case .raw:
             mainRepository.updateItem(

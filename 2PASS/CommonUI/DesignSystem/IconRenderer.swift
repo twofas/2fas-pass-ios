@@ -60,10 +60,20 @@ final class IconRenderer: UIView {
             }
         case .contentType(let contentType):
             contentTypeRenderer.configure(with: contentType)
-            
+
             imageRenderer.isHidden = true
             labelRenderer.isHidden = true
             contentTypeRenderer.isHidden = false
+        case .card(let issuer):
+            if let issuer, let cardIssuer = CardIssuer(rawValue: issuer) {
+                updateIcon(with: cardIssuer.icon)
+            } else {
+                contentTypeRenderer.configure(with: .card)
+
+                imageRenderer.isHidden = true
+                labelRenderer.isHidden = true
+                contentTypeRenderer.isHidden = false
+            }
         }
     }
     
