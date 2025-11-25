@@ -110,7 +110,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             searchPhrase: searchPhrase,
             tagId: tag?.id,
             vaultId: nil,
-            contentTypes: contentTypes,
+            contentTypes: contentTypes ?? .allKnownTypes,
             sortBy: currentSortType,
             trashed: .no
         )
