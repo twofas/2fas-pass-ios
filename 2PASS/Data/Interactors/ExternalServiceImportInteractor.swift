@@ -533,7 +533,10 @@ private extension ExternalServiceImportInteractor {
                     return .failure(.wrongFormat)
                 }
                 let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-
+                guard csv.validateHeader(["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note"]) else {
+                    return .failure(.wrongFormat)
+                }
+                
                 try csv.enumerateAsDict { [weak self] dict in
                     guard dict.allValuesEmpty == false else { return }
 
