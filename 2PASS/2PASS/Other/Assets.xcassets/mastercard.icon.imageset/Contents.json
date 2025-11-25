@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "ma_symbol-cropped.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
