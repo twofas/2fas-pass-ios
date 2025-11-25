@@ -42,11 +42,7 @@ final class PasswordsPresenter {
         }
     }
     
-    private(set) var contentTypeFilter: ItemContentTypeFilter = .all {
-        didSet {
-            reload()
-        }
-    }
+    private(set) var contentTypeFilter: ItemContentTypeFilter = .all
     
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
@@ -123,6 +119,7 @@ extension PasswordsPresenter {
     
     func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
         contentTypeFilter = filter
+        reload()
     }
 
     func onClearSearchPhrase() {
@@ -360,7 +357,7 @@ private extension PasswordsPresenter {
         }
         
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil {
+            if interactor.isSearching || selectedFilterTag != nil || (contentTypeFilter.contentType != nil && hasItems) {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()
