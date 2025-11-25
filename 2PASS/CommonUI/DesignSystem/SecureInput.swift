@@ -177,10 +177,16 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UITextField, context: Context) {
+        let selectedRange = uiView.selectedTextRange
+
         if isColorized {
             uiView.attributedText = PasswordRenderer(password: text).makeColorizedNSAttributedString()
         } else {
             uiView.text = text
+        }
+
+        if let selectedRange {
+            uiView.selectedTextRange = selectedRange
         }
 
         uiView.placeholder = placeholder
