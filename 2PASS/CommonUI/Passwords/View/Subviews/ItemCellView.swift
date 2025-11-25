@@ -81,13 +81,13 @@ class ItemCellView: UICollectionViewListCell {
         
         var content = defaultContentConfiguration().updated(for: state)
         content.text = ItemNameFormatStyle().format(cellData.name)
-        content.textProperties.font = .bodyEmphasized
+        content.textProperties.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         content.textProperties.color = Asset.mainTextColor.color
         content.textProperties.numberOfLines = 1
 
         if let secondaryText = cellData.description {
             content.secondaryText = secondaryText
-            content.secondaryTextProperties.font = UIFont.preferredFont(forTextStyle: .subheadline)
+            content.secondaryTextProperties.font = UIFont.systemFont(ofSize: 15)
             content.secondaryTextProperties.color = Asset.labelSecondaryColor.color
             content.secondaryTextProperties.numberOfLines = 1
         }
