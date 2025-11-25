@@ -7,30 +7,30 @@
 import SwiftUI
 import SwiftUIIntrospect
 
-public struct PasswordInput: View {
-    let label: LocalizedStringKey
-    
+public struct SecureInput: View {
+    let label: String
+
     @State
     private var isReveal = false
-    
+
     @Binding
-    private var password: String
-    
+    private var value: String
+
     private var bindingReveal: Binding<Bool>?
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
     private var onSubmit: (() -> Void)?
-    
-    public init(label: LocalizedStringKey, password: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
+
+    public init(label: String, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
         self.label = label
         self.bindingReveal = reveal
-        self._password = password
+        self._value = value
         self.onSubmit = onSubmit
     }
-    
+
     public var body: some View {
         HStack {
-            PasswordContentInput(label: label, password: $password, isReveal: isReveal)
+            SecureContentInput(label: label, value: $value, isReveal: isReveal)
                 .colorized(isColorized)
                 .introspect(introspectTextField)
                 .onSubmit {
@@ -82,44 +82,44 @@ public struct RevealToggleStyle: ToggleStyle {
     }
 }
 
-public struct PasswordContentInput: View {
-    
+public struct SecureContentInput: View {
+
     private enum Field {
         case unsecure
         case secure
     }
-    
-    let label: LocalizedStringKey
+
+    let label: String
     let isReveal: Bool
-    
+
     @Binding
-    var password: String
-    
+    var value: String
+
     @FocusState
     private var focusedField: Field?
-    
+
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
-    
-    public init(label: LocalizedStringKey, password: Binding<String>, isReveal: Bool = false) {
+
+    public init(label: String, value: Binding<String>, isReveal: Bool = false) {
         self.label = label
-        self._password = password
+        self._value = value
         self.isReveal = isReveal
     }
-    
+
     public var body: some View {
         ZStack {
-            SecureField(label, text: $password)
+            SecureField(label, text: $value)
                 .focused($focusedField, equals: .secure)
                 .opacity(isReveal ? 0 : 1)
                 .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     introspectTextField(textField)
                 }
-            
-            SecureContainerView(contentId: password) {
-                RevealedPasswordTextField(text: $password, isColorized: isColorized)
+
+            SecureContainerView(contentId: value) {
+                RevealedPasswordTextField(text: $value, placeholder: label, isColorized: isColorized)
                     .focused($focusedField, equals: .unsecure)
-                    .fontDesign(password.isEmpty ? .default : .monospaced)
+                    .fontDesign(value.isEmpty ? .default : .monospaced)
                     .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                         introspectTextField(textField)
                     }
@@ -156,8 +156,9 @@ public struct PasswordContentInput: View {
 
 private struct RevealedPasswordTextField: UIViewRepresentable {
     @Binding var text: String
+    let placeholder: String
     let isColorized: Bool
-    
+
     func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
         textField.autocapitalizationType = .none
@@ -166,24 +167,30 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
         textField.smartQuotesType = .no
         textField.smartDashesType = .no
         textField.smartInsertDeleteType = .no
-        
+
         textField.delegate = context.coordinator
         textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        
+
         return textField
     }
-    
+
     func updateUIView(_ uiView: UITextField, context: Context) {
         if isColorized {
             uiView.attributedText = PasswordRenderer(password: text).makeColorizedNSAttributedString()
         } else {
             uiView.text = text
         }
-        
+
+        uiView.placeholder = placeholder
+
         let bodyFont = UIFont.preferredFont(forTextStyle: .body)
-        uiView.font = UIFont.monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
+        if text.isEmpty == false {
+            uiView.font = UIFont.monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
+        } else {
+            uiView.font = bodyFont
+        }
     }
     
     func makeCoordinator() -> Coordinator {

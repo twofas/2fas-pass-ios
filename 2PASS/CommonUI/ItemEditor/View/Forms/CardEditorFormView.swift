@@ -75,10 +75,15 @@ struct CardEditorFormView: View {
             .formFieldChanged(presenter.expirationDateChanged)
 
             LabeledInput(label: T.cardSecurityCodeLabel.localizedKey, fieldWidth: $fieldWidth) {
-                TextField(T.cardSecurityCodeLabel.localizedKey, text: $presenter.securityCode)
-                    .focused($focusField, equals: .securityCode)
+                SecureInput(label: T.cardSecurityCodeLabel, value: $presenter.securityCode)
+                    .introspect { textField in
+                        textField.keyboardType = .numberPad
+                        textField.textContentType = .creditCardSecurityCode
+                    }
                     .keyboardType(.numberPad)
                     .textContentType(.creditCardSecurityCode)
+                    .limitText($presenter.securityCode, to: 4)
+                    .focused($focusField, equals: .securityCode)
             }
             .formFieldChanged(presenter.securityCodeChanged)
         } header: {

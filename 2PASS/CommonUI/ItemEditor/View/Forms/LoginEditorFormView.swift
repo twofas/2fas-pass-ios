@@ -140,7 +140,7 @@ struct LoginEditorFormView: View {
     @ViewBuilder
     private var passwordField: some View {
         LabeledInput(label: T.loginPasswordLabel.localizedKey, fieldWidth: $fieldWidth) {
-            PasswordInput(label: T.loginPasswordPlaceholder.localizedKey, password: $presenter.password)
+            SecureInput(label: T.loginPasswordPlaceholder, value: $presenter.password)
                 .colorized()
                 .introspect { textField in
                     setupPasswordTextField(textField)

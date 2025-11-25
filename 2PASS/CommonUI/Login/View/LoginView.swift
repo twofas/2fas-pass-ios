@@ -190,7 +190,7 @@ public struct LoginView: View {
     
     @ViewBuilder
     private var passwordInput: some View {
-        PasswordInput(label: T.masterPasswordLabel.localizedKey, password: $presenter.loginInput)
+        SecureInput(label: T.masterPasswordLabel, value: $presenter.loginInput)
             .focused($focusedField, equals: .login)
             .onSubmit {
                 presenter.onLogin()
