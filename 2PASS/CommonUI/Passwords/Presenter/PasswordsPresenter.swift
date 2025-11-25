@@ -368,7 +368,7 @@ private extension PasswordsPresenter {
                 actions: [
                     .view,
                     .edit,
-                    .copy(.secureNoteText),
+                    secureNoteItem.content.text != nil ? .copy(.secureNoteText) : nil,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }
