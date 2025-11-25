@@ -416,8 +416,32 @@ private extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let notes = dict["note"]?.nilIfEmpty
-                    
+
+                    // Add unmapped fields to notes
+                    let note = dict["note"]?.nilIfEmpty
+                    let username2 = dict["username2"]?.nilIfEmpty
+                    let username3 = dict["username3"]?.nilIfEmpty
+                    var extraNotes: [String] = []
+                    if let username2 {
+                        extraNotes.append("Username: \(username2)")
+                    }
+                    if let username3 {
+                        extraNotes.append("Alternate username: \(username3)")
+                    }
+                    if let category = dict["category"]?.nilIfEmpty {
+                        extraNotes.append("Category: \(category)")
+                    }
+                    let notes: String? = {
+                        if let note, extraNotes.isEmpty == false {
+                            return note + "\n\n" + extraNotes.joined(separator: "\n")
+                        } else if let note {
+                            return note
+                        } else if extraNotes.isEmpty == false {
+                            return extraNotes.joined(separator: "\n")
+                        }
+                        return nil
+                    }()
+
                     items.append(
                         .login(.init(
                             id: .init(),
