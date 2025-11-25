@@ -31,6 +31,7 @@ public protocol CardItemInteracting: AnyObject {
     ) throws(ItemsInteractorSaveError)
 
     func detectCardIssuer(from cardNumber: String?) -> CardIssuer?
+    func makeCardNumberMask(from cardNumber: String?) -> String?
 }
 
 final class CardItemInteractor {
@@ -159,6 +160,17 @@ extension CardItemInteractor: CardItemInteracting {
 
         return nil
     }
+
+    func makeCardNumberMask(from cardNumber: String?) -> String? {
+        guard let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty else {
+            return nil
+        }
+        let digitsOnly = cardNumber.filter { $0.isNumber }
+        guard digitsOnly.count >= 4 else {
+            return nil
+        }
+        return String(digitsOnly.suffix(4))
+    }
 }
 
 private extension CardItemInteractor {
@@ -231,17 +243,5 @@ private extension CardItemInteractor {
                 notes: notes?.trim().nilIfEmpty
             )
         )
-    }
-
-    func makeCardNumberMask(from cardNumber: String?) -> String? {
-        guard let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty else {
-            return nil
-        }
-        let digitsOnly = cardNumber.filter { $0.isNumber }
-        guard digitsOnly.count >= 4 else {
-            return nil
-        }
-        let lastFour = String(digitsOnly.suffix(4))
-        return lastFour
     }
 }

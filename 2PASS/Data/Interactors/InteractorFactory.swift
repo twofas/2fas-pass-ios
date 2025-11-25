@@ -283,7 +283,11 @@ public final class InteractorFactory {
     }
     
     public func externalServiceImportInteractor() -> ExternalServiceImportInteracting {
-        ExternalServiceImportInteractor(mainRepository: MainRepositoryImpl.shared, uriInteractor: uriInteractor())
+        ExternalServiceImportInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            uriInteractor: uriInteractor(),
+            cardItemInteractor: cardItemInteractor()
+        )
     }
 
     public func currentDateInteractor() -> CurrentDateInteracting {

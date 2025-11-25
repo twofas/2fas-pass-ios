@@ -28,10 +28,12 @@ public protocol ExternalServiceImportInteracting: AnyObject {
 final class ExternalServiceImportInteractor {
     private let mainRepository: MainRepository
     private let uriInteractor: URIInteracting
-    
-    init(mainRepository: MainRepository, uriInteractor: URIInteracting) {
+    private let cardItemInteractor: CardItemInteracting
+
+    init(mainRepository: MainRepository, uriInteractor: URIInteracting, cardItemInteractor: CardItemInteracting) {
         self.mainRepository = mainRepository
         self.uriInteractor = uriInteractor
+        self.cardItemInteractor = cardItemInteractor
     }
 }
 
@@ -97,13 +99,13 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
 }
 
 private extension ExternalServiceImportInteractor {
-    func encryptPassword(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
+    func encryptSecureField(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
         guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel),
-              let passwordData = string.data(using: .utf8),
-              let password = mainRepository.encrypt(passwordData, key: key) else {
+              let data = string.data(using: .utf8),
+              let encrypted = mainRepository.encrypt(data, key: key) else {
             return nil
         }
-        return password
+        return encrypted
     }
 
     var selectedVaultId: VaultID? {
@@ -139,7 +141,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["Username"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -194,7 +196,7 @@ private extension ExternalServiceImportInteractor {
             let username = item.login?.username
             let password: Data? = {
                 if let passwordString = item.login?.password?.nilIfEmpty,
-                   let password = encryptPassword(passwordString, for: protectionLevel) {
+                   let password = encryptSecureField(passwordString, for: protectionLevel) {
                     return password
                 }
                 return nil
@@ -269,7 +271,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -334,7 +336,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -409,7 +411,7 @@ private extension ExternalServiceImportInteractor {
                     let username = dict["username"]?.nilIfEmpty
                     let password: Data? = {
                         if let passwordString = dict["password"]?.nilIfEmpty,
-                           let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                           let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                             return password
                         }
                         return nil
@@ -451,7 +453,7 @@ private extension ExternalServiceImportInteractor {
                 _ = try archive.extract(entry) { data in
                     fileData.append(data)
                 }
-                
+
                 guard let csvString = String(data: fileData, encoding: .utf8) else {
                     return .failure(.wrongFormat)
                 }
@@ -460,14 +462,20 @@ private extension ExternalServiceImportInteractor {
                     return .failure(.wrongFormat)
                 }
 
-                try csv.enumerateAsDict { dict in
+                try csv.enumerateAsDict { [weak self] dict in
                     guard dict.allValuesEmpty == false else { return }
 
                     let name = dict["title"].formattedName
-                    let notes = dict["note"]?.nilIfEmpty
-                    
+                    let text: Data? = {
+                        if let noteString = dict["note"]?.nilIfEmpty,
+                           let encrypted = self?.encryptSecureField(noteString, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+
                     items.append(
-                        .login(.init(
+                        .secureNote(.init(
                             id: .init(),
                             vaultId: vaultID,
                             metadata: .init(
@@ -480,11 +488,7 @@ private extension ExternalServiceImportInteractor {
                             name: name,
                             content: .init(
                                 name: name,
-                                username: nil,
-                                password: nil,
-                                notes: notes,
-                                iconType: .default,
-                                uris: nil
+                                text: text
                             )
                         ))
                     )
@@ -493,7 +497,116 @@ private extension ExternalServiceImportInteractor {
                 return .failure(.wrongFormat)
             }
         }
-        
+
+        if let entry = archive.first(where: { $0.path.hasSuffix("payments.csv")}) {
+            do {
+                var fileData = Data()
+                _ = try archive.extract(entry) { data in
+                    fileData.append(data)
+                }
+
+                guard let csvString = String(data: fileData, encoding: .utf8) else {
+                    return .failure(.wrongFormat)
+                }
+                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+
+                try csv.enumerateAsDict { [weak self] dict in
+                    guard dict.allValuesEmpty == false else { return }
+
+                    let name = dict["name"].formattedName
+                    let cardHolder = dict["account_holder"]?.nilIfEmpty
+                    let cardNumberString = dict["cc_number"]?.nilIfEmpty
+                    let securityCodeString = dict["code"]?.nilIfEmpty
+                    let expirationMonth = dict["expiration_month"]?.nilIfEmpty
+                    let expirationYear = dict["expiration_year"]?.nilIfEmpty
+                    let expirationDateString: String? = {
+                        guard let month = expirationMonth, let year = expirationYear?.suffix(2) else { return nil }
+                        return "\(month)/\(year)"
+                    }()
+
+                    let cardNumber: Data? = {
+                        if let value = cardNumberString,
+                           let encrypted = self?.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let expirationDate: Data? = {
+                        if let value = expirationDateString,
+                           let encrypted = self?.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let securityCode: Data? = {
+                        if let value = securityCodeString,
+                           let encrypted = self?.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let cardNumberMask = self?.cardItemInteractor.makeCardNumberMask(from: cardNumberString)
+                    let cardIssuer = self?.cardItemInteractor.detectCardIssuer(from: cardNumberString)?.rawValue
+
+                    // Add unmapped fields to notes
+                    let note = dict["note"]?.nilIfEmpty
+                    var extraNotes: [String] = []
+                    if let accountName = dict["account_name"]?.nilIfEmpty {
+                        extraNotes.append("Account name: \(accountName)")
+                    }
+                    if let accountHolder = dict["account_holder"]?.nilIfEmpty {
+                        extraNotes.append("Account holder: \(accountHolder)")
+                    }
+                    if let country = dict["country"]?.nilIfEmpty {
+                        extraNotes.append("Country: \(country)")
+                    }
+                    if let bank = dict["issuing_bank"]?.nilIfEmpty {
+                        extraNotes.append("Issuing bank: \(bank)")
+                    }
+                    if let routingNumber = dict["routing_number"]?.nilIfEmpty {
+                        extraNotes.append("Routing number: \(routingNumber)")
+                    }
+                    let notes: String? = {
+                        if let note, extraNotes.isEmpty == false {
+                            return note + "\n\n" + extraNotes.joined(separator: "\n")
+                        } else if let note {
+                            return note
+                        } else if extraNotes.isEmpty == false {
+                            return extraNotes.joined(separator: "\n")
+                        }
+                        return nil
+                    }()
+
+                    items.append(
+                        .card(.init(
+                            id: .init(),
+                            vaultId: vaultID,
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                cardHolder: cardHolder,
+                                cardIssuer: cardIssuer,
+                                cardNumber: cardNumber,
+                                cardNumberMask: cardNumberMask,
+                                expirationDate: expirationDate,
+                                securityCode: securityCode,
+                                notes: notes
+                            )
+                        ))
+                    )
+                }
+            } catch {
+                return .failure(.wrongFormat)
+            }
+        }
+
         return .success(items)
     }
     
@@ -524,7 +637,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["username"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -588,7 +701,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["username"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -690,7 +803,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["username"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -761,7 +874,7 @@ private extension ExternalServiceImportInteractor {
                 }()
                 let password: Data? = {
                     if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -825,7 +938,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["Login Name"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -891,7 +1004,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["Username"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -961,7 +1074,7 @@ private extension ExternalServiceImportInteractor {
                 let username = dict["username"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptPassword(passwordString, for: protectionLevel) {
+                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
@@ -1028,7 +1141,7 @@ private extension ExternalServiceImportInteractor {
                     username = field.value?.nilIfEmpty
                 case "password":
                     if let passwordString = field.value?.nilIfEmpty {
-                        password = encryptPassword(passwordString, for: protectionLevel)
+                        password = encryptSecureField(passwordString, for: protectionLevel)
                     }
                 case "url":
                     urlString = field.value?.nilIfEmpty
@@ -1089,7 +1202,7 @@ private extension ExternalServiceImportInteractor {
             let username = record.login?.nilIfEmpty
             let password: Data? = {
                 if let passwordString = record.password?.nilIfEmpty {
-                    return encryptPassword(passwordString, for: protectionLevel)
+                    return encryptSecureField(passwordString, for: protectionLevel)
                 }
                 return nil
             }()
