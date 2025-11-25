@@ -112,7 +112,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             searchPhrase: searchPhrase,
             tagId: tag?.id,
             vaultId: nil,
-            contentTypes: contentTypes,
+            contentTypes: contentTypes ?? .allKnownTypes,
             sortBy: currentSortType,
             trashed: .no
         )
@@ -212,18 +212,28 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             } else {
                 return false
             }
+        case .failure(.noPassword):
+            systemInteractor.copyToClipboard("")
+            return true
         case .failure:
             return false
         }
     }
     
     func copySecureNote(_ itemID: ItemID) -> Bool {
-        guard let secureNoteItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asSecureNote,
-              let noteText = secureNoteItem.content.text,
-              let decryptedText = itemsInteractor.decrypt(noteText, isSecureField: true, protectionLevel: secureNoteItem.protectionLevel)
-        else {
+        guard let secureNoteItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asSecureNote else {
             return false
         }
+        
+        guard let noteText = secureNoteItem.content.text else {
+            systemInteractor.copyToClipboard("")
+            return true
+        }
+        
+        guard let decryptedText = itemsInteractor.decrypt(noteText, isSecureField: true, protectionLevel: secureNoteItem.protectionLevel) else {
+            return false
+        }
+        
         systemInteractor.copyToClipboard(decryptedText)
         return true
     }

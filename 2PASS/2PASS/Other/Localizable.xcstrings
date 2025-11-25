@@ -48,6 +48,17 @@
         }
       }
     },
+    " login_view_action_common_copy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
     " paywall_notice_items_limit_import_msg" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2269,7 +2280,18 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All items"
+            "value" : "All Items"
+          }
+        }
+      }
+    },
+    "content_type_filter_card_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cards"
           }
         }
       }

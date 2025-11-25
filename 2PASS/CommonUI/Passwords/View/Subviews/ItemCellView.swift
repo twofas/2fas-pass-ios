@@ -92,6 +92,7 @@ class ItemCellView: UICollectionViewListCell {
             content.secondaryTextProperties.numberOfLines = 1
         }
 
+        content.directionalLayoutMargins = .zero
         content.directionalLayoutMargins.leading = Spacing.l + CGFloat(Config.iconDimension) + Spacing.m
 
         listContentView.configuration = content

@@ -18,6 +18,8 @@ internal enum T {
   internal static let cameraErrorSystemOverload = T.tr("Localizable", " camera_error_system_overload", fallback: "The camera is unavailable because the system is overloaded. Please reboot the device.")
   /// Customize icon
   internal static let customizeIcon = T.tr("Localizable", " customize_icon", fallback: "Customize icon")
+  /// Copy
+  internal static let loginViewActionCommonCopy = T.tr("Localizable", " login_view_action_common_copy", fallback: "Copy")
   /// You have reached your %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitImportMsg(_ p1: Int) -> String {
     return T.tr("Localizable", " paywall_notice_items_limit_import_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
@@ -437,8 +439,8 @@ internal enum T {
   internal static let connectTitle = T.tr("Localizable", "connect_title", fallback: "Connect")
   /// Card
   internal static let contentTypeCardName = T.tr("Localizable", "content_type_card_name", fallback: "Card")
-  /// All items
-  internal static let contentTypeFilterAllName = T.tr("Localizable", "content_type_filter_all_name", fallback: "All items")
+  /// All Items
+  internal static let contentTypeFilterAllName = T.tr("Localizable", "content_type_filter_all_name", fallback: "All Items")
   /// Cards
   internal static let contentTypeFilterCardName = T.tr("Localizable", "content_type_filter_card_name", fallback: "Cards")
   /// Logins

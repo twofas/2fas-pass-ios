@@ -262,10 +262,11 @@ private extension PasswordsViewController {
         
         presenter.onImageFetchResult = { [weak self] password, url, result in
             guard let dataSource = self?.dataSource else { return }
-            
+
             switch result {
             case .success:
                 var snapshot = dataSource.snapshot()
+                guard snapshot.itemIdentifiers.contains(password) else { return }
                 snapshot.reconfigureItems([password])
                 dataSource.apply(snapshot, animatingDifferences: false)
             case .failure:
