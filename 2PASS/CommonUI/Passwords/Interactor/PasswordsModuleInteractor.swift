@@ -210,6 +210,9 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             } else {
                 return false
             }
+        case .failure(.noPassword):
+            systemInteractor.copyToClipboard("")
+            return true
         case .failure:
             return false
         }

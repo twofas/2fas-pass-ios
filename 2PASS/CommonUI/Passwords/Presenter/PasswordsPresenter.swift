@@ -147,7 +147,7 @@ extension PasswordsPresenter {
             } else {
                 toastPresenter.present(
                     T.passwordErrorCopyUsername,
-                    style: .info
+                    style: .failure
                 )
             }
         case .copy(.loginPassword):
@@ -352,8 +352,8 @@ private extension PasswordsPresenter {
                 actions: [
                     .view,
                     .edit,
-                    .copy(.loginUsername),
-                    .copy(.loginPassword),
+                    loginItem.username != nil ? .copy(.loginUsername) : nil,
+                    loginItem.password != nil ? .copy(.loginPassword) : nil,
                     isAutoFillExtension ? nil : .goToURI(uris: loginItem.content.uris?.map { $0.uri } ?? []),
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
