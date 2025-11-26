@@ -7,7 +7,7 @@
 import SwiftUI
 import Common
 
-struct CardEditorFormView: View {
+struct PaymentCardEditorFormView: View {
 
     enum Field: Hashable {
         case cardHolder
@@ -18,7 +18,7 @@ struct CardEditorFormView: View {
     }
 
     @Bindable
-    var presenter: CardEditorFormPresenter
+    var presenter: PaymentCardEditorFormPresenter
     let resignFirstResponder: Callback
 
     @State
@@ -27,17 +27,17 @@ struct CardEditorFormView: View {
     @FocusState
     private var focusField: Field?
 
-    private var cardIcon: IconContent {
-        if let icon = presenter.cardIssuerIcon {
+    private var paymentCardIcon: IconContent {
+        if let icon = presenter.paymentCardIssuerIcon {
             return .icon(icon)
         }
-        return .contentType(.card)
+        return .contentType(.paymentCard)
     }
 
     var body: some View {
         HStack {
             Spacer()
-            ItemEditorIconView(content: cardIcon)
+            ItemEditorIconView(content: paymentCardIcon)
             Spacer()
         }
         .listRowBackground(Color.clear)

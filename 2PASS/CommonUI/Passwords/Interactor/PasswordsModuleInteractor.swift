@@ -28,8 +28,8 @@ protocol PasswordsModuleInteracting: AnyObject {
     func copyUsername(_ itemID: ItemID) -> Bool
     func copyPassword(_ itemID: ItemID) -> Bool
     func copySecureNote(_ itemID: ItemID) -> Bool
-    func copyCardNumber(_ itemID: ItemID) -> Bool
-    func copyCardSecurityCode(_ itemID: ItemID) -> Bool
+    func copyPaymentCardNumber(_ itemID: ItemID) -> Bool
+    func copyPaymentCardSecurityCode(_ itemID: ItemID) -> Bool
 
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
@@ -238,10 +238,10 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         return true
     }
 
-    func copyCardNumber(_ itemID: ItemID) -> Bool {
-        guard let cardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asCard,
-              let cardNumber = cardItem.content.cardNumber,
-              let decryptedNumber = itemsInteractor.decrypt(cardNumber, isSecureField: true, protectionLevel: cardItem.protectionLevel)
+    func copyPaymentCardNumber(_ itemID: ItemID) -> Bool {
+        guard let paymentCardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asPaymentCard,
+              let cardNumber = paymentCardItem.content.cardNumber,
+              let decryptedNumber = itemsInteractor.decrypt(cardNumber, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel)
         else {
             return false
         }
@@ -249,10 +249,10 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         return true
     }
 
-    func copyCardSecurityCode(_ itemID: ItemID) -> Bool {
-        guard let cardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asCard,
-              let securityCode = cardItem.content.securityCode,
-              let decryptedCode = itemsInteractor.decrypt(securityCode, isSecureField: true, protectionLevel: cardItem.protectionLevel)
+    func copyPaymentCardSecurityCode(_ itemID: ItemID) -> Bool {
+        guard let paymentCardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asPaymentCard,
+              let securityCode = paymentCardItem.content.securityCode,
+              let decryptedCode = itemsInteractor.decrypt(securityCode, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel)
         else {
             return false
         }

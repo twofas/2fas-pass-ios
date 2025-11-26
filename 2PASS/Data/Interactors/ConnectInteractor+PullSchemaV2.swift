@@ -111,37 +111,37 @@ extension ConnectInteractor {
                     text: newText
                 )
             )
-        case .card:
-            guard let cardContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddCardRequest.self, from: data) else {
+        case .paymentCard:
+            guard let paymentCardContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddCardRequest.self, from: data) else {
                 throw ConnectError.badData
             }
 
             var newCardNumber: String?
-            if let cardNumberDataEnc = cardContent.data.content.cardNumber,
+            if let cardNumberDataEnc = paymentCardContent.data.content.cardNumber,
                let cardNumberData = mainRepository.decrypt(cardNumberDataEnc, key: encryptionNewItemKey) {
                 newCardNumber = String(data: cardNumberData, encoding: .utf8)
             }
 
             var newExpirationDate: String?
-            if let expirationDateDataEnc = cardContent.data.content.expirationDate,
+            if let expirationDateDataEnc = paymentCardContent.data.content.expirationDate,
                let expirationDateData = mainRepository.decrypt(expirationDateDataEnc, key: encryptionNewItemKey) {
                 newExpirationDate = String(data: expirationDateData, encoding: .utf8)
             }
 
             var newSecurityCode: String?
-            if let securityCodeDataEnc = cardContent.data.content.securityCode,
+            if let securityCodeDataEnc = paymentCardContent.data.content.securityCode,
                let securityCodeData = mainRepository.decrypt(securityCodeDataEnc, key: encryptionNewItemKey) {
                 newSecurityCode = String(data: securityCodeData, encoding: .utf8)
             }
 
-            itemChangeRequest = .addCard(
-                CardDataChangeRequest(
-                    name: cardContent.data.content.name,
-                    cardHolder: cardContent.data.content.cardHolder,
+            itemChangeRequest = .addPaymentCard(
+                PaymentCardDataChangeRequest(
+                    name: paymentCardContent.data.content.name,
+                    cardHolder: paymentCardContent.data.content.cardHolder,
                     cardNumber: newCardNumber,
                     expirationDate: newExpirationDate,
                     securityCode: newSecurityCode,
-                    notes: cardContent.data.content.notes
+                    notes: paymentCardContent.data.content.notes
                 )
             )
         case .unknown(let contentType):
@@ -306,20 +306,20 @@ extension ConnectInteractor {
                 protectionLevel: newProtectionLevel,
                 tags: secureNoteRequest.data.tags
             ))
-        case .card:
-            guard let cardRequest = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionUpdateCardRequest.self, from: data) else {
+        case .paymentCard:
+            guard let paymentCardRequest = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionUpdateCardRequest.self, from: data) else {
                 throw ConnectError.badData
             }
 
-            guard let cardItem = item.asCard else {
+            guard let paymentCardItem = item.asPaymentCard else {
                 throw ConnectError.badData
             }
 
             let newCardNumber: String?
-            if let cardNumberDataEnc = cardRequest.data.content.cardNumber {
+            if let cardNumberDataEnc = paymentCardRequest.data.content.cardNumber {
                 if cardNumberDataEnc.isEmpty {
                     newCardNumber = ""
-                } else if let encryptionKey = encryptionPasswordKey(cardItem.protectionLevel),
+                } else if let encryptionKey = encryptionPasswordKey(paymentCardItem.protectionLevel),
                           let cardNumberData = mainRepository.decrypt(cardNumberDataEnc, key: encryptionKey) {
                     newCardNumber = String(data: cardNumberData, encoding: .utf8)
                 } else {
@@ -330,10 +330,10 @@ extension ConnectInteractor {
             }
 
             let newExpirationDate: String?
-            if let expirationDateDataEnc = cardRequest.data.content.expirationDate {
+            if let expirationDateDataEnc = paymentCardRequest.data.content.expirationDate {
                 if expirationDateDataEnc.isEmpty {
                     newExpirationDate = ""
-                } else if let encryptionKey = encryptionPasswordKey(cardItem.protectionLevel),
+                } else if let encryptionKey = encryptionPasswordKey(paymentCardItem.protectionLevel),
                           let expirationDateData = mainRepository.decrypt(expirationDateDataEnc, key: encryptionKey) {
                     newExpirationDate = String(data: expirationDateData, encoding: .utf8)
                 } else {
@@ -344,10 +344,10 @@ extension ConnectInteractor {
             }
 
             let newSecurityCode: String?
-            if let securityCodeDataEnc = cardRequest.data.content.securityCode {
+            if let securityCodeDataEnc = paymentCardRequest.data.content.securityCode {
                 if securityCodeDataEnc.isEmpty {
                     newSecurityCode = ""
-                } else if let encryptionKey = encryptionPasswordKey(cardItem.protectionLevel),
+                } else if let encryptionKey = encryptionPasswordKey(paymentCardItem.protectionLevel),
                           let securityCodeData = mainRepository.decrypt(securityCodeDataEnc, key: encryptionKey) {
                     newSecurityCode = String(data: securityCodeData, encoding: .utf8)
                 } else {
@@ -357,15 +357,15 @@ extension ConnectInteractor {
                 newSecurityCode = nil
             }
 
-            itemChangeRequest = .updateCard(cardItem, CardDataChangeRequest(
-                name: cardRequest.data.content.name,
-                cardHolder: cardRequest.data.content.cardHolder,
+            itemChangeRequest = .updatePaymentCard(paymentCardItem, PaymentCardDataChangeRequest(
+                name: paymentCardRequest.data.content.name,
+                cardHolder: paymentCardRequest.data.content.cardHolder,
                 cardNumber: newCardNumber,
                 expirationDate: newExpirationDate,
                 securityCode: newSecurityCode,
-                notes: cardRequest.data.content.notes,
+                notes: paymentCardRequest.data.content.notes,
                 protectionLevel: newProtectionLevel,
-                tags: cardRequest.data.tags
+                tags: paymentCardRequest.data.tags
             ))
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)

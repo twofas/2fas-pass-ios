@@ -8,7 +8,7 @@ import Common
 import UIKit
 
 @Observable
-final class CardEditorFormPresenter: ItemEditorFormPresenter {
+final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
     var cardHolder: String = ""
     var cardNumber: String = ""
@@ -16,8 +16,8 @@ final class CardEditorFormPresenter: ItemEditorFormPresenter {
     var securityCode: String = ""
     var notes: String = ""
 
-    var cardIssuerIcon: UIImage? {
-        interactor.detectCardIssuer(from: cardNumber)?.icon
+    var paymentCardIssuerIcon: UIImage? {
+        interactor.detectPaymentCardIssuer(from: cardNumber)?.icon
     }
 
     private var initialCardHolder: String?
@@ -26,8 +26,8 @@ final class CardEditorFormPresenter: ItemEditorFormPresenter {
     private var initialSecurityCode: String?
     private var initialNotes: String?
 
-    private var initialCardItem: CardItemData? {
-        initialData as? CardItemData
+    private var initialPaymentCardItem: PaymentCardItemData? {
+        initialData as? PaymentCardItemData
     }
     
     var cardHolderChanged: Bool {
@@ -58,8 +58,8 @@ final class CardEditorFormPresenter: ItemEditorFormPresenter {
     init(
         interactor: ItemEditorModuleInteracting,
         flowController: ItemEditorFlowControlling,
-        initialData: CardItemData? = nil,
-        changeRequest: CardDataChangeRequest? = nil
+        initialData: PaymentCardItemData? = nil,
+        changeRequest: PaymentCardDataChangeRequest? = nil
     ) {
         if let initialData {
             let decryptedCardNumber = initialData.content.cardNumber.flatMap {
@@ -95,7 +95,7 @@ final class CardEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     func onSave() -> SaveItemResult {
-        interactor.saveCard(
+        interactor.savePaymentCard(
             name: name,
             cardHolder: cardHolder.nilIfEmpty,
             cardNumber: cardNumber.nilIfEmpty,

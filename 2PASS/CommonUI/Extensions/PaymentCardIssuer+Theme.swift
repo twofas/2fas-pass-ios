@@ -7,7 +7,7 @@
 import Common
 import UIKit
 
-extension CardIssuer {
+extension PaymentCardIssuer {
 
     public var icon: UIImage {
         switch self {
@@ -29,11 +29,11 @@ extension CardIssuer {
     }
 }
 
-extension CardItemData {
+extension PaymentCardItemData {
 
     var issuerIcon: UIImage? {
         guard let issuerString = content.cardIssuer,
-              let issuer = CardIssuer(rawValue: issuerString) else {
+              let issuer = PaymentCardIssuer(rawValue: issuerString) else {
             return nil
         }
         return issuer.icon

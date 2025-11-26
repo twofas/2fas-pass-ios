@@ -404,7 +404,7 @@ extension InMemoryStorageDataSourceImpl {
 }
 
 extension InMemoryStorageDataSourceImpl {
-    public func createCardItem(
+    public func createPaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         creationDate: Date,
@@ -421,7 +421,7 @@ extension InMemoryStorageDataSourceImpl {
         cardNumberMask: String?,
         cardIssuer: String?
     ) {
-        CardEntity.createCard(
+        PaymentCardEntity.createPaymentCard(
             on: context,
             itemID: itemID,
             vaultID: vaultID,
@@ -441,7 +441,7 @@ extension InMemoryStorageDataSourceImpl {
         )
     }
 
-    public func updateCardItem(
+    public func updatePaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         modificationDate: Date,
@@ -457,7 +457,7 @@ extension InMemoryStorageDataSourceImpl {
         cardNumberMask: String?,
         cardIssuer: String?
     ) {
-        CardEntity.updateCard(
+        PaymentCardEntity.updatePaymentCard(
             on: context,
             for: itemID,
             vaultID: vaultID,
@@ -476,22 +476,22 @@ extension InMemoryStorageDataSourceImpl {
         )
     }
 
-    public func getCardItem(
+    public func getPaymentCardItem(
         itemID: ItemID,
         checkInTrash: Bool
-    ) -> CardItemData? {
-        CardEntity.getCardEntity(
+    ) -> PaymentCardItemData? {
+        PaymentCardEntity.getPaymentCardEntity(
             on: context,
             itemID: itemID,
             checkInTrash: checkInTrash
-        )?.toData().asCard
+        )?.toData().asPaymentCard
     }
 
-    public func listCardItems(
+    public func listPaymentCardItems(
         options: ItemsListOptions
-    ) -> [CardItemData] {
-        CardEntity.listCardEntities(on: context, options: options)
-            .compactMap { $0.toData().asCard }
+    ) -> [PaymentCardItemData] {
+        PaymentCardEntity.listPaymentCardEntities(on: context, options: options)
+            .compactMap { $0.toData().asPaymentCard }
     }
 }
 

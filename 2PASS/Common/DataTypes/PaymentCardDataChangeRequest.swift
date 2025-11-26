@@ -4,8 +4,8 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-public struct CardDataChangeRequest: ItemDataChangeRequest {
-    public let contentType: ItemContentType = .card
+public struct PaymentCardDataChangeRequest: ItemDataChangeRequest {
+    public let contentType: ItemContentType = .paymentCard
 
     public var name: String?
     public var cardHolder: String?

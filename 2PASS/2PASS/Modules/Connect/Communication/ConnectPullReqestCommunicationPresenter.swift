@@ -131,12 +131,12 @@ final class ConnectPullReqestCommunicationPresenter {
                 destination = .editItem(.secureNote(secureNoteItem), changeRequest: secureNoteChangeRequest, onClose: { [weak self] result in
                     self?.onSaveItem(result: result)
                 })
-            case .addCard(let cardChangeRequest):
-                destination = .addItem(changeRequest: cardChangeRequest, onClose: { [weak self] result in
+            case .addPaymentCard(let paymentCardChangeRequest):
+                destination = .addItem(changeRequest: paymentCardChangeRequest, onClose: { [weak self] result in
                     self?.onSaveItem(result: result)
                 })
-            case .updateCard(let cardItem, let cardChangeRequest):
-                destination = .editItem(.card(cardItem), changeRequest: cardChangeRequest, onClose: { [weak self] result in
+            case .updatePaymentCard(let paymentCardItem, let paymentCardChangeRequest):
+                destination = .editItem(.paymentCard(paymentCardItem), changeRequest: paymentCardChangeRequest, onClose: { [weak self] result in
                     self?.onSaveItem(result: result)
                 })
             }
@@ -290,9 +290,9 @@ extension ConnectPullReqestCommunicationPresenter {
                     return .secureNote(currentSecureNoteData)
                 case .changeRequest(.addSecureNote):
                     return nil
-                case .changeRequest(.updateCard(let currentCardData, _)):
-                    return .card(currentCardData)
-                case .changeRequest(.addCard):
+                case .changeRequest(.updatePaymentCard(let currentPaymentCardData, _)):
+                    return .paymentCard(currentPaymentCardData)
+                case .changeRequest(.addPaymentCard):
                     return nil
                 case .delete(let item):
                     return item

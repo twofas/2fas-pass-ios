@@ -43,16 +43,16 @@ public struct ItemMetadata: Hashable {
 public enum ItemContentType: Hashable {
     case login
     case secureNote
-    case card
+    case paymentCard
     case unknown(String)
 
-    public static let allKnownTypes: [ItemContentType] = [.login, .secureNote, .card]
+    public static let allKnownTypes: [ItemContentType] = [.login, .secureNote, .paymentCard]
 
     public var rawValue: String {
         switch self {
         case .login: "login"
         case .secureNote: "secureNote"
-        case .card: "card"
+        case .paymentCard: "paymentCard"
         case .unknown(let contentType): contentType
         }
     }
@@ -61,7 +61,7 @@ public enum ItemContentType: Hashable {
         switch rawValue {
         case ItemContentType.login.rawValue: self = .login
         case ItemContentType.secureNote.rawValue: self = .secureNote
-        case ItemContentType.card.rawValue: self = .card
+        case ItemContentType.paymentCard.rawValue: self = .paymentCard
         default: self = .unknown(rawValue)
         }
     }
@@ -96,7 +96,7 @@ extension ItemDataType {
 public enum ItemData: ItemDataType {
     case login(LoginItemData)
     case secureNote(SecureNoteItemData)
-    case card(CardItemData)
+    case paymentCard(PaymentCardItemData)
     case raw(RawItemData)
 
     public var id: ItemID { base.id }
@@ -114,7 +114,7 @@ public enum ItemData: ItemDataType {
         switch self {
         case .login(let data): return data
         case .secureNote(let data): return data
-        case .card(let data): return data
+        case .paymentCard(let data): return data
         case .raw(let data): return data
         }
     }
@@ -142,15 +142,15 @@ public enum ItemData: ItemDataType {
                     contentVersion: rawData.contentVersion,
                     content: try decoder.decode(SecureNoteItemData.Content.self, from: rawData.content)
                 ))
-            case .card:
-                self = .card(.init(
+            case .paymentCard:
+                self = .paymentCard(.init(
                     id: rawData.id,
                     vaultId: rawData.vaultId,
                     metadata: rawData.metadata,
                     name: rawData.name,
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
-                    content: try decoder.decode(CardItemData.Content.self, from: rawData.content)
+                    content: try decoder.decode(PaymentCardItemData.Content.self, from: rawData.content)
                 ))
             case .unknown:
                 self = .raw(rawData)
@@ -253,8 +253,8 @@ extension ItemData {
             return .login(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .secureNote(let data):
             return .secureNote(data.update(creationDate: creationDate, modificationDate: modificationDate))
-        case .card(let data):
-            return .card(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        case .paymentCard(let data):
+            return .paymentCard(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .raw(let data):
             return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
         }

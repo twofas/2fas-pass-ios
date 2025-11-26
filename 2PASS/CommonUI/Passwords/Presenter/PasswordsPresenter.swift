@@ -157,11 +157,11 @@ extension PasswordsPresenter {
         case .copy(.secureNoteText):
             copySecureNote(id: itemID)
 
-        case .copy(.cardNumber):
-            copyCardNumber(id: itemID)
+        case .copy(.paymentCardNumber):
+            copyPaymentCardNumber(id: itemID)
 
-        case .copy(.cardSecurityCode):
-            copyCardSecurityCode(id: itemID)
+        case .copy(.paymentCardSecurityCode):
+            copyPaymentCardSecurityCode(id: itemID)
 
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
@@ -190,8 +190,8 @@ extension PasswordsPresenter {
                 copyPassword(id: itemData.id)
             case .secureNote:
                 copySecureNote(id: itemData.id)
-            case .card:
-                copyCardNumber(id: itemData.id)
+            case .paymentCard:
+                copyPaymentCardNumber(id: itemData.id)
             case .raw:
                 break
             }
@@ -270,9 +270,9 @@ private extension PasswordsPresenter {
         }
     }
 
-    func copyCardNumber(id: ItemID) {
-        if interactor.copyCardNumber(id) {
-            toastPresenter.presentCardNumberCopied()
+    func copyPaymentCardNumber(id: ItemID) {
+        if interactor.copyPaymentCardNumber(id) {
+            toastPresenter.presentPaymentCardNumberCopied()
         } else {
             toastPresenter.present(
                 T.cardErrorCopyNumber,
@@ -281,9 +281,9 @@ private extension PasswordsPresenter {
         }
     }
 
-    func copyCardSecurityCode(id: ItemID) {
-        if interactor.copyCardSecurityCode(id) {
-            toastPresenter.presentCardSecurityCodeCopied()
+    func copyPaymentCardSecurityCode(id: ItemID) {
+        if interactor.copyPaymentCardSecurityCode(id) {
+            toastPresenter.presentPaymentCardSecurityCodeCopied()
         } else {
             toastPresenter.present(
                 T.cardErrorCopySecurityCode,
@@ -399,22 +399,22 @@ private extension PasswordsPresenter {
                 ]
                 .compactMap { $0 }
             )
-        case .card(let cardItem):
-            let description: String? = if let mask = cardItem.content.cardNumberMask {
-                CardNumberMaskFormatStyle().format(mask)
+        case .paymentCard(let paymentCardItem):
+            let description: String? = if let mask = paymentCardItem.content.cardNumberMask {
+                PaymentCardNumberMaskFormatStyle().format(mask)
             } else {
-                cardItem.content.cardHolder
+                paymentCardItem.content.cardHolder
             }
             return ItemCellData(
-                itemID: cardItem.id,
-                name: cardItem.name,
+                itemID: paymentCardItem.id,
+                name: paymentCardItem.name,
                 description: description,
-                iconType: .card(issuer: cardItem.content.cardIssuer),
+                iconType: .paymentCard(issuer: paymentCardItem.content.cardIssuer),
                 actions: [
                     .view,
                     .edit,
-                    .copy(.cardNumber),
-                    .copy(.cardSecurityCode),
+                    .copy(.paymentCardNumber),
+                    .copy(.paymentCardSecurityCode),
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

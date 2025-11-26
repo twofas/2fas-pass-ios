@@ -192,8 +192,8 @@ private extension ItemCellView {
                  .copy(.loginUsername),
                  .copy(.loginPassword),
                  .copy(.secureNoteText),
-                 .copy(.cardNumber),
-                 .copy(.cardSecurityCode),
+                 .copy(.paymentCardNumber),
+                 .copy(.paymentCardSecurityCode),
                  .moveToTrash:
                 list.append(
                     UIAction(

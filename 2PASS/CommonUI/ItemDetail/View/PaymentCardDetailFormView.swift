@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-struct CardDetailFormView: View {
+struct PaymentCardDetailFormView: View {
 
     enum SelectedField: Hashable {
         case cardHolder
@@ -15,14 +15,14 @@ struct CardDetailFormView: View {
         case securityCode
     }
 
-    let presenter: CardDetailFormPresenter
+    let presenter: PaymentCardDetailFormPresenter
 
     @State
     private var selectedField: SelectedField?
 
     var body: some View {
         Group {
-            ItemDetalFormTitle(name: presenter.name, icon: presenter.cardIcon)
+            ItemDetalFormTitle(name: presenter.name, icon: presenter.paymentCardIcon)
 
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(

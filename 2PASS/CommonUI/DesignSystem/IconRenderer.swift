@@ -64,11 +64,11 @@ final class IconRenderer: UIView {
             imageRenderer.isHidden = true
             labelRenderer.isHidden = true
             contentTypeRenderer.isHidden = false
-        case .card(let issuer):
-            if let issuer, let cardIssuer = CardIssuer(rawValue: issuer) {
-                updateIcon(with: cardIssuer.icon)
+        case .paymentCard(let issuer):
+            if let issuer, let paymentCardIssuer = PaymentCardIssuer(rawValue: issuer) {
+                updateIcon(with: paymentCardIssuer.icon)
             } else {
-                contentTypeRenderer.configure(with: .card)
+                contentTypeRenderer.configure(with: .paymentCard)
 
                 imageRenderer.isHidden = true
                 labelRenderer.isHidden = true

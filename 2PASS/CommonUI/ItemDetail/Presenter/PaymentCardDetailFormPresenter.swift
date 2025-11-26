@@ -8,48 +8,48 @@ import Common
 import SwiftUI
 
 @Observable
-final class CardDetailFormPresenter: ItemDetailFormPresenter {
+final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
 
-    private(set) var cardItem: CardItemData
+    private(set) var paymentCardItem: PaymentCardItemData
 
     var cardHolder: String? {
-        cardItem.content.cardHolder
+        paymentCardItem.content.cardHolder
     }
 
     var notes: String? {
-        cardItem.content.notes
+        paymentCardItem.content.notes
     }
 
     var cardNumberMask: String? {
-        cardItem.content.cardNumberMask
+        paymentCardItem.content.cardNumberMask
     }
 
-    var cardIssuer: String? {
-        cardItem.content.cardIssuer
+    var paymentCardIssuer: String? {
+        paymentCardItem.content.cardIssuer
     }
 
-    var cardIcon: IconContent {
-        if let icon = cardItem.issuerIcon {
+    var paymentCardIcon: IconContent {
+        if let icon = paymentCardItem.issuerIcon {
             return .icon(icon)
         }
-        return .contentType(.card)
+        return .contentType(.paymentCard)
     }
 
     var cardNumber: String?
     var expirationDate: String?
     var securityCode: String?
 
-    init(item: CardItemData, configuration: ItemDetailFormConfiguration) {
-        self.cardItem = item
+    init(item: PaymentCardItemData, configuration: ItemDetailFormConfiguration) {
+        self.paymentCardItem = item
         super.init(item: item, configuration: configuration)
         refreshValues()
     }
 
     func reload() {
-        guard let newCard = interactor.fetchItem(for: cardItem.id)?.asCard else {
+        guard let newPaymentCard = interactor.fetchItem(for: paymentCardItem.id)?.asPaymentCard else {
             return
         }
-        self.cardItem = newCard
+        self.paymentCardItem = newPaymentCard
         refreshValues()
     }
 
@@ -59,7 +59,7 @@ final class CardDetailFormPresenter: ItemDetailFormPresenter {
         if autoFillEnvironment?.isTextToInsert == true {
             flowController.autoFillTextToInsert(decrypted)
         } else {
-            cardNumber = CardNumberFormatStyle().format(decrypted)
+            cardNumber = PaymentCardNumberFormatStyle().format(decrypted)
         }
     }
 
@@ -83,7 +83,7 @@ final class CardDetailFormPresenter: ItemDetailFormPresenter {
     func onCopyCardNumber() {
         if let decrypted = decryptCardNumber() {
             interactor.copy(decrypted)
-            toastPresenter.presentCardNumberCopied()
+            toastPresenter.presentPaymentCardNumberCopied()
         }
     }
 
@@ -97,24 +97,24 @@ final class CardDetailFormPresenter: ItemDetailFormPresenter {
     func onCopySecurityCode() {
         if let decrypted = decryptSecurityCode() {
             interactor.copy(decrypted)
-            toastPresenter.presentCardSecurityCodeCopied()
+            toastPresenter.presentPaymentCardSecurityCodeCopied()
         }
     }
 
     private func refreshValues() {
         if let mask = cardNumberMask {
-            cardNumber = CardNumberMaskFormatStyle().format(mask)
+            cardNumber = PaymentCardNumberMaskFormatStyle().format(mask)
         } else {
             cardNumber = nil
         }
 
-        if let encrypted = cardItem.content.expirationDate {
-            expirationDate = interactor.decryptSecureField(encrypted, protectionLevel: cardItem.protectionLevel)
+        if let encrypted = paymentCardItem.content.expirationDate {
+            expirationDate = interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel)
         } else {
             expirationDate = nil
         }
 
-        if cardItem.content.securityCode != nil {
+        if paymentCardItem.content.securityCode != nil {
             securityCode = "•••"
         } else {
             securityCode = nil
@@ -122,12 +122,12 @@ final class CardDetailFormPresenter: ItemDetailFormPresenter {
     }
 
     private func decryptCardNumber() -> String? {
-        guard let encrypted = cardItem.content.cardNumber else { return nil }
-        return interactor.decryptSecureField(encrypted, protectionLevel: cardItem.protectionLevel)
+        guard let encrypted = paymentCardItem.content.cardNumber else { return nil }
+        return interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel)
     }
 
     private func decryptSecurityCode() -> String? {
-        guard let encrypted = cardItem.content.securityCode else { return nil }
-        return interactor.decryptSecureField(encrypted, protectionLevel: cardItem.protectionLevel)
+        guard let encrypted = paymentCardItem.content.securityCode else { return nil }
+        return interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel)
     }
 }

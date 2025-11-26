@@ -7,8 +7,8 @@
 import UIKit
 import Common
 
-public protocol CardItemInteracting: AnyObject {
-    func createCard(
+public protocol PaymentCardItemInteracting: AnyObject {
+    func createPaymentCard(
         id: ItemID,
         metadata: ItemMetadata,
         name: String,
@@ -19,7 +19,7 @@ public protocol CardItemInteracting: AnyObject {
         notes: String?
     ) throws(ItemsInteractorSaveError)
 
-    func updateCard(
+    func updatePaymentCard(
         id: ItemID,
         metadata: ItemMetadata,
         name: String,
@@ -30,11 +30,11 @@ public protocol CardItemInteracting: AnyObject {
         notes: String?
     ) throws(ItemsInteractorSaveError)
 
-    func detectCardIssuer(from cardNumber: String?) -> CardIssuer?
-    func makeCardNumberMask(from cardNumber: String?) -> String?
+    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
+    func makePaymentCardNumberMask(from cardNumber: String?) -> String?
 }
 
-final class CardItemInteractor {
+final class PaymentCardItemInteractor {
     private let itemsInteractor: ItemsInteracting
     private let mainRepository: MainRepository
 
@@ -44,9 +44,9 @@ final class CardItemInteractor {
     }
 }
 
-extension CardItemInteractor: CardItemInteracting {
+extension PaymentCardItemInteractor: PaymentCardItemInteracting {
 
-    func createCard(
+    func createPaymentCard(
         id: ItemID,
         metadata: ItemMetadata,
         name: String,
@@ -57,7 +57,7 @@ extension CardItemInteractor: CardItemInteracting {
         notes: String?
     ) throws(ItemsInteractorSaveError) {
         let vaultId = try selectedVaultId
-        let cardItem = try makeCard(
+        let paymentCardItem = try makePaymentCard(
             id: id,
             vaultId: vaultId,
             metadata: metadata,
@@ -68,10 +68,10 @@ extension CardItemInteractor: CardItemInteracting {
             securityCode: securityCode,
             notes: notes
         )
-        try itemsInteractor.createItem(.card(cardItem))
+        try itemsInteractor.createItem(.paymentCard(paymentCardItem))
     }
 
-    func updateCard(
+    func updatePaymentCard(
         id: ItemID,
         metadata: ItemMetadata,
         name: String,
@@ -82,7 +82,7 @@ extension CardItemInteractor: CardItemInteracting {
         notes: String?
     ) throws(ItemsInteractorSaveError) {
         let vaultId = try selectedVaultId
-        let cardItem = try makeCard(
+        let paymentCardItem = try makePaymentCard(
             id: id,
             vaultId: vaultId,
             metadata: metadata,
@@ -93,10 +93,10 @@ extension CardItemInteractor: CardItemInteracting {
             securityCode: securityCode,
             notes: notes
         )
-        try itemsInteractor.updateItem(.card(cardItem))
+        try itemsInteractor.updateItem(.paymentCard(paymentCardItem))
     }
 
-    func detectCardIssuer(from cardNumber: String?) -> CardIssuer? {
+    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
         guard let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty else {
             return nil
         }
@@ -161,7 +161,7 @@ extension CardItemInteractor: CardItemInteracting {
         return nil
     }
 
-    func makeCardNumberMask(from cardNumber: String?) -> String? {
+    func makePaymentCardNumberMask(from cardNumber: String?) -> String? {
         guard let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty else {
             return nil
         }
@@ -173,7 +173,7 @@ extension CardItemInteractor: CardItemInteracting {
     }
 }
 
-private extension CardItemInteractor {
+private extension PaymentCardItemInteractor {
 
     var selectedVaultId: VaultID {
         get throws(ItemsInteractorSaveError) {
@@ -184,7 +184,7 @@ private extension CardItemInteractor {
         }
     }
 
-    func makeCard(
+    func makePaymentCard(
         id: ItemID,
         vaultId: VaultID,
         metadata: ItemMetadata,
@@ -194,13 +194,13 @@ private extension CardItemInteractor {
         expirationDate: String?,
         securityCode: String?,
         notes: String?
-    ) throws(ItemsInteractorSaveError) -> CardItemData {
+    ) throws(ItemsInteractorSaveError) -> PaymentCardItemData {
         let protectionLevel = metadata.protectionLevel
 
         var encryptedCardNumber: Data?
         if let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty {
             guard let encrypted = itemsInteractor.encrypt(cardNumber, isSecureField: true, protectionLevel: protectionLevel) else {
-                Log("CardItemInteractor: Can't encrypt cardNumber", module: .interactor, severity: .error)
+                Log("PaymentCardItemInteractor: Can't encrypt cardNumber", module: .interactor, severity: .error)
                 throw .encryptionError
             }
             encryptedCardNumber = encrypted
@@ -209,7 +209,7 @@ private extension CardItemInteractor {
         var encryptedExpirationDate: Data?
         if let expirationDate = expirationDate?.trim(), !expirationDate.isEmpty {
             guard let encrypted = itemsInteractor.encrypt(expirationDate, isSecureField: true, protectionLevel: protectionLevel) else {
-                Log("CardItemInteractor: Can't encrypt expirationDate", module: .interactor, severity: .error)
+                Log("PaymentCardItemInteractor: Can't encrypt expirationDate", module: .interactor, severity: .error)
                 throw .encryptionError
             }
             encryptedExpirationDate = encrypted
@@ -218,14 +218,14 @@ private extension CardItemInteractor {
         var encryptedSecurityCode: Data?
         if let securityCode = securityCode?.trim(), !securityCode.isEmpty {
             guard let encrypted = itemsInteractor.encrypt(securityCode, isSecureField: true, protectionLevel: protectionLevel) else {
-                Log("CardItemInteractor: Can't encrypt securityCode", module: .interactor, severity: .error)
+                Log("PaymentCardItemInteractor: Can't encrypt securityCode", module: .interactor, severity: .error)
                 throw .encryptionError
             }
             encryptedSecurityCode = encrypted
         }
 
-        let cardNumberMask = makeCardNumberMask(from: cardNumber)
-        let cardIssuer = detectCardIssuer(from: cardNumber)?.rawValue
+        let cardNumberMask = makePaymentCardNumberMask(from: cardNumber)
+        let paymentCardIssuer = detectPaymentCardIssuer(from: cardNumber)?.rawValue
 
         return .init(
             id: id,
@@ -235,7 +235,7 @@ private extension CardItemInteractor {
             content: .init(
                 name: name,
                 cardHolder: cardHolder?.trim().nilIfEmpty,
-                cardIssuer: cardIssuer,
+                cardIssuer: paymentCardIssuer,
                 cardNumber: encryptedCardNumber,
                 cardNumberMask: cardNumberMask,
                 expirationDate: encryptedExpirationDate,

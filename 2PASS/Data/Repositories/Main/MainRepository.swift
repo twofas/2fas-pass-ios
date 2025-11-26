@@ -322,7 +322,7 @@ protocol MainRepository: AnyObject {
         text: Data?
     )
 
-    func createCardItem(
+    func createPaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         creationDate: Date,
@@ -390,7 +390,7 @@ protocol MainRepository: AnyObject {
         text: Data?
     )
 
-    func updateCardItem(
+    func updatePaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         modificationDate: Date,

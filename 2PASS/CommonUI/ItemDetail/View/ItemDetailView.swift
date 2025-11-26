@@ -24,8 +24,8 @@ struct ItemDetailView: View {
                         LoginDetailFormView(presenter: formPresenter)
                     case .secureNote(let formPresenter):
                         SecureNoteDetailFormView(presenter: formPresenter)
-                    case .card(let formPresenter):
-                        CardDetailFormView(presenter: formPresenter)
+                    case .paymentCard(let formPresenter):
+                        PaymentCardDetailFormView(presenter: formPresenter)
                     default:
                         EmptyView()
                     }
@@ -144,8 +144,8 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         text: nil
                     )
                 ))
-        case .card:
-                .card(CardItemData(
+        case .paymentCard:
+                .paymentCard(PaymentCardItemData(
                     id: itemID,
                     vaultId: UUID(),
                     metadata: .init(

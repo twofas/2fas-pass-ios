@@ -1,8 +1,8 @@
-public typealias CardItemData = _ItemData<CardContent>
+public typealias PaymentCardItemData = _ItemData<PaymentCardContent>
 
-public struct CardContent: ItemContent {
+public struct PaymentCardContent: ItemContent {
 
-    public static let contentType: ItemContentType = .card
+    public static let contentType: ItemContentType = .paymentCard
     public static let contentVersion = 1
 
     public let name: String?
@@ -48,9 +48,9 @@ public struct CardContent: ItemContent {
 
 extension ItemData {
 
-    public var asCard: CardItemData? {
+    public var asPaymentCard: PaymentCardItemData? {
         switch self {
-        case .card(let cardItem): cardItem
+        case .paymentCard(let paymentCardItem): paymentCardItem
         default: nil
         }
     }

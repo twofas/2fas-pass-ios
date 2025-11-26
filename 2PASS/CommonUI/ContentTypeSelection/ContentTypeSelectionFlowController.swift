@@ -65,8 +65,8 @@ extension ContentTypeSelectionFlowController: ContentTypeSelectionFlowControllin
             }
         case .secureNote:
             changeRequest = SecureNoteDataChangeRequest(allowChangeContentType: true)
-        case .card:
-            changeRequest = CardDataChangeRequest(allowChangeContentType: true)
+        case .paymentCard:
+            changeRequest = PaymentCardDataChangeRequest(allowChangeContentType: true)
         case .unknown:
             changeRequest = nil
         }

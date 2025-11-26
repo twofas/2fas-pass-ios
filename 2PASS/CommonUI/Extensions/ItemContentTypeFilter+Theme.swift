@@ -21,7 +21,7 @@ extension ItemContentTypeFilter {
             "person.crop.square.fill"
         case .contentType(.secureNote):
             "note.text"
-        case .contentType(.card):
+        case .contentType(.paymentCard):
             "creditcard"
         case .contentType(.unknown):
             ""

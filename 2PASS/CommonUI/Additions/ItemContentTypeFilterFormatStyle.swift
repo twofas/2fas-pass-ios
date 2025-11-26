@@ -22,7 +22,7 @@ struct ItemContentTypeFilterFormatStyle: FormatStyle {
             return T.contentTypeFilterLoginName
         case .contentType(.secureNote):
             return T.contentTypeFilterSecureNoteName
-        case .contentType(.card):
+        case .contentType(.paymentCard):
             return T.contentTypeFilterCardName
         case .contentType(.unknown):
             return "Unknows"

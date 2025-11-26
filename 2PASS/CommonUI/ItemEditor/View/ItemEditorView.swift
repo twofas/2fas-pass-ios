@@ -31,8 +31,8 @@ struct ItemEditorFormView: View {
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )
-            case .card(let presenter):
-                CardEditorFormView(
+            case .paymentCard(let presenter):
+                PaymentCardEditorFormView(
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )

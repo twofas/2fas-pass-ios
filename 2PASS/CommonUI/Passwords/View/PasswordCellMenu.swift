@@ -12,8 +12,8 @@ enum PasswordCellMenu: Hashable {
         case loginUsername
         case loginPassword
         case secureNoteText
-        case cardNumber
-        case cardSecurityCode
+        case paymentCardNumber
+        case paymentCardSecurityCode
     }
     
     case view
@@ -29,8 +29,8 @@ enum PasswordCellMenu: Hashable {
         case .copy(.loginUsername): T.loginViewActionCopyUsername
         case .copy(.loginPassword): T.loginViewActionCopyPassword
         case .copy(.secureNoteText): T.secureNoteViewActionCopy
-        case .copy(.cardNumber): T.cardViewActionCopyCardNumber
-        case .copy(.cardSecurityCode): T.cardViewActionCopySecurityCode
+        case .copy(.paymentCardNumber): T.cardViewActionCopyCardNumber
+        case .copy(.paymentCardSecurityCode): T.cardViewActionCopySecurityCode
         case .goToURI: T.loginViewActionOpenUri
         case .moveToTrash: T.loginViewActionDelete
         }
@@ -43,8 +43,8 @@ enum PasswordCellMenu: Hashable {
         case .copy(.loginUsername): UIImage(systemName: "person")
         case .copy(.loginPassword): UIImage(systemName: "ellipsis.rectangle")
         case .copy(.secureNoteText): UIImage(systemName: "document.on.document")
-        case .copy(.cardNumber): UIImage(systemName: "creditcard")
-        case .copy(.cardSecurityCode): UIImage(systemName: "creditcard.and.123")
+        case .copy(.paymentCardNumber): UIImage(systemName: "creditcard")
+        case .copy(.paymentCardSecurityCode): UIImage(systemName: "creditcard.and.123")
         case .goToURI: UIImage(systemName: "arrow.up.right")
         case .moveToTrash: UIImage(systemName: "trash")
         }

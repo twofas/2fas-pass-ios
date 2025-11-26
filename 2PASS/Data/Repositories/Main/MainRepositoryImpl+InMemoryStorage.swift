@@ -96,7 +96,7 @@ extension MainRepositoryImpl {
         )
     }
 
-    func createCardItem(
+    func createPaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         creationDate: Date,
@@ -113,7 +113,7 @@ extension MainRepositoryImpl {
         cardNumberMask: String?,
         cardIssuer: String?
     ) {
-        inMemoryStorage?.createCardItem(
+        inMemoryStorage?.createPaymentCardItem(
             itemID: itemID,
             vaultID: vaultID,
             creationDate: creationDate,
@@ -232,7 +232,7 @@ extension MainRepositoryImpl {
         )
     }
 
-    func updateCardItem(
+    func updatePaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         modificationDate: Date,
@@ -248,7 +248,7 @@ extension MainRepositoryImpl {
         cardNumberMask: String?,
         cardIssuer: String?
     ) {
-        inMemoryStorage?.updateCardItem(
+        inMemoryStorage?.updatePaymentCardItem(
             itemID: itemID,
             vaultID: vaultID,
             modificationDate: modificationDate,

@@ -20,11 +20,11 @@ extension ToastPresenter {
         presentCopied(T.toastSecureNoteCopied)
     }
 
-    public func presentCardNumberCopied() {
+    public func presentPaymentCardNumberCopied() {
         presentCopied(T.toastCardNumberCopied)
     }
 
-    public func presentCardSecurityCodeCopied() {
+    public func presentPaymentCardSecurityCodeCopied() {
         presentCopied(T.toastCardSecurityCodeCopied)
     }
 

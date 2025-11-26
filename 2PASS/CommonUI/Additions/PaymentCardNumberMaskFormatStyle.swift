@@ -4,13 +4,13 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-extension FormatStyle where Self == CardNumberMaskFormatStyle {
-    public static var cardNumberMask: CardNumberMaskFormatStyle {
+extension FormatStyle where Self == PaymentCardNumberMaskFormatStyle {
+    public static var paymentCardNumberMask: PaymentCardNumberMaskFormatStyle {
         .init()
     }
 }
 
-public struct CardNumberMaskFormatStyle: FormatStyle {
+public struct PaymentCardNumberMaskFormatStyle: FormatStyle {
 
     public init() {}
 

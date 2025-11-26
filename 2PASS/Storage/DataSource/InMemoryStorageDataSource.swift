@@ -175,9 +175,9 @@ public protocol InMemoryStorageDataSource: AnyObject {
         options: ItemsListOptions
     ) -> [SecureNoteItemData]
 
-    // MARK: - Card Items
+    // MARK: - Payment Card Items
 
-    func createCardItem(
+    func createPaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         creationDate: Date,
@@ -195,7 +195,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         cardIssuer: String?
     )
 
-    func updateCardItem(
+    func updatePaymentCardItem(
         itemID: ItemID,
         vaultID: VaultID,
         modificationDate: Date,
@@ -212,14 +212,14 @@ public protocol InMemoryStorageDataSource: AnyObject {
         cardIssuer: String?
     )
 
-    func getCardItem(
+    func getPaymentCardItem(
         itemID: ItemID,
         checkInTrash: Bool
-    ) -> CardItemData?
+    ) -> PaymentCardItemData?
 
-    func listCardItems(
+    func listPaymentCardItems(
         options: ItemsListOptions
-    ) -> [CardItemData]
+    ) -> [PaymentCardItemData]
 
     // MARK: - Other
     

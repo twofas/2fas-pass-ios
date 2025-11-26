@@ -8,9 +8,9 @@ import Foundation
 import CoreData
 import Common
 
-extension CardEntity {
-    @nonobjc static func fetchRequest() -> NSFetchRequest<CardEntity> {
-        NSFetchRequest<CardEntity>(entityName: cardEntityName)
+extension PaymentCardEntity {
+    @nonobjc static func fetchRequest() -> NSFetchRequest<PaymentCardEntity> {
+        NSFetchRequest<PaymentCardEntity>(entityName: paymentCardEntityName)
     }
 
     @NSManaged var cardHolder: String?

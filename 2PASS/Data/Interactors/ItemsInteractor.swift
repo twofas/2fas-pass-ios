@@ -155,23 +155,23 @@ extension ItemsInteractor: ItemsInteracting {
                 name: secureNoteItem.name,
                 text: secureNoteItem.content.text
             )
-        case .card(let cardItem):
-            mainRepository.createCardItem(
-                itemID: cardItem.id,
+        case .paymentCard(let paymentCardItem):
+            mainRepository.createPaymentCardItem(
+                itemID: paymentCardItem.id,
                 vaultID: selectedVault.id,
-                creationDate: cardItem.creationDate,
-                modificationDate: cardItem.modificationDate,
-                trashedStatus: cardItem.trashedStatus,
-                protectionLevel: cardItem.protectionLevel,
-                tagIds: cardItem.tagIds,
-                name: cardItem.name,
-                cardHolder: cardItem.content.cardHolder,
-                cardNumber: cardItem.content.cardNumber,
-                expirationDate: cardItem.content.expirationDate,
-                securityCode: cardItem.content.securityCode,
-                notes: cardItem.content.notes,
-                cardNumberMask: cardItem.content.cardNumberMask,
-                cardIssuer: cardItem.content.cardIssuer
+                creationDate: paymentCardItem.creationDate,
+                modificationDate: paymentCardItem.modificationDate,
+                trashedStatus: paymentCardItem.trashedStatus,
+                protectionLevel: paymentCardItem.protectionLevel,
+                tagIds: paymentCardItem.tagIds,
+                name: paymentCardItem.name,
+                cardHolder: paymentCardItem.content.cardHolder,
+                cardNumber: paymentCardItem.content.cardNumber,
+                expirationDate: paymentCardItem.content.expirationDate,
+                securityCode: paymentCardItem.content.securityCode,
+                notes: paymentCardItem.content.notes,
+                cardNumberMask: paymentCardItem.content.cardNumberMask,
+                cardIssuer: paymentCardItem.content.cardIssuer
             )
         case .raw:
             mainRepository.createItem(
@@ -246,22 +246,22 @@ extension ItemsInteractor: ItemsInteracting {
                 name: secureNoteItem.name,
                 text: secureNoteItem.content.text
             )
-        case .card(let cardItem):
-            mainRepository.updateCardItem(
-                itemID: cardItem.id,
+        case .paymentCard(let paymentCardItem):
+            mainRepository.updatePaymentCardItem(
+                itemID: paymentCardItem.id,
                 vaultID: selectedVault.id,
-                modificationDate: cardItem.modificationDate,
-                trashedStatus: cardItem.trashedStatus,
-                protectionLevel: cardItem.protectionLevel,
-                tagIds: cardItem.tagIds,
-                name: cardItem.name,
-                cardHolder: cardItem.content.cardHolder,
-                cardNumber: cardItem.content.cardNumber,
-                expirationDate: cardItem.content.expirationDate,
-                securityCode: cardItem.content.securityCode,
-                notes: cardItem.content.notes,
-                cardNumberMask: cardItem.content.cardNumberMask,
-                cardIssuer: cardItem.content.cardIssuer
+                modificationDate: paymentCardItem.modificationDate,
+                trashedStatus: paymentCardItem.trashedStatus,
+                protectionLevel: paymentCardItem.protectionLevel,
+                tagIds: paymentCardItem.tagIds,
+                name: paymentCardItem.name,
+                cardHolder: paymentCardItem.content.cardHolder,
+                cardNumber: paymentCardItem.content.cardNumber,
+                expirationDate: paymentCardItem.content.expirationDate,
+                securityCode: paymentCardItem.content.securityCode,
+                notes: paymentCardItem.content.notes,
+                cardNumberMask: paymentCardItem.content.cardNumberMask,
+                cardIssuer: paymentCardItem.content.cardIssuer
             )
         case .raw:
             mainRepository.updateItem(

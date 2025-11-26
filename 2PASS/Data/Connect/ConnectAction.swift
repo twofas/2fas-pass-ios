@@ -109,7 +109,7 @@ extension ConnectSchemaV2 {
 
     enum SupportedFeatures: String {
         case secureNote = "items.secureNote"
-        case card = "items.card"
+        case card = "items.paymentCard"
     }
     
     struct ConnectActioRequestType: Decodable {

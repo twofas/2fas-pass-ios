@@ -8,9 +8,9 @@ import Foundation
 import CoreData
 import Common
 
-@objc(CardEntity)
-final class CardEntity: ItemMetadataEntity {
-    @nonobjc static let cardEntityName = "CardEntity"
+@objc(PaymentCardEntity)
+final class PaymentCardEntity: ItemMetadataEntity {
+    @nonobjc static let paymentCardEntityName = "PaymentCardEntity"
 
     override class func create(
         on context: NSManagedObjectContext,
@@ -28,9 +28,9 @@ final class CardEntity: ItemMetadataEntity {
     ) {
         do {
             let decoder = JSONDecoder()
-            let cardContent = try decoder.decode(CardContent.self, from: content)
+            let paymentCardContent = try decoder.decode(PaymentCardContent.self, from: content)
 
-            createCard(
+            createPaymentCard(
                 on: context,
                 itemID: itemID,
                 vaultID: vaultID,
@@ -40,13 +40,13 @@ final class CardEntity: ItemMetadataEntity {
                 protectionLevel: protectionLevel,
                 tagIds: tagIds,
                 name: name,
-                cardHolder: cardContent.cardHolder,
-                cardNumber: cardContent.cardNumber,
-                expirationDate: cardContent.expirationDate,
-                securityCode: cardContent.securityCode,
-                notes: cardContent.notes,
-                cardNumberMask: cardContent.cardNumberMask,
-                cardIssuer: cardContent.cardIssuer
+                cardHolder: paymentCardContent.cardHolder,
+                cardNumber: paymentCardContent.cardNumber,
+                expirationDate: paymentCardContent.expirationDate,
+                securityCode: paymentCardContent.securityCode,
+                notes: paymentCardContent.notes,
+                cardNumberMask: paymentCardContent.cardNumberMask,
+                cardIssuer: paymentCardContent.cardIssuer
             )
         } catch {
             fatalError(error.localizedDescription)
@@ -68,9 +68,9 @@ final class CardEntity: ItemMetadataEntity {
     ) {
         do {
             let decoder = JSONDecoder()
-            let cardContent = try decoder.decode(CardContent.self, from: content)
+            let paymentCardContent = try decoder.decode(PaymentCardContent.self, from: content)
 
-            updateCard(
+            updatePaymentCard(
                 on: context,
                 for: itemID,
                 vaultID: vaultID,
@@ -79,20 +79,20 @@ final class CardEntity: ItemMetadataEntity {
                 protectionLevel: protectionLevel,
                 tagIds: tagIds,
                 name: name,
-                cardHolder: cardContent.cardHolder,
-                cardNumber: cardContent.cardNumber,
-                expirationDate: cardContent.expirationDate,
-                securityCode: cardContent.securityCode,
-                notes: cardContent.notes,
-                cardNumberMask: cardContent.cardNumberMask,
-                cardIssuer: cardContent.cardIssuer
+                cardHolder: paymentCardContent.cardHolder,
+                cardNumber: paymentCardContent.cardNumber,
+                expirationDate: paymentCardContent.expirationDate,
+                securityCode: paymentCardContent.securityCode,
+                notes: paymentCardContent.notes,
+                cardNumberMask: paymentCardContent.cardNumberMask,
+                cardIssuer: paymentCardContent.cardIssuer
             )
         } catch {
             fatalError(error.localizedDescription)
         }
     }
 
-    @nonobjc static func createCard(
+    @nonobjc static func createPaymentCard(
         on context: NSManagedObjectContext,
         itemID: ItemID,
         vaultID: VaultID,
@@ -110,15 +110,15 @@ final class CardEntity: ItemMetadataEntity {
         cardNumberMask: String?,
         cardIssuer: String?
     ) {
-        let entity = NSEntityDescription.insertNewObject(forEntityName: cardEntityName, into: context) as! CardEntity
+        let entity = NSEntityDescription.insertNewObject(forEntityName: paymentCardEntityName, into: context) as! PaymentCardEntity
 
         entity.itemID = itemID
         entity.vaultID = vaultID
         entity.name = name
         entity.creationDate = creationDate
         entity.modificationDate = modificationDate
-        entity.contentType = ItemContentType.card.rawValue
-        entity.contentVersion = Int16(CardContent.contentVersion)
+        entity.contentType = ItemContentType.paymentCard.rawValue
+        entity.contentVersion = Int16(PaymentCardContent.contentVersion)
 
         switch trashedStatus {
         case .no:
@@ -145,7 +145,7 @@ final class CardEntity: ItemMetadataEntity {
         entity.cardIssuer = cardIssuer
     }
 
-    @nonobjc static func updateCard(
+    @nonobjc static func updatePaymentCard(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
         vaultID: VaultID,
@@ -162,12 +162,12 @@ final class CardEntity: ItemMetadataEntity {
         cardNumberMask: String?,
         cardIssuer: String?
     ) {
-        guard let entity = getCardEntity(on: context, itemID: itemID, checkInTrash: true) else {
-            Log("Can't find card entity for itemID: \(itemID)", module: .storage)
+        guard let entity = getPaymentCardEntity(on: context, itemID: itemID, checkInTrash: true) else {
+            Log("Can't find payment card entity for itemID: \(itemID)", module: .storage)
             return
         }
 
-        updateCard(
+        updatePaymentCard(
             on: context,
             entity: entity,
             vaultID: vaultID,
@@ -186,9 +186,9 @@ final class CardEntity: ItemMetadataEntity {
         )
     }
 
-    @nonobjc static func updateCard(
+    @nonobjc static func updatePaymentCard(
         on context: NSManagedObjectContext,
-        entity: CardEntity,
+        entity: PaymentCardEntity,
         vaultID: VaultID,
         modificationDate: Date,
         trashedStatus: ItemTrashedStatus,
@@ -232,12 +232,12 @@ final class CardEntity: ItemMetadataEntity {
         entity.cardIssuer = cardIssuer
     }
 
-    @nonobjc static func getCardEntity(
+    @nonobjc static func getPaymentCardEntity(
         on context: NSManagedObjectContext,
         itemID: UUID,
         checkInTrash: Bool
-    ) -> CardEntity? {
-        let fetchRequest: NSFetchRequest<CardEntity> = CardEntity.fetchRequest()
+    ) -> PaymentCardEntity? {
+        let fetchRequest: NSFetchRequest<PaymentCardEntity> = PaymentCardEntity.fetchRequest()
 
         if checkInTrash {
             fetchRequest.predicate = NSPredicate(format: "itemID == %@", itemID as CVarArg)
@@ -249,23 +249,23 @@ final class CardEntity: ItemMetadataEntity {
             let results = try context.fetch(fetchRequest)
             return results.first
         } catch {
-            Log("Error fetching CardEntity: \(error)", module: .storage)
+            Log("Error fetching PaymentCardEntity: \(error)", module: .storage)
             return nil
         }
     }
 
-    @nonobjc static func listCardEntities(
+    @nonobjc static func listPaymentCardEntities(
         on context: NSManagedObjectContext,
         options: ItemsListOptions
-    ) -> [CardEntity] {
-        let fetchRequest: NSFetchRequest<CardEntity> = CardEntity.fetchRequest()
+    ) -> [PaymentCardEntity] {
+        let fetchRequest: NSFetchRequest<PaymentCardEntity> = PaymentCardEntity.fetchRequest()
         fetchRequest.predicate = options.predicate
         fetchRequest.sortDescriptors = options.sortDescriptors
 
         do {
             return try context.fetch(fetchRequest)
         } catch {
-            Log("Error fetching CardEntities: \(error)", module: .storage)
+            Log("Error fetching PaymentCardEntities: \(error)", module: .storage)
             return []
         }
     }
@@ -273,7 +273,7 @@ final class CardEntity: ItemMetadataEntity {
     override func toData() -> ItemData {
         let metadata = toMetadata()
 
-        let content = CardContent(
+        let content = PaymentCardContent(
             name: name,
             cardHolder: cardHolder,
             cardIssuer: cardIssuer,
@@ -284,7 +284,7 @@ final class CardEntity: ItemMetadataEntity {
             notes: notes
         )
 
-        return .card(CardItemData(
+        return .paymentCard(PaymentCardItemData(
             id: itemID,
             vaultId: vaultID,
             metadata: metadata,
