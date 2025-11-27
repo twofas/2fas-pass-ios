@@ -16,8 +16,24 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     var securityCode: String = ""
     var notes: String = ""
 
+    var paymentCardIssuer: PaymentCardIssuer? {
+        interactor.detectPaymentCardIssuer(from: cardNumber)
+    }
+
     var paymentCardIssuerIcon: UIImage? {
-        interactor.detectPaymentCardIssuer(from: cardNumber)?.icon
+        paymentCardIssuer?.icon
+    }
+
+    var maxCardNumberLength: Int {
+        interactor.maxCardNumberLength(for: paymentCardIssuer)
+    }
+
+    var maxSecurityCodeLength: Int {
+        interactor.maxSecurityCodeLength(for: paymentCardIssuer)
+    }
+
+    var cardNumberFormatStyle: PaymentCardNumberFormatStyle {
+        PaymentCardNumberFormatStyle(issuer: paymentCardIssuer)
     }
 
     private var initialCardHolder: String?

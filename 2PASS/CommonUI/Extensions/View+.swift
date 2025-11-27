@@ -69,6 +69,11 @@ public extension View {
                 text.wrappedValue = String(text.wrappedValue.prefix(characterLimit))
             }
         }
+        .onChange(of: characterLimit) { _, newValue in
+            if text.wrappedValue.count > characterLimit {
+                text.wrappedValue = String(text.wrappedValue.prefix(newValue))
+            }
+        }
     }
 }
 

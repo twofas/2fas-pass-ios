@@ -573,7 +573,7 @@ private extension ExternalServiceImportInteractor {
                         return nil
                     }()
                     let cardNumberMask = self?.paymentCardItemInteractor.makePaymentCardNumberMask(from: cardNumberString)
-                    let cardIssuer = self?.paymentCardItemInteractor.detectPaymentCardIssuer(from: cardNumberString)?.rawValue
+                    let cardIssuer = self?.paymentCardItemInteractor.detectCardIssuer(from: cardNumberString)?.rawValue
 
                     // Add unmapped fields to notes
                     let note = dict["note"]?.nilIfEmpty

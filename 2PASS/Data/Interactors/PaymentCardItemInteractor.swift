@@ -8,6 +8,7 @@ import UIKit
 import Common
 
 public protocol PaymentCardItemInteracting: AnyObject {
+
     func createPaymentCard(
         id: ItemID,
         metadata: ItemMetadata,
@@ -30,7 +31,9 @@ public protocol PaymentCardItemInteracting: AnyObject {
         notes: String?
     ) throws(ItemsInteractorSaveError)
 
-    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
+    func detectCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
+    func maxCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
+    func maxSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
     func makePaymentCardNumberMask(from cardNumber: String?) -> String?
 }
 
@@ -45,6 +48,28 @@ final class PaymentCardItemInteractor {
 }
 
 extension PaymentCardItemInteractor: PaymentCardItemInteracting {
+
+    func maxCardNumberLength(for issuer: PaymentCardIssuer?) -> Int {
+        switch issuer {
+        case .visa, .mastercard, .jcb:
+            return 16
+        case .americanExpress:
+            return 15
+        case .discover, .dinersClub, .unionPay:
+            return 19
+        case nil:
+            return 19
+        }
+    }
+
+    func maxSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        switch issuer {
+        case .americanExpress, nil:
+            return 4
+        case .visa, .mastercard, .discover, .dinersClub, .jcb, .unionPay:
+            return 3
+        }
+    }
 
     func createPaymentCard(
         id: ItemID,
@@ -96,14 +121,11 @@ extension PaymentCardItemInteractor: PaymentCardItemInteracting {
         try itemsInteractor.updateItem(.paymentCard(paymentCardItem))
     }
 
-    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
+    func detectCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
         guard let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty else {
             return nil
         }
         let digitsOnly = cardNumber.filter { $0.isNumber }
-        guard digitsOnly.count >= 4 else {
-            return nil
-        }
 
         // Visa: starts with 4
         if digitsOnly.hasPrefix("4") {
@@ -225,7 +247,7 @@ private extension PaymentCardItemInteractor {
         }
 
         let cardNumberMask = makePaymentCardNumberMask(from: cardNumber)
-        let paymentCardIssuer = detectPaymentCardIssuer(from: cardNumber)?.rawValue
+        let paymentCardIssuer = detectCardIssuer(from: cardNumber)?.rawValue
 
         return .init(
             id: id,

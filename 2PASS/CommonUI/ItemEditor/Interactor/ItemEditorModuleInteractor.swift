@@ -77,6 +77,8 @@ protocol ItemEditorModuleInteracting: AnyObject {
 
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
+    func maxCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
+    func maxSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
 
     func mostUsedUsernames() -> [String]
     func normalizeURLString(_ str: String) -> String?
@@ -166,7 +168,15 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     }
 
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
-        paymentCardItemInteractor.detectPaymentCardIssuer(from: cardNumber)
+        paymentCardItemInteractor.detectCardIssuer(from: cardNumber)
+    }
+
+    func maxCardNumberLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardItemInteractor.maxCardNumberLength(for: issuer)
+    }
+
+    func maxSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardItemInteractor.maxSecurityCodeLength(for: issuer)
     }
 
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {

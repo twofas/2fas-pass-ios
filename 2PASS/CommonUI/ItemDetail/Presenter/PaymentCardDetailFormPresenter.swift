@@ -59,7 +59,8 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         if autoFillEnvironment?.isTextToInsert == true {
             flowController.autoFillTextToInsert(decrypted)
         } else {
-            cardNumber = PaymentCardNumberFormatStyle().format(decrypted)
+            let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
+            cardNumber = PaymentCardNumberFormatStyle(issuer: issuer).format(decrypted)
         }
     }
 

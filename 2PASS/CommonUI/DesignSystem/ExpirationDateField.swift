@@ -15,7 +15,7 @@ public struct ExpirationDateField: View {
     @State
     private var previousText = ""
 
-    public init(placeholder: String, text: Binding<String>) {
+    public init(_ placeholder: String, text: Binding<String>) {
         self.placeholder = placeholder
         self._text = text
     }

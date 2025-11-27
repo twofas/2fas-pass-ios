@@ -6,10 +6,10 @@
 
 public enum PaymentCardIssuer: String, Codable, Hashable, Sendable {
     case visa = "Visa"
-    case mastercard = "Mastercard"
-    case americanExpress = "American Express"
+    case mastercard = "MC"
+    case americanExpress = "AMEX"
     case discover = "Discover"
-    case dinersClub = "Diners Club"
+    case dinersClub = "DinersClub"
     case jcb = "JCB"
     case unionPay = "UnionPay"
 }

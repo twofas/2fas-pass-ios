@@ -60,15 +60,18 @@ struct PaymentCardEditorFormView: View {
             .formFieldChanged(presenter.cardHolderChanged)
 
             LabeledInput(label: T.cardNumberLabel.localizedKey, fieldWidth: $fieldWidth) {
-                TextField(T.cardNumberLabel.localizedKey, text: $presenter.cardNumber)
-                    .focused($focusField, equals: .cardNumber)
-                    .keyboardType(.numberPad)
-                    .textContentType(.creditCardNumber)
+                PaymentCardNumberField(
+                    T.cardNumberLabel,
+                    text: $presenter.cardNumber,
+                    maxLength: presenter.maxCardNumberLength,
+                    formatStyle: presenter.cardNumberFormatStyle
+                )
+                .focused($focusField, equals: .cardNumber)
             }
             .formFieldChanged(presenter.cardNumberChanged)
 
             LabeledInput(label: T.cardExpirationDateLabel.localizedKey, fieldWidth: $fieldWidth) {
-                ExpirationDateField(placeholder: T.cardExpirationDatePlaceholder, text: $presenter.expirationDate)
+                ExpirationDateField(T.cardExpirationDatePlaceholder, text: $presenter.expirationDate)
                     .textContentType(.creditCardExpiration)
                     .focused($focusField, equals: .expirationDate)
             }
@@ -80,7 +83,7 @@ struct PaymentCardEditorFormView: View {
                         textField.keyboardType = .numberPad
                         textField.textContentType = .creditCardSecurityCode
                     }
-                    .limitText($presenter.securityCode, to: 4)
+                    .limitText($presenter.securityCode, to: presenter.maxSecurityCodeLength)
                     .focused($focusField, equals: .securityCode)
             }
             .formFieldChanged(presenter.securityCodeChanged)
