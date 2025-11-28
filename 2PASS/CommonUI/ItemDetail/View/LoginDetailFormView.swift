@@ -74,7 +74,10 @@ struct LoginDetailFormView: View {
                         actions: {[
                             UIAction(title: T.loginViewActionOpenUri) { _ in
                                 presenter.onOpenURI(uriNormalized)
-                            }
+                            },
+                            UIAction(title: T.loginViewActionCopyUri) { _ in
+                                presenter.onCopyURI(uriNormalized)
+                            },
                         ]},
                     )
                     .selected($selectedField, equals: .url(uri.id))
