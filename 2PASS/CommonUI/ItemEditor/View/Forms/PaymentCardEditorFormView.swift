@@ -116,7 +116,7 @@ struct PaymentCardEditorFormView: View {
                         textField.keyboardType = .numberPad
                         textField.textContentType = .creditCardSecurityCode
                     }
-                    .limitText($presenter.securityCode, to: presenter.maxSecurityCodeLength)
+                    .limitText($presenter.displayedSecurityCode, to: presenter.maxSecurityCodeLength)
                     .focused($focusField, equals: .securityCode)
             }
             .formFieldChanged(presenter.securityCodeChanged)

@@ -11,9 +11,9 @@ import UIKit
 final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
     var cardHolder: String = ""
-    var cardNumber: String = ""
+    var cardNumber: String?
     var expirationDate: String = ""
-    var securityCode: String = ""
+    var securityCode: String?
     var notes: String = ""
     
     var isSecurityCodeInvalid: Bool = false
@@ -36,7 +36,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     var displayedCardNumber: String {
         get {
             if isCardNumberRevealed {
-                return cardNumber
+                return cardNumber ?? ""
             } else {
                 let mask = cardNumberMask ?? initialCardNumberMask
                 return mask?.formatted(.paymentCardNumberMask) ?? ""
@@ -56,7 +56,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     var displayedSecurityCode: String {
         get {
             if isSecurityCodeRevealed {
-                return securityCode
+                return securityCode ?? ""
             } else {
                 return String(repeating: "•", count: maxSecurityCodeLength)
             }
@@ -97,8 +97,8 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     override var canSave: Bool {
         guard super.canSave else { return false }
         let isExpirationDateValid = expirationDate.isEmpty || validateExpirationDate(expirationDate)
-        let isSecurityCodeValid = securityCode.isEmpty || validateSecurityCode(securityCode)
-        let isCardNumberValid = cardNumber.isEmpty || validateCardNumber(cardNumber)
+        let isSecurityCodeValid = securityCode?.isEmpty != false || securityCode.map { validateSecurityCode($0) } == true
+        let isCardNumberValid = cardNumber?.isEmpty == true || cardNumber.map { validateCardNumber($0) } == true
         return isExpirationDateValid && isSecurityCodeValid && isCardNumberValid
     }
 
@@ -156,15 +156,15 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
     func onSecurityCodeFocusChange(isFocused: Bool) {
         if isFocused {
-            isSecurityCodeLiveValidation = !securityCode.isEmpty
+            isSecurityCodeLiveValidation = securityCode?.isEmpty == false
         } else {
-            isSecurityCodeInvalid = !securityCode.isEmpty && !validateSecurityCode(securityCode)
+            isSecurityCodeInvalid = securityCode?.isEmpty == false && securityCode.map { validateSecurityCode($0) } == false
         }
     }
 
     func onSecurityCodeChange() {
         if isSecurityCodeLiveValidation {
-            isSecurityCodeInvalid = !securityCode.isEmpty && !validateSecurityCode(securityCode)
+            isSecurityCodeInvalid = securityCode?.isEmpty == false && securityCode.map { validateSecurityCode($0) } == false
         }
     }
 
@@ -174,21 +174,20 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
     func onCardNumberFocusChange(isFocused: Bool) {
         if isFocused {
-            isCardNumberLiveValidation = !cardNumber.isEmpty
+            isCardNumberLiveValidation = cardNumber?.isEmpty == false
         } else {
-            isCardNumberInvalid = !cardNumber.isEmpty && !validateCardNumber(cardNumber)
+            isCardNumberInvalid = cardNumber?.isEmpty == false && cardNumber.map { validateCardNumber($0) } == false
         }
     }
 
     func onCardNumberChange() {
         if isCardNumberLiveValidation {
-            isCardNumberInvalid = !cardNumber.isEmpty && !validateCardNumber(cardNumber)
+            isCardNumberInvalid = cardNumber?.isEmpty == false && cardNumber.map { validateCardNumber($0) } == false
         }
     }
 
     var securityCodeChanged: Bool {
-        guard let initialSecurityCode else { return false }
-        return securityCode != initialSecurityCode
+        securityCode != initialSecurityCode
     }
 
     var notesChanged: Bool {
@@ -252,7 +251,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     private func decryptCardNumberIfNeeded() {
-        guard cardNumber.isEmpty else { return }
+        guard cardNumber == nil else { return }
         if let encrypted = encryptedCardNumber,
            let item = initialPaymentCardItem {
             let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel) ?? ""
@@ -268,10 +267,10 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     private func decryptSecurityCodeIfNeeded() {
-        guard securityCode.isEmpty else { return }
+        guard securityCode == nil else { return }
         if let encrypted = encryptedSecurityCode,
            let item = initialPaymentCardItem {
-            let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel) ?? ""
+            let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel)
             securityCode = decrypted
             initialSecurityCode = decrypted
         }
