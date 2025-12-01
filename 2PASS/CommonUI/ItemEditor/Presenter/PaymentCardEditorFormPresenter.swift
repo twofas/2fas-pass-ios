@@ -187,7 +187,8 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     var securityCodeChanged: Bool {
-        securityCode != initialSecurityCode
+        guard let initialSecurityCode else { return false }
+        return securityCode != initialSecurityCode
     }
 
     var notesChanged: Bool {
