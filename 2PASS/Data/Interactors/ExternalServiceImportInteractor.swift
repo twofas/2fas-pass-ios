@@ -28,12 +28,16 @@ public protocol ExternalServiceImportInteracting: AnyObject {
 final class ExternalServiceImportInteractor {
     private let mainRepository: MainRepository
     private let uriInteractor: URIInteracting
-    private let paymentCardItemInteractor: PaymentCardItemInteracting
+    private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
 
-    init(mainRepository: MainRepository, uriInteractor: URIInteracting, paymentCardItemInteractor: PaymentCardItemInteracting) {
+    init(
+        mainRepository: MainRepository,
+        uriInteractor: URIInteracting,
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+    ) {
         self.mainRepository = mainRepository
         self.uriInteractor = uriInteractor
-        self.paymentCardItemInteractor = paymentCardItemInteractor
+        self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
     }
 }
 
@@ -572,8 +576,8 @@ private extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let cardNumberMask = self?.paymentCardItemInteractor.makePaymentCardNumberMask(from: cardNumberString)
-                    let cardIssuer = self?.paymentCardItemInteractor.detectCardIssuer(from: cardNumberString)?.rawValue
+                    let cardNumberMask = self?.paymentCardUtilityInteractor.cardNumberMask(from: cardNumberString)
+                    let cardIssuer = self?.paymentCardUtilityInteractor.detectCardIssuer(from: cardNumberString)?.rawValue
 
                     // Add unmapped fields to notes
                     let note = dict["note"]?.nilIfEmpty

@@ -9,6 +9,7 @@ import SwiftUIIntrospect
 
 public struct SecureInput: View {
     let label: String
+    let isInvalid: Bool
 
     @State
     private var isReveal = false
@@ -21,16 +22,17 @@ public struct SecureInput: View {
     private var isColorized = false
     private var onSubmit: (() -> Void)?
 
-    public init(label: String, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
+    public init(label: String, value: Binding<String>, reveal: Binding<Bool>? = nil, isInvalid: Bool = false, onSubmit: (() -> Void)? = nil) {
         self.label = label
         self.bindingReveal = reveal
         self._value = value
+        self.isInvalid = isInvalid
         self.onSubmit = onSubmit
     }
 
     public var body: some View {
         HStack {
-            SecureContentInput(label: label, value: $value, isReveal: isReveal)
+            SecureContentInput(label: label, value: $value, isReveal: isReveal, isInvalid: isInvalid)
                 .colorized(isColorized)
                 .introspect(introspectTextField)
                 .onSubmit {
@@ -38,9 +40,9 @@ public struct SecureInput: View {
                 }
             
             Spacer()
-            
+
             Toggle(isOn: $isReveal, label: {})
-                .toggleStyle(RevealToggleStyle())
+                .toggleStyle(.reveal)
                 .frame(width: 22)
         }
         .onChange(of: isReveal) { oldValue, newValue in
@@ -68,19 +70,6 @@ public struct SecureInput: View {
     }
 }
 
-public struct RevealToggleStyle: ToggleStyle {
-    
-    public init() {}
-    
-    public func makeBody(configuration: Configuration) -> some View {
-        Button {
-            configuration.$isOn.wrappedValue.toggle()
-        } label: {
-            Image(systemName: configuration.isOn ? "eye.slash" : "eye")
-                .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
-        }
-    }
-}
 
 public struct SecureContentInput: View {
 
@@ -91,6 +80,7 @@ public struct SecureContentInput: View {
 
     let label: String
     let isReveal: Bool
+    let isInvalid: Bool
 
     @Binding
     var value: String
@@ -101,23 +91,25 @@ public struct SecureContentInput: View {
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
 
-    public init(label: String, value: Binding<String>, isReveal: Bool = false) {
+    public init(label: String, value: Binding<String>, isReveal: Bool = false, isInvalid: Bool = false) {
         self.label = label
         self._value = value
         self.isReveal = isReveal
+        self.isInvalid = isInvalid
     }
 
     public var body: some View {
         ZStack {
             SecureField(label, text: $value)
                 .focused($focusedField, equals: .secure)
+                .foregroundStyle(isInvalid ? .danger500 : .primary)
                 .opacity(isReveal ? 0 : 1)
                 .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     introspectTextField(textField)
                 }
 
             SecureContainerView(contentId: value) {
-                RevealedPasswordTextField(text: $value, placeholder: label, isColorized: isColorized)
+                RevealedPasswordTextField(text: $value, placeholder: label, isColorized: isColorized, isInvalid: isInvalid)
                     .focused($focusedField, equals: .unsecure)
                     .fontDesign(value.isEmpty ? .default : .monospaced)
                     .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
@@ -158,6 +150,7 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
     @Binding var text: String
     let placeholder: String
     let isColorized: Bool
+    let isInvalid: Bool
 
     func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
@@ -190,6 +183,7 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
         }
 
         uiView.placeholder = placeholder
+        uiView.textColor = isInvalid ? UIColor(.danger500) : .label
 
         let bodyFont = UIFont.preferredFont(forTextStyle: .body)
         if text.isEmpty == false {

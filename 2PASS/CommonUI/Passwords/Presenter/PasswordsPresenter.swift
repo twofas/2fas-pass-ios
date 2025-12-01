@@ -401,7 +401,7 @@ private extension PasswordsPresenter {
             )
         case .paymentCard(let paymentCardItem):
             let description: String? = if let mask = paymentCardItem.content.cardNumberMask {
-                PaymentCardNumberMaskFormatStyle().format(mask)
+                mask.formatted(.paymentCardNumberMask)
             } else {
                 paymentCardItem.content.cardHolder
             }

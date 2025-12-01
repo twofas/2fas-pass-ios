@@ -193,6 +193,10 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         []
     }
+
+    func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        issuer == .americanExpress ? 4 : 3
+    }
 }
 
 

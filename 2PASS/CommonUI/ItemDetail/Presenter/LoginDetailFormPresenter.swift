@@ -72,7 +72,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
         if autoFillEnvironment?.isTextToInsert == true {
             flowController.autoFillTextToInsert(passwordDecrypted)
         } else {
-            password = PasswordRenderer(password: passwordDecrypted).makeColorizedAttributedString()
+            password = PasswordRenderer(password: passwordDecrypted.withZeroWidthSpaces).makeColorizedAttributedString()
         }
     }
     
@@ -106,6 +106,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     
     func onCopyURI(_ url: URL) {
         interactor.copy(url.absoluteString)
+        toastPresenter.presentCopied()
     }
     
     func uriKey(at index: Int) -> LocalizedStringKey {

@@ -188,7 +188,7 @@ struct ConnectPullReqestCommunicationView: View {
             subtitle: Text(T.requestModalSecureNoteRequestSubtitle.localizedKey),
             name: item.name ?? "",
             description: nil,
-            iconContent: .contentType(.secureNote)
+            iconContent: presenter.iconContent
         )
     }
 
@@ -196,9 +196,9 @@ struct ConnectPullReqestCommunicationView: View {
         itemRequestView(
             title: Text(T.requestModalCardRequestTitle.localizedKey),
             subtitle: Text(T.requestModalCardRequestSubtitle.localizedKey),
-            name: PaymentCardNumberMaskFormatStyle().format(item.content.cardNumberMask ?? ""),
-            description: item.content.cardHolder,
-            iconContent: .contentType(.paymentCard)
+            name: item.name ?? "",
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask),
+            iconContent: presenter.iconContent
         )
     }
 
@@ -246,7 +246,7 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(T.requestModalNewSecureNoteTitle.localizedKey),
             name: changeRequest.name ?? "",
             description: nil,
-            iconContent: .contentType(.secureNote)
+            iconContent: presenter.iconContent
         )
     }
 
@@ -254,8 +254,8 @@ struct ConnectPullReqestCommunicationView: View {
         addItemView(
             title: Text(T.requestModalNewCardTitle.localizedKey),
             name: changeRequest.name ?? "",
-            description: PaymentCardNumberMaskFormatStyle().format(changeRequest.cardNumber ?? ""),
-            iconContent: .contentType(.paymentCard)
+            description: changeRequest.cardNumber?.formatted(.paymentCardNumberMask),
+            iconContent: presenter.iconContent
         )
     }
 
@@ -302,7 +302,7 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(T.requestModalUpdateSecureNoteTitle.localizedKey),
             name: item.name ?? "",
             description: nil,
-            iconContent: .contentType(.secureNote)
+            iconContent: presenter.iconContent
         )
     }
 
@@ -310,8 +310,8 @@ struct ConnectPullReqestCommunicationView: View {
         updateItemView(
             title: Text(T.requestModalUpdateCardTitle.localizedKey),
             name: item.name ?? "",
-            description: PaymentCardNumberMaskFormatStyle().format(item.content.cardNumberMask ?? ""),
-            iconContent: .contentType(.paymentCard)
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask),
+            iconContent: presenter.iconContent
         )
     }
 
@@ -358,7 +358,7 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(T.requestModalRemoveSecureNoteTitle.localizedKey),
             name: item.name ?? "",
             description: nil,
-            iconContent: .contentType(.secureNote)
+            iconContent: presenter.iconContent
         )
     }
 
@@ -366,8 +366,8 @@ struct ConnectPullReqestCommunicationView: View {
         deleteItemView(
             title: Text(T.requestModalRemoveCardTitle.localizedKey),
             name: item.name ?? "",
-            description: PaymentCardNumberMaskFormatStyle().format(item.content.cardNumberMask ?? ""),
-            iconContent: .contentType(.paymentCard)
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask),
+            iconContent: presenter.iconContent
         )
     }
 

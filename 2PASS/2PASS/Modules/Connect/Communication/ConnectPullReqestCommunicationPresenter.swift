@@ -51,10 +51,18 @@ final class ConnectPullReqestCommunicationPresenter {
                 } else {
                     setIconContent(iconType: .domainIcon(nil), name: changeRequest.name)
                 }
+            case .action(.changeRequest(.addSecureNote)):
+                iconContent = .contentType(.secureNote)
+            case .action(.changeRequest(.addPaymentCard(let changeRequest))):
+                setPaymentCardIconContent(cardNumber: changeRequest.cardNumber)
             default:
                 switch state.itemData {
                 case .login(let loginItemData):
                     setIconContent(iconType: loginItemData.iconType, name: loginItemData.name)
+                case .secureNote:
+                    iconContent = .contentType(.secureNote)
+                case .paymentCard(let paymentCardItemData):
+                    setPaymentCardIconContent(issuerIcon: paymentCardItemData.issuerIcon)
                 default:
                     break
                 }
@@ -177,7 +185,7 @@ final class ConnectPullReqestCommunicationPresenter {
     
     private func fetchIcon(from iconURL: URL, name: String) {
         iconContent = .loading
-        
+
         fetchingIconTask?.cancel()
         fetchingIconTask = Task { @MainActor in
             if let imageData = try? await interactor.fetchIconImage(from: iconURL), let image = UIImage(data: imageData) {
@@ -187,7 +195,23 @@ final class ConnectPullReqestCommunicationPresenter {
             }
         }
     }
-    
+
+    private func setPaymentCardIconContent(issuerIcon: UIImage?) {
+        if let issuerIcon {
+            iconContent = .icon(issuerIcon)
+        } else {
+            iconContent = .contentType(.paymentCard)
+        }
+    }
+
+    private func setPaymentCardIconContent(cardNumber: String?) {
+        if let cardNumber, let issuer = interactor.detectPaymentCardIssuer(from: cardNumber) {
+            iconContent = .icon(issuer.icon)
+        } else {
+            iconContent = .contentType(.paymentCard)
+        }
+    }
+
     private func connect() {
         connectingTask = Task {
             do {

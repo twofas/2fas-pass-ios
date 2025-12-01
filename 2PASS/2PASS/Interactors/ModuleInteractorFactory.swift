@@ -318,7 +318,8 @@ extension ModuleInteractorFactory {
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
-            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
+            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
+            paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor()
         )
     }
     

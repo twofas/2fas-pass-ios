@@ -16,6 +16,7 @@ protocol ItemDetailModuleInteracting: AnyObject {
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
+    func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
 }
 
 final class ItemDetailModuleInteractor {
@@ -24,19 +25,22 @@ final class ItemDetailModuleInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let uriInteractor: URIInteracting
     private let tagInteractor: TagInteracting
-    
+    private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+
     init(
         itemsInteractor: ItemsInteracting,
         systemInteractor: SystemInteracting,
         fileIconInteractor: FileIconInteracting,
         uriInteractor: URIInteracting,
-        tagInteractor: TagInteracting
+        tagInteractor: TagInteracting,
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.systemInteractor = systemInteractor
         self.fileIconInteractor = fileIconInteractor
         self.uriInteractor = uriInteractor
         self.tagInteractor = tagInteractor
+        self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
     }
 }
 
@@ -74,5 +78,9 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         tagInteractor.getTags(by: tagIDs)
             .sorted { $0.name < $1.name }
+    }
+
+    func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardUtilityInteractor.maxSecurityCodeLength(for: issuer)
     }
 }

@@ -60,7 +60,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
             flowController.autoFillTextToInsert(decrypted)
         } else {
             let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
-            cardNumber = PaymentCardNumberFormatStyle(issuer: issuer).format(decrypted)
+            cardNumber = decrypted.formatted(.paymentCardNumber(issuer: issuer))
         }
     }
 
@@ -104,7 +104,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
 
     private func refreshValues() {
         if let mask = cardNumberMask {
-            cardNumber = PaymentCardNumberMaskFormatStyle().format(mask)
+            cardNumber = mask.formatted(.paymentCardNumberMask)
         } else {
             cardNumber = nil
         }
@@ -116,7 +116,9 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         }
 
         if paymentCardItem.content.securityCode != nil {
-            securityCode = "•••"
+            let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
+            let length = interactor.paymentCardSecurityCodeLength(for: issuer)
+            securityCode = String(repeating: "•", count: length)
         } else {
             securityCode = nil
         }

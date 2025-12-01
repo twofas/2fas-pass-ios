@@ -55,6 +55,13 @@ private struct _SecureContainerView<ID: Hashable, Content: View>: UIViewRepresen
     func updateUIView(_ uiView: UIView, context: Context) {
         context.coordinator.hosting?.rootView = content(contentId)
     }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIView, context: Context) -> CGSize? {
+        context.coordinator.hosting?.sizeThatFits(in: CGSize(
+            width: proposal.width ?? UIView.layoutFittingExpandedSize.width,
+            height: proposal.height ?? UIView.layoutFittingExpandedSize.height
+        ))
+    }
     
     private func clearContainer(_ container: UIView) {
         container.subviews.forEach { subview in

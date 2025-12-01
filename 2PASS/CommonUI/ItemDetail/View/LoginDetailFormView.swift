@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
 
 struct LoginDetailFormView: View {
 
@@ -48,7 +49,9 @@ struct LoginDetailFormView: View {
                         SecureContainerView {
                             HStack {
                                 Spacer()
-                                Text(password).monospaced()
+                                Text(password)
+                                    .monospaced()
+                                    .multilineTextAlignment(.leading)
                             }
                         }
                     },
@@ -98,6 +101,9 @@ struct LoginDetailFormView: View {
                     Spacer(minLength: 0)
                 }
             }
+        }
+        .onAppear {
+            selectedField = nil
         }
         .onDisappear {
             presenter.onDisappear()
