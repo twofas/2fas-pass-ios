@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
 
 private struct Constants {
     static let noteFont = UIFont.preferredFont(forTextStyle: .body)
@@ -21,9 +22,16 @@ struct SecureNoteDetailFormView: View {
     @State
     private var noteHeight: CGFloat = 0
     
+    @State
+    private var selectedField: SelectedField?
+    
     @Namespace
     private var namespace
     
+    private enum SelectedField: Hashable {
+        case note
+    }
+
     var body: some View {
         ItemDetailFormTitle(name: presenter.name, icon: .contentType(.secureNote))
         noteView
@@ -38,6 +46,9 @@ struct SecureNoteDetailFormView: View {
             Color.clear
                 .overlay(alignment: .top) {
                     SecureNoteTextView(text: presenter.note ?? "", height: $noteHeight)
+                        .onTap {
+                            selectedField = .note
+                        }
                         .frame(height: noteHeight)
                 }
                 .clipped()
@@ -84,6 +95,11 @@ struct SecureNoteDetailFormView: View {
         .sensoryFeedback(.selection, trigger: presenter.isReveal) { _, newValue in
             newValue
         }
+        .editMenu($selectedField, equals: .note, actions: [
+            UIAction(title: T.commonCopy) { _ in
+                presenter.onCopyNote()
+            }
+        ])
     }
     
     private var lockedNoteView: some View {
@@ -98,8 +114,20 @@ struct SecureNoteDetailFormView: View {
 private struct SecureNoteTextView: UIViewRepresentable {
     
     let text: String
+    private var onTap: Callback?
     @Binding var height: CGFloat
 
+    init(text: String, height: Binding<CGFloat>) {
+        self.text = text
+        self._height = height
+    }
+    
+    func onTap(_ onTap: @escaping () -> Void) -> Self {
+        var instance = self
+        instance.onTap = onTap
+        return instance
+    }
+    
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
 
@@ -112,6 +140,11 @@ private struct SecureNoteTextView: UIViewRepresentable {
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         textView.font = Constants.noteFont
         textView.delegate = context.coordinator
+        textView.dataDetectorTypes = [.phoneNumber, .link]
+        
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(SecureNoteTextView.Coordinator.handleTapOnTextView(_:)))
+        tap.delegate = context.coordinator
+        textView.addGestureRecognizer(tap)
         
         return textView
     }
@@ -143,11 +176,45 @@ private struct SecureNoteTextView: UIViewRepresentable {
         Coordinator(self)
     }
 
-    class Coordinator: NSObject, UITextViewDelegate {
+    class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate {
         var parent: SecureNoteTextView
 
         init(_ parent: SecureNoteTextView) {
             self.parent = parent
+        }
+
+        @objc func handleTapOnTextView(_ gesture: UITapGestureRecognizer) {
+            parent.onTap?()
+        }
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldReceive touch: UITouch
+        ) -> Bool {
+            guard let textView = gestureRecognizer.view as? UITextView else {
+                return true
+            }
+
+            let location = touch.location(in: textView)
+            let locationInTextContainer = CGPoint(
+                x: location.x - textView.textContainerInset.left,
+                y: location.y - textView.textContainerInset.top
+            )
+
+            let characterIndex = textView.layoutManager.characterIndex(
+                for: locationInTextContainer,
+                in: textView.textContainer,
+                fractionOfDistanceBetweenInsertionPoints: nil
+            )
+
+            if characterIndex < textView.textStorage.length {
+                let attributes = textView.textStorage.attributes(at: characterIndex, effectiveRange: nil)
+                if attributes[.link] != nil {
+                    return false
+                }
+            }
+
+            return true
         }
     }
 }

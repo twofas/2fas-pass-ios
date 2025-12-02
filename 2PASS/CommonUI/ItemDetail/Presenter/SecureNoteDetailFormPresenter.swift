@@ -40,6 +40,12 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         isReveal = true
     }
 
+    func onCopyNote() {
+        guard let note else { return }
+        interactor.copy(note)
+        toastPresenter.presentCopied()
+    }
+    
     private func refreshValues() {
         isReveal = (isReveal || protectionLevel == .normal)
 
