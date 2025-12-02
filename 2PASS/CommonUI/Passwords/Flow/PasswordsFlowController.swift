@@ -6,9 +6,10 @@
 
 import UIKit
 import Common
+import SwiftUI
 
 public protocol PasswordsFlowControllerParent: AnyObject {
-    func passwordsToViewPassword(itemID: ItemID)
+    func passwordsToItemDetail(itemID: ItemID)
     func selectPassword(itemID: ItemID)
     func cancel()
     func toQuickSetup()
@@ -19,14 +20,14 @@ public protocol PasswordsFlowControllerParent: AnyObject {
 }
 
 protocol PasswordsFlowControlling: AnyObject {
-    func toAddPassword()
-    func toEditPassword(itemID: ItemID)
-    func toViewPassword(itemID: ItemID)
+    func toContentTypeSelection(sourceItem: (any UIPopoverPresentationControllerSourceItem)?)
+    func toEditItem(itemID: ItemID)
+    func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
-    
+
     func selectPassword(itemID: ItemID)
     func cancel()
-    
+
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
 
@@ -63,32 +64,25 @@ public final class PasswordsFlowController: FlowController {
 }
 
 extension PasswordsFlowController: PasswordsFlowControlling {
-    func toAddPassword() {
-        let changeRequest: LoginDataChangeRequest?
-        if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers {
-            changeRequest = LoginDataChangeRequest(uris: serviceIdentifiers.map { .init(uri: $0, match: .domain)} )
-        } else {
-            changeRequest = nil
-        }
-        
-        AddPasswordNavigationFlowController.present(
+
+    func toContentTypeSelection(sourceItem: (any UIPopoverPresentationControllerSourceItem)?) {
+        ContentTypeSelectionFlowController.present(
             on: viewController,
             parent: self,
-            editItemID: nil,
-            changeRequest: changeRequest
+            sourceItem: sourceItem
         )
     }
-    
-    func toEditPassword(itemID: ItemID) {
-        AddPasswordNavigationFlowController.present(
+
+    func toEditItem(itemID: ItemID) {
+        ItemEditorNavigationFlowController.present(
             on: viewController,
             parent: self,
             editItemID: itemID
         )
     }
     
-    func toViewPassword(itemID: ItemID) {
-        parent?.passwordsToViewPassword(itemID: itemID)
+    func toItemDetail(itemID: ItemID) {
+        parent?.passwordsToItemDetail(itemID: itemID)
     }
     
     func toURI(_ selectedURI: URL) {
@@ -121,10 +115,26 @@ extension PasswordsFlowController {
     var viewController: PasswordsViewController { _viewController as! PasswordsViewController }
 }
 
-extension PasswordsFlowController: AddPasswordNavigationFlowControllerParent {
-    
-    func closeAddPassword(with result: SavePasswordResult) {
-        viewController.presenter.handleRefresh()
+extension PasswordsFlowController: ItemEditorNavigationFlowControllerParent {
+
+    func closeItemEditor(with result: SaveItemResult) {
+        if result.isSuccess {
+            viewController.presenter.handleRefresh()
+        }
         viewController.dismiss(animated: true)
+    }
+}
+
+extension PasswordsFlowController: ContentTypeSelectionFlowControllerParent {
+
+    func contentTypeSelectionDidClose(with result: SaveItemResult) {
+        if result.isSuccess {
+            viewController.presenter.handleRefresh()
+        }
+        viewController.dismiss(animated: true)
+    }
+
+    func getAutoFillEnvironment() -> AutoFillEnvironment? {
+        return autoFillEnvironment
     }
 }

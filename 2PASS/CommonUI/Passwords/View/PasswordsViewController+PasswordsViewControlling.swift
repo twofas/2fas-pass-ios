@@ -9,24 +9,29 @@ import UIKit
 protocol PasswordsViewControlling: AnyObject {
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
-            PasswordSectionData,
-            PasswordCellData
+            ItemSectionData,
+            ItemCellData
         >
     )
+    func showContentTypeFilterPicker(_ flag: Bool)
     func showList()
     func showEmptyScreen()
     func showSearchEmptyScreen()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {
+    
+    func showContentTypeFilterPicker(_ flag: Bool) {
+        reloadLayout()
+    }
+    
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
-            PasswordSectionData,
-            PasswordCellData
+            ItemSectionData,
+            ItemCellData
         >
     ) {
         dataSource?.apply(newSnapshot, animatingDifferences: true)
-        updateNavigationBarButtons()
     }
     
     // MARK: - Empty screen or list

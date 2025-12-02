@@ -29,6 +29,7 @@
         <attribute name="content" attributeType="Binary"/>
     </entity>
     <entity name="SecureNoteEntity" representedClassName=".SecureNoteEntity" parentEntity="ItemMetadataEntity" syncable="YES">
+        <attribute name="additionalInfo" optional="YES" attributeType="String"/>
         <attribute name="text" optional="YES" attributeType="Binary"/>
     </entity>
     <entity name="TagEntity" representedClassName=".TagEntity" syncable="YES">

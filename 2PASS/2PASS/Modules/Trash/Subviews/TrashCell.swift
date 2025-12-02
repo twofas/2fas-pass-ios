@@ -23,8 +23,8 @@ struct TrashCell: View {
                     .foregroundStyle(.neutral950)
                     .lineLimit(1)
                 
-                if let username = data.username {
-                    Text(username)
+                if let description = data.description {
+                    Text(description)
                         .font(.footnote)
                         .foregroundStyle(.neutral500)
                         .lineLimit(1)

@@ -44,16 +44,16 @@ public final class PasswordsNavigationFlowController: NavigationFlowController {
 }
 
 extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
-    public func passwordsToViewPassword(itemID: ItemID) {
-        ViewPasswordFlowController.push(
+    public func passwordsToItemDetail(itemID: ItemID) {
+        ItemDetailFlowController.push(
             on: navigationController,
             parent: self,
             itemID: itemID
         )
     }
-    
+
     public func selectPassword(itemID: ItemID) {
-        passwordsToViewPassword(itemID: itemID)
+        passwordsToItemDetail(itemID: itemID)
     }
     
     public func toQuickSetup() {
@@ -73,10 +73,10 @@ extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
     }
 }
 
-extension PasswordsNavigationFlowController: ViewPasswordFlowControllerParent {
-    func viewPasswordClose() {
+extension PasswordsNavigationFlowController: ItemDetailFlowControllerParent {
+    func itemDetailClose() {
         navigationController.popToRootViewController(animated: true)
     }
-    
-    func viewPasswordAutoFillTextToInsert(_ text: String) {}
+
+    func itemDetailAutoFillTextToInsert(_ text: String) {}
 }

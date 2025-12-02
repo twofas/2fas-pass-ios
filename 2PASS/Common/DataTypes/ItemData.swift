@@ -45,7 +45,7 @@ public enum ItemContentType: Hashable {
     case secureNote
     case unknown(String)
     
-    public static let allKnownTypes: [ItemContentType] = [.login]
+    public static let allKnownTypes: [ItemContentType] = [.login, .secureNote]
     
     public var rawValue: String {
         switch self {

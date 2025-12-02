@@ -9,24 +9,24 @@ import UIKit
 extension ToastPresenter {
     
     public func presentUsernameCopied() {
-        present(
-            T.toastUsernameCopied,
-            style: .info,
-            icon: UIImage(named: "copy.icon")?.withRenderingMode(.alwaysTemplate),
-        )
+        presentCopied(T.toastUsernameCopied)
     }
     
     public func presentPasswordCopied() {
-        present(
-            T.toastPasswordCopied,
-            style: .info,
-            icon: UIImage(named: "copy.icon")?.withRenderingMode(.alwaysTemplate),
-        )
+        presentCopied(T.toastPasswordCopied)
+    }
+    
+    public func presentSecureNoteCopied() {
+        presentCopied(T.toastSecureNoteCopied)
     }
     
     public func presentCopied() {
+        presentCopied(T.commonCopied)
+    }
+    
+    private func presentCopied(_ text: String) {
         present(
-            T.commonCopied,
+            text,
             style: .info,
             icon: UIImage(named: "copy.icon")?.withRenderingMode(.alwaysTemplate),
         )

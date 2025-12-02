@@ -10,13 +10,7 @@ final class PasswordsListView: UICollectionView {
     func configure(isAutoFillExtension: Bool) {
         backgroundColor = Asset.mainBackgroundColor.color
         
-        if isAutoFillExtension {
-            register(AutoFillPasswordsCellView.self, forCellWithReuseIdentifier: AutoFillPasswordsCellView.reuseIdentifier)
-            register(AutoFillPasswordsSectionView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier)
-        } else {
-            register(MainAppPasswordsCellView.self, forCellWithReuseIdentifier: MainAppPasswordsCellView.reuseIdentifier)
-        }
-        
         register(SelectedTagBannerView.self, forSupplementaryViewOfKind: SelectedTagBannerView.elementKind, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
+        register(ItemContentTypeFilterPickerView.self, forSupplementaryViewOfKind: ItemContentTypeFilterPickerView.elementKind, withReuseIdentifier: ItemContentTypeFilterPickerView.reuseIdentifier)
     }
 }

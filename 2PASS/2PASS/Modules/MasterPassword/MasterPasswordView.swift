@@ -85,9 +85,9 @@ struct MasterPasswordView: View {
                     VStack(spacing: 0) {
                         HStack {
                             FloatingField(placeholder: Text(T.masterPasswordLabel.localizedKey), isEmpty: presenter.firstInput.isEmpty) {
-                                PasswordContentInput(
+                                SecureContentInput(
                                     label: "",
-                                    password: $presenter.firstInput,
+                                    value: $presenter.firstInput,
                                     isReveal: presenter.firstInputReveal
                                 )
                             }
@@ -113,9 +113,9 @@ struct MasterPasswordView: View {
                         if presenter.isRetype {
                             HStack {
                                 FloatingField(placeholder: Text(T.masterPasswordConfirmLabel.localizedKey), isEmpty: presenter.secondInput.isEmpty) {
-                                    PasswordContentInput(
+                                    SecureContentInput(
                                         label: "",
-                                        password: $presenter.secondInput,
+                                        value: $presenter.secondInput,
                                         isReveal: presenter.secondInputReveal
                                     )
                                     .focused($focusedField, equals: .second)

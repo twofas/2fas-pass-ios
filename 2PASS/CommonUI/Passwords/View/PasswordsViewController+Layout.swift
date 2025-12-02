@@ -5,65 +5,99 @@
 // See LICENSE file for full terms
 
 import UIKit
+import SwiftUI
 
 private struct Constants {
-    static let cellHeight: CGFloat = 82
+    static let gridCellHeight: CGFloat = 68
     static let tagBannerHeight: CGFloat = 52
+    static let contentTypePickerHeight: CGFloat = 40
     static let headerHeight: CGFloat = 28
+}
+
+class ItemContentTypeFilterPickerView: UICollectionReusableView {
+    static let elementKind = "ItemContentTypeFilterPicker"
+    static let reuseIdentifier = "ItemContentTypeFilterPickerView"
+
+    var onChange: (ItemContentTypeFilter) -> Void = { _ in }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        let filters = ItemContentTypeFilter.allKnown
+
+        let categoryPicker = UIHostingController(rootView: ItemContentTypePickerUIKitWrapper(
+            initialFilter: filters[0],
+            filters: filters,
+            onChange: { [weak self] filter in
+                self?.onChange(filter)
+            }
+        ))
+        
+        categoryPicker.view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(categoryPicker.view)
+        NSLayoutConstraint.activate([
+            categoryPicker.view.topAnchor.constraint(equalTo: topAnchor, constant: 6),
+            categoryPicker.view.leadingAnchor.constraint(equalTo: leadingAnchor),
+            categoryPicker.view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            categoryPicker.view.heightAnchor.constraint(equalToConstant: 40)
+        ])
+    }	
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
 
 extension PasswordsViewController {
 
     func makeLayout() -> UICollectionViewCompositionalLayout {
         let config = UICollectionViewCompositionalLayoutConfiguration()
-
-        if presenter.selectedFilterTag != nil {
-            let bannerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(Constants.tagBannerHeight)
-            )
-            
-            let banner = NSCollectionLayoutBoundarySupplementaryItem(
-                layoutSize: bannerSize,
-                elementKind: SelectedTagBannerView.elementKind,
-                alignment: .top
-            )
-            banner.pinToVisibleBounds = true
-            banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
-            banner.zIndex = 2
-            
-            config.boundarySupplementaryItems = [banner]
-        }
         
+        if presenter.hasItems {
+            let pickerSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .absolute(Constants.contentTypePickerHeight)
+            )
+            
+            let picker = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: pickerSize,
+                elementKind: ItemContentTypeFilterPickerView.elementKind,
+                alignment: .top,
+            )
+            picker.pinToVisibleBounds = false
+            picker.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            picker.zIndex = 3
+            
+            if presenter.selectedFilterTag != nil {
+                let bannerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(Constants.tagBannerHeight)
+                )
+                
+                let banner = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: bannerSize,
+                    elementKind: SelectedTagBannerView.elementKind,
+                    alignment: .top,
+                    absoluteOffset: CGPoint(x: 0, y: Constants.contentTypePickerHeight + 32)
+                )
+                banner.pinToVisibleBounds = true
+                banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
+                banner.zIndex = 2
+                
+                config.boundarySupplementaryItems = [picker, banner]
+            } else {
+                config.boundarySupplementaryItems = [picker]
+            }
+        }
+
         let layout = UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionOffset, enviroment in
             self?.getLayout(sectionOffset: sectionOffset, enviroment: enviroment)
         }, configuration: config)
-                
+
         return layout
     }
 
-    func getCell(
-        for collectionView: UICollectionView,
-        indexPath: IndexPath,
-        item: PasswordCellData
-    ) -> UICollectionViewCell? {
-        let cell: PasswordsCellView? = collectionView.dequeueReusableCell(
-            withReuseIdentifier: PasswordsCellView.reuseIdentifier,
-            for: indexPath
-        ) as? PasswordsCellView
-        cell?.update(cellData: item)
-
-        if let url = item.iconType.iconURL, let cachedData = presenter.cachedImage(from: url) {
-            cell?.updateIcon(wirh: cachedData)
-        }
-
-        cell?.menuAction = { [weak self] action, itemID, selectedURI in
-            self?.presenter.onCellMenuAction(action, itemID: itemID, selectedURI: selectedURI)
-        }
-        return cell
-    }
-
     func getLayout(sectionOffset: Int, enviroment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? {
+        let section: NSCollectionLayoutSection
         let minimumCellWidth: CGFloat = 310
         let itemsInRow: Int = {
             let availableWidth = enviroment.container.effectiveContentSize.width
@@ -78,34 +112,36 @@ extension PasswordsViewController {
             }
             return columns
         }()
+                
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: cellHeight()
+            heightDimension: gridCellHeight()
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-
+        
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
-            heightDimension: cellHeight()
+            heightDimension: gridCellHeight()
         )
-
+        
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,
             repeatingSubitem: item,
             count: itemsInRow
         )
-
-        let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .zero
-
+        
+        section = NSCollectionLayoutSection(group: group)
+        section.contentInsets.top = presenter.selectedFilterTag != nil ? Constants.tagBannerHeight + 32 : 24
+        section.interGroupSpacing = Spacing.xs
+        
         if presenter.hasSuggestedItems {
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(Constants.headerHeight),
+                heightDimension: .absolute(Constants.headerHeight)
             )
-            
+
             let topPadding: CGFloat = sectionOffset == 0 ? (presenter.selectedFilterTag != nil ? 48 : 36) : 0
-            
+
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -115,15 +151,14 @@ extension PasswordsViewController {
             header.pinToVisibleBounds = true
             section.contentInsets.top = topPadding
             section.boundarySupplementaryItems = [header]
-            return section
         }
-        
+
         return section
     }
-
-    func cellHeight() -> NSCollectionLayoutDimension {
-        .absolute(Constants.cellHeight)
-    }
+    
+    func gridCellHeight() -> NSCollectionLayoutDimension {
+         .absolute(Constants.gridCellHeight)
+     }
 }
 
 private extension UIContentSizeCategory {

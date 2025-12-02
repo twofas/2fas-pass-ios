@@ -37,7 +37,7 @@ struct BackupAddWebDAVView: View {
                         .textContentType(.username)
                         .disabled(!presenter.isEditable)
                     
-                    PasswordInput(label: T.webdavPassword.localizedKey, password: $presenter.password)
+                    SecureInput(label: T.webdavPassword.localizedResource, value: $presenter.password)
                         .disabled(!presenter.isEditable)
                 }
   

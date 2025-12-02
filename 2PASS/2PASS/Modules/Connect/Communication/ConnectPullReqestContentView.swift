@@ -15,7 +15,7 @@ private struct Constants {
 
 struct ConnectPullReqestItem {
     let name: String
-    let username: String?
+    let description: String?
     let iconContent: IconContent?
 }
 
@@ -75,7 +75,7 @@ struct ConnectPullReqestContentView<Icon, Actions>: View where Icon: View, Actio
                     .font(.bodyEmphasized)
                     .foregroundStyle(.neutral950)
                 
-                if let username = item.username {
+                if let username = item.description {
                     Text(username)
                         .font(.footnote)
                         .foregroundStyle(.neutral500)
@@ -93,7 +93,7 @@ struct ConnectPullReqestContentView<Icon, Actions>: View where Icon: View, Actio
 }
 
 #Preview {
-    let item = ConnectPullReqestItem(name: "Name", username: "Username", iconContent: .label("NA", color: nil))
+    let item = ConnectPullReqestItem(name: "Name", description: "Username", iconContent: .label("NA", color: nil))
     
     ConnectPullReqestContentView(
         title: Text("Title"),

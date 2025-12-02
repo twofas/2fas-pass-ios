@@ -11,6 +11,7 @@ final class IconRenderer: UIView {
     
     private let imageRenderer = ImageIconRenderer()
     private let labelRenderer = LabelRenderer()
+    private let contentTypeRenderer = ContentTypeRenderer()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -31,33 +32,45 @@ final class IconRenderer: UIView {
         
         addSubview(labelRenderer)
         labelRenderer.pinToParentCenter()
+        
+        addSubview(contentTypeRenderer)
+        contentTypeRenderer.pinToParentCenter()
     }
     
-    func configure(with iconType: PasswordIconType, name: String) {
+    func configure(with iconType: ItemCellData.Icon, name: String) {
         func showLabel(labelTitle: String, labelColor: UIColor?) {
             imageRenderer.image = nil
+            contentTypeRenderer.configure(with: nil)
             
             labelRenderer.setColor(labelColor, animated: false)
             labelRenderer.setText(labelTitle)
             
             imageRenderer.isHidden = true
+            contentTypeRenderer.isHidden = true
             labelRenderer.isHidden = false
         }
         
         switch iconType {
-        case .customIcon, .domainIcon:
-            showLabel(labelTitle: Config.defaultIconLabel(forName: name), labelColor: nil)
-        case .label(let labelTitle, let labelColor):
-            showLabel(labelTitle: labelTitle, labelColor: labelColor)
+        case .login(let iconType):
+            switch iconType {
+            case .customIcon, .domainIcon:
+                showLabel(labelTitle: Config.defaultIconLabel(forName: name), labelColor: nil)
+            case .label(let labelTitle, let labelColor):
+                showLabel(labelTitle: labelTitle, labelColor: labelColor)
+            }
+        case .contentType(let contentType):
+            contentTypeRenderer.configure(with: contentType)
+            
+            imageRenderer.isHidden = true
+            labelRenderer.isHidden = true
+            contentTypeRenderer.isHidden = false
         }
     }
     
-    func updateIcon(with data: Data) {
-        guard let image = UIImage(data: data) else {
-            return
-        }
+    func updateIcon(with image: UIImage) {
         imageRenderer.image = image
         imageRenderer.isHidden = false
+        contentTypeRenderer.isHidden = true
         labelRenderer.isHidden = true
     }
     

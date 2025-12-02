@@ -8,12 +8,25 @@ import Foundation
 import Common
 
 struct TrashItemData: Identifiable, Hashable {
+
+    enum Icon: Hashable {
+        case login(PasswordIconType)
+        case contentType(ItemContentType)
+
+        var iconURL: URL? {
+            guard case .login(let value) = self else {
+                return nil
+            }
+            return value.iconURL
+        }
+    }
+
     var id: ItemID {
         itemID
     }
     let itemID: ItemID
     let name: String?
-    let username: String?
+    let description: String?
     let deletedDate: Date
-    let iconType: PasswordIconType
+    let icon: Icon
 }

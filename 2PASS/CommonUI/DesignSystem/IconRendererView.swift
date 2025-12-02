@@ -21,6 +21,7 @@ public enum IconContent {
     case icon(UIImage)
     case label(String, color: UIColor?)
     case placeholder
+    case contentType(ItemContentType)
 }
 
 extension IconContent {
@@ -52,8 +53,10 @@ public struct IconRendererView: View {
                 ProgressView()
             case .icon(let icon):
                 IconView(icon: icon)
+            case .contentType(let contentType):
+                ContentTypeIconView(contentType: contentType)
             case .label(let title, let color):
-                labelView(title: title, color: color)
+                loginLabelView(title: title, color: color)
             case .placeholder:
                 RoundedRectangle(cornerRadius: Constants.iconCornerRadius)
                     .foregroundStyle(Asset.inactiveControlColor.swiftUIColor)
@@ -83,29 +86,23 @@ public struct IconRendererView: View {
         }
     }
     
-    private func labelView(title: String, color: UIColor?) -> some View {
-        Group {
-            if let color {
-                Color(color)
-            } else {
-                IconGradientView_SwiftUI()
+    private func loginLabelView(title: String, color: UIColor?) -> some View {
+        Color(color ?? ItemContentType.login.secondaryColor)
+            .overlay {
+                Text(verbatim: title)
+                    .fontWeight(.bold)
+                    .font(.body)
+                    .foregroundStyle(textColor(forLabelColor: color))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
-        }
-        .overlay {
-            Text(verbatim: title)
-                .fontWeight(.bold)
-                .font(.body)
-                .foregroundStyle(textColor(forLabelColor: color))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-        }
     }
     
     private func textColor(forLabelColor color: UIColor?) -> Color {
         if let color {
             return color.isDark ? .white : .black
         } else {
-            return .brand500
+            return Color(ItemContentType.login.primaryColor)
         }
     }
 }
@@ -115,6 +112,7 @@ public struct IconRendererView: View {
     IconRendererView(content: .label("AB", color: nil))
     IconRendererView(content: .label("AB", color: .red))
     IconRendererView(content: .icon(UIImage(named: "2PASSShield")!))
+    IconRendererView(content: .contentType(.secureNote))
 }
 
 private struct IconView: View {
@@ -127,20 +125,28 @@ private struct IconView: View {
             
             Image(uiImage: icon)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
                 .clipShape(RoundedRectangle(cornerRadius: Constants.innerIconCornerRadius))
         }
     }
 }
 
-private struct IconGradientView_SwiftUI: UIViewRepresentable {
+private struct ContentTypeIconView: View {
     
-    func makeUIView(context: Context) -> IconGradientView {
-        IconGradientView()
+    let contentType: ItemContentType
+    
+    var body: some View {
+        ZStack {
+            Color(uiColor: contentType.secondaryColor)
+            
+            if let icon = contentType.icon {
+                Image(uiImage: icon)
+                    .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
+                    .foregroundStyle(Color(contentType.primaryColor))
+            }
+        }
     }
-    
-    func updateUIView(_ uiView: IconGradientView, context: Context) {}
 }
 
 private struct IconBackgroundBlurView: UIViewRepresentable {

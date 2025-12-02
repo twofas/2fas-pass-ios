@@ -12,6 +12,7 @@ extension SecureNoteEntity {
     @nonobjc static func fetchRequest() -> NSFetchRequest<SecureNoteEntity> {
         NSFetchRequest<SecureNoteEntity>(entityName: secureNoteEntityName)
     }
-    
+
     @NSManaged var text: Data?
+    @NSManaged var additionalInfo: String?
 }

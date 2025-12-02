@@ -50,18 +50,18 @@ public final class AutofillPasswordsNavigationFlowController: NavigationFlowCont
 }
 
 extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerParent {
-    public func passwordsToViewPassword(itemID: ItemID) {
-        ViewPasswordFlowController.push(
+    public func passwordsToItemDetail(itemID: ItemID) {
+        ItemDetailFlowController.push(
             on: navigationController,
             parent: self,
             itemID: itemID,
             autoFillEnvironment: autoFillEnvironment
         )
     }
-    
+
     public func selectPassword(itemID: ItemID) {
         if autoFillEnvironment.isTextToInsert {
-            passwordsToViewPassword(itemID: itemID)
+            passwordsToItemDetail(itemID: itemID)
         } else {
             parent?.selectPassword(itemID: itemID)
         }
@@ -101,12 +101,12 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
     }
 }
 
-extension AutofillPasswordsNavigationFlowController: ViewPasswordFlowControllerParent {
-    func viewPasswordClose() {
+extension AutofillPasswordsNavigationFlowController: ItemDetailFlowControllerParent {
+    func itemDetailClose() {
         navigationController.popToRootViewController(animated: true)
     }
-    
-    func viewPasswordAutoFillTextToInsert(_ text: String) {
+
+    func itemDetailAutoFillTextToInsert(_ text: String) {
         parent?.textToInsert(text)
     }
 }
