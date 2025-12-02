@@ -9,7 +9,6 @@ import SwiftUIIntrospect
 
 public struct SecureInput: View {
     let label: String
-    let isInvalid: Bool
 
     @State
     private var isReveal = false
@@ -22,17 +21,16 @@ public struct SecureInput: View {
     private var isColorized = false
     private var onSubmit: (() -> Void)?
 
-    public init(label: String, value: Binding<String>, reveal: Binding<Bool>? = nil, isInvalid: Bool = false, onSubmit: (() -> Void)? = nil) {
+    public init(label: String, value: Binding<String>, reveal: Binding<Bool>? = nil,  onSubmit: (() -> Void)? = nil) {
         self.label = label
         self.bindingReveal = reveal
         self._value = value
-        self.isInvalid = isInvalid
         self.onSubmit = onSubmit
     }
 
     public var body: some View {
         HStack {
-            SecureContentInput(label: label, value: $value, isReveal: isReveal, isInvalid: isInvalid)
+            SecureContentInput(label: label, value: $value, isReveal: isReveal)
                 .colorized(isColorized)
                 .introspect(introspectTextField)
                 .onSubmit {
@@ -80,36 +78,34 @@ public struct SecureContentInput: View {
 
     let label: String
     let isReveal: Bool
-    let isInvalid: Bool
 
     @Binding
     var value: String
 
     @FocusState
     private var focusedField: Field?
-
+    
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
 
-    public init(label: String, value: Binding<String>, isReveal: Bool = false, isInvalid: Bool = false) {
+    public init(label: String, value: Binding<String>, isReveal: Bool = false) {
         self.label = label
         self._value = value
         self.isReveal = isReveal
-        self.isInvalid = isInvalid
     }
 
+    
     public var body: some View {
         ZStack {
             SecureField(label, text: $value)
                 .focused($focusedField, equals: .secure)
-                .foregroundStyle(isInvalid ? .danger500 : .primary)
                 .opacity(isReveal ? 0 : 1)
                 .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     introspectTextField(textField)
                 }
 
             SecureContainerView(contentId: value) {
-                RevealedPasswordTextField(text: $value, placeholder: label, isColorized: isColorized, isInvalid: isInvalid)
+                RevealedPasswordTextField(text: $value, placeholder: label, isColorized: isColorized)
                     .focused($focusedField, equals: .unsecure)
                     .fontDesign(value.isEmpty ? .default : .monospaced)
                     .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
@@ -123,11 +119,11 @@ public struct SecureContentInput: View {
         .textInputAutocapitalization(.never)
         .frame(maxWidth: .infinity)
         .onChange(of: isReveal) { oldValue, newValue in
-            if newValue, (focusedField == .secure || focusedField == nil) {
+            if newValue, focusedField == .secure {
                 Task {
                     focusedField = .unsecure
                 }
-            } else if focusedField == .unsecure || focusedField == nil {
+            } else if focusedField == .unsecure {
                 focusedField = .secure
             }
         }
@@ -150,7 +146,6 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
     @Binding var text: String
     let placeholder: String
     let isColorized: Bool
-    let isInvalid: Bool
 
     func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
@@ -183,7 +178,6 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
         }
 
         uiView.placeholder = placeholder
-        uiView.textColor = isInvalid ? UIColor(.danger500) : .label
 
         let bodyFont = UIFont.preferredFont(forTextStyle: .body)
         if text.isEmpty == false {

@@ -63,13 +63,14 @@ public extension View {
         }
     }
     
-    func limitText(_ text: Binding<String>, to characterLimit: Int) -> some View {
+    func limitText(_ text: Binding<String>, to characterLimit: Int, removeCharactersOnChangeLimit: Bool = false) -> some View {
         self.onChange(of: text.wrappedValue) { _, newValue in
             if newValue.count > characterLimit {
                 text.wrappedValue = String(text.wrappedValue.prefix(characterLimit))
             }
         }
         .onChange(of: characterLimit) { _, newValue in
+            guard removeCharactersOnChangeLimit else { return }
             if text.wrappedValue.count > characterLimit {
                 text.wrappedValue = String(text.wrappedValue.prefix(newValue))
             }

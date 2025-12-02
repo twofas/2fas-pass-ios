@@ -62,7 +62,7 @@ struct PaymentCardEditorFormView: View {
             LabeledInput(label: T.cardNumberLabel.localizedKey, fieldWidth: $fieldWidth) {
                 PaymentCardNumberTextField(
                     T.cardNumberLabel,
-                    text: $presenter.displayedCardNumber,
+                    text: $presenter.cardNumber,
                     maxLength: presenter.maxCardNumberLength,
                     formatStyle: presenter.cardNumberFormatStyle,
                     isRevealed: $presenter.isCardNumberRevealed,
@@ -85,7 +85,7 @@ struct PaymentCardEditorFormView: View {
                     presenter.onCardNumberFocusChange(isFocused: false)
                 }
             }
-            .onChange(of: presenter.cardNumber) { _, _ in
+            .onChange(of: presenter.decryptedCardNumber) { _, _ in
                 presenter.onCardNumberChange()
             }
 
@@ -111,25 +111,22 @@ struct PaymentCardEditorFormView: View {
             }
 
             LabeledInput(label: T.cardSecurityCodeLabel.localizedKey, fieldWidth: $fieldWidth) {
-                SecureInput(label: T.cardSecurityCodeLabel, value: $presenter.displayedSecurityCode, isInvalid: presenter.isSecurityCodeInvalid)
+                SecureInput(label: T.cardSecurityCodeLabel, value: $presenter.securityCode, reveal: $presenter.securityCodeRevealed)
                     .introspect { textField in
                         textField.keyboardType = .numberPad
                         textField.textContentType = .creditCardSecurityCode
+                        textField.textColor = presenter.isSecurityCodeInvalid ? .danger500 : .label
                     }
-                    .limitText($presenter.displayedSecurityCode, to: presenter.maxSecurityCodeLength)
+                    .limitText($presenter.securityCode, to: presenter.maxSecurityCodeLength)
                     .focused($focusField, equals: .securityCode)
             }
             .formFieldChanged(presenter.securityCodeChanged)
             .onChange(of: focusField) { oldValue, newValue in
                 if newValue == .securityCode {
-                    presenter.revealSecurityCode()
                     presenter.onSecurityCodeFocusChange(isFocused: true)
                 } else if oldValue == .securityCode {
                     presenter.onSecurityCodeFocusChange(isFocused: false)
                 }
-            }
-            .onChange(of: presenter.securityCode) { _, _ in
-                presenter.onSecurityCodeChange()
             }
         } header: {
             Text(T.cardDetailsHeader.localizedKey)
