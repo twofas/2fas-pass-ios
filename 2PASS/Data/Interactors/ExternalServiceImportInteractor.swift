@@ -516,7 +516,8 @@ private extension ExternalServiceImportInteractor {
                             name: name,
                             content: .init(
                                 name: name,
-                                text: text
+                                text: text,
+                                additionalInfo: nil
                             )
                         ))
                     )

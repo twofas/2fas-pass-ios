@@ -28,9 +28,7 @@ struct ManageSubscriptionView: View {
                 
                 Section {
                     HStack {
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(T.manageSubscriptionItemsTitle.localizedKey)
-                        }
+                        Text(T.manageSubscriptionItemsTitle.localizedKey)
                         
                         Spacer()
                         

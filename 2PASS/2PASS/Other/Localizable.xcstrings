@@ -147,6 +147,17 @@
         }
       }
     },
+    " secure_note_additional_info_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Additional info"
+          }
+        }
+      }
+    },
     " security_tiers_help_layers_section_title" : {
       "extractionState" : "manual",
       "localizations" : {

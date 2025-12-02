@@ -122,7 +122,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     }
     
     private func refreshValues() {
-        if loginItem.password != nil, let password = interactor.decryptPassword(for: loginItem.id) {
+        if let encryptedPassword = loginItem.password, let password = interactor.decryptSecureField(encryptedPassword, protectionLevel: loginItem.protectionLevel) {
             isPasswordAvailable = true
             passwordDecrypted = password
             self.password = AttributedString(passwordPlaceholder)

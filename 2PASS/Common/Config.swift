@@ -48,7 +48,8 @@ public enum Config {
     public static let webDAVURLSchemaVersion = 1
     public static let webDAVLockFileTime = 30
     public static let maxNotesLength = 2048
-    public static let maxSecureNotesLength = 1024 *  16
+    public static let maxSecureNotesLength = 1024 * 16
+    public static let maxSecureNotesAdditionalInfoLength = 1024 * 16
     public static let maxURICount = 9
     
     public static let cloudSchemaVersion = 2

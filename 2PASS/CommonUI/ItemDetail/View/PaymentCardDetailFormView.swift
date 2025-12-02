@@ -22,7 +22,7 @@ struct PaymentCardDetailFormView: View {
 
     var body: some View {
         Group {
-            ItemDetalFormTitle(name: presenter.name, icon: presenter.paymentCardIcon)
+            ItemDetailFormTitle(name: presenter.name, icon: presenter.paymentCardIcon)
 
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(
@@ -103,19 +103,8 @@ struct PaymentCardDetailFormView: View {
             }
 
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
-
             ItemDetailFormTags(presenter.tags)
-
-            if let notes = presenter.notes, !notes.isEmpty {
-                HStack {
-                    Text(notes)
-                        .multilineTextAlignment(.leading)
-                        .font(.body)
-                        .foregroundStyle(.neutral400)
-
-                    Spacer(minLength: 0)
-                }
-            }
+            ItemDetailFormNotes(presenter.notes)
         }
         .onAppear {
             selectedField = nil

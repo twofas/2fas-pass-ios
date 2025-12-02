@@ -81,7 +81,8 @@ extension MainRepositoryImpl {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         inMemoryStorage?.createSecureNoteItem(
             itemID: itemID,
@@ -92,7 +93,8 @@ extension MainRepositoryImpl {
             protectionLevel: protectionLevel,
             tagIds: tagIds,
             name: name,
-            text: text
+            text: text,
+            additionalInfo: additionalInfo
         )
     }
 
@@ -218,7 +220,8 @@ extension MainRepositoryImpl {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         inMemoryStorage?.updateSecureNoteItem(
             itemID: itemID,
@@ -228,7 +231,8 @@ extension MainRepositoryImpl {
             protectionLevel: protectionLevel,
             tagIds: tagIds,
             name: name,
-            text: text
+            text: text,
+            additionalInfo: additionalInfo
         )
     }
 

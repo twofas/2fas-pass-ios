@@ -60,6 +60,7 @@ protocol ItemEditorModuleInteracting: AnyObject {
     func saveSecureNote(
         name: String?,
         text: String?,
+        additionalInfo: String?,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
@@ -298,6 +299,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     func saveSecureNote(
         name: String?,
         text: String?,
+        additionalInfo: String?,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult {
@@ -314,7 +316,8 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
                         tagIds: tagIds ?? current.tagIds
                     ),
                     name: name ?? "",
-                    text: text
+                    text: text,
+                    additionalInfo: additionalInfo
                 )
 
                 Log("ItemEditorModuleInteractor - success while updating secure note. Saving storage")
@@ -338,7 +341,8 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
                         tagIds: tagIds
                     ),
                     name: name ?? "",
-                    text: text
+                    text: text,
+                    additionalInfo: additionalInfo
                 )
 
                 Log("ItemEditorModuleInteractor - success while adding secure note. Saving storage")

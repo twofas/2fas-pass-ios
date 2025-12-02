@@ -46,7 +46,7 @@ struct VaultRecoveryWebDAVView: View {
                         .textContentType(.username)
                         .disabled(presenter.isLoading)
                     
-                    SecureInput(label: T.webdavPassword, value: $presenter.password)
+                    SecureInput(label: T.webdavPassword.localizedResource, value: $presenter.password)
                         .disabled(presenter.isLoading)
                 }
             }

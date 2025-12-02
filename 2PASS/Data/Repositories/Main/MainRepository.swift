@@ -319,7 +319,8 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
 
     func createPaymentCardItem(
@@ -387,7 +388,8 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
 
     func updatePaymentCardItem(

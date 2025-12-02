@@ -48,6 +48,7 @@ public struct LabeledInput<Content: View>: View {
                 .frame(width: fieldWidth, alignment: .leading)
             content()
         }
+        .labeledContentStyle(InputLabeledStyle())
     }
     
     private func updateWidth(_ newValue: CGFloat) {
@@ -57,6 +58,17 @@ public struct LabeledInput<Content: View>: View {
             }
         } else {
             self.fieldWidth = max(minWidth ?? 0, newValue)
+        }
+    }
+}
+
+private struct InputLabeledStyle: LabeledContentStyle {
+
+    public func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            Spacer()
+            configuration.content
         }
     }
 }
