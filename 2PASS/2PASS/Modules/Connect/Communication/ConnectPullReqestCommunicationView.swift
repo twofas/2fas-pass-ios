@@ -163,8 +163,7 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(T.requestModalPasswordRequestTitle.localizedKey),
             subtitle: Text(T.requestModalPasswordRequestSubtitle.localizedKey),
             name: item.name ?? "",
-            description: item.username,
-            iconContent: presenter.iconContent
+            description: item.username
         )
     }
 
@@ -173,8 +172,7 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(T.requestModalSecureNoteRequestTitle.localizedKey),
             subtitle: Text(T.requestModalSecureNoteRequestSubtitle.localizedKey),
             name: item.name ?? "",
-            description: nil,
-            iconContent: .contentType(.secureNote)
+            description: nil
         )
     }
 
@@ -182,13 +180,12 @@ struct ConnectPullReqestCommunicationView: View {
         title: Text,
         subtitle: Text,
         name: String,
-        description: String?,
-        iconContent: IconContent?
+        description: String?
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
             description: subtitle,
-            item: .init(name: name, description: description, iconContent: iconContent),
+            item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "arrow.down.circle.fill")
                     .foregroundStyle(.brand500)
@@ -212,8 +209,7 @@ struct ConnectPullReqestCommunicationView: View {
         addItemView(
             title: Text(T.requestModalNewLoginTitle.localizedKey),
             name: changeRequest.name ?? "",
-            description: changeRequest.username?.value,
-            iconContent: presenter.iconContent
+            description: changeRequest.username?.value
         )
     }
     
@@ -221,21 +217,19 @@ struct ConnectPullReqestCommunicationView: View {
         addItemView(
             title: Text(T.requestModalNewSecureNoteTitle.localizedKey),
             name: changeRequest.name ?? "",
-            description: nil,
-            iconContent: .contentType(.secureNote)
+            description: nil
         )
     }
 
     private func addItemView(
         title: Text,
         name: String,
-        description: String?,
-        iconContent: IconContent?
+        description: String?
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
             description: Text(T.requestModalNewItemSubtitle.localizedKey),
-            item: .init(name: name, description: description, iconContent: iconContent),
+            item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "arrow.clockwise.circle.fill")
                     .foregroundStyle(.brand500)
@@ -259,8 +253,7 @@ struct ConnectPullReqestCommunicationView: View {
         updateItemView(
             title: Text(T.requestModalUpdateLoginTitle.localizedKey),
             name: item.name ?? "",
-            description: item.username,
-            iconContent: presenter.iconContent
+            description: item.username
         )
     }
     
@@ -268,21 +261,19 @@ struct ConnectPullReqestCommunicationView: View {
         updateItemView(
             title: Text(T.requestModalUpdateSecureNoteTitle.localizedKey),
             name: item.name ?? "",
-            description: nil,
-            iconContent: .contentType(.secureNote)
+            description: nil
         )
     }
 
     private func updateItemView(
         title: Text,
         name: String,
-        description: String?,
-        iconContent: IconContent?
+        description: String?
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
             description: Text(T.requestModalUpdateItemSubtitle.localizedKey),
-            item: .init(name: name, description: description, iconContent: iconContent),
+            item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "arrow.clockwise.circle.fill")
                     .foregroundStyle(.brand500)
@@ -306,8 +297,7 @@ struct ConnectPullReqestCommunicationView: View {
         deleteItemView(
             title: Text(T.requestModalRemoveLoginTitle.localizedKey),
             name: item.name ?? "",
-            description: item.username,
-            iconContent: presenter.iconContent
+            description: item.username
         )
     }
 
@@ -315,21 +305,19 @@ struct ConnectPullReqestCommunicationView: View {
         deleteItemView(
             title: Text(T.requestModalRemoveSecureNoteTitle.localizedKey),
             name: item.name ?? "",
-            description: nil,
-            iconContent: .contentType(.secureNote)
+            description: nil
         )
     }
 
     private func deleteItemView(
         title: Text,
         name: String,
-        description: String?,
-        iconContent: IconContent?
+        description: String?
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
             description: Text(T.requestModalRemoveItemSubtitle.localizedKey),
-            item: .init(name: name, description: description, iconContent: iconContent),
+            item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "trash.circle.fill")
                     .foregroundStyle(.danger500)

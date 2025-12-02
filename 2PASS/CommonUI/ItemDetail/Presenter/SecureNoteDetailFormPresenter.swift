@@ -32,7 +32,7 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     }
     
     func onViewNote() {
-        note = interactor.decryptNote(in: secureNoteItem)
+        note = decryptNote()
         isReveal = true
     }
     
@@ -40,7 +40,12 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         isReveal = (isReveal || protectionLevel == .normal)
         
         if isReveal {
-            note = interactor.decryptNote(in: secureNoteItem)
+            note = decryptNote()
         }
+    }
+    
+    private func decryptNote() -> String? {
+        guard let encrypted = secureNoteItem.content.text else { return nil }
+        return interactor.decryptSecureField(encrypted, protectionLevel: secureNoteItem.protectionLevel)
     }
 }

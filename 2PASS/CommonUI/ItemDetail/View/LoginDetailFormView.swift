@@ -48,7 +48,9 @@ struct LoginDetailFormView: View {
                         SecureContainerView {
                             HStack {
                                 Spacer()
-                                Text(password).monospaced()
+                                Text(password)
+                                    .monospaced()
+                                    .multilineTextAlignment(.leading)
                             }
                         }
                     },
@@ -74,6 +76,9 @@ struct LoginDetailFormView: View {
                         actions: {[
                             UIAction(title: T.loginViewActionOpenUri) { _ in
                                 presenter.onOpenURI(uriNormalized)
+                            },
+                            UIAction(title: T.loginViewActionCopyUri) { _ in
+                                presenter.onCopyURI(uriNormalized)
                             }
                         ]},
                     )
@@ -95,6 +100,9 @@ struct LoginDetailFormView: View {
                     Spacer(minLength: 0)
                 }
             }
+        }
+        .onAppear {
+            selectedField = nil
         }
         .onDisappear {
             presenter.onDisappear()

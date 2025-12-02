@@ -11,8 +11,7 @@ import Common
 protocol ItemDetailModuleInteracting: AnyObject {
     func fetchItem(for itemID: ItemID) -> ItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
-    func decryptPassword(for itemID: ItemID) -> String?
-    func decryptNote(in note: SecureNoteItemData) -> String?
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
@@ -45,18 +44,8 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
         itemsInteractor.getItem(for: itemID, checkInTrash: false)
     }
     
-    func decryptPassword(for itemID: ItemID) -> String? {
-        switch itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false) {
-        case .success(let password): return password
-        case .failure: return nil
-        }
-    }
-    
-    func decryptNote(in note: SecureNoteItemData) -> String? {
-        guard let encyptedText = note.content.text else {
-            return nil
-        }
-        return itemsInteractor.decrypt(encyptedText, isSecureField: true, protectionLevel: note.protectionLevel)
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
+        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
     }
     
     func copy(_ str: String) {

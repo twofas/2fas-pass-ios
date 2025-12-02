@@ -64,8 +64,7 @@ protocol ItemEditorModuleInteracting: AnyObject {
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
-    func decryptPassword(in login: LoginItemData) -> String?
-    func decryptNote(in note: SecureNoteItemData) -> String?
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     
     func mostUsedUsernames() -> [String]
     func normalizeURLString(_ str: String) -> String?
@@ -147,18 +146,8 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         return item
     }
     
-    func decryptPassword(in login: LoginItemData) -> String? {
-        guard let encryptedPassword = login.password else {
-            return nil
-        }
-        return itemsInteractor.decrypt(encryptedPassword, isSecureField: true, protectionLevel: login.protectionLevel)
-    }
-
-    func decryptNote(in note: SecureNoteItemData) -> String? {
-        guard let encyptedText = note.content.text else {
-            return nil
-        }
-        return itemsInteractor.decrypt(encyptedText, isSecureField: true, protectionLevel: note.protectionLevel)
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
+        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
     }
     
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {

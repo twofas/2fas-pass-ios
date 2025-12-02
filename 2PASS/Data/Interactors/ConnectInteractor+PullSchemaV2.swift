@@ -65,7 +65,7 @@ extension ConnectInteractor {
 
         let contentType = ItemContentType(rawValue: actionRequestData.data.contentType)
 
-        let encryptionNewPasswordKey = HKDF<SHA256>.deriveKey(
+        let encryptionNewItemKey = HKDF<SHA256>.deriveKey(
             inputKeyMaterial: keys.sessionKey,
             salt: keys.hkdfSalt,
             info: Keys.Connect.newItem.data(using: .utf8)!,
@@ -81,7 +81,7 @@ extension ConnectInteractor {
             }
 
             var newPassword: String?
-            if let newPasswordDataEnc = loginContent.data.content.password.value, let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewPasswordKey) {
+            if let newPasswordDataEnc = loginContent.data.content.password.value, let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewItemKey) {
                 newPassword = String(data: newPasswordData, encoding: .utf8)
             }
 
@@ -101,7 +101,7 @@ extension ConnectInteractor {
             }
 
             var newText: String?
-            if let newTextData = mainRepository.decrypt(secureNoteContent.data.content.text, key: encryptionNewPasswordKey) {
+            if let newTextData = mainRepository.decrypt(secureNoteContent.data.content.text, key: encryptionNewItemKey) {
                 newText = String(data: newTextData, encoding: .utf8)
             }
 

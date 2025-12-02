@@ -18,4 +18,11 @@ enum ItemContentTypeFilter: Equatable, Hashable {
             return contentType
         }
     }
+    
+    static let allKnown: [ItemContentTypeFilter] = {
+        var allContentTypes = ItemContentType.allKnownTypes.map {
+            ItemContentTypeFilter.contentType($0)
+        }
+        return [.all] + allContentTypes
+    }()
 }

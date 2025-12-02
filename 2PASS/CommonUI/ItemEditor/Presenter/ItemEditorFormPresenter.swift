@@ -27,6 +27,10 @@ class _ItemEditorFormPresenter {
         name.isEmpty == false
     }
     
+    var isEditMode: Bool {
+        initialData != nil
+    }
+    
     var nameChanged: Bool {
         guard let initialData else {
             return false
