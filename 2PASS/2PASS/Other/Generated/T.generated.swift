@@ -20,17 +20,17 @@ internal enum T {
   internal static let customizeIcon = T.tr("Localizable", " customize_icon", fallback: "Customize icon")
   /// Copy
   internal static let loginViewActionCommonCopy = T.tr("Localizable", " login_view_action_common_copy", fallback: "Copy")
-  /// You have reached your %d Item limit. Upgrade your plan for unlimited Items.
+  /// You've reached your %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitImportMsg(_ p1: Int) -> String {
-    return T.tr("Localizable", " paywall_notice_items_limit_import_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
+    return T.tr("Localizable", " paywall_notice_items_limit_import_msg", p1, fallback: "You've reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
   /// Restoring these Items would exceed the %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitRestoreMsg(_ p1: Int) -> String {
     return T.tr("Localizable", " paywall_notice_items_limit_restore_msg", p1, fallback: "Restoring these Items would exceed the %d Item limit. Upgrade your plan for unlimited Items.")
   }
-  /// You have reached your %d Item limit. Upgrade your plan for unlimited Items.
+  /// You've reached your %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitTransferMsg(_ p1: Int) -> String {
-    return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
+    return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You've reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
   /// Send your Vault's data to the browser extension.
   internal static let requestModalFullSyncSubtitle = T.tr("Localizable", " request_modal_full_sync_subtitle", fallback: "Send your Vault's data to the browser extension.")
@@ -42,6 +42,8 @@ internal enum T {
   internal static let requestModalRemoveSecureNoteTitle = T.tr("Localizable", " request_modal_remove_secure_note_title", fallback: "Remove Secure Note")
   /// Select decryption method:
   internal static let restoreDecryptVaultOptionTitle = T.tr("Localizable", " restore_decrypt_vault_option_title", fallback: "Select decryption method:")
+  /// Additional info
+  internal static let secureNoteAdditionalInfoLabel = T.tr("Localizable", " secure_note_additional_info_label", fallback: "Additional info")
   /// 3. Multi-Layer Encryption
   internal static let securityTiersHelpLayersSectionTitle = T.tr("Localizable", " security_tiers_help_layers_section_title", fallback: "3. Multi-Layer Encryption")
   /// Your data is protected with a unique, randomly generated SEED combined with your Master Password.
@@ -701,8 +703,8 @@ internal enum T {
   internal static let loginDeleteConfirmTitle = T.tr("Localizable", "login_delete_confirm_title", fallback: "Remove Item?")
   /// Remove Item
   internal static let loginDeleteCta = T.tr("Localizable", "login_delete_cta", fallback: "Remove Item")
-  /// Edit item
-  internal static let loginEdit = T.tr("Localizable", "login_edit", fallback: "Edit item")
+  /// Edit Item
+  internal static let loginEdit = T.tr("Localizable", "login_edit", fallback: "Edit Item")
   /// Edit icon
   internal static let loginEditIconCta = T.tr("Localizable", "login_edit_icon_cta", fallback: "Edit icon")
   /// Edit Login
@@ -811,6 +813,8 @@ internal enum T {
   internal static let loginUsernameMostUsedHeader = T.tr("Localizable", "login_username_most_used_header", fallback: "Most used Usernames")
   /// Copy password
   internal static let loginViewActionCopyPassword = T.tr("Localizable", "login_view_action_copy_password", fallback: "Copy password")
+  /// Copy URL
+  internal static let loginViewActionCopyUri = T.tr("Localizable", "login_view_action_copy_uri", fallback: "Copy URL")
   /// Copy username
   internal static let loginViewActionCopyUsername = T.tr("Localizable", "login_view_action_copy_username", fallback: "Copy username")
   /// Remove Item
@@ -827,8 +831,6 @@ internal enum T {
   internal static let manageSubscriptionBrowsersTitle = T.tr("Localizable", "manage_subscription_browsers_title", fallback: "Connected Web Browsers")
   /// Your plan ends on 
   internal static let manageSubscriptionEndDatePrefix = T.tr("Localizable", "manage_subscription_end_date_prefix", fallback: "Your plan ends on ")
-  /// Your logins and passwords
-  internal static let manageSubscriptionItemsSubtitle = T.tr("Localizable", "manage_subscription_items_subtitle", fallback: "Your logins and passwords")
   /// Items
   internal static let manageSubscriptionItemsTitle = T.tr("Localizable", "manage_subscription_items_title", fallback: "Items")
   /// Multi-Device Sync
@@ -969,8 +971,8 @@ internal enum T {
   internal static let passwordLengthRequirement = T.tr("Localizable", "password_length_requirement", fallback: "At least 9 characters")
   /// Passwords match
   internal static let passwordsMatchText = T.tr("Localizable", "passwords_match_text", fallback: "Passwords match")
-  /// You have reached your limit. Upgrade your plan to sync unlimited devices.
-  internal static let paywallNoticeBrowsersLimitMsg = T.tr("Localizable", "paywall_notice_browsers_limit_msg", fallback: "You have reached your limit. Upgrade your plan to sync unlimited devices.")
+  /// You've reached your limit. Upgrade your plan to sync unlimited devices.
+  internal static let paywallNoticeBrowsersLimitMsg = T.tr("Localizable", "paywall_notice_browsers_limit_msg", fallback: "You've reached your limit. Upgrade your plan to sync unlimited devices.")
   /// Can't connect
   internal static let paywallNoticeBrowsersLimitTitle = T.tr("Localizable", "paywall_notice_browsers_limit_title", fallback: "Can't connect")
   /// Upgrade plan
@@ -1673,8 +1675,8 @@ internal enum T {
   internal static let syncStatusErrorNewerVersionNeeded = T.tr("Localizable", "sync_status_error_newer_version_needed", fallback: "A newer version of the app is required to access the backup file")
   /// Newer version needed
   internal static let syncStatusErrorNewerVersionNeededTitle = T.tr("Localizable", "sync_status_error_newer_version_needed_title", fallback: "Newer version needed")
-  /// Server error: Method not allowed. Ensure you're connecting to WebDAV server"
-  internal static let syncStatusErrorNoWebDavServer = T.tr("Localizable", "sync_status_error_no_web_dav_server", fallback: "Server error: Method not allowed. Ensure you're connecting to WebDAV server\"")
+  /// Server error: Method not allowed. Ensure you're connecting to WebDAV server
+  internal static let syncStatusErrorNoWebDavServer = T.tr("Localizable", "sync_status_error_no_web_dav_server", fallback: "Server error: Method not allowed. Ensure you're connecting to WebDAV server")
   /// Not authorized to access this path
   internal static let syncStatusErrorNotAuthorized = T.tr("Localizable", "sync_status_error_not_authorized", fallback: "Not authorized to access this path")
   /// Not configured
@@ -1743,12 +1745,12 @@ internal enum T {
   internal static let toastSecureNoteCopied = T.tr("Localizable", "toast_secure_note_copied", fallback: "Note copied")
   /// Username copied
   internal static let toastUsernameCopied = T.tr("Localizable", "toast_username copied", fallback: "Username copied")
-  /// Passwords transferred
-  internal static let transferFileSummaryCounterDescription = T.tr("Localizable", "transfer_file_summary_counter_description", fallback: "Passwords transferred")
+  /// Logins being transferred
+  internal static let transferFileSummaryCounterDescription = T.tr("Localizable", "transfer_file_summary_counter_description", fallback: "Logins being transferred")
   /// Proceed
   internal static let transferFileSummaryCta = T.tr("Localizable", "transfer_file_summary_cta", fallback: "Proceed")
-  /// You have transferred the passwords
-  internal static let transferFileSummaryDescription = T.tr("Localizable", "transfer_file_summary_description", fallback: "You have transferred the passwords")
+  /// You're transferring Items from another app
+  internal static let transferFileSummaryDescription = T.tr("Localizable", "transfer_file_summary_description", fallback: "You're transferring Items from another app")
   /// 2FAS Pass couldn’t import your Items. Please try again.
   internal static let transferImportingFailureDescription = T.tr("Localizable", "transfer_importing_failure_description", fallback: "2FAS Pass couldn’t import your Items. Please try again.")
   /// Import failed
@@ -1957,9 +1959,9 @@ internal enum T {
   internal static let vaultRecoveryErrorOpenFile = T.tr("Localizable", "vault_recovery_error_open_file", fallback: "Can't open the file")
   /// Ensure you have access to the file.
   internal static let vaultRecoveryErrorOpenFileAccessExplain = T.tr("Localizable", "vault_recovery_error_open_file_access_explain", fallback: "Ensure you have access to the file.")
-  /// Can't open the file. %@
+  /// Can't open the file %@
   internal static func vaultRecoveryErrorOpenFileDetails(_ p1: Any) -> String {
-    return T.tr("Localizable", "vault_recovery_error_open_file_details", String(describing: p1), fallback: "Can't open the file. %@")
+    return T.tr("Localizable", "vault_recovery_error_open_file_details", String(describing: p1), fallback: "Can't open the file %@")
   }
   /// Error while scanning the file. Make sure the QR code is visible and that there's only one in the image.
   internal static let vaultRecoveryErrorScanningFile = T.tr("Localizable", "vault_recovery_error_scanning_file", fallback: "Error while scanning the file. Make sure the QR code is visible and that there's only one in the image.")

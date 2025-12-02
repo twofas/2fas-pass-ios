@@ -40,7 +40,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
                 protectionLevel: protectionLevel,
                 tagIds: tagIds,
                 name: name,
-                text: secureNoteContent.text
+                text: secureNoteContent.text,
+                additionalInfo: secureNoteContent.additionalInfo
             )
         } catch {
             fatalError(error.localizedDescription)
@@ -73,7 +74,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
                 protectionLevel: protectionLevel,
                 tagIds: tagIds,
                 name: name,
-                text: secureNoteContent.text
+                text: secureNoteContent.text,
+                additionalInfo: secureNoteContent.additionalInfo
             )
         } catch {
             fatalError(error.localizedDescription)
@@ -90,7 +92,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         let entity = NSEntityDescription.insertNewObject(forEntityName: secureNoteEntityName, into: context) as! SecureNoteEntity
 
@@ -119,8 +122,9 @@ final class SecureNoteEntity: ItemMetadataEntity {
         }
 
         entity.text = text
+        entity.additionalInfo = additionalInfo
     }
-    
+
     @nonobjc static func updateSecureNote(
         on context: NSManagedObjectContext,
         for itemID: ItemID,
@@ -130,7 +134,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         guard let entity = getSecureNoteEntity(on: context, itemID: itemID, checkInTrash: true) else {
             Log("Can't find secure note entity for itemID: \(itemID)", module: .storage)
@@ -146,7 +151,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
             protectionLevel: protectionLevel,
             tagIds: tagIds,
             name: name,
-            text: text
+            text: text,
+            additionalInfo: additionalInfo
         )
     }
     
@@ -159,7 +165,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         entity.vaultID = vaultID
         entity.modificationDate = modificationDate
@@ -182,8 +189,9 @@ final class SecureNoteEntity: ItemMetadataEntity {
         }
 
         entity.text = text
+        entity.additionalInfo = additionalInfo
     }
-    
+
     @nonobjc static func getSecureNoteEntity(
         on context: NSManagedObjectContext,
         itemID: UUID,
@@ -227,7 +235,8 @@ final class SecureNoteEntity: ItemMetadataEntity {
         
         let content = SecureNoteContent(
             name: name,
-            text: text
+            text: text,
+            additionalInfo: additionalInfo
         )
         
         return .secureNote(SecureNoteItemData(

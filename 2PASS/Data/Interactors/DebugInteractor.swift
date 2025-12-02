@@ -409,7 +409,8 @@ extension DebugInteractor: DebugInteracting {
                     tagIds: randomTagIds()
                 ),
                 name: name,
-                text: text
+                text: text,
+                additionalInfo: Bool.random() ? "Additional info for note \(i)" : nil
             )
         }
 

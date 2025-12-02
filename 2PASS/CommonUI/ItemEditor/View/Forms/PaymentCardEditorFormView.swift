@@ -78,7 +78,7 @@ struct PaymentCardEditorFormView: View {
             .formFieldChanged(presenter.expirationDateChanged)
 
             LabeledInput(label: T.cardSecurityCodeLabel.localizedKey, fieldWidth: $fieldWidth) {
-                SecureInput(label: T.cardSecurityCodeLabel, value: $presenter.securityCode)
+                SecureInput(label: T.cardSecurityCodeLabel.localizedResource, value: $presenter.securityCode)
                     .introspect { textField in
                         textField.keyboardType = .numberPad
                         textField.textContentType = .creditCardSecurityCode

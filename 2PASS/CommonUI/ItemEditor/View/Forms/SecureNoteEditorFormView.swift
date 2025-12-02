@@ -9,12 +9,14 @@ import Common
 
 private struct Constants {
     static let minHeightNotes: CGFloat = 80
+    static let minHeightAdditionalInfo: CGFloat = 80
 }
 
 struct SecureNoteEditorFormView: View {
     
     enum Field: Hashable {
         case notes
+        case additionalInfo
     }
     
     @Bindable
@@ -79,5 +81,33 @@ struct SecureNoteEditorFormView: View {
         ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
         
         ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+        
+        if presenter.additionalInfo != nil {
+            Section {
+                TextField("", text: additionalInfoBinding, axis: .vertical)
+                    .focused($focusField, equals: .additionalInfo)
+                    .autocorrectionDisabled(false)
+                    .textInputAutocapitalization(.sentences)
+                    .multilineTextAlignment(.leading)
+                    .limitText(additionalInfoBinding, to: Config.maxSecureNotesAdditionalInfoLength)
+                    .frame(maxWidth: .infinity, minHeight: Constants.minHeightAdditionalInfo, alignment: .topLeading)
+                    .contentShape(Rectangle())
+                    .formFieldChanged(presenter.additionalInfoChanged)
+                    .onTapGesture {
+                        focusField = .additionalInfo
+                    }
+            } header: {
+                Text(T.secureNoteAdditionalInfoLabel.localizedKey)
+            }
+        }
+    }
+    
+    private var additionalInfoBinding: Binding<String> {
+        Binding {
+            presenter.additionalInfo ?? ""
+        } set: {
+            presenter.additionalInfo = $0
+        }
+
     }
 }

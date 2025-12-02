@@ -65,7 +65,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have reached your %d Item limit. Upgrade your plan for unlimited Items."
+            "value" : "You've reached your %d Item limit. Upgrade your plan for unlimited Items."
           }
         }
       }
@@ -87,7 +87,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have reached your %d Item limit. Upgrade your plan for unlimited Items."
+            "value" : "You've reached your %d Item limit. Upgrade your plan for unlimited Items."
           }
         }
       }
@@ -143,6 +143,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select decryption method:"
+          }
+        }
+      }
+    },
+    " secure_note_additional_info_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Additional info"
           }
         }
       }
@@ -3666,7 +3677,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit item"
+            "value" : "Edit Item"
           }
         }
       }
@@ -4243,6 +4254,17 @@
         }
       }
     },
+    "login_view_action_copy_uri" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy URL"
+          }
+        }
+      }
+    },
     "login_view_action_copy_username" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4327,17 +4349,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your plan ends on "
-          }
-        }
-      }
-    },
-    "manage_subscription_items_subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your logins and passwords"
           }
         }
       }
@@ -5107,7 +5118,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have reached your limit. Upgrade your plan to sync unlimited devices."
+            "value" : "You've reached your limit. Upgrade your plan to sync unlimited devices."
           }
         }
       }
@@ -8825,7 +8836,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Server error: Method not allowed. Ensure you're connecting to WebDAV server\""
+            "value" : "Server error: Method not allowed. Ensure you're connecting to WebDAV server"
           }
         }
       }
@@ -9177,7 +9188,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Passwords transferred"
+            "value" : "Logins being transferred"
           }
         }
       }
@@ -9199,7 +9210,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have transferred the passwords"
+            "value" : "You're transferring Items from another app"
           }
         }
       }
@@ -9661,7 +9672,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can't open the file. %@"
+            "value" : "Can't open the file %@"
           }
         }
       }

@@ -8,7 +8,7 @@ import SwiftUI
 import SwiftUIIntrospect
 
 public struct SecureInput: View {
-    let label: String
+    let label: LocalizedStringResource
 
     @State
     private var isReveal = false
@@ -20,8 +20,8 @@ public struct SecureInput: View {
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
     private var onSubmit: (() -> Void)?
-
-    public init(label: String, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
+    
+    public init(label: LocalizedStringResource, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
         self.label = label
         self.bindingReveal = reveal
         self._value = value
@@ -40,7 +40,7 @@ public struct SecureInput: View {
             Spacer()
             
             Toggle(isOn: $isReveal, label: {})
-                .toggleStyle(RevealToggleStyle())
+                .toggleStyle(.reveal)
                 .frame(width: 22)
         }
         .onChange(of: isReveal) { oldValue, newValue in
@@ -68,28 +68,14 @@ public struct SecureInput: View {
     }
 }
 
-public struct RevealToggleStyle: ToggleStyle {
-    
-    public init() {}
-    
-    public func makeBody(configuration: Configuration) -> some View {
-        Button {
-            configuration.$isOn.wrappedValue.toggle()
-        } label: {
-            Image(systemName: configuration.isOn ? "eye.slash" : "eye")
-                .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
-        }
-    }
-}
-
 public struct SecureContentInput: View {
-
+    
     private enum Field {
         case unsecure
         case secure
     }
 
-    let label: String
+    let label: LocalizedStringResource
     let isReveal: Bool
 
     @Binding
@@ -101,7 +87,7 @@ public struct SecureContentInput: View {
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
 
-    public init(label: String, value: Binding<String>, isReveal: Bool = false) {
+    public init(label: LocalizedStringResource, value: Binding<String>, isReveal: Bool = false) {
         self.label = label
         self._value = value
         self.isReveal = isReveal
@@ -115,9 +101,8 @@ public struct SecureContentInput: View {
                 .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     introspectTextField(textField)
                 }
-
             SecureContainerView(contentId: value) {
-                RevealedPasswordTextField(text: $value, placeholder: label, isColorized: isColorized)
+                RevealedPasswordTextField(placeholder: label, text: $value, isColorized: isColorized)
                     .focused($focusedField, equals: .unsecure)
                     .fontDesign(value.isEmpty ? .default : .monospaced)
                     .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
@@ -131,11 +116,11 @@ public struct SecureContentInput: View {
         .textInputAutocapitalization(.never)
         .frame(maxWidth: .infinity)
         .onChange(of: isReveal) { oldValue, newValue in
-            if newValue, (focusedField == .secure || focusedField == nil) {
+            if newValue, focusedField == .secure {
                 Task {
                     focusedField = .unsecure
                 }
-            } else if focusedField == .unsecure || focusedField == nil {
+            } else if focusedField == .unsecure {
                 focusedField = .secure
             }
         }
@@ -155,8 +140,8 @@ public struct SecureContentInput: View {
 }
 
 private struct RevealedPasswordTextField: UIViewRepresentable {
+    let placeholder: LocalizedStringResource
     @Binding var text: String
-    let placeholder: String
     let isColorized: Bool
 
     func makeUIView(context: Context) -> UITextField {
@@ -184,13 +169,13 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
         } else {
             uiView.text = text
         }
-
+        
         if let selectedRange {
             uiView.selectedTextRange = selectedRange
         }
-
-        uiView.placeholder = placeholder
-
+        
+        uiView.placeholder = String(localized: placeholder)
+        
         let bodyFont = UIFont.preferredFont(forTextStyle: .body)
         if text.isEmpty == false {
             uiView.font = UIFont.monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)

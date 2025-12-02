@@ -39,7 +39,7 @@ struct VaultRecoveryEnterPasswordView: View {
                 .listSectionSpacing(0)
                 
                 Section {
-                    SecureInput(label: T.masterPasswordLabel, value: $presenter.password)
+                    SecureInput(label: T.masterPasswordLabel.localizedResource, value: $presenter.password)
                         .focused($focusedField, equals: .password)
                         .onSubmit {
                             presenter.onDecrypt()

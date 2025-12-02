@@ -20,6 +20,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     var text: String = ""
+    var additionalInfo: String?
     private var initialText: String?
     
     var textChanged: Bool {
@@ -27,6 +28,13 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
             return false
         }
         return text != initialText
+    }
+    
+    var additionalInfoChanged: Bool {
+        guard let initialSecureNoteItem else {
+            return false
+        }
+        return (additionalInfo ?? "") != (initialSecureNoteItem.content.additionalInfo ?? "")
     }
 
     private var initialSecureNoteItem: SecureNoteItemData? {
@@ -45,6 +53,8 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
             } else {
                 self.isReveal = false
             }
+            
+            self.additionalInfo = changeRequest?.additionalInfo ?? initialData.content.additionalInfo
         } else {
             self.text = changeRequest?.text ?? ""
             self.isReveal = true
@@ -65,6 +75,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
         return interactor.saveSecureNote(
             name: name,
             text: text.nilIfEmpty,
+            additionalInfo: additionalInfo?.nilIfEmpty,
             protectionLevel: protectionLevel,
             tagIds: Array(selectedTags.map { $0.tagID })
         )

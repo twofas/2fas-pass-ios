@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-struct ItemDetalFormTitle: View {
+struct ItemDetailFormTitle: View {
     
     let name: String
     let icon: IconContent?

@@ -51,10 +51,14 @@ final class ConnectPullReqestCommunicationPresenter {
                 } else {
                     setIconContent(iconType: .domainIcon(nil), name: changeRequest.name)
                 }
+            case .action(.changeRequest(.addSecureNote)):
+                iconContent = .contentType(.secureNote)
             default:
                 switch state.itemData {
                 case .login(let loginItemData):
                     setIconContent(iconType: loginItemData.iconType, name: loginItemData.name)
+                case .secureNote:
+                    iconContent = .contentType(.secureNote)
                 default:
                     break
                 }
