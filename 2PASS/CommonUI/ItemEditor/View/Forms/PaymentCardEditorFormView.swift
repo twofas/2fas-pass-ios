@@ -29,7 +29,7 @@ struct PaymentCardEditorFormView: View {
 
     private var paymentCardIcon: IconContent {
         if let icon = presenter.paymentCardIssuerIcon {
-            return .icon(icon)
+            return .icon(icon, ignoreCornerRadius: true)
         }
         return .contentType(.paymentCard)
     }
