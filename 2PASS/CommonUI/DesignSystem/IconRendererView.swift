@@ -18,7 +18,7 @@ private struct Constants {
 
 public enum IconContent {
     case loading
-    case icon(UIImage)
+    case icon(UIImage, ignoreCornerRadius: Bool = false)
     case label(String, color: UIColor?)
     case placeholder
     case contentType(ItemContentType)
@@ -51,8 +51,9 @@ public struct IconRendererView: View {
             switch content {
             case .loading:
                 ProgressView()
-            case .icon(let icon):
+            case .icon(let icon, let ignoreCornerRadius):
                 IconView(icon: icon)
+                    .ignoreCornerRadius(ignoreCornerRadius)
             case .contentType(let contentType):
                 ContentTypeIconView(contentType: contentType)
             case .label(let title, let color):
@@ -119,16 +120,34 @@ private struct IconView: View {
     
     let icon: UIImage
     
+    private var ignoreCornerRadius = false
+    
+    init(icon: UIImage) {
+        self.icon = icon
+    }
+    
     var body: some View {
         ZStack {
             IconBackgroundBlurView(icon: icon)
 
-            Image(uiImage: icon)
+            let image = Image(uiImage: icon)
                 .resizable()
                 .scaledToFit()
                 .frame(width: Constants.innerIconSize, height: Constants.innerIconSize)
-                .clipShape(RoundedRectangle(cornerRadius: Constants.innerIconCornerRadius))
+            
+            if ignoreCornerRadius {
+                image
+            } else {
+                image
+                    .clipShape(RoundedRectangle(cornerRadius: Constants.innerIconCornerRadius))
+            }
         }
+    }
+    
+    func ignoreCornerRadius(_ ignore: Bool) -> Self {
+        var instance = self
+        instance.ignoreCornerRadius = ignore
+        return instance
     }
 }
 

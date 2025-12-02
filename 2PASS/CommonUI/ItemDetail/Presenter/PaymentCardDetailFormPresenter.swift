@@ -30,7 +30,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
 
     var paymentCardIcon: IconContent {
         if let icon = paymentCardItem.issuerIcon {
-            return .icon(icon)
+            return .icon(icon, ignoreCornerRadius: true)
         }
         return .contentType(.paymentCard)
     }

@@ -39,7 +39,7 @@ final class IconRenderer: UIView {
     
     func configure(with iconType: ItemCellData.Icon, name: String) {
         func showLabel(labelTitle: String, labelColor: UIColor?) {
-            imageRenderer.image = nil
+            imageRenderer.setImage(nil)
             contentTypeRenderer.configure(with: nil)
             
             labelRenderer.setColor(labelColor, animated: false)
@@ -66,7 +66,7 @@ final class IconRenderer: UIView {
             contentTypeRenderer.isHidden = false
         case .paymentCard(let issuer):
             if let issuer, let paymentCardIssuer = PaymentCardIssuer(rawValue: issuer) {
-                updateIcon(with: paymentCardIssuer.icon)
+                updateIcon(with: paymentCardIssuer.icon, ignoreCornerRadius: true)
             } else {
                 contentTypeRenderer.configure(with: .paymentCard)
 
@@ -77,8 +77,8 @@ final class IconRenderer: UIView {
         }
     }
     
-    func updateIcon(with image: UIImage) {
-        imageRenderer.image = image
+    func updateIcon(with image: UIImage, ignoreCornerRadius: Bool = false) {
+        imageRenderer.setImage(image, ignoreCornerRadius: ignoreCornerRadius)
         imageRenderer.isHidden = false
         contentTypeRenderer.isHidden = true
         labelRenderer.isHidden = true

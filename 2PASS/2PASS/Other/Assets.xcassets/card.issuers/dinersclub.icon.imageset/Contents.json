@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "dinners.icon-light.png",
+      "filename" : "dinners.icon-light.svg",
       "idiom" : "universal"
     },
     {
@@ -11,7 +11,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "dinners.icon-dark.png",
+      "filename" : "dinners.icon-dark.svg",
       "idiom" : "universal"
     }
   ],
