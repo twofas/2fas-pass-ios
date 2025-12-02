@@ -42,6 +42,8 @@ internal enum T {
   internal static let requestModalRemoveSecureNoteTitle = T.tr("Localizable", " request_modal_remove_secure_note_title", fallback: "Remove Secure Note")
   /// Select decryption method:
   internal static let restoreDecryptVaultOptionTitle = T.tr("Localizable", " restore_decrypt_vault_option_title", fallback: "Select decryption method:")
+  /// Additional info
+  internal static let secureNoteAdditionalInfoLabel = T.tr("Localizable", " secure_note_additional_info_label", fallback: "Additional info")
   /// 3. Multi-Layer Encryption
   internal static let securityTiersHelpLayersSectionTitle = T.tr("Localizable", " security_tiers_help_layers_section_title", fallback: "3. Multi-Layer Encryption")
   /// Your data is protected with a unique, randomly generated SEED combined with your Master Password.

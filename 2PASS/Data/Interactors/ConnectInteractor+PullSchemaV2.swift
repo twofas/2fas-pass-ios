@@ -270,6 +270,7 @@ extension ConnectInteractor {
             itemChangeRequest = .updateSecureNote(secureNoteItem, SecureNoteDataChangeRequest(
                 name: secureNoteRequest.data.content.name,
                 text: newText,
+                additionalInfo: secureNoteRequest.data.content.additionalInfo,
                 protectionLevel: newProtectionLevel,
                 tags: secureNoteRequest.data.tags
             ))

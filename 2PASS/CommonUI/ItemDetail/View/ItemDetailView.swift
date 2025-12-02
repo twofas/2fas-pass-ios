@@ -139,7 +139,8 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                     name: "Preview Name",
                     content: .init(
                         name: "Preview Name",
-                        text: nil
+                        text: nil,
+                        additionalInfo: nil
                     )
                 ))
         case .unknown:

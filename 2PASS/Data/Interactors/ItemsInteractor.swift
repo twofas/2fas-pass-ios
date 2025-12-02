@@ -153,7 +153,8 @@ extension ItemsInteractor: ItemsInteracting {
                 protectionLevel: secureNoteItem.protectionLevel,
                 tagIds: secureNoteItem.tagIds,
                 name: secureNoteItem.name,
-                text: secureNoteItem.content.text
+                text: secureNoteItem.content.text,
+                additionalInfo: secureNoteItem.content.additionalInfo
             )
         case .raw:
             mainRepository.createItem(
@@ -226,7 +227,8 @@ extension ItemsInteractor: ItemsInteracting {
                 protectionLevel: secureNoteItem.protectionLevel,
                 tagIds: secureNoteItem.tagIds,
                 name: secureNoteItem.name,
-                text: secureNoteItem.content.text
+                text: secureNoteItem.content.text,
+                additionalInfo: secureNoteItem.content.additionalInfo
             )
         case .raw:
             mainRepository.updateItem(

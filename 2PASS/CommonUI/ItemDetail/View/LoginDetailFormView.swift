@@ -21,7 +21,7 @@ struct LoginDetailFormView: View {
 
     var body: some View {
         Group {
-            ItemDetalFormTitle(name: presenter.name, icon: presenter.iconContent)
+            ItemDetailFormTitle(name: presenter.name, icon: presenter.iconContent)
 
             if let username = presenter.username {
                 ItemDetailFormActionsRow(
@@ -87,19 +87,8 @@ struct LoginDetailFormView: View {
             }
 
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
-
             ItemDetailFormTags(presenter.tags)
-
-            if let notes = presenter.notes, !notes.isEmpty {
-                HStack {
-                    Text(notes)
-                        .multilineTextAlignment(.leading)
-                        .font(.body)
-                        .foregroundStyle(.neutral400)
-
-                    Spacer(minLength: 0)
-                }
-            }
+            ItemDetailFormNotes(presenter.notes)
         }
         .onAppear {
             selectedField = nil

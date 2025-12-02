@@ -319,7 +319,8 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
 
     func updateMetadataItem(
@@ -369,9 +370,10 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
-    
+
     func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func getItemEntity(

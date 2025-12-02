@@ -206,10 +206,12 @@ extension ConnectSchemaV2 {
             private enum CodingKeys: String, CodingKey {
                 case name
                 case text = "s_text"
+                case additionalInfo
             }
 
             let name: String?
             let text: Data?
+            let additionalInfo: String?
         }
     }
     
