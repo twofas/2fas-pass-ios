@@ -213,6 +213,8 @@ private struct SecureNoteTextView: UIViewRepresentable {
                     return false
                 }
             }
+            
+            textView.resignFirstResponder()
 
             return true
         }
