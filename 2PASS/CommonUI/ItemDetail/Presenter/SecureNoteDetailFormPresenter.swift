@@ -46,6 +46,15 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         toastPresenter.presentCopied()
     }
     
+    func onCopy(_ url: URL) {
+        interactor.copy(url.absoluteString)
+        toastPresenter.presentCopied()
+    }
+    
+    func onOpen(_ url: URL) {
+        UIApplication.shared.open(url)
+    }
+    
     private func refreshValues() {
         isReveal = (isReveal || protectionLevel == .normal)
         

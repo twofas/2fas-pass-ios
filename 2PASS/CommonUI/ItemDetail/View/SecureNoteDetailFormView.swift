@@ -46,6 +46,16 @@ struct SecureNoteDetailFormView: View {
             Color.clear
                 .overlay(alignment: .top) {
                     SecureNoteTextView(text: presenter.note ?? "", height: $noteHeight)
+                        .linkContextMenu({ url in
+                            UIMenu(children: [
+                                UIAction(title: T.commonOpen) { [weak presenter] _ in
+                                    presenter?.onOpen(url)
+                                },
+                                UIAction(title: T.commonCopy) { [weak presenter] _ in
+                                    presenter?.onCopy(url)
+                                }
+                            ])
+                        })
                         .onTap {
                             selectedField = .note
                         }
@@ -114,9 +124,12 @@ struct SecureNoteDetailFormView: View {
 private struct SecureNoteTextView: UIViewRepresentable {
     
     let text: String
-    private var onTap: Callback?
+    
     @Binding var height: CGFloat
 
+    private var onTap: Callback?
+    private var linkMenu: ((URL) -> UIMenu)?
+    
     init(text: String, height: Binding<CGFloat>) {
         self.text = text
         self._height = height
@@ -125,6 +138,12 @@ private struct SecureNoteTextView: UIViewRepresentable {
     func onTap(_ onTap: @escaping () -> Void) -> Self {
         var instance = self
         instance.onTap = onTap
+        return instance
+    }
+    
+    func linkContextMenu(_ menu: @escaping (URL) -> UIMenu) -> Self {
+        var instance = self
+        instance.linkMenu = menu
         return instance
     }
     
@@ -176,9 +195,11 @@ private struct SecureNoteTextView: UIViewRepresentable {
         Coordinator(self)
     }
 
-    class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate {
+    class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate, UIEditMenuInteractionDelegate {
         var parent: SecureNoteTextView
 
+        private var linkContextMenuItem: (url: URL, rect: CGRect, interaction: UIEditMenuInteraction)?
+        
         init(_ parent: SecureNoteTextView) {
             self.parent = parent
         }
@@ -186,6 +207,59 @@ private struct SecureNoteTextView: UIViewRepresentable {
         @objc func handleTapOnTextView(_ gesture: UITapGestureRecognizer) {
             parent.onTap?()
         }
+        
+        func textView(_ textView: UITextView, primaryActionFor textItem: UITextItem, defaultAction: UIAction) -> UIAction? {
+            UIAction { [weak self] _ in
+                self?.openContextMenu(from: textView, for: textItem)
+            }
+        }
+        
+        private func openContextMenu(from textView: UITextView, for item: UITextItem) {
+            guard case .link(let url) = item.content else { return }
+            
+            guard let textRange = textViewRange(from: item.range, in: textView) else { return }
+
+            let interaction = UIEditMenuInteraction(delegate: self)
+            textView.addInteraction(interaction)
+
+            let rect = textView.firstRect(for: textRange)
+            linkContextMenuItem = (url, rect, interaction)
+                        
+            let config = UIEditMenuConfiguration(identifier: UUID(), sourcePoint: .zero)
+            config.preferredArrowDirection = .down
+            interaction.presentEditMenu(with: config)
+        }
+        
+        private func textViewRange(from nsRange: NSRange, in textView: UITextView) -> UITextRange? {
+            guard
+                let start = textView.position(from: textView.beginningOfDocument, offset: nsRange.location),
+                let end = textView.position(from: start, offset: nsRange.length)
+            else { return nil }
+
+            return textView.textRange(from: start, to: end)
+        }
+        
+        private func firstRect(for range: UITextRange, in textView: UITextView) -> CGRect {
+            let rects = textView.selectionRects(for: range)
+            return rects.first?.rect ?? .zero
+        }
+        
+        // MARK: - UIEditMenuInteractionDelegate
+        
+        func editMenuInteraction(_ interaction: UIEditMenuInteraction, menuFor configuration: UIEditMenuConfiguration, suggestedActions: [UIMenuElement]) -> UIMenu? {
+            guard let linkContextMenuItem else { return nil }
+            return parent.linkMenu?(linkContextMenuItem.url)
+        }
+        
+        func editMenuInteraction(_ interaction: UIEditMenuInteraction, targetRectFor configuration: UIEditMenuConfiguration) -> CGRect {
+            linkContextMenuItem?.rect ?? .zero
+        }
+        
+        func editMenuInteraction(_ interaction: UIEditMenuInteraction, willDismissMenuFor configuration: UIEditMenuConfiguration, animator: any UIEditMenuInteractionAnimating) {
+            linkContextMenuItem = nil
+        }
+        
+        // MARK: - UIGestureRecognizerDelegate
 
         func gestureRecognizer(
             _ gestureRecognizer: UIGestureRecognizer,
@@ -194,7 +268,23 @@ private struct SecureNoteTextView: UIViewRepresentable {
             guard let textView = gestureRecognizer.view as? UITextView else {
                 return true
             }
+            
+            // Unselect if any text is selected
+            
+            if textView.selectedTextRange?.isEmpty == false {
+                textView.selectedTextRange = nil
+                return false
+            }
+            
+            // Hide the link context menu if it is open
+            
+            if let linkContextMenuItem {
+                linkContextMenuItem.interaction.dismissMenu()
+                return false
+            }
 
+            // Ignore the gesture if the user taps on a link
+            
             let location = touch.location(in: textView)
             let locationInTextContainer = CGPoint(
                 x: location.x - textView.textContainerInset.left,
@@ -214,8 +304,6 @@ private struct SecureNoteTextView: UIViewRepresentable {
                 }
             }
             
-            textView.resignFirstResponder()
-
             return true
         }
     }

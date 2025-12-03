@@ -219,7 +219,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To sync your Vault on multiple devices, you need to upgrade to the Unlimited plan"
+            "value" : "To sync this Vault across multiple devices, you need to upgrade to the Unlimited plan"
           }
         }
       }
@@ -1559,6 +1559,17 @@
         }
       }
     },
+    "common_open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        }
+      }
+    },
     "common_open_system_settings" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2885,7 +2896,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Showing %d items tagged: **%@**"
+            "value" : "Showing %d Items tagged: **%@**"
           }
         }
       }
