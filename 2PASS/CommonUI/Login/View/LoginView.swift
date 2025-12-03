@@ -49,7 +49,6 @@ public struct LoginView: View {
                 enterPasswordView
             }
         }
-        .background(Asset.mainBackgroundColor.swiftUIColor)
         .toolbar(.visible, for: .navigationBar)
         .onAppear {
             presenter.onAppear()

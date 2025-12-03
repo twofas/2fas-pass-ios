@@ -183,7 +183,7 @@ extension PasswordsPresenter {
         
         switch interactor.selectAction {
         case .viewDetails:
-            flowController.selectPassword(itemID: itemData.id)
+            flowController.selectItem(id: itemData.id, contentType: itemData.contentType)
         case .copy:
             switch itemData {
             case .login:

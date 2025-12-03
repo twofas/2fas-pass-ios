@@ -55,8 +55,8 @@ internal enum T {
   internal static let securityTiersHelpTiersTopSecretTitle = T.tr("Localizable", " security_tiers_help_tiers_top_secret_title", fallback: "Top Secret")
   /// iCloud Vault Sync had a merge error. Try switching the Sync on and off, or restoring the backup from iCloud
   internal static let syncErrorIcloudMergeError = T.tr("Localizable", " sync_error_icloud_merge_error", fallback: "iCloud Vault Sync had a merge error. Try switching the Sync on and off, or restoring the backup from iCloud")
-  /// To sync your Vault on multiple devices, you need to upgrade to the Unlimited plan
-  internal static let syncErrorIcloudSyncNotAllowedDescription = T.tr("Localizable", " sync_error_icloud_sync_not_allowed_description", fallback: "To sync your Vault on multiple devices, you need to upgrade to the Unlimited plan")
+  /// To sync this Vault across multiple devices, you need to upgrade to the Unlimited plan
+  internal static let syncErrorIcloudSyncNotAllowedDescription = T.tr("Localizable", " sync_error_icloud_sync_not_allowed_description", fallback: "To sync this Vault across multiple devices, you need to upgrade to the Unlimited plan")
   /// Can't enable Vault Sync
   internal static let syncErrorIcloudSyncNotAllowedTitle = T.tr("Localizable", " sync_error_icloud_sync_not_allowed_title", fallback: "Can't enable Vault Sync")
   /// Incorrect URL
@@ -303,6 +303,8 @@ internal enum T {
   internal static let commonOk = T.tr("Localizable", "common_ok", fallback: "OK")
   /// On
   internal static let commonOn = T.tr("Localizable", "common_on", fallback: "On")
+  /// Open
+  internal static let commonOpen = T.tr("Localizable", "common_open", fallback: "Open")
   /// Open System Settings
   internal static let commonOpenSystemSettings = T.tr("Localizable", "common_open_system_settings", fallback: "Open System Settings")
   /// Other
@@ -549,9 +551,9 @@ internal enum T {
   internal static let exportBackupModalTitle = T.tr("Localizable", "export_backup_modal_title", fallback: "Export your backup")
   /// Save the exported Vault in a safe place
   internal static let exportVaultTitle = T.tr("Localizable", "export_vault_title", fallback: "Save the exported Vault in a safe place")
-  /// Showing %d items tagged: **%@**
+  /// Showing %d Items tagged: **%@**
   internal static func filterTagBannerIos(_ p1: Int, _ p2: Any) -> String {
-    return T.tr("Localizable", "filter_tag_banner_ios", p1, String(describing: p2), fallback: "Showing %d items tagged: **%@**")
+    return T.tr("Localizable", "filter_tag_banner_ios", p1, String(describing: p2), fallback: "Showing %d Items tagged: **%@**")
   }
   /// No local Vault found. Please reinstall the app
   internal static let generalErrorNoLocalVault = T.tr("Localizable", "general_error_no_local_vault", fallback: "No local Vault found. Please reinstall the app")

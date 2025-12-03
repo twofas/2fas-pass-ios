@@ -18,7 +18,7 @@ struct AutoFillRootView: View {
                 SplashScreenView()
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("common_cancel") {
+                            ToolbarCancelButton {
                                 presenter.onCancel()
                             }
                         }
