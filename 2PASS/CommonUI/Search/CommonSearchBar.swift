@@ -6,9 +6,7 @@
 
 import UIKit
 
-final class CommonSearchBar: UISearchBar {
-    private var shouldEndEditing = true
-    
+final class CommonSearchBar: UISearchBar {    
     var dataSource: CommonSearchDataSourceSearchable?
     
     override init(frame: CGRect) {
@@ -36,13 +34,11 @@ final class CommonSearchBar: UISearchBar {
             clear()
             return
         }
-        shouldEndEditing = true
         resignFirstResponder()
     }
     
     func clear() {
         text = ""
-        shouldEndEditing = true
         dataSource?.clearSearchPhrase()
         resignFirstResponder()
     }
@@ -51,26 +47,11 @@ final class CommonSearchBar: UISearchBar {
 extension CommonSearchBar: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        shouldEndEditing = false
         dataSource?.setSearchPhrase(searchText)
-    }
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        shouldEndEditing = true
-        searchBar.resignFirstResponder()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         clear()
-    }
-    
-    func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
-        if shouldEndEditing {
-            return true
-        } else {
-            shouldEndEditing = true
-            return false
-        }
     }
 }
 
