@@ -42,6 +42,10 @@ final class PasswordsPresenter {
         }
     }
     
+    var hideContentTypePicker: Bool {
+        autoFillEnvironment?.serviceIdentifiers.isEmpty == false
+    }
+    
     private(set) var contentTypeFilter: ItemContentTypeFilter = .all
     
     private(set) var itemsCount: Int = 0

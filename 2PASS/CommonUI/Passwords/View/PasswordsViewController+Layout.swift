@@ -53,19 +53,23 @@ extension PasswordsViewController {
         let config = UICollectionViewCompositionalLayoutConfiguration()
         
         if presenter.hasItems {
-            let pickerSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(Constants.contentTypePickerHeight)
-            )
-            
-            let picker = NSCollectionLayoutBoundarySupplementaryItem(
-                layoutSize: pickerSize,
-                elementKind: ItemContentTypeFilterPickerView.elementKind,
-                alignment: .top,
-            )
-            picker.pinToVisibleBounds = false
-            picker.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-            picker.zIndex = 3
+            if presenter.hideContentTypePicker == false {
+                let pickerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(Constants.contentTypePickerHeight)
+                )
+                
+                let picker = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: pickerSize,
+                    elementKind: ItemContentTypeFilterPickerView.elementKind,
+                    alignment: .top,
+                )
+                picker.pinToVisibleBounds = false
+                picker.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+                picker.zIndex = 3
+                
+                config.boundarySupplementaryItems.append(picker)
+            }
             
             if presenter.selectedFilterTag != nil {
                 let bannerSize = NSCollectionLayoutSize(
@@ -83,9 +87,7 @@ extension PasswordsViewController {
                 banner.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: Spacing.l, bottom: 0, trailing: Spacing.l)
                 banner.zIndex = 2
                 
-                config.boundarySupplementaryItems = [picker, banner]
-            } else {
-                config.boundarySupplementaryItems = [picker]
+                config.boundarySupplementaryItems.append(banner)
             }
         }
 
