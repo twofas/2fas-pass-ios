@@ -150,8 +150,6 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
                     } else {
                         rest.append(element)
                     }
-                } else {
-                    rest.append(element)
                 }
             }
         }
