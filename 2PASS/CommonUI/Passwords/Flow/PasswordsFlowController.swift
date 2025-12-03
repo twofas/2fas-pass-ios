@@ -10,7 +10,7 @@ import SwiftUI
 
 public protocol PasswordsFlowControllerParent: AnyObject {
     func passwordsToItemDetail(itemID: ItemID)
-    func selectPassword(itemID: ItemID)
+    func selectItem(id: ItemID, contentType: ItemContentType)
     func cancel()
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
@@ -25,7 +25,7 @@ protocol PasswordsFlowControlling: AnyObject {
     func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
 
-    func selectPassword(itemID: ItemID)
+    func selectItem(id: ItemID, contentType: ItemContentType)
     func cancel()
 
     func toQuickSetup()
@@ -89,8 +89,8 @@ extension PasswordsFlowController: PasswordsFlowControlling {
         UIApplication.shared.openInBrowser(selectedURI)
     }
     
-    func selectPassword(itemID: ItemID) {
-        parent?.selectPassword(itemID: itemID)
+    func selectItem(id: ItemID, contentType: ItemContentType) {
+        parent?.selectItem(id: id, contentType: contentType)
     }
     
     func cancel() {

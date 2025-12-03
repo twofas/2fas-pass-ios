@@ -52,8 +52,8 @@ extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
         )
     }
 
-    public func selectPassword(itemID: ItemID) {
-        passwordsToItemDetail(itemID: itemID)
+    public func selectItem(id: ItemID, contentType: ItemContentType) {
+        passwordsToItemDetail(itemID: id)
     }
     
     public func toQuickSetup() {

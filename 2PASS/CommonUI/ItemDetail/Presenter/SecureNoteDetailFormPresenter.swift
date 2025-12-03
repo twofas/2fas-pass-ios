@@ -40,6 +40,11 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         isReveal = true
     }
     
+    func onSelectNote() {
+        guard let note else { return }
+        flowController.autoFillTextToInsert(note)
+    }
+    
     func onCopyNote() {
         guard let note else { return }
         interactor.copy(note)

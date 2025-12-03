@@ -105,6 +105,11 @@ struct SecureNoteDetailFormView: View {
         .sensoryFeedback(.selection, trigger: presenter.isReveal) { _, newValue in
             newValue
         }
+        .onChange(of: selectedField == .note) { _, newValue in
+            if newValue {
+                presenter.onSelectNote()
+            }
+        }
         .editMenu($selectedField, equals: .note, actions: [
             UIAction(title: T.commonCopy) { _ in
                 presenter.onCopyNote()
