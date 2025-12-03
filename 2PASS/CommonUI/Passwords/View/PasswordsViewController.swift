@@ -137,7 +137,7 @@ private extension PasswordsViewController {
             return
         }
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
+        appearance.configureWithDefaultBackground()
         navigationBar.standardAppearance = appearance
         navigationBar.scrollEdgeAppearance = appearance
     }
