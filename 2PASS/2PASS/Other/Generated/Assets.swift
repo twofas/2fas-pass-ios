@@ -111,7 +111,6 @@ internal enum Asset {
   internal static let tier2Icon = ImageAsset(name: "tier2.icon")
   internal static let tier3Icon = ImageAsset(name: "tier3.icon")
   internal static let tiersHelpHeader = ImageAsset(name: "tiers.help.header")
-  internal static let topElipse = ImageAsset(name: "top.elipse")
   internal static let topSecretTierFigure = ImageAsset(name: "top.secret.tier.figure")
   internal static let transferIcon = ImageAsset(name: "transfer.icon")
   internal static let transferItemsIcon = ImageAsset(name: "transfer.items.icon")

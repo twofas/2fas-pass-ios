@@ -7,10 +7,10 @@
 import UIKit
 
 final class PasswordsListView: UICollectionView {
-    func configure(isAutoFillExtension: Bool) {
-        backgroundColor = Asset.mainBackgroundColor.color
-        
+    func configure(isAutoFillExtension: Bool) {        
         register(SelectedTagBannerView.self, forSupplementaryViewOfKind: SelectedTagBannerView.elementKind, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
         register(ItemContentTypeFilterPickerView.self, forSupplementaryViewOfKind: ItemContentTypeFilterPickerView.elementKind, withReuseIdentifier: ItemContentTypeFilterPickerView.reuseIdentifier)
+        
+        keyboardDismissMode = .onDrag
     }
 }

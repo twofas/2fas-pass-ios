@@ -59,11 +59,11 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
         )
     }
 
-    public func selectPassword(itemID: ItemID) {
-        if autoFillEnvironment.isTextToInsert {
-            passwordsToItemDetail(itemID: itemID)
+    public func selectItem(id: ItemID, contentType: ItemContentType) {
+        if autoFillEnvironment.isTextToInsert || contentType != .login {
+            passwordsToItemDetail(itemID: id)
         } else {
-            parent?.selectPassword(itemID: itemID)
+            parent?.selectPassword(itemID: id)
         }
     }
     

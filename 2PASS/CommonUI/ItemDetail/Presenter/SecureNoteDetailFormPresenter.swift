@@ -40,10 +40,24 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         isReveal = true
     }
 
+    func onSelectNote() {
+        guard let note else { return }
+        flowController.autoFillTextToInsert(note)
+    }
+    
     func onCopyNote() {
         guard let note else { return }
         interactor.copy(note)
         toastPresenter.presentCopied()
+    }
+    
+    func onCopy(_ url: URL) {
+        interactor.copy(url.absoluteString)
+        toastPresenter.presentCopied()
+    }
+    
+    func onOpen(_ url: URL) {
+        UIApplication.shared.open(url)
     }
     
     private func refreshValues() {
