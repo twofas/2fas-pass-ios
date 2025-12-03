@@ -81,6 +81,11 @@ public extension String {
     var withZeroWidthSpaces: String {
         map({ String($0) }).joined(separator: "\u{200B}")
     }
+    
+    var capitalizedFirstLetter: String {
+        guard let first else { return self }
+        return first.uppercased() + dropFirst()
+    }
 }
 
 public extension Optional where Wrapped == String {

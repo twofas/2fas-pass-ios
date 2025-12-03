@@ -115,6 +115,26 @@ private extension ExternalServiceImportInteractor {
     var selectedVaultId: VaultID? {
         mainRepository.selectedVault?.vaultID
     }
+
+    func formatDictionary(_ dict: [String: String], excludingKeys: Set<String>, keyMap: [String : String] = [:]) -> String? {
+        let result = dict
+            .filter { !excludingKeys.contains($0.key) && !$0.value.isEmpty }
+            .map {
+                (key: keyMap[$0.key] ?? $0.key.replacingOccurrences(of: "_", with: " "), value: $0.value)
+            }
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key.capitalizedFirstLetter): \($0.value)" }
+            .joined(separator: "\n")
+        return result.isEmpty ? nil : result
+    }
+    
+    func mergeNote(_ note: String?, additionalInfo: String?) -> String? {
+        if let note, let additionalInfo {
+            return note + "\n\n" + additionalInfo
+        } else {
+            return note ?? additionalInfo
+        }
+    }
 }
 
 private extension ExternalServiceImportInteractor {
@@ -421,36 +441,26 @@ private extension ExternalServiceImportInteractor {
                         return nil
                     }()
 
-                    // Add unmapped fields to notes
                     let note = dict["note"]?.nilIfEmpty
-                    let username2 = dict["username2"]?.nilIfEmpty
-                    let username3 = dict["username3"]?.nilIfEmpty
-                    var extraNotes: [String] = []
-                    if let username2 {
-                        extraNotes.append("Username: \(username2)")
-                    }
-                    if let username3 {
-                        extraNotes.append("Alternate username: \(username3)")
-                    }
-                    if let category = dict["category"]?.nilIfEmpty {
-                        extraNotes.append("Category: \(category)")
-                    }
-                    let notes: String? = {
-                        if let note, extraNotes.isEmpty == false {
-                            return note + "\n\n" + extraNotes.joined(separator: "\n")
-                        } else if let note {
-                            return note
-                        } else if extraNotes.isEmpty == false {
-                            return extraNotes.joined(separator: "\n")
-                        }
-                        return nil
-                    }()
+                    
+                    let additionalInfo = self?.formatDictionary(
+                        dict,
+                        excludingKeys: [
+                            "title", "url", "username", "password", "note"
+                        ],
+                        keyMap: [
+                            "username2": "Username",
+                            "username3": "Alternate username"
+                        ]
+                    )
 
+                    let notes = self?.mergeNote(note, additionalInfo: additionalInfo)
+              
                     items.append(
                         .login(.init(
                             id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
+                            vaultId: vaultID,
+                            metadata: .init(
                                 creationDate: Date.importPasswordPlaceholder,
                                 modificationDate: Date.importPasswordPlaceholder,
                                 protectionLevel: protectionLevel,
@@ -501,7 +511,9 @@ private extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-
+                    
+                    let additionalInfo = self?.formatDictionary(dict, excludingKeys: ["title", "note"])
+                    
                     items.append(
                         .secureNote(.init(
                             id: .init(),
@@ -517,7 +529,7 @@ private extension ExternalServiceImportInteractor {
                             content: .init(
                                 name: name,
                                 text: text,
-                                additionalInfo: nil
+                                additionalInfo: additionalInfo
                             )
                         ))
                     )
@@ -579,36 +591,16 @@ private extension ExternalServiceImportInteractor {
                     }()
                     let cardNumberMask = self?.paymentCardUtilityInteractor.cardNumberMask(from: cardNumberString)
                     let cardIssuer = self?.paymentCardUtilityInteractor.detectCardIssuer(from: cardNumberString)?.rawValue
-
-                    // Add unmapped fields to notes
+                    
                     let note = dict["note"]?.nilIfEmpty
-                    var extraNotes: [String] = []
-                    if let accountName = dict["account_name"]?.nilIfEmpty {
-                        extraNotes.append("Account name: \(accountName)")
-                    }
-                    if let accountHolder = dict["account_holder"]?.nilIfEmpty {
-                        extraNotes.append("Account holder: \(accountHolder)")
-                    }
-                    if let country = dict["country"]?.nilIfEmpty {
-                        extraNotes.append("Country: \(country)")
-                    }
-                    if let bank = dict["issuing_bank"]?.nilIfEmpty {
-                        extraNotes.append("Issuing bank: \(bank)")
-                    }
-                    if let routingNumber = dict["routing_number"]?.nilIfEmpty {
-                        extraNotes.append("Routing number: \(routingNumber)")
-                    }
-                    let notes: String? = {
-                        if let note, extraNotes.isEmpty == false {
-                            return note + "\n\n" + extraNotes.joined(separator: "\n")
-                        } else if let note {
-                            return note
-                        } else if extraNotes.isEmpty == false {
-                            return extraNotes.joined(separator: "\n")
-                        }
-                        return nil
-                    }()
-
+                    let additionalInfo = self?.formatDictionary(
+                        dict,
+                        excludingKeys: [
+                            "name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"
+                        ]
+                    )
+                    let notes = self?.mergeNote(note, additionalInfo: additionalInfo)
+                    
                     items.append(
                         .paymentCard(.init(
                             id: .init(),
