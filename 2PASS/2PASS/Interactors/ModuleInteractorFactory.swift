@@ -331,10 +331,10 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, items: [ItemData]) -> TransferItemsImportingModuleInteracting {
+    func transferItemsImportingModuleInteractor(service: ExternalService, result: ExternalServiceImportResult) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
-            items: items,
+            result: result,
             itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
         )
     }

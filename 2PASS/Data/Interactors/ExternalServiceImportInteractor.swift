@@ -13,6 +13,16 @@ public enum ExternalServiceImportError: Error {
     case cantReadFile
 }
 
+public struct ExternalServiceImportResult {
+    public let items: [ItemData]
+    public let tags: [ItemTagData]
+
+    public init(items: [ItemData], tags: [ItemTagData] = []) {
+        self.items = items
+        self.tags = tags
+    }
+}
+
 public protocol ExternalServiceImportInteracting: AnyObject {
 
     func openFile(from url: URL) async throws(ExternalServiceImportError) -> Data
@@ -20,7 +30,7 @@ public protocol ExternalServiceImportInteracting: AnyObject {
     func importService(
         _ service: ExternalService,
         content: Data
-    ) async throws(ExternalServiceImportError) -> [ItemData]
+    ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult
 }
 
 final class ExternalServiceImportInteractor {
@@ -66,38 +76,38 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
     func importService(
         _ service: ExternalService,
         content: Data
-    ) async throws(ExternalServiceImportError) -> [ItemData] {
+    ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
         switch service {
         case .onePassword:
-            try await OnePasswordImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await OnePasswordImporter(context: context).import(content))
         case .bitWarden:
             try await BitWardenImporter(context: context).import(content)
         case .chrome:
-            try await ChromeImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await ChromeImporter(context: context).import(content))
         case .dashlaneMobile:
-            try await DashlaneImporter(context: context).importMobile(content)
+            ExternalServiceImportResult(items: try await DashlaneImporter(context: context).importMobile(content))
         case .dashlaneDesktop:
-            try await DashlaneImporter(context: context).importDesktop(content)
+            ExternalServiceImportResult(items: try await DashlaneImporter(context: context).importDesktop(content))
         case .lastPass:
-            try await LastPassImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await LastPassImporter(context: context).import(content))
         case .protonPass:
-            try await ProtonPassImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await ProtonPassImporter(context: context).import(content))
         case .applePasswordsMobile:
-            try await ApplePasswordsImporter(context: context).importMobile(content)
+            ExternalServiceImportResult(items: try await ApplePasswordsImporter(context: context).importMobile(content))
         case .applePasswordsDesktop:
-            try await ApplePasswordsImporter(context: context).importDesktop(content)
+            ExternalServiceImportResult(items: try await ApplePasswordsImporter(context: context).importDesktop(content))
         case .firefox:
-            try await FirefoxImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await FirefoxImporter(context: context).import(content))
         case .keePass:
-            try await KeePassImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await KeePassImporter(context: context).import(content))
         case .keePassXC:
-            try await KeePassXCImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await KeePassXCImporter(context: context).import(content))
         case .microsoftEdge:
-            try await MicrosoftEdgeImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await MicrosoftEdgeImporter(context: context).import(content))
         case .enpass:
-            try await EnpassImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await EnpassImporter(context: context).import(content))
         case .keeper:
-            try await KeeperImporter(context: context).import(content)
+            ExternalServiceImportResult(items: try await KeeperImporter(context: context).import(content))
         }
     }
 }
@@ -131,28 +141,69 @@ extension ExternalServiceImportInteractor {
             }
             return encrypted
         }
+        
+        func formatDictionary(
+            _ dict: [String: Any],
+            excludingKeys: Set<String> = [],
+            keyMap: [String: String] = [:]
+        ) -> String? {
+            let stringDict = dict.compactMapValues { value -> String? in
+                if let string = value as? String {
+                    return string
+                } else if let int = value as? Int {
+                    return String(int)
+                } else if let double = value as? Double {
+                    return String(double)
+                } else if let bool = value as? Bool {
+                    return String(bool)
+                }
+                return nil
+            }
+            return formatDictionary(stringDict, excludingKeys: excludingKeys, keyMap: keyMap)
+        }
 
         func formatDictionary(
             _ dict: [String: String],
-            excludingKeys: Set<String>,
+            excludingKeys: Set<String> = [],
             keyMap: [String: String] = [:]
         ) -> String? {
             let result = dict
                 .filter { !excludingKeys.contains($0.key) && !$0.value.isEmpty }
                 .map {
-                    (key: keyMap[$0.key] ?? $0.key.replacingOccurrences(of: "_", with: " "), value: $0.value)
+                    let formattedKey = keyMap[$0.key] ?? formatKey($0.key)
+                    return (key: formattedKey, value: $0.value)
                 }
                 .sorted { $0.key < $1.key }
-                .map { "\($0.key.capitalizedFirstLetter): \($0.value)" }
+                .map { "\($0.key): \($0.value)" }
                 .joined(separator: "\n")
             return result.isEmpty ? nil : result
         }
 
-        func mergeNote(_ note: String?, additionalInfo: String?) -> String? {
-            if let note, let additionalInfo {
-                return note + "\n\n" + additionalInfo
+        private func formatKey(_ key: String) -> String {
+            key.replacingOccurrences(of: "_", with: " ")
+                .replacingOccurrences(
+                    of: "([a-z])([A-Z])",
+                    with: "$1 $2",
+                    options: .regularExpression
+                )
+                .replacingOccurrences(
+                    of: "([a-zA-Z])([0-9])",
+                    with: "$1 $2",
+                    options: .regularExpression
+                )
+                .replacingOccurrences(
+                    of: "([0-9])([a-zA-Z])",
+                    with: "$1 $2",
+                    options: .regularExpression
+                )
+                .capitalizedFirstLetter
+        }
+
+        func mergeNote(_ note: String?, with info: String?) -> String? {
+            if let note, let info {
+                return note + "\n\n" + info
             } else {
-                return note ?? additionalInfo
+                return note ?? info
             }
         }
 

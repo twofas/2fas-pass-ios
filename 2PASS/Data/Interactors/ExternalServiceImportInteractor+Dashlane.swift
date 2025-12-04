@@ -170,7 +170,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     ]
                 )
 
-                let notes = context.mergeNote(note, additionalInfo: additionalInfo)
+                let notes = context.mergeNote(note, with: additionalInfo)
 
                 items.append(
                     .login(.init(
@@ -334,7 +334,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     dict,
                     excludingKeys: ["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"]
                 )
-                let notes = context.mergeNote(note, additionalInfo: additionalInfo)
+                let notes = context.mergeNote(note, with: additionalInfo)
 
                 items.append(
                     .paymentCard(.init(

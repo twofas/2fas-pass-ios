@@ -67,7 +67,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                     dict,
                     excludingKeys: Set(requiredHeaders)
                 )
-                let notes = context.mergeNote(dict["Notes"]?.nilIfEmpty, additionalInfo: additionalInfo)
+                let notes = context.mergeNote(dict["Notes"]?.nilIfEmpty, with: additionalInfo)
 
                 items.append(
                     .login(.init(
@@ -241,7 +241,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             }
         }
         let additionalInfo = additionalFields.isEmpty ? nil : additionalFields.joined(separator: "\n")
-        let mergedNotes = context.mergeNote(notes, additionalInfo: additionalInfo)
+        let mergedNotes = context.mergeNote(notes, with: additionalInfo)
 
         let creationDate: Date = {
             if let timestamp = item.createdAt {
