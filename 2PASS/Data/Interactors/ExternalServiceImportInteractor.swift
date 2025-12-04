@@ -150,7 +150,9 @@ private extension ExternalServiceImportInteractor {
 
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["Title", "Url", "Username", "Password", "Notes"]) else {
+            
+            let requiredHeaders = ["Title", "Url", "Username", "Password", "Notes"]
+            guard csv.validateHeader(requiredHeaders) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
@@ -170,8 +172,14 @@ private extension ExternalServiceImportInteractor {
                     }
                     return nil
                 }()
-                let notes = dict["Notes"]?.nilIfEmpty
-
+                
+                let additionalInfo = self?.formatDictionary(
+                    dict,
+                    excludingKeys: Set(requiredHeaders),
+                    keyMap: [:]
+                )
+                let notes = self?.mergeNote(dict["Notes"]?.nilIfEmpty, additionalInfo: additionalInfo)
+                
                 items.append(
                     .login(.init(
                         id: .init(),
