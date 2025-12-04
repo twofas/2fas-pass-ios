@@ -33,7 +33,7 @@ struct TransferItemsInstructionsRouter: Router {
     func routingType(for destination: TransferItemsInstructionsDestination?) -> RoutingType? {
         switch destination {
         case .uploadFile(let service, let onClose):
-            .fileImporter(contentTypes: [service.allowedContentType], onClose: onClose)
+            .fileImporter(contentTypes: service.allowedContentTypes, onClose: onClose)
         case .summary, .importFailure:
             .push
         case nil:

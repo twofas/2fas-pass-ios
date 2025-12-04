@@ -32,14 +32,20 @@ struct TransferItemsInstructionsView: View {
                 presenter.onUploadFile()
             } label: {
                 Group {
-                    switch presenter.service.allowedContentType {
-                    case .json:
-                        Text(T.transferInstructionsCtaJson.localizedKey)
-                    case .zip:
-                        Text(T.transferInstructionsCtaZip.localizedKey)
-                    case .commaSeparatedText:
-                        Text(T.transferInstructionsCtaCsv.localizedKey)
-                    default:
+                    if presenter.service.allowedContentTypes.count > 1 {
+                        Text(T.transferInstructionsCtaGeneric.localizedKey)
+                    } else if let contentType = presenter.service.allowedContentTypes.first {
+                        switch contentType {
+                        case .json:
+                            Text(T.transferInstructionsCtaJson.localizedKey)
+                        case .zip:
+                            Text(T.transferInstructionsCtaZip.localizedKey)
+                        case .commaSeparatedText:
+                            Text(T.transferInstructionsCtaCsv.localizedKey)
+                        default:
+                            Text(T.transferInstructionsCtaGeneric.localizedKey)
+                        }
+                    } else {
                         Text(T.transferInstructionsCtaGeneric.localizedKey)
                     }
                 }

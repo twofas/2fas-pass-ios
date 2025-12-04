@@ -6,8 +6,6 @@
 
 import Foundation
 import Common
-import SwiftCSV
-import ZIPFoundation
 
 public enum ExternalServiceImportError: Error {
     case wrongFormat
@@ -16,19 +14,18 @@ public enum ExternalServiceImportError: Error {
 }
 
 public protocol ExternalServiceImportInteracting: AnyObject {
-    
+
     func openFile(from url: URL) async throws(ExternalServiceImportError) -> Data
 
     func importService(
         _ service: ExternalService,
         content: Data
-    ) async -> Result<[ItemData], ExternalServiceImportError>
+    ) async throws(ExternalServiceImportError) -> [ItemData]
 }
 
 final class ExternalServiceImportInteractor {
     private let mainRepository: MainRepository
-    private let uriInteractor: URIInteracting
-    private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+    private let context: ImportContext
 
     init(
         mainRepository: MainRepository,
@@ -36,13 +33,16 @@ final class ExternalServiceImportInteractor {
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     ) {
         self.mainRepository = mainRepository
-        self.uriInteractor = uriInteractor
-        self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
+        self.context = ImportContext(
+            mainRepository: mainRepository,
+            uriInteractor: uriInteractor,
+            paymentCardUtilityInteractor: paymentCardUtilityInteractor
+        )
     }
 }
 
 extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
-    
+
     func openFile(from url: URL) async throws(ExternalServiceImportError) -> Data {
         guard let fileURL = mainRepository.copyFileToLocalIfNeeded(from: url) else {
             throw .cantReadFile
@@ -51,1321 +51,125 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         guard let fileSize = mainRepository.checkFileSize(for: fileURL) else {
             throw .wrongFileSize
         }
-        
+
         guard fileSize < Config.maximumExternalImportFileSize else {
             throw .wrongFileSize
         }
-        
+
         guard let data = await mainRepository.readFileData(from: fileURL) else {
             throw .cantReadFile
         }
-        
+
         return data
     }
-    
+
     func importService(
         _ service: ExternalService,
         content: Data
-    ) async -> Result<[ItemData], ExternalServiceImportError> {
+    ) async throws(ExternalServiceImportError) -> [ItemData] {
         switch service {
         case .onePassword:
-            return await importOnePassword(content: content)
+            try await OnePasswordImporter(context: context).import(content)
         case .bitWarden:
-            return await importBitWarden(content: content)
+            try await BitWardenImporter(context: context).import(content)
         case .chrome:
-            return await importChrome(content: content)
+            try await ChromeImporter(context: context).import(content)
         case .dashlaneMobile:
-            return await importDashlaneMobile(content: content)
+            try await DashlaneImporter(context: context).importMobile(content)
         case .dashlaneDesktop:
-            return await importDashlaneDesktop(content: content)
+            try await DashlaneImporter(context: context).importDesktop(content)
         case .lastPass:
-            return await importLastPass(content: content)
+            try await LastPassImporter(context: context).import(content)
         case .protonPass:
-            return await importProtonPass(content: content)
+            try await ProtonPassImporter(context: context).import(content)
         case .applePasswordsMobile:
-            return await importApplePasswordsMobile(content: content)
+            try await ApplePasswordsImporter(context: context).importMobile(content)
         case .applePasswordsDesktop:
-            return await importApplePasswordsDesktop(content: content)
+            try await ApplePasswordsImporter(context: context).importDesktop(content)
         case .firefox:
-            return await importFirefox(content: content)
+            try await FirefoxImporter(context: context).import(content)
         case .keePass:
-            return await importKeePass(content: content)
+            try await KeePassImporter(context: context).import(content)
         case .keePassXC:
-            return await importKeePassXC(content: content)
+            try await KeePassXCImporter(context: context).import(content)
         case .microsoftEdge:
-            return await importMicrosoftEdge(content: content)
+            try await MicrosoftEdgeImporter(context: context).import(content)
         case .enpass:
-            return await importEnpass(content: content)
+            try await EnpassImporter(context: context).import(content)
         case .keeper:
-            return await importKeeper(content: content)
+            try await KeeperImporter(context: context).import(content)
         }
     }
 }
 
-private extension ExternalServiceImportInteractor {
-    func encryptSecureField(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
-        guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel),
-              let data = string.data(using: .utf8),
-              let encrypted = mainRepository.encrypt(data, key: key) else {
-            return nil
-        }
-        return encrypted
-    }
+// MARK: - ImportContext
 
-    var selectedVaultId: VaultID? {
-        mainRepository.selectedVault?.vaultID
-    }
+extension ExternalServiceImportInteractor {
 
-    func formatDictionary(_ dict: [String: String], excludingKeys: Set<String>, keyMap: [String : String] = [:]) -> String? {
-        let result = dict
-            .filter { !excludingKeys.contains($0.key) && !$0.value.isEmpty }
-            .map {
-                (key: keyMap[$0.key] ?? $0.key.replacingOccurrences(of: "_", with: " "), value: $0.value)
-            }
-            .sorted { $0.key < $1.key }
-            .map { "\($0.key.capitalizedFirstLetter): \($0.value)" }
-            .joined(separator: "\n")
-        return result.isEmpty ? nil : result
-    }
-    
-    func mergeNote(_ note: String?, additionalInfo: String?) -> String? {
-        if let note, let additionalInfo {
-            return note + "\n\n" + additionalInfo
-        } else {
-            return note ?? additionalInfo
-        }
-    }
-}
+    struct ImportContext {
+        let mainRepository: MainRepository
+        let uriInteractor: URIInteracting
+        let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
 
-private extension ExternalServiceImportInteractor {
-    func importOnePassword(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            
-            let requiredHeaders = ["Title", "Url", "Username", "Password", "Notes"]
-            guard csv.validateHeader(requiredHeaders) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["Title"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["Url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["Username"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                
-                let additionalInfo = self?.formatDictionary(
-                    dict,
-                    excludingKeys: Set(requiredHeaders),
-                    keyMap: [:]
-                )
-                let notes = self?.mergeNote(dict["Notes"]?.nilIfEmpty, additionalInfo: additionalInfo)
-                
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: .importPasswordPlaceholder,
-                            modificationDate: .importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
+        var selectedVaultId: VaultID? {
+            mainRepository.selectedVault?.vaultID
         }
 
-        return .success(items)
-    }
-    
-    func importBitWarden(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let parsedJSON = try? mainRepository.jsonDecoder.decode(BitWarden.self, from: content),
-              parsedJSON.encrypted == false
-        else {
-            return .failure(ExternalServiceImportError.wrongFormat)
+        var currentProtectionLevel: ItemProtectionLevel {
+            mainRepository.currentDefaultProtectionLevel
         }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
 
-        parsedJSON.items?.forEach { item in
-            let name = item.name.formattedName
-            let notes = item.notes
-            let username = item.login?.username
-            let password: Data? = {
-                if let passwordString = item.login?.password?.nilIfEmpty,
-                   let password = encryptSecureField(passwordString, for: protectionLevel) {
-                    return password
-                }
+        var jsonDecoder: JSONDecoder {
+            mainRepository.jsonDecoder
+        }
+
+        func encryptSecureField(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
+            guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel),
+                  let data = string.data(using: .utf8),
+                  let encrypted = mainRepository.encrypt(data, key: key) else {
                 return nil
-            }()
-            let uris: [PasswordURI]? = { () -> [PasswordURI]? in
-                guard let list = item.login?.uris else {
-                    return nil
+            }
+            return encrypted
+        }
+
+        func formatDictionary(
+            _ dict: [String: String],
+            excludingKeys: Set<String>,
+            keyMap: [String: String] = [:]
+        ) -> String? {
+            let result = dict
+                .filter { !excludingKeys.contains($0.key) && !$0.value.isEmpty }
+                .map {
+                    (key: keyMap[$0.key] ?? $0.key.replacingOccurrences(of: "_", with: " "), value: $0.value)
                 }
-                let urisList: [PasswordURI] = list.compactMap { uriEntry in
-                    guard let uri = uriEntry.uri, !uri.isEmpty else {
-                        return nil
-                    }
-                    return PasswordURI(uri: uri, match: uriEntry.matchValue)
-                }
-                guard !urisList.isEmpty else {
-                    return nil
-                }
-                return urisList
-            }()
-
-            items.append(
-                .login(.init(
-                    id: .init(),
-                    vaultId: vaultID,
-                    metadata: .init(
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        protectionLevel: protectionLevel,
-                        trashedStatus: .no,
-                        tagIds: nil
-                    ),
-                    name: name,
-                    content: .init(
-                        name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        iconType: makeIconType(uri: uris?.first?.uri),
-                        uris: uris
-                    )
-                ))
-            )
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key.capitalizedFirstLetter): \($0.value)" }
+                .joined(separator: "\n")
+            return result.isEmpty ? nil : result
         }
 
-        return .success(items)
-    }
-    
-    func importChrome(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
+        func mergeNote(_ note: String?, additionalInfo: String?) -> String? {
+            if let note, let additionalInfo {
+                return note + "\n\n" + additionalInfo
+            } else {
+                return note ?? additionalInfo
             }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["name"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["note"]?.nilIfEmpty
-                
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
         }
-        
-        return .success(items)
-    }
-    
-    func importDashlaneMobile(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
 
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["username", "title", "password", "note", "url"]) else {
-                return .failure(.wrongFormat)
+        func makeIconType(uri: String?) -> PasswordIconType {
+            guard let uri else {
+                return .createDefault(domain: nil)
             }
+            let domain = uriInteractor.extractDomain(from: uri)
+            return .createDefault(domain: domain)
+        }
 
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
+        func cardNumberMask(from cardNumber: String?) -> String? {
+            paymentCardUtilityInteractor.cardNumberMask(from: cardNumber)
+        }
 
-                let name = dict["title"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["note"]?.nilIfEmpty
-                
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-            
-            return .success(items)
-            
-        } catch {
-            return .failure(.wrongFormat)
+        func detectCardIssuer(from cardNumber: String?) -> String? {
+            paymentCardUtilityInteractor.detectCardIssuer(from: cardNumber)?.rawValue
         }
     }
-    
-    func importDashlaneDesktop(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
-            return .failure(.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
-        if let entry = archive.first(where: { $0.path.hasSuffix("credentials.csv")}) {
-            do {
-                var fileData = Data()
-                _ = try archive.extract(entry) { data in
-                    fileData.append(data)
-                }
-                
-                guard let csvString = String(data: fileData, encoding: .utf8) else {
-                    return .failure(.wrongFormat)
-                }
-                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.validateHeader(["username", "title", "password", "note", "url"]) else {
-                    return .failure(.wrongFormat)
-                }
-
-                try csv.enumerateAsDict { [weak self] dict in
-                    guard dict.allValuesEmpty == false else { return }
-
-                    let name = dict["title"].formattedName
-                    let uris: [PasswordURI]? = {
-                        guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                        let uri = PasswordURI(uri: urlString, match: .domain)
-                        return [uri]
-                    }()
-                    let username = dict["username"]?.nilIfEmpty
-                    let password: Data? = {
-                        if let passwordString = dict["password"]?.nilIfEmpty,
-                           let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                            return password
-                        }
-                        return nil
-                    }()
-
-                    let note = dict["note"]?.nilIfEmpty
-                    
-                    let additionalInfo = self?.formatDictionary(
-                        dict,
-                        excludingKeys: [
-                            "title", "url", "username", "password", "note"
-                        ],
-                        keyMap: [
-                            "username2": "Username",
-                            "username3": "Alternate username"
-                        ]
-                    )
-
-                    let notes = self?.mergeNote(note, additionalInfo: additionalInfo)
-              
-                    items.append(
-                        .login(.init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: Date.importPasswordPlaceholder,
-                                modificationDate: Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                username: username,
-                                password: password,
-                                notes: notes,
-                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                                uris: uris
-                            )
-                        ))
-                    )
-                }
-                
-            } catch {
-                return .failure(.wrongFormat)
-            }
-        }
-        
-        if let entry = archive.first(where: { $0.path.hasSuffix("securenotes.csv")}) {
-            do {
-                var fileData = Data()
-                _ = try archive.extract(entry) { data in
-                    fileData.append(data)
-                }
-
-                guard let csvString = String(data: fileData, encoding: .utf8) else {
-                    return .failure(.wrongFormat)
-                }
-                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.validateHeader(["title", "note"]) else {
-                    return .failure(.wrongFormat)
-                }
-
-                try csv.enumerateAsDict { [weak self] dict in
-                    guard dict.allValuesEmpty == false else { return }
-
-                    let name = dict["title"].formattedName
-                    let text: Data? = {
-                        if let noteString = dict["note"]?.nilIfEmpty,
-                           let encrypted = self?.encryptSecureField(noteString, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
-                    
-                    let additionalInfo = self?.formatDictionary(dict, excludingKeys: ["title", "note"])
-                    
-                    items.append(
-                        .secureNote(.init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: Date.importPasswordPlaceholder,
-                                modificationDate: Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                text: text,
-                                additionalInfo: additionalInfo
-                            )
-                        ))
-                    )
-                }
-            } catch {
-                return .failure(.wrongFormat)
-            }
-        }
-
-        if let entry = archive.first(where: { $0.path.hasSuffix("payments.csv")}) {
-            do {
-                var fileData = Data()
-                _ = try archive.extract(entry) { data in
-                    fileData.append(data)
-                }
-
-                guard let csvString = String(data: fileData, encoding: .utf8) else {
-                    return .failure(.wrongFormat)
-                }
-                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.validateHeader(["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note"]) else {
-                    return .failure(.wrongFormat)
-                }
-                
-                try csv.enumerateAsDict { [weak self] dict in
-                    guard dict.allValuesEmpty == false else { return }
-
-                    let name = dict["name"].formattedName
-                    let cardHolder = dict["account_holder"]?.nilIfEmpty
-                    let cardNumberString = dict["cc_number"]?.nilIfEmpty
-                    let securityCodeString = dict["code"]?.nilIfEmpty
-                    let expirationMonth = dict["expiration_month"]?.nilIfEmpty
-                    let expirationYear = dict["expiration_year"]?.nilIfEmpty
-                    let expirationDateString: String? = {
-                        guard let month = expirationMonth, let year = expirationYear?.suffix(2) else { return nil }
-                        return "\(month)/\(year)"
-                    }()
-
-                    let cardNumber: Data? = {
-                        if let value = cardNumberString,
-                           let encrypted = self?.encryptSecureField(value, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
-                    let expirationDate: Data? = {
-                        if let value = expirationDateString,
-                           let encrypted = self?.encryptSecureField(value, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
-                    let securityCode: Data? = {
-                        if let value = securityCodeString,
-                           let encrypted = self?.encryptSecureField(value, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
-                    let cardNumberMask = self?.paymentCardUtilityInteractor.cardNumberMask(from: cardNumberString)
-                    let cardIssuer = self?.paymentCardUtilityInteractor.detectCardIssuer(from: cardNumberString)?.rawValue
-                    
-                    let note = dict["note"]?.nilIfEmpty
-                    let additionalInfo = self?.formatDictionary(
-                        dict,
-                        excludingKeys: [
-                            "name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"
-                        ]
-                    )
-                    let notes = self?.mergeNote(note, additionalInfo: additionalInfo)
-                    
-                    items.append(
-                        .paymentCard(.init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: Date.importPasswordPlaceholder,
-                                modificationDate: Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                cardHolder: cardHolder,
-                                cardIssuer: cardIssuer,
-                                cardNumber: cardNumber,
-                                cardNumberMask: cardNumberMask,
-                                expirationDate: expirationDate,
-                                securityCode: securityCode,
-                                notes: notes
-                            )
-                        ))
-                    )
-                }
-            } catch {
-                return .failure(.wrongFormat)
-            }
-        }
-
-        return .success(items)
-    }
-    
-    func importLastPass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["name", "url", "username", "password", "extra"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["name"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["username"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["extra"]?.nilIfEmpty
-                
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-        
-        return .success(items)
-    }
-    
-    func importProtonPass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["name"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["username"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["note"]?.nilIfEmpty
-                
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-        
-        return .success(items)
-    }
-    
-    func importApplePasswordsMobile(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
-            return .failure(.wrongFormat)
-        }
-        
-        guard let passwordsCSVFile = archive.first(where: { $0.path.hasSuffix("csv") }) else {
-            return .failure(.wrongFormat)
-        }
-                
-        do {
-            var fileData = Data()
-            _ = try archive.extract(passwordsCSVFile) { data in
-                fileData.append(data)
-            }
-            guard let csvString = String(data: fileData, encoding: .utf8) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            return await importApplePasswords(csvContent: csvString)
-        } catch {
-            return .failure(.wrongFormat)
-        }
-    }
-    
-    func importApplePasswordsDesktop(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        return await importApplePasswords(csvContent: csvString)
-    }
-    
-    func importFirefox(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-        
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["url", "username", "password", "httpRealm", "formActionOrigin", "guid", "timeCreated", "timeLastUsed", "timePasswordChanged"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            
-            var offset = 0
-            try csv.enumerateAsDict { [weak self] dict in
-                defer {
-                    offset += 1
-                }
-                guard offset > 0 else { // ignore first line with firefox accont configuration
-                    return
-                }
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["url"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["username"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let timeCreated = dict["timeCreated"]?.nilIfEmpty as? String
-                let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty as? String
-
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: timeCreated.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
-                            modificationDate: timePasswordChanged.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: nil,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-        
-        return .success(items)
-    }
-    
-    private func importApplePasswords(csvContent: String) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvContent, delimiter: .comma)
-            guard csv.validateHeader(["Title", "URL", "Username", "Password", "Notes"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let username = dict["Username"]?.nilIfEmpty
-                let name: String? = {
-                    let name = dict["Title"].formattedName
-                    if let name, let username {
-                        let suffixToRemove = " (\(username))"
-                        if name.hasSuffix(suffixToRemove){
-                            return String(name.dropLast(suffixToRemove.count))
-                        }
-                    }
-                    return name
-                }()
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["URL"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let password: Data? = {
-                    if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["Notes"]?.nilIfEmpty
-                
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                            uris: uris
-                        )
-                    ))
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-        
-        return .success(items)
-    }
-    
-    func importKeePass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var passwords: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["Account", "Login Name", "Password", "Web Site", "Comments"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["Account"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["Web Site"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["Login Name"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["Comments"]?.nilIfEmpty
-
-                passwords.append(
-                    .login(
-                        .init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: Date.importPasswordPlaceholder,
-                                modificationDate: Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                username: username,
-                                password: password,
-                                notes: notes,
-                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                                uris: uris
-                            )
-                        )
-                    )
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-        
-        return .success(passwords)
-    }
-    
-    func importKeePassXC(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var passwords: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["Title", "Username", "Password", "URL", "Notes", "Last Modified", "Created"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["Title"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["URL"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["Username"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["Password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["Notes"]?.nilIfEmpty
-
-                let dateFormatter = ISO8601DateFormatter()
-                let creationDate = dict["Created"]?.nilIfEmpty.flatMap { dateFormatter.date(from: $0) }
-                let modificationDate = dict["Last Modified"]?.nilIfEmpty.flatMap { dateFormatter.date(from: $0) }
-                
-                passwords.append(
-                    .login(
-                        .init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: creationDate ?? Date.importPasswordPlaceholder,
-                                modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                username: username,
-                                password: password,
-                                notes: notes,
-                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                                uris: uris
-                            )
-                        )
-                    )
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-        
-        return .success(passwords)
-    }
-    
-    func importMicrosoftEdge(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let csvString = String(data: content, encoding: .utf8) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var passwords: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        do {
-            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
-                return .failure(ExternalServiceImportError.wrongFormat)
-            }
-            try csv.enumerateAsDict { [weak self] dict in
-                guard dict.allValuesEmpty == false else { return }
-
-                let name = dict["name"].formattedName
-                let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
-                    return [uri]
-                }()
-                let username = dict["username"]?.nilIfEmpty
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
-                       let password = self?.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
-                let notes = dict["note"]?.nilIfEmpty
-
-                passwords.append(
-                    .login(
-                        .init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: Date.importPasswordPlaceholder,
-                                modificationDate: Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                username: username,
-                                password: password,
-                                notes: notes,
-                                iconType: self?.makeIconType(uri: uris?.first?.uri) ?? .default,
-                                uris: uris
-                            )
-                        )
-                    )
-                )
-            }
-        } catch {
-            return .failure(.wrongFormat)
-        }
-
-        return .success(passwords)
-    }
-
-    func importEnpass(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let parsedJSON = try? mainRepository.jsonDecoder.decode(Enpass.self, from: content) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        parsedJSON.items?.forEach { item in
-            guard item.trashed != 1 else { return }
-
-            let name = item.title.formattedName
-            let notes = item.note?.nilIfEmpty
-
-            var username: String?
-            var password: Data?
-            var urlString: String?
-
-            item.fields?.forEach { field in
-                guard field.deleted != 1 else { return }
-
-                switch field.type {
-                case "username":
-                    username = field.value?.nilIfEmpty
-                case "password":
-                    if let passwordString = field.value?.nilIfEmpty {
-                        password = encryptSecureField(passwordString, for: protectionLevel)
-                    }
-                case "url":
-                    urlString = field.value?.nilIfEmpty
-                default:
-                    break
-                }
-            }
-
-            let uris: [PasswordURI]? = {
-                guard let urlString else { return nil }
-                let uri = PasswordURI(uri: urlString, match: .domain)
-                return [uri]
-            }()
-
-            items.append(
-                .login(.init(
-                    id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        protectionLevel: protectionLevel,
-                        trashedStatus: .no,
-                        tagIds: nil
-                    ),
-                    name: name,
-                    content: .init(
-                        name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        iconType: makeIconType(uri: uris?.first?.uri),
-                        uris: uris
-                    )
-                ))
-            )
-        }
-
-        return .success(items)
-    }
-
-    func importKeeper(content: Data) async -> Result<[ItemData], ExternalServiceImportError> {
-        guard let parsedJSON = try? mainRepository.jsonDecoder.decode(Keeper.self, from: content) else {
-            return .failure(ExternalServiceImportError.wrongFormat)
-        }
-        guard let vaultID = selectedVaultId else {
-            return .failure(.wrongFormat)
-        }
-        var items: [ItemData] = []
-        let protectionLevel = mainRepository.currentDefaultProtectionLevel
-
-        parsedJSON.records?.forEach { record in
-            // Import login and encryptedNotes type records
-            guard record.type == "login" || record.type == "encryptedNotes" else { return }
-
-            let name = record.title.formattedName
-            let notes = record.notes?.nilIfEmpty
-            let username = record.login?.nilIfEmpty
-            let password: Data? = {
-                if let passwordString = record.password?.nilIfEmpty {
-                    return encryptSecureField(passwordString, for: protectionLevel)
-                }
-                return nil
-            }()
-
-            let uris: [PasswordURI]? = {
-                guard let urlString = record.loginUrl?.nilIfEmpty else { return nil }
-                let uri = PasswordURI(uri: urlString, match: .domain)
-                return [uri]
-            }()
-
-            items.append(
-                .login(.init(
-                    id: .init(),
-                    vaultId: vaultID,
-                    metadata: .init(
-                        creationDate: Date.importPasswordPlaceholder,
-                        modificationDate: Date.importPasswordPlaceholder,
-                        protectionLevel: protectionLevel,
-                        trashedStatus: .no,
-                        tagIds: nil
-                    ),
-                    name: name,
-                    content: .init(
-                        name: name,
-                        username: username,
-                        password: password,
-                        notes: notes,
-                        iconType: makeIconType(uri: uris?.first?.uri),
-                        uris: uris
-                    )
-                ))
-            )
-        }
-
-        return .success(items)
-    }
-
-    private func makeIconType(uri: String?) -> PasswordIconType {
-        guard let uri else {
-            return .createDefault(domain: nil)
-        }
-        
-        let domain = uriInteractor.extractDomain(from: uri)
-        return .createDefault(domain: domain)
-    }
-}
-
-private extension CSV {
-    func validateHeader(_ headerRow: [String]) -> Bool {
-        headerRow.reduce(into: true) { result, headerEntry in
-            result = result && self.header.contains(where: { $0 == headerEntry })
-        }
-    }
-}
-
-private extension Dictionary where Key == String, Value == String {
-
-    var allValuesEmpty: Bool {
-        return allSatisfy { $0.value.isEmpty }
-    }
-}
-
-private struct BitWarden: Decodable {
-    struct Item: Decodable {
-        struct Login: Decodable {
-            struct URI: Decodable {
-                let uri: String?
-                let match: Int?
-
-                var matchValue: PasswordURI.Match {
-                    switch match {
-                    case 0: .domain
-                    case 1: .host
-                    case 2: .startsWith
-                    case 3: .exact
-                    default: .domain
-                    }
-                }
-            }
-
-            let username: String?
-            let password: String?
-            let uris: [URI]?
-        }
-
-        let name: String?
-        let notes: String?
-        let login: Login?
-    }
-    let encrypted: Bool
-    let items: [Item]?
-}
-
-private struct Enpass: Decodable {
-    struct Item: Decodable {
-        struct Field: Decodable {
-            let label: String?
-            let type: String?
-            let value: String?
-            let sensitive: Int?
-            let deleted: Int?
-        }
-
-        let title: String?
-        let note: String?
-        let category: String?
-        let fields: [Field]?
-        let trashed: Int?
-    }
-
-    let items: [Item]?
-}
-
-private struct Keeper: Decodable {
-    struct Record: Decodable {
-        let title: String?
-        let notes: String?
-        let type: String?
-        let login: String?
-        let password: String?
-        let loginUrl: String?
-
-        enum CodingKeys: String, CodingKey {
-            case title
-            case notes
-            case type = "$type"
-            case login
-            case password
-            case loginUrl = "login_url"
-        }
-    }
-
-    let records: [Record]?
 }

@@ -24,13 +24,6 @@ final class TransferItemsInstructionsModuleInteractor: TransferItemsInstructions
     
     func transfer(from url: URL) async throws(ExternalServiceImportError) -> [ItemData] {
         let data = try await externalServiceImportInteractor.openFile(from: url)
-        
-        let result = await externalServiceImportInteractor.importService(service, content: data)
-        switch result {
-        case .success(let items):
-            return items
-        case .failure(let error):
-            throw error
-        }
+        return try await externalServiceImportInteractor.importService(service, content: data)
     }
 }
