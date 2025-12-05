@@ -30,7 +30,11 @@ struct ItemDetailView: View {
                         EmptyView()
                     }
                 } footer: {
-                    modificationDatesView
+                    VStack(alignment: .leading, spacing: Spacing.l) {
+                        tagsView
+                        modificationDatesView
+                    }
+                    .padding(.vertical, Spacing.xs)
                 }
             }
             .scrollReadableContentMargins()
@@ -42,6 +46,24 @@ struct ItemDetailView: View {
         }
     }
     
+    @ViewBuilder
+    private var tagsView: some View {
+        if !presenter.tags.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text(T.loginTags)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.neutral500)
+
+                MultilineFlowLayout(spacing: Spacing.s, lineSpacing: Spacing.s) {
+                    ForEach(presenter.tags) { tag in
+                        TagChip(tag: tag)
+                    }
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private var modificationDatesView: some View {
         if let createdAt = presenter.createdAt, let modifiedAt = presenter.modifiedAt {
@@ -115,7 +137,7 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         modificationDate: Date(),
                         protectionLevel: .topSecret,
                         trashedStatus: .no,
-                        tagIds: nil
+                        tagIds: [UUID(), UUID(), UUID()]
                     ),
                     name: "Preview Name",
                     content: .init(
@@ -188,7 +210,11 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
     }
 
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
-        []
+        [
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .systemBlue, position: 0, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .systemGreen, position: 1, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .systemOrange, position: 2, modificationDate: Date())
+        ]
     }
 
     func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {

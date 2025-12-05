@@ -88,7 +88,6 @@ struct LoginDetailFormView: View {
             }
 
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
-            ItemDetailFormTags(presenter.tags)
             ItemDetailFormNotes(presenter.notes)
         }
         .onAppear {

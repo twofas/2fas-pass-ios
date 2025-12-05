@@ -36,7 +36,6 @@ struct SecureNoteDetailFormView: View {
         ItemDetailFormTitle(name: presenter.name, icon: .contentType(.secureNote))
         noteView
         ItemDetailFormProtectionLevel(presenter.protectionLevel)
-        ItemDetailFormTags(presenter.tags)
         ItemDetailFormNotes(presenter.additionalInfo)
     }
     

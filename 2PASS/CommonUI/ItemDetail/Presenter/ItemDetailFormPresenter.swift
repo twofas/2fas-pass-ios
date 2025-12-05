@@ -24,7 +24,7 @@ class _ItemDetailFormPresenter {
     
     let createdAt: String
     let modifiedAt: String
-    let tags: String?
+    let tags: [ItemTagData]
     
     var name: String {
         item.name ?? ""
@@ -74,9 +74,9 @@ class _ItemDetailFormPresenter {
         self.modifiedAt = dateFormatter.string(from: item.modificationDate)
         
         if let tagIds = item.tagIds, tagIds.isEmpty == false {
-            tags = configuration.interactor.fetchTags(for: tagIds).map(\.name).joined(separator: ", ")
+            tags = configuration.interactor.fetchTags(for: tagIds)
         } else {
-            tags = nil
+            tags = []
         }
     }
 }

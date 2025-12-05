@@ -86,6 +86,7 @@ private struct ItemContentTypeFilterButton: View {
     @State private var pressing = false
     
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     var body: some View {
         Button(action: action) {
@@ -94,17 +95,19 @@ private struct ItemContentTypeFilterButton: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(isSelected ? .white : (colorScheme == .light ? .black.opacity(0.7) : .init(uiColor: UIColor(hexString: "#CBCBCB")!)))
                 
-                if isSelected {
+                if isSelected || horizontalSizeClass == .regular {
                     Text(filter.title)
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(isSelected ? .white : (colorScheme == .light ? .black.opacity(0.7) : .init(uiColor: UIColor(hexString: "#CBCBCB")!)))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }
             }
             .padding(.horizontal, isSelected ? 16 : 8)
             .padding(.vertical, 10)
-            .frame(width: width, height: 40)
+            .frame(maxWidth: horizontalSizeClass == .regular ? .infinity : nil)
+            .frame(width: horizontalSizeClass == .regular ? nil : width, height: 40)
+            .contentShape(Capsule())
             
             if #available(iOS 26.0, *) {
                 content
