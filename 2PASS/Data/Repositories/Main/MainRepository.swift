@@ -436,6 +436,7 @@ protocol MainRepository: AnyObject {
     func createTag(_ tag: ItemTagData)
     func updateTag(_ tag: ItemTagData)
     func deleteTag(tagID: ItemTagID)
+    func deleteAllTags()
     func listTags(options: TagListOptions) -> [ItemTagData]
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
     
@@ -523,6 +524,7 @@ protocol MainRepository: AnyObject {
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
+    func deleteAllEncryptedTags()
     
     // MARK: - Sort
     var sortType: SortType? { get }
