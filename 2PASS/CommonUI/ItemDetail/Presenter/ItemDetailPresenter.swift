@@ -19,7 +19,11 @@ final class ItemDetailPresenter {
     var modifiedAt: String? {
         formPresenter?.modifiedAt
     }
-    
+
+    var tags: [ItemTagData] {
+        formPresenter?.tags ?? []
+    }
+
     private let itemID: ItemID
     private let flowController: ItemDetailFlowControlling
     private let interactor: ItemDetailModuleInteracting
