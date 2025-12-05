@@ -78,7 +78,7 @@ final class LoginEntity: ItemMetadataEntity {
                 protectionLevel: protectionLevel,
                 tagIds: tagIds,
                 name: name,
-                username: loginContent.name,
+                username: loginContent.username,
                 password: loginContent.password,
                 notes: loginContent.notes,
                 iconType: loginContent.iconType,

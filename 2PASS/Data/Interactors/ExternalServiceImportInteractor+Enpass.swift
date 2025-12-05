@@ -29,6 +29,7 @@ extension ExternalServiceImportInteractor {
                 let notes = item.note?.nilIfEmpty
 
                 var username: String?
+                var email: String?
                 var password: Data?
                 var urlString: String?
 
@@ -38,6 +39,8 @@ extension ExternalServiceImportInteractor {
                     switch field.type {
                     case "username":
                         username = field.value?.nilIfEmpty
+                    case "email":
+                        email = field.value?.nilIfEmpty
                     case "password":
                         if let passwordString = field.value?.nilIfEmpty {
                             password = context.encryptSecureField(passwordString, for: protectionLevel)
@@ -48,6 +51,8 @@ extension ExternalServiceImportInteractor {
                         break
                     }
                 }
+                
+                username = username ?? email
 
                 let uris: [PasswordURI]? = {
                     guard let urlString else { return nil }

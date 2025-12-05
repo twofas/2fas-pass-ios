@@ -25,13 +25,13 @@ extension ExternalServiceImportInteractor {
 
             do {
                 let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.header.containsAll(["name", "url", "username", "password", "note"]) else {
+                guard csv.header.containsAll(["name", "url", "email", "username", "password", "note"]) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
 
-                    let name = dict["name"].formattedName
+                    let name = dict["name"].formattedName ?? dict["email"].formattedName
                     let uris: [PasswordURI]? = {
                         guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
                         let uri = PasswordURI(uri: urlString, match: .domain)

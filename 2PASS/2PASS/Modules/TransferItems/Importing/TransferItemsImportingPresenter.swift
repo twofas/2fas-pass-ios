@@ -11,11 +11,12 @@ final class TransferItemsImportingPresenter {
     
     let onClose: Callback
     
-    private(set) var state: State = .importing
+    private(set) var state: State = .idle
     
     private let interactor: TransferItemsImportingModuleInteracting
     
     enum State {
+        case idle
         case importing
         case success
     }
@@ -26,6 +27,10 @@ final class TransferItemsImportingPresenter {
     }
     
     func onAppear() async {
+        guard state == .idle else {
+            return
+        }
+        
         state = .importing
         await interactor.importItems()
         state = .success
