@@ -16,7 +16,9 @@ struct ItemDetailFormProtectionLevel: View {
     }
     
     var body: some View {
-        LabeledContent(T.loginSecurityLevelLabel.localizedKey, value: protectionLevel.title)
-            .labeledContentStyle(.listCell)
+        LabeledContent(T.loginSecurityLevelLabel.localizedKey) {
+            ProtectionLevelLabel(protectionLevel)
+        }
+        .labeledContentStyle(.listCell)
     }
 }

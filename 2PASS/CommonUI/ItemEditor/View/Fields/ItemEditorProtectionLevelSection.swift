@@ -24,15 +24,8 @@ struct ItemEditorProtectionLevelSection: View {
 
                     Spacer()
                     
-                    Label {
-                        Text(presenter.protectionLevel.title.localizedKey)
-                    } icon: {
-                        presenter.protectionLevel.icon
-                            .renderingMode(.template)
-                            .foregroundStyle(.accent)
-                    }
-                    .labelStyle(.rowValue)
-                    .foregroundStyle(.neutral500)
+                    ProtectionLevelLabel(presenter.protectionLevel)
+                        .foregroundStyle(.neutral500)
                     
                     Image(systemName: "chevron.forward")
                         .foregroundStyle(Asset.inactiveColor.swiftUIColor)
