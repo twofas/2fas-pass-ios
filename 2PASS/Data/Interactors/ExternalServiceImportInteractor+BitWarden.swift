@@ -56,15 +56,33 @@ extension ExternalServiceImportInteractor {
 
                 switch item.type {
                 case .login:
-                    if let loginItem = parseLogin(item: item, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                    if let loginItem = parseLogin(
+                        login: BitWarden.Login(item.login),
+                        item: item,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        tagIds: tagIds
+                    ) {
                         items.append(loginItem)
                     }
                 case .secureNote:
-                    if let noteItem = parseSecureNote(item: item, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                    if let noteItem = parseSecureNote(
+                        secureNote: BitWarden.SecureNote(item.secureNote),
+                        item: item,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        tagIds: tagIds
+                    ) {
                         items.append(noteItem)
                     }
                 case .card:
-                    if let cardItem = parseCard(item: item, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                    if let cardItem = parseCard(
+                        card: BitWarden.Card(item.card),
+                        item: item,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        tagIds: tagIds
+                    ) {
                         items.append(cardItem)
                     }
                 case .identity:
@@ -116,32 +134,32 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
     }
 
     func parseLogin(
+        login: BitWarden.Login,
         item: BitWarden.Item,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
     ) -> ItemData? {
-        let login = item.login
         let name = item.name.formattedName
         let notes = item.notes?.nilIfEmpty
-        let username = (login?["username"]?.value as? String)?.nilIfEmpty
+        let username = login.username?.nilIfEmpty
         let password: Data? = {
-            if let passwordString = (login?["password"]?.value as? String)?.nilIfEmpty,
+            if let passwordString = login.password?.nilIfEmpty,
                let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                 return password
             }
             return nil
         }()
         let uris: [PasswordURI]? = {
-            guard let uriList = login?["uris"]?.value as? [[String: Any]] else {
+            guard let uriList = login.uris else {
                 return nil
             }
             let urisList: [PasswordURI] = uriList.compactMap { uriEntry in
-                guard let uri = uriEntry["uri"] as? String, !uri.isEmpty else {
+                guard let uri = uriEntry.uri, !uri.isEmpty else {
                     return nil
                 }
                 let match: PasswordURI.Match = {
-                    switch uriEntry["match"] as? Int {
+                    switch uriEntry.match {
                     case 0: .domain
                     case 1: .host
                     case 2: .startsWith
@@ -158,10 +176,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         }()
 
         // Additional info from login data (excluding used fields) and custom fields
-        let loginAdditionalInfo = context.formatDictionary(
-            login?.mapValues { $0.value } ?? [:],
-            excludingKeys: ["username", "password", "uris", "fido2Credentials"]
-        )
+        let loginAdditionalInfo = context.formatDictionary(login.unknownData)
         let fieldsInfo = formatCustomFields(item.fields)
         let additionalInfo = context.mergeNote(loginAdditionalInfo, with: fieldsInfo)
         let mergedNotes = context.mergeNote(notes, with: additionalInfo)
@@ -192,6 +207,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
     }
 
     func parseSecureNote(
+        secureNote: BitWarden.SecureNote,
         item: BitWarden.Item,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
@@ -207,11 +223,8 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
             }
             return nil
         }()
-        
-        let secureNoteInfo = context.formatDictionary(
-            item.secureNote?.mapValues { $0.value } ?? [:],
-            excludingKeys: ["type"]
-        )
+
+        let secureNoteInfo = context.formatDictionary(secureNote.unknownData)
         let fieldsInfo = formatCustomFields(item.fields)
         let additionalInfo = context.mergeNote(secureNoteInfo, with: fieldsInfo)
 
@@ -238,6 +251,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
     }
 
     func parseCard(
+        card: BitWarden.Card,
         item: BitWarden.Item,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
@@ -246,13 +260,13 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         let name = item.name.formattedName
         let notes = item.notes?.nilIfEmpty
 
-        let cardHolder = (item.card?["cardholderName"]?.value as? String)?.nilIfEmpty
-        let cardNumberString = (item.card?["number"]?.value as? String)?.nilIfEmpty
-        let securityCodeString = (item.card?["code"]?.value as? String)?.nilIfEmpty
+        let cardHolder = card.cardholderName?.nilIfEmpty
+        let cardNumberString = card.number?.nilIfEmpty
+        let securityCodeString = card.code?.nilIfEmpty
 
         let expirationDateString: String? = {
-            guard let month = (item.card?["expMonth"]?.value as? String)?.nilIfEmpty,
-                  let year = (item.card?["expYear"]?.value as? String)?.nilIfEmpty else { return nil }
+            guard let month = card.expMonth?.nilIfEmpty,
+                  let year = card.expYear?.nilIfEmpty else { return nil }
             let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
             return "\(month)/\(yearSuffix)"
         }()
@@ -282,12 +296,9 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         }()
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
-        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? (item.card?["brand"]?.value as? String)?.nilIfEmpty
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? card.brand?.nilIfEmpty
 
-        let cardAdditionalInfo = context.formatDictionary(
-            item.card?.mapValues { $0.value } ?? [:],
-            excludingKeys: ["cardholderName", "number", "code", "expMonth", "expYear", "brand"]
-        )
+        let cardAdditionalInfo = context.formatDictionary(card.unknownData)
         let fieldsInfo = formatCustomFields(item.fields)
         let additionalInfo = context.mergeNote(cardAdditionalInfo, with: fieldsInfo)
         let mergedNotes = context.mergeNote(notes, with: additionalInfo)
@@ -425,5 +436,221 @@ private struct BitWarden: Decodable {
         let name: String?
         let value: String?
         let type: Int?
+    }
+}
+
+// MARK: - BitWarden Types
+
+private extension BitWarden {
+
+    struct Login {
+        static let usedKeys: Set<String> = ["username", "password", "uris", "fido2Credentials"]
+
+        let rawData: [String: Any]?
+        let unknownData: [String: Any]
+
+        init(_ rawData: [String: AnyCodable]?) {
+            self.rawData = rawData?.mapValues { $0.value }
+            self.unknownData = self.rawData?.filter { !Self.usedKeys.contains($0.key) } ?? [:]
+        }
+
+        var username: String? {
+            rawData?["username"] as? String
+        }
+
+        var password: String? {
+            rawData?["password"] as? String
+        }
+
+        var totp: String? {
+            rawData?["totp"] as? String
+        }
+
+        var uris: [URI]? {
+            guard let uriList = rawData?["uris"] as? [[String: Any]] else {
+                return nil
+            }
+            return uriList.map { URI($0) }
+        }
+
+        var fido2Credentials: [[String: Any]]? {
+            rawData?["fido2Credentials"] as? [[String: Any]]
+        }
+
+        struct URI {
+            let rawData: [String: Any]
+
+            init(_ rawData: [String: Any]) {
+                self.rawData = rawData
+            }
+
+            var uri: String? {
+                rawData["uri"] as? String
+            }
+
+            var match: Int? {
+                rawData["match"] as? Int
+            }
+        }
+    }
+
+    struct SecureNote {
+        static let usedKeys: Set<String> = ["type"]
+
+        let rawData: [String: Any]?
+        let unknownData: [String: Any]
+
+        init(_ rawData: [String: AnyCodable]?) {
+            self.rawData = rawData?.mapValues { $0.value }
+            self.unknownData = self.rawData?.filter { !Self.usedKeys.contains($0.key) } ?? [:]
+        }
+
+        var type: Int? {
+            rawData?["type"] as? Int
+        }
+    }
+
+    struct Card {
+        static let usedKeys: Set<String> = ["cardholderName", "number", "code", "expMonth", "expYear", "brand"]
+
+        let rawData: [String: Any]?
+        let unknownData: [String: Any]
+
+        init(_ rawData: [String: AnyCodable]?) {
+            self.rawData = rawData?.mapValues { $0.value }
+            self.unknownData = self.rawData?.filter { !Self.usedKeys.contains($0.key) } ?? [:]
+        }
+
+        var cardholderName: String? {
+            rawData?["cardholderName"] as? String
+        }
+
+        var brand: String? {
+            rawData?["brand"] as? String
+        }
+
+        var number: String? {
+            rawData?["number"] as? String
+        }
+
+        var expMonth: String? {
+            rawData?["expMonth"] as? String
+        }
+
+        var expYear: String? {
+            rawData?["expYear"] as? String
+        }
+
+        var code: String? {
+            rawData?["code"] as? String
+        }
+    }
+
+    struct Identity {
+        static let usedKeys: Set<String> = []
+
+        let rawData: [String: Any]?
+        let unknownData: [String: Any]
+
+        init(_ rawData: [String: AnyCodable]?) {
+            self.rawData = rawData?.mapValues { $0.value }
+            self.unknownData = self.rawData?.filter { !Self.usedKeys.contains($0.key) } ?? [:]
+        }
+
+        var title: String? {
+            rawData?["title"] as? String
+        }
+
+        var firstName: String? {
+            rawData?["firstName"] as? String
+        }
+
+        var middleName: String? {
+            rawData?["middleName"] as? String
+        }
+
+        var lastName: String? {
+            rawData?["lastName"] as? String
+        }
+
+        var address1: String? {
+            rawData?["address1"] as? String
+        }
+
+        var address2: String? {
+            rawData?["address2"] as? String
+        }
+
+        var address3: String? {
+            rawData?["address3"] as? String
+        }
+
+        var city: String? {
+            rawData?["city"] as? String
+        }
+
+        var state: String? {
+            rawData?["state"] as? String
+        }
+
+        var postalCode: String? {
+            rawData?["postalCode"] as? String
+        }
+
+        var country: String? {
+            rawData?["country"] as? String
+        }
+
+        var company: String? {
+            rawData?["company"] as? String
+        }
+
+        var email: String? {
+            rawData?["email"] as? String
+        }
+
+        var phone: String? {
+            rawData?["phone"] as? String
+        }
+
+        var ssn: String? {
+            rawData?["ssn"] as? String
+        }
+
+        var username: String? {
+            rawData?["username"] as? String
+        }
+
+        var passportNumber: String? {
+            rawData?["passportNumber"] as? String
+        }
+
+        var licenseNumber: String? {
+            rawData?["licenseNumber"] as? String
+        }
+    }
+
+    struct SSHKey {
+        static let usedKeys: Set<String> = []
+
+        let rawData: [String: Any]?
+        let unknownData: [String: Any]
+
+        init(_ rawData: [String: AnyCodable]?) {
+            self.rawData = rawData?.mapValues { $0.value }
+            self.unknownData = self.rawData?.filter { !Self.usedKeys.contains($0.key) } ?? [:]
+        }
+
+        var privateKey: String? {
+            rawData?["privateKey"] as? String
+        }
+
+        var publicKey: String? {
+            rawData?["publicKey"] as? String
+        }
+
+        var keyFingerprint: String? {
+            rawData?["keyFingerprint"] as? String
+        }
     }
 }
