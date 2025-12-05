@@ -573,13 +573,13 @@ private extension ExternalServiceImportInteractor {
 
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.validateHeader(["name", "url", "username", "password", "note"]) else {
+            guard csv.validateHeader(["name", "url", "email", "username", "password", "note"]) else {
                 return .failure(ExternalServiceImportError.wrongFormat)
             }
             try csv.enumerateAsDict { [weak self] dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let name = dict["name"].formattedName
+                let name = dict["name"].formattedName ?? dict["email"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
                     let uri = PasswordURI(uri: urlString, match: .domain)
@@ -1017,6 +1017,7 @@ private extension ExternalServiceImportInteractor {
             let notes = item.note?.nilIfEmpty
 
             var username: String?
+            var email: String?
             var password: Data?
             var urlString: String?
 
@@ -1026,6 +1027,8 @@ private extension ExternalServiceImportInteractor {
                 switch field.type {
                 case "username":
                     username = field.value?.nilIfEmpty
+                case "email":
+                    email = field.value?.nilIfEmpty
                 case "password":
                     if let passwordString = field.value?.nilIfEmpty {
                         password = encryptPassword(passwordString, for: protectionLevel)
@@ -1036,6 +1039,8 @@ private extension ExternalServiceImportInteractor {
                     break
                 }
             }
+            
+            username = username ?? email
 
             let uris: [PasswordURI]? = {
                 guard let urlString else { return nil }
