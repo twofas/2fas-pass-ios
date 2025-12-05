@@ -103,7 +103,6 @@ struct PaymentCardDetailFormView: View {
             }
 
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
-            ItemDetailFormTags(presenter.tags)
             ItemDetailFormNotes(presenter.notes)
         }
         .onAppear {

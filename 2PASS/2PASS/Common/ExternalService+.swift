@@ -32,7 +32,7 @@ public extension ExternalService {
     var allowedContentTypes: [UTType] {
         switch self {
         case .onePassword: [UTType.commaSeparatedText, UTType.zip]
-        case .bitWarden: [UTType.json]
+        case .bitWarden: [UTType.json, UTType.commaSeparatedText]
         case .chrome: [UTType.commaSeparatedText]
         case .dashlaneDesktop: [UTType.zip]
         case .dashlaneMobile: [UTType.commaSeparatedText]

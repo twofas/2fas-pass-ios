@@ -6,6 +6,7 @@
 
 import Foundation
 import Common
+import SwiftCSV
 
 extension ExternalServiceImportInteractor {
 
@@ -19,11 +20,19 @@ extension ExternalServiceImportInteractor {
         }
 
         func `import`(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-            guard let parsedJSON = try? decoder.decode(BitWarden.self, from: content),
-                  parsedJSON.encrypted == false
-            else {
-                throw .wrongFormat
+            if let parsedJSON = try? decoder.decode(BitWarden.self, from: content),
+               parsedJSON.encrypted == false {
+                return try await importJSON(parsedJSON)
             }
+
+            if let csvString = String(data: content, encoding: .utf8) {
+                return try await importCSV(csvString)
+            }
+
+            throw .wrongFormat
+        }
+
+        private func importJSON(_ parsedJSON: BitWarden) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
             guard let vaultID = context.selectedVaultId else {
                 throw .wrongFormat
             }
@@ -114,10 +123,241 @@ extension ExternalServiceImportInteractor {
 
             return ExternalServiceImportResult(items: items, tags: tags)
         }
+
+        private func importCSV(_ csvString: String) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
+            guard let vaultID = context.selectedVaultId else {
+                throw .wrongFormat
+            }
+            var items: [ItemData] = []
+            let protectionLevel = context.currentProtectionLevel
+
+            // Track unique folder names to create tags
+            var folderToTagId: [String: ItemTagID] = [:]
+            var tags: [ItemTagData] = []
+
+            do {
+                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+                guard csv.header.containsAll([
+                    "type", "name", "notes", "login_uri", "login_username", "login_password"
+                ]) else {
+                    throw ExternalServiceImportError.wrongFormat
+                }
+
+                try csv.enumerateAsDict { dict in
+                    guard dict.allValuesEmpty == false else { return }
+
+                    // Handle folder -> tag mapping
+                    let tagIds: [ItemTagID]? = {
+                        guard let folderName = dict["folder"]?.nilIfEmpty else { return nil }
+                        if let existingTagId = folderToTagId[folderName] {
+                            return [existingTagId]
+                        }
+                        let newTagId = ItemTagID()
+                        folderToTagId[folderName] = newTagId
+                        tags.append(ItemTagData(
+                            tagID: newTagId,
+                            vaultID: vaultID,
+                            name: folderName,
+                            color: .gray,
+                            position: tags.count,
+                            modificationDate: Date()
+                        ))
+                        return [newTagId]
+                    }()
+
+                    let itemType = dict["type"] ?? "login"
+
+                    switch itemType {
+                    case "login":
+                        if let loginItem = parseCSVLogin(dict: dict, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                            items.append(loginItem)
+                        }
+                    case "note":
+                        if let noteItem = parseCSVSecureNote(dict: dict, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                            items.append(noteItem)
+                        }
+                    case "card":
+                        if let cardItem = parseCSVCard(dict: dict, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                            items.append(cardItem)
+                        }
+                    default:
+                        break
+                    }
+                }
+            } catch let error as ExternalServiceImportError {
+                throw error
+            } catch {
+                throw .wrongFormat
+            }
+
+            return ExternalServiceImportResult(items: items, tags: tags)
+        }
     }
 }
 
-// MARK: - Parsing
+// MARK: - CSV Parsing
+
+private extension ExternalServiceImportInteractor.BitWardenImporter {
+
+    func parseCSVLogin(
+        dict: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = dict["name"].formattedName
+        let notes = dict["notes"]?.nilIfEmpty
+        let username = dict["login_username"]?.nilIfEmpty
+        let password: Data? = {
+            if let passwordString = dict["login_password"]?.nilIfEmpty,
+               let password = context.encryptSecureField(passwordString, for: protectionLevel) {
+                return password
+            }
+            return nil
+        }()
+        let uris: [PasswordURI]? = {
+            guard let urlString = dict["login_uri"]?.nilIfEmpty else { return nil }
+            let uri = PasswordURI(uri: urlString, match: .domain)
+            return [uri]
+        }()
+
+        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nilIfEmpty)
+
+        return .login(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: Date.importPasswordPlaceholder,
+                modificationDate: Date.importPasswordPlaceholder,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                username: username,
+                password: password,
+                notes: mergedNotes,
+                iconType: context.makeIconType(uri: uris?.first?.uri),
+                uris: uris
+            )
+        ))
+    }
+
+    func parseCSVSecureNote(
+        dict: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = dict["name"].formattedName
+        let noteText = dict["notes"]?.nilIfEmpty
+
+        let text: Data? = {
+            if let note = noteText,
+               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let fieldsInfo = dict["fields"]?.nilIfEmpty
+
+        return .secureNote(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: Date.importPasswordPlaceholder,
+                modificationDate: Date.importPasswordPlaceholder,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                text: text,
+                additionalInfo: fieldsInfo
+            )
+        ))
+    }
+
+    func parseCSVCard(
+        dict: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = dict["name"].formattedName
+        let notes = dict["notes"]?.nilIfEmpty
+
+        let cardHolder = dict["card_cardholderName"]?.nilIfEmpty
+        let cardNumberString = dict["card_number"]?.nilIfEmpty
+        let securityCodeString = dict["card_code"]?.nilIfEmpty
+
+        let expirationDateString: String? = {
+            guard let month = dict["card_expMonth"]?.nilIfEmpty,
+                  let year = dict["card_expYear"]?.nilIfEmpty else { return nil }
+            let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
+            return "\(month)/\(yearSuffix)"
+        }()
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? dict["card_brand"]?.nilIfEmpty
+
+        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nilIfEmpty)
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: Date.importPasswordPlaceholder,
+                modificationDate: Date.importPasswordPlaceholder,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
+            )
+        ))
+    }
+}
+
+// MARK: - JSON Parsing
 
 private extension ExternalServiceImportInteractor.BitWardenImporter {
 
