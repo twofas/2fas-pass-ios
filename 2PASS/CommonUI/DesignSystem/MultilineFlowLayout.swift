@@ -6,12 +6,17 @@
 
 import SwiftUI
 
-struct MultilineFlowLayout: Layout {
-    
+public struct MultilineFlowLayout: Layout {
+
     var spacing: CGFloat = 8
     var lineSpacing: CGFloat = 8
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    public init(spacing: CGFloat = 8, lineSpacing: CGFloat = 8) {
+        self.spacing = spacing
+        self.lineSpacing = lineSpacing
+    }
+
+    public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let maxWidth = proposal.width ?? 0
         var totalHeight: CGFloat = 0
         var currentWidth: CGFloat = 0
@@ -34,7 +39,7 @@ struct MultilineFlowLayout: Layout {
         return CGSize(width: maxWidth, height: totalHeight)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         let maxWidth = bounds.width
         var x: CGFloat = 0
         var y: CGFloat = 0

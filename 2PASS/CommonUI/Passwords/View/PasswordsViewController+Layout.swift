@@ -64,7 +64,7 @@ extension PasswordsViewController {
                     elementKind: ItemContentTypeFilterPickerView.elementKind,
                     alignment: .top,
                 )
-                picker.pinToVisibleBounds = false
+                picker.pinToVisibleBounds = UIDevice.isiPad
                 picker.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
                 picker.zIndex = 3
                 
