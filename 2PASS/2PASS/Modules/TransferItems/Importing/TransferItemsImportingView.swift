@@ -14,7 +14,7 @@ struct TransferItemsImportingView: View {
     var body: some View {
         ZStack {
             switch presenter.state {
-            case .importing:
+            case .idle, .importing:
                 ProgressView(label: {
                     Text(T.backupImportingFileText.localizedKey)
                 })
