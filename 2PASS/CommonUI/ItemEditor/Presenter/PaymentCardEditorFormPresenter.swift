@@ -236,6 +236,12 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         }
 
         super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
+        
+        if let decryptedCardNumber {
+            isCardNumberInvalid = validateCardNumber(decryptedCardNumber) == false
+        }
+        isExpirationDateInvalid = validateExpirationDate(expirationDate) == false
+        isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
     }
 
     func revealCardNumber() {
