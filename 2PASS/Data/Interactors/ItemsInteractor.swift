@@ -399,7 +399,7 @@ extension ItemsInteractor: ItemsInteracting {
                     tagIds: item.tagIds
                 ),
                 name: name,
-                contentType: .login,
+                contentType: item.contentType,
                 contentVersion: item.contentVersion,
                 content: decyptedContent
             )
