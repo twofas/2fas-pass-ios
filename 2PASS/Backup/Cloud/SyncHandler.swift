@@ -15,11 +15,15 @@ final class SyncHandler {
     private let cacheHandler: CacheHandler
     private let cloudKit: CloudKit
     private let modifyQueue: ModificationBatchQueue
+    private let syncTokenHandler: SyncTokenHandler
     
     private var isSyncing = false
     private var applyingChanges = false
     private var currentDate = Date()
-        
+    private var isUserLoggedIn: Bool {
+        isUserLoggedInCheck?() == true
+    }
+    
     typealias OtherError = (NSError) -> Void
     
     var startedSync: Callback?
@@ -29,6 +33,7 @@ final class SyncHandler {
     var quotaExceeded: Callback?
     var userDisabledCloud: Callback?
     var useriCloudProblem: Callback?
+    var isUserLoggedInCheck: (() -> Bool)?
     
     var container: CKContainer { cloudKit.container }
     
@@ -36,35 +41,81 @@ final class SyncHandler {
         mergeHandler: MergeHandler,
         cacheHandler: CacheHandler,
         cloudKit: CloudKit,
-        modifyQueue: ModificationBatchQueue
+        modifyQueue: ModificationBatchQueue,
+        syncTokenHandler: SyncTokenHandler
     ) {
         self.mergeHandler = mergeHandler
         self.cacheHandler = cacheHandler
         self.cloudKit = cloudKit
         self.modifyQueue = modifyQueue
+        self.syncTokenHandler = syncTokenHandler
                 
-        cloudKit.deletedEntries = { [weak self] entries in self?.deleteEntries(entries) }
-        cloudKit.updatedEntries = { [weak self] entries in self?.updateEntries(entries) }
-        cloudKit.fetchFinishedSuccessfuly = { [weak self] in self?.fetchFinishedSuccessfuly() }
-        cloudKit.changesSavedSuccessfuly = { [weak self] in self?.changesSavedSuccessfuly() }
+        cloudKit.deletedEntries = { [weak self] entries in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
+            self?.deleteEntries(entries)
+        }
+        cloudKit.updatedEntries = { [weak self] entries in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
+            self?.updateEntries(entries)
+        }
+        cloudKit.fetchFinishedSuccessfuly = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
+            self?.fetchFinishedSuccessfuly()
+        }
+        cloudKit.changesSavedSuccessfuly = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
+            self?.changesSavedSuccessfuly()
+        }
         
         cloudKit.resetStack = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
             Log("SyncHandler - resetStack", module: .cloudSync)
             self?.resetStack()
         }
         cloudKit.userLoggedOut = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
             Log("SyncHandler - userLoggedOut based on error", module: .cloudSync)
             self?.useriCloudProblem?()
         }
         cloudKit.quotaExceeded = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
             Log("SyncHandler - Quota exceeded!", module: .cloudSync)
             self?.quotaExceeded?()
         }
         cloudKit.userDisablediCloud = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
             Log("SyncHandler - User disabled iCloud!", module: .cloudSync)
             self?.userDisabledCloud?()
         }
         cloudKit.useriCloudProblem = { [weak self] in
+            guard self?.isUserLoggedIn == true else {
+                self?.stopSync()
+                return
+            }
             Log("SyncHandler - User has problem with iCloud - check settings!", module: .cloudSync)
             self?.useriCloudProblem?()
         }
@@ -84,6 +135,10 @@ final class SyncHandler {
     }
     
     func synchronize(zoneID: CKRecordZone.ID) {
+        guard isUserLoggedIn else {
+            stopSync()
+            return
+        }
         guard !isSyncing else {
             Log("SyncHandler - Can't start sync. Already in progress. Exiting", module: .cloudSync)
             return
@@ -122,6 +177,7 @@ final class SyncHandler {
     
     // swiftlint:disable line_length
     private func fetchFinishedSuccessfuly() {
+        syncTokenHandler.commitChanges()
         cacheHandler.commitChanges()
         
         Log("SyncHandler - method: fetch finished successfuly", module: .cloudSync)
@@ -150,6 +206,10 @@ final class SyncHandler {
     }
     
     private func applyMerge() {
+        guard isUserLoggedIn else {
+            stopSync()
+            return
+        }
         guard isSyncing else {
             Log("SyncHandler - apply and merge stopped", module: .cloudSync)
             return
@@ -192,6 +252,10 @@ final class SyncHandler {
     }
     
     private func syncCompleted() {
+        guard isUserLoggedIn else {
+            stopSync()
+            return
+        }
         guard isSyncing else { return }
         Log("SyncHandler - Sync completed, clearing changes for sending", module: .cloudSync)
         isSyncing = false
@@ -212,6 +276,13 @@ final class SyncHandler {
         mergeHandler.clear()
         cacheHandler.purge()
         ConstStorage.clearZone()
+    }
+    
+    private func stopSync() {
+        Log("SyncHandler - Sync Handler: stop sync", module: .cloudSync)
+        applyingChanges = false
+        isSyncing = false
+        cloudKit.clear()
     }
     // swiftlint:enable line_length
 }

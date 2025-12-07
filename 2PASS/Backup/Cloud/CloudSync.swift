@@ -55,6 +55,7 @@ public final class CloudSync {
     }
     public var currentState: CloudCurrentState { cloudHandler?.currentState ?? .unknown }
     public var isConnected: Bool { cloudHandler?.isConnected ?? false }
+    public var isUserLoggedInCheck: (() -> Bool)?
     
     public init() {}
     
@@ -77,16 +78,21 @@ public final class CloudSync {
             jsonEncoder: jsonEncoder
         )
         self.mergeHandler = mergeHandler
-        let cloudKit = CloudKit()
+        let syncTokenHandler = SyncTokenHandler()
+        let cloudKit = CloudKit(syncTokenHandler: syncTokenHandler)
         let cloudAvailability = CloudAvailability(container: cloudKit.container)
         let modifyQueue = ModificationBatchQueue()
         let syncHandler = SyncHandler(
             mergeHandler: mergeHandler,
             cacheHandler: cacheHandler,
             cloudKit: cloudKit,
-            modifyQueue: modifyQueue
+            modifyQueue: modifyQueue,
+            syncTokenHandler: syncTokenHandler
         )
         self.syncHandler = syncHandler
+        syncHandler.isUserLoggedInCheck = { [weak self] in
+            self?.isUserLoggedInCheck?() == true
+        }
         cloudHandler = CloudHandler(
             cloudAvailability: cloudAvailability,
             syncHandler: syncHandler,

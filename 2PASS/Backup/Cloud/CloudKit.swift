@@ -45,9 +45,10 @@ final class CloudKit {
     
     private var collectedActions: [CloudKitAction] = []
     
-    private let syncTokenHandler = SyncTokenHandler()
+    private let syncTokenHandler: SyncTokenHandler
     
-    init() {
+    init(syncTokenHandler: SyncTokenHandler) {
+        self.syncTokenHandler = syncTokenHandler
         container = CKContainer(identifier: containerIdentifier)
         database = container.privateCloudDatabase
     }
@@ -205,7 +206,6 @@ final class CloudKit {
         guard zoneUpdated else {
             Log("CloudKit - NO zone changes - exiting", module: .cloudSync)
             DispatchQueue.main.async {
-                self.syncTokenHandler.commitChanges()
                 self.fetchFinishedSuccessfuly?()
             }
             return
@@ -472,7 +472,6 @@ final class CloudKit {
             
             self.clearRecordChanges()
             
-            self.syncTokenHandler.commitChanges()
             self.fetchFinishedSuccessfuly?()
         }
     }

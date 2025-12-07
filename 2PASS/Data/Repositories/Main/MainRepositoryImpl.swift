@@ -124,6 +124,7 @@ final class MainRepositoryImpl: MainRepository {
         logDataSource.storageError = { [weak self] in self?.storageError?($0) }
         cloudCache.storageError = { [weak self] in self?.storageError?($0) }
         cloudCache.initilizingNewStore = { [weak self] in self?._cloudCacheInitilizingNewStore = true }
+        cloudSync.isUserLoggedInCheck = { [weak self] in self?.isUserLoggedIn == true }
 
         logDataSource.loadStore {
             LogStorage.setStorage(logDataSource)

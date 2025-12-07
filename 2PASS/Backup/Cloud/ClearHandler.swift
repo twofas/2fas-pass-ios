@@ -9,7 +9,7 @@ import Common
 import CloudKit
 
 final class ClearHandler {
-    private let cloudKit = CloudKit()
+    private let cloudKit = CloudKit(syncTokenHandler: SyncTokenHandler())
     private var isClearing = false
     private var batchCount: Int = 0
     private let batchElementLimit = 399
