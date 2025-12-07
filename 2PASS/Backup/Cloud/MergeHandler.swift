@@ -12,6 +12,7 @@ public enum MergeHandlerError: Error {
     case schemaNotSupported(Int)
     case noLocalVault
     case incorrectEncryption
+    case missingEncryption
     case mergeError
     case syncNotAllowed
 }
@@ -232,7 +233,13 @@ extension MergeHandler {
                 vaultAddIfDataModifed = cloudVault
             }
             
-            if !ConstStorage.passwordWasChanged && !encryptionHandler.verifyEncryption(cloudVault) {
+            let verificationResult = encryptionHandler.verifyEncryption(cloudVault)
+            guard verificationResult != .missingEncryption else {
+                completion(.failure(.missingEncryption))
+                return
+            }
+            
+            if !ConstStorage.passwordWasChanged && verificationResult == .rejected  {
                 incorrectEncryption?()
                 completion(.failure(.incorrectEncryption))
                 return

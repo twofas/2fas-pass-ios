@@ -7,39 +7,6 @@
 import UIKit
 import Common
 
-public enum CloudCurrentState: Equatable {
-    public enum NotAvailableReason: Equatable {
-        case overQuota
-        case disabledByUser
-        case useriCloudProblem
-        case error(error: NSError?)
-        case other
-        case noAccount
-        case restricted
-        case schemaNotSupported(Int)
-        case incorrectEncryption
-    }
-    
-    public enum OutOfSyncReason: Equatable {
-        case schemaNotSupported(Int)
-    }
-    
-    public enum Sync: Equatable {
-        case syncing // in progress
-        case synced // all done
-        case outOfSync(OutOfSyncReason)
-        // case error(error: NSError) <- not used. Sync restarts itself
-    }
-    
-    case unknown
-    case disabledNotAvailable(reason: NotAvailableReason)
-    case disabledAvailable
-    case enabled(sync: Sync)
-}
-
-public typealias UserToggledState = (Bool) -> Void
-
-
 public final class CloudSync {
     private var cloudHandler: CloudHandler?
     private var syncHandler: SyncHandler?

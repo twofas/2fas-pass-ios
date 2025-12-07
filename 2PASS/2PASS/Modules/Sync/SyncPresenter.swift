@@ -48,17 +48,7 @@ final class SyncPresenter {
             }
             
             if newValue {
-                if case .disabledNotAvailable(reason: let reason) = interactor.cloudState {
-                    switch reason {
-                    case .schemaNotSupported(let schemaVersion):
-                        destination = .iCloudSchemeNotSupported(schemaVersion, onUpdateApp: { [weak self] in
-                            self?.onUpdateApp()
-                        })
-                    default:
-                        destination = .iCloudNotAvailable(reason: reason.description)
-                    }
-                    
-                } else if newValue, interactor.isWebDAVEnabled {
+                 if interactor.isWebDAVEnabled {
                     destination = .disableWebDAVConfirmation(onConfirm: { [interactor] in
                         interactor.disableWebDAV()
                         interactor.turnOnCloud()
@@ -144,12 +134,12 @@ final class SyncPresenter {
             showUpdateAppButton = false
             
             switch interactor.cloudState {
-            case .disabledNotAvailable(.schemaNotSupported(let schemaVersion)):
+            case .enabledNotAvailable(.schemaNotSupported(let schemaVersion)):
                 destination = .iCloudSchemeNotSupported(schemaVersion, onUpdateApp: { [weak self] in
                     self?.onUpdateApp()
                 })
-            case .disabledNotAvailable(let reason):
-                print(reason)
+            case .enabledNotAvailable(let reason):
+                destination = .iCloudNotAvailable(reason: reason.description)
             default:
                 break
             }
@@ -210,8 +200,8 @@ private extension CloudState {
     var description: String {
         switch self {
         case .unknown: T.syncChecking
-        case .disabledNotAvailable: T.syncNotAvailable
-        case .disabledAvailable: T.syncDisabled
+        case .enabledNotAvailable(let reason): T.syncNotAvailable + "\n" + reason.description
+        case .disabled: T.syncDisabled
         case .enabled(let sync): sync.description
         }
     }
@@ -224,8 +214,8 @@ private extension CloudState.NotAvailableReason {
         case .disabledByUser: T.syncErrorIcloudDisabled
         case .error(let error):
             if let error {
-                if let error = error as? MergeHandlerError {
-                    T.syncErrorIcloudErrorDetails(error.description)
+                if let error = error as? MergeHandlerError, let description = error.description {
+                    T.syncErrorIcloudErrorDetails(description)
                 } else {
                     T.syncErrorIcloudErrorDetails(error)
                 }
@@ -243,13 +233,14 @@ private extension CloudState.NotAvailableReason {
 }
 
 private extension MergeHandlerError {
-    var description: String {
+    var description: String? {
         switch self {
         case .schemaNotSupported: T.syncErrorIcloudErrorNewerVersion
         case .noLocalVault: T.generalErrorNoLocalVault
         case .incorrectEncryption: T.syncErrorIcloudVaultEncryptionRestore
         case .mergeError: T.syncErrorIcloudMergeError
         case .syncNotAllowed: T.syncErrorIcloudSyncNotAllowedDescription
+        case .missingEncryption: nil
         }
     }
 }
