@@ -6,7 +6,7 @@
 
 public enum PasswordListAction: Int, CaseIterable {
     case viewDetails
-    case copyPassword
+    case copy
     case goToURI
     case edit
 }

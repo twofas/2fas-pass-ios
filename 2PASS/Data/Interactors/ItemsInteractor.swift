@@ -75,7 +75,7 @@ public protocol ItemsInteracting: AnyObject {
         completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     )
     
-    func getItemCountForTag(tagID: ItemTagID) -> Int
+    func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int
 }
 
 final class ItemsInteractor {
@@ -153,7 +153,8 @@ extension ItemsInteractor: ItemsInteracting {
                 protectionLevel: secureNoteItem.protectionLevel,
                 tagIds: secureNoteItem.tagIds,
                 name: secureNoteItem.name,
-                text: secureNoteItem.content.text
+                text: secureNoteItem.content.text,
+                additionalInfo: secureNoteItem.content.additionalInfo
             )
         case .raw:
             mainRepository.createItem(
@@ -226,7 +227,8 @@ extension ItemsInteractor: ItemsInteracting {
                 protectionLevel: secureNoteItem.protectionLevel,
                 tagIds: secureNoteItem.tagIds,
                 name: secureNoteItem.name,
-                text: secureNoteItem.content.text
+                text: secureNoteItem.content.text,
+                additionalInfo: secureNoteItem.content.additionalInfo
             )
         case .raw:
             mainRepository.updateItem(
@@ -704,10 +706,13 @@ extension ItemsInteractor: ItemsInteracting {
         return true
     }
     
-    func getItemCountForTag(tagID: ItemTagID) -> Int {
+    func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int {
         mainRepository.listItems(options: .allNotTrashed)
             .filter {
-                $0.tagIds?.contains(tagID) ?? false
+                if let contentType, $0.contentType != contentType {
+                    return false
+                }
+                return $0.tagIds?.contains(tagID) ?? false
             }
             .count
     }

@@ -152,9 +152,10 @@ public protocol InMemoryStorageDataSource: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
-    
+
     func updateSecureNoteItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -163,7 +164,8 @@ public protocol InMemoryStorageDataSource: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
     
     func getSecureNoteItem(

@@ -6,9 +6,7 @@
 
 import UIKit
 
-final class CommonSearchBar: UISearchBar {
-    private var shouldEndEditing = true
-    
+final class CommonSearchBar: UISearchBar {    
     var dataSource: CommonSearchDataSourceSearchable?
     
     override init(frame: CGRect) {
@@ -36,50 +34,24 @@ final class CommonSearchBar: UISearchBar {
             clear()
             return
         }
-        shouldEndEditing = true
         resignFirstResponder()
     }
     
     func clear() {
         text = ""
-        shouldEndEditing = true
         dataSource?.clearSearchPhrase()
         resignFirstResponder()
     }
 }
 
 extension CommonSearchBar: UISearchBarDelegate {
-    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        guard !UIDevice.isiPad else { return }
-        searchBar.setShowsCancelButton(false, animated: true)
-    }
-    
-    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        guard !UIDevice.isiPad else { return }
-        searchBar.setShowsCancelButton(true, animated: true)
-    }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        shouldEndEditing = false
         dataSource?.setSearchPhrase(searchText)
-    }
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        shouldEndEditing = true
-        searchBar.resignFirstResponder()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         clear()
-    }
-    
-    func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
-        if shouldEndEditing {
-            return true
-        } else {
-            shouldEndEditing = true
-            return false
-        }
     }
 }
 

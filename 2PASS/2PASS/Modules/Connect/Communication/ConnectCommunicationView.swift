@@ -52,9 +52,11 @@ struct ConnectCommunicationView: View {
             $1.isFailure
         })
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
             presenter.onAppear(colorScheme: colorScheme)
         }
         .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
             presenter.onDisappear()
         }
         .onChange(of: presenter.state, { oldValue, newValue in

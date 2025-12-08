@@ -6,20 +6,27 @@
 
 import UIKit
 
-enum PasswordCellMenu: CaseIterable {
+enum PasswordCellMenu: Hashable {
+    
+    enum Field {
+        case loginUsername
+        case loginPassword
+        case secureNoteText
+    }
+    
     case view
     case edit
-    case copyUsername
-    case copyPassword
-    case goToURI
+    case copy(Field)
+    case goToURI(uris: [String])
     case moveToTrash
     
     var label: String {
         switch self {
         case .view: T.loginViewActionViewDetails
         case .edit: T.loginEdit
-        case .copyUsername: T.loginViewActionCopyUsername
-        case .copyPassword: T.loginViewActionCopyPassword
+        case .copy(.loginUsername): T.loginViewActionCopyUsername
+        case .copy(.loginPassword): T.loginViewActionCopyPassword
+        case .copy(.secureNoteText): T.secureNoteViewActionCopy
         case .goToURI: T.loginViewActionOpenUri
         case .moveToTrash: T.loginViewActionDelete
         }
@@ -29,15 +36,16 @@ enum PasswordCellMenu: CaseIterable {
         switch self {
         case .view: UIImage(systemName: "wallet.pass")
         case .edit: UIImage(systemName: "square.and.pencil")
-        case .copyUsername: UIImage(systemName: "person")
-        case .copyPassword: UIImage(systemName: "ellipsis.rectangle")
+        case .copy(.loginUsername): UIImage(systemName: "person")
+        case .copy(.loginPassword): UIImage(systemName: "ellipsis.rectangle")
+        case .copy(.secureNoteText): UIImage(systemName: "document.on.document")
         case .goToURI: UIImage(systemName: "arrow.up.right")
         case .moveToTrash: UIImage(systemName: "trash")
         }
     }
     
     var attributes: UIMenuElement.Attributes {
-        guard self == .moveToTrash else {
+        guard case .moveToTrash = self else {
             return []
         }
         return [.destructive]

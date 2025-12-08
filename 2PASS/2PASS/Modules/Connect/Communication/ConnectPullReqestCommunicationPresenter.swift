@@ -14,15 +14,15 @@ enum ConnectPullReqestCommunicationError: Error {
 }
 
 enum ConnectPullReqestCommunicationDestination: RouterDestination {
-    case addItem(changeRequest: LoginDataChangeRequest, onClose: (SavePasswordResult) -> Void)
-    case editItem(LoginItemData, changeRequest: LoginDataChangeRequest, onClose: (SavePasswordResult) -> Void)
-    
+    case addItem(changeRequest: any ItemDataChangeRequest, onClose: (SaveItemResult) -> Void)
+    case editItem(ItemData, changeRequest: any ItemDataChangeRequest, onClose: (SaveItemResult) -> Void)
+
     var id: String {
         switch self {
         case .addItem:
             "addItem"
-        case .editItem(let passwordData, _, _):
-            "editItem_\(passwordData.id)"
+        case .editItem(let itemData, _, _):
+            "editItem_\(itemData.id)"
         }
     }
 }
@@ -51,10 +51,14 @@ final class ConnectPullReqestCommunicationPresenter {
                 } else {
                     setIconContent(iconType: .domainIcon(nil), name: changeRequest.name)
                 }
+            case .action(.changeRequest(.addSecureNote)):
+                iconContent = .contentType(.secureNote)
             default:
                 switch state.itemData {
                 case .login(let loginItemData):
                     setIconContent(iconType: loginItemData.iconType, name: loginItemData.name)
+                case .secureNote:
+                    iconContent = .contentType(.secureNote)
                 default:
                     break
                 }
@@ -117,11 +121,19 @@ final class ConnectPullReqestCommunicationPresenter {
             switch changeRequest {
             case .addLogin(let loginChangeRequest):
                 destination = .addItem(changeRequest: loginChangeRequest, onClose: { [weak self] result in
-                    self?.onSavePassword(result: result)
+                    self?.onSaveItem(result: result)
                 })
             case .updateLogin(let loginItem, let loginChangeRequest):
-                destination = .editItem(loginItem, changeRequest: loginChangeRequest, onClose: { [weak self] result in
-                    self?.onSavePassword(result: result)
+                destination = .editItem(.login(loginItem), changeRequest: loginChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
+                })
+            case .addSecureNote(let secureNoteChangeRequest):
+                destination = .addItem(changeRequest: secureNoteChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
+                })
+            case .updateSecureNote(let secureNoteItem, let secureNoteChangeRequest):
+                destination = .editItem(.secureNote(secureNoteItem), changeRequest: secureNoteChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
                 })
             }
             
@@ -206,7 +218,7 @@ final class ConnectPullReqestCommunicationPresenter {
         }
     }
     
-    private func onSavePassword(result: SavePasswordResult) {
+    private func onSaveItem(result: SaveItemResult) {
         destination = nil
         
         switch result {
@@ -269,6 +281,10 @@ extension ConnectPullReqestCommunicationPresenter {
                 case .changeRequest(.updateLogin(let currentPasswordData, _)):
                     return .login(currentPasswordData)
                 case .changeRequest(.addLogin):
+                    return nil
+                case .changeRequest(.updateSecureNote(let currentSecureNoteData, _)):
+                    return .secureNote(currentSecureNoteData)
+                case .changeRequest(.addSecureNote):
                     return nil
                 case .delete(let item):
                     return item
