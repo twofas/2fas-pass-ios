@@ -134,6 +134,10 @@ struct PaymentCardEditorFormView: View {
         .font(.body)
         .listSectionSpacing(Spacing.m)
 
+        ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+
+        ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+        
         Section {
             TextField("", text: $presenter.notes, axis: .vertical)
                 .focused($focusField, equals: .notes)
@@ -150,9 +154,5 @@ struct PaymentCardEditorFormView: View {
             Text(T.cardNotesLabel.localizedKey)
         }
         .listSectionSpacing(Spacing.l)
-
-        ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
-
-        ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
     }
 }
