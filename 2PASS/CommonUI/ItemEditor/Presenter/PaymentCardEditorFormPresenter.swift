@@ -209,20 +209,21 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
             self.initialCardIssuer = initialData.content.cardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
             self.initialExpirationDate = decryptedExpirationDate
 
-            // Handle change request - decrypt if needed
             if let cardNumberFromRequest = changeRequest?.cardNumber {
                 self.decryptedCardNumber = cardNumberFromRequest
                 self.isCardNumberRevealed = true
+                self.initialCardNumber = initialData.content.cardNumber.flatMap {
+                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                }
             } else {
                 self.isCardNumberRevealed = initialData.content.cardNumber == nil
             }
 
             if let securityCodeFromRequest = changeRequest?.securityCode {
                 self.decryptedSecurityCode = securityCodeFromRequest
-                self.initialSecurityCode = securityCodeFromRequest
-            } else {
-                self.decryptedSecurityCode = initialData.content.securityCode == nil ? "" : nil
-                self.initialSecurityCode = initialData.content.securityCode == nil ? "" : nil
+                self.initialSecurityCode = initialData.content.securityCode.flatMap {
+                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                }
             }
         } else {
             self.cardHolder = changeRequest?.cardHolder ?? ""
@@ -240,8 +241,12 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         if let decryptedCardNumber {
             isCardNumberInvalid = validateCardNumber(decryptedCardNumber) == false
         }
+        
         isExpirationDateInvalid = validateExpirationDate(expirationDate) == false
-        isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
+        
+        if let decryptedSecurityCode {
+            isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
+        }
     }
 
     func revealCardNumber() {
