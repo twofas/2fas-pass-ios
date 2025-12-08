@@ -332,12 +332,8 @@ final class CloudHandler: CloudHandlerType {
     private func schemaNotSupported(_ schemaVersion: Int) {
         Log("Cloud Handler - schema not supported (v\(schemaVersion))", module: .cloudSync)
         
-        if isEnabling {
-            currentState = .enabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
-            clearCache()
-        } else {
-            currentState = .enabled(sync: .outOfSync(.schemaNotSupported(schemaVersion)))
-        }
+        currentState = .enabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
+        clearCache()
     }
     
     private func incorrectEncryption() {

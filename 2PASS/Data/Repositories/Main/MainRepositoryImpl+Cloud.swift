@@ -89,8 +89,6 @@ private extension MainRepositoryImpl {
                 return .enabled(sync: .syncing)
             case .synced:
                 return .enabled(sync: .synced)
-            case .outOfSync(.schemaNotSupported(let schemaVersion)):
-                return .enabled(sync: .outOfSync(.schemaNotSupported(schemaVersion)))
             }
         }
     }

@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: BUSL-1.1
 //
-//  CloudTypes.swift
-//  2PASS
-//
-//  Created by Zbigniew Cisiński on 06/12/2025.
-//  Copyright © 2025 Two Factor Authentication Service, Inc. All rights reserved.
-//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
 
 import Foundation
 
@@ -22,16 +20,10 @@ public enum CloudCurrentState: Equatable {
         case schemaNotSupported(Int)
         case incorrectEncryption
     }
-    
-    public enum OutOfSyncReason: Equatable {
-        case schemaNotSupported(Int)
-    }
-    
+        
     public enum Sync: Equatable {
         case syncing // in progress
         case synced // all done
-        case outOfSync(OutOfSyncReason)
-        // case error(error: NSError) <- not used. Sync restarts itself
     }
     
     case unknown
