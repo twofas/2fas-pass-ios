@@ -10,6 +10,7 @@ import Common
 
 protocol PasswordsModuleInteracting: AnyObject {
     var hasItems: Bool { get }
+    func hasItems(for contentType: ItemContentType) -> Bool
     
     var currentPlanItemsLimit: Int { get }
     var canAddPassword: Bool { get }
@@ -36,7 +37,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     
     func normalizedURL(for uri: String) -> URL?
     func listAllTags() -> [ItemTagData]
-    func countItemsForTag(_ tagID: ItemTagID) -> Int
+    func countItemsForTag(_ tagID: ItemTagID, contentType: ItemContentType?) -> Int
 }
 
 final class PasswordsModuleInteractor {
@@ -79,9 +80,13 @@ final class PasswordsModuleInteractor {
 }
 
 extension PasswordsModuleInteractor: PasswordsModuleInteracting {
-    
+
     var hasItems: Bool {
         itemsInteractor.hasItems
+    }
+
+    func hasItems(for contentType: ItemContentType) -> Bool {
+        !itemsInteractor.listItems(searchPhrase: nil, tagId: nil, vaultId: nil, contentTypes: [contentType], sortBy: .az, trashed: .no).isEmpty
     }
     
     var canAddPassword: Bool {
@@ -127,7 +132,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             }
         }()
         
-        let allPasswords = itemsInteractor.listItems(searchPhrase: nil, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, sortBy: currentSortType, trashed: .no)
+        let allPasswords = itemsInteractor.listItems(searchPhrase: searchPhrase, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, sortBy: currentSortType, trashed: .no)
         
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)
@@ -135,27 +140,35 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         
         var suggested: [ItemData] = []
         var rest: [ItemData] = []
-        
-        for autofillService in serviceIdentifiers {
-            for element in allPasswords where Config.autoFillExcludeProtectionLevels.contains(element.protectionLevel) == false {
-                if case let .login(loginItem) = element {
-                    if let uris = loginItem.content.uris {
+        var processedItemIDs: Set<ItemID> = []
+
+        for element in allPasswords where Config.autoFillExcludeProtectionLevels.contains(element.protectionLevel) == false {
+            guard processedItemIDs.contains(element.id) == false else { continue }
+
+            if case let .login(loginItem) = element {
+                var isSuggested = false
+
+                if let uris = loginItem.content.uris {
+                    for autofillService in serviceIdentifiers {
                         let isMatch = uris.contains(where: { uri in
                             uriInteractor.isMatch(uri.uri, to: autofillService, rule: uri.match)
                         })
-                        
                         if isMatch {
-                            suggested.append(element)
-                        } else {
-                            rest.append(element)
+                            isSuggested = true
+                            break
                         }
-                    } else {
-                        rest.append(element)
                     }
                 }
+
+                if isSuggested {
+                    suggested.append(element)
+                } else {
+                    rest.append(element)
+                }
+                processedItemIDs.insert(element.id)
             }
         }
-        
+
         return (suggested, rest)
     }
     
@@ -280,7 +293,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             .sorted(by: { $0.name < $1.name })
     }
     
-    func countItemsForTag(_ tagID: ItemTagID) -> Int {
-        itemsInteractor.getItemCountForTag(tagID: tagID)
+    func countItemsForTag(_ tagID: ItemTagID, contentType: ItemContentType?) -> Int {
+        itemsInteractor.getItemCountForTag(tagID: tagID, contentType: contentType)
     }
 }

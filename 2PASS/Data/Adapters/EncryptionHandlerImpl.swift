@@ -22,40 +22,43 @@ final class EncryptionHandlerImpl {
 extension EncryptionHandlerImpl: EncryptionHandler {
     var currentCloudSchemaVersion: Int { Config.cloudSchemaVersion }
     
-    func verifyEncryption(_ cloudData: VaultCloudData) -> Bool {
+    func verifyEncryption(_ cloudData: VaultCloudData) -> EncryptionVerificationResult {
         guard let key = mainRepository.cachedExternalKey else {
             Log("EncryptionHandlerImpl: can't external key", module: .interactor, severity: .error)
-            return false
+            return .missingEncryption
         }
         
         guard let vaultID = mainRepository.selectedVault?.vaultID else {
             Log("EncryptionHandlerImpl: can't get vaultID", module: .interactor, severity: .error)
-            return false
+            return .missingEncryption
         }
         
         guard let data = Data(base64Encoded: cloudData.reference) else {
             Log("EncryptionHandlerImpl: can't encode data from cloud reference", module: .interactor, severity: .error)
-            return false
+            return .rejected
         }
         
         guard let reference = mainRepository.decrypt(data, key: key),
               let string = String(data: reference, encoding: .utf8),
               UUID(uuidString: string) == vaultID else {
             Log("EncryptionHandlerImpl: Password was changed - can't decode cloud reference!", module: .interactor)
-            return false
+            return .rejected
         }
         
         guard let seedHash = mainRepository.createSeedHashHexForExport() else {
             Log("EncryptionHandlerImpl: can't get seed hash hex", module: .interactor, severity: .error)
-            return false
+            return .missingEncryption
         }
         
         guard let kdfSpec = try? mainRepository.jsonDecoder.decode(KDFSpec.self, from: cloudData.kdfSpec) else {
             Log("EncryptionHandlerImpl: can't decode KDFSpec", module: .interactor, severity: .error)
-            return false
+            return .rejected
         }
         
-        return cloudData.seedHash == seedHash && kdfSpec == KDFSpec.default
+        if cloudData.seedHash == seedHash && kdfSpec == KDFSpec.default {
+            return .verified
+        }
+        return .rejected
     }
     
     func localEncryptedItemToCloudEncryptedData(_ localEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {

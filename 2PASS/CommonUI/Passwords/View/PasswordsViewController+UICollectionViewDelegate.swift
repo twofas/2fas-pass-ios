@@ -6,29 +6,28 @@
 
 import UIKit
 
-private struct Constants {
-    static let contentTypePickerHideOffset: CGFloat = 50
-}
-
 extension PasswordsViewController: UICollectionViewDelegate {
     
+    // MARK: - Scroll View Delegate
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        guard UIDevice.isiPad == false else { return }
         
-        if let contentTypePicker = passwordsList?.visibleSupplementaryViews(ofKind: ItemContentTypeFilterPickerView.elementKind).first {
-            contentTypePicker.alpha = 1 - (offset / Constants.contentTypePickerHideOffset)
-            contentTypePicker.transform = .init(translationX: 0, y: offset < 0 ? offset : 0)
-        }
+        let offset = scrollView.adjustedContentInset.top + scrollView.contentOffset.y
+        setContentTypePickerOffset(max(-view.safeAreaInsets.top, min(0, -offset)))
+        contentTypePicker.alpha = presenter.showContentTypePicker ? (1 - (offset / contentTypePicker.frame.height)) : 0
     }
     
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        guard presenter.showContentTypePicker, UIDevice.isiPad == false else { return }
+        
         let topInset = -scrollView.adjustedContentInset.top
         
         switch targetContentOffset.pointee.y {
-        case (topInset..<topInset + Constants.contentTypePickerHideOffset/2):
+        case (topInset..<topInset + contentTypePicker.frame.height/2):
             targetContentOffset.pointee.y = topInset
-        case (topInset + Constants.contentTypePickerHideOffset/2..<topInset + Constants.contentTypePickerHideOffset):
-            targetContentOffset.pointee.y = topInset + Constants.contentTypePickerHideOffset
+        case (topInset + contentTypePicker.frame.height/2..<topInset + contentTypePicker.frame.height):
+            targetContentOffset.pointee.y = topInset + contentTypePicker.frame.height
         default:
             break
         }

@@ -35,7 +35,7 @@ final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     }
     
     func getItemCountForTag(tagID: ItemTagID) -> Int {
-        itemsInteractor.getItemCountForTag(tagID: tagID)
+        itemsInteractor.getItemCountForTag(tagID: tagID, contentType: nil)
     }
 }
 

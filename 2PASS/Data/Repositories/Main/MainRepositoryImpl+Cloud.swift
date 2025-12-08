@@ -60,37 +60,35 @@ private extension MainRepositoryImpl {
         switch cloudCurrentState {
         case .unknown:
             return .unknown
-        case .disabledNotAvailable(let reason):
+        case .enabledNotAvailable(let reason):
             switch reason {
             case .overQuota:
-                return .disabledNotAvailable(reason: .overQuota)
+                return .enabledNotAvailable(reason: .overQuota)
             case .disabledByUser:
-                return .disabledNotAvailable(reason: .disabledByUser)
+                return .enabledNotAvailable(reason: .disabledByUser)
             case .error(let error):
-                return .disabledNotAvailable(reason: .error(error: error))
+                return .enabledNotAvailable(reason: .error(error: error))
             case .useriCloudProblem:
-                return .disabledNotAvailable(reason: .useriCloudProblem)
+                return .enabledNotAvailable(reason: .useriCloudProblem)
             case .other:
-                return .disabledNotAvailable(reason: .other)
+                return .enabledNotAvailable(reason: .other)
             case .schemaNotSupported(let schemaVersion):
-                return .disabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
+                return .enabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
             case .incorrectEncryption:
-                return .disabledNotAvailable(reason: .incorrectEncryption)
+                return .enabledNotAvailable(reason: .incorrectEncryption)
             case .noAccount:
-                return .disabledNotAvailable(reason: .noAccount)
+                return .enabledNotAvailable(reason: .noAccount)
             case .restricted:
-                return .disabledNotAvailable(reason: .restricted)
+                return .enabledNotAvailable(reason: .restricted)
             }
-        case .disabledAvailable:
-            return .disabledAvailable
+        case .disabled:
+            return .disabled
         case .enabled(let sync):
             switch sync {
             case .syncing:
                 return .enabled(sync: .syncing)
             case .synced:
                 return .enabled(sync: .synced)
-            case .outOfSync(.schemaNotSupported(let schemaVersion)):
-                return .enabled(sync: .outOfSync(.schemaNotSupported(schemaVersion)))
             }
         }
     }
