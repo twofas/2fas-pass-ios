@@ -7,9 +7,15 @@
 import Foundation
 import Common
 
+public enum EncryptionVerificationResult {
+    case verified
+    case rejected
+    case missingEncryption
+}
+
 public protocol EncryptionHandler: AnyObject {
     var currentCloudSchemaVersion: Int { get }
-    func verifyEncryption(_ cloudData: VaultCloudData) -> Bool
+    func verifyEncryption(_ cloudData: VaultCloudData) -> EncryptionVerificationResult
     func localEncryptedItemToCloudEncryptedData(_ localEncryptedItem: ItemEncryptedData) -> ItemEncryptedData?
     func cloudEncryptedItemToLocalEncryptedItem(_ cloudEncryptedItem: ItemEncryptedData) -> ItemEncryptedData?
     func tagToTagEncrypted(_ tag: ItemTagData) -> ItemTagEncryptedData?

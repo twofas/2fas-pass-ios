@@ -126,7 +126,7 @@ final class QuickSetupPresenter {
     private func observeCloudStatusChanged() async {
         for await _ in interactor.didCloudStatusChanged {
             switch interactor.cloudState {
-            case .disabledNotAvailable:
+            case .enabledNotAvailable:
                 showVaultSyncFailure = true
             default:
                 break
