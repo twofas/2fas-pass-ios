@@ -7,9 +7,8 @@
 import UIKit
 
 final class PasswordsListView: UICollectionView {
-    func configure(isAutoFillExtension: Bool) {        
-        register(SelectedTagBannerView.self, forSupplementaryViewOfKind: SelectedTagBannerView.elementKind, withReuseIdentifier: SelectedTagBannerView.reuseIdentifier)
-        register(ItemContentTypeFilterPickerView.self, forSupplementaryViewOfKind: ItemContentTypeFilterPickerView.elementKind, withReuseIdentifier: ItemContentTypeFilterPickerView.reuseIdentifier)
+    func configure(isAutoFillExtension: Bool) {
+        register(ItemListSectionView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ItemListSectionView.reuseIdentifier)
         
         keyboardDismissMode = .onDrag
     }

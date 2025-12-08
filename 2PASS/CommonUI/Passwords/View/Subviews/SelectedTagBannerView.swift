@@ -15,7 +15,7 @@ final class SelectedTagBannerView: UICollectionReusableView {
     private let filterIconImageView = UIImageView()
     private let messageLabel = UILabel()
     private let clearButton = UIButton(type: .system)
-    
+        
     var onClear: (() -> Void)?
     
     override init(frame: CGRect) {
@@ -76,14 +76,15 @@ final class SelectedTagBannerView: UICollectionReusableView {
         // Add elements to container
         containerView.addSubview(contentStackView, with: [
             contentStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            contentStackView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
+            contentStackView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            contentStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
         ])
         
         containerView.addSubview(clearButton, with: [
             clearButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             clearButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             clearButton.leadingAnchor.constraint(greaterThanOrEqualTo: contentStackView.trailingAnchor, constant: 8)
-        ])
+        ])        
     }
     
     func configure(tagName: String, itemCount: Int) {

@@ -62,9 +62,7 @@ final class ItemEditorViewController: UIViewController {
         presenter.onSave()
     }
     
-    private func addContentTypePicker() {
-        let contentTypeName = ItemContentTypeFormatStyle().format(presenter.contentType)
-        
+    private func addContentTypePicker() {        
         if presenter.allowChangeContentType {
             contentTypePicker.selectedTitle = presenter.title
             contentTypePicker.menuItems = ItemContentType.allKnownTypes.map { contentType in

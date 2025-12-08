@@ -21,22 +21,23 @@ protocol PasswordsViewControlling: AnyObject {
 
 extension PasswordsViewController: PasswordsViewControlling {
     
-    func showContentTypeFilterPicker(_ flag: Bool) {
-        reloadLayout()
-    }
-    
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
             ItemSectionData,
             ItemCellData
         >
     ) {
+        updateNavigationBarButtons()
+        
+        if let passwordsList, dataSource?.numberOfSections(in: passwordsList) != newSnapshot.sectionIdentifiers.count {
+            reloadLayout()
+        }
+        
         dataSource?.apply(newSnapshot, animatingDifferences: true)
     }
     
     // MARK: - Empty screen or list
     func showList() {
-        passwordsList?.isScrollEnabled = true
         UIView.animate(
             withDuration: Animation.duration,
             delay: 0,
@@ -53,7 +54,6 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showEmptyScreen() {
-        passwordsList?.isScrollEnabled = false
         VoiceOver.say(T.homeEmptyTitle)
         guard emptyList?.isHidden == true else { return }
         
@@ -68,7 +68,6 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showSearchEmptyScreen() {
-        passwordsList?.isScrollEnabled = false
         VoiceOver.say(T.loginSearchNoResultsTitle)
         
         emptySearchList?.alpha = 0
