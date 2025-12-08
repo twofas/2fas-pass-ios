@@ -42,8 +42,12 @@ final class PasswordsPresenter {
         }
     }
     
-    var hideContentTypePicker: Bool {
-        autoFillEnvironment?.serviceIdentifiers.isEmpty == false
+    var showContentTypePicker: Bool {
+        if let autoFillEnvironment {
+            return autoFillEnvironment.serviceIdentifiers.isEmpty && hasItems
+        } else {
+            return hasItems
+        }
     }
     
     private(set) var contentTypeFilter: ItemContentTypeFilter = .all
@@ -55,7 +59,7 @@ final class PasswordsPresenter {
             guard oldValue != hasItems else {
                 return
             }
-            view?.showContentTypeFilterPicker(hasItems)
+            view?.showContentTypeFilterPicker(showContentTypePicker)
         }
     }
 
@@ -221,8 +225,8 @@ extension PasswordsPresenter {
         interactor.listAllTags()
     }
 
-    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
-        interactor.countItemsForTag(tagID)
+    func countPasswordsForTag(_ tagID: ItemTagID, contentType: ItemContentType? = nil) -> Int {
+        interactor.countItemsForTag(tagID, contentType: contentType)
     }
 }
 
@@ -303,12 +307,11 @@ private extension PasswordsPresenter {
     func reload() {
         listData.removeAll()
         hasSuggestedItems = false
-        hasItems = interactor.hasItems
         
         let cellsCount: Int
         
-        if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, interactor.isSearching == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
+        if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers {
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag)
             
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             
@@ -342,7 +345,8 @@ private extension PasswordsPresenter {
                 cellsCount = suggestedCells.count + restCells.count
                 itemsCount = cellsCount
             }
-            
+
+            hasItems = interactor.hasItems(for: .login)
             view?.reloadData(newSnapshot: snapshot)
             
         } else {
@@ -356,7 +360,8 @@ private extension PasswordsPresenter {
         
             cellsCount = cells.count
             itemsCount = cellsCount
-            
+
+            hasItems = interactor.hasItems
             view?.reloadData(newSnapshot: snapshot)
         }
         

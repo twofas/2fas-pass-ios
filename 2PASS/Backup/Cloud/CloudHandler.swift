@@ -37,6 +37,7 @@ final class CloudHandler: CloudHandlerType {
     private var shouldResetState = false
     private var isEnabling = false
     
+    
     private(set) var currentState: CloudCurrentState = .unknown {
         didSet {
             guard oldValue != currentState else { return }
@@ -117,13 +118,16 @@ final class CloudHandler: CloudHandlerType {
             resetBeforeMigration()
         }
         switch currentState {
-        case .unknown, .disabledNotAvailable:
-            Log("Cloud Handler -  unknown state on synchronize", module: .cloudSync)
+        case .unknown:
+            Log("Cloud Handler - unknown state on synchronize", module: .cloudSync)
             checkState()
+        case .enabledNotAvailable:
+            Log("Cloud Handler - enabled but not available state on synchronize", module: .cloudSync)
+            sync()
         case .enabled:
             Log("Cloud Handler -  is enabled - syncing", module: .cloudSync)
             sync()
-        case .disabledAvailable:
+        case .disabled:
             Log("Cloud Handler -  Can't synchronize if cloud is disabled", module: .cloudSync)
         }
     }
@@ -135,15 +139,13 @@ final class CloudHandler: CloudHandlerType {
         
         Log("Cloud Handler - Got Enable action", module: .cloudSync)
         switch currentState {
-        case .enabled:
+        case .enabled, .enabledNotAvailable:
             Log("Cloud Handler - Can't enable again!", module: .cloudSync)
-        case .disabledAvailable:
+        case .disabled:
             Log("Cloud Handler - enable and state is disabledAvailable - enabling!", module: .cloudSync)
             setEnabled()
             userToggledState?(true)
             sync()
-        case .disabledNotAvailable:
-            Log("Cloud Handler - Can't enable if cloud is not available", module: .cloudSync)
         case .unknown:
             Log("Cloud Handler - Can't enable - state unknown", module: .cloudSync)
         }
@@ -152,17 +154,16 @@ final class CloudHandler: CloudHandlerType {
     func disable(notify: Bool = true) {
         Log("Cloud Handler - Got Disable action", module: .cloudSync)
         switch currentState {
-        case .enabled, .unknown:
+        case .enabled, .unknown, .enabledNotAvailable:
             Log("Cloud Handler - is enabled - disabling", module: .cloudSync)
-            clearAll()
+            setDisabled()
+            clearCache()
             if notify {
                 userToggledState?(false)
             }
-            currentState = .disabledAvailable
-        case .disabledAvailable:
+            currentState = .disabled
+        case .disabled:
             Log("Cloud Handler - Can't disable again!", module: .cloudSync)
-        case .disabledNotAvailable:
-            Log("Cloud Handler - Can't disable not available", module: .cloudSync)
         }
     }
     
@@ -208,7 +209,7 @@ final class CloudHandler: CloudHandlerType {
             if isEnabled {
                 sync()
             } else {
-                currentState = .disabledAvailable
+                currentState = .disabled
             }
         case .accountChanged:
             if isEnabled {
@@ -217,19 +218,19 @@ final class CloudHandler: CloudHandlerType {
                 syncHandler.firstStart()
                 sync()
             } else {
-                currentState = .disabledAvailable
+                currentState = .disabled
             }
         case .error(let error):
             otherError(error)
         case .noAccount:
-            clearAll()
-            currentState = .disabledNotAvailable(reason: .noAccount)
+            clearCache()
+            currentState = .enabledNotAvailable(reason: .noAccount)
         case .restricted:
-            clearAll()
-            currentState = .disabledNotAvailable(reason: .restricted)
+            clearCache()
+            currentState = .enabledNotAvailable(reason: .restricted)
         case .notAvailable:
-            clearAll()
-            currentState = .disabledNotAvailable(reason: .other)
+            clearCache()
+            currentState = .enabledNotAvailable(reason: .other)
         }
     }
     
@@ -246,12 +247,6 @@ final class CloudHandler: CloudHandlerType {
         Log("Cloud Handler - clear cache", module: .cloudSync)
         cloudAvailability.clear()
         syncHandler.clearCacheAndDisable()
-    }
-    
-    private func clearAll() {
-        Log("Cloud Handler - clear all", module: .cloudSync)
-        setDisabled()
-        clearCache()
     }
     
     // MARK: -
@@ -312,49 +307,46 @@ final class CloudHandler: CloudHandlerType {
     
     private func quotaError() {
         Log("Cloud Handler - Quota Error", module: .cloudSync)
-        clearAll()
-        currentState = .disabledNotAvailable(reason: .overQuota)
+        clearCache()
+        currentState = .enabledNotAvailable(reason: .overQuota)
     }
     
     private func disabledByUser() {
         Log("Cloud Handler - Disabled by User", module: .cloudSync)
-        clearAll()
-        currentState = .disabledNotAvailable(reason: .disabledByUser)
+        clearCache()
+        currentState = .enabledNotAvailable(reason: .disabledByUser)
     }
     
     private func useriCloudProblem() {
         Log("Cloud Handler - User has iCloud problem", module: .cloudSync)
-        clearAll()
-        currentState = .disabledNotAvailable(reason: .useriCloudProblem)
+        clearCache()
+        currentState = .enabledNotAvailable(reason: .useriCloudProblem)
     }
     
     private func otherError(_ error: NSError?) {
         Log("Cloud Handler - Other Error \(String(describing: error))", module: .cloudSync)
-        clearAll()
-        currentState = .disabledNotAvailable(reason: .error(error: error))
+        clearCache()
+        currentState = .enabledNotAvailable(reason: .error(error: error))
     }
     
     private func schemaNotSupported(_ schemaVersion: Int) {
         Log("Cloud Handler - schema not supported (v\(schemaVersion))", module: .cloudSync)
         
-        if isEnabling {
-            currentState = .disabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
-            clearAll()
-        } else {
-            currentState = .enabled(sync: .outOfSync(.schemaNotSupported(schemaVersion)))
-        }
+        currentState = .enabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
+        clearCache()
     }
     
     private func incorrectEncryption() {
         Log("Cloud Handler - newer version of cloud", module: .cloudSync)
-        clearAll()
-        currentState = .disabledNotAvailable(reason: .incorrectEncryption)
+        clearCache()
+        currentState = .enabledNotAvailable(reason: .incorrectEncryption)
     }
     
     private func syncNotAllowed() {
         Log("Cloud Handler - sync not allowed", module: .cloudSync)
-        clearAll()
-        currentState = .disabledAvailable
+        setDisabled()
+        clearCache()
+        currentState = .disabled
         NotificationCenter.default.post(name: .presentSyncPremiumNeededScreen, object: nil)
     }
     

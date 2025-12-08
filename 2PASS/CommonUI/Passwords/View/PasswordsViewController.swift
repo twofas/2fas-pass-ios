@@ -8,6 +8,14 @@ import UIKit
 import SwiftUI
 import Common
 
+private struct Constants {
+    static let maxSelectedTagBannerWidth: CGFloat = 500
+    static let contentTypePickerHeight: CGFloat = 44
+    static let searchTransitioningLayoutAnimationDuration = 0.3
+    static let changeScrollContentInsetAnimationDuration = 0.3
+    static let showSelectedTagBannerAnimationDuration = 0.15
+}
+
 final class PasswordsViewController: UIViewController {
     var presenter: PasswordsPresenter!
 
@@ -19,9 +27,25 @@ final class PasswordsViewController: UIViewController {
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
     
+    private var isSearchTransitioning: Bool = false
+    
+    let selectedTagBannerView = SelectedTagBannerView()
+
+    var contentTypePicker: UIView {
+        contentTypePickerViewController.view
+    }
+    
+    private var contentTypePickerViewController: UIViewController!
+    private var contentTypePickerTopConstraint: NSLayoutConstraint!
+    private var contentTypePickerHeightConstraint: NSLayoutConstraint!
+        
+    private var edgeEffectView: UIView?
+    private var edgeEffectToContentTypePickerConstraint: NSLayoutConstraint?
+    private var edgeEffectToSelectedTagConstraint: NSLayoutConstraint?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = Asset.mainBackgroundColor.color
 
         setupNavigationBar()
@@ -30,6 +54,20 @@ final class PasswordsViewController: UIViewController {
         setupDelegates()
         setupEmptyLists()
         setupDataSource()
+        
+        addContentTypePicker()
+        addSelectedTagBanner()
+        addTopEdgeEffect()
+    }
+    
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        
+        if isSearchTransitioning {
+            UIView.animate(withDuration: Constants.searchTransitioningLayoutAnimationDuration) {
+                self.view.layoutIfNeeded()
+            }
+        }
     }
     
     // MARK: - App events
@@ -58,23 +96,24 @@ final class PasswordsViewController: UIViewController {
             addButton.tintColor = UIColor(hexString: "#007CF9", transparency: 0.8)
             addButton.style = .prominent
 
-            let filterButton = UIBarButtonItem(
-                image: UIImage(systemName: "line.3.horizontal.decrease"),
-                menu: filterMenu()
-            )
-            filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
-            filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
-
-            navigationItem.rightBarButtonItems = [
-                addButton,
-                .fixedSpace(0),
-                filterButton
-            ]
+            if presenter.hasItems {
+                let filterButton = UIBarButtonItem(
+                    image: UIImage(systemName: "line.3.horizontal.decrease"),
+                    menu: filterMenu()
+                )
+                filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
+                filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
+                
+                navigationItem.rightBarButtonItems = [
+                    addButton,
+                    .fixedSpace(0),
+                    filterButton
+                ]
+            } else {
+                navigationItem.rightBarButtonItems = [addButton]
+            }
+            
         } else {
-            let filterIconName = presenter.selectedFilterTag != nil
-            ? "line.3.horizontal.decrease.circle.fill"
-            : "line.3.horizontal.decrease.circle"
-
             let addButton = UIBarButtonItem(
                 image: UIImage(systemName: "plus.circle.fill"),
                 style: .plain,
@@ -82,19 +121,44 @@ final class PasswordsViewController: UIViewController {
                 action: #selector(addAction)
             )
 
-            navigationItem.rightBarButtonItems = [
-                addButton,
-                UIBarButtonItem(
-                    image: UIImage(systemName: filterIconName),
-                    menu: filterMenu()
-                )
-            ]
+            if presenter.hasItems {
+                let filterIconName = presenter.selectedFilterTag != nil
+                ? "line.3.horizontal.decrease.circle.fill"
+                : "line.3.horizontal.decrease.circle"
+                
+                navigationItem.rightBarButtonItems = [
+                    addButton,
+                    UIBarButtonItem(
+                        image: UIImage(systemName: filterIconName),
+                        menu: filterMenu()
+                    )
+                ]
+            } else {
+                navigationItem.rightBarButtonItems = [addButton]
+            }
         }
     }
     
     func reloadLayout() {
+        view.layoutIfNeeded()
+        
+        UIView.animate(withDuration: Constants.changeScrollContentInsetAnimationDuration) {
+            self.passwordsList?.contentInset.top = (self.presenter.selectedFilterTag != nil ? self.selectedTagBannerView.frame.height + Spacing.m + (self.presenter.showContentTypePicker ? 0 : Spacing.l) : 0)
+        }
+        
         layout = makeLayout()
         passwordsList?.setCollectionViewLayout(layout, animated: true)
+    }
+    
+    func setContentTypePickerOffset(_ offset: CGFloat) {
+        contentTypePickerTopConstraint.constant = offset
+    }
+    
+    func showContentTypeFilterPicker(_ flag: Bool) {
+        contentTypePickerHeightConstraint?.constant = flag ? Constants.contentTypePickerHeight : 0
+        contentTypePicker.alpha = flag ? 1 : 0
+        
+        reloadLayout()
     }
 }
 
@@ -110,6 +174,91 @@ private extension PasswordsViewController {
         presenter.onCancel()
     }
     
+    func makeLayout() -> UICollectionViewCompositionalLayout {
+        ItemListLayout(
+            topInset: presenter.showContentTypePicker ? contentTypePicker.frame.height + Spacing.l : 0,
+            showSectionHeaders: presenter.hasSuggestedItems
+        )
+    }
+    
+    func addContentTypePicker() {
+        let filters = ItemContentTypeFilter.allKnown
+        
+        contentTypePickerViewController = UIHostingController(rootView: ItemContentTypePickerUIKitWrapper(
+            initialFilter: filters[0],
+            filters: filters,
+            onChange: { [weak self] filter in
+                self?.presenter.onSetContentTypeFilter(filter)
+                self?.updateTagBanner()
+                self?.reloadLayout()
+            }
+        ))
+        
+        contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
+        contentTypePicker.backgroundColor = .clear
+        
+        contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(contentTypePicker)
+        
+        contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        contentTypePickerHeightConstraint = contentTypePicker.heightAnchor.constraint(equalToConstant: 0)
+        NSLayoutConstraint.activate([
+            contentTypePickerTopConstraint,
+            contentTypePicker.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            contentTypePicker.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            contentTypePickerHeightConstraint
+        ])
+    }
+    
+    func addSelectedTagBanner() {
+        selectedTagBannerView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(selectedTagBannerView)
+        
+        let leading = selectedTagBannerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l)
+        leading.priority = .defaultHigh
+        
+        let trailing = selectedTagBannerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
+        trailing.priority = .defaultHigh
+        
+        let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.m)
+        top.priority = .defaultHigh
+        NSLayoutConstraint.activate([
+            selectedTagBannerView.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor, constant: Spacing.m),
+            top,
+            leading,
+            trailing,
+            selectedTagBannerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            selectedTagBannerView.widthAnchor.constraint(lessThanOrEqualToConstant: Constants.maxSelectedTagBannerWidth)
+        ])
+        
+        selectedTagBannerView.onClear = { [weak self] in
+            self?.presenter.onClearFilterTag()
+            self?.didSelectedTagChanged()
+        }
+        
+        didSelectedTagChanged()
+    }
+    
+    func addTopEdgeEffect() {
+        if #available(iOS 26.0, *), let passwordsList {
+            let effectView = EdgeEffectView(edge: .top, scrollView: passwordsList)
+            
+            effectView.translatesAutoresizingMaskIntoConstraints = false
+            view?.insertSubview(effectView, at: 0)
+            
+            edgeEffectToSelectedTagConstraint = effectView.bottomAnchor.constraint(equalTo: selectedTagBannerView.bottomAnchor)
+            edgeEffectToContentTypePickerConstraint = effectView.bottomAnchor.constraint(equalTo: contentTypePicker.bottomAnchor)
+            
+            NSLayoutConstraint.activate([
+                effectView.topAnchor.constraint(equalTo: view.topAnchor),
+                effectView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                effectView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            ])
+            
+            edgeEffectView = effectView
+        }
+    }
+    
     func setupPasswordsList() {
         layout = makeLayout()
         let passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
@@ -120,6 +269,7 @@ private extension PasswordsViewController {
     }
 
     func setupNavigationItems() {
+        searchController.delegate = self
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .never
@@ -212,49 +362,18 @@ private extension PasswordsViewController {
 
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
             switch kind {
-            case ItemContentTypeFilterPickerView.elementKind:
-                let pickerView = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: ItemContentTypeFilterPickerView.reuseIdentifier,
-                    for: indexPath
-                ) as? ItemContentTypeFilterPickerView
-                
-                pickerView?.onChange = { [weak self] filter in
-                    self?.presenter.onSetContentTypeFilter(filter)
-                }
-
-                return pickerView
-                
-            case SelectedTagBannerView.elementKind:
-                let bannerView = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: SelectedTagBannerView.reuseIdentifier,
-                    for: indexPath
-                ) as? SelectedTagBannerView
-                
-                if let selectedTag = self?.presenter.selectedFilterTag {
-                    let itemCount = self?.presenter.countPasswordsForTag(selectedTag.tagID) ?? 0
-                    bannerView?.configure(tagName: selectedTag.name, itemCount: itemCount)
-                    bannerView?.onClear = { [weak self] in
-                        self?.presenter.onClearFilterTag()
-                        self?.updateLayoutWithTagFilter()
-                    }
-                }
-                
-                return bannerView
-                
             case UICollectionView.elementKindSectionHeader:
                 let headerView = collectionView.dequeueReusableSupplementaryView(
                     ofKind: kind,
-                    withReuseIdentifier: AutoFillPasswordsSectionView.reuseIdentifier,
+                    withReuseIdentifier: ItemListSectionView.reuseIdentifier,
                     for: indexPath
-                ) as? AutoFillPasswordsSectionView
-                
+                ) as? ItemListSectionView
+
                 let passwordSection = self?.dataSource?.snapshot().sectionIdentifiers[indexPath.section] as? ItemSectionData
                 headerView?.titleLabel.text = passwordSection?.title
-                
+
                 return headerView
-            
+
             default:
                 return nil
             }
@@ -295,7 +414,7 @@ private extension PasswordsViewController {
                 attributes: .destructive
             ) { [weak self] _ in
                 self?.presenter.onClearFilterTag()
-                self?.updateLayoutWithTagFilter()
+                self?.didSelectedTagChanged()
             }
             menuItems.append(clearFilterAction)
         }
@@ -315,7 +434,7 @@ private extension PasswordsViewController {
                 state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
             ) { [weak self] _ in
                 self?.presenter.onSelectFilterTag(tag)
-                self?.updateLayoutWithTagFilter()
+                self?.didSelectedTagChanged()
             }
         }
         
@@ -349,11 +468,27 @@ private extension PasswordsViewController {
         }
     }
     
-    func updateLayoutWithTagFilter() {
-        // Update navigation bar filter icon
-        updateNavigationBarButtons()
+    func updateTagBanner() {
+        if let selectedTag = presenter.selectedFilterTag {
+            let itemCount = presenter.countPasswordsForTag(selectedTag.tagID, contentType: presenter.contentTypeFilter.contentType)
+            selectedTagBannerView.configure(tagName: selectedTag.name, itemCount: itemCount)
+        }
+
+        edgeEffectToContentTypePickerConstraint?.isActive = presenter.selectedFilterTag == nil
+        edgeEffectToSelectedTagConstraint?.isActive = presenter.selectedFilterTag != nil
         
-        // Update the layout to show/hide the banner
+        if presenter.selectedFilterTag != nil {
+            UIView.animate(withDuration: Constants.showSelectedTagBannerAnimationDuration) {
+                self.selectedTagBannerView.alpha = 1
+            }
+        } else {
+            self.selectedTagBannerView.alpha = 0
+        }
+    }
+    
+    func didSelectedTagChanged() {
+        updateTagBanner()
+        updateNavigationBarButtons()
         reloadLayout()
     }
 }
@@ -365,5 +500,24 @@ extension PasswordsViewController: CommonSearchDataSourceSearchable {
     
     func clearSearchPhrase() {
         presenter.onClearSearchPhrase()
+    }
+}
+
+extension PasswordsViewController: UISearchControllerDelegate {
+    
+    func willPresentSearchController(_ searchController: UISearchController) {
+        isSearchTransitioning = true
+    }
+    
+    func didPresentSearchController(_ searchController: UISearchController) {
+        isSearchTransitioning = false
+    }
+    
+    func willDismissSearchController(_ searchController: UISearchController) {
+        isSearchTransitioning = true
+    }
+    
+    func didDismissSearchController(_ searchController: UISearchController) {
+        isSearchTransitioning = false
     }
 }

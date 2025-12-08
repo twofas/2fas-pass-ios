@@ -142,6 +142,7 @@ final class SyncHandler {
                 Log("SyncHandler: error while merging: \(error)", module: .cloudSync, severity: .error)
                 switch error {
                 case .schemaNotSupported: break
+                case .missingEncryption: self?.isSyncing = false
                 case .incorrectEncryption: self?.otherError?(error as NSError)
                 case .noLocalVault, .mergeError, .syncNotAllowed: self?.resetStack()
                 }

@@ -29,6 +29,7 @@ struct ItemContentTypePickerUIKitWrapper: View {
             selectedFilter: $selectedFilter,
             filters: filters
         )
+        .ignoresSafeArea()
         .onChange(of: selectedFilter) { oldValue, newValue in
             onChange(newValue)
         }
@@ -106,7 +107,7 @@ private struct ItemContentTypeFilterButton: View {
             .padding(.horizontal, isSelected ? 16 : 8)
             .padding(.vertical, 10)
             .frame(maxWidth: horizontalSizeClass == .regular ? .infinity : nil)
-            .frame(width: horizontalSizeClass == .regular ? nil : width, height: 40)
+            .frame(width: horizontalSizeClass == .regular ? nil : width, height: 44)
             .contentShape(Capsule())
             
             if #available(iOS 26.0, *) {
