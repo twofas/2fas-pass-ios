@@ -352,6 +352,7 @@ extension DebugInteractor: DebugInteracting {
         for i in 0..<count {
             let name = words.randomElement() ?? "Test\(i)"
             let username = "\(words.randomElement() ?? "one")\(i)@\(words.randomElement() ?? "second").com"
+            let uri = "\(words.randomElement() ?? "second").com"
             let password = words.randomElement() ?? "SomePass123\(i)"
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
@@ -371,8 +372,8 @@ extension DebugInteractor: DebugInteracting {
                 username: username,
                 password: password,
                 notes: notes,
-                iconType: .default,
-                uris: [.init(uri: username,
+                iconType: .domainIcon(uri),
+                uris: [.init(uri: uri,
                 match: .domain),
                 .init(uri: name,
                 match: .exact),
