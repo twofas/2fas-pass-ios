@@ -26,6 +26,7 @@ final class TransferItemsFileSummaryPresenter {
 
     let contentTypes: [ItemContentType]
     let summary: [ItemContentType: Int]
+    let itemsConvertedToSecureNotes: Int
 
     var destination: TransferItemsFileSummaryDestination?
 
@@ -35,11 +36,22 @@ final class TransferItemsFileSummaryPresenter {
         self.service = service
         self.result = result
         self.onClose = onClose
+        self.itemsConvertedToSecureNotes = result.itemsConvertedToSecureNotes
 
-        let summary: [ItemContentType: Int] = result.items.reduce(into: [:], { result, item in
+        var summary: [ItemContentType: Int] = result.items.reduce(into: [:], { result, item in
             let count = result[item.contentType] ?? 0
             result[item.contentType] = count + 1
         })
+
+        // Subtract converted items from secure notes count
+        if let secureNoteCount = summary[.secureNote], result.itemsConvertedToSecureNotes > 0 {
+            let adjustedCount = secureNoteCount - result.itemsConvertedToSecureNotes
+            if adjustedCount > 0 {
+                summary[.secureNote] = adjustedCount
+            } else {
+                summary.removeValue(forKey: .secureNote)
+            }
+        }
 
         self.contentTypes = ItemContentType.allKnownTypes.filter { summary[$0] != nil }
         self.summary = summary

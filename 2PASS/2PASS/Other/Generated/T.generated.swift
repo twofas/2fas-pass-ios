@@ -14,8 +14,8 @@ internal enum T {
   internal static let backupImportingFailureDescription = T.tr("Localizable", " backup_importing_failure_description", fallback: "2FAS Pass couldn’t import your Items. Please try again.")
   /// Can't initialize the camera in Split View mode. Open the app in full screen and try again.
   internal static let cameraErrorSplitMode = T.tr("Localizable", " camera_error_split_mode", fallback: "Can't initialize the camera in Split View mode. Open the app in full screen and try again.")
-  /// The camera is unavailable because the system is overloaded. Please reboot the device.
-  internal static let cameraErrorSystemOverload = T.tr("Localizable", " camera_error_system_overload", fallback: "The camera is unavailable because the system is overloaded. Please reboot the device.")
+  /// The camera is unavailable because the system is overloaded. Please reset the device.
+  internal static let cameraErrorSystemOverload = T.tr("Localizable", " camera_error_system_overload", fallback: "The camera is unavailable because the system is overloaded. Please reset the device.")
   /// Customize icon
   internal static let customizeIcon = T.tr("Localizable", " customize_icon", fallback: "Customize icon")
   /// Copy
@@ -207,10 +207,10 @@ internal enum T {
   internal static let bottomBarPasswords = T.tr("Localizable", "bottom_bar_passwords", fallback: "Items")
   /// Settings
   internal static let bottomBarSettings = T.tr("Localizable", "bottom_bar_settings", fallback: "Settings")
-  /// Can't initialize the camera. Try rebooting the device.
-  internal static let cameraErrorGeneral = T.tr("Localizable", "camera_error_general", fallback: "Can't initialize the camera. Try rebooting the device.")
-  /// Another app is using the camera. If closing other apps doesn't help, please reboot the device.
-  internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app is using the camera. If closing other apps doesn't help, please reboot the device.")
+  /// Can't initialize the camera. Try resetting the device.
+  internal static let cameraErrorGeneral = T.tr("Localizable", "camera_error_general", fallback: "Can't initialize the camera. Try resetting the device.")
+  /// Another app is using the camera. If closing other apps doesn't help, please reset the device.
+  internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app is using the camera. If closing other apps doesn't help, please reset the device.")
   /// Error while scanning the QR Code
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning the QR Code")
   /// Add Card
@@ -1037,8 +1037,8 @@ internal enum T {
   internal static let quickSetupSubtitle = T.tr("Localizable", "quick_setup_subtitle", fallback: "Personlize your security and usability preferences.")
   /// Quick setup
   internal static let quickSetupTitle = T.tr("Localizable", "quick_setup_title", fallback: "Quick setup")
-  /// Transfer passwords from other apps
-  internal static let quickSetupTransferItemsCta = T.tr("Localizable", "quick_setup_transfer_items_cta", fallback: "Transfer passwords from other apps")
+  /// Transfer from other apps
+  internal static let quickSetupTransferItemsCta = T.tr("Localizable", "quick_setup_transfer_items_cta", fallback: "Transfer from other apps")
   /// User is forbidden to access this path.
   internal static let recoveryErrorForbidden = T.tr("Localizable", "recovery_error_forbidden", fallback: "User is forbidden to access this path.")
   /// Index file is damaged.
@@ -1651,8 +1651,8 @@ internal enum T {
   internal static let syncErrorIcloudErrorNewerVersion = T.tr("Localizable", "sync_error_icloud_error_newer_version", fallback: "iCloud Vault was created on a newer version. Please update the app")
   /// No iCloud account
   internal static let syncErrorIcloudErrorNoAccount = T.tr("Localizable", "sync_error_icloud_error_no_account", fallback: "No iCloud account")
-  /// There was a problem with iCloud sync. Try rebooting the device
-  internal static let syncErrorIcloudErrorReboot = T.tr("Localizable", "sync_error_icloud_error_reboot", fallback: "There was a problem with iCloud sync. Try rebooting the device")
+  /// There was a problem with iCloud sync. Try reseting the device
+  internal static let syncErrorIcloudErrorReboot = T.tr("Localizable", "sync_error_icloud_error_reboot", fallback: "There was a problem with iCloud sync. Try reseting the device")
   /// Check if you're correctly logged into iCloud
   internal static let syncErrorIcloudErrorUserLoggedIn = T.tr("Localizable", "sync_error_icloud_error_user_logged_in", fallback: "Check if you're correctly logged into iCloud")
   /// iCloud account is over quota
@@ -1747,12 +1747,18 @@ internal enum T {
   internal static let toastSecureNoteCopied = T.tr("Localizable", "toast_secure_note_copied", fallback: "Note copied")
   /// Username copied
   internal static let toastUsernameCopied = T.tr("Localizable", "toast_username copied", fallback: "Username copied")
-  /// Logins being transferred
-  internal static let transferFileSummaryCounterDescription = T.tr("Localizable", "transfer_file_summary_counter_description", fallback: "Logins being transferred")
   /// Proceed
   internal static let transferFileSummaryCta = T.tr("Localizable", "transfer_file_summary_cta", fallback: "Proceed")
   /// You're transferring Items from another app
   internal static let transferFileSummaryDescription = T.tr("Localizable", "transfer_file_summary_description", fallback: "You're transferring Items from another app")
+  /// Logins detected
+  internal static let transferFileSummaryLoginsCounterDescription = T.tr("Localizable", "transfer_file_summary_logins_counter_description", fallback: "Logins detected")
+  /// Other Items converted to secure notes
+  internal static let transferFileSummaryOthersCounterDescription = T.tr("Localizable", "transfer_file_summary_others_counter_description", fallback: "Other Items converted to secure notes")
+  /// Cards detected
+  internal static let transferFileSummaryPaymentCardsCounterDescription = T.tr("Localizable", "transfer_file_summary_payment_cards_counter_description", fallback: "Cards detected")
+  /// Secure Notes detected
+  internal static let transferFileSummarySecureNotesCounterDescription = T.tr("Localizable", "transfer_file_summary_secure_notes_counter_description", fallback: "Secure Notes detected")
   /// 2FAS Pass couldn’t import your Items. Please try again.
   internal static let transferImportingFailureDescription = T.tr("Localizable", "transfer_importing_failure_description", fallback: "2FAS Pass couldn’t import your Items. Please try again.")
   /// Import failed
@@ -1763,6 +1769,8 @@ internal enum T {
   internal static let transferImportingSuccessDescription = T.tr("Localizable", "transfer_importing_success_description", fallback: "Your 2FAS Pass Items have been successfully imported to Vault.")
   /// Imported successfully
   internal static let transferImportingSuccessTitle = T.tr("Localizable", "transfer_importing_success_title", fallback: "Imported successfully")
+  /// JSON file is recommended to fully transfer your Vault. CSV doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV doesn't support all Item types.")
   /// Open **System settings** on your mobile device.
   /// 
   /// Go to **Apps** and select **Safari**.
@@ -1803,6 +1811,8 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below. 
   internal static let transferInstructionsChrome = T.tr("Localizable", "transfer_instructions_chrome", fallback: "Open Google Chrome on your PC\n\nSelect your **Profile Icon** at the top right, then select **Passwords**.\n\nSelect **Settings** and **Download file**.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
+  /// Upload JSON/CSV file
+  internal static let transferInstructionsCtaBitwarden = T.tr("Localizable", "transfer_instructions_cta_bitwarden", fallback: "Upload JSON/CSV file")
   /// Upload CSV file
   internal static let transferInstructionsCtaCsv = T.tr("Localizable", "transfer_instructions_cta_csv", fallback: "Upload CSV file")
   /// Upload file
@@ -1955,8 +1965,8 @@ internal enum T {
   internal static let vaultRecoveryDecrypting = T.tr("Localizable", "vault_recovery_decrypting", fallback: "Decrypting...")
   /// File is corrupted and can't be decrypted.
   internal static let vaultRecoveryErrorFileCorrupted = T.tr("Localizable", "vault_recovery_error_file_corrupted", fallback: "File is corrupted and can't be decrypted.")
-  /// There was an error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.
-  internal static let vaultRecoveryErrorGalleryAccess = T.tr("Localizable", "vault_recovery_error_gallery_access", fallback: "There was an error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.")
+  /// Error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.
+  internal static let vaultRecoveryErrorGalleryAccess = T.tr("Localizable", "vault_recovery_error_gallery_access", fallback: "Error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.")
   /// Can't open the file
   internal static let vaultRecoveryErrorOpenFile = T.tr("Localizable", "vault_recovery_error_open_file", fallback: "Can't open the file")
   /// Ensure you have access to the file.
@@ -1967,8 +1977,8 @@ internal enum T {
   }
   /// Error while scanning the file. Make sure the QR code is visible and that there's only one in the image.
   internal static let vaultRecoveryErrorScanningFile = T.tr("Localizable", "vault_recovery_error_scanning_file", fallback: "Error while scanning the file. Make sure the QR code is visible and that there's only one in the image.")
-  /// Wrong Master Password or Secret Words. Try again.
-  internal static let vaultRecoveryErrorWrongMasterPasswordWords = T.tr("Localizable", "vault_recovery_error_wrong_master_password_words", fallback: "Wrong Master Password or Secret Words. Try again.")
+  /// Incorrect Master Password or Secret Words. Try again.
+  internal static let vaultRecoveryErrorWrongMasterPasswordWords = T.tr("Localizable", "vault_recovery_error_wrong_master_password_words", fallback: "Incorrect Master Password or Secret Words. Try again.")
   /// Use another backup file
   internal static let vaultRecoveryWrongDecryptionKitAnotherBackupCta = T.tr("Localizable", "vault_recovery_wrong_decryption_kit_another_backup_cta", fallback: "Use another backup file")
   /// Use another Decryption Kit

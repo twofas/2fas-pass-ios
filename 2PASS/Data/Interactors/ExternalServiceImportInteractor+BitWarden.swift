@@ -37,6 +37,7 @@ extension ExternalServiceImportInteractor {
                 throw .wrongFormat
             }
             var items: [ItemData] = []
+            var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
 
             // Create tags from folders
@@ -104,6 +105,7 @@ extension ExternalServiceImportInteractor {
                         tagIds: tagIds
                     ) {
                         items.append(identityItem)
+                        itemsConvertedToSecureNotes += 1
                     }
                 case .sshKey:
                     if let sshItem = parseAsSecureNote(
@@ -115,13 +117,14 @@ extension ExternalServiceImportInteractor {
                         tagIds: tagIds
                     ) {
                         items.append(sshItem)
+                        itemsConvertedToSecureNotes += 1
                     }
                 case .unknown:
                     break
                 }
             }
 
-            return ExternalServiceImportResult(items: items, tags: tags)
+            return ExternalServiceImportResult(items: items, tags: tags, itemsConvertedToSecureNotes: itemsConvertedToSecureNotes)
         }
 
         private func importCSV(_ csvString: String) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {

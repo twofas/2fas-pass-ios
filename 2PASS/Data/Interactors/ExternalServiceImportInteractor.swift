@@ -16,10 +16,12 @@ public enum ExternalServiceImportError: Error {
 public struct ExternalServiceImportResult {
     public let items: [ItemData]
     public let tags: [ItemTagData]
+    public let itemsConvertedToSecureNotes: Int
 
-    public init(items: [ItemData], tags: [ItemTagData] = []) {
+    public init(items: [ItemData], tags: [ItemTagData] = [], itemsConvertedToSecureNotes: Int = 0) {
         self.items = items
         self.tags = tags
+        self.itemsConvertedToSecureNotes = itemsConvertedToSecureNotes
     }
 }
 
