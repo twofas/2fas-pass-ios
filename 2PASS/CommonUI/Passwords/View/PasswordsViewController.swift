@@ -31,13 +31,13 @@ final class PasswordsViewController: UIViewController {
     
     let selectedTagBannerView = SelectedTagBannerView()
 
-    var contentTypePicker: UIView {
-        contentTypePickerViewController.view
+    var contentTypePicker: UIView? {
+        contentTypePickerViewController?.view
     }
     
-    private var contentTypePickerViewController: UIViewController!
-    private var contentTypePickerTopConstraint: NSLayoutConstraint!
-    private var contentTypePickerHeightConstraint: NSLayoutConstraint!
+    private var contentTypePickerViewController: UIViewController?
+    private var contentTypePickerTopConstraint: NSLayoutConstraint?
+    private var contentTypePickerHeightConstraint: NSLayoutConstraint?
         
     private var edgeEffectView: UIView?
     private var edgeEffectToContentTypePickerConstraint: NSLayoutConstraint?
@@ -56,8 +56,11 @@ final class PasswordsViewController: UIViewController {
         setupDataSource()
         
         addContentTypePicker()
-        addSelectedTagBanner()
-        addTopEdgeEffect()
+        
+        if let contentTypePicker {
+            addSelectedTagBanner(contentTypePicker: contentTypePicker)
+            addTopEdgeEffect(contentTypePicker: contentTypePicker)
+        }
     }
     
     override func viewSafeAreaInsetsDidChange() {
@@ -137,12 +140,12 @@ final class PasswordsViewController: UIViewController {
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
-        contentTypePickerTopConstraint.constant = offset
+        contentTypePickerTopConstraint?.constant = offset
     }
     
     func showContentTypeFilterPicker(_ flag: Bool) {
         contentTypePickerHeightConstraint?.constant = flag ? Constants.contentTypePickerHeight : 0
-        contentTypePicker.alpha = flag ? 1 : 0
+        contentTypePicker?.alpha = flag ? 1 : 0
         
         reloadLayout()
     }
@@ -189,7 +192,7 @@ private extension PasswordsViewController {
     
     func makeLayout() -> UICollectionViewCompositionalLayout {
         ItemListLayout(
-            topInset: presenter.showContentTypePicker ? contentTypePicker.frame.height + Spacing.l : 0,
+            topInset: presenter.showContentTypePicker ? (contentTypePicker?.frame.height ?? 0) + Spacing.l : 0,
             showSectionHeaders: presenter.hasSuggestedItems
         )
     }
@@ -207,23 +210,29 @@ private extension PasswordsViewController {
             }
         ))
         
+        guard let contentTypePicker else {
+            return
+        }
+        
         contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
         contentTypePicker.backgroundColor = .clear
         
         contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(contentTypePicker)
         
-        contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
-        contentTypePickerHeightConstraint = contentTypePicker.heightAnchor.constraint(equalToConstant: 0)
+        let contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        let contentTypePickerHeightConstraint = contentTypePicker.heightAnchor.constraint(equalToConstant: 0)
         NSLayoutConstraint.activate([
             contentTypePickerTopConstraint,
             contentTypePicker.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             contentTypePicker.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             contentTypePickerHeightConstraint
         ])
+        self.contentTypePickerTopConstraint = contentTypePickerTopConstraint
+        self.contentTypePickerHeightConstraint = contentTypePickerHeightConstraint
     }
     
-    func addSelectedTagBanner() {
+    func addSelectedTagBanner(contentTypePicker: UIView) {
         selectedTagBannerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(selectedTagBannerView)
         
@@ -252,7 +261,7 @@ private extension PasswordsViewController {
         didSelectedTagChanged()
     }
     
-    func addTopEdgeEffect() {
+    func addTopEdgeEffect(contentTypePicker: UIView) {
         if #available(iOS 26.0, *), let passwordsList {
             let effectView = EdgeEffectView(edge: .top, scrollView: passwordsList)
             

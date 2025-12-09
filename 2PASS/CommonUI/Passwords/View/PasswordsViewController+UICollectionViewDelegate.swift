@@ -12,7 +12,8 @@ extension PasswordsViewController: UICollectionViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard UIDevice.isiPad == false else { return }
-        
+        guard let contentTypePicker else { return }
+
         let offset = scrollView.adjustedContentInset.top + scrollView.contentOffset.y
         setContentTypePickerOffset(max(-view.safeAreaInsets.top, min(0, -offset)))
         contentTypePicker.alpha = presenter.showContentTypePicker ? (1 - (offset / contentTypePicker.frame.height)) : 0
@@ -20,6 +21,7 @@ extension PasswordsViewController: UICollectionViewDelegate {
     
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         guard presenter.showContentTypePicker, UIDevice.isiPad == false else { return }
+        guard let contentTypePicker else { return }
         
         let topInset = -scrollView.adjustedContentInset.top
         
