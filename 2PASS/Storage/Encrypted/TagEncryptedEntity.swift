@@ -60,10 +60,17 @@ extension TagEncryptedEntity {
         request.fetchLimit = 1
         
         do {
-            guard let result = try context.fetch(request).first else {
-                return nil
+            let result = try context.fetch(request)
+            
+            if result.count > 1 {
+                Log("TagEncryptedEntity: Error while fetching entity with TagID: \(tagID). There's more than one. Correcting!", severity: .error)
+                let itemsForDeletition = result[1...]
+                for item in itemsForDeletition {
+                    delete(on: context, entity: item)
+                }
             }
-            return result
+            
+            return result.first
         } catch {
             let err = error as NSError
             Log("TagEncryptedEntity in Storage find: \(err.localizedDescription)", module: .storage)
