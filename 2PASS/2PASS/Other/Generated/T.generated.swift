@@ -1753,8 +1753,8 @@ internal enum T {
   internal static let transferFileSummaryDescription = T.tr("Localizable", "transfer_file_summary_description", fallback: "You're transferring Items from another app")
   /// Logins detected
   internal static let transferFileSummaryLoginsCounterDescription = T.tr("Localizable", "transfer_file_summary_logins_counter_description", fallback: "Logins detected")
-  /// Other Items converted to secure notes
-  internal static let transferFileSummaryOthersCounterDescription = T.tr("Localizable", "transfer_file_summary_others_counter_description", fallback: "Other Items converted to secure notes")
+  /// Other Items converted to Secure Notes
+  internal static let transferFileSummaryOthersCounterDescription = T.tr("Localizable", "transfer_file_summary_others_counter_description", fallback: "Other Items converted to Secure Notes")
   /// Cards detected
   internal static let transferFileSummaryPaymentCardsCounterDescription = T.tr("Localizable", "transfer_file_summary_payment_cards_counter_description", fallback: "Cards detected")
   /// Secure Notes detected
@@ -1799,10 +1799,10 @@ internal enum T {
   /// 
   /// Go to **Tools/Vault**, then select **Export Vault**.
   /// 
-  /// Choose **.JSON** as the file format and select **Export Vault**.
+  /// Choose **JSON or CSV** as the file format, then select **Export Vault**.
   /// 
-  /// Copy the exported file to this device and tap **Upload JSON file** below.
-  internal static let transferInstructionsBitwarden = T.tr("Localizable", "transfer_instructions_bitwarden", fallback: "Open Bitwarden and go to **Settings** (gear icon).\n\nGo to **Tools/Vault**, then select **Export Vault**.\n\nChoose **.JSON** as the file format and select **Export Vault**.\n\nCopy the exported file to this device and tap **Upload JSON file** below.")
+  /// Copy the exported file to this device and tap the **Upload button** below.
+  internal static let transferInstructionsBitwarden = T.tr("Localizable", "transfer_instructions_bitwarden", fallback: "Open Bitwarden and go to **Settings** (gear icon).\n\nGo to **Tools/Vault**, then select **Export Vault**.\n\nChoose **JSON or CSV** as the file format, then select **Export Vault**.\n\nCopy the exported file to this device and tap the **Upload button** below.")
   /// Open Google Chrome on your PC
   /// 
   /// Select your **Profile Icon** at the top right, then select **Passwords**.
