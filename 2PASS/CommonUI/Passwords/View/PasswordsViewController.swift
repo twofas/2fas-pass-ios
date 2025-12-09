@@ -97,17 +97,10 @@ final class PasswordsViewController: UIViewController {
             addButton.style = .prominent
 
             if presenter.hasItems {
-                let filterButton = UIBarButtonItem(
-                    image: UIImage(systemName: "line.3.horizontal.decrease"),
-                    menu: filterMenu()
-                )
-                filterButton.tintColor = presenter.selectedFilterTag != nil ? .brand500 : nil
-                filterButton.style = presenter.selectedFilterTag != nil ? .prominent : .plain
-                
                 navigationItem.rightBarButtonItems = [
                     addButton,
                     .fixedSpace(0),
-                    filterButton
+                    filterBarButton()
                 ]
             } else {
                 navigationItem.rightBarButtonItems = [addButton]
@@ -122,16 +115,9 @@ final class PasswordsViewController: UIViewController {
             )
 
             if presenter.hasItems {
-                let filterIconName = presenter.selectedFilterTag != nil
-                ? "line.3.horizontal.decrease.circle.fill"
-                : "line.3.horizontal.decrease.circle"
-                
                 navigationItem.rightBarButtonItems = [
                     addButton,
-                    UIBarButtonItem(
-                        image: UIImage(systemName: filterIconName),
-                        menu: filterMenu()
-                    )
+                    filterBarButton()
                 ]
             } else {
                 navigationItem.rightBarButtonItems = [addButton]
@@ -172,6 +158,33 @@ private extension PasswordsViewController {
     @objc
     func cancel() {
         presenter.onCancel()
+    }
+    
+    func filterBarButton() -> UIBarButtonItem {
+        let button = FilterButton()
+        button.isFilterActive = presenter.selectedFilterTag != nil
+        button.menu = filterMenu()
+        button.showsMenuAsPrimaryAction = true
+        button.clipsToBounds = false
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        let container = UIView()
+        container.addSubview(button)
+
+        NSLayoutConstraint.activate([
+            container.widthAnchor.constraint(equalToConstant: 44),
+            container.heightAnchor.constraint(equalToConstant: 44)
+        ])
+        button.pinToParent()
+        
+        let filterButton = UIBarButtonItem(customView: container)
+        
+        if #available(iOS 26.0, *) {
+            filterButton.sharesBackground = false
+            filterButton.hidesSharedBackground = true
+        }
+        
+        return filterButton
     }
     
     func makeLayout() -> UICollectionViewCompositionalLayout {
@@ -521,3 +534,4 @@ extension PasswordsViewController: UISearchControllerDelegate {
         isSearchTransitioning = false
     }
 }
+
