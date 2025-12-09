@@ -65,5 +65,25 @@
 			</dict>
 		</dict>
 	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>1Password Unencrypted Export</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.1password.1pux</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>1pux</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

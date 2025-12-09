@@ -6,34 +6,77 @@
 
 import SwiftUI
 
-public struct PaymentCardNumberField: UIViewRepresentable {
+public struct PaymentCardNumberTextField: View {
     let placeholder: String
     let maxLength: Int
     let formatStyle: PaymentCardNumberFormatStyle
+    let showRevealButton: Bool
+    let isInvalid: Bool
 
     @Binding
     var text: String
+
+    @Binding
+    var isRevealed: Bool
 
     public init(
         _ placeholder: String,
         text: Binding<String>,
         maxLength: Int,
-        formatStyle: PaymentCardNumberFormatStyle
+        formatStyle: PaymentCardNumberFormatStyle,
+        isRevealed: Binding<Bool>,
+        showRevealButton: Bool = true,
+        isInvalid: Bool = false
     ) {
         self.placeholder = placeholder
         self._text = text
         self.maxLength = maxLength
         self.formatStyle = formatStyle
+        self._isRevealed = isRevealed
+        self.showRevealButton = showRevealButton
+        self.isInvalid = isInvalid
     }
 
-    public func makeUIView(context: Context) -> UITextField {
+    public var body: some View {
+        HStack {
+            _PaymentCardNumberTextField(
+                placeholder: placeholder,
+                maxLength: maxLength,
+                formatStyle: formatStyle,
+                isMasked: !isRevealed,
+                isInvalid: isInvalid,
+                text: $text
+            )
+
+            if showRevealButton {
+                Toggle(isOn: $isRevealed, label: {})
+                    .toggleStyle(.reveal)
+                    .frame(width: 22)
+            }
+        }
+    }
+}
+
+private struct _PaymentCardNumberTextField: UIViewRepresentable {
+    let placeholder: String
+    let maxLength: Int
+    let formatStyle: PaymentCardNumberFormatStyle
+    let isMasked: Bool
+    let isInvalid: Bool
+
+    @Binding
+    var text: String
+
+    func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
         textField.placeholder = placeholder
         textField.keyboardType = .asciiCapableNumberPad
         textField.textContentType = .creditCardNumber
         textField.delegate = context.coordinator
-        textField.font = UIFont.preferredFont(forTextStyle: .body)
-        textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        let bodyFont = UIFont.preferredFont(forTextStyle: .body)
+        textField.font = .monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
+        textField.setContentHuggingPriority(.required, for: .vertical)
+        textField.setContentCompressionResistancePriority(.required, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         textField.text = text
         return textField
@@ -42,28 +85,38 @@ public struct PaymentCardNumberField: UIViewRepresentable {
     public func updateUIView(_ textField: UITextField, context: Context) {
         context.coordinator.maxLength = maxLength
         context.coordinator.formatStyle = formatStyle
+        context.coordinator.isMasked = isMasked
 
-        let formatted = formatStyle.format(text)
-        if textField.text != formatted {
-            textField.text = formatted
+        if isMasked {
+            if textField.text != text {
+                textField.text = text
+            }
+        } else {
+            let formatted = formatStyle.format(text)
+            if textField.text != formatted {
+                textField.text = formatted
+            }
         }
         textField.placeholder = placeholder
+        textField.textColor = isInvalid ? UIColor(.danger500) : .label
     }
 
     public func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
-    public class Coordinator: NSObject, UITextFieldDelegate {
-        var parent: PaymentCardNumberField
+    class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: _PaymentCardNumberTextField
         var maxLength: Int
         var formatStyle: PaymentCardNumberFormatStyle
+        var isMasked: Bool
         private var previousText = ""
 
-        init(_ parent: PaymentCardNumberField) {
+        init(_ parent: _PaymentCardNumberTextField) {
             self.parent = parent
             self.maxLength = parent.maxLength
             self.formatStyle = parent.formatStyle
+            self.isMasked = parent.isMasked
             self.previousText = parent.text
         }
 
@@ -72,6 +125,11 @@ public struct PaymentCardNumberField: UIViewRepresentable {
             shouldChangeCharactersIn range: NSRange,
             replacementString string: String
         ) -> Bool {
+            // When masked, don't allow editing - the field will be revealed on focus
+            if isMasked {
+                return false
+            }
+
             let currentText = textField.text ?? ""
 
             guard let textRange = Range(range, in: currentText) else {

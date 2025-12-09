@@ -2318,17 +2318,6 @@
         }
       }
     },
-    "content_type_filter_card_name" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cards"
-          }
-        }
-      }
-    },
     "content_type_filter_login_name" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9485,7 +9474,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open 1Password on your PC.\n\nClick the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload CSV file** below."
+            "value" : "Open 1Password on your PC.\n\nClick the three dots at the top of the side bar, select **Export** and choose the account you want to export (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **1PUX** or **CSV** format and select **Export data**.\n\nCopy the exported file to this device and tap **Upload file** below."
           }
         }
       }

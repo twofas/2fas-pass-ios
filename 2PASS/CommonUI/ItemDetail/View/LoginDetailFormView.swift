@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
 
 struct LoginDetailFormView: View {
 
@@ -88,6 +89,9 @@ struct LoginDetailFormView: View {
 
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
             ItemDetailFormNotes(presenter.notes)
+        }
+        .onAppear {
+            selectedField = nil
         }
         .onAppear {
             selectedField = nil

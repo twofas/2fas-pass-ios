@@ -70,7 +70,10 @@ public protocol DebugInteracting: AnyObject {
 
     var unknownCount: Int { get }
     func generateUnknown(count: Int, completion: @escaping Callback)
-    
+
+    var tagsCount: Int { get }
+    func deleteAllTags()
+
     // MARK: - WebDAV debug
     var writeDecryptedCopy: Bool { get }
     func setWriteDecryptedCopy(_ writeDecryptedCopy: Bool)
@@ -461,7 +464,19 @@ extension DebugInteractor: DebugInteracting {
         mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
-    
+
+    var tagsCount: Int {
+        mainRepository.listTags(options: .all).count
+    }
+
+    func deleteAllTags() {
+        mainRepository.deleteAllTags()
+        mainRepository.deleteAllEncryptedTags()
+        mainRepository.saveStorage()
+        mainRepository.saveEncryptedStorage()
+        mainRepository.webDAVSetHasLocalChanges()
+    }
+
     // MARK: - WebDAV debug
     
     var writeDecryptedCopy: Bool {

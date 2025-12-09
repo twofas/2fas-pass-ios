@@ -12,22 +12,22 @@ protocol TransferItemsImportingModuleInteracting {
 }
 
 final class TransferItemsImportingModuleInteractor: TransferItemsImportingModuleInteracting {
-    
+
     private let itemsImportInteractor: ItemsImportInteracting
-    
+
     let service: ExternalService
-    let items: [ItemData]
-    
-    init(service: ExternalService, items: [ItemData], itemsImportInteractor: ItemsImportInteracting) {
+    let result: ExternalServiceImportResult
+
+    init(service: ExternalService, result: ExternalServiceImportResult, itemsImportInteractor: ItemsImportInteracting) {
         self.service = service
-        self.items = items
+        self.result = result
         self.itemsImportInteractor = itemsImportInteractor
     }
-    
+
     @MainActor
     func importItems() async {
         await withCheckedContinuation { continuation in
-            itemsImportInteractor.importItems(items, tags: []) { _ in
+            itemsImportInteractor.importItems(result.items, tags: result.tags) { _ in
                 continuation.resume()
             }
         }

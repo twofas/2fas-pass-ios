@@ -29,7 +29,7 @@ extension PaymentCardIssuer {
     }
 }
 
-extension PaymentCardItemData {
+public extension PaymentCardItemData {
 
     var issuerIcon: UIImage? {
         guard let issuerString = content.cardIssuer,

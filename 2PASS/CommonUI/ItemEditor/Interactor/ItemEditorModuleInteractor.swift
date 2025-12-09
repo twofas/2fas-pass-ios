@@ -78,8 +78,12 @@ protocol ItemEditorModuleInteracting: AnyObject {
 
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
-    func maxCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
-    func maxSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
+    func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
+    func maxPaymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
+    func paymentCardNumberMask(from cardNumber: String?) -> String?
+    func validatePaymentCardExpirationDate(_ value: String) -> Bool
+    func validatePaymentCardSecurityCode(_ value: String, for issuer: PaymentCardIssuer?) -> Bool
+    func validatePaymentCardCardNumber(_ value: String, for issuer: PaymentCardIssuer?) -> Bool
 
     func mostUsedUsernames() -> [String]
     func normalizeURLString(_ str: String) -> String?
@@ -97,6 +101,7 @@ final class ItemEditorModuleInteractor {
     private let loginItemInteractor: LoginItemInteracting
     private let secureNoteItemInteractor: SecureNoteItemInteracting
     private let paymentCardItemInteractor: PaymentCardItemInteracting
+    private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
@@ -115,6 +120,7 @@ final class ItemEditorModuleInteractor {
         loginItemInteractor: LoginItemInteracting,
         secureNoteItemInteractor: SecureNoteItemInteracting,
         paymentCardItemInteractor: PaymentCardItemInteracting,
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
@@ -131,6 +137,7 @@ final class ItemEditorModuleInteractor {
         self.loginItemInteractor = loginItemInteractor
         self.secureNoteItemInteractor = secureNoteItemInteractor
         self.paymentCardItemInteractor = paymentCardItemInteractor
+        self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -169,15 +176,31 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     }
 
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
-        paymentCardItemInteractor.detectCardIssuer(from: cardNumber)
+        paymentCardUtilityInteractor.detectCardIssuer(from: cardNumber)
     }
 
-    func maxCardNumberLength(for issuer: PaymentCardIssuer?) -> Int {
-        paymentCardItemInteractor.maxCardNumberLength(for: issuer)
+    func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardUtilityInteractor.maxCardNumberLength(for: issuer)
     }
 
-    func maxSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
-        paymentCardItemInteractor.maxSecurityCodeLength(for: issuer)
+    func maxPaymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardUtilityInteractor.maxSecurityCodeLength(for: issuer)
+    }
+
+    func paymentCardNumberMask(from cardNumber: String?) -> String? {
+        paymentCardUtilityInteractor.cardNumberMask(from: cardNumber)
+    }
+
+    func validatePaymentCardExpirationDate(_ value: String) -> Bool {
+        paymentCardUtilityInteractor.validateExpirationDate(value)
+    }
+
+    func validatePaymentCardSecurityCode(_ value: String, for issuer: PaymentCardIssuer?) -> Bool {
+        paymentCardUtilityInteractor.validateSecurityCode(value, for: issuer)
+    }
+
+    func validatePaymentCardCardNumber(_ value: String, for issuer: PaymentCardIssuer?) -> Bool {
+        paymentCardUtilityInteractor.validateCardNumber(value, for: issuer)
     }
 
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {

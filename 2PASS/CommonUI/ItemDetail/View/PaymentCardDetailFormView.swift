@@ -44,7 +44,9 @@ struct PaymentCardDetailFormView: View {
                         SecureContainerView {
                             HStack {
                                 Spacer()
-                                Text(cardNumber).monospaced()
+                                Text(cardNumber)
+                                    .monospaced()
+                                    .multilineTextAlignment(.leading)
                             }
                         }
                     },
@@ -101,8 +103,10 @@ struct PaymentCardDetailFormView: View {
             }
 
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
-            ItemDetailFormTags(presenter.tags)
             ItemDetailFormNotes(presenter.notes)
+        }
+        .onAppear {
+            selectedField = nil
         }
     }
 }

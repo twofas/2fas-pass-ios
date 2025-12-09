@@ -187,7 +187,7 @@ private extension TrashPresenter {
                         return TrashItemData(
                             itemID: paymentCardItem.id,
                             name: paymentCardItem.name,
-                            description: paymentCardItem.content.cardNumberMask.map { PaymentCardNumberMaskFormatStyle().format($0) },
+                            description: paymentCardItem.content.cardNumberMask?.formatted(.paymentCardNumberMask),
                             deletedDate: trashingDate,
                             icon: .paymentCard(issuer: paymentCardItem.content.cardIssuer)
                         )

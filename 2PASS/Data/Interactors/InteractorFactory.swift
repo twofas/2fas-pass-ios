@@ -64,8 +64,13 @@ public final class InteractorFactory {
     public func paymentCardItemInteractor() -> PaymentCardItemInteracting {
         PaymentCardItemInteractor(
             itemsInteractor: itemsInteractor(),
-            mainRepository: MainRepositoryImpl.shared
+            mainRepository: MainRepositoryImpl.shared,
+            paymentCardUtilityInteractor: paymentCardUtilityInteractor()
         )
+    }
+
+    public func paymentCardUtilityInteractor() -> PaymentCardUtilityInteracting {
+        PaymentCardUtilityInteractor()
     }
 
     public func systemInteractor() -> SystemInteracting {
@@ -286,7 +291,7 @@ public final class InteractorFactory {
         ExternalServiceImportInteractor(
             mainRepository: MainRepositoryImpl.shared,
             uriInteractor: uriInteractor(),
-            paymentCardItemInteractor: paymentCardItemInteractor()
+            paymentCardUtilityInteractor: paymentCardUtilityInteractor()
         )
     }
 

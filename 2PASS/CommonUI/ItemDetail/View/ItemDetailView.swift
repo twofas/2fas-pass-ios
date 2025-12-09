@@ -216,6 +216,10 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
             ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .systemOrange, position: 2, modificationDate: Date())
         ]
     }
+
+    func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        issuer == .americanExpress ? 4 : 3
+    }
 }
 
 

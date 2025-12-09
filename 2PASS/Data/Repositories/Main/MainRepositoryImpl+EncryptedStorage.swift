@@ -270,7 +270,12 @@ extension MainRepositoryImpl {
     func deleteAllEncryptedTags(in vault: VaultID) {
         encryptedStorage.deleteAllEncryptedTags(in: vault)
     }
-    
+
+    func deleteAllEncryptedTags() {
+        guard let vaultID = selectedVault?.vaultID else { return }
+        encryptedStorage.deleteAllEncryptedTags(in: vaultID)
+    }
+
     // MARK: Web Browser Extension
     
     func createEncryptedWebBrowser(_ data: WebBrowserEncryptedData) {

@@ -318,7 +318,8 @@ extension ModuleInteractorFactory {
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
-            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
+            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
+            paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor()
         )
     }
     
@@ -330,10 +331,10 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, items: [ItemData]) -> TransferItemsImportingModuleInteracting {
+    func transferItemsImportingModuleInteractor(service: ExternalService, result: ExternalServiceImportResult) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
-            items: items,
+            result: result,
             itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
         )
     }

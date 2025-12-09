@@ -20,7 +20,7 @@ public struct SecureInput: View {
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
     private var onSubmit: (() -> Void)?
-    
+
     public init(label: LocalizedStringResource, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
         self.label = label
         self.bindingReveal = reveal
@@ -38,7 +38,7 @@ public struct SecureInput: View {
                 }
             
             Spacer()
-            
+
             Toggle(isOn: $isReveal, label: {})
                 .toggleStyle(.reveal)
                 .frame(width: 22)
@@ -83,7 +83,7 @@ public struct SecureContentInput: View {
 
     @FocusState
     private var focusedField: Field?
-
+    
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
 
@@ -93,6 +93,7 @@ public struct SecureContentInput: View {
         self.isReveal = isReveal
     }
 
+    
     public var body: some View {
         ZStack {
             SecureField(label, text: $value)

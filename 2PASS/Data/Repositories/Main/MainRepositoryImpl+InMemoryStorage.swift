@@ -343,6 +343,10 @@ extension MainRepositoryImpl {
     func deleteTag(tagID: ItemTagID) {
         inMemoryStorage?.deleteTag(tagID: tagID)
     }
+
+    func deleteAllTags() {
+        inMemoryStorage?.deleteAllTagEntities()
+    }
     
     func listTags(options: TagListOptions) -> [ItemTagData] {
         inMemoryStorage?.listTags(options: options) ?? []

@@ -194,8 +194,8 @@ struct ConnectPullReqestCommunicationView: View {
         itemRequestView(
             title: Text(T.requestModalCardRequestTitle.localizedKey),
             subtitle: Text(T.requestModalCardRequestSubtitle.localizedKey),
-            name: PaymentCardNumberMaskFormatStyle().format(item.content.cardNumberMask ?? ""),
-            description: item.content.cardHolder
+            name: item.name ?? "",
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
     }
 
@@ -248,7 +248,7 @@ struct ConnectPullReqestCommunicationView: View {
         addItemView(
             title: Text(T.requestModalNewCardTitle.localizedKey),
             name: changeRequest.name ?? "",
-            description: PaymentCardNumberMaskFormatStyle().format(changeRequest.cardNumber ?? "")
+            description: changeRequest.cardNumber?.formatted(.paymentCardNumberMask)
         )
     }
 
@@ -300,7 +300,7 @@ struct ConnectPullReqestCommunicationView: View {
         updateItemView(
             title: Text(T.requestModalUpdateCardTitle.localizedKey),
             name: item.name ?? "",
-            description: PaymentCardNumberMaskFormatStyle().format(item.content.cardNumberMask ?? "")
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
     }
 
@@ -352,7 +352,7 @@ struct ConnectPullReqestCommunicationView: View {
         deleteItemView(
             title: Text(T.requestModalRemoveCardTitle.localizedKey),
             name: item.name ?? "",
-            description: PaymentCardNumberMaskFormatStyle().format(item.content.cardNumberMask ?? "")
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
     }
 

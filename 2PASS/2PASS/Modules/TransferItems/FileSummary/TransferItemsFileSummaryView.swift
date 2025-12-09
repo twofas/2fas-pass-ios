@@ -6,6 +6,7 @@
 
 import SwiftUI
 import CommonUI
+import Data
 
 struct TransferItemsFileSummaryView: View {
     
@@ -13,24 +14,33 @@ struct TransferItemsFileSummaryView: View {
     
     var body: some View {
         SettingsDetailsForm(Text(T.transferInstructionsHeader(presenter.service.name).localizedKey)) {
-            HStack {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(presenter.items.count, format: .number)
-                        .font(.bodyEmphasized)
-                        .foregroundStyle(.neutral950)
-                    
-                    Text(T.transferFileSummaryCounterDescription.localizedKey)
-                        .font(.footnote)
-                        .foregroundStyle(.neutral600)
+            ForEach(presenter.contentTypes, id: \.self) { contentType in
+                Section {
+                    HStack(spacing: Spacing.s) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            let count = Text(presenter.summary[contentType] ?? 0, format: .number)
+                                .font(.bodyEmphasized)
+                                .foregroundStyle(.neutral950)
+                                                        
+                            if let icon = contentType.iconSystemName {
+                                HStack(spacing: Spacing.s) {
+                                    Image(systemName: icon)
+                                    count
+                                }
+                            } else {
+                                count
+                            }
+                            
+                            Text(T.transferFileSummaryCounterDescription.localizedKey)
+                                .font(.footnote)
+                                .foregroundStyle(.neutral600)
+                        }
+                        
+                        Spacer()
+                    }
                 }
-                
-                Spacer()
-                
-                Image(systemName: "checkmark.circle")
-                    .font(.system(size: 24))
-                    .foregroundStyle(.success500)
+                .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
             }
-            .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
             
         } header: {
             SettingsHeaderView(
@@ -66,5 +76,7 @@ struct TransferItemsFileSummaryView: View {
 }
 
 #Preview {
-    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, items: [], onClose: {}))
+    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, result: ExternalServiceImportResult(items: [
+        .login(.init(id: .init(), vaultId: .init(), metadata: .init(creationDate: Date(), modificationDate: Date(), protectionLevel: .confirm, trashedStatus: .no, tagIds: nil), name: nil, content: .init(name: nil, username: nil, password: nil, notes: nil, iconType: .domainIcon(nil), uris: nil)))
+    ]), onClose: {}))
 }

@@ -8,18 +8,19 @@ import Data
 import Common
 
 protocol ConnectPullReqestCommunicationModuleInteracting: AnyObject {
-    
+
     var currentPlanItemsLimit: Int { get }
     var canAddItem: Bool { get }
-    
+
     var appNotification: AppNotification { get }
-    
+
     func identiconSVG(colorScheme: ColorScheme) -> String?
     func fetchIconImage(from url: URL) async throws -> Data
     func extractDomain(from urlString: String) -> String?
+    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
     func deleteItem(for itemID: ItemID)
     func deleteAppNotification() async throws
-    
+
     func connect(
         progress: @escaping (Float) -> Void,
         onReceiveBrowserInfo: @escaping (WebBrowser) -> Void,
@@ -28,7 +29,7 @@ protocol ConnectPullReqestCommunicationModuleInteracting: AnyObject {
 }
 
 final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCommunicationModuleInteracting {
-    
+
     let appNotification: AppNotification
     let identiconInteractor: ConnectIdenticonInteracting
     let connectInteractor: ConnectInteracting
@@ -37,15 +38,18 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     let itemsInteractor: ItemsInteracting
     let appNotificationsInteractor: AppNotificationsInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
-    
-    init(appNotification: AppNotification,
-         connectInteractor: ConnectInteracting,
-         identiconInteractor: ConnectIdenticonInteracting,
-         fileIconInteractor: FileIconInteracting,
-         uriInteractor: URIInteracting,
-         itemsInteractor: ItemsInteracting,
-         appNotificationsInteractor: AppNotificationsInteracting,
-         paymentStatusInteractor: PaymentStatusInteracting
+    let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+
+    init(
+        appNotification: AppNotification,
+        connectInteractor: ConnectInteracting,
+        identiconInteractor: ConnectIdenticonInteracting,
+        fileIconInteractor: FileIconInteracting,
+        uriInteractor: URIInteracting,
+        itemsInteractor: ItemsInteracting,
+        appNotificationsInteractor: AppNotificationsInteracting,
+        paymentStatusInteractor: PaymentStatusInteracting,
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     ) {
         self.appNotification = appNotification
         self.connectInteractor = connectInteractor
@@ -55,6 +59,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         self.itemsInteractor = itemsInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
+        self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
     }
     
     var canAddItem: Bool {
@@ -95,7 +100,11 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     func extractDomain(from urlString: String) -> String? {
         uriInteractor.extractDomain(from: urlString)
     }
-    
+
+    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
+        paymentCardUtilityInteractor.detectCardIssuer(from: cardNumber)
+    }
+
     func deleteItem(for itemID: ItemID) {
         itemsInteractor.markAsTrashed(for: itemID)
         itemsInteractor.saveStorage()

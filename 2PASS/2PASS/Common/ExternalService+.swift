@@ -29,23 +29,23 @@ public extension ExternalService {
         }
     }
 
-    var allowedContentType: UTType {
+    var allowedContentTypes: [UTType] {
         switch self {
-        case .onePassword: UTType.commaSeparatedText
-        case .bitWarden: UTType.json
-        case .chrome: UTType.commaSeparatedText
-        case .dashlaneDesktop: UTType.zip
-        case .dashlaneMobile: UTType.commaSeparatedText
-        case .lastPass: UTType.commaSeparatedText
-        case .protonPass: UTType.commaSeparatedText
-        case .applePasswordsDesktop: UTType.commaSeparatedText
-        case .applePasswordsMobile: UTType.zip
-        case .firefox: UTType.commaSeparatedText
-        case .keePassXC: UTType.commaSeparatedText
-        case .keePass: UTType.commaSeparatedText
-        case .microsoftEdge: UTType.commaSeparatedText
-        case .enpass: UTType.json
-        case .keeper: UTType.json
+        case .onePassword: [UTType.commaSeparatedText, UTType.zip]
+        case .bitWarden: [UTType.json, UTType.commaSeparatedText]
+        case .chrome: [UTType.commaSeparatedText]
+        case .dashlaneDesktop: [UTType.zip]
+        case .dashlaneMobile: [UTType.commaSeparatedText]
+        case .lastPass: [UTType.commaSeparatedText]
+        case .protonPass: [UTType.commaSeparatedText]
+        case .applePasswordsDesktop: [UTType.commaSeparatedText]
+        case .applePasswordsMobile: [UTType.zip]
+        case .firefox: [UTType.commaSeparatedText]
+        case .keePassXC: [UTType.commaSeparatedText]
+        case .keePass: [UTType.commaSeparatedText]
+        case .microsoftEdge: [UTType.commaSeparatedText]
+        case .enpass: [UTType.json]
+        case .keeper: [UTType.json]
         }
     }
 }
