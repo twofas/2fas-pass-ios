@@ -27,14 +27,14 @@ final class PasswordsViewController: UIViewController {
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
     
-    private var isSearchTransitioning: Bool = false
-    
-    let selectedTagBannerView = SelectedTagBannerView()
-
     var contentTypePicker: UIView? {
         contentTypePickerViewController?.view
     }
     
+    private var isSearchTransitioning: Bool = false
+
+    private let selectedTagBannerView = SelectedTagBannerView()
+
     private var contentTypePickerViewController: UIViewController?
     private var contentTypePickerTopConstraint: NSLayoutConstraint?
     private var contentTypePickerHeightConstraint: NSLayoutConstraint?
