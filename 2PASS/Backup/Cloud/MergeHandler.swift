@@ -250,7 +250,7 @@ extension MergeHandler {
                     if isMultiDeviceSyncEnabled {
                         cloudVault.update(deviceID: deviceID, updatedAt: date)
                         vaultAddIfDataModifed = cloudVault
-                        skipIfDataUnmodified = true
+                        skipIfDataUnmodified = ConstStorage.passwordWasChanged == false
                     } else {
                         syncNotAllowed?()
                         completion(.failure(.syncNotAllowed))
