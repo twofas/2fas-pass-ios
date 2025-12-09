@@ -70,7 +70,7 @@ final class PasswordsPresenter {
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private var listData: [Int: [ItemData]] = [:]
-    private var allowLoadData: Bool = false
+    private var canLoadData: Bool = false
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
@@ -98,7 +98,7 @@ final class PasswordsPresenter {
 extension PasswordsPresenter {
     
     func viewWillAppear() {
-        allowLoadData = true
+        canLoadData = true
         reload()
     }
     
@@ -278,7 +278,7 @@ private extension PasswordsPresenter {
     }
     
     func reload() {
-        guard allowLoadData else {
+        guard canLoadData else {
             return
         }
         
