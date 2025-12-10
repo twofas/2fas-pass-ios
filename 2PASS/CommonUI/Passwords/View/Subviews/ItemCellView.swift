@@ -177,12 +177,14 @@ private extension ItemCellView {
     
     func menuAccessoryConfiguration(for cellData: ItemCellData, isHidden: Bool) -> UICellAccessory.CustomViewConfiguration {
         menuButton.menu = menu(for: cellData)
-
+        menuButton.frame.size = CGSize(width: 40, height: Constants.minimalCellHeight)
+        
         let configuration = UICellAccessory.CustomViewConfiguration(
             customView: menuButton,
             placement: .trailing(),
             isHidden: isHidden,
-            reservedLayoutWidth: .custom(40)
+            reservedLayoutWidth: .custom(40),
+            maintainsFixedSize: true
         )
 
         return configuration
