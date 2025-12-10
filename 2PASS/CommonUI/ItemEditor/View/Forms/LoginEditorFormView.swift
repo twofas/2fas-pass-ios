@@ -97,14 +97,6 @@ struct LoginEditorFormView: View {
             .listSectionSpacing(Spacing.m)
             
             urisSection
-                .onChange(of: showURIMatchSettings) { _, current in
-                    if !current {
-                        currentURI = nil
-                    }
-                }
-                .sheet(isPresented: $showURIMatchSettings) {
-                    matchingRuleSheet()
-                }
             
             ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
             ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
@@ -196,6 +188,9 @@ struct LoginEditorFormView: View {
 
         } header: {
             Text(T.loginUriHeader.localizedKey)
+                .sheet(isPresented: $showURIMatchSettings) { // placed here to work around an iOS auto-close bug
+                    matchingRuleSheet()
+                }
         } footer: {
             if let uriError = presenter.uriError {
                 HStack {
@@ -208,6 +203,11 @@ struct LoginEditorFormView: View {
             }
         }
         .listSectionSpacing(Spacing.l)
+        .onChange(of: showURIMatchSettings) { _, current in
+            if !current {
+                currentURI = nil
+            }
+        }
     }
 
     @ViewBuilder
