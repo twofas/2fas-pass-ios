@@ -217,7 +217,6 @@ private extension PasswordsViewController {
         contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
         contentTypePicker.backgroundColor = .clear
         
-        contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(contentTypePicker)
         
         let contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
