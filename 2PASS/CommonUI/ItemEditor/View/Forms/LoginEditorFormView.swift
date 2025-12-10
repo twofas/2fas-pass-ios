@@ -75,12 +75,36 @@ struct LoginEditorFormView: View {
                 .formFieldChanged(presenter.nameChanged)
                 
                 usernameField
+                    .sheet(isPresented: $presenter.showMostUsed) {
+                        mostUsedSheet()
+                    }
+                
                 passwordField
+                    .sheet(isPresented: $presenter.showGeneratePassword) {
+                        PasswordGeneratorRouter.buildView(close: {
+                            presenter.showGeneratePassword = false
+                        }) { password in
+                            presenter.password = password
+                            presenter.showGeneratePassword = false
+
+                            Task {
+                                focusField = nil
+                            }
+                        }
+                    }
             }
             .font(.body)
             .listSectionSpacing(Spacing.m)
             
             urisSection
+                .onChange(of: showURIMatchSettings) { _, current in
+                    if !current {
+                        currentURI = nil
+                    }
+                }
+                .sheet(isPresented: $showURIMatchSettings) {
+                    matchingRuleSheet()
+                }
             
             ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
             ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
@@ -94,29 +118,6 @@ struct LoginEditorFormView: View {
         }
         .onDisappear {
             presenter.onFocusField = nil
-        }
-        .sheet(isPresented: $showURIMatchSettings) {
-            matchingRuleSheet()
-        }
-        .sheet(isPresented: $presenter.showMostUsed) {
-            mostUsedSheet()
-        }
-        .sheet(isPresented: $presenter.showGeneratePassword) {
-            PasswordGeneratorRouter.buildView(close: {
-                presenter.showGeneratePassword = false
-            }) { password in
-                presenter.password = password
-                presenter.showGeneratePassword = false
-
-                Task {
-                    focusField = nil
-                }
-            }
-        }
-        .onChange(of: showURIMatchSettings) { _, current in
-            if !current {
-                currentURI = nil
-            }
         }
     }
     
