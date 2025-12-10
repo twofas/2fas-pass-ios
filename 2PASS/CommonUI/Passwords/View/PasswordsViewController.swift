@@ -401,15 +401,16 @@ private extension PasswordsViewController {
             }
         }
         
-        presenter.onImageFetchResult = { [weak self] password, url, result in
+        presenter.onImageFetchResult = { [weak self] item, url, result in
             guard let dataSource = self?.dataSource else { return }
 
             switch result {
-            case .success:
-                var snapshot = dataSource.snapshot()
-                guard snapshot.itemIdentifiers.contains(password) else { return }
-                snapshot.reconfigureItems([password])
-                dataSource.apply(snapshot, animatingDifferences: false)
+            case .success(let imageData):
+                guard let indexPath = dataSource.indexPath(for: item),
+                      let cell = self?.passwordsList?.cellForItem(at: indexPath) as? ItemCellView else {
+                    return
+                }
+                cell.updateIcon(with: imageData, for: item)
             case .failure:
                 break
             }

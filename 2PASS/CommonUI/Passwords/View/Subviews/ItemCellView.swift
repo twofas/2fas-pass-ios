@@ -119,6 +119,12 @@ class ItemCellView: UICollectionViewListCell {
         
         setNeedsUpdateConfiguration()
     }
+    
+    func updateIcon(with iconData: Data, for cellData: ItemCellData) {
+        guard self.cellData == cellData else { return }
+        
+        updateIcon(wirh: iconData)
+    }
 
     func updateIcon(wirh iconData: Data) {
         guard let image = UIImage(data: iconData) else {

@@ -23,6 +23,10 @@ extension MainRepositoryImpl {
             URLCache.shared.storeCachedResponse(cachedResponse, for: URLRequest(url: url))
         }
         
+        guard data.isEmpty == false else {
+            throw NetworkError.emptyData
+        }
+        
         return data
     }
 }
