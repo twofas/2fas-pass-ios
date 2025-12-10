@@ -61,6 +61,8 @@ final class PasswordsViewController: UIViewController {
             addSelectedTagBanner(contentTypePicker: contentTypePicker)
             addTopEdgeEffect(contentTypePicker: contentTypePicker)
         }
+        
+        updateTagBanner()
     }
     
     override func viewSafeAreaInsetsDidChange() {
@@ -140,7 +142,8 @@ final class PasswordsViewController: UIViewController {
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
-        contentTypePickerTopConstraint?.constant = offset
+        contentTypePickerTopConstraint?.constant = max(-(contentTypePicker?.frame.height ?? 0), offset)
+        edgeEffectToContentTypePickerConstraint?.constant = max(-view.safeAreaInsets.top, offset)
     }
     
     func showContentTypeFilterPicker(_ flag: Bool) {
