@@ -48,7 +48,7 @@ final class LoginEntity: ItemMetadataEntity {
                 uris: loginContent.uris
             )
         } catch {
-            fatalError(error.localizedDescription)
+            assertionFailure(error.localizedDescription)
         }
     }
     
@@ -85,7 +85,7 @@ final class LoginEntity: ItemMetadataEntity {
                 uris: loginContent.uris
             )
         } catch {
-            fatalError(error.localizedDescription)
+            assertionFailure(error.localizedDescription)
         }
     }
     
