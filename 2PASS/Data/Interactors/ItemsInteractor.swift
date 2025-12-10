@@ -281,7 +281,7 @@ extension ItemsInteractor: ItemsInteracting {
             return nil
         }()
 
-        let items = mainRepository.listItems(options: .filterByPhrase(searchPhrase, sortBy: sortBy, trashed: trashed))
+        let items = mainRepository.listItems(options: .filterByPhrase(nil, sortBy: sortBy, trashed: trashed))
 
         return items.filter { item in
             if let tagId {
@@ -300,6 +300,18 @@ extension ItemsInteractor: ItemsInteracting {
                 guard contentTypes.contains(item.contentType) else {
                     return false
                 }
+            }
+  
+            if let searchPhrase {
+                if item.name?.localizedCaseInsensitiveContains(searchPhrase) == true {
+                    return true
+                }
+                
+                if let loginItem = item.asLoginItem, loginItem.username?.localizedCaseInsensitiveContains(searchPhrase) == true {
+                    return true
+                }
+                
+                return false
             }
 
             return true
