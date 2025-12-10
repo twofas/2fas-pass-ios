@@ -124,4 +124,3 @@ private struct ItemContentTypeFilterButton: View {
         .buttonStyle(.plain)
     }
 }
-
