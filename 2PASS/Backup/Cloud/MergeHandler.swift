@@ -349,7 +349,7 @@ private extension MergeHandler {
         }
     }
     
-    func mergeTags(local localTags: [ItemTagData], cloud cloudTags: [CloudDataTagItem], vaultID: VaultID) {
+    func mergeTags(local localTags: [ItemTagEncryptedData], cloud cloudTags: [CloudDataTagItem], vaultID: VaultID) {
         tags = localTags.reduce(into: [ItemTagID: Tag]()) { result, itemTag in
             result[itemTag.tagID] = Tag.local(itemTag)
         }
@@ -460,21 +460,17 @@ private extension MergeHandler {
     }
     
     func prepareChangesInTags(
-        local localTags: [ItemTagData],
+        local localTags: [ItemTagEncryptedData],
         cloud cloudTags: [CloudDataTagItem],
         vaultID: VaultID
     ) -> Bool {
-        let localTagIDs = localTags.map { $0.tagID }
-
+        let localTagIDs = localTags.map { $0.id }
+        
         for (_, tagEntry) in tags {
             switch tagEntry {
-            case .local(let tag):
+            case .local(let encryptedTag):
                 var record: CKRecord?
-                guard let encryptedTag = encryptionHandler.tagToTagEncrypted(tag) else {
-                    Log("MergeHandler: Error encrypting tag", module: .backup, severity: .error)
-                    return false
-                }
-                if let tagItem = cloudTags.first(where: { $0.tagItem.tagID == tag.tagID }) {
+                if let tagItem = cloudTags.first(where: { $0.tagItem.tagID == encryptedTag.tagID }) {
                     record = TagRecord
                         .recreate(with: tagItem.metadata, data: encryptedTag)
                     cloudStorageTagUpdate.append((tag: encryptedTag, metadata: tagItem.metadata))
@@ -748,7 +744,7 @@ private extension MergeHandler {
     }
     
     enum Tag: Hashable {
-        case local(ItemTagData)
+        case local(ItemTagEncryptedData)
         case cloud(tag: ItemTagEncryptedData, metadata: Data)
         
         func hash(into hasher: inout Hasher) {

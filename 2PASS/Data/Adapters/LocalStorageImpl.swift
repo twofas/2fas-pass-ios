@@ -40,8 +40,8 @@ extension LocalStorageImpl: LocalStorage {
         deletedItemsInteractor.listDeletedItems()
     }
     
-    func listAllTags() -> [ItemTagData] {
-        tagInteractor.listAllTags()
+    func listAllTags() -> [ItemTagEncryptedData] {
+        tagInteractor.listAllEncryptedTags()
     }
     
     func listTrashedItemsIDs() -> [ItemID] {
