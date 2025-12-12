@@ -91,6 +91,7 @@ public protocol EncryptedStorageDataSource: AnyObject {
     func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
+    func removeDuplicatedEncryptedTags()
     
     // MARK: Storage
     
