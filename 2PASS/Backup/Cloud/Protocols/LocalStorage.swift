@@ -10,7 +10,7 @@ public protocol LocalStorage: AnyObject {
     func save()
     func listItems() -> [ItemEncryptedData]
     func listAllDeletedItems() -> [DeletedItemData]
-    func listAllTags() -> [ItemTagData]
+    func listAllTags() -> [ItemTagEncryptedData]
     func moveFromTrash(_ itemID: ItemID)
     func listTrashedItemsIDs() -> [ItemID]
     func createDeletedItem(_ deletedItem: DeletedItemData)
