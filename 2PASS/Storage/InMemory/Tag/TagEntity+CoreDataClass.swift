@@ -80,15 +80,6 @@ final class TagEntity: NSManagedObject {
             on: context,
             options: .tag(tagID)
         )
-        
-        // If something went wrong (wrong migration, some bugs) -> remove duplicated entries instead of:
-        if list.count > 1 {
-            let itemsForDeletition = list[1...]
-            for item in itemsForDeletition {
-                delete(on: context, entity: item)
-            }
-        }
-        
         return list.first
     }
     

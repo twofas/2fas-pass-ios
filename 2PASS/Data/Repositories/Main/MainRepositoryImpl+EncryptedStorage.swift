@@ -275,6 +275,10 @@ extension MainRepositoryImpl {
         guard let vaultID = selectedVault?.vaultID else { return }
         encryptedStorage.deleteAllEncryptedTags(in: vaultID)
     }
+    
+    func removeDuplicatedEncryptedTags() {
+        encryptedStorage.removeDuplicatedEncryptedTags()
+    }
 
     // MARK: Web Browser Extension
     

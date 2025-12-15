@@ -75,7 +75,23 @@ struct LoginEditorFormView: View {
                 .formFieldChanged(presenter.nameChanged)
                 
                 usernameField
+                    .sheet(isPresented: $presenter.showMostUsed) {
+                        mostUsedSheet()
+                    }
+                
                 passwordField
+                    .sheet(isPresented: $presenter.showGeneratePassword) {
+                        PasswordGeneratorRouter.buildView(close: {
+                            presenter.showGeneratePassword = false
+                        }) { password in
+                            presenter.password = password
+                            presenter.showGeneratePassword = false
+
+                            Task {
+                                focusField = nil
+                            }
+                        }
+                    }
             }
             .font(.body)
             .listSectionSpacing(Spacing.m)
@@ -94,29 +110,6 @@ struct LoginEditorFormView: View {
         }
         .onDisappear {
             presenter.onFocusField = nil
-        }
-        .sheet(isPresented: $showURIMatchSettings) {
-            matchingRuleSheet()
-        }
-        .sheet(isPresented: $presenter.showMostUsed) {
-            mostUsedSheet()
-        }
-        .sheet(isPresented: $presenter.showGeneratePassword) {
-            PasswordGeneratorRouter.buildView(close: {
-                presenter.showGeneratePassword = false
-            }) { password in
-                presenter.password = password
-                presenter.showGeneratePassword = false
-
-                Task {
-                    focusField = nil
-                }
-            }
-        }
-        .onChange(of: showURIMatchSettings) { _, current in
-            if !current {
-                currentURI = nil
-            }
         }
     }
     
@@ -195,6 +188,9 @@ struct LoginEditorFormView: View {
 
         } header: {
             Text(T.loginUriHeader.localizedKey)
+                .sheet(isPresented: $showURIMatchSettings) { // placed here to work around an iOS auto-close bug
+                    matchingRuleSheet()
+                }
         } footer: {
             if let uriError = presenter.uriError {
                 HStack {
@@ -207,6 +203,11 @@ struct LoginEditorFormView: View {
             }
         }
         .listSectionSpacing(Spacing.l)
+        .onChange(of: showURIMatchSettings) { _, current in
+            if !current {
+                currentURI = nil
+            }
+        }
     }
 
     @ViewBuilder

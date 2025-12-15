@@ -306,7 +306,11 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         let listAll = TagEncryptedEntity.list(on: context, in: vault)
         listAll.forEach { TagEncryptedEntity.delete(on: context, entity: $0) }
     }
-    
+
+    public func removeDuplicatedEncryptedTags() {
+        TagEncryptedEntity.removeDuplicates(on: context)
+    }
+
     public func warmUp() {
         // Artifically calling out context so it will prepare storage for concurrent access
         coreDataStack.context.performAndWait { [weak self] in

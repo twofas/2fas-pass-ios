@@ -317,7 +317,7 @@ private extension PasswordsPresenter {
         
         let cellsCount: Int
         
-        if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers {
+        if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, autoFillEnvironment?.isTextToInsert == false {
             let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag)
             
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()

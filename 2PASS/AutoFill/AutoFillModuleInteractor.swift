@@ -77,13 +77,17 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             Log("AutoFill - Missing password", module: .autofill)
             return nil
         }
-        let result = itemsInteractor.getPasswordEncryptedContents(for: itemID, checkInTrash: false)
-        switch result {
-        case .success(let value):
+        
+        guard let password = loginItem.password else {
+            Log("AutoFill - Complete get credential without password", module: .autofill)
+            return ASPasswordCredential(user: loginItem.username ?? "", password: "")
+        }
+        
+        if let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: loginItem.protectionLevel) {
             Log("AutoFill - Complete get credential", module: .autofill)
-            return ASPasswordCredential(user: loginItem.username ?? "", password: value ?? "")
-        case .failure(let failure):
-            Log("AutoFill - Failed get credential: \(failure)", module: .autofill)
+            return ASPasswordCredential(user: loginItem.username ?? "", password: decryptedPassword)
+        } else {
+            Log("AutoFill - Failed get credential", module: .autofill)
             return nil
         }
     }
