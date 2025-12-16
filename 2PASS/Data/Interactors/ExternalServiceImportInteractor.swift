@@ -13,6 +13,11 @@ public enum ExternalServiceImportError: Error {
     case cantReadFile
 }
 
+public enum ImportContent {
+    case file(Data)
+    case folder([String: Data])
+}
+
 public struct ExternalServiceImportResult {
     public let items: [ItemData]
     public let tags: [ItemTagData]
@@ -27,11 +32,11 @@ public struct ExternalServiceImportResult {
 
 public protocol ExternalServiceImportInteracting: AnyObject {
 
-    func openFile(from url: URL) async throws(ExternalServiceImportError) -> Data
+    func open(from url: URL) async throws(ExternalServiceImportError) -> ImportContent
 
     func importService(
         _ service: ExternalService,
-        content: Data
+        content: ImportContent
     ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult
 }
 
@@ -55,27 +60,61 @@ final class ExternalServiceImportInteractor {
 
 extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
 
-    func openFile(from url: URL) async throws(ExternalServiceImportError) -> Data {
-        guard let fileURL = mainRepository.copyFileToLocalIfNeeded(from: url) else {
+    func open(from url: URL) async throws(ExternalServiceImportError) -> ImportContent {
+        let hasSecurityScope = url.startAccessingSecurityScopedResource()
+        defer {
+            if hasSecurityScope {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        guard let isDirectory = mainRepository.isDirectory(at: url) else {
             throw .cantReadFile
         }
 
-        guard let fileSize = mainRepository.checkFileSize(for: fileURL) else {
-            throw .wrongFileSize
-        }
+        if isDirectory {
+            guard let files = mainRepository.readFilesFromFolder(
+                at: url,
+                withExtension: "csv",
+                maxFileSize: Config.maximumExternalImportFileSize
+            ) else {
+                throw .cantReadFile
+            }
+            return .folder(files)
+        } else {
+            guard let localURL = mainRepository.copyFileToLocalIfNeeded(from: url) else {
+                throw .cantReadFile
+            }
 
-        guard fileSize < Config.maximumExternalImportFileSize else {
-            throw .wrongFileSize
-        }
+            guard let fileSize = mainRepository.checkFileSize(for: localURL) else {
+                throw .wrongFileSize
+            }
 
-        guard let data = await mainRepository.readFileData(from: fileURL) else {
-            throw .cantReadFile
-        }
+            guard fileSize < Config.maximumExternalImportFileSize else {
+                throw .wrongFileSize
+            }
 
-        return data
+            guard let data = mainRepository.readLocalFile(at: localURL) else {
+                throw .cantReadFile
+            }
+
+            return .file(data)
+        }
     }
 
     func importService(
+        _ service: ExternalService,
+        content: ImportContent
+    ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
+        switch content {
+        case .file(let data):
+            try await importServiceFromFile(service, content: data)
+        case .folder(let files):
+            try await importServiceFromFolder(service, files: files)
+        }
+    }
+
+    private func importServiceFromFile(
         _ service: ExternalService,
         content: Data
     ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
@@ -87,9 +126,9 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .chrome:
             ExternalServiceImportResult(items: try await ChromeImporter(context: context).import(content))
         case .dashlaneMobile:
-            ExternalServiceImportResult(items: try await DashlaneImporter(context: context).importMobile(content))
+            try await DashlaneImporter(context: context).importMobileCSV([content])
         case .dashlaneDesktop:
-            ExternalServiceImportResult(items: try await DashlaneImporter(context: context).importDesktop(content))
+            try await DashlaneImporter(context: context).importDesktopZIP(content)
         case .lastPass:
             ExternalServiceImportResult(items: try await LastPassImporter(context: context).import(content))
         case .protonPass:
@@ -110,6 +149,18 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             ExternalServiceImportResult(items: try await EnpassImporter(context: context).import(content))
         case .keeper:
             try await KeeperImporter(context: context).import(content)
+        }
+    }
+
+    private func importServiceFromFolder(
+        _ service: ExternalService,
+        files: [String: Data]
+    ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
+        switch service {
+        case .dashlaneMobile:
+            try await DashlaneImporter(context: context).importMobileCSV(Array(files.values))
+        default:
+            throw .wrongFormat
         }
     }
 }

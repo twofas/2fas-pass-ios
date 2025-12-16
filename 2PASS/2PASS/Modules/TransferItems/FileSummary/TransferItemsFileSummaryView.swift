@@ -33,6 +33,14 @@ struct TransferItemsFileSummaryView: View {
                         description: T.transferFileSummaryOthersCounterDescription.localizedKey
                     )
                 }
+                
+                if presenter.tagsCount > 0 {
+                    summarySection(
+                        count: presenter.tagsCount,
+                        icon: Image(systemName: "tag"),
+                        description: T.transferFileSummaryTagsCounterDescription.localizedKey
+                    )
+                }
 
             } header: {
                 SettingsHeaderView(

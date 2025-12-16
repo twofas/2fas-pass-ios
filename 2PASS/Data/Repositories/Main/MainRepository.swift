@@ -136,6 +136,9 @@ protocol MainRepository: AnyObject {
     func readFileData(from url: URL) async -> Data?
     func fileExists(at url: URL) -> Bool
     func copyFileToLocalIfNeeded(from url: URL) -> URL?
+    func isDirectory(at url: URL) -> Bool?
+    func readFilesFromFolder(at url: URL, withExtension ext: String, maxFileSize: Int) -> [String: Data]?
+    func readLocalFile(at url: URL) -> Data?
     
     var is2FASAuthInstalled: Bool { get }
     

@@ -151,11 +151,11 @@ extension MainRepositoryImpl {
                 do {
                     let fileManager = FileManager.default
                     let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
-                    
+
                     if fileManager.fileExists(atPath: destinationURL.path) {
                         try fileManager.removeItem(at: destinationURL)
                     }
-                    
+
                     try fileManager.copyItem(at: newURL, to: destinationURL)
 
                     resultURL = destinationURL
@@ -164,32 +164,73 @@ extension MainRepositoryImpl {
                     Log("Error copying file at: \(url)", module: .mainRepository, severity: .error)
                 }
             }
-            
+
             if error != nil {
                 Log("Error copying file at: \(url)", module: .mainRepository, severity: .error)
                 return nil
             }
-            
+
             return resultURL
         }
-         
+
         if url.startAccessingSecurityScopedResource() {
             defer {
                 url.stopAccessingSecurityScopedResource()
             }
-            
+
             guard fileExists(at: url) == false else {
                 return url
             }
-            
+
             return copyFile()
         } else {
             guard fileExists(at: url) == false else {
                 return url
             }
-            
+
             return copyFile()
         }
+    }
+
+    func isDirectory(at url: URL) -> Bool? {
+        try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory
+    }
+
+    func readLocalFile(at url: URL) -> Data? {
+        FileManager.default.contents(atPath: url.path)
+    }
+
+    func readFilesFromFolder(at folderURL: URL, withExtension ext: String, maxFileSize: Int) -> [String: Data]? {
+        let fileManager = FileManager.default
+
+        guard let enumerator = fileManager.enumerator(
+            at: folderURL,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return nil
+        }
+
+        var files: [String: Data] = [:]
+
+        for case let fileURL as URL in enumerator {
+            guard fileURL.pathExtension.lowercased() == ext.lowercased(),
+                  let resourceValues = try? fileURL.resourceValues(forKeys: [.isRegularFileKey]),
+                  resourceValues.isRegularFile == true else {
+                continue
+            }
+
+            guard let localURL = copyFileToLocalIfNeeded(from: fileURL),
+                  let fileSize = checkFileSize(for: localURL),
+                  fileSize < maxFileSize,
+                  let data = readLocalFile(at: localURL) else {
+                continue
+            }
+
+            files[fileURL.lastPathComponent.lowercased()] = data
+        }
+
+        return files
     }
     
     var is2FASAuthInstalled: Bool {

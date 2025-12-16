@@ -35,7 +35,7 @@ public extension ExternalService {
         case .bitWarden: [UTType.json, UTType.commaSeparatedText]
         case .chrome: [UTType.commaSeparatedText]
         case .dashlaneDesktop: [UTType.zip]
-        case .dashlaneMobile: [UTType.commaSeparatedText]
+        case .dashlaneMobile: [UTType.commaSeparatedText, UTType.folder]
         case .lastPass: [UTType.commaSeparatedText]
         case .protonPass: [UTType.commaSeparatedText]
         case .applePasswordsDesktop: [UTType.commaSeparatedText]

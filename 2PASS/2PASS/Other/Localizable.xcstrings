@@ -3908,7 +3908,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take another try with a different filter"
+            "value" : "Try a different filter"
           }
         }
       }
@@ -9248,6 +9248,17 @@
         }
       }
     },
+    "transfer_file_summary_tags_counter_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags detected"
+          }
+        }
+      }
+    },
     "transfer_importing_failure_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9309,7 +9320,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "JSON file is recommended to fully transfer your Vault. CSV doesn't support all Item types."
+            "value" : "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types."
           }
         }
       }
@@ -9441,7 +9452,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the .json file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. "
+            "value" : "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the **json** file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. "
           }
         }
       }

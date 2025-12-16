@@ -14,75 +14,74 @@ extension ExternalServiceImportInteractor {
     struct DashlaneImporter {
         let context: ImportContext
 
-        func importMobile(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
-            guard let csvString = String(data: content, encoding: .utf8) else {
-                throw .wrongFormat
-            }
+        func importMobileCSV(_ files: [Data]) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
             guard let vaultID = context.selectedVaultId else {
                 throw .wrongFormat
             }
             var items: [ItemData] = []
+            var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
+            let tagResolver = TagResolver(vaultID: vaultID)
 
-            do {
-                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.header.containsAll(["username", "title", "password", "note", "url"]) else {
-                    throw ExternalServiceImportError.wrongFormat
+            // Process each CSV file and detect type based on headers
+            for data in files {
+                guard let csvString = String(data: data, encoding: .utf8) else { continue }
+
+                do {
+                    let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+                    let csvType = detectCSVType(from: csv.header)
+
+                    switch csvType {
+                    case .credentials:
+                        let credentialItems = try importCredentialsFromData(
+                            data,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            resolveTagIds: tagResolver.resolve
+                        )
+                        items.append(contentsOf: credentialItems)
+                    case .secureNotes:
+                        let noteItems = try importSecureNotesFromData(
+                            data,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            resolveTagIds: tagResolver.resolve
+                        )
+                        items.append(contentsOf: noteItems)
+                    case .payments:
+                        let result = try importPaymentsFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                        items.append(contentsOf: result.items)
+                        itemsConvertedToSecureNotes += result.convertedCount
+                    case .ids:
+                        let idItems = try importIDsFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                        items.append(contentsOf: idItems)
+                        itemsConvertedToSecureNotes += idItems.count
+                    case .personalInfo:
+                        let personalItems = try importPersonalInfoFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                        items.append(contentsOf: personalItems)
+                        itemsConvertedToSecureNotes += personalItems.count
+                    case .wifi:
+                        let wifiItems = try importWiFiFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                        items.append(contentsOf: wifiItems)
+                        itemsConvertedToSecureNotes += wifiItems.count
+                    case .unknown:
+                        // Skip unknown CSV types
+                        continue
+                    }
+                } catch {
+                    // Skip files that fail to parse
+                    continue
                 }
-
-                try csv.enumerateAsDict { dict in
-                    guard dict.allValuesEmpty == false else { return }
-
-                    let name = dict["title"].formattedName
-                    let uris: [PasswordURI]? = {
-                        guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
-                        let uri = PasswordURI(uri: urlString, match: .domain)
-                        return [uri]
-                    }()
-                    let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
-                    let password: Data? = {
-                        if let passwordString = dict["password"]?.nilIfEmpty,
-                           let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                            return password
-                        }
-                        return nil
-                    }()
-                    let notes = dict["note"]?.nilIfEmpty
-
-                    items.append(
-                        .login(.init(
-                            id: .init(),
-                            vaultId: vaultID,
-                            metadata: .init(
-                                creationDate: Date.importPasswordPlaceholder,
-                                modificationDate: Date.importPasswordPlaceholder,
-                                protectionLevel: protectionLevel,
-                                trashedStatus: .no,
-                                tagIds: nil
-                            ),
-                            name: name,
-                            content: .init(
-                                name: name,
-                                username: username,
-                                password: password,
-                                notes: notes,
-                                iconType: context.makeIconType(uri: uris?.first?.uri),
-                                uris: uris
-                            )
-                        ))
-                    )
-                }
-
-                return items
-
-            } catch let error as ExternalServiceImportError {
-                throw error
-            } catch {
-                throw .wrongFormat
             }
+
+            return ExternalServiceImportResult(
+                items: items,
+                tags: tagResolver.tags,
+                itemsConvertedToSecureNotes: itemsConvertedToSecureNotes
+            )
         }
 
-        func importDesktop(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func importDesktopZIP(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
             guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
                 throw .wrongFormat
             }
@@ -90,50 +89,79 @@ extension ExternalServiceImportInteractor {
                 throw .wrongFormat
             }
             var items: [ItemData] = []
+            var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
+            let tagResolver = TagResolver(vaultID: vaultID)
 
             // Import credentials
             if let entry = archive.first(where: { $0.path.hasSuffix("credentials.csv") }) {
-                let credentialItems = try importCredentialsCSV(from: archive, entry: entry, vaultID: vaultID, protectionLevel: protectionLevel)
+                let data = try extractData(from: archive, entry: entry)
+                let credentialItems = try importCredentialsFromData(
+                    data,
+                    vaultID: vaultID,
+                    protectionLevel: protectionLevel,
+                    resolveTagIds: tagResolver.resolve
+                )
                 items.append(contentsOf: credentialItems)
             }
 
             // Import secure notes
             if let entry = archive.first(where: { $0.path.hasSuffix("securenotes.csv") }) {
-                let noteItems = try importSecureNotesCSV(from: archive, entry: entry, vaultID: vaultID, protectionLevel: protectionLevel)
+                let data = try extractData(from: archive, entry: entry)
+                let noteItems = try importSecureNotesFromData(
+                    data,
+                    vaultID: vaultID,
+                    protectionLevel: protectionLevel,
+                    resolveTagIds: tagResolver.resolve
+                )
                 items.append(contentsOf: noteItems)
             }
 
-            // Import payment cards
+            // Import payment cards and bank accounts
             if let entry = archive.first(where: { $0.path.hasSuffix("payments.csv") }) {
-                let cardItems = try importPaymentsCSV(from: archive, entry: entry, vaultID: vaultID, protectionLevel: protectionLevel)
-                items.append(contentsOf: cardItems)
+                let data = try extractData(from: archive, entry: entry)
+                let result = try importPaymentsFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                items.append(contentsOf: result.items)
+                itemsConvertedToSecureNotes += result.convertedCount
             }
 
-            return items
+            // Import IDs (as secure notes)
+            if let entry = archive.first(where: { $0.path.hasSuffix("ids.csv") }) {
+                let data = try extractData(from: archive, entry: entry)
+                let idItems = try importIDsFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                items.append(contentsOf: idItems)
+                itemsConvertedToSecureNotes += idItems.count
+            }
+
+            // Import personal info (as secure notes)
+            if let entry = archive.first(where: { $0.path.hasSuffix("personalInfo.csv") }) {
+                let data = try extractData(from: archive, entry: entry)
+                let personalItems = try importPersonalInfoFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                items.append(contentsOf: personalItems)
+                itemsConvertedToSecureNotes += personalItems.count
+            }
+
+            return ExternalServiceImportResult(
+                items: items,
+                tags: tagResolver.tags,
+                itemsConvertedToSecureNotes: itemsConvertedToSecureNotes
+            )
         }
     }
 }
 
-// MARK: - Desktop Import Helpers
-
 private extension ExternalServiceImportInteractor.DashlaneImporter {
 
-    func importCredentialsCSV(
-        from archive: Archive,
-        entry: Entry,
+    func importCredentialsFromData(
+        _ data: Data,
         vaultID: VaultID,
-        protectionLevel: ItemProtectionLevel
+        protectionLevel: ItemProtectionLevel,
+        resolveTagIds: @escaping (String?) -> [ItemTagID]?
     ) throws(ExternalServiceImportError) -> [ItemData] {
         var items: [ItemData] = []
 
         do {
-            var fileData = Data()
-            _ = try archive.extract(entry) { data in
-                fileData.append(data)
-            }
-
-            guard let csvString = String(data: fileData, encoding: .utf8) else {
+            guard let csvString = String(data: data, encoding: .utf8) else {
                 throw ExternalServiceImportError.wrongFormat
             }
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
@@ -150,7 +178,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     let uri = PasswordURI(uri: urlString, match: .domain)
                     return [uri]
                 }()
-                let username = dict["username"]?.nilIfEmpty
+                let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
                 let password: Data? = {
                     if let passwordString = dict["password"]?.nilIfEmpty,
                        let password = context.encryptSecureField(passwordString, for: protectionLevel) {
@@ -160,16 +188,24 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 }()
 
                 let note = dict["note"]?.nilIfEmpty
+                let tagIds = resolveTagIds(dict["category"])
 
+                var excludingKeys: Set<String> = ["title", "url", "username", "password", "note", "category"]
+                if dict["username"]?.nilIfEmpty == nil {
+                    excludingKeys.insert("username2")
+                }
+                if dict["username2"]?.nilIfEmpty == nil {
+                    excludingKeys.insert("username3")
+                }
+                
                 let additionalInfo = context.formatDictionary(
                     dict,
-                    excludingKeys: ["title", "url", "username", "password", "note"],
+                    excludingKeys: excludingKeys,
                     keyMap: [
                         "username2": "Username",
                         "username3": "Alternate username"
                     ]
                 )
-
                 let notes = context.mergeNote(note, with: additionalInfo)
 
                 items.append(
@@ -181,7 +217,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                             modificationDate: Date.importPasswordPlaceholder,
                             protectionLevel: protectionLevel,
                             trashedStatus: .no,
-                            tagIds: nil
+                            tagIds: tagIds
                         ),
                         name: name,
                         content: .init(
@@ -204,21 +240,16 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         return items
     }
 
-    func importSecureNotesCSV(
-        from archive: Archive,
-        entry: Entry,
+    func importSecureNotesFromData(
+        _ data: Data,
         vaultID: VaultID,
-        protectionLevel: ItemProtectionLevel
+        protectionLevel: ItemProtectionLevel,
+        resolveTagIds: @escaping (String?) -> [ItemTagID]?
     ) throws(ExternalServiceImportError) -> [ItemData] {
         var items: [ItemData] = []
 
         do {
-            var fileData = Data()
-            _ = try archive.extract(entry) { data in
-                fileData.append(data)
-            }
-
-            guard let csvString = String(data: fileData, encoding: .utf8) else {
+            guard let csvString = String(data: data, encoding: .utf8) else {
                 throw ExternalServiceImportError.wrongFormat
             }
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
@@ -238,7 +269,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     return nil
                 }()
 
-                let additionalInfo = context.formatDictionary(dict, excludingKeys: ["title", "note"])
+                let tagIds = resolveTagIds(dict["category"])
+                let additionalInfo = context.formatDictionary(dict, excludingKeys: ["title", "note", "category"])
 
                 items.append(
                     .secureNote(.init(
@@ -249,7 +281,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                             modificationDate: Date.importPasswordPlaceholder,
                             protectionLevel: protectionLevel,
                             trashedStatus: .no,
-                            tagIds: nil
+                            tagIds: tagIds
                         ),
                         name: name,
                         content: .init(
@@ -269,75 +301,197 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         return items
     }
 
-    func importPaymentsCSV(
-        from archive: Archive,
-        entry: Entry,
+    func importPaymentsFromData(
+        _ data: Data,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel
-    ) throws(ExternalServiceImportError) -> [ItemData] {
+    ) throws(ExternalServiceImportError) -> (items: [ItemData], convertedCount: Int) {
         var items: [ItemData] = []
+        var convertedCount = 0
 
         do {
-            var fileData = Data()
-            _ = try archive.extract(entry) { data in
-                fileData.append(data)
-            }
-
-            guard let csvString = String(data: fileData, encoding: .utf8) else {
+            guard let csvString = String(data: data, encoding: .utf8) else {
                 throw ExternalServiceImportError.wrongFormat
             }
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-            guard csv.header.containsAll(["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note"]) else {
+            guard csv.header.containsAll(["type", "name", "account_holder", "note"]) else {
                 throw ExternalServiceImportError.wrongFormat
             }
 
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let name = dict["name"].formattedName
-                let cardHolder = dict["account_holder"]?.nilIfEmpty
-                let cardNumberString = dict["cc_number"]?.nilIfEmpty
-                let securityCodeString = dict["code"]?.nilIfEmpty
-                let expirationMonth = dict["expiration_month"]?.nilIfEmpty
-                let expirationYear = dict["expiration_year"]?.nilIfEmpty
-                let expirationDateString: String? = {
-                    guard let month = expirationMonth, let year = expirationYear?.suffix(2) else { return nil }
-                    return "\(month)/\(year)"
+                let paymentType = dict["type"]?.nilIfEmpty ?? "payment_card"
+
+                if paymentType == "payment_card" {
+                    let name = dict["name"].formattedName
+                    let cardHolder = dict["account_holder"]?.nilIfEmpty
+                    let cardNumberString = dict["cc_number"]?.nilIfEmpty
+                    let securityCodeString = dict["code"]?.nilIfEmpty
+                    let expirationMonth = dict["expiration_month"]?.nilIfEmpty
+                    let expirationYear = dict["expiration_year"]?.nilIfEmpty
+                    let expirationDateString: String? = {
+                        guard let month = expirationMonth, let year = expirationYear?.suffix(2) else { return nil }
+                        return "\(month)/\(year)"
+                    }()
+
+                    let cardNumber: Data? = {
+                        if let value = cardNumberString,
+                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let expirationDate: Data? = {
+                        if let value = expirationDateString,
+                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let securityCode: Data? = {
+                        if let value = securityCodeString,
+                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+                    let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+                    let note = dict["note"]?.nilIfEmpty
+                    let additionalInfo = context.formatDictionary(
+                        dict,
+                        excludingKeys: ["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"]
+                    )
+                    let notes = context.mergeNote(note, with: additionalInfo)
+
+                    items.append(
+                        .paymentCard(.init(
+                            id: .init(),
+                            vaultId: vaultID,
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                cardHolder: cardHolder,
+                                cardIssuer: cardIssuer,
+                                cardNumber: cardNumber,
+                                cardNumberMask: cardNumberMask,
+                                expirationDate: expirationDate,
+                                securityCode: securityCode,
+                                notes: notes
+                            )
+                        ))
+                    )
+                } else {
+                    // Bank accounts and other payment types -> secure note
+                    let typeName = formatTypeName(paymentType)
+                    let accountName = dict["account_name"]?.nilIfEmpty
+                    let name: String = {
+                        var output = ""
+                        if let accountName {
+                            output.append("\(accountName) ")
+                        }
+                        return output + "(\(typeName))"
+                    }()
+
+                    let additionalInfo = context.formatDictionary(
+                        dict,
+                        excludingKeys: ["type", "account_name", "note"]
+                    )
+                    let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nilIfEmpty)
+
+                    let text: Data? = {
+                        if let note = noteText,
+                           let encrypted = context.encryptSecureField(note, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+
+                    items.append(
+                        .secureNote(.init(
+                            id: .init(),
+                            vaultId: vaultID,
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                text: text,
+                                additionalInfo: nil
+                            )
+                        ))
+                    )
+                    convertedCount += 1
+                }
+            }
+        } catch let error as ExternalServiceImportError {
+            throw error
+        } catch {
+            throw .wrongFormat
+        }
+
+        return (items: items, convertedCount: convertedCount)
+    }
+
+    func importIDsFromData(
+        _ data: Data,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel
+    ) throws(ExternalServiceImportError) -> [ItemData] {
+        var items: [ItemData] = []
+
+        do {
+            guard let csvString = String(data: data, encoding: .utf8) else {
+                throw ExternalServiceImportError.wrongFormat
+            }
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.header.containsAll(["type", "number", "name"]) else {
+                throw ExternalServiceImportError.wrongFormat
+            }
+
+            try csv.enumerateAsDict { dict in
+                guard dict.allValuesEmpty == false else { return }
+
+                let idType = dict["type"]?.nilIfEmpty ?? "id"
+                let typeName = formatTypeName(idType)
+                let idName = dict["name"]?.nilIfEmpty
+                let name: String = {
+                    var output = ""
+                    if let idName {
+                        output.append("\(idName) ")
+                    }
+                    return output + "(\(typeName))"
                 }()
 
-                let cardNumber: Data? = {
-                    if let value = cardNumberString,
-                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
-                let expirationDate: Data? = {
-                    if let value = expirationDateString,
-                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
-                let securityCode: Data? = {
-                    if let value = securityCodeString,
-                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
-                let cardNumberMask = context.cardNumberMask(from: cardNumberString)
-                let cardIssuer = context.detectCardIssuer(from: cardNumberString)
-
-                let note = dict["note"]?.nilIfEmpty
                 let additionalInfo = context.formatDictionary(
                     dict,
-                    excludingKeys: ["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"]
+                    excludingKeys: ["type", "name"]
                 )
-                let notes = context.mergeNote(note, with: additionalInfo)
+
+                let text: Data? = {
+                    if let info = additionalInfo,
+                       let encrypted = context.encryptSecureField(info, for: protectionLevel) {
+                        return encrypted
+                    }
+                    return nil
+                }()
 
                 items.append(
-                    .paymentCard(.init(
+                    .secureNote(.init(
                         id: .init(),
                         vaultId: vaultID,
                         metadata: .init(
@@ -350,13 +504,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                         name: name,
                         content: .init(
                             name: name,
-                            cardHolder: cardHolder,
-                            cardIssuer: cardIssuer,
-                            cardNumber: cardNumber,
-                            cardNumberMask: cardNumberMask,
-                            expirationDate: expirationDate,
-                            securityCode: securityCode,
-                            notes: notes
+                            text: text,
+                            additionalInfo: nil
                         )
                     ))
                 )
@@ -368,5 +517,252 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         }
 
         return items
+    }
+
+    func importPersonalInfoFromData(
+        _ data: Data,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel
+    ) throws(ExternalServiceImportError) -> [ItemData] {
+        var items: [ItemData] = []
+
+        do {
+            guard let csvString = String(data: data, encoding: .utf8) else {
+                throw ExternalServiceImportError.wrongFormat
+            }
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.header.containsAll(["type"]) else {
+                throw ExternalServiceImportError.wrongFormat
+            }
+
+            try csv.enumerateAsDict { dict in
+                guard dict.allValuesEmpty == false else { return }
+
+                let infoType = dict["type"]?.nilIfEmpty ?? "personal"
+                let typeName = formatTypeName(infoType)
+
+                let name: String? = {
+                    let detectedName: () -> String? = {
+                        switch infoType {
+                        case "name":
+                            [dict["first_name"], dict["middle_name"], dict["last_name"]]
+                                .compactMap { $0?.nilIfEmpty }
+                                .joined(separator: " ")
+                                .nilIfEmpty
+                        case "email":
+                            dict["email"]?.nilIfEmpty
+                        case "number":
+                            dict["phone_number"]?.nilIfEmpty
+                        case "website":
+                            dict["url"]?.nilIfEmpty
+                        default:
+                            nil
+                        }
+                    }
+
+                    let displayName: String? = dict["item_name"]?.nilIfEmpty ?? detectedName()
+
+                    var output = ""
+                    if let displayName, !displayName.isEmpty {
+                        output.append("\(displayName) ")
+                    }
+                    return output + "(\(typeName))"
+                }()
+
+                let additionalInfo = context.formatDictionary(
+                    dict,
+                    excludingKeys: ["type", "item_name"]
+                )
+
+                let text: Data? = {
+                    if let info = additionalInfo,
+                       let encrypted = context.encryptSecureField(info, for: protectionLevel) {
+                        return encrypted
+                    }
+                    return nil
+                }()
+
+                items.append(
+                    .secureNote(.init(
+                        id: .init(),
+                        vaultId: vaultID,
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
+                        name: name,
+                        content: .init(
+                            name: name,
+                            text: text,
+                            additionalInfo: nil
+                        )
+                    ))
+                )
+            }
+        } catch let error as ExternalServiceImportError {
+            throw error
+        } catch {
+            throw .wrongFormat
+        }
+
+        return items
+    }
+
+    func importWiFiFromData(
+        _ data: Data,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel
+    ) throws(ExternalServiceImportError) -> [ItemData] {
+        var items: [ItemData] = []
+
+        do {
+            guard let csvString = String(data: data, encoding: .utf8) else {
+                throw ExternalServiceImportError.wrongFormat
+            }
+            let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+            guard csv.header.containsAll(["ssid"]) else {
+                throw ExternalServiceImportError.wrongFormat
+            }
+
+            try csv.enumerateAsDict { dict in
+                guard dict.allValuesEmpty == false else { return }
+
+                let ssid = dict["ssid"]?.nilIfEmpty
+                let wifiName = dict["name"]?.nilIfEmpty
+                let name: String = {
+                    var output = ""
+                    if let displayName = wifiName ?? ssid {
+                        output.append("\(displayName) ")
+                    }
+                    return output + "(WiFi)"
+                }()
+
+                let additionalInfo = context.formatDictionary(
+                    dict,
+                    excludingKeys: ["name", "note"]
+                )
+                let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nilIfEmpty)
+
+                let text: Data? = {
+                    if let note = noteText,
+                       let encrypted = context.encryptSecureField(note, for: protectionLevel) {
+                        return encrypted
+                    }
+                    return nil
+                }()
+
+                items.append(
+                    .secureNote(.init(
+                        id: .init(),
+                        vaultId: vaultID,
+                        metadata: .init(
+                            creationDate: Date.importPasswordPlaceholder,
+                            modificationDate: Date.importPasswordPlaceholder,
+                            protectionLevel: protectionLevel,
+                            trashedStatus: .no,
+                            tagIds: nil
+                        ),
+                        name: name,
+                        content: .init(
+                            name: name,
+                            text: text,
+                            additionalInfo: nil
+                        )
+                    ))
+                )
+            }
+        } catch let error as ExternalServiceImportError {
+            throw error
+        } catch {
+            throw .wrongFormat
+        }
+
+        return items
+    }
+}
+
+private extension ExternalServiceImportInteractor.DashlaneImporter {
+
+    enum DashlaneCSVType {
+        case credentials
+        case secureNotes
+        case payments
+        case ids
+        case personalInfo
+        case wifi
+        case unknown
+    }
+    
+    func detectCSVType(from header: [String]) -> DashlaneCSVType {
+        if header.containsAll(["username", "title", "password", "url"]) {
+            return .credentials
+        } else if header.containsAll(["title", "note"]) && !header.contains("password") {
+            return .secureNotes
+        } else if header.containsAll(["type", "account_holder"]) {
+            return .payments
+        } else if header.containsAll(["type", "number", "name"]) && header.contains("issue_date") {
+            return .ids
+        } else if header.containsAll(["type"]) && (header.contains("first_name") || header.contains("email") || header.contains("phone_number") || header.contains("address")) {
+            return .personalInfo
+        } else if header.containsAll(["ssid"]) {
+            return .wifi
+        }
+        return .unknown
+    }
+
+    func extractData(from archive: Archive, entry: Entry) throws(ExternalServiceImportError) -> Data {
+        do {
+            var fileData = Data()
+            _ = try archive.extract(entry) { data in
+                fileData.append(data)
+            }
+            return fileData
+        } catch {
+            throw .wrongFormat
+        }
+    }
+    
+    func formatTypeName(_ type: String) -> String {
+        type.replacingOccurrences(of: "_", with: " ")
+            .replacingOccurrences(
+                of: "([a-z])([A-Z])",
+                with: "$1 $2",
+                options: .regularExpression
+            )
+            .capitalizedFirstLetter
+    }
+}
+
+private extension ExternalServiceImportInteractor.DashlaneImporter {
+
+    final class TagResolver {
+        private let vaultID: VaultID
+        private var categoryToTagId: [String: ItemTagID] = [:]
+        private(set) var tags: [ItemTagData] = []
+
+        init(vaultID: VaultID) {
+            self.vaultID = vaultID
+        }
+
+        func resolve(for category: String?) -> [ItemTagID]? {
+            guard let category = category?.nilIfEmpty else { return nil }
+            if let existingTagId = categoryToTagId[category] {
+                return [existingTagId]
+            }
+            let newTagId = ItemTagID()
+            categoryToTagId[category] = newTagId
+            tags.append(ItemTagData(
+                tagID: newTagId,
+                vaultID: vaultID,
+                name: category,
+                color: .gray,
+                position: tags.count,
+                modificationDate: Date()
+            ))
+            return [newTagId]
+        }
     }
 }

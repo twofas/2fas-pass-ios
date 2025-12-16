@@ -26,6 +26,7 @@ final class TransferItemsFileSummaryPresenter {
 
     let contentTypes: [ItemContentType]
     let summary: [ItemContentType: Int]
+    let tagsCount: Int
     let itemsConvertedToSecureNotes: Int
 
     var destination: TransferItemsFileSummaryDestination?
@@ -43,6 +44,8 @@ final class TransferItemsFileSummaryPresenter {
             result[item.contentType] = count + 1
         })
 
+        self.tagsCount = result.tags.count
+        
         // Subtract converted items from secure notes count
         if let secureNoteCount = summary[.secureNote], result.itemsConvertedToSecureNotes > 0 {
             let adjustedCount = secureNoteCount - result.itemsConvertedToSecureNotes

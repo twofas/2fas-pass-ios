@@ -747,8 +747,8 @@ internal enum T {
   internal static let loginPasswordLabel = T.tr("Localizable", "login_password_label", fallback: "Password")
   /// Enter password
   internal static let loginPasswordPlaceholder = T.tr("Localizable", "login_password_placeholder", fallback: "Enter password")
-  /// Take another try with a different filter
-  internal static let loginSearchNoResultsDescription = T.tr("Localizable", "login_search_no_results_description", fallback: "Take another try with a different filter")
+  /// Try a different filter
+  internal static let loginSearchNoResultsDescription = T.tr("Localizable", "login_search_no_results_description", fallback: "Try a different filter")
   /// Item not found
   internal static let loginSearchNoResultsTitle = T.tr("Localizable", "login_search_no_results_title", fallback: "Item not found")
   /// Security
@@ -1759,6 +1759,8 @@ internal enum T {
   internal static let transferFileSummaryPaymentCardsCounterDescription = T.tr("Localizable", "transfer_file_summary_payment_cards_counter_description", fallback: "Cards detected")
   /// Secure Notes detected
   internal static let transferFileSummarySecureNotesCounterDescription = T.tr("Localizable", "transfer_file_summary_secure_notes_counter_description", fallback: "Secure Notes detected")
+  /// Tags detected
+  internal static let transferFileSummaryTagsCounterDescription = T.tr("Localizable", "transfer_file_summary_tags_counter_description", fallback: "Tags detected")
   /// 2FAS Pass couldn’t import your Items. Please try again.
   internal static let transferImportingFailureDescription = T.tr("Localizable", "transfer_importing_failure_description", fallback: "2FAS Pass couldn’t import your Items. Please try again.")
   /// Import failed
@@ -1769,8 +1771,8 @@ internal enum T {
   internal static let transferImportingSuccessDescription = T.tr("Localizable", "transfer_importing_success_description", fallback: "Your 2FAS Pass Items have been successfully imported to Vault.")
   /// Imported successfully
   internal static let transferImportingSuccessTitle = T.tr("Localizable", "transfer_importing_success_title", fallback: "Imported successfully")
-  /// JSON file is recommended to fully transfer your Vault. CSV doesn't support all Item types.
-  internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV doesn't support all Item types.")
+  /// JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// Open **System settings** on your mobile device.
   /// 
   /// Go to **Apps** and select **Safari**.
@@ -1849,12 +1851,12 @@ internal enum T {
   /// 
   /// Select **File** then **Export**.
   /// 
-  /// Select the correct Vault and the .json file format.
+  /// Select the correct Vault and the **json** file format.
   /// 
   /// Choose the location and confirm the export.
   /// 
   /// Copy the exported file to this device and tap **Upload JSON file** below. 
-  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the .json file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
+  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the **json** file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Open Firefox on your PC
   /// 
   /// Select the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.
