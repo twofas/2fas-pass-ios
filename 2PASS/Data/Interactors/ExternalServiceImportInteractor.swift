@@ -109,7 +109,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .enpass:
             ExternalServiceImportResult(items: try await EnpassImporter(context: context).import(content))
         case .keeper:
-            ExternalServiceImportResult(items: try await KeeperImporter(context: context).import(content))
+            try await KeeperImporter(context: context).import(content)
         }
     }
 }
