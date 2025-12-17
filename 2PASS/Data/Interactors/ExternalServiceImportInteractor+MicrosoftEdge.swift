@@ -28,6 +28,11 @@ extension ExternalServiceImportInteractor {
                 guard csv.header.containsAll(["name", "url", "username", "password", "note"]) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
+
+                let knownCSVColumns: Set<String> = [
+                    "name", "url", "username", "password", "note"
+                ]
+
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
 
@@ -45,7 +50,10 @@ extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let notes = dict["note"]?.nilIfEmpty
+
+                    // Build additional info from unknown CSV columns
+                    let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+                    let notes = context.mergeNote(dict["note"]?.nilIfEmpty, with: csvAdditionalInfo)
 
                     passwords.append(
                         .login(
