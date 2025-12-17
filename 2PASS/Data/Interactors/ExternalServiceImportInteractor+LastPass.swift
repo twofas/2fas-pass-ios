@@ -158,8 +158,14 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
             }
             return nil
         }()
-        let notes = dict["extra"]?.nilIfEmpty
-        
+
+        // Build additional info from unknown CSV columns
+        let knownCSVColumns: Set<String> = [
+            "url", "username", "password", "extra", "name", "grouping", "fav"
+        ]
+        let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+        let notes = context.mergeNote(dict["extra"]?.nilIfEmpty, with: csvAdditionalInfo)
+
         return .login(.init(
             id: .init(),
             vaultId: vaultID,
@@ -272,13 +278,21 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = dict["name"].formattedName
-        guard let text = dict["extra"]?.nilIfEmpty else { return nil }
-        
+        guard let extra = dict["extra"]?.nilIfEmpty else { return nil }
+
+        // Build additional info from unknown CSV columns
+        let knownCSVColumns: Set<String> = [
+            "url", "username", "password", "extra", "name", "grouping", "fav"
+        ]
+        let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+        let fullText = context.mergeNote(extra, with: csvAdditionalInfo)
+
         let encryptedText: Data? = {
-            if let encrypted = context.encryptSecureField(text, for: protectionLevel) {
-                return encrypted
+            guard let text = fullText,
+                  let encrypted = context.encryptSecureField(text, for: protectionLevel) else {
+                return nil
             }
-            return nil
+            return encrypted
         }()
         
         return .secureNote(.init(
@@ -311,15 +325,25 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         guard let extra = dict["extra"]?.nilIfEmpty else { return nil }
         let fields = parseExtraFields(from: extra)
         let displayName = "\(name ?? "Item") (\(noteType ?? "Unknown"))"
-        
+
         let transformedFields = fields.mapValues { value in
             parsePhoneNumber(value) ?? value
         }
-        
-        let excludedKeys: Set<String> = ["NoteType", "Notes", "Language"]
-        let structuredText = context.formatDictionary(transformedFields, excludingKeys: excludedKeys)
+
+        // Build additional info from unknown extra fields
+        let excludedExtraKeys: Set<String> = ["NoteType", "Notes", "Language"]
+        let extraAdditionalInfo = context.formatDictionary(transformedFields, excludingKeys: excludedExtraKeys)
+
+        // Build additional info from unknown CSV columns
+        let knownCSVColumns: Set<String> = [
+            "url", "username", "password", "extra", "name", "grouping", "fav"
+        ]
+        let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+
+        // Merge all additional info
         let notes = fields["Notes"]?.nilIfEmpty
-        let fullText = context.mergeNote(structuredText, with: notes)
+        let combinedAdditionalInfo = context.mergeNote(extraAdditionalInfo, with: csvAdditionalInfo)
+        let fullText = context.mergeNote(combinedAdditionalInfo, with: notes)
         
         let encryptedText: Data? = {
             guard let text = fullText,
