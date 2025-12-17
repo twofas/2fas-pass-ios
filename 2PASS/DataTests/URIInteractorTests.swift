@@ -11,7 +11,7 @@ final class URIInteractorTests: XCTestCase {
     private var interactor: URIInteractor!
     
     override func setUp() {
-        interactor = URIInteractor()
+        interactor = URIInteractor(mainRepository: MockMainRepository())
     }
 
     override func tearDown() {

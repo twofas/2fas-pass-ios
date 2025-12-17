@@ -35,7 +35,6 @@
 		54571D742D688AC200FC2DB3 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54571D732D688AC200FC2DB3 /* AuthenticationServices.framework */; };
 		54571D7F2D688AC200FC2DB3 /* AutoFill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54571D722D688AC200FC2DB3 /* AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		545B19432D78BBBB00BE2B14 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = 545B19422D78BBBB00BE2B14 /* Gzip */; };
-		5462C0632D7177B1002C38A4 /* URIInteractorMatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5462C0622D7177A6002C38A4 /* URIInteractorMatchTests.swift */; };
 		54820F502DA594B900E29C73 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
 		5485DAD72D68A1C000DCC33C /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 5485DAD62D68A1C000DCC33C /* SwiftUIIntrospect */; };
 		54878E4C2D7ED4D00073BFC8 /* Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C267F9312BE2DDFF005F7B89 /* Common.framework */; };
@@ -85,7 +84,6 @@
 		C21422D22C8E439F00C978F9 /* LogStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21422D12C8E439F00C978F9 /* LogStorageDataSourceImpl.swift */; };
 		C2145B5D2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2145B5C2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift */; };
 		C2145B602BF555F800A40A0A /* Storage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C249E7762BF10B23003464D5 /* Storage.framework */; };
-		C23DFCC32C56B47A00390C87 /* URIInteractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23DFCC22C56B47A00390C87 /* URIInteractorTests.swift */; };
 		C23DFCC42C56B47A00390C87 /* Data.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F81EC22BE42858008FD374 /* Data.framework */; platformFilter = ios; };
 		C246BB002C46FE01007CF48D /* SocialChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C246BAFF2C46FE01007CF48D /* SocialChannel.swift */; };
 		C249E7792BF10B23003464D5 /* Storage.h in Headers */ = {isa = PBXBuildFile; fileRef = C249E7782BF10B23003464D5 /* Storage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -321,7 +319,6 @@
 		544617972D419FDF003A14E1 /* SetupCompleteRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupCompleteRouter.swift; sourceTree = "<group>"; };
 		54571D722D688AC200FC2DB3 /* AutoFill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AutoFill.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54571D732D688AC200FC2DB3 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
-		5462C0622D7177A6002C38A4 /* URIInteractorMatchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URIInteractorMatchTests.swift; sourceTree = "<group>"; };
 		54820F4E2DA594B900E29C73 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5492005F2DD4D83100C2431E /* ios-secret-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ios-secret-key.json"; sourceTree = "<group>"; };
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
@@ -357,7 +354,6 @@
 		C21422D12C8E439F00C978F9 /* LogStorageDataSourceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStorageDataSourceImpl.swift; sourceTree = "<group>"; };
 		C2145B5C2BF536B400A40A0A /* InMemoryStorageDataSourceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryStorageDataSourceImpl.swift; sourceTree = "<group>"; };
 		C23DFCC02C56B47A00390C87 /* DataTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DataTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C23DFCC22C56B47A00390C87 /* URIInteractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URIInteractorTests.swift; sourceTree = "<group>"; };
 		C246BAFF2C46FE01007CF48D /* SocialChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialChannel.swift; sourceTree = "<group>"; };
 		C249E7762BF10B23003464D5 /* Storage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Storage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C249E7782BF10B23003464D5 /* Storage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Storage.h; sourceTree = "<group>"; };
@@ -489,6 +485,7 @@
 		549B1F652E8C01DA00228FE2 /* RestoreVault */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = RestoreVault; sourceTree = "<group>"; };
 		54A825872D82DA3700CBC463 /* Settings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Settings; sourceTree = "<group>"; };
 		54AFB3212DA441BB00EE00E9 /* Connect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Connect; sourceTree = "<group>"; };
+		54B1E96A2EF2B31F00BA8ACA /* DataTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DataTests; sourceTree = "<group>"; };
 		54B6643F2D84E09700AB4691 /* AutofillSettings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AutofillSettings; sourceTree = "<group>"; };
 		54B664B42D85752200AB4691 /* Trash */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Trash; sourceTree = "<group>"; };
 		54B664C52D85820A00AB4691 /* KnownBrowsers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = KnownBrowsers; sourceTree = "<group>"; };
@@ -716,15 +713,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		C23DFCC12C56B47A00390C87 /* DataTests */ = {
-			isa = PBXGroup;
-			children = (
-				C23DFCC22C56B47A00390C87 /* URIInteractorTests.swift */,
-				5462C0622D7177A6002C38A4 /* URIInteractorMatchTests.swift */,
-			);
-			path = DataTests;
-			sourceTree = "<group>";
-		};
 		C249E7772BF10B23003464D5 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
@@ -839,7 +827,7 @@
 				5415BA562E2A79BB00FBEE71 /* Common */,
 				5415B9662E2A79A700FBEE71 /* Data */,
 				C249E7772BF10B23003464D5 /* Storage */,
-				C23DFCC12C56B47A00390C87 /* DataTests */,
+				54B1E96A2EF2B31F00BA8ACA /* DataTests */,
 				C2B0FC1C2CE91C4D005CFADD /* Backup */,
 				54571D752D688AC200FC2DB3 /* AutoFill */,
 				54C0900B2D6E658300954E76 /* CommonUI */,
@@ -1178,6 +1166,9 @@
 			);
 			dependencies = (
 				C23DFCC62C56B47A00390C87 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				54B1E96A2EF2B31F00BA8ACA /* DataTests */,
 			);
 			name = DataTests;
 			productName = DataTests;
@@ -1591,8 +1582,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C23DFCC32C56B47A00390C87 /* URIInteractorTests.swift in Sources */,
-				5462C0632D7177B1002C38A4 /* URIInteractorMatchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

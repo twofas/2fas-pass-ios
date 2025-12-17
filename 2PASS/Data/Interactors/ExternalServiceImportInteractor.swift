@@ -146,7 +146,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .microsoftEdge:
             ExternalServiceImportResult(items: try await MicrosoftEdgeImporter(context: context).import(content))
         case .enpass:
-            ExternalServiceImportResult(items: try await EnpassImporter(context: context).import(content))
+            try await EnpassImporter(context: context).import(content)
         case .keeper:
             try await KeeperImporter(context: context).import(content)
         }
