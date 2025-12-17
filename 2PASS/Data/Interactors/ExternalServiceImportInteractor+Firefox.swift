@@ -29,14 +29,12 @@ extension ExternalServiceImportInteractor {
                     throw ExternalServiceImportError.wrongFormat
                 }
 
-                var offset = 0
+                let excludingKeys: Set<String> = [
+                    "url", "username", "password",
+                    "timeCreated", "timePasswordChanged", "guid", "timeLastUsed"
+                ]
+
                 try csv.enumerateAsDict { dict in
-                    defer {
-                        offset += 1
-                    }
-                    guard offset > 0 else { // ignore first line with firefox account configuration
-                        return
-                    }
                     guard dict.allValuesEmpty == false else { return }
 
                     let name = dict["url"].formattedName
@@ -53,16 +51,31 @@ extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let timeCreated = dict["timeCreated"]?.nilIfEmpty as? String
-                    let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty as? String
+                    let timeCreated = dict["timeCreated"]?.nilIfEmpty
+                    let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty
+                    let timeLastUsed: String? = {
+                        guard let timestampString = dict["timeLastUsed"]?.nilIfEmpty,
+                              let timestamp = Int(timestampString) else { return nil }
+                        let date = Date(exportTimestamp: timestamp)
+                        return date.formatted(date: .abbreviated, time: .shortened)
+                    }()
+
+                    var additionalFields: [String] = []
+                    if let otherFields = context.formatDictionary(dict, excludingKeys: excludingKeys) {
+                        additionalFields.append(otherFields)
+                    }
+                    if let timeLastUsed {
+                        additionalFields.append("Time Last Used: \(timeLastUsed)")
+                    }
+                    let additionalInfo = additionalFields.isEmpty ? nil : additionalFields.joined(separator: "\n")
 
                     items.append(
                         .login(.init(
                             id: .init(),
                             vaultId: vaultID,
                             metadata: .init(
-                                creationDate: timeCreated.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
-                                modificationDate: timePasswordChanged.map { Int($0) }?.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
+                                creationDate: timeCreated.flatMap { Int($0) }.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
+                                modificationDate: timePasswordChanged.flatMap { Int($0) }.map { Date(exportTimestamp: $0) } ?? Date.importPasswordPlaceholder,
                                 protectionLevel: protectionLevel,
                                 trashedStatus: .no,
                                 tagIds: nil
@@ -72,7 +85,7 @@ extension ExternalServiceImportInteractor {
                                 name: name,
                                 username: username,
                                 password: password,
-                                notes: nil,
+                                notes: additionalInfo,
                                 iconType: context.makeIconType(uri: uris?.first?.uri),
                                 uris: uris
                             )
