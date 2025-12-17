@@ -28,6 +28,11 @@ extension ExternalServiceImportInteractor {
                 guard csv.header.containsAll(["name", "url", "username", "password", "note"]) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
+
+                let knownCSVColumns: Set<String> = [
+                    "name", "url", "username", "password", "note"
+                ]
+
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
 
@@ -37,7 +42,7 @@ extension ExternalServiceImportInteractor {
                         let uri = PasswordURI(uri: urlString, match: .domain)
                         return [uri]
                     }()
-                    let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
+                    let username = dict["username"]?.nilIfEmpty
                     let password: Data? = {
                         if let passwordString = dict["password"]?.nilIfEmpty,
                            let password = context.encryptSecureField(passwordString, for: protectionLevel) {
@@ -45,7 +50,10 @@ extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let notes = dict["note"]?.nilIfEmpty
+
+                    // Build additional info from unknown CSV columns
+                    let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+                    let notes = context.mergeNote(dict["note"]?.nilIfEmpty, with: csvAdditionalInfo)
 
                     items.append(
                         .login(.init(
