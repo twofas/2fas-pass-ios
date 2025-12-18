@@ -61,7 +61,12 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
 
         do {
             let csv = try CSV<Enumerated>(string: csvContent, delimiter: .comma)
-            guard csv.header.containsAll(["Title", "URL", "Username", "Password", "Notes"]) else {
+
+            let knownCSVColumns: Set<String> = [
+                "Title", "URL", "Username", "Password", "Notes"
+            ]
+
+            guard csv.header.containsAll(Array(knownCSVColumns)) else {
                 throw ExternalServiceImportError.wrongFormat
             }
             try csv.enumerateAsDict { dict in
@@ -90,7 +95,9 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
                     }
                     return nil
                 }()
-                let notes = dict["Notes"]?.nilIfEmpty
+
+                let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+                let notes = context.mergeNote(dict["Notes"]?.nilIfEmpty, with: csvAdditionalInfo)
 
                 items.append(
                     .login(.init(
