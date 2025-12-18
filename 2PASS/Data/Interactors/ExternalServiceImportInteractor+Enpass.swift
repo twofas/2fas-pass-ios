@@ -132,7 +132,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.title.formattedName
-        let notes = item.note?.nilIfEmpty
+        let notes = item.note?.nonBlankTrimmedOrNil
 
         var username: String?
         var email: String?
@@ -142,7 +142,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
 
         item.fields?.forEach { field in
             guard field.deleted != 1 else { return }
-            guard let value = field.value?.nilIfEmpty else { return }
+            guard let value = field.value?.nonBlankTrimmedOrNil else { return }
 
             switch field.type {
             case "username":
@@ -223,7 +223,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.title.formattedName
-        let notes = item.note?.nilIfEmpty
+        let notes = item.note?.nonBlankTrimmedOrNil
 
         var cardHolder: String?
         var cardNumberString: String?
@@ -235,7 +235,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
 
         item.fields?.forEach { field in
             guard field.deleted != 1 else { return }
-            guard let value = field.value?.nilIfEmpty else { return }
+            guard let value = field.value?.nonBlankTrimmedOrNil else { return }
 
             switch field.type {
             case "ccName":
@@ -354,7 +354,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.title.formattedName
-        let noteText = item.note?.nilIfEmpty
+        let noteText = item.note?.nonBlankTrimmedOrNil
 
         let text: Data? = {
             if let note = noteText,
@@ -368,7 +368,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         item.fields?.forEach { field in
             guard field.deleted != 1 else { return }
             guard field.type != "section" else { return }
-            guard let value = field.value?.nilIfEmpty else { return }
+            guard let value = field.value?.nonBlankTrimmedOrNil else { return }
             let label = field.label ?? formatFieldType(field.type)
             additionalFields.append((label, value))
         }
@@ -412,13 +412,13 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         item.fields?.forEach { field in
             guard field.deleted != 1 else { return }
             guard field.type != "section" else { return }
-            guard let value = field.value?.nilIfEmpty else { return }
+            guard let value = field.value?.nonBlankTrimmedOrNil else { return }
             let label = field.label ?? formatFieldType(field.type)
             additionalFields.append((label, value))
         }
 
         let additionalInfo = formatAdditionalFields(additionalFields)
-        let noteText = context.mergeNote(additionalInfo, with: item.note?.nilIfEmpty)
+        let noteText = context.mergeNote(additionalInfo, with: item.note?.nonBlankTrimmedOrNil)
 
         let text: Data? = {
             if let note = noteText,

@@ -65,10 +65,15 @@ public extension String {
         return String(repeating: "0", count: paddingCount) + binaryString
     }
     
-    var nilIfEmpty: String? {
+    var nonBlankTrimmedOrNil: String? {
         let value = self.trim()
         guard !value.isEmpty else { return nil }
         return value
+    }
+    
+    var nonBlankOrNil: String? {
+        let value = self.trim()
+        return value.isEmpty ? nil : self
     }
 
     func sanitizeNotes() -> String? {

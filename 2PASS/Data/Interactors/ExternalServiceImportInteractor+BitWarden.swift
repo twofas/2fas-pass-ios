@@ -151,7 +151,7 @@ extension ExternalServiceImportInteractor {
 
                     // Handle folder -> tag mapping
                     let tagIds: [ItemTagID]? = {
-                        guard let folderName = dict["folder"]?.nilIfEmpty else { return nil }
+                        guard let folderName = dict["folder"]?.nonBlankTrimmedOrNil else { return nil }
                         if let existingTagId = folderToTagId[folderName] {
                             return [existingTagId]
                         }
@@ -208,23 +208,23 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
     ) -> ItemData? {
-        let name = dict["name"].formattedName
-        let notes = dict["notes"]?.nilIfEmpty
-        let username = dict["login_username"]?.nilIfEmpty
+        let name = dict["name"]?.nonBlankTrimmedOrNil
+        let notes = dict["notes"]?.nonBlankTrimmedOrNil
+        let username = dict["login_username"]?.nonBlankTrimmedOrNil
         let password: Data? = {
-            if let passwordString = dict["login_password"]?.nilIfEmpty,
+            if let passwordString = dict["login_password"]?.nonBlankOrNil,
                let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                 return password
             }
             return nil
         }()
         let uris: [PasswordURI]? = {
-            guard let urlString = dict["login_uri"]?.nilIfEmpty else { return nil }
+            guard let urlString = dict["login_uri"]?.nonBlankTrimmedOrNil else { return nil }
             let uri = PasswordURI(uri: urlString, match: .domain)
             return [uri]
         }()
 
-        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nilIfEmpty)
+        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nonBlankTrimmedOrNil)
 
         return .login(.init(
             id: .init(),
@@ -254,8 +254,8 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
     ) -> ItemData? {
-        let name = dict["name"].formattedName
-        let noteText = dict["notes"]?.nilIfEmpty
+        let name = dict["name"]?.nonBlankTrimmedOrNil
+        let noteText = dict["notes"]?.nonBlankTrimmedOrNil
 
         let text: Data? = {
             if let note = noteText,
@@ -265,7 +265,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
             return nil
         }()
 
-        let fieldsInfo = dict["fields"]?.nilIfEmpty
+        let fieldsInfo = dict["fields"]?.nonBlankTrimmedOrNil
 
         return .secureNote(.init(
             id: .init(),
@@ -293,15 +293,15 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = dict["name"].formattedName
-        let notes = dict["notes"]?.nilIfEmpty
+        let notes = dict["notes"]?.nonBlankTrimmedOrNil
 
-        let cardHolder = dict["card_cardholderName"]?.nilIfEmpty
-        let cardNumberString = dict["card_number"]?.nilIfEmpty
-        let securityCodeString = dict["card_code"]?.nilIfEmpty
+        let cardHolder = dict["card_cardholderName"]?.nonBlankTrimmedOrNil
+        let cardNumberString = dict["card_number"]?.nonBlankTrimmedOrNil
+        let securityCodeString = dict["card_code"]?.nonBlankTrimmedOrNil
 
         let expirationDateString: String? = {
-            guard let month = dict["card_expMonth"]?.nilIfEmpty,
-                  let year = dict["card_expYear"]?.nilIfEmpty else { return nil }
+            guard let month = dict["card_expMonth"]?.nonBlankTrimmedOrNil,
+                  let year = dict["card_expYear"]?.nonBlankTrimmedOrNil else { return nil }
             let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
             return "\(month)/\(yearSuffix)"
         }()
@@ -331,9 +331,9 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         }()
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
-        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? dict["card_brand"]?.nilIfEmpty
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? dict["card_brand"]?.nonBlankTrimmedOrNil
 
-        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nilIfEmpty)
+        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nonBlankTrimmedOrNil)
 
         return .paymentCard(.init(
             id: .init(),
@@ -383,11 +383,11 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
     ) -> ItemData? {
-        let name = item.name.formattedName
-        let notes = item.notes?.nilIfEmpty
-        let username = login.username?.nilIfEmpty
+        let name = item.name?.nonBlankTrimmedOrNil
+        let notes = item.notes?.nonBlankTrimmedOrNil
+        let username = login.username?.nonBlankTrimmedOrNil
         let password: Data? = {
-            if let passwordString = login.password?.nilIfEmpty,
+            if let passwordString = login.password?.nonBlankOrNil,
                let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                 return password
             }
@@ -457,7 +457,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.name.formattedName
-        let noteText = item.notes?.nilIfEmpty
+        let noteText = item.notes?.nonBlankTrimmedOrNil
 
         let text: Data? = {
             if let note = noteText,
@@ -501,15 +501,15 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.name.formattedName
-        let notes = item.notes?.nilIfEmpty
+        let notes = item.notes?.nonBlankTrimmedOrNil
 
-        let cardHolder = card.cardholderName?.nilIfEmpty
-        let cardNumberString = card.number?.nilIfEmpty
-        let securityCodeString = card.code?.nilIfEmpty
+        let cardHolder = card.cardholderName?.nonBlankTrimmedOrNil
+        let cardNumberString = card.number?.nonBlankTrimmedOrNil
+        let securityCodeString = card.code?.nonBlankTrimmedOrNil
 
         let expirationDateString: String? = {
-            guard let month = card.expMonth?.nilIfEmpty,
-                  let year = card.expYear?.nilIfEmpty else { return nil }
+            guard let month = card.expMonth?.nonBlankTrimmedOrNil,
+                  let year = card.expYear?.nonBlankTrimmedOrNil else { return nil }
             let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
             return "\(month)/\(yearSuffix)"
         }()
@@ -539,7 +539,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         }()
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
-        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? card.brand?.nilIfEmpty
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? card.brand?.nonBlankTrimmedOrNil
 
         let cardAdditionalInfo = context.formatDictionary(card.unknownData)
         let fieldsInfo = formatCustomFields(item.fields)
@@ -594,7 +594,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         )
         let fieldsInfo = formatCustomFields(item.fields)
         let additionalInfo = context.mergeNote(dataInfo, with: fieldsInfo)
-        let noteText = context.mergeNote(additionalInfo, with: item.notes?.nilIfEmpty)
+        let noteText = context.mergeNote(additionalInfo, with: item.notes?.nonBlankTrimmedOrNil)
 
         let text: Data? = {
             if let note = noteText,

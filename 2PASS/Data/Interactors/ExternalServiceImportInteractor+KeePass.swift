@@ -33,19 +33,19 @@ extension ExternalServiceImportInteractor {
 
                     let name = dict["Account"].formattedName
                     let uris: [PasswordURI]? = {
-                        guard let urlString = dict["Web Site"]?.nilIfEmpty else { return nil }
+                        guard let urlString = dict["Web Site"]?.nonBlankTrimmedOrNil else { return nil }
                         let uri = PasswordURI(uri: urlString, match: .domain)
                         return [uri]
                     }()
-                    let username = dict["Login Name"]?.nilIfEmpty
+                    let username = dict["Login Name"]?.nonBlankTrimmedOrNil
                     let password: Data? = {
-                        if let passwordString = dict["Password"]?.nilIfEmpty,
+                        if let passwordString = dict["Password"]?.nonBlankTrimmedOrNil,
                            let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                             return password
                         }
                         return nil
                     }()
-                    let notes = dict["Comments"]?.nilIfEmpty
+                    let notes = dict["Comments"]?.nonBlankTrimmedOrNil
 
                     passwords.append(
                         .login(

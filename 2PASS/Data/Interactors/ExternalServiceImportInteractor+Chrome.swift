@@ -39,13 +39,13 @@ extension ExternalServiceImportInteractor {
 
                     let name = dict["name"].formattedName
                     let uris: [PasswordURI]? = {
-                        guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+                        guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
                         let uri = PasswordURI(uri: urlString, match: .domain)
                         return [uri]
                     }()
-                    let username = dict["username"]?.nilIfEmpty
+                    let username = dict["username"]?.nonBlankTrimmedOrNil
                     let password: Data? = {
-                        if let passwordString = dict["password"]?.nilIfEmpty,
+                        if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
                            let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                             return password
                         }
@@ -53,7 +53,7 @@ extension ExternalServiceImportInteractor {
                     }()
 
                     let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
-                    let notes = context.mergeNote(dict["note"]?.nilIfEmpty, with: csvAdditionalInfo)
+                    let notes = context.mergeNote(dict["note"]?.nonBlankTrimmedOrNil, with: csvAdditionalInfo)
 
                     items.append(
                         .login(.init(

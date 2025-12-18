@@ -132,7 +132,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .lastPass:
             try await LastPassImporter(context: context).import(content)
         case .protonPass:
-            ExternalServiceImportResult(items: try await ProtonPassImporter(context: context).import(content))
+            try await ProtonPassImporter(context: context).import(content)
         case .applePasswordsMobile:
             ExternalServiceImportResult(items: try await ApplePasswordsImporter(context: context).importMobile(content))
         case .applePasswordsDesktop:

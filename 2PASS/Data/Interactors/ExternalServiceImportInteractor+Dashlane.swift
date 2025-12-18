@@ -174,27 +174,29 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
 
                 let name = dict["title"].formattedName
                 let uris: [PasswordURI]? = {
-                    guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+                    guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
                     let uri = PasswordURI(uri: urlString, match: .domain)
                     return [uri]
                 }()
-                let username = dict["username"]?.nilIfEmpty ?? dict["username2"]?.nilIfEmpty ?? dict["username3"]?.nilIfEmpty
+                let username = dict["username"]?.nonBlankTrimmedOrNil
+                    ?? dict["username2"]?.nonBlankTrimmedOrNil
+                    ?? dict["username3"]?.nonBlankTrimmedOrNil
                 let password: Data? = {
-                    if let passwordString = dict["password"]?.nilIfEmpty,
+                    if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
                        let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
                     return nil
                 }()
 
-                let note = dict["note"]?.nilIfEmpty
+                let note = dict["note"]?.nonBlankTrimmedOrNil
                 let tagIds = resolveTagIds(dict["category"])
 
                 var excludingKeys: Set<String> = ["title", "url", "username", "password", "note", "category"]
-                if dict["username"]?.nilIfEmpty == nil {
+                if dict["username"]?.nonBlankTrimmedOrNil == nil {
                     excludingKeys.insert("username2")
                 }
-                if dict["username2"]?.nilIfEmpty == nil {
+                if dict["username2"]?.nonBlankTrimmedOrNil == nil {
                     excludingKeys.insert("username3")
                 }
                 
@@ -262,7 +264,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
 
                 let name = dict["title"].formattedName
                 let text: Data? = {
-                    if let noteString = dict["note"]?.nilIfEmpty,
+                    if let noteString = dict["note"]?.nonBlankTrimmedOrNil,
                        let encrypted = context.encryptSecureField(noteString, for: protectionLevel) {
                         return encrypted
                     }
@@ -321,15 +323,15 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let paymentType = dict["type"]?.nilIfEmpty ?? "payment_card"
+                let paymentType = dict["type"]?.nonBlankTrimmedOrNil ?? "payment_card"
 
                 if paymentType == "payment_card" {
                     let name = dict["name"].formattedName
-                    let cardHolder = dict["account_holder"]?.nilIfEmpty
-                    let cardNumberString = dict["cc_number"]?.nilIfEmpty
-                    let securityCodeString = dict["code"]?.nilIfEmpty
-                    let expirationMonth = dict["expiration_month"]?.nilIfEmpty
-                    let expirationYear = dict["expiration_year"]?.nilIfEmpty
+                    let cardHolder = dict["account_holder"]?.nonBlankTrimmedOrNil
+                    let cardNumberString = dict["cc_number"]?.nonBlankTrimmedOrNil
+                    let securityCodeString = dict["code"]?.nonBlankTrimmedOrNil
+                    let expirationMonth = dict["expiration_month"]?.nonBlankTrimmedOrNil
+                    let expirationYear = dict["expiration_year"]?.nonBlankTrimmedOrNil
                     let expirationDateString: String? = {
                         guard let month = expirationMonth, let year = expirationYear?.suffix(2) else { return nil }
                         return "\(month)/\(year)"
@@ -359,7 +361,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     let cardNumberMask = context.cardNumberMask(from: cardNumberString)
                     let cardIssuer = context.detectCardIssuer(from: cardNumberString)
 
-                    let note = dict["note"]?.nilIfEmpty
+                    let note = dict["note"]?.nonBlankTrimmedOrNil
                     let additionalInfo = context.formatDictionary(
                         dict,
                         excludingKeys: ["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"]
@@ -393,7 +395,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 } else {
                     // Bank accounts and other payment types -> secure note
                     let typeName = formatTypeName(paymentType)
-                    let accountName = dict["account_name"]?.nilIfEmpty
+                    let accountName = dict["account_name"]?.nonBlankTrimmedOrNil
                     let name: String = {
                         var output = ""
                         if let accountName {
@@ -406,7 +408,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                         dict,
                         excludingKeys: ["type", "account_name", "note"]
                     )
-                    let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nilIfEmpty)
+                    let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
 
                     let text: Data? = {
                         if let note = noteText,
@@ -466,9 +468,9 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let idType = dict["type"]?.nilIfEmpty ?? "id"
+                let idType = dict["type"]?.nonBlankTrimmedOrNil ?? "id"
                 let typeName = formatTypeName(idType)
-                let idName = dict["name"]?.nilIfEmpty
+                let idName = dict["name"]?.nonBlankTrimmedOrNil
                 let name: String = {
                     var output = ""
                     if let idName {
@@ -538,7 +540,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let infoType = dict["type"]?.nilIfEmpty ?? "personal"
+                let infoType = dict["type"]?.nonBlankTrimmedOrNil ?? "personal"
                 let typeName = formatTypeName(infoType)
 
                 let name: String? = {
@@ -546,21 +548,21 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                         switch infoType {
                         case "name":
                             [dict["first_name"], dict["middle_name"], dict["last_name"]]
-                                .compactMap { $0?.nilIfEmpty }
+                                .compactMap { $0?.nonBlankTrimmedOrNil }
                                 .joined(separator: " ")
-                                .nilIfEmpty
+                                .nonBlankTrimmedOrNil
                         case "email":
-                            dict["email"]?.nilIfEmpty
+                            dict["email"]?.nonBlankTrimmedOrNil
                         case "number":
-                            dict["phone_number"]?.nilIfEmpty
+                            dict["phone_number"]?.nonBlankTrimmedOrNil
                         case "website":
-                            dict["url"]?.nilIfEmpty
+                            dict["url"]?.nonBlankTrimmedOrNil
                         default:
                             nil
                         }
                     }
 
-                    let displayName: String? = dict["item_name"]?.nilIfEmpty ?? detectedName()
+                    let displayName: String? = dict["item_name"]?.nonBlankTrimmedOrNil ?? detectedName()
 
                     var output = ""
                     if let displayName, !displayName.isEmpty {
@@ -630,8 +632,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
 
-                let ssid = dict["ssid"]?.nilIfEmpty
-                let wifiName = dict["name"]?.nilIfEmpty
+                let ssid = dict["ssid"]?.nonBlankTrimmedOrNil
+                let wifiName = dict["name"]?.nonBlankTrimmedOrNil
                 let name: String = {
                     var output = ""
                     if let displayName = wifiName ?? ssid {
@@ -644,7 +646,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     dict,
                     excludingKeys: ["name", "note"]
                 )
-                let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nilIfEmpty)
+                let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
 
                 let text: Data? = {
                     if let note = noteText,
@@ -748,7 +750,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         }
 
         func resolve(for category: String?) -> [ItemTagID]? {
-            guard let category = category?.nilIfEmpty else { return nil }
+            guard let category = category?.nonBlankTrimmedOrNil else { return nil }
             if let existingTagId = categoryToTagId[category] {
                 return [existingTagId]
             }

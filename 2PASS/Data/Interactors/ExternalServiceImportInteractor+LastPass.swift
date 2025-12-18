@@ -36,7 +36,7 @@ extension ExternalServiceImportInteractor {
 
                 // First pass: collect all unique folders
                 try csv.enumerateAsDict { dict in
-                    if let grouping = dict["grouping"]?.nilIfEmpty {
+                    if let grouping = dict["grouping"]?.nonBlankTrimmedOrNil {
                         let folders = grouping.split(separator: "\\").map { String($0) }
                         folders.forEach { folderNames.insert($0) }
                     }
@@ -51,8 +51,8 @@ extension ExternalServiceImportInteractor {
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
 
-                    let url = dict["url"]?.nilIfEmpty
-                    let extra = dict["extra"]?.nilIfEmpty
+                    let url = dict["url"]?.nonBlankTrimmedOrNil
+                    let extra = dict["extra"]?.nonBlankTrimmedOrNil
 
                     // Resolve tags from folder hierarchy
                     let tagIds = resolveTagIds(from: dict["grouping"], folderToTagId: folderToTagId)
@@ -146,13 +146,13 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
     ) -> ItemData? {
         let name = dict["name"].formattedName
         let uris: [PasswordURI]? = {
-            guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+            guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
             let uri = PasswordURI(uri: urlString, match: .domain)
             return [uri]
         }()
-        let username = dict["username"]?.nilIfEmpty
+        let username = dict["username"]?.nonBlankTrimmedOrNil
         let password: Data? = {
-            if let passwordString = dict["password"]?.nilIfEmpty,
+            if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
                let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                 return password
             }
@@ -164,7 +164,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
             "url", "username", "password", "extra", "name", "grouping", "fav"
         ]
         let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
-        let notes = context.mergeNote(dict["extra"]?.nilIfEmpty, with: csvAdditionalInfo)
+        let notes = context.mergeNote(dict["extra"]?.nonBlankTrimmedOrNil, with: csvAdditionalInfo)
 
         return .login(.init(
             id: .init(),
@@ -201,8 +201,8 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         let cardNumberString = fields["Number"]
         let securityCodeString = fields["Security Code"]
         let expirationDateString = parseExpirationDate(from: fields["Expiration Date"])
-        let notes = fields["Notes"]?.nilIfEmpty
-        
+        let notes = fields["Notes"]?.nonBlankTrimmedOrNil
+
         let cardNumber: Data? = {
             if let value = cardNumberString,
                let encrypted = context.encryptSecureField(value, for: protectionLevel) {
@@ -278,7 +278,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = dict["name"].formattedName
-        guard let extra = dict["extra"]?.nilIfEmpty else { return nil }
+        guard let extra = dict["extra"]?.nonBlankTrimmedOrNil else { return nil }
 
         // Build additional info from unknown CSV columns
         let knownCSVColumns: Set<String> = [
@@ -322,7 +322,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = dict["name"].formattedName
-        guard let extra = dict["extra"]?.nilIfEmpty else { return nil }
+        guard let extra = dict["extra"]?.nonBlankTrimmedOrNil else { return nil }
         let fields = parseExtraFields(from: extra)
         let displayName = "\(name ?? "Item") (\(noteType ?? "Unknown"))"
 
@@ -341,7 +341,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
 
         // Merge all additional info
-        let notes = fields["Notes"]?.nilIfEmpty
+        let notes = fields["Notes"]?.nonBlankTrimmedOrNil
         let combinedAdditionalInfo = context.mergeNote(extraAdditionalInfo, with: csvAdditionalInfo)
         let fullText = context.mergeNote(combinedAdditionalInfo, with: notes)
         
@@ -390,7 +390,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
     }
 
     func resolveTagIds(from grouping: String?, folderToTagId: [String: ItemTagID]) -> [ItemTagID]? {
-        guard let grouping = grouping?.nilIfEmpty else { return nil }
+        guard let grouping = grouping?.nonBlankTrimmedOrNil else { return nil }
         let folders = grouping.split(separator: "\\").map { String($0) }
         let tagIds = folders.compactMap { folderToTagId[$0] }
         return tagIds.isEmpty ? nil : tagIds
@@ -412,7 +412,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         if let ext = phone.ext.nilIfEmpty {
             result += " ext.\(ext)"
         }
-        return result.nilIfEmpty
+        return result.nonBlankTrimmedOrNil
     }
     
     func parseExpirationDate(from dateString: String?) -> String? {

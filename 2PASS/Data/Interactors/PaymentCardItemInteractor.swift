@@ -162,13 +162,13 @@ private extension PaymentCardItemInteractor {
             name: name,
             content: .init(
                 name: name,
-                cardHolder: cardHolder?.trim().nilIfEmpty,
+                cardHolder: cardHolder?.trim().nonBlankTrimmedOrNil,
                 cardIssuer: paymentCardIssuer,
                 cardNumber: encryptedCardNumber,
                 cardNumberMask: cardNumberMask,
                 expirationDate: encryptedExpirationDate,
                 securityCode: encryptedSecurityCode,
-                notes: notes?.trim().nilIfEmpty
+                notes: notes?.trim().nonBlankTrimmedOrNil
             )
         )
     }

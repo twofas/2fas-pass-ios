@@ -32,7 +32,7 @@ extension ExternalServiceImportInteractor {
                 let tagIds: [ItemTagID]? = {
                     guard let folders = record.folders,
                           let firstFolder = folders.first,
-                          let folderName = firstFolder.folder?.nilIfEmpty else { return nil }
+                          let folderName = firstFolder.folder?.nonBlankTrimmedOrNil else { return nil }
                     if let existingTagId = folderToTagId[folderName] {
                         return [existingTagId]
                     }
@@ -113,17 +113,17 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = record.title.formattedName
-        let notes = record.notes?.nilIfEmpty
-        let username = record.login?.nilIfEmpty
+        let notes = record.notes?.nonBlankTrimmedOrNil
+        let username = record.login?.nonBlankTrimmedOrNil
         let password: Data? = {
-            if let passwordString = record.password?.nilIfEmpty {
+            if let passwordString = record.password?.nonBlankTrimmedOrNil {
                 return context.encryptSecureField(passwordString, for: protectionLevel)
             }
             return nil
         }()
 
         let uris: [PasswordURI]? = {
-            guard let urlString = record.loginUrl?.nilIfEmpty else { return nil }
+            guard let urlString = record.loginUrl?.nonBlankTrimmedOrNil else { return nil }
             let uri = PasswordURI(uri: urlString, match: .domain)
             return [uri]
         }()
@@ -163,7 +163,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
 
         // For encrypted notes, the main content is in custom_fields.$note::1
         let noteContent = record.customFields?.note
-        let recordNotes = record.notes?.nilIfEmpty
+        let recordNotes = record.notes?.nonBlankTrimmedOrNil
 
         // Combine the note content with record notes
         let fullNoteText = context.mergeNote(noteContent, with: recordNotes)
@@ -205,7 +205,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = record.title.formattedName
-        let notes = record.notes?.nilIfEmpty
+        let notes = record.notes?.nonBlankTrimmedOrNil
 
         // Extract card details from custom_fields
         let paymentCard = record.customFields?.paymentCard
@@ -293,19 +293,19 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         // Gather all data into a single note
         var noteComponents: [String] = []
 
-        if let login = record.login?.nilIfEmpty {
+        if let login = record.login?.nonBlankTrimmedOrNil {
             noteComponents.append("Login: \(login)")
         }
-        if let password = record.password?.nilIfEmpty {
+        if let password = record.password?.nonBlankTrimmedOrNil {
             noteComponents.append("Password: \(password)")
         }
-        if let url = record.loginUrl?.nilIfEmpty {
+        if let url = record.loginUrl?.nonBlankTrimmedOrNil {
             noteComponents.append("URL: \(url)")
         }
         if let customFieldsInfo = formatCustomFields(record.customFields) {
             noteComponents.append(customFieldsInfo)
         }
-        if let notes = record.notes?.nilIfEmpty {
+        if let notes = record.notes?.nonBlankTrimmedOrNil {
             noteComponents.append(notes)
         }
 

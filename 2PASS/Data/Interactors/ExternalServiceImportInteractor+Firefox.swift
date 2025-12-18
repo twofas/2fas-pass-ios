@@ -40,22 +40,22 @@ extension ExternalServiceImportInteractor {
 
                     let name = dict["url"].formattedName
                     let uris: [PasswordURI]? = {
-                        guard let urlString = dict["url"]?.nilIfEmpty else { return nil }
+                        guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
                         let uri = PasswordURI(uri: urlString, match: .domain)
                         return [uri]
                     }()
-                    let username = dict["username"]?.nilIfEmpty
+                    let username = dict["username"]?.nonBlankTrimmedOrNil
                     let password: Data? = {
-                        if let passwordString = dict["password"]?.nilIfEmpty,
+                        if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
                            let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                             return password
                         }
                         return nil
                     }()
-                    let timeCreated = dict["timeCreated"]?.nilIfEmpty
-                    let timePasswordChanged = dict["timePasswordChanged"]?.nilIfEmpty
+                    let timeCreated = dict["timeCreated"]?.nonBlankTrimmedOrNil
+                    let timePasswordChanged = dict["timePasswordChanged"]?.nonBlankTrimmedOrNil
                     let timeLastUsed: String? = {
-                        guard let timestampString = dict["timeLastUsed"]?.nilIfEmpty,
+                        guard let timestampString = dict["timeLastUsed"]?.nonBlankTrimmedOrNil,
                               let timestamp = Int(timestampString) else { return nil }
                         let date = Date(exportTimestamp: timestamp)
                         return date.formatted(date: .abbreviated, time: .shortened)

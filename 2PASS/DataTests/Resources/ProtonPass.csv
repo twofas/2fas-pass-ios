@@ -1,0 +1,19 @@
+type,name,url,email,username,password,note,totp,createTime,modifyTime,vault
+login,wellcome-home.com,https://wellcome-home.com,,mark,Washout2-Professor5-Antibody1-Lustfully9-Barrel5,,,1740854486,1740854486,Personal
+creditCard,Karta 1238,,,,,"{""cardholderName"":""Simon H Bron"",""cardType"":0,""number"":""1234123413241238"",""verificationNumber"":""810"",""expirationDate"":""2030-10"",""pin"":""111111"",""note"":""Note to card""}",,1764445742,1764445742,Personal
+login,Przykład tytuł Login,https://onet.com,simon@kac.vegas,,Tarnish9-Green2-Scanner8-Unretired9-Operable7,Notatka do login,,1766050424,1766050424,Personal
+note,"Sekure Notę ",,,,,"Trudny język Polski język jest być ",,1766050464,1766050464,Personal
+creditCard,Karta 2,,,,,"{""cardholderName"":""Marek Hodler"",""cardType"":0,""number"":""1234514545151848"",""verificationNumber"":""555"",""expirationDate"":""2018-12"",""pin"":""1234"",""note"":"" Ktoś do karty dopisał notatkę""}",,1766050510,1766050527,Personal
+identity,Paszport z Israela,,,,,"{""fullName"":""Jan Goldstein"",""email"":""jan@goldstein.com"",""phoneNumber"":""5642534141"",""firstName"":"""",""middleName"":"""",""lastName"":"""",""birthdate"":"""",""gender"":"""",""extraPersonalDetails"":[],""organization"":""Nso"",""streetAddress"":""Ani Okresu Ani Adresu"",""zipOrPostalCode"":""112112"",""city"":""Miasto W Izraelu"",""stateOrProvince"":""Stan Wyjatkowy"",""countryOrRegion"":""Israel"",""floor"":"""",""county"":"""",""extraAddressDetails"":[],""socialSecurityNumber"":""SOCIAL NUMBER TUTAJ"",""passportNumber"":""NR PASZPORTU"",""licenseNumber"":""NR LICENCJI "",""website"":""storna www! po cholere nie wiem"",""xHandle"":""adrss do twitera"",""secondPhoneNumber"":""451245124812"",""linkedin"":"""",""reddit"":"""",""facebook"":"""",""yahoo"":"""",""instagram"":"""",""extraContactDetails"":[],""company"":"""",""jobTitle"":"""",""personalWebsite"":"""",""workPhoneNumber"":"""",""workEmail"":"""",""extraWorkDetails"":[],""extraSections"":[],""note"":""""}",,1766050681,1766050681,Personal
+custom,API tytuł,,,,,Notatka,,1766050739,1766050739,Personal
+custom,Baza danych tytuł,,,,,"Notatka ",,1766050795,1766050795,Personal
+custom,Tytuł serwer,,,,,"Notę ",,1766050852,1766050852,Personal
+custom,"Licencja softu ",,,,,"Notę ",,1766050886,1766050886,Personal
+sshKey,Klucz ssh,,,,,"Notę jak zwykle ",,1766050941,1766050941,Personal
+wifi,"Moje WiFi ",,,,haslo111,"Ta normalna ",,1766050974,1766050974,Personal
+custom,Social Security no,,,,,"Notę ",,1766051172,1766051172,Personal
+custom,Prawo jazdy,,,,,,,1766051232,1766051232,Personal
+custom,Medical wpis,,,,,"Notę ",,1766051934,1766051934,Personal
+custom,"Member tytuł ",,,,,,,1766051980,1766051980,Personal
+custom,Paszport tytuł,,,,,,,1766052021,1766052021,Personal
+custom,Rewars próg,,,,,Notka,,1766052065,1766052065,Personal

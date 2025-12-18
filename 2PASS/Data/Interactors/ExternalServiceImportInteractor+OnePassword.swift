@@ -50,13 +50,13 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
 
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
-                    guard let urlString = dict["Url"]?.nilIfEmpty else { return nil }
+                    guard let urlString = dict["Url"]?.nonBlankTrimmedOrNil else { return nil }
                     let uri = PasswordURI(uri: urlString, match: .domain)
                     return [uri]
                 }()
-                let username = dict["Username"]?.nilIfEmpty
+                let username = dict["Username"]?.nonBlankTrimmedOrNil
                 let password: Data? = {
-                    if let passwordString = dict["Password"]?.nilIfEmpty,
+                    if let passwordString = dict["Password"]?.nonBlankTrimmedOrNil,
                        let password = context.encryptSecureField(passwordString, for: protectionLevel) {
                         return password
                     }
@@ -67,7 +67,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                     dict,
                     excludingKeys: Set(requiredHeaders)
                 )
-                let notes = context.mergeNote(dict["Notes"]?.nilIfEmpty, with: additionalInfo)
+                let notes = context.mergeNote(dict["Notes"]?.nonBlankTrimmedOrNil, with: additionalInfo)
 
                 items.append(
                     .login(.init(
@@ -195,7 +195,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         protectionLevel: ItemProtectionLevel
     ) -> ItemData? {
         let name = item.overview?.title.formattedName
-        let notes = item.details?.notesPlain?.nilIfEmpty
+        let notes = item.details?.notesPlain?.nonBlankTrimmedOrNil
 
         // Extract username and password from loginFields
         var username: String?
@@ -203,9 +203,9 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
 
         for field in item.details?.loginFields ?? [] {
             if field.designation == "username" {
-                username = field.value?.nilIfEmpty
+                username = field.value?.nonBlankTrimmedOrNil
             } else if field.designation == "password" {
-                passwordString = field.value?.nilIfEmpty
+                passwordString = field.value?.nonBlankTrimmedOrNil
             }
         }
 
@@ -221,11 +221,11 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         let uris: [PasswordURI]? = {
             if let urls = item.overview?.urls, !urls.isEmpty {
                 let uriList = urls.compactMap { urlEntry -> PasswordURI? in
-                    guard let urlString = urlEntry.url?.nilIfEmpty else { return nil }
+                    guard let urlString = urlEntry.url?.nonBlankTrimmedOrNil else { return nil }
                     return PasswordURI(uri: urlString, match: .domain)
                 }
                 return uriList.isEmpty ? nil : uriList
-            } else if let urlString = item.overview?.url?.nilIfEmpty {
+            } else if let urlString = item.overview?.url?.nonBlankTrimmedOrNil {
                 return [PasswordURI(uri: urlString, match: .domain)]
             }
             return nil
@@ -285,7 +285,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         protectionLevel: ItemProtectionLevel
     ) -> ItemData? {
         let name = item.overview?.title.formattedName
-        let noteText = item.details?.notesPlain?.nilIfEmpty
+        let noteText = item.details?.notesPlain?.nonBlankTrimmedOrNil
 
         let text: Data? = {
             if let note = noteText,
@@ -345,7 +345,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         protectionLevel: ItemProtectionLevel
     ) -> ItemData? {
         let name = item.overview?.title.formattedName
-        let notes = item.details?.notesPlain?.nilIfEmpty
+        let notes = item.details?.notesPlain?.nonBlankTrimmedOrNil
 
         var cardHolder: String?
         var cardNumberString: String?
@@ -361,12 +361,12 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
 
                 switch fieldId {
                 case "cardholder":
-                    cardHolder = value?.nilIfEmpty
+                    cardHolder = value?.nonBlankTrimmedOrNil
                 case "ccnum":
                     // Credit card number can be in creditCardNumber field or as string value
-                    cardNumberString = field.value?.creditCardNumber?.nilIfEmpty ?? value?.nilIfEmpty
+                    cardNumberString = field.value?.creditCardNumber?.nonBlankTrimmedOrNil ?? value?.nonBlankTrimmedOrNil
                 case "cvv":
-                    securityCodeString = value?.nilIfEmpty
+                    securityCodeString = value?.nonBlankTrimmedOrNil
                 case "expiry":
                     // 1Password stores expiry as YYYYMM integer
                     if let dateValue = field.value?.date ?? field.value?.monthYear {
@@ -375,7 +375,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                         expirationDateString = String(format: "%02d/%02d", month, year % 100)
                     }
                 case "type":
-                    cardTypeString = field.value?.creditCardType?.nilIfEmpty ?? value?.nilIfEmpty
+                    cardTypeString = field.value?.creditCardType?.nonBlankTrimmedOrNil ?? value?.nonBlankTrimmedOrNil
                 default:
                     break
                 }

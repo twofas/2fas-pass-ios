@@ -260,11 +260,11 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
         return interactor.savePaymentCard(
             name: name,
-            cardHolder: cardHolder.nilIfEmpty,
+            cardHolder: cardHolder.nonBlankTrimmedOrNil,
             cardNumber: decryptedCardNumber.nilIfEmpty,
-            expirationDate: expirationDate.nilIfEmpty,
+            expirationDate: expirationDate.nonBlankTrimmedOrNil,
             securityCode: decryptedSecurityCode.nilIfEmpty,
-            notes: notes.nilIfEmpty,
+            notes: notes.nonBlankTrimmedOrNil,
             protectionLevel: protectionLevel,
             tagIds: Array(selectedTags.map { $0.tagID })
         )
