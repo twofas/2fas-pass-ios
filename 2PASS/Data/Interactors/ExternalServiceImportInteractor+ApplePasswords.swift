@@ -24,14 +24,28 @@ extension ExternalServiceImportInteractor {
             }
 
             do {
-                var fileData = Data()
+                var items: [ItemData] = []
+
+                // Import passwords from CSV
+                var csvData = Data()
                 _ = try archive.extract(passwordsCSVFile) { data in
-                    fileData.append(data)
+                    csvData.append(data)
                 }
-                guard let csvString = String(data: fileData, encoding: .utf8) else {
+                guard let csvString = String(data: csvData, encoding: .utf8) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
-                return try await importCSV(csvString)
+                items.append(contentsOf: try await importCSV(csvString))
+
+                // Import payment cards from JSON if present
+                if let paymentCardsFile = archive.first(where: { $0.path.hasSuffix("PaymentCards.json") }) {
+                    var jsonData = Data()
+                    _ = try archive.extract(paymentCardsFile) { data in
+                        jsonData.append(data)
+                    }
+                    items.append(contentsOf: try await importPaymentCardsJSON(jsonData))
+                }
+
+                return items
             } catch let error as ExternalServiceImportError {
                 throw error
             } catch {
@@ -129,5 +143,122 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
         }
 
         return items
+    }
+
+    func importPaymentCardsJSON(_ jsonData: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        guard let vaultID = context.selectedVaultId else {
+            throw .wrongFormat
+        }
+
+        let protectionLevel = context.currentProtectionLevel
+
+        do {
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            let parsed = try decoder.decode(ApplePaymentCards.self, from: jsonData)
+            var items: [ItemData] = []
+
+            for rawCard in parsed.paymentCards {
+                let card = ApplePaymentCard(rawCard)
+
+                let cardNumberString = card.cardNumber?.nilIfEmpty
+                let expirationDateString: String? = {
+                    guard let month = card.cardExpirationMonth,
+                          let year = card.cardExpirationYear else { return nil }
+                    let yearSuffix = year > 99 ? year % 100 : year
+                    return "\(month)/\(yearSuffix)"
+                }()
+
+                let cardNumber: Data? = {
+                    if let value = cardNumberString,
+                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                        return encrypted
+                    }
+                    return nil
+                }()
+
+                let expirationDate: Data? = {
+                    if let value = expirationDateString,
+                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                        return encrypted
+                    }
+                    return nil
+                }()
+
+                let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+                let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+                let name = card.cardName?.nilIfEmpty
+                let notes = context.formatDictionary(card.unknownData)
+
+                items.append(.paymentCard(.init(
+                    id: .init(),
+                    vaultId: vaultID,
+                    metadata: .init(
+                        creationDate: Date.importPasswordPlaceholder,
+                        modificationDate: Date.importPasswordPlaceholder,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: name,
+                    content: .init(
+                        name: name,
+                        cardHolder: card.cardholderName?.nilIfEmpty,
+                        cardIssuer: cardIssuer,
+                        cardNumber: cardNumber,
+                        cardNumberMask: cardNumberMask,
+                        expirationDate: expirationDate,
+                        securityCode: nil,
+                        notes: notes
+                    )
+                )))
+            }
+
+            return items
+        } catch {
+            throw .wrongFormat
+        }
+    }
+}
+
+// MARK: - Apple PaymentCards JSON Model
+
+private struct ApplePaymentCards: Decodable {
+    let paymentCards: [[String: AnyCodable]]
+}
+
+private struct ApplePaymentCard {
+    static let knownKeys: Set<String> = [
+        "card_number", "card_name", "cardholder_name",
+        "card_expiration_month", "card_expiration_year"
+    ]
+
+    let rawData: [String: Any]
+    let unknownData: [String: Any]
+
+    init(_ rawData: [String: AnyCodable]) {
+        self.rawData = rawData.mapValues { $0.value }
+        self.unknownData = self.rawData.filter { !Self.knownKeys.contains($0.key) }
+    }
+
+    var cardNumber: String? {
+        rawData["card_number"] as? String
+    }
+
+    var cardName: String? {
+        rawData["card_name"] as? String
+    }
+
+    var cardholderName: String? {
+        rawData["cardholder_name"] as? String
+    }
+
+    var cardExpirationMonth: Int? {
+        rawData["card_expiration_month"] as? Int
+    }
+
+    var cardExpirationYear: Int? {
+        rawData["card_expiration_year"] as? Int
     }
 }
