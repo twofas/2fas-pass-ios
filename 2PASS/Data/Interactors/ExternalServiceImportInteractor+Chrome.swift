@@ -25,13 +25,14 @@ extension ExternalServiceImportInteractor {
 
             do {
                 let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.header.containsAll(["name", "url", "username", "password", "note"]) else {
-                    throw ExternalServiceImportError.wrongFormat
-                }
-
+                
                 let knownCSVColumns: Set<String> = [
                     "name", "url", "username", "password", "note"
                 ]
+                
+                guard csv.header.containsAll(Array(knownCSVColumns)) else {
+                    throw ExternalServiceImportError.wrongFormat
+                }
 
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
@@ -51,7 +52,6 @@ extension ExternalServiceImportInteractor {
                         return nil
                     }()
 
-                    // Build additional info from unknown CSV columns
                     let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
                     let notes = context.mergeNote(dict["note"]?.nilIfEmpty, with: csvAdditionalInfo)
 

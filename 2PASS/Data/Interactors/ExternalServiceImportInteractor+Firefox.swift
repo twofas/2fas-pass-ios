@@ -36,6 +36,7 @@ extension ExternalServiceImportInteractor {
 
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
+                    guard dict["url"] != "chrome://FirefoxAccounts" else { return }
 
                     let name = dict["url"].formattedName
                     let uris: [PasswordURI]? = {
