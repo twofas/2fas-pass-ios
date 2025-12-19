@@ -9,16 +9,24 @@ import UIKit
 
 extension ItemContentType {
     
+    public var iconSystemName: String? {
+        switch self {
+        case .login:
+            return "person.crop.circle"
+        case .secureNote:
+            return "note.text"
+        case .unknown:
+            return nil
+        }
+    }
+    
     public var icon: UIImage? {
         let image: UIImage? = {
             let configuration = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
-            
-            switch self {
-            case .login, .unknown:
-                return UIImage(systemName: "person.crop.circle", withConfiguration: configuration)
-            case .secureNote:
-                return UIImage(systemName: "note.text", withConfiguration: configuration)
+            guard let iconSystemName else {
+                return nil
             }
+            return UIImage(systemName: iconSystemName, withConfiguration: configuration)
         }()
         return image?.withRenderingMode(.alwaysTemplate)
     }

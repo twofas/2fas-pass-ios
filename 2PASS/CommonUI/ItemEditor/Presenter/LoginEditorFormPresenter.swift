@@ -254,7 +254,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
             name: name,
             username: username,
             password: password,
-            notes: notes.nilIfEmpty,
+            notes: notes.nonBlankTrimmedOrNil,
             iconType: iconType,
             protectionLevel: protectionLevel,
             uris: checkedURIs.map { content in

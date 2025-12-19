@@ -18,7 +18,7 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     private(set) var note: String?
     
     var additionalInfo: String? {
-        secureNoteItem.content.additionalInfo?.nilIfEmpty
+        secureNoteItem.content.additionalInfo?.nonBlankTrimmedOrNil
     }
     
     init(item: SecureNoteItemData, configuration: ItemDetailFormConfiguration) {

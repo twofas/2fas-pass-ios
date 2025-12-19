@@ -7,15 +7,16 @@
 import SwiftUI
 import CommonUI
 import Common
+import Data
 
 struct TransferItemsImportingRouter {
-    
+
     @MainActor
-    static func buildView(service: ExternalService, items: [ItemData], onClose: @escaping Callback) -> some View {
+    static func buildView(service: ExternalService, result: ExternalServiceImportResult, onClose: @escaping Callback) -> some View {
         TransferItemsImportingView(presenter: .init(
             interactor: ModuleInteractorFactory.shared.transferItemsImportingModuleInteractor(
                 service: service,
-                items: items
+                result: result
             ),
             onClose: onClose
         ))

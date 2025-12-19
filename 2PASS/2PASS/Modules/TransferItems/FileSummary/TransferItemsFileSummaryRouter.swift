@@ -7,13 +7,14 @@
 import SwiftUI
 import CommonUI
 import Common
+import Data
 
 struct TransferItemsFileSummaryRouter: Router {
-    
-    static func buildView(service: ExternalService, items: [ItemData], onClose: @escaping Callback) -> some View {
-        TransferItemsFileSummaryView(presenter: .init(service: service, items: items, onClose: onClose))
+
+    static func buildView(service: ExternalService, result: ExternalServiceImportResult, onClose: @escaping Callback) -> some View {
+        TransferItemsFileSummaryView(presenter: .init(service: service, result: result, onClose: onClose))
     }
-    
+
     func routingType(for destination: TransferItemsFileSummaryDestination?) -> RoutingType? {
         switch destination {
         case .importItems:
@@ -22,11 +23,11 @@ struct TransferItemsFileSummaryRouter: Router {
             nil
         }
     }
-    
+
     func view(for destination: TransferItemsFileSummaryDestination) -> some View {
         switch destination {
-        case .importItems(let items, let service, let onClose):
-            TransferItemsImportingRouter.buildView(service: service, items: items, onClose: onClose)
+        case .importItems(let result, let service, let onClose):
+            TransferItemsImportingRouter.buildView(service: service, result: result, onClose: onClose)
         }
     }
 }

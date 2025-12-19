@@ -7,6 +7,7 @@
 import SwiftUI
 import CommonUI
 import Common
+import Data
 
 struct TransferItemsInstructionsRouter: Router {
     
@@ -23,8 +24,8 @@ struct TransferItemsInstructionsRouter: Router {
         switch destination {
         case .uploadFile:
             EmptyView()
-        case .summary(let service, let items, let onClose):
-            TransferItemsFileSummaryRouter.buildView(service: service, items: items, onClose: onClose)
+        case .summary(let service, let result, let onClose):
+            TransferItemsFileSummaryRouter.buildView(service: service, result: result, onClose: onClose)
         case .importFailure(let onClose):
             TransferItemsFailureView(onClose: onClose)
         }
@@ -33,7 +34,7 @@ struct TransferItemsInstructionsRouter: Router {
     func routingType(for destination: TransferItemsInstructionsDestination?) -> RoutingType? {
         switch destination {
         case .uploadFile(let service, let onClose):
-            .fileImporter(contentTypes: [service.allowedContentType], onClose: onClose)
+            .fileImporter(contentTypes: service.allowedContentTypes, onClose: onClose)
         case .summary, .importFailure:
             .push
         case nil:
@@ -41,3 +42,4 @@ struct TransferItemsInstructionsRouter: Router {
         }
     }
 }
+

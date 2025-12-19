@@ -74,8 +74,8 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
         
         return interactor.saveSecureNote(
             name: name,
-            text: text.nilIfEmpty,
-            additionalInfo: additionalInfo?.nilIfEmpty,
+            text: text.nonBlankTrimmedOrNil,
+            additionalInfo: additionalInfo?.nonBlankTrimmedOrNil,
             protectionLevel: protectionLevel,
             tagIds: Array(selectedTags.map { $0.tagID })
         )
