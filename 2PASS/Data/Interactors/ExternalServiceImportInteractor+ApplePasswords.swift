@@ -231,7 +231,8 @@ private struct ApplePaymentCards: Decodable {
 private struct ApplePaymentCard {
     static let knownKeys: Set<String> = [
         "card_number", "card_name", "cardholder_name",
-        "card_expiration_month", "card_expiration_year"
+        "card_expiration_month", "card_expiration_year",
+        "card_last_used_time_usec"
     ]
 
     let rawData: [String: Any]

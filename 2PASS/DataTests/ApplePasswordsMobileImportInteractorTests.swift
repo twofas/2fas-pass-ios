@@ -157,10 +157,8 @@ struct ApplePasswordsMobileImportInteractorTests {
             return nil
         }
 
-        // All cards should have cardLastUsedTimeUsec in notes
         let visaCard = try #require(cards.first { $0.name == "VISA - virtual" })
-        let notes = try #require(visaCard.content.notes)
-        #expect(notes == "Card last used time usec: 1734913850411943")
+        #expect(visaCard.content.notes == nil)
     }
 
     // MARK: - Login Import Tests
@@ -271,10 +269,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         #expect(visaVirtualCard.metadata.protectionLevel == .normal)
         #expect(visaVirtualCard.metadata.trashedStatus == .no)
         #expect(visaVirtualCard.metadata.tagIds == nil)
-
-        // Notes should contain unknown field
-        let visaVirtualNotes = try #require(visaVirtualCard.content.notes)
-        #expect(visaVirtualNotes == "Card last used time usec: 1734913850411943")
+        #expect(visaVirtualCard.content.notes == nil)
 
         // MARK: Payment Card - "Visa" (minimal fields)
         let visaCard = try #require(cards.first { $0.name == "Visa" })
