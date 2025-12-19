@@ -37,7 +37,7 @@ public extension ExternalService {
         case .dashlaneDesktop: [UTType.zip]
         case .dashlaneMobile: [UTType.commaSeparatedText, UTType.folder]
         case .lastPass: [UTType.commaSeparatedText]
-        case .protonPass: [UTType.commaSeparatedText]
+        case .protonPass: [UTType.commaSeparatedText, UTType.zip]
         case .applePasswordsDesktop: [UTType.commaSeparatedText]
         case .applePasswordsMobile: [UTType.zip]
         case .firefox: [UTType.commaSeparatedText]

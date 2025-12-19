@@ -837,19 +837,21 @@ struct ProtonPassImportInteractorTests {
         let identity = try #require(notes.first { $0.name == "Paszport z Israela (Identity)" })
         let identityText = try #require(decrypt(identity.content.text))
         let expectedIdentityText = """
-            Full name: Jan Goldstein
-            Email: jan@goldstein.com
-            Phone: 5642534141
-            Organization: Nso
-            Address: Ani Okresu Ani Adresu
             City: Miasto W Izraelu
-            State/Province: Stan Wyjatkowy
-            ZIP/Postal code: 112112
-            Country: Israel
-            SSN: SOCIAL NUMBER TUTAJ
-            Passport number: NR PASZPORTU
-            License number: NR LICENCJI
+            Country Or Region: Israel
+            Email: jan@goldstein.com
+            Full Name: Jan Goldstein
+            License Number: NR LICENCJI\(" ")
+            Organization: Nso
+            Passport Number: NR PASZPORTU
+            Phone Number: 5642534141
+            Second Phone Number: 451245124812
+            Social Security Number: SOCIAL NUMBER TUTAJ
+            State Or Province: Stan Wyjatkowy
+            Street Address: Ani Okresu Ani Adresu
             Website: storna www! po cholere nie wiem
+            X Handle: adrss do twitera
+            Zip Or Postal Code: 112112
 
             Vault: Personal
             """
