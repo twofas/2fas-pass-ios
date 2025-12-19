@@ -134,6 +134,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         }
 
         var items: [ItemData] = []
+        var itemsConvertedToSecureNotes = 0
         let protectionLevel = context.currentProtectionLevel
 
         // Track tags for tag creation
@@ -198,8 +199,23 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                             items.append(noteItem)
                         }
 
+                    case OnePassword1Pux.categoryCreditCard,
+                         OnePassword1Pux.categoryIdentity:
+                        // Convert known non-login types to secure notes
+                        if let noteItem = parseAsSecureNote(
+                            item: item,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            contentTypeName: categoryName(for: categoryUuid),
+                            tagIds: itemTagIds
+                        ) {
+                            items.append(noteItem)
+                            itemsConvertedToSecureNotes += 1
+                        }
+
                     default:
-                        // For other categories, try to import as login if it has login fields
+                        // For unknown categories, try to import as login if it has login fields
+                        // Otherwise convert to secure note
                         if item.details?.loginFields?.isEmpty == false {
                             if let loginItem = parseLogin(
                                 item: item,
@@ -209,6 +225,15 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                             ) {
                                 items.append(loginItem)
                             }
+                        } else if let noteItem = parseAsSecureNote(
+                            item: item,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            contentTypeName: categoryName(for: categoryUuid),
+                            tagIds: itemTagIds
+                        ) {
+                            items.append(noteItem)
+                            itemsConvertedToSecureNotes += 1
                         }
                     }
                 }
@@ -228,7 +253,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             )
         }
 
-        return ExternalServiceImportResult(items: items, tags: tags)
+        return ExternalServiceImportResult(items: items, tags: tags, itemsConvertedToSecureNotes: itemsConvertedToSecureNotes)
     }
 
     private func resolveTagIds(from tags: [String]?, tagNameToId: [String: ItemTagID]) -> [ItemTagID]? {
@@ -391,6 +416,82 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             )
         ))
     }
+
+    private func parseAsSecureNote(
+        item: OnePassword1Pux.Item,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        contentTypeName: String,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name: String = {
+            var output = ""
+            if let itemName = item.overview?.title.formattedName {
+                output.append("\(itemName) ")
+            }
+            return output + "(\(contentTypeName))"
+        }()
+
+        // Extract all fields from sections as additional info
+        var allFields: [String] = []
+        for section in item.details?.sections ?? [] {
+            for field in section.fields ?? [] {
+                if let title = field.title, let value = field.value?.stringValue, !value.isEmpty {
+                    allFields.append("\(title): \(value)")
+                }
+            }
+        }
+        let fieldsInfo = allFields.isEmpty ? nil : allFields.joined(separator: "\n")
+        let noteText = context.mergeNote(fieldsInfo, with: item.details?.notesPlain?.nonBlankTrimmedOrNil)
+
+        let text: Data? = {
+            if let note = noteText,
+               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let creationDate: Date = {
+            if let timestamp = item.createdAt {
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
+            return .importPasswordPlaceholder
+        }()
+
+        let modificationDate: Date = {
+            if let timestamp = item.updatedAt {
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
+            return .importPasswordPlaceholder
+        }()
+
+        return .secureNote(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                text: text,
+                additionalInfo: nil
+            )
+        ))
+    }
+
+    private func categoryName(for categoryUuid: String) -> String {
+        switch categoryUuid {
+        case OnePassword1Pux.categoryCreditCard: return "Credit Card"
+        case OnePassword1Pux.categoryIdentity: return "Identity"
+        default: return "Item"
+        }
+    }
 }
 
 // MARK: - 1Password 1PUX Format Models
@@ -544,6 +645,8 @@ private struct OnePassword1Pux: Decodable {
     }
 
     static let categoryLogin = "001"
+    static let categoryCreditCard = "002"
     static let categorySecureNote = "003"
+    static let categoryIdentity = "004"
     static let categoryPassword = "005"
 }

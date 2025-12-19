@@ -394,6 +394,24 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
             components.append("Secret: \(secret)")
         }
 
+        // Format payment card
+        if let card = customFields.paymentCard {
+            if let cardNumber = card.cardNumber {
+                components.append("Card Number: \(cardNumber)")
+            }
+            if let expiration = card.cardExpirationDate {
+                components.append("Expiration Date: \(expiration)")
+            }
+            if let securityCode = card.cardSecurityCode {
+                components.append("Security Code: \(securityCode)")
+            }
+        }
+
+        // Add cardholder name
+        if let cardholderName = customFields.cardholderName {
+            components.append("Cardholder Name: \(cardholderName)")
+        }
+
         // Add PIN code
         if let pinCode = customFields.pinCode {
             components.append("PIN: \(pinCode)")
