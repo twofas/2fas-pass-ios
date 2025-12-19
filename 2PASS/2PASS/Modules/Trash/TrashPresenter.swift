@@ -82,29 +82,35 @@ extension TrashPresenter {
     
     @MainActor
     func onAppear(for item: TrashItemData) {
-        switch item.iconType {
-        case .domainIcon:
-            let label = Config.defaultIconLabel(forName: item.name ?? "")
-            icons[item.id] = .label(label, color: nil)
-            
-            if let url = item.iconType.iconURL {
+        switch item.icon {
+        case .login(let iconType):
+            switch iconType {
+            case .domainIcon:
+                let label = Config.defaultIconLabel(forName: item.name ?? "")
+                icons[item.id] = .label(label, color: nil)
+
+                if let url = iconType.iconURL {
+                    if let cachedData = iconDataSource.cachedImage(from: url), let image = UIImage(data: cachedData) {
+                        icons[item.id] = .icon(image)
+                    }
+                    iconDataSource.fetchImage(from: url, for: item)
+                }
+
+            case .customIcon(let url):
+                let label = Config.defaultIconLabel(forName: item.name ?? "")
+                icons[item.id] = .label(label, color: nil)
+
                 if let cachedData = iconDataSource.cachedImage(from: url), let image = UIImage(data: cachedData) {
                     icons[item.id] = .icon(image)
                 }
                 iconDataSource.fetchImage(from: url, for: item)
+
+            case .label(labelTitle: let title, labelColor: let color):
+                icons[item.id] = .label(title, color: color)
             }
-            
-        case .customIcon(let url):
-            let label = Config.defaultIconLabel(forName: item.name ?? "")
-            icons[item.id] = .label(label, color: nil)
-            
-            if let cachedData = iconDataSource.cachedImage(from: url), let image = UIImage(data: cachedData) {
-                icons[item.id] = .icon(image)
-            }
-            iconDataSource.fetchImage(from: url, for: item)
-            
-        case .label(labelTitle: let title, labelColor: let color):
-            icons[item.id] = .label(title, color: color)
+
+        case .contentType(let contentType):
+            icons[item.id] = .contentType(contentType)
         }
     }
     
@@ -158,11 +164,19 @@ private extension TrashPresenter {
                         return TrashItemData(
                             itemID: loginItem.id,
                             name: loginItem.name,
-                            username: loginItem.username,
+                            description: loginItem.username,
                             deletedDate: trashingDate,
-                            iconType: loginItem.iconType
+                            icon: .login(loginItem.iconType)
                         )
-                    default:
+                    case .secureNote(let noteItem):
+                        return TrashItemData(
+                            itemID: noteItem.id,
+                            name: noteItem.name,
+                            description: nil,
+                            deletedDate: trashingDate,
+                            icon: .contentType(.secureNote)
+                        )
+                    case .raw:
                         return nil
                     }
                 }

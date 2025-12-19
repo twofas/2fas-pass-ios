@@ -345,7 +345,8 @@ extension InMemoryStorageDataSourceImpl {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         SecureNoteEntity.createSecureNote(
             on: context,
@@ -357,10 +358,11 @@ extension InMemoryStorageDataSourceImpl {
             protectionLevel: protectionLevel,
             tagIds: tagIds,
             name: name,
-            text: text
+            text: text,
+            additionalInfo: additionalInfo
         )
     }
-    
+
     public func updateSecureNoteItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -369,7 +371,8 @@ extension InMemoryStorageDataSourceImpl {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     ) {
         SecureNoteEntity.updateSecureNote(
             on: context,
@@ -380,7 +383,8 @@ extension InMemoryStorageDataSourceImpl {
             protectionLevel: protectionLevel,
             tagIds: tagIds,
             name: name,
-            text: text
+            text: text,
+            additionalInfo: additionalInfo
         )
     }
     

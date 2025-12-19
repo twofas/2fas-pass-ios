@@ -67,7 +67,9 @@ struct EditMenuController<Value>: UIViewRepresentable where Value: Hashable {
             self.actions = actions
             self.binding = binding
 
-            interaction.presentEditMenu(with: .init(identifier: UUID(), sourcePoint: .zero))
+            let config = UIEditMenuConfiguration(identifier: UUID(), sourcePoint: .zero)
+            config.preferredArrowDirection = .down
+            interaction.presentEditMenu(with: config)
         }
         
         func editMenuInteraction(_ interaction: UIEditMenuInteraction, menuFor configuration: UIEditMenuConfiguration, suggestedActions: [UIMenuElement]) -> UIMenu? {

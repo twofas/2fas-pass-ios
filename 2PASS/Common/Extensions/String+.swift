@@ -65,10 +65,15 @@ public extension String {
         return String(repeating: "0", count: paddingCount) + binaryString
     }
     
-    var nilIfEmpty: String? {
+    var nonBlankTrimmedOrNil: String? {
         let value = self.trim()
         guard !value.isEmpty else { return nil }
         return value
+    }
+    
+    var nonBlankOrNil: String? {
+        let value = self.trim()
+        return value.isEmpty ? nil : self
     }
 
     func sanitizeNotes() -> String? {
@@ -80,6 +85,11 @@ public extension String {
     /// Use it for disable line break strategy
     var withZeroWidthSpaces: String {
         map({ String($0) }).joined(separator: "\u{200B}")
+    }
+    
+    var capitalizedFirstLetter: String {
+        guard let first else { return self }
+        return first.uppercased() + dropFirst()
     }
 }
 

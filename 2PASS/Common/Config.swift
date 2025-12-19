@@ -29,7 +29,7 @@ public enum Config {
 
     public static let maxIdentifierLength: Int = 128
     public static let minMasterPasswordLength = 9
-    public static let iconDimension = 42
+    public static let iconDimension = 52
     public static let defaultIconLabel = ""
     public static let maxLabelLength = 2
     public static let scaleImageSize = CGSize(width: 128, height: 128)
@@ -48,6 +48,8 @@ public enum Config {
     public static let webDAVURLSchemaVersion = 1
     public static let webDAVLockFileTime = 30
     public static let maxNotesLength = 2048
+    public static let maxSecureNotesLength = 1024 * 16
+    public static let maxSecureNotesAdditionalInfoLength = 1024 * 16
     public static let maxURICount = 9
     
     public static let cloudSchemaVersion = 2

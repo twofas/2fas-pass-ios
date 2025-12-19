@@ -9,29 +9,35 @@ import UIKit
 protocol PasswordsViewControlling: AnyObject {
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
-            PasswordSectionData,
-            PasswordCellData
+            ItemSectionData,
+            ItemCellData
         >
     )
+    func showContentTypeFilterPicker(_ flag: Bool)
     func showList()
     func showEmptyScreen()
     func showSearchEmptyScreen()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {
+    
     func reloadData(
         newSnapshot: NSDiffableDataSourceSnapshot<
-            PasswordSectionData,
-            PasswordCellData
+            ItemSectionData,
+            ItemCellData
         >
     ) {
-        dataSource?.apply(newSnapshot, animatingDifferences: true)
         updateNavigationBarButtons()
+        
+        if let passwordsList, dataSource?.numberOfSections(in: passwordsList) != newSnapshot.sectionIdentifiers.count {
+            reloadLayout()
+        }
+        
+        dataSource?.apply(newSnapshot, animatingDifferences: true)
     }
     
     // MARK: - Empty screen or list
     func showList() {
-        passwordsList?.isScrollEnabled = true
         UIView.animate(
             withDuration: Animation.duration,
             delay: 0,
@@ -48,7 +54,6 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showEmptyScreen() {
-        passwordsList?.isScrollEnabled = false
         VoiceOver.say(T.homeEmptyTitle)
         guard emptyList?.isHidden == true else { return }
         
@@ -63,7 +68,6 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showSearchEmptyScreen() {
-        passwordsList?.isScrollEnabled = false
         VoiceOver.say(T.loginSearchNoResultsTitle)
         
         emptySearchList?.alpha = 0

@@ -13,6 +13,7 @@ public enum NetworkError: Error {
         case serverHTTPError(status: Int, error: ReturnedError?)
         case parseError
     }
+    case emptyData
     case noInternet
     case connection(error: ConnectionError)
 }

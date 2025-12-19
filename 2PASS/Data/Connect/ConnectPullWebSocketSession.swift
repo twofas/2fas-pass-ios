@@ -21,7 +21,7 @@ struct ConnectPullWebSocketSession {
                 deviceName: deviceName,
                 deviceOs: "ios",
                 deviceType: deviceType,
-                supportedFeatures: schemeVersion < .v2 ? nil : []
+                supportedFeatures: schemeVersion < .v2 ? nil : [ConnectSchemaV2.SupportedFeatures.secureNote.rawValue]
             )
         )
 

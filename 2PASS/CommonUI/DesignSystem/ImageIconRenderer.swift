@@ -8,7 +8,7 @@ import UIKit
 import Common
 
 private struct Constants {
-    static let cornerRadius: CGFloat = 12
+    static let cornerRadius: CGFloat = 16
     static let innerIconDimension = 28
     static let innerCornerRadius: CGFloat = 6
 }
