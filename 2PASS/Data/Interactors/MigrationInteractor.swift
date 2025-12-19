@@ -51,7 +51,7 @@ final class MigrationInteractor: MigrationInteracting {
             Log("Already migrated for \(appVersion, privacy: .public) version", module: .migration, severity: .info)
         }
 
-        if mainRepository.lastKnownAppVersion?.compare("1.3.1", options: .numeric) == .orderedAscending {
+        if mainRepository.lastKnownAppVersion?.compare("1.3.0", options: .numeric) == .orderedAscending {
             mainRepository.removeDuplicatedEncryptedTags()
         }
 
