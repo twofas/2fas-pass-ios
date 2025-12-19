@@ -14,7 +14,7 @@ extension ExternalServiceImportInteractor {
     struct OnePasswordImporter {
         let context: ImportContext
 
-        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
             if let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) {
                 return try await import1Pux(archive)
             }
@@ -27,8 +27,8 @@ extension ExternalServiceImportInteractor {
 // MARK: - CSV Import
 
 fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
-    
-    func importCSV(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+
+    func importCSV(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
         guard let csvString = String(data: content, encoding: .utf8) else {
             throw .wrongFormat
         }
@@ -98,15 +98,15 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             throw .wrongFormat
         }
 
-        return items
+        return ExternalServiceImportResult(items: items)
     }
 }
 
 // MARK: - 1PUX Import
 
 fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
-    
-    func import1Pux(_ archive: Archive) async throws(ExternalServiceImportError) -> [ItemData] {
+
+    func import1Pux(_ archive: Archive) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
         guard let vaultID = context.selectedVaultId else {
             throw .wrongFormat
         }
@@ -132,6 +132,34 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         var items: [ItemData] = []
         let protectionLevel = context.currentProtectionLevel
 
+        // Track tags for tag creation
+        var tagNames: Set<String> = []
+        var tagNameToId: [String: ItemTagID] = [:]
+
+        // First pass: collect all unique tags
+        for account in parsedJSON.accounts ?? [] {
+            for vault in account.vaults ?? [] {
+                for item in vault.items ?? [] {
+                    if item.trashed == true || item.state == "archived" {
+                        continue
+                    }
+                    if let itemTags = item.overview?.tags {
+                        for tagName in itemTags {
+                            if let trimmedTag = tagName.nonBlankTrimmedOrNil {
+                                tagNames.insert(trimmedTag)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Create tag IDs for each tag
+        for tagName in tagNames {
+            tagNameToId[tagName] = ItemTagID()
+        }
+
+        // Second pass: import items with tag references
         for account in parsedJSON.accounts ?? [] {
             for vault in account.vaults ?? [] {
                 for item in vault.items ?? [] {
@@ -140,6 +168,9 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                         continue
                     }
 
+                    // Resolve tag IDs for this item
+                    let itemTagIds = resolveTagIds(from: item.overview?.tags, tagNameToId: tagNameToId)
+
                     let categoryUuid = item.categoryUuid ?? ""
 
                     switch categoryUuid {
@@ -147,7 +178,8 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                         if let loginItem = parseLogin(
                             item: item,
                             vaultID: vaultID,
-                            protectionLevel: protectionLevel
+                            protectionLevel: protectionLevel,
+                            tagIds: itemTagIds
                         ) {
                             items.append(loginItem)
                         }
@@ -156,7 +188,8 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                         if let noteItem = parseSecureNote(
                             item: item,
                             vaultID: vaultID,
-                            protectionLevel: protectionLevel
+                            protectionLevel: protectionLevel,
+                            tagIds: itemTagIds
                         ) {
                             items.append(noteItem)
                         }
@@ -167,7 +200,8 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                             if let loginItem = parseLogin(
                                 item: item,
                                 vaultID: vaultID,
-                                protectionLevel: protectionLevel
+                                protectionLevel: protectionLevel,
+                                tagIds: itemTagIds
                             ) {
                                 items.append(loginItem)
                             }
@@ -177,13 +211,36 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             }
         }
 
-        return items
+        // Create tags from collected tag names
+        let tags: [ItemTagData] = tagNames.enumerated().compactMap { index, tagName -> ItemTagData? in
+            guard let tagId = tagNameToId[tagName] else { return nil }
+            return ItemTagData(
+                tagID: tagId,
+                vaultID: vaultID,
+                name: tagName,
+                color: .gray,
+                position: index,
+                modificationDate: Date()
+            )
+        }
+
+        return ExternalServiceImportResult(items: items, tags: tags)
+    }
+
+    private func resolveTagIds(from tags: [String]?, tagNameToId: [String: ItemTagID]) -> [ItemTagID]? {
+        guard let tags else { return nil }
+        let tagIds = tags.compactMap { tagName -> ItemTagID? in
+            guard let trimmedTag = tagName.nonBlankTrimmedOrNil else { return nil }
+            return tagNameToId[trimmedTag]
+        }
+        return tagIds.isEmpty ? nil : tagIds
     }
 
     private func parseLogin(
         item: OnePassword1Pux.Item,
         vaultID: VaultID,
-        protectionLevel: ItemProtectionLevel
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.overview?.title.formattedName
         let notes = item.details?.notesPlain?.nonBlankTrimmedOrNil
@@ -256,7 +313,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                 modificationDate: modificationDate,
                 protectionLevel: protectionLevel,
                 trashedStatus: .no,
-                tagIds: nil
+                tagIds: tagIds
             ),
             name: name,
             content: .init(
@@ -273,7 +330,8 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
     private func parseSecureNote(
         item: OnePassword1Pux.Item,
         vaultID: VaultID,
-        protectionLevel: ItemProtectionLevel
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
     ) -> ItemData? {
         let name = item.overview?.title.formattedName
         let noteText = item.details?.notesPlain?.nonBlankTrimmedOrNil
@@ -319,7 +377,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                 modificationDate: modificationDate,
                 protectionLevel: protectionLevel,
                 trashedStatus: .no,
-                tagIds: nil
+                tagIds: tagIds
             ),
             name: name,
             content: .init(
