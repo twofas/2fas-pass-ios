@@ -47,7 +47,11 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             }
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
-
+                
+                if dict["Archived"] == "true" {
+                    return
+                }
+                
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["Url"]?.nonBlankTrimmedOrNil else { return nil }
@@ -65,7 +69,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
 
                 let additionalInfo = context.formatDictionary(
                     dict,
-                    excludingKeys: Set(requiredHeaders)
+                    excludingKeys: Set(requiredHeaders).union(["Archived", "Favorite"])
                 )
                 let notes = context.mergeNote(dict["Notes"]?.nonBlankTrimmedOrNil, with: additionalInfo)
 
