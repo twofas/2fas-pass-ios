@@ -436,8 +436,12 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         var allFields: [String] = []
         for section in item.details?.sections ?? [] {
             for field in section.fields ?? [] {
-                if let title = field.title, let value = field.value?.stringValue, !value.isEmpty {
-                    allFields.append("\(title): \(value)")
+                if let value = field.value?.stringValue?.nonBlankTrimmedOrNil {
+                    if let title = field.title?.nonBlankTrimmedOrNil {
+                        allFields.append("\(title.capitalized): \(value)")
+                    } else {
+                        allFields.append(value)
+                    }
                 }
             }
         }
