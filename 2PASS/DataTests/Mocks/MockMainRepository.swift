@@ -15,6 +15,26 @@ import Storage
 
 final class MockMainRepository: MainRepository {
 
+    // MARK: - Default Configuration
+
+    /// Creates a MockMainRepository with default stubs for common testing scenarios.
+    /// Includes: selected vault, encryption key, and basic encryption/decryption pass-through.
+    static func defaultConfiguration(vaultID: VaultID = UUID()) -> MockMainRepository {
+        let keyData = Data(repeating: 0x42, count: 32)
+        let mock = MockMainRepository()
+        mock
+            .withSelectedVault(VaultEncryptedData(
+                vaultID: vaultID,
+                name: "Test Vault",
+                trustedKey: Data(),
+                createdAt: Date(),
+                updatedAt: Date(),
+                isEmpty: false
+            ))
+            .withGetKey { _, _ in SymmetricKey(data: keyData) }
+        return mock
+    }
+
     // MARK: - Call Tracking
 
     private(set) var methodCalls: [String] = []

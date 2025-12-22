@@ -38,6 +38,21 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         var items: [ItemData] = []
         let protectionLevel = context.currentProtectionLevel
 
+        // Track tags for tag creation
+        var tagNames: Set<String> = []
+        var tagNameToId: [String: ItemTagID] = [:]
+
+        // Structure to hold parsed item data before tag resolution
+        struct ParsedItem {
+            let name: String?
+            let uris: [PasswordURI]?
+            let username: String?
+            let password: Data?
+            let notes: String?
+            let tagStrings: [String]
+        }
+        var parsedItems: [ParsedItem] = []
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
 
@@ -45,13 +60,15 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             guard csv.header.containsAll(requiredHeaders) else {
                 throw ExternalServiceImportError.wrongFormat
             }
+
+            // First pass: parse items and collect tag names
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
-                
+
                 if dict["Archived"] == "true" {
                     return
                 }
-                
+
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["Url"]?.nonBlankTrimmedOrNil else { return nil }
@@ -67,34 +84,33 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                     return nil
                 }()
 
+                // Parse tags (semicolon-separated)
+                let tagStrings: [String] = {
+                    guard let tagsString = dict["Tags"]?.nonBlankTrimmedOrNil else { return [] }
+                    return tagsString
+                        .split(separator: ";")
+                        .compactMap { $0.trimmingCharacters(in: .whitespaces).nonBlankTrimmedOrNil }
+                }()
+
+                // Collect unique tag names
+                for tagName in tagStrings {
+                    tagNames.insert(tagName)
+                }
+
                 let additionalInfo = context.formatDictionary(
                     dict,
-                    excludingKeys: Set(requiredHeaders).union(["Archived", "Favorite"])
+                    excludingKeys: Set(requiredHeaders).union(["Archived", "Favorite", "Tags"])
                 )
                 let notes = context.mergeNote(dict["Notes"]?.nonBlankTrimmedOrNil, with: additionalInfo)
 
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: .importPasswordPlaceholder,
-                            modificationDate: .importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: context.makeIconType(uri: uris?.first?.uri),
-                            uris: uris
-                        )
-                    ))
-                )
+                parsedItems.append(ParsedItem(
+                    name: name,
+                    uris: uris,
+                    username: username,
+                    password: password,
+                    notes: notes,
+                    tagStrings: tagStrings
+                ))
             }
         } catch let error as ExternalServiceImportError {
             throw error
@@ -102,7 +118,56 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             throw .wrongFormat
         }
 
-        return ExternalServiceImportResult(items: items)
+        // Create tag IDs for each unique tag
+        for tagName in tagNames {
+            tagNameToId[tagName] = ItemTagID()
+        }
+
+        // Second pass: create items with tag references
+        for parsedItem in parsedItems {
+            let itemTagIds: [ItemTagID]? = {
+                let ids = parsedItem.tagStrings.compactMap { tagNameToId[$0] }
+                return ids.isEmpty ? nil : ids
+            }()
+
+            items.append(
+                .login(.init(
+                    id: .init(),
+                    vaultId: vaultID,
+                    metadata: .init(
+                        creationDate: .importPasswordPlaceholder,
+                        modificationDate: .importPasswordPlaceholder,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: itemTagIds
+                    ),
+                    name: parsedItem.name,
+                    content: .init(
+                        name: parsedItem.name,
+                        username: parsedItem.username,
+                        password: parsedItem.password,
+                        notes: parsedItem.notes,
+                        iconType: context.makeIconType(uri: parsedItem.uris?.first?.uri),
+                        uris: parsedItem.uris
+                    )
+                ))
+            )
+        }
+
+        // Create tags from collected tag names
+        let tags: [ItemTagData] = tagNames.enumerated().compactMap { index, tagName -> ItemTagData? in
+            guard let tagId = tagNameToId[tagName] else { return nil }
+            return ItemTagData(
+                tagID: tagId,
+                vaultID: vaultID,
+                name: tagName,
+                color: .gray,
+                position: index,
+                modificationDate: Date()
+            )
+        }
+
+        return ExternalServiceImportResult(items: items, tags: tags)
     }
 }
 
