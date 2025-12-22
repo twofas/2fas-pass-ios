@@ -41,8 +41,14 @@ struct TransferItemsInstructionsView: View {
             } label: {
                 Group {
                     switch presenter.service {
+                    case .onePassword:
+                        Text(T.transferInstructionsCtaOnepassword.localizedKey)
                     case .bitWarden:
                         Text(T.transferInstructionsCtaBitwarden.localizedKey)
+                    case .protonPass:
+                        Text(T.transferInstructionsCtaProtonPass.localizedKey)
+                    case .dashlaneMobile:
+                        Text(T.transferInstructionsCtaDashlaneMobile.localizedKey)
                     default:
                         if presenter.service.allowedContentTypes.count > 1 {
                             Text(T.transferInstructionsCtaGeneric.localizedKey)
@@ -128,8 +134,12 @@ struct TransferItemsInstructionsView: View {
     
     private var instructionsAdditionalInfo: Text? {
         switch presenter.service {
+        case .onePassword:
+            Text(T.transferInstructionsAdditionalInfoOnepassword.localizedKey)
         case .bitWarden:
             Text(T.transferInstructionsAdditionalInfoBitwarden.localizedKey)
+        case .protonPass:
+            Text(T.transferInstructionsAdditionalInfoProtonPass.localizedKey)
         default:
             nil
         }

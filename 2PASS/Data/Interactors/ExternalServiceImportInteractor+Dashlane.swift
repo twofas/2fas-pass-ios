@@ -395,7 +395,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 } else {
                     // Bank accounts and other payment types -> secure note
                     let typeName = formatTypeName(paymentType)
-                    let accountName = dict["account_name"]?.nonBlankTrimmedOrNil
+                    let accountName = dict["name"]?.nonBlankTrimmedOrNil
                     let name: String = {
                         var output = ""
                         if let accountName {
@@ -406,7 +406,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
 
                     let additionalInfo = context.formatDictionary(
                         dict,
-                        excludingKeys: ["type", "account_name", "note"]
+                        excludingKeys: ["type", "name", "note"]
                     )
                     let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
 

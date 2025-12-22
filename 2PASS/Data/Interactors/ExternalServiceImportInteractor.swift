@@ -120,7 +120,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
     ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
         switch service {
         case .onePassword:
-            ExternalServiceImportResult(items: try await OnePasswordImporter(context: context).import(content))
+            try await OnePasswordImporter(context: context).import(content)
         case .bitWarden:
             try await BitWardenImporter(context: context).import(content)
         case .chrome:

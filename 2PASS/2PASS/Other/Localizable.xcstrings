@@ -9325,6 +9325,28 @@
         }
       }
     },
+    "transfer_instructions_additional_info_onepassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types."
+          }
+        }
+      }
+    },
+    "transfer_instructions_additional_info_proton_pass" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types."
+          }
+        }
+      }
+    },
     "transfer_instructions_apple_passwords_mobile" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9391,6 +9413,17 @@
         }
       }
     },
+    "transfer_instructions_cta_dashlane_mobile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload folder or CSV file"
+          }
+        }
+      }
+    },
     "transfer_instructions_cta_generic" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9413,6 +9446,28 @@
         }
       }
     },
+    "transfer_instructions_cta_onepassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload 1PUX/CSV file"
+          }
+        }
+      }
+    },
+    "transfer_instructions_cta_proton_pass" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload ZIP/CSV file"
+          }
+        }
+      }
+    },
     "transfer_instructions_cta_zip" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9430,7 +9485,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Dashlane on your mobile phone.\n\nGo to **Settings** and select **General**.\n\nSelect **Export data to CSV**, then confirm the export to a folder.\n\nSelect the CSV file labelled as **credentials** in the created folder.\n\nCopy the exported file to this device and tap **Upload CSV file** below. "
+            "value" : "Open Dashlane on your mobile phone.\n\nGo to **Settings** and select **General**.\n\nSelect **Export data to CSV**, then confirm the export to a folder.\n\nCopy the exported **Dashlane CSV folder or specific files** to this device. \n\nTap **Upload folder or CSV file** below. "
           }
         }
       }
@@ -9540,7 +9595,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open 1Password on your PC.\n\nClick the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload CSV file** below."
+            "value" : "Open 1Password on your PC.\n\nClick the three dots at the top of the sidebar, select **Export** and choose the account you want to export (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **1PUX or CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload 1PUX/CSV file** below."
           }
         }
       }
@@ -9551,7 +9606,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Proton Pass via their browser extension, web app or Windows app.\n\nClick the **Proton Pass Logo**, select **Settings**, then **Export**.\n\nChoose the **CSV format** and select **Export**.\n\nFind the CSV file saved in your default download location.\n\nCopy this file to this device and tap **Upload CSV file** below."
+            "value" : "Open Proton Pass via their browser extension, web app or Windows app.\n\nClick the **Proton Pass Logo**, select **Settings**, then **Export**.\n\nChoose the **ZIP or CSV format** and select **Export**.\n\nFind the saved file in your default download location.\n\nCopy this file to this device and tap **Upload ZIP/CSV file** below."
           }
         }
       }

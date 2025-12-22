@@ -483,33 +483,6 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             noteComponents.append("Vault: \(sourceVaultName)")
         }
         
-//        // For identity type, parse JSON from note field
-//        if itemType == "identity",
-//           ,
-//           ,
-//           let identityData = try? JSONDecoder().decode([ProtonPassCSVIdentity].self, from: jsonData) {
-//            let identityFields = extractIdentityFields(identityData)
-//            if !identityFields.isEmpty {
-//                noteComponents.append(identityFields)
-//            }
-//            if let note = identityData.note?.nonBlankTrimmedOrNil {
-//                noteComponents.append(note)
-//            }
-//        } else if itemType == "wifi" {
-//            // WiFi: password is in password field
-//            if let password = dict["password"]?.nonBlankOrNil {
-//                noteComponents.append("Password: \(password)")
-//            }
-//            if let note = dict["note"]?.nonBlankTrimmedOrNil {
-//                noteComponents.append(note)
-//            }
-//        } else {
-//            // Other types: just use the note field
-//            if let note = dict["note"]?.nonBlankTrimmedOrNil {
-//                noteComponents.append(note)
-//            }
-//        }
-        
         let noteText = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
         
         let text: Data? = {

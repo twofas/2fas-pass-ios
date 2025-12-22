@@ -1773,6 +1773,10 @@ internal enum T {
   internal static let transferImportingSuccessTitle = T.tr("Localizable", "transfer_importing_success_title", fallback: "Imported successfully")
   /// JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// 1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoOnepassword = T.tr("Localizable", "transfer_instructions_additional_info_onepassword", fallback: "1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoProtonPass = T.tr("Localizable", "transfer_instructions_additional_info_proton_pass", fallback: "ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// Open **System settings** on your mobile device.
   /// 
   /// Go to **Apps** and select **Safari**.
@@ -1817,10 +1821,16 @@ internal enum T {
   internal static let transferInstructionsCtaBitwarden = T.tr("Localizable", "transfer_instructions_cta_bitwarden", fallback: "Upload JSON/CSV file")
   /// Upload CSV file
   internal static let transferInstructionsCtaCsv = T.tr("Localizable", "transfer_instructions_cta_csv", fallback: "Upload CSV file")
+  /// Upload folder or CSV file
+  internal static let transferInstructionsCtaDashlaneMobile = T.tr("Localizable", "transfer_instructions_cta_dashlane_mobile", fallback: "Upload folder or CSV file")
   /// Upload file
   internal static let transferInstructionsCtaGeneric = T.tr("Localizable", "transfer_instructions_cta_generic", fallback: "Upload file")
   /// Upload JSON file
   internal static let transferInstructionsCtaJson = T.tr("Localizable", "transfer_instructions_cta_json", fallback: "Upload JSON file")
+  /// Upload 1PUX/CSV file
+  internal static let transferInstructionsCtaOnepassword = T.tr("Localizable", "transfer_instructions_cta_onepassword", fallback: "Upload 1PUX/CSV file")
+  /// Upload ZIP/CSV file
+  internal static let transferInstructionsCtaProtonPass = T.tr("Localizable", "transfer_instructions_cta_proton_pass", fallback: "Upload ZIP/CSV file")
   /// Upload ZIP file
   internal static let transferInstructionsCtaZip = T.tr("Localizable", "transfer_instructions_cta_zip", fallback: "Upload ZIP file")
   /// Open Dashlane on your mobile phone.
@@ -1829,10 +1839,10 @@ internal enum T {
   /// 
   /// Select **Export data to CSV**, then confirm the export to a folder.
   /// 
-  /// Select the CSV file labelled as **credentials** in the created folder.
+  /// Copy the exported **Dashlane CSV folder or specific files** to this device. 
   /// 
-  /// Copy the exported file to this device and tap **Upload CSV file** below. 
-  internal static let transferInstructionsDashlaneMobile = T.tr("Localizable", "transfer_instructions_dashlane_mobile", fallback: "Open Dashlane on your mobile phone.\n\nGo to **Settings** and select **General**.\n\nSelect **Export data to CSV**, then confirm the export to a folder.\n\nSelect the CSV file labelled as **credentials** in the created folder.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
+  /// Tap **Upload folder or CSV file** below. 
+  internal static let transferInstructionsDashlaneMobile = T.tr("Localizable", "transfer_instructions_dashlane_mobile", fallback: "Open Dashlane on your mobile phone.\n\nGo to **Settings** and select **General**.\n\nSelect **Export data to CSV**, then confirm the export to a folder.\n\nCopy the exported **Dashlane CSV folder or specific files** to this device. \n\nTap **Upload folder or CSV file** below. ")
   /// Open Dashlane on your browser.
   /// 
   /// Expand the **My account** menu and select **Settings**.
@@ -1919,24 +1929,24 @@ internal enum T {
   internal static let transferInstructionsMicrosoftEdge = T.tr("Localizable", "transfer_instructions_microsoft_edge", fallback: "Open Microsoft Edge on your PC\n\nSelect the 3 dots next to your profile icon at the top right, then select **Passwords**.\n\nSelect the 3 dots next to Passkeys and click **Export passwords**.\n\nConfirm the export.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
   /// Open 1Password on your PC.
   /// 
-  /// Click the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).
+  /// Click the three dots at the top of the sidebar, select **Export** and choose the account you want to export (on Mac select a specific Vault).
   /// 
   /// Enter your account password.
   /// 
-  /// Choose the **CSV format** and select **Export data**.
+  /// Choose the **1PUX or CSV format** and select **Export data**.
   /// 
-  /// Copy the exported file to this device and tap **Upload CSV file** below.
-  internal static let transferInstructionsOnepassword = T.tr("Localizable", "transfer_instructions_onepassword", fallback: "Open 1Password on your PC.\n\nClick the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
+  /// Copy the exported file to this device and tap **Upload 1PUX/CSV file** below.
+  internal static let transferInstructionsOnepassword = T.tr("Localizable", "transfer_instructions_onepassword", fallback: "Open 1Password on your PC.\n\nClick the three dots at the top of the sidebar, select **Export** and choose the account you want to export (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **1PUX or CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload 1PUX/CSV file** below.")
   /// Open Proton Pass via their browser extension, web app or Windows app.
   /// 
   /// Click the **Proton Pass Logo**, select **Settings**, then **Export**.
   /// 
-  /// Choose the **CSV format** and select **Export**.
+  /// Choose the **ZIP or CSV format** and select **Export**.
   /// 
-  /// Find the CSV file saved in your default download location.
+  /// Find the saved file in your default download location.
   /// 
-  /// Copy this file to this device and tap **Upload CSV file** below.
-  internal static let transferInstructionsProtonpass = T.tr("Localizable", "transfer_instructions_protonpass", fallback: "Open Proton Pass via their browser extension, web app or Windows app.\n\nClick the **Proton Pass Logo**, select **Settings**, then **Export**.\n\nChoose the **CSV format** and select **Export**.\n\nFind the CSV file saved in your default download location.\n\nCopy this file to this device and tap **Upload CSV file** below.")
+  /// Copy this file to this device and tap **Upload ZIP/CSV file** below.
+  internal static let transferInstructionsProtonpass = T.tr("Localizable", "transfer_instructions_protonpass", fallback: "Open Proton Pass via their browser extension, web app or Windows app.\n\nClick the **Proton Pass Logo**, select **Settings**, then **Export**.\n\nChoose the **ZIP or CSV format** and select **Export**.\n\nFind the saved file in your default download location.\n\nCopy this file to this device and tap **Upload ZIP/CSV file** below.")
   /// Please follow the instructions if you would like to transfer passwords from other applications into 2FAS Pass.
   /// 
   /// All product names, logos, and brands are the property of their respective owners. Use of these names does not imply any affiliation with or endorsement by them.
