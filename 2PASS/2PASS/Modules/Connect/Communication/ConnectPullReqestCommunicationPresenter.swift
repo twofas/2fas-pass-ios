@@ -213,6 +213,7 @@ final class ConnectPullReqestCommunicationPresenter {
                 )
                 state = .finish(.success(()))
             } catch {
+                Log("ConnectPullReqestCommunicationPresenter - Failed to connect: \(error)", module: .connect, severity: .error)
                 state = .finish(.failure(error))
             }
         }
