@@ -11,7 +11,7 @@ public struct SplashScreenView: View {
     public init() {}
     
     public var body: some View {
-        Asset.mainBackgroundColor.swiftUIColor
+        Color.clear
             .overlay {
                 Image(.smallShield)
             }

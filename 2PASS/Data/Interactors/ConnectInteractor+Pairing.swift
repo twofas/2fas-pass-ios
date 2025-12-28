@@ -83,7 +83,7 @@ extension ConnectInteractor {
             let helloResponse = try await pairingSession.helloHandshake(
                 deviceID: deviceID,
                 deviceName: mainRepository.deviceName,
-                deviceType: .init(mainRepository.deviceType)
+                deviceType: .init(mainRepository.deviceType),
             )
             
             progress(0.25)

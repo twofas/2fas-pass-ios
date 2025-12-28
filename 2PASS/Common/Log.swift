@@ -205,17 +205,16 @@ public struct LogInterpolation: StringInterpolationProtocol {
     }
     
     public mutating func appendInterpolation(_ value: @autoclosure () -> String, privacy: LogPrivacy = .auto) {
-        #if DEBUG
-        let interpolation = "\(value())"
-        #else
+        #if PROD
         let shouldHide: Bool = {
             switch privacy {
             case .auto, .private: return true
             case .public: return false
             }
         }()
-        
         let interpolation = shouldHide ? "<private>" : "\(value())"
+        #else
+        let interpolation = "\(value())"
         #endif
         
         _interpolation.appendInterpolation(interpolation)

@@ -151,7 +151,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     
     @objc
     func stateChanged() {
-        if cloudSyncInteractor.currentState == .disabledAvailable {
+        if cloudSyncInteractor.currentState == .disabled {
             cloudSyncInteractor.enable()
             cloudSyncInteractor.synchronize()
         }

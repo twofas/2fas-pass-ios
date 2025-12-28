@@ -6,65 +6,121 @@
 
 import SwiftUI
 import CommonUI
+import Common
+import Data
 
 struct TransferItemsFileSummaryView: View {
-    
+
     @State var presenter: TransferItemsFileSummaryPresenter
-    
+
+    let iconWidth = 20.0
+
     var body: some View {
-        SettingsDetailsForm(Text(T.transferInstructionsHeader(presenter.service.name).localizedKey)) {
-            HStack {
+        VStack(spacing: 0) {
+            SettingsDetailsForm(Text(T.transferInstructionsHeader(presenter.service.name).localizedKey)) {
+                ForEach(presenter.contentTypes, id: \.self) { contentType in
+                    summarySection(
+                        count: presenter.summary[contentType] ?? 0,
+                        icon: contentType.iconSystemName.map { Image(systemName: $0) },
+                        description: descriptionForContentType(contentType)
+                    )
+                }
+
+                if presenter.itemsConvertedToSecureNotes > 0 {
+                    summarySection(
+                        count: presenter.itemsConvertedToSecureNotes,
+                        icon: Image(systemName: "questionmark.circle"),
+                        description: T.transferFileSummaryOthersCounterDescription.localizedKey
+                    )
+                }
+                
+                if presenter.tagsCount > 0 {
+                    summarySection(
+                        count: presenter.tagsCount,
+                        icon: Image(systemName: "tag"),
+                        description: T.transferFileSummaryTagsCounterDescription.localizedKey
+                    )
+                }
+
+            } header: {
+                SettingsHeaderView(
+                    icon: {
+                        SettingsIconView(icon: presenter.service.settingsIcon)
+                    },
+                    title: {
+                        HStack(spacing: Spacing.s) {
+                            Text(presenter.service.name)
+                            Image(.transferIcon)
+                            Text(T.appName.localizedKey)
+                        }
+                    },
+                    description: {
+                        Text(T.transferFileSummaryDescription.localizedKey)
+                            .foregroundStyle(.neutral600)
+                    }
+                )
+                .settingsIconStyle(.border)
+            }
+            .listSectionSpacing(Spacing.m)
+            
+            Button(T.transferFileSummaryCta.localizedKey) {
+                presenter.onProceed()
+            }
+            .buttonStyle(.filled)
+            .controlSize(.large)
+            .padding(.horizontal, Spacing.xl)
+            .padding(.bottom, Spacing.xl)
+            .background(Color(UIColor.systemGroupedBackground))
+            .router(router: TransferItemsFileSummaryRouter(), destination: $presenter.destination)
+        }
+    }
+
+    @ViewBuilder
+    private func summarySection(count: Int, icon: Image?, description: LocalizedStringKey) -> some View {
+        Section {
+            HStack(spacing: Spacing.s) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(presenter.items.count, format: .number)
+                    let countText = Text(count, format: .number)
                         .font(.bodyEmphasized)
                         .foregroundStyle(.neutral950)
-                    
-                    Text(T.transferFileSummaryCounterDescription.localizedKey)
+
+                    if let icon {
+                        HStack(spacing: Spacing.xs) {
+                            icon.frame(width: iconWidth)
+                            countText
+                        }
+                    } else {
+                        countText
+                    }
+
+                    Text(description)
                         .font(.footnote)
                         .foregroundStyle(.neutral600)
                 }
-                
+
                 Spacer()
-                
-                Image(systemName: "checkmark.circle")
-                    .font(.system(size: 24))
-                    .foregroundStyle(.success500)
             }
-            .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
-            
-        } header: {
-            SettingsHeaderView(
-                icon: {
-                    SettingsIconView(icon: presenter.service.settingsIcon)
-                },
-                title: {
-                    HStack(spacing: Spacing.s) {
-                        Text(presenter.service.name)
-                        Image(.transferIcon)
-                        Text(T.appName.localizedKey)
-                    }
-                },
-                description: {
-                    Text(T.transferFileSummaryDescription.localizedKey)
-                        .foregroundStyle(.neutral600)
-                }
-            )
-            .settingsIconStyle(.border)
         }
-        .listSectionSpacing(Spacing.m)
-        
-        Button(T.transferFileSummaryCta.localizedKey) {
-            presenter.onProceed()
+        .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
+    }
+
+    private func descriptionForContentType(_ contentType: ItemContentType) -> LocalizedStringKey {
+        switch contentType {
+        case .login:
+            T.transferFileSummaryLoginsCounterDescription.localizedKey
+        case .secureNote:
+            T.transferFileSummarySecureNotesCounterDescription.localizedKey
+        case .unknown:
+            T.transferFileSummaryOthersCounterDescription.localizedKey
         }
-        .buttonStyle(.filled)
-        .controlSize(.large)
-        .padding(.horizontal, Spacing.xl)
-        .padding(.bottom, Spacing.xl)
-        .background(Color(UIColor.systemGroupedBackground))
-        .router(router: TransferItemsFileSummaryRouter(), destination: $presenter.destination)
     }
 }
 
 #Preview {
-    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, items: [], onClose: {}))
+    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, result: ExternalServiceImportResult(
+        items: [
+            .login(.init(id: .init(), vaultId: .init(), metadata: .init(creationDate: Date(), modificationDate: Date(), protectionLevel: .confirm, trashedStatus: .no, tagIds: nil), name: nil, content: .init(name: nil, username: nil, password: nil, notes: nil, iconType: .domainIcon(nil), uris: nil))),
+        ],
+        itemsConvertedToSecureNotes: 12), onClose: {}
+    ))
 }

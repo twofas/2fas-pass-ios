@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
+import Foundation
+import Common
+import SwiftCSV
+
+extension ExternalServiceImportInteractor {
+
+    struct KeePassImporter {
+        let context: ImportContext
+
+        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+            guard let csvString = String(data: content, encoding: .utf8) else {
+                throw .wrongFormat
+            }
+            guard let vaultID = context.selectedVaultId else {
+                throw .wrongFormat
+            }
+            var passwords: [ItemData] = []
+            let protectionLevel = context.currentProtectionLevel
+
+            do {
+                let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
+                guard csv.header.containsAll(["Account", "Login Name", "Password", "Web Site", "Comments"]) else {
+                    throw ExternalServiceImportError.wrongFormat
+                }
+                try csv.enumerateAsDict { dict in
+                    guard dict.allValuesEmpty == false else { return }
+
+                    let name = dict["Account"].formattedName
+                    let uris: [PasswordURI]? = {
+                        guard let urlString = dict["Web Site"]?.nonBlankTrimmedOrNil else { return nil }
+                        let uri = PasswordURI(uri: urlString, match: .domain)
+                        return [uri]
+                    }()
+                    let username = dict["Login Name"]?.nonBlankTrimmedOrNil
+                    let password: Data? = {
+                        if let passwordString = dict["Password"]?.nonBlankTrimmedOrNil,
+                           let password = context.encryptSecureField(passwordString, for: protectionLevel) {
+                            return password
+                        }
+                        return nil
+                    }()
+                    let notes = dict["Comments"]?.nonBlankTrimmedOrNil
+
+                    passwords.append(
+                        .login(
+                            .init(
+                                id: .init(),
+                                vaultId: vaultID,
+                                metadata: .init(
+                                    creationDate: Date.importPasswordPlaceholder,
+                                    modificationDate: Date.importPasswordPlaceholder,
+                                    protectionLevel: protectionLevel,
+                                    trashedStatus: .no,
+                                    tagIds: nil
+                                ),
+                                name: name,
+                                content: .init(
+                                    name: name,
+                                    username: username,
+                                    password: password,
+                                    notes: notes,
+                                    iconType: context.makeIconType(uri: uris?.first?.uri),
+                                    uris: uris
+                                )
+                            )
+                        )
+                    )
+                }
+            } catch let error as ExternalServiceImportError {
+                throw error
+            } catch {
+                throw .wrongFormat
+            }
+
+            return passwords
+        }
+    }
+}

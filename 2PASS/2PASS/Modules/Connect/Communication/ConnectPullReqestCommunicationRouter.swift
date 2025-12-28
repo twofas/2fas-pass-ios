@@ -22,9 +22,9 @@ struct ConnectPullReqestCommunicationRouter: Router {
     func view(for destination: ConnectPullReqestCommunicationDestination) -> some View {
         switch destination {
         case .addItem(let changeRequest, let onClose):
-            AddPasswordRouter.buildView(id: nil, changeRequest: changeRequest, onClose: onClose)
+            ItemEditorRouter.buildView(id: nil, changeRequest: changeRequest, onClose: onClose)
         case .editItem(let passwordData, let changeRequest, let onClose):
-            AddPasswordRouter.buildView(id: passwordData.id, changeRequest: changeRequest, onClose: onClose)
+            ItemEditorRouter.buildView(id: passwordData.id, changeRequest: changeRequest, onClose: onClose)
         }
     }
 }

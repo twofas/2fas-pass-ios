@@ -10,34 +10,40 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 internal enum T {
-  /// Application couldn’t import your 2FAS Pass Items. Please try again.
-  internal static let backupImportingFailureDescription = T.tr("Localizable", " backup_importing_failure_description", fallback: "Application couldn’t import your 2FAS Pass Items. Please try again.")
+  /// 2FAS Pass couldn’t import your Items. Please try again.
+  internal static let backupImportingFailureDescription = T.tr("Localizable", " backup_importing_failure_description", fallback: "2FAS Pass couldn’t import your Items. Please try again.")
   /// Can't initialize the camera in Split View mode. Open the app in full screen and try again.
   internal static let cameraErrorSplitMode = T.tr("Localizable", " camera_error_split_mode", fallback: "Can't initialize the camera in Split View mode. Open the app in full screen and try again.")
-  /// The camera is unavailable because the system is overloaded. Please reboot the device.
-  internal static let cameraErrorSystemOverload = T.tr("Localizable", " camera_error_system_overload", fallback: "The camera is unavailable because the system is overloaded. Please reboot the device.")
-  /// Try again
-  internal static let connectModalErrorNoInternetCta = T.tr("Localizable", " connect_modal_error_no_internet_cta", fallback: "Try again")
+  /// The camera is unavailable because the system is overloaded. Please reset the device.
+  internal static let cameraErrorSystemOverload = T.tr("Localizable", " camera_error_system_overload", fallback: "The camera is unavailable because the system is overloaded. Please reset the device.")
   /// Customize icon
   internal static let customizeIcon = T.tr("Localizable", " customize_icon", fallback: "Customize icon")
-  /// You have reached your %d Item limit. Upgrade your plan for unlimited Items.
+  /// Copy
+  internal static let loginViewActionCommonCopy = T.tr("Localizable", " login_view_action_common_copy", fallback: "Copy")
+  /// You've reached your %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitImportMsg(_ p1: Int) -> String {
-    return T.tr("Localizable", " paywall_notice_items_limit_import_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
+    return T.tr("Localizable", " paywall_notice_items_limit_import_msg", p1, fallback: "You've reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
   /// Restoring these Items would exceed the %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitRestoreMsg(_ p1: Int) -> String {
     return T.tr("Localizable", " paywall_notice_items_limit_restore_msg", p1, fallback: "Restoring these Items would exceed the %d Item limit. Upgrade your plan for unlimited Items.")
   }
-  /// You have reached your %d Item limit. Upgrade your plan for unlimited Items.
+  /// You've reached your %d Item limit. Upgrade your plan for unlimited Items.
   internal static func paywallNoticeItemsLimitTransferMsg(_ p1: Int) -> String {
-    return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You have reached your %d Item limit. Upgrade your plan for unlimited Items.")
+    return T.tr("Localizable", " paywall_notice_items_limit_transfer_msg", p1, fallback: "You've reached your %d Item limit. Upgrade your plan for unlimited Items.")
   }
-  /// Sync request from the browser extension.
-  internal static let requestModalFullSyncSubtitle = T.tr("Localizable", " request_modal_full_sync_subtitle", fallback: "Sync request from the browser extension.")
-  /// Sync Request
-  internal static let requestModalFullSyncTitle = T.tr("Localizable", " request_modal_full_sync_title", fallback: "Sync Request")
+  /// Send your Vault's data to the browser extension.
+  internal static let requestModalFullSyncSubtitle = T.tr("Localizable", " request_modal_full_sync_subtitle", fallback: "Send your Vault's data to the browser extension.")
+  /// Vault Request
+  internal static let requestModalFullSyncTitle = T.tr("Localizable", " request_modal_full_sync_title", fallback: "Vault Request")
+  /// Remove Login
+  internal static let requestModalRemoveLoginTitle = T.tr("Localizable", " request_modal_remove_login_title", fallback: "Remove Login")
+  /// Remove Secure Note
+  internal static let requestModalRemoveSecureNoteTitle = T.tr("Localizable", " request_modal_remove_secure_note_title", fallback: "Remove Secure Note")
   /// Select decryption method:
   internal static let restoreDecryptVaultOptionTitle = T.tr("Localizable", " restore_decrypt_vault_option_title", fallback: "Select decryption method:")
+  /// Additional info
+  internal static let secureNoteAdditionalInfoLabel = T.tr("Localizable", " secure_note_additional_info_label", fallback: "Additional info")
   /// 3. Multi-Layer Encryption
   internal static let securityTiersHelpLayersSectionTitle = T.tr("Localizable", " security_tiers_help_layers_section_title", fallback: "3. Multi-Layer Encryption")
   /// Your data is protected with a unique, randomly generated SEED combined with your Master Password.
@@ -49,8 +55,8 @@ internal enum T {
   internal static let securityTiersHelpTiersTopSecretTitle = T.tr("Localizable", " security_tiers_help_tiers_top_secret_title", fallback: "Top Secret")
   /// iCloud Vault Sync had a merge error. Try switching the Sync on and off, or restoring the backup from iCloud
   internal static let syncErrorIcloudMergeError = T.tr("Localizable", " sync_error_icloud_merge_error", fallback: "iCloud Vault Sync had a merge error. Try switching the Sync on and off, or restoring the backup from iCloud")
-  /// To sync your Vault on multiple devices, you need to upgrade to the Unlimited plan
-  internal static let syncErrorIcloudSyncNotAllowedDescription = T.tr("Localizable", " sync_error_icloud_sync_not_allowed_description", fallback: "To sync your Vault on multiple devices, you need to upgrade to the Unlimited plan")
+  /// To sync this Vault across multiple devices, you need to upgrade to the Unlimited plan
+  internal static let syncErrorIcloudSyncNotAllowedDescription = T.tr("Localizable", " sync_error_icloud_sync_not_allowed_description", fallback: "To sync this Vault across multiple devices, you need to upgrade to the Unlimited plan")
   /// Can't enable Vault Sync
   internal static let syncErrorIcloudSyncNotAllowedTitle = T.tr("Localizable", " sync_error_icloud_sync_not_allowed_title", fallback: "Can't enable Vault Sync")
   /// Incorrect URL
@@ -149,8 +155,8 @@ internal enum T {
   internal static let autofillPromptTitle = T.tr("Localizable", "autofill_prompt_title", fallback: "Autofill Request")
   /// Export
   internal static let backupExportCta = T.tr("Localizable", "backup_export_cta", fallback: "Export")
-  /// Application couldn’t export your 2FAS Pass Items. Please try again.
-  internal static let backupExportFailedDescription = T.tr("Localizable", "backup_export_failed_description", fallback: "Application couldn’t export your 2FAS Pass Items. Please try again.")
+  /// 2FAS Pass couldn’t export your Items. Please try again.
+  internal static let backupExportFailedDescription = T.tr("Localizable", "backup_export_failed_description", fallback: "2FAS Pass couldn’t export your Items. Please try again.")
   /// Export failed
   internal static let backupExportFailedTitle = T.tr("Localizable", "backup_export_failed_title", fallback: "Export failed")
   /// Use Export to back up your Items offline.
@@ -201,12 +207,44 @@ internal enum T {
   internal static let bottomBarPasswords = T.tr("Localizable", "bottom_bar_passwords", fallback: "Items")
   /// Settings
   internal static let bottomBarSettings = T.tr("Localizable", "bottom_bar_settings", fallback: "Settings")
-  /// Can't initialize the camera. Try rebooting the device.
-  internal static let cameraErrorGeneral = T.tr("Localizable", "camera_error_general", fallback: "Can't initialize the camera. Try rebooting the device.")
-  /// Another app is using the camera. If closing other apps doesn't help, please reboot the device.
-  internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app is using the camera. If closing other apps doesn't help, please reboot the device.")
+  /// Can't initialize the camera. Try resetting the device.
+  internal static let cameraErrorGeneral = T.tr("Localizable", "camera_error_general", fallback: "Can't initialize the camera. Try resetting the device.")
+  /// Another app is using the camera. If closing other apps doesn't help, please reset the device.
+  internal static let cameraErrorOtherAppUsesCamera = T.tr("Localizable", "camera_error_other_app_uses_camera", fallback: "Another app is using the camera. If closing other apps doesn't help, please reset the device.")
   /// Error while scanning the QR Code
   internal static let cameraQrCodeError = T.tr("Localizable", "camera_qr_code_error", fallback: "Error while scanning the QR Code")
+  /// Add Card
+  internal static let cardAddTitle = T.tr("Localizable", "card_add_title", fallback: "Add Card")
+  /// Card Details
+  internal static let cardDetailsHeader = T.tr("Localizable", "card_details_header", fallback: "Card Details")
+  /// Edit Card
+  internal static let cardEditTitle = T.tr("Localizable", "card_edit_title", fallback: "Edit Card")
+  /// Error while copying card number
+  internal static let cardErrorCopyNumber = T.tr("Localizable", "card_error_copy_number", fallback: "Error while copying card number")
+  /// Error while copying security code
+  internal static let cardErrorCopySecurityCode = T.tr("Localizable", "card_error_copy_security_code", fallback: "Error while copying security code")
+  /// Expiration Date
+  internal static let cardExpirationDateLabel = T.tr("Localizable", "card_expiration_date_label", fallback: "Expiration Date")
+  /// MM/YY
+  internal static let cardExpirationDatePlaceholder = T.tr("Localizable", "card_expiration_date_placeholder", fallback: "MM/YY")
+  /// Cardholder
+  internal static let cardHolderLabel = T.tr("Localizable", "card_holder_label", fallback: "Cardholder")
+  /// Name
+  internal static let cardNameLabel = T.tr("Localizable", "card_name_label", fallback: "Name")
+  /// Notes
+  internal static let cardNotesLabel = T.tr("Localizable", "card_notes_label", fallback: "Notes")
+  /// Card Number
+  internal static let cardNumberLabel = T.tr("Localizable", "card_number_label", fallback: "Card Number")
+  /// Security Code
+  internal static let cardSecurityCodeLabel = T.tr("Localizable", "card_security_code_label", fallback: "Security Code")
+  /// Copy cardholder
+  internal static let cardViewActionCopyCardHolder = T.tr("Localizable", "card_view_action_copy_card_holder", fallback: "Copy cardholder")
+  /// Copy card number
+  internal static let cardViewActionCopyCardNumber = T.tr("Localizable", "card_view_action_copy_card_number", fallback: "Copy card number")
+  /// Copy expiration date
+  internal static let cardViewActionCopyExpirationDate = T.tr("Localizable", "card_view_action_copy_expiration_date", fallback: "Copy expiration date")
+  /// Copy security code
+  internal static let cardViewActionCopySecurityCode = T.tr("Localizable", "card_view_action_copy_security_code", fallback: "Copy security code")
   /// Update app
   internal static let cloudSyncInvalidSchemaErrorCta = T.tr("Localizable", "cloud_sync_invalid_schema_error_cta", fallback: "Update app")
   /// Cloud sync failed. The Vault you’re trying to synchronize was created in a newer version %d, which is not supported in your current version. Please update your app to synchronize it.
@@ -255,8 +293,8 @@ internal enum T {
   internal static let commonGeneralErrorTryAgain = T.tr("Localizable", "common_general_error_try_again", fallback: "There was an error. Please try again")
   /// Help
   internal static let commonHelp = T.tr("Localizable", "common_help", fallback: "Help")
-  /// Modified:
-  internal static let commonModified = T.tr("Localizable", "common_modified", fallback: "Modified:")
+  /// Last modified:
+  internal static let commonModified = T.tr("Localizable", "common_modified", fallback: "Last modified:")
   /// No
   internal static let commonNo = T.tr("Localizable", "common_no", fallback: "No")
   /// Off
@@ -265,6 +303,8 @@ internal enum T {
   internal static let commonOk = T.tr("Localizable", "common_ok", fallback: "OK")
   /// On
   internal static let commonOn = T.tr("Localizable", "common_on", fallback: "On")
+  /// Open
+  internal static let commonOpen = T.tr("Localizable", "common_open", fallback: "Open")
   /// Open System Settings
   internal static let commonOpenSystemSettings = T.tr("Localizable", "common_open_system_settings", fallback: "Open System Settings")
   /// Other
@@ -401,6 +441,32 @@ internal enum T {
   internal static let connectSetupStepsHeader = T.tr("Localizable", "connect_setup_steps_header", fallback: "2FAS Pass Browser Extension setup")
   /// Connect
   internal static let connectTitle = T.tr("Localizable", "connect_title", fallback: "Connect")
+  /// Card
+  internal static let contentTypeCardName = T.tr("Localizable", "content_type_card_name", fallback: "Card")
+  /// All Items
+  internal static let contentTypeFilterAllName = T.tr("Localizable", "content_type_filter_all_name", fallback: "All Items")
+  /// Cards
+  internal static let contentTypeFilterCardName = T.tr("Localizable", "content_type_filter_card_name", fallback: "Cards")
+  /// Logins
+  internal static let contentTypeFilterLoginName = T.tr("Localizable", "content_type_filter_login_name", fallback: "Logins")
+  /// Secure Notes
+  internal static let contentTypeFilterSecureNoteName = T.tr("Localizable", "content_type_filter_secure_note_name", fallback: "Secure Notes")
+  /// Login
+  internal static let contentTypeLoginName = T.tr("Localizable", "content_type_login_name", fallback: "Login")
+  /// Secure Note
+  internal static let contentTypeSecureNoteName = T.tr("Localizable", "content_type_secure_note_name", fallback: "Secure Note")
+  /// Cardholder
+  internal static let creditCardCardholderLabel = T.tr("Localizable", "credit_card_cardholder_label", fallback: "Cardholder")
+  /// CVV
+  internal static let creditCardCvvLabel = T.tr("Localizable", "credit_card_cvv_label", fallback: "CVV")
+  /// Expiration date
+  internal static let creditCardExpirationLabel = T.tr("Localizable", "credit_card_expiration_label", fallback: "Expiration date")
+  /// Name
+  internal static let creditCardNameLabel = T.tr("Localizable", "credit_card_name_label", fallback: "Name")
+  /// Notes
+  internal static let creditCardNotesLabel = T.tr("Localizable", "credit_card_notes_label", fallback: "Notes")
+  /// Card Number
+  internal static let creditCardNumberLabel = T.tr("Localizable", "credit_card_number_label", fallback: "Card Number")
   /// Custom
   internal static let customizeIconCustom = T.tr("Localizable", "customize_icon_custom", fallback: "Custom")
   /// Favicon URL
@@ -459,8 +525,8 @@ internal enum T {
   internal static let decryptionKitSettingsSecretWordsIos = T.tr("Localizable", "decryption_kit_settings_secret_words_ios", fallback: "**Secret Words** (15-word phrase),")
   /// Decryption Kit Settings
   internal static let decryptionKitSettingsTitle = T.tr("Localizable", "decryption_kit_settings_title", fallback: "Decryption Kit Settings")
-  /// to avoid entering the Master Password when recovering my Vault.
-  internal static let decryptionKitSettingsToggleMsg = T.tr("Localizable", "decryption_kit_settings_toggle_msg", fallback: "to avoid entering the Master Password when recovering my Vault.")
+  /// to avoid entering the Master Password during Vault recovery.
+  internal static let decryptionKitSettingsToggleMsg = T.tr("Localizable", "decryption_kit_settings_toggle_msg", fallback: "to avoid entering the Master Password during Vault recovery.")
   /// Include the Master Password hash 
   internal static let decryptionKitSettingsToggleTitle = T.tr("Localizable", "decryption_kit_settings_toggle_title", fallback: "Include the Master Password hash ")
   /// Download this PDF
@@ -485,9 +551,9 @@ internal enum T {
   internal static let exportBackupModalTitle = T.tr("Localizable", "export_backup_modal_title", fallback: "Export your backup")
   /// Save the exported Vault in a safe place
   internal static let exportVaultTitle = T.tr("Localizable", "export_vault_title", fallback: "Save the exported Vault in a safe place")
-  /// Showing %d items tagged: **%@**
+  /// Showing %d Items tagged: **%@**
   internal static func filterTagBannerIos(_ p1: Int, _ p2: Any) -> String {
-    return T.tr("Localizable", "filter_tag_banner_ios", p1, String(describing: p2), fallback: "Showing %d items tagged: **%@**")
+    return T.tr("Localizable", "filter_tag_banner_ios", p1, String(describing: p2), fallback: "Showing %d Items tagged: **%@**")
   }
   /// No local Vault found. Please reinstall the app
   internal static let generalErrorNoLocalVault = T.tr("Localizable", "general_error_no_local_vault", fallback: "No local Vault found. Please reinstall the app")
@@ -501,6 +567,12 @@ internal enum T {
   internal static func generalServerErrorDetails(_ p1: Any) -> String {
     return T.tr("Localizable", "general_server_error_details", String(describing: p1), fallback: "Server error: %@")
   }
+  /// Are you sure you want to remove %d Items? You can recover them later.
+  internal static func homeDeleteConfirmBody(_ p1: Int) -> String {
+    return T.tr("Localizable", "home_delete_confirm_body", p1, fallback: "Are you sure you want to remove %d Items? You can recover them later.")
+  }
+  /// Remove Items?
+  internal static let homeDeleteConfirmTitle = T.tr("Localizable", "home_delete_confirm_title", fallback: "Remove Items?")
   /// Start with quick setup
   internal static let homeEmptyImportCta = T.tr("Localizable", "home_empty_import_cta", fallback: "Start with quick setup")
   /// No Items available
@@ -517,6 +589,10 @@ internal enum T {
   }
   /// Master Password
   internal static let iosLockScreenUnlockTitle = T.tr("Localizable", "ios_lock_screen_unlock_title", fallback: "Master Password")
+  /// Add Item
+  internal static let itemAddTitle = T.tr("Localizable", "item_add_title", fallback: "Add Item")
+  /// Edit Item
+  internal static let itemEditTitle = T.tr("Localizable", "item_edit_title", fallback: "Edit Item")
   /// Delete
   internal static let knownBrowserDeleteButton = T.tr("Localizable", "known_browser_delete_button", fallback: "Delete")
   /// Are you sure you want to disconnect this device from the selected browser extension?
@@ -531,10 +607,10 @@ internal enum T {
   internal static let knownBrowsersDescription = T.tr("Localizable", "known_browsers_description", fallback: "List of trusted browser extensions that have been approved by you and don't need a confirmation to connect to this device.")
   /// No browsers found
   internal static let knownBrowsersEmpty = T.tr("Localizable", "known_browsers_empty", fallback: "No browsers found")
-  /// Connected Browser Extensions
-  internal static let knownBrowsersHeader = T.tr("Localizable", "known_browsers_header", fallback: "Connected Browser Extensions")
-  /// Trusted Extensions
-  internal static let knownBrowsersTitle = T.tr("Localizable", "known_browsers_title", fallback: "Trusted Extensions")
+  /// Trusted Browser Extensions
+  internal static let knownBrowsersHeader = T.tr("Localizable", "known_browsers_header", fallback: "Trusted Browser Extensions")
+  /// Connected Extensions
+  internal static let knownBrowsersTitle = T.tr("Localizable", "known_browsers_title", fallback: "Connected Extensions")
   /// Biometrics Error
   internal static let lockScreenBiometricsErrorTitle = T.tr("Localizable", "lock_screen_biometrics_error_title", fallback: "Biometrics Error")
   /// Too many failed attempts. You can enable biometrics later in Settings -> Security.
@@ -619,8 +695,8 @@ internal enum T {
   internal static let lockoutSettingsAutofillLockTimeNever = T.tr("Localizable", "lockout_settings_autofill_lock_time_never", fallback: "Never")
   /// Autofill Lockout
   internal static let lockoutSettingsAutofillLockoutHeader = T.tr("Localizable", "lockout_settings_autofill_lockout_header", fallback: "Autofill Lockout")
-  /// Add Item
-  internal static let loginAddTitle = T.tr("Localizable", "login_add_title", fallback: "Add Item")
+  /// Add Login
+  internal static let loginAddTitle = T.tr("Localizable", "login_add_title", fallback: "Add Login")
   /// +  Add URL
   internal static let loginAddUriCta = T.tr("Localizable", "login_add_uri_cta", fallback: "+  Add URL")
   /// Are you sure you want to remove this Item? You can recover it later.
@@ -629,12 +705,12 @@ internal enum T {
   internal static let loginDeleteConfirmTitle = T.tr("Localizable", "login_delete_confirm_title", fallback: "Remove Item?")
   /// Remove Item
   internal static let loginDeleteCta = T.tr("Localizable", "login_delete_cta", fallback: "Remove Item")
-  /// Edit item
-  internal static let loginEdit = T.tr("Localizable", "login_edit", fallback: "Edit item")
+  /// Edit Item
+  internal static let loginEdit = T.tr("Localizable", "login_edit", fallback: "Edit Item")
   /// Edit icon
   internal static let loginEditIconCta = T.tr("Localizable", "login_edit_icon_cta", fallback: "Edit icon")
-  /// Edit Item
-  internal static let loginEditTitle = T.tr("Localizable", "login_edit_title", fallback: "Edit Item")
+  /// Edit Login
+  internal static let loginEditTitle = T.tr("Localizable", "login_edit_title", fallback: "Edit Login")
   /// Item was deleted on another device. You can find it in the trash
   internal static let loginErrorDeletedOtherDevice = T.tr("Localizable", "login_error_deleted_other_device", fallback: "Item was deleted on another device. You can find it in the trash")
   /// Item was edited on another device
@@ -671,8 +747,8 @@ internal enum T {
   internal static let loginPasswordLabel = T.tr("Localizable", "login_password_label", fallback: "Password")
   /// Enter password
   internal static let loginPasswordPlaceholder = T.tr("Localizable", "login_password_placeholder", fallback: "Enter password")
-  /// Take another try with a different filter
-  internal static let loginSearchNoResultsDescription = T.tr("Localizable", "login_search_no_results_description", fallback: "Take another try with a different filter")
+  /// Try a different filter
+  internal static let loginSearchNoResultsDescription = T.tr("Localizable", "login_search_no_results_description", fallback: "Try a different filter")
   /// Item not found
   internal static let loginSearchNoResultsTitle = T.tr("Localizable", "login_search_no_results_title", fallback: "Item not found")
   /// Security
@@ -739,6 +815,8 @@ internal enum T {
   internal static let loginUsernameMostUsedHeader = T.tr("Localizable", "login_username_most_used_header", fallback: "Most used Usernames")
   /// Copy password
   internal static let loginViewActionCopyPassword = T.tr("Localizable", "login_view_action_copy_password", fallback: "Copy password")
+  /// Copy URL
+  internal static let loginViewActionCopyUri = T.tr("Localizable", "login_view_action_copy_uri", fallback: "Copy URL")
   /// Copy username
   internal static let loginViewActionCopyUsername = T.tr("Localizable", "login_view_action_copy_username", fallback: "Copy username")
   /// Remove Item
@@ -755,8 +833,6 @@ internal enum T {
   internal static let manageSubscriptionBrowsersTitle = T.tr("Localizable", "manage_subscription_browsers_title", fallback: "Connected Web Browsers")
   /// Your plan ends on 
   internal static let manageSubscriptionEndDatePrefix = T.tr("Localizable", "manage_subscription_end_date_prefix", fallback: "Your plan ends on ")
-  /// Your logins and passwords
-  internal static let manageSubscriptionItemsSubtitle = T.tr("Localizable", "manage_subscription_items_subtitle", fallback: "Your logins and passwords")
   /// Items
   internal static let manageSubscriptionItemsTitle = T.tr("Localizable", "manage_subscription_items_title", fallback: "Items")
   /// Multi-Device Sync
@@ -897,8 +973,8 @@ internal enum T {
   internal static let passwordLengthRequirement = T.tr("Localizable", "password_length_requirement", fallback: "At least 9 characters")
   /// Passwords match
   internal static let passwordsMatchText = T.tr("Localizable", "passwords_match_text", fallback: "Passwords match")
-  /// You have reached your limit. Upgrade your plan to sync unlimited devices.
-  internal static let paywallNoticeBrowsersLimitMsg = T.tr("Localizable", "paywall_notice_browsers_limit_msg", fallback: "You have reached your limit. Upgrade your plan to sync unlimited devices.")
+  /// You've reached your limit. Upgrade your plan to sync unlimited devices.
+  internal static let paywallNoticeBrowsersLimitMsg = T.tr("Localizable", "paywall_notice_browsers_limit_msg", fallback: "You've reached your limit. Upgrade your plan to sync unlimited devices.")
   /// Can't connect
   internal static let paywallNoticeBrowsersLimitTitle = T.tr("Localizable", "paywall_notice_browsers_limit_title", fallback: "Can't connect")
   /// Upgrade plan
@@ -961,8 +1037,8 @@ internal enum T {
   internal static let quickSetupSubtitle = T.tr("Localizable", "quick_setup_subtitle", fallback: "Personlize your security and usability preferences.")
   /// Quick setup
   internal static let quickSetupTitle = T.tr("Localizable", "quick_setup_title", fallback: "Quick setup")
-  /// Transfer passwords from other apps
-  internal static let quickSetupTransferItemsCta = T.tr("Localizable", "quick_setup_transfer_items_cta", fallback: "Transfer passwords from other apps")
+  /// Transfer from other apps
+  internal static let quickSetupTransferItemsCta = T.tr("Localizable", "quick_setup_transfer_items_cta", fallback: "Transfer from other apps")
   /// User is forbidden to access this path.
   internal static let recoveryErrorForbidden = T.tr("Localizable", "recovery_error_forbidden", fallback: "User is forbidden to access this path.")
   /// Index file is damaged.
@@ -989,6 +1065,10 @@ internal enum T {
   internal static let recoveryKitTitle = T.tr("Localizable", "recovery_kit_title", fallback: "2FAS Pass Decryption Kit")
   /// Write down the Master Password:
   internal static let recoveryKitWriteDown = T.tr("Localizable", "recovery_kit_write_down", fallback: "Write down the Master Password:")
+  /// Browser Extension requests this Card
+  internal static let requestModalCardRequestSubtitle = T.tr("Localizable", "request_modal_card_request_subtitle", fallback: "Browser Extension requests this Card")
+  /// Card Request
+  internal static let requestModalCardRequestTitle = T.tr("Localizable", "request_modal_card_request_title", fallback: "Card Request")
   /// Close
   internal static let requestModalErrorGenericCta = T.tr("Localizable", "request_modal_error_generic_cta", fallback: "Close")
   /// Something went wrong. Please try again.
@@ -1021,6 +1101,8 @@ internal enum T {
   internal static let requestModalHeaderTitle = T.tr("Localizable", "request_modal_header_title", fallback: "Request from 2FAS Pass")
   /// Connecting…
   internal static let requestModalLoading = T.tr("Localizable", "request_modal_loading", fallback: "Connecting…")
+  /// New Card
+  internal static let requestModalNewCardTitle = T.tr("Localizable", "request_modal_new_card_title", fallback: "New Card")
   /// Cancel
   internal static let requestModalNewItemCtaNegative = T.tr("Localizable", "request_modal_new_item_cta_negative", fallback: "Cancel")
   /// Continue
@@ -1029,6 +1111,10 @@ internal enum T {
   internal static let requestModalNewItemSubtitle = T.tr("Localizable", "request_modal_new_item_subtitle", fallback: "Browser Extension asks you to add a new Item to your Vault")
   /// New Item
   internal static let requestModalNewItemTitle = T.tr("Localizable", "request_modal_new_item_title", fallback: "New Item")
+  /// New Login
+  internal static let requestModalNewLoginTitle = T.tr("Localizable", "request_modal_new_login_title", fallback: "New Login")
+  /// New Secure Note
+  internal static let requestModalNewSecureNoteTitle = T.tr("Localizable", "request_modal_new_secure_note_title", fallback: "New Secure Note")
   /// Cancel
   internal static let requestModalPasswordRequestCtaNegative = T.tr("Localizable", "request_modal_password_request_cta_negative", fallback: "Cancel")
   /// Send
@@ -1037,6 +1123,8 @@ internal enum T {
   internal static let requestModalPasswordRequestSubtitle = T.tr("Localizable", "request_modal_password_request_subtitle", fallback: "Browser extension requests this Item's password")
   /// Password Request
   internal static let requestModalPasswordRequestTitle = T.tr("Localizable", "request_modal_password_request_title", fallback: "Password Request")
+  /// Remove Card
+  internal static let requestModalRemoveCardTitle = T.tr("Localizable", "request_modal_remove_card_title", fallback: "Remove Card")
   /// Cancel
   internal static let requestModalRemoveItemCtaNegative = T.tr("Localizable", "request_modal_remove_item_cta_negative", fallback: "Cancel")
   /// Remove
@@ -1045,18 +1133,28 @@ internal enum T {
   internal static let requestModalRemoveItemSubtitle = T.tr("Localizable", "request_modal_remove_item_subtitle", fallback: "Browser Extension asks you to remove the following Item from your Vault")
   /// Remove Item
   internal static let requestModalRemoveItemTitle = T.tr("Localizable", "request_modal_remove_item_title", fallback: "Remove Item")
+  /// Browser Extension requests this Note
+  internal static let requestModalSecureNoteRequestSubtitle = T.tr("Localizable", "request_modal_secure_note_request_subtitle", fallback: "Browser Extension requests this Note")
+  /// Secure Note Request
+  internal static let requestModalSecureNoteRequestTitle = T.tr("Localizable", "request_modal_secure_note_request_title", fallback: "Secure Note Request")
   /// Request canceled!
   internal static let requestModalToastCancel = T.tr("Localizable", "request_modal_toast_cancel", fallback: "Request canceled!")
   /// Item added successfully!
   internal static let requestModalToastSuccessAddLogin = T.tr("Localizable", "request_modal_toast_success_add_login", fallback: "Item added successfully!")
+  /// Card sent successfully
+  internal static let requestModalToastSuccessCardRequest = T.tr("Localizable", "request_modal_toast_success_card_request", fallback: "Card sent successfully")
   /// Item deleted successfully!
   internal static let requestModalToastSuccessDeleteLogin = T.tr("Localizable", "request_modal_toast_success_delete_login", fallback: "Item deleted successfully!")
   /// Synced successfully
   internal static let requestModalToastSuccessFullSync = T.tr("Localizable", "request_modal_toast_success_full_sync", fallback: "Synced successfully")
   /// Password sent successfully!
   internal static let requestModalToastSuccessPasswordRequest = T.tr("Localizable", "request_modal_toast_success_password_request", fallback: "Password sent successfully!")
+  /// Note sent successfully
+  internal static let requestModalToastSuccessSecureNoteRequest = T.tr("Localizable", "request_modal_toast_success_secure_note_request", fallback: "Note sent successfully")
   /// Item updated successfully!
   internal static let requestModalToastSuccessUpdateLogin = T.tr("Localizable", "request_modal_toast_success_update_login", fallback: "Item updated successfully!")
+  /// Update Card
+  internal static let requestModalUpdateCardTitle = T.tr("Localizable", "request_modal_update_card_title", fallback: "Update Card")
   /// Cancel
   internal static let requestModalUpdateItemCtaNegative = T.tr("Localizable", "request_modal_update_item_cta_negative", fallback: "Cancel")
   /// Continue
@@ -1065,6 +1163,10 @@ internal enum T {
   internal static let requestModalUpdateItemSubtitle = T.tr("Localizable", "request_modal_update_item_subtitle", fallback: "Browser Extension requests the update of the following fields of this Item.")
   /// Update Item
   internal static let requestModalUpdateItemTitle = T.tr("Localizable", "request_modal_update_item_title", fallback: "Update Item")
+  /// Update Login
+  internal static let requestModalUpdateLoginTitle = T.tr("Localizable", "request_modal_update_login_title", fallback: "Update Login")
+  /// Update Secure Note
+  internal static let requestModalUpdateSecureNoteTitle = T.tr("Localizable", "request_modal_update_secure_note_title", fallback: "Update Secure Note")
   /// Below, you can see a list of 2FAS Pass Vaults. Select the one you want to restore.
   internal static let restoreCloudFilesDescription = T.tr("Localizable", "restore_cloud_files_description", fallback: "Below, you can see a list of 2FAS Pass Vaults. Select the one you want to restore.")
   /// No Vaults found in your cloud storage
@@ -1105,8 +1207,8 @@ internal enum T {
   internal static let restoreErrorIncorrectQrCode = T.tr("Localizable", "restore_error_incorrect_qr_code", fallback: "Error. Incorrect QR Code.")
   /// Error. Incorrect Secret Words.
   internal static let restoreErrorIncorrectWords = T.tr("Localizable", "restore_error_incorrect_words", fallback: "Error. Incorrect Secret Words.")
-  /// Did you use the correct Recover Kit?
-  internal static let restoreFailureDescription = T.tr("Localizable", "restore_failure_description", fallback: "Did you use the correct Recover Kit?")
+  /// Did you use the correct Decryption Kit?
+  internal static let restoreFailureDescription = T.tr("Localizable", "restore_failure_description", fallback: "Did you use the correct Decryption Kit?")
   /// Error while trying to recover the Vault
   internal static let restoreFailureTitle = T.tr("Localizable", "restore_failure_title", fallback: "Error while trying to recover the Vault")
   /// Error while fetching iCloud contents
@@ -1201,6 +1303,24 @@ internal enum T {
   internal static let scanDecryptionKitDescription = T.tr("Localizable", "scan_decryption_kit_description", fallback: "Point your camera at the QR code found in your Decryption Kit.")
   /// Scan the QR code
   internal static let scanDecryptionKitTitle = T.tr("Localizable", "scan_decryption_kit_title", fallback: "Scan the QR code")
+  /// Add Secure Note
+  internal static let secureNoteAddTitle = T.tr("Localizable", "secure_note_add_title", fallback: "Add Secure Note")
+  /// Edit Secure Note
+  internal static let secureNoteEditTitle = T.tr("Localizable", "secure_note_edit_title", fallback: "Edit Secure Note")
+  /// Error while copying the note
+  internal static let secureNoteErrorCopy = T.tr("Localizable", "secure_note_error_copy", fallback: "Error while copying the note")
+  /// Name
+  internal static let secureNoteNameLabel = T.tr("Localizable", "secure_note_name_label", fallback: "Name")
+  /// Note
+  internal static let secureNoteTextLabel = T.tr("Localizable", "secure_note_text_label", fallback: "Note")
+  /// more
+  internal static let secureNoteTextMoreAction = T.tr("Localizable", "secure_note_text_more_action", fallback: "more")
+  /// Tap to edit
+  internal static let secureNoteTextRevealEditAction = T.tr("Localizable", "secure_note_text_reveal_edit_action", fallback: "Tap to edit")
+  /// Tap to view
+  internal static let secureNoteTextRevealViewAction = T.tr("Localizable", "secure_note_text_reveal_view_action", fallback: "Tap to view")
+  /// Copy note
+  internal static let secureNoteViewActionCopy = T.tr("Localizable", "secure_note_view_action_copy", fallback: "Copy note")
   /// Enable Biometrics
   internal static let securityBiometricsEnableCta = T.tr("Localizable", "security_biometrics_enable_cta", fallback: "Enable Biometrics")
   /// Master Password is required to enable biometrics.
@@ -1265,8 +1385,8 @@ internal enum T {
   internal static let selectTagsTitle = T.tr("Localizable", "select_tags_title", fallback: "Manage Tags")
   /// Changing the Master Password will update your Vault encryption, so you'll need to 
   internal static let setNewPasswordConfirmBodyPart1 = T.tr("Localizable", "set_new_password_confirm_body_part1", fallback: "Changing the Master Password will update your Vault encryption, so you'll need to ")
-  /// Changing your Master Password will update your Vault encryption, and you'll need to **download a new Decryption Kit.**
-  internal static let setNewPasswordConfirmBodyPart1Ios = T.tr("Localizable", "set_new_password_confirm_body_part1_ios", fallback: "Changing your Master Password will update your Vault encryption, and you'll need to **download a new Decryption Kit.**")
+  /// Changing your Master Password will update the encryption of your Vault. You'll need to **download a new Decryption Kit and create a new Local Backup.**
+  internal static let setNewPasswordConfirmBodyPart1Ios = T.tr("Localizable", "set_new_password_confirm_body_part1_ios", fallback: "Changing your Master Password will update the encryption of your Vault. You'll need to **download a new Decryption Kit and create a new Local Backup.**")
   /// download a new Decryption Kit.
   internal static let setNewPasswordConfirmBodyPart2Bold = T.tr("Localizable", "set_new_password_confirm_body_part2_bold", fallback: "download a new Decryption Kit.")
   /// If you use this Vault on other devices, Sync will be disabled, and you'll need to re-enable it using your new Master Password.
@@ -1297,8 +1417,8 @@ internal enum T {
   internal static let settingsAutofillKeyboard = T.tr("Localizable", "settings_autofill_keyboard", fallback: "Keyboard inline suggestions")
   /// Display autofill suggestions in your keyboard (if supported).
   internal static let settingsAutofillKeyboardDescription = T.tr("Localizable", "settings_autofill_keyboard_description", fallback: "Display autofill suggestions in your keyboard (if supported).")
-  /// Configure AutoFill: Settings -> Notifications -> 2FAS Pass
-  internal static let settingsAutofillOpenSystemSettingsDescription = T.tr("Localizable", "settings_autofill_open_system_settings_description", fallback: "Configure AutoFill: Settings -> Notifications -> 2FAS Pass")
+  /// Configure AutoFill: Settings -> General -> AutoFill & Passwords
+  internal static let settingsAutofillOpenSystemSettingsDescription = T.tr("Localizable", "settings_autofill_open_system_settings_description", fallback: "Configure AutoFill: Settings -> General -> AutoFill & Passwords")
   /// Setup Autofill
   internal static let settingsAutofillService = T.tr("Localizable", "settings_autofill_service", fallback: "Setup Autofill")
   /// Select 2FAS Pass to automatically fill in Item details in other apps.
@@ -1405,10 +1525,10 @@ internal enum T {
   internal static let settingsEntryImportExportDescription = T.tr("Localizable", "settings_entry_import_export_description", fallback: "Move your data between devices.")
   /// Apps
   internal static let settingsEntryImportOtherApps = T.tr("Localizable", "settings_entry_import_other_apps", fallback: "Apps")
-  /// Trusted Extensions
-  internal static let settingsEntryKnownBrowsers = T.tr("Localizable", "settings_entry_known_browsers", fallback: "Trusted Extensions")
-  /// Manage trusted browser extensions.
-  internal static let settingsEntryKnownBrowsersDescription = T.tr("Localizable", "settings_entry_known_browsers_description", fallback: "Manage trusted browser extensions.")
+  /// Connected Extensions
+  internal static let settingsEntryKnownBrowsers = T.tr("Localizable", "settings_entry_known_browsers", fallback: "Connected Extensions")
+  /// Manage connected browser extensions.
+  internal static let settingsEntryKnownBrowsersDescription = T.tr("Localizable", "settings_entry_known_browsers_description", fallback: "Manage connected browser extensions.")
   /// Lockout settings
   internal static let settingsEntryLockoutSettings = T.tr("Localizable", "settings_entry_lockout_settings", fallback: "Lockout settings")
   /// Manage the app's lockouts settings.
@@ -1531,8 +1651,8 @@ internal enum T {
   internal static let syncErrorIcloudErrorNewerVersion = T.tr("Localizable", "sync_error_icloud_error_newer_version", fallback: "iCloud Vault was created on a newer version. Please update the app")
   /// No iCloud account
   internal static let syncErrorIcloudErrorNoAccount = T.tr("Localizable", "sync_error_icloud_error_no_account", fallback: "No iCloud account")
-  /// There was a problem with iCloud sync. Try rebooting the device
-  internal static let syncErrorIcloudErrorReboot = T.tr("Localizable", "sync_error_icloud_error_reboot", fallback: "There was a problem with iCloud sync. Try rebooting the device")
+  /// There was a problem with iCloud sync. Try reseting the device
+  internal static let syncErrorIcloudErrorReboot = T.tr("Localizable", "sync_error_icloud_error_reboot", fallback: "There was a problem with iCloud sync. Try reseting the device")
   /// Check if you're correctly logged into iCloud
   internal static let syncErrorIcloudErrorUserLoggedIn = T.tr("Localizable", "sync_error_icloud_error_user_logged_in", fallback: "Check if you're correctly logged into iCloud")
   /// iCloud account is over quota
@@ -1557,8 +1677,8 @@ internal enum T {
   internal static let syncStatusErrorNewerVersionNeeded = T.tr("Localizable", "sync_status_error_newer_version_needed", fallback: "A newer version of the app is required to access the backup file")
   /// Newer version needed
   internal static let syncStatusErrorNewerVersionNeededTitle = T.tr("Localizable", "sync_status_error_newer_version_needed_title", fallback: "Newer version needed")
-  /// Server error: Method not allowed. Ensure you're connecting to WebDAV server"
-  internal static let syncStatusErrorNoWebDavServer = T.tr("Localizable", "sync_status_error_no_web_dav_server", fallback: "Server error: Method not allowed. Ensure you're connecting to WebDAV server\"")
+  /// Server error: Method not allowed. Ensure you're connecting to WebDAV server
+  internal static let syncStatusErrorNoWebDavServer = T.tr("Localizable", "sync_status_error_no_web_dav_server", fallback: "Server error: Method not allowed. Ensure you're connecting to WebDAV server")
   /// Not authorized to access this path
   internal static let syncStatusErrorNotAuthorized = T.tr("Localizable", "sync_status_error_not_authorized", fallback: "Not authorized to access this path")
   /// Not configured
@@ -1617,18 +1737,32 @@ internal enum T {
   internal static let tagsEmptyList = T.tr("Localizable", "tags_empty_list", fallback: "You don't have any Tags yet")
   /// Manage Tags
   internal static let tagsTitle = T.tr("Localizable", "tags_title", fallback: "Manage Tags")
+  /// Card number copied
+  internal static let toastCardNumberCopied = T.tr("Localizable", "toast_card_number_copied", fallback: "Card number copied")
+  /// Security code copied
+  internal static let toastCardSecurityCodeCopied = T.tr("Localizable", "toast_card_security_code_copied", fallback: "Security code copied")
   /// Password copied
   internal static let toastPasswordCopied = T.tr("Localizable", "toast_password_copied", fallback: "Password copied")
+  /// Note copied
+  internal static let toastSecureNoteCopied = T.tr("Localizable", "toast_secure_note_copied", fallback: "Note copied")
   /// Username copied
   internal static let toastUsernameCopied = T.tr("Localizable", "toast_username copied", fallback: "Username copied")
-  /// Passwords transferred
-  internal static let transferFileSummaryCounterDescription = T.tr("Localizable", "transfer_file_summary_counter_description", fallback: "Passwords transferred")
   /// Proceed
   internal static let transferFileSummaryCta = T.tr("Localizable", "transfer_file_summary_cta", fallback: "Proceed")
-  /// This file allows you to transfer
-  internal static let transferFileSummaryDescription = T.tr("Localizable", "transfer_file_summary_description", fallback: "This file allows you to transfer")
-  /// Application couldn’t import your 2FAS Pass Items. Please try again.
-  internal static let transferImportingFailureDescription = T.tr("Localizable", "transfer_importing_failure_description", fallback: "Application couldn’t import your 2FAS Pass Items. Please try again.")
+  /// You're transferring Items from another app
+  internal static let transferFileSummaryDescription = T.tr("Localizable", "transfer_file_summary_description", fallback: "You're transferring Items from another app")
+  /// Logins detected
+  internal static let transferFileSummaryLoginsCounterDescription = T.tr("Localizable", "transfer_file_summary_logins_counter_description", fallback: "Logins detected")
+  /// Other Items converted to Secure Notes
+  internal static let transferFileSummaryOthersCounterDescription = T.tr("Localizable", "transfer_file_summary_others_counter_description", fallback: "Other Items converted to Secure Notes")
+  /// Cards detected
+  internal static let transferFileSummaryPaymentCardsCounterDescription = T.tr("Localizable", "transfer_file_summary_payment_cards_counter_description", fallback: "Cards detected")
+  /// Secure Notes detected
+  internal static let transferFileSummarySecureNotesCounterDescription = T.tr("Localizable", "transfer_file_summary_secure_notes_counter_description", fallback: "Secure Notes detected")
+  /// Tags detected
+  internal static let transferFileSummaryTagsCounterDescription = T.tr("Localizable", "transfer_file_summary_tags_counter_description", fallback: "Tags detected")
+  /// 2FAS Pass couldn’t import your Items. Please try again.
+  internal static let transferImportingFailureDescription = T.tr("Localizable", "transfer_importing_failure_description", fallback: "2FAS Pass couldn’t import your Items. Please try again.")
   /// Import failed
   internal static let transferImportingFailureTitle = T.tr("Localizable", "transfer_importing_failure_title", fallback: "Import failed")
   /// Importing...
@@ -1637,6 +1771,12 @@ internal enum T {
   internal static let transferImportingSuccessDescription = T.tr("Localizable", "transfer_importing_success_description", fallback: "Your 2FAS Pass Items have been successfully imported to Vault.")
   /// Imported successfully
   internal static let transferImportingSuccessTitle = T.tr("Localizable", "transfer_importing_success_title", fallback: "Imported successfully")
+  /// JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// 1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoOnepassword = T.tr("Localizable", "transfer_instructions_additional_info_onepassword", fallback: "1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoProtonPass = T.tr("Localizable", "transfer_instructions_additional_info_proton_pass", fallback: "ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// Open **System settings** on your mobile device.
   /// 
   /// Go to **Apps** and select **Safari**.
@@ -1655,20 +1795,20 @@ internal enum T {
   /// 
   /// Select **Export All/Selected Passwords to File**.
   /// 
-  /// Click **Export Passwords**, choose the location and click **Save**.
+  /// Click **Export Passwords**, select the location, and click **Save**.
   /// 
   /// Find the **Passwords** file saved in your download location.
   /// 
-  /// Copy it to this device and tap **Upload CSV file** below.
-  internal static let transferInstructionsApplePasswordsPc = T.tr("Localizable", "transfer_instructions_apple_passwords_pc", fallback: "Open the **Passwords** app on your Mac.\n\nClick **File** on your menu bar.\n\nSelect **Export All/Selected Passwords to File**.\n\nClick **Export Passwords**, choose the location and click **Save**.\n\nFind the **Passwords** file saved in your download location.\n\nCopy it to this device and tap **Upload CSV file** below.")
+  /// Copy the exported file to this device and tap **Upload CSV file** below.
+  internal static let transferInstructionsApplePasswordsPc = T.tr("Localizable", "transfer_instructions_apple_passwords_pc", fallback: "Open the **Passwords** app on your Mac.\n\nClick **File** on your menu bar.\n\nSelect **Export All/Selected Passwords to File**.\n\nClick **Export Passwords**, select the location, and click **Save**.\n\nFind the **Passwords** file saved in your download location.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
   /// Open Bitwarden and go to **Settings** (gear icon).
   /// 
   /// Go to **Tools/Vault**, then select **Export Vault**.
   /// 
-  /// Choose **.JSON** as the file format and select **Export Vault**.
+  /// Choose **JSON or CSV** as the file format, then select **Export Vault**.
   /// 
-  /// Copy the exported file to this device and tap **Upload JSON file** below.
-  internal static let transferInstructionsBitwarden = T.tr("Localizable", "transfer_instructions_bitwarden", fallback: "Open Bitwarden and go to **Settings** (gear icon).\n\nGo to **Tools/Vault**, then select **Export Vault**.\n\nChoose **.JSON** as the file format and select **Export Vault**.\n\nCopy the exported file to this device and tap **Upload JSON file** below.")
+  /// Copy the exported file to this device and tap the **Upload button** below.
+  internal static let transferInstructionsBitwarden = T.tr("Localizable", "transfer_instructions_bitwarden", fallback: "Open Bitwarden and go to **Settings** (gear icon).\n\nGo to **Tools/Vault**, then select **Export Vault**.\n\nChoose **JSON or CSV** as the file format, then select **Export Vault**.\n\nCopy the exported file to this device and tap the **Upload button** below.")
   /// Open Google Chrome on your PC
   /// 
   /// Select your **Profile Icon** at the top right, then select **Passwords**.
@@ -1677,12 +1817,20 @@ internal enum T {
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below. 
   internal static let transferInstructionsChrome = T.tr("Localizable", "transfer_instructions_chrome", fallback: "Open Google Chrome on your PC\n\nSelect your **Profile Icon** at the top right, then select **Passwords**.\n\nSelect **Settings** and **Download file**.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
+  /// Upload JSON/CSV file
+  internal static let transferInstructionsCtaBitwarden = T.tr("Localizable", "transfer_instructions_cta_bitwarden", fallback: "Upload JSON/CSV file")
   /// Upload CSV file
   internal static let transferInstructionsCtaCsv = T.tr("Localizable", "transfer_instructions_cta_csv", fallback: "Upload CSV file")
+  /// Upload folder or CSV file
+  internal static let transferInstructionsCtaDashlaneMobile = T.tr("Localizable", "transfer_instructions_cta_dashlane_mobile", fallback: "Upload folder or CSV file")
   /// Upload file
   internal static let transferInstructionsCtaGeneric = T.tr("Localizable", "transfer_instructions_cta_generic", fallback: "Upload file")
   /// Upload JSON file
   internal static let transferInstructionsCtaJson = T.tr("Localizable", "transfer_instructions_cta_json", fallback: "Upload JSON file")
+  /// Upload 1PUX/CSV file
+  internal static let transferInstructionsCtaOnepassword = T.tr("Localizable", "transfer_instructions_cta_onepassword", fallback: "Upload 1PUX/CSV file")
+  /// Upload ZIP/CSV file
+  internal static let transferInstructionsCtaProtonPass = T.tr("Localizable", "transfer_instructions_cta_proton_pass", fallback: "Upload ZIP/CSV file")
   /// Upload ZIP file
   internal static let transferInstructionsCtaZip = T.tr("Localizable", "transfer_instructions_cta_zip", fallback: "Upload ZIP file")
   /// Open Dashlane on your mobile phone.
@@ -1691,10 +1839,10 @@ internal enum T {
   /// 
   /// Select **Export data to CSV**, then confirm the export to a folder.
   /// 
-  /// Select the CSV file labelled as **credentials** in the created folder.
+  /// Copy the exported **Dashlane CSV folder or specific files** to this device. 
   /// 
-  /// Copy the **credentials** file to this device and tap **Upload CSV file** below.
-  internal static let transferInstructionsDashlaneMobile = T.tr("Localizable", "transfer_instructions_dashlane_mobile", fallback: "Open Dashlane on your mobile phone.\n\nGo to **Settings** and select **General**.\n\nSelect **Export data to CSV**, then confirm the export to a folder.\n\nSelect the CSV file labelled as **credentials** in the created folder.\n\nCopy the **credentials** file to this device and tap **Upload CSV file** below.")
+  /// Tap **Upload folder or CSV file** below. 
+  internal static let transferInstructionsDashlaneMobile = T.tr("Localizable", "transfer_instructions_dashlane_mobile", fallback: "Open Dashlane on your mobile phone.\n\nGo to **Settings** and select **General**.\n\nSelect **Export data to CSV**, then confirm the export to a folder.\n\nCopy the exported **Dashlane CSV folder or specific files** to this device. \n\nTap **Upload folder or CSV file** below. ")
   /// Open Dashlane on your browser.
   /// 
   /// Expand the **My account** menu and select **Settings**.
@@ -1705,20 +1853,20 @@ internal enum T {
   /// 
   /// Find the ZIP file saved in your default download location.
   /// 
-  /// Copy this ZIP file to this device and tap **Upload ZIP file** below.
-  internal static let transferInstructionsDashlanePc = T.tr("Localizable", "transfer_instructions_dashlane_pc", fallback: "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this ZIP file to this device and tap **Upload ZIP file** below.")
+  /// Copy this file to this device and tap **Upload ZIP file** below.
+  internal static let transferInstructionsDashlanePc = T.tr("Localizable", "transfer_instructions_dashlane_pc", fallback: "Open Dashlane on your browser.\n\nExpand the **My account** menu and select **Settings**.\n\nSelect **Export data** and **Export to CSV**.\n\nEnter your Master Password, select **Unlock** and **Continue**.\n\nFind the ZIP file saved in your default download location.\n\nCopy this file to this device and tap **Upload ZIP file** below.")
   /// Open Enpass on your PC.
   /// 
   /// Open the menu at the top right of the app.
   /// 
   /// Select **File** then **Export**.
   /// 
-  /// Select the correct Vault and the .json file format.
+  /// Select the correct Vault and the **json** file format.
   /// 
   /// Choose the location and confirm the export.
   /// 
   /// Copy the exported file to this device and tap **Upload JSON file** below. 
-  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the .json file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
+  internal static let transferInstructionsEnpass = T.tr("Localizable", "transfer_instructions_enpass", fallback: "Open Enpass on your PC.\n\nOpen the menu at the top right of the app.\n\nSelect **File** then **Export**.\n\nSelect the correct Vault and the **json** file format.\n\nChoose the location and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Open Firefox on your PC
   /// 
   /// Select the **Menu button** (3 horizontal lines) at the top right, then select **Passwords**.
@@ -1765,10 +1913,10 @@ internal enum T {
   /// 
   /// Open the received mail and select **Continue export**.
   /// 
-  /// Back in the export window, enter your Master Password and save the CSV file.
+  /// Back in the export window, enter your Master Password and save the **CSV file**.
   /// 
   /// Copy the exported file to this device and tap **Upload CSV file** below. 
-  internal static let transferInstructionsLastpass = T.tr("Localizable", "transfer_instructions_lastpass", fallback: "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the CSV file.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
+  internal static let transferInstructionsLastpass = T.tr("Localizable", "transfer_instructions_lastpass", fallback: "Log in to LastPass on your browser and go to **Advanced Options**.\n\nUnder **Manage Your Vault**, select **Export**. This will send you a verification email.\n\nOpen the received mail and select **Continue export**.\n\nBack in the export window, enter your Master Password and save the **CSV file**.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
   /// Open Microsoft Edge on your PC
   /// 
   /// Select the 3 dots next to your profile icon at the top right, then select **Passwords**.
@@ -1781,30 +1929,28 @@ internal enum T {
   internal static let transferInstructionsMicrosoftEdge = T.tr("Localizable", "transfer_instructions_microsoft_edge", fallback: "Open Microsoft Edge on your PC\n\nSelect the 3 dots next to your profile icon at the top right, then select **Passwords**.\n\nSelect the 3 dots next to Passkeys and click **Export passwords**.\n\nConfirm the export.\n\nCopy the exported file to this device and tap **Upload CSV file** below. ")
   /// Open 1Password on your PC.
   /// 
-  /// Click the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).
+  /// Click the three dots at the top of the sidebar, select **Export** and choose the account you want to export (on Mac select a specific Vault).
   /// 
   /// Enter your account password.
   /// 
-  /// Choose the **CSV format** and select **Export data**.
+  /// Choose the **1PUX or CSV format** and select **Export data**.
   /// 
-  /// Copy the exported file to this device and tap **Upload CSV file** below.
-  internal static let transferInstructionsOnepassword = T.tr("Localizable", "transfer_instructions_onepassword", fallback: "Open 1Password on your PC.\n\nClick the three dots at the top of the side bar, select **Export** and choose the account you want to export, (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload CSV file** below.")
+  /// Copy the exported file to this device and tap **Upload 1PUX/CSV file** below.
+  internal static let transferInstructionsOnepassword = T.tr("Localizable", "transfer_instructions_onepassword", fallback: "Open 1Password on your PC.\n\nClick the three dots at the top of the sidebar, select **Export** and choose the account you want to export (on Mac select a specific Vault).\n\nEnter your account password.\n\nChoose the **1PUX or CSV format** and select **Export data**.\n\nCopy the exported file to this device and tap **Upload 1PUX/CSV file** below.")
   /// Open Proton Pass via their browser extension, web app or Windows app.
   /// 
-  /// Click the **Proton Pass Logo** and select **Settings**.
+  /// Click the **Proton Pass Logo**, select **Settings**, then **Export**.
   /// 
-  /// In the Settings menu, select **Export**.
+  /// Choose the **ZIP or CSV format** and select **Export**.
   /// 
-  /// Choose the **CSV format** and select **Export**.
+  /// Find the saved file in your default download location.
   /// 
-  /// Find the CSV file saved in your default download location.
-  /// 
-  /// Copy this file to this device and tap **Upload CSV file** below.
-  internal static let transferInstructionsProtonpass = T.tr("Localizable", "transfer_instructions_protonpass", fallback: "Open Proton Pass via their browser extension, web app or Windows app.\n\nClick the **Proton Pass Logo** and select **Settings**.\n\nIn the Settings menu, select **Export**.\n\nChoose the **CSV format** and select **Export**.\n\nFind the CSV file saved in your default download location.\n\nCopy this file to this device and tap **Upload CSV file** below.")
-  /// Please follow the instructions if you would like to import passwords from other applications into 2FAS Pass.
+  /// Copy this file to this device and tap **Upload ZIP/CSV file** below.
+  internal static let transferInstructionsProtonpass = T.tr("Localizable", "transfer_instructions_protonpass", fallback: "Open Proton Pass via their browser extension, web app or Windows app.\n\nClick the **Proton Pass Logo**, select **Settings**, then **Export**.\n\nChoose the **ZIP or CSV format** and select **Export**.\n\nFind the saved file in your default download location.\n\nCopy this file to this device and tap **Upload ZIP/CSV file** below.")
+  /// Please follow the instructions if you would like to transfer passwords from other applications into 2FAS Pass.
   /// 
   /// All product names, logos, and brands are the property of their respective owners. Use of these names does not imply any affiliation with or endorsement by them.
-  internal static let transferServicesListFooter = T.tr("Localizable", "transfer_services_list_footer", fallback: "Please follow the instructions if you would like to import passwords from other applications into 2FAS Pass.\n\nAll product names, logos, and brands are the property of their respective owners. Use of these names does not imply any affiliation with or endorsement by them.")
+  internal static let transferServicesListFooter = T.tr("Localizable", "transfer_services_list_footer", fallback: "Please follow the instructions if you would like to transfer passwords from other applications into 2FAS Pass.\n\nAll product names, logos, and brands are the property of their respective owners. Use of these names does not imply any affiliation with or endorsement by them.")
   /// Import Instructions
   internal static let transferServicesListHeader = T.tr("Localizable", "transfer_services_list_header", fallback: "Import Instructions")
   /// Are you sure you want to permanently delete this Item? This cannot be undone!
@@ -1831,20 +1977,20 @@ internal enum T {
   internal static let vaultRecoveryDecrypting = T.tr("Localizable", "vault_recovery_decrypting", fallback: "Decrypting...")
   /// File is corrupted and can't be decrypted.
   internal static let vaultRecoveryErrorFileCorrupted = T.tr("Localizable", "vault_recovery_error_file_corrupted", fallback: "File is corrupted and can't be decrypted.")
-  /// There was an error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.
-  internal static let vaultRecoveryErrorGalleryAccess = T.tr("Localizable", "vault_recovery_error_gallery_access", fallback: "There was an error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.")
+  /// Error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.
+  internal static let vaultRecoveryErrorGalleryAccess = T.tr("Localizable", "vault_recovery_error_gallery_access", fallback: "Error while accessing the file from the Gallery. Ensure you're connected to the Internet and try again.")
   /// Can't open the file
   internal static let vaultRecoveryErrorOpenFile = T.tr("Localizable", "vault_recovery_error_open_file", fallback: "Can't open the file")
   /// Ensure you have access to the file.
   internal static let vaultRecoveryErrorOpenFileAccessExplain = T.tr("Localizable", "vault_recovery_error_open_file_access_explain", fallback: "Ensure you have access to the file.")
-  /// Can't open the file. %@
+  /// Can't open the file %@
   internal static func vaultRecoveryErrorOpenFileDetails(_ p1: Any) -> String {
-    return T.tr("Localizable", "vault_recovery_error_open_file_details", String(describing: p1), fallback: "Can't open the file. %@")
+    return T.tr("Localizable", "vault_recovery_error_open_file_details", String(describing: p1), fallback: "Can't open the file %@")
   }
   /// Error while scanning the file. Make sure the QR code is visible and that there's only one in the image.
   internal static let vaultRecoveryErrorScanningFile = T.tr("Localizable", "vault_recovery_error_scanning_file", fallback: "Error while scanning the file. Make sure the QR code is visible and that there's only one in the image.")
-  /// Wrong Master Password or Secret Words. Try again.
-  internal static let vaultRecoveryErrorWrongMasterPasswordWords = T.tr("Localizable", "vault_recovery_error_wrong_master_password_words", fallback: "Wrong Master Password or Secret Words. Try again.")
+  /// Incorrect Master Password or Secret Words. Try again.
+  internal static let vaultRecoveryErrorWrongMasterPasswordWords = T.tr("Localizable", "vault_recovery_error_wrong_master_password_words", fallback: "Incorrect Master Password or Secret Words. Try again.")
   /// Use another backup file
   internal static let vaultRecoveryWrongDecryptionKitAnotherBackupCta = T.tr("Localizable", "vault_recovery_wrong_decryption_kit_another_backup_cta", fallback: "Use another backup file")
   /// Use another Decryption Kit

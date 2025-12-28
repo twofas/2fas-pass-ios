@@ -18,6 +18,14 @@ struct TransferItemsInstructionsView: View {
                     instructions
                 }
                 
+                if let instructionsAdditionalInfo {
+                    Section {
+                        instructionsAdditionalInfo
+                            .foregroundStyle(.neutral950)
+                            .font(.footnote)
+                    }
+                }
+                
             } header: {
                 SettingsHeaderView(
                     icon: { SettingsIconView(icon: presenter.service.settingsIcon) },
@@ -32,15 +40,32 @@ struct TransferItemsInstructionsView: View {
                 presenter.onUploadFile()
             } label: {
                 Group {
-                    switch presenter.service.allowedContentType {
-                    case .json:
-                        Text(T.transferInstructionsCtaJson.localizedKey)
-                    case .zip:
-                        Text(T.transferInstructionsCtaZip.localizedKey)
-                    case .commaSeparatedText:
-                        Text(T.transferInstructionsCtaCsv.localizedKey)
+                    switch presenter.service {
+                    case .onePassword:
+                        Text(T.transferInstructionsCtaOnepassword.localizedKey)
+                    case .bitWarden:
+                        Text(T.transferInstructionsCtaBitwarden.localizedKey)
+                    case .protonPass:
+                        Text(T.transferInstructionsCtaProtonPass.localizedKey)
+                    case .dashlaneMobile:
+                        Text(T.transferInstructionsCtaDashlaneMobile.localizedKey)
                     default:
-                        Text(T.transferInstructionsCtaGeneric.localizedKey)
+                        if presenter.service.allowedContentTypes.count > 1 {
+                            Text(T.transferInstructionsCtaGeneric.localizedKey)
+                        } else if let contentType = presenter.service.allowedContentTypes.first {
+                            switch contentType {
+                            case .json:
+                                Text(T.transferInstructionsCtaJson.localizedKey)
+                            case .zip:
+                                Text(T.transferInstructionsCtaZip.localizedKey)
+                            case .commaSeparatedText:
+                                Text(T.transferInstructionsCtaCsv.localizedKey)
+                            default:
+                                Text(T.transferInstructionsCtaGeneric.localizedKey)
+                            }
+                        } else {
+                            Text(T.transferInstructionsCtaGeneric.localizedKey)
+                        }
                     }
                 }
                 .accessoryLoader(presenter.isUploadingFile)
@@ -105,6 +130,19 @@ struct TransferItemsInstructionsView: View {
             }
         }()
         return input.components(separatedBy: "\n\n")
+    }
+    
+    private var instructionsAdditionalInfo: Text? {
+        switch presenter.service {
+        case .onePassword:
+            Text(T.transferInstructionsAdditionalInfoOnepassword.localizedKey)
+        case .bitWarden:
+            Text(T.transferInstructionsAdditionalInfoBitwarden.localizedKey)
+        case .protonPass:
+            Text(T.transferInstructionsAdditionalInfoProtonPass.localizedKey)
+        default:
+            nil
+        }
     }
 }
 

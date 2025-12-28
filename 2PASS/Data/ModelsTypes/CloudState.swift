@@ -30,25 +30,13 @@ public enum CloudState: Equatable {
     }
     
     case unknown
-    case disabledNotAvailable(reason: NotAvailableReason)
-    case disabledAvailable
+    case enabledNotAvailable(reason: NotAvailableReason)
+    case disabled
     case enabled(sync: Sync)
     
     public var hasError: Bool {
         switch self {
-        case .enabled(sync: .outOfSync):
-            true
-        case .disabledNotAvailable(let reason):
-            switch reason {
-            case .overQuota,
-                    .disabledByUser,
-                    .error,
-                    .other,
-                    .useriCloudProblem,
-                    .schemaNotSupported,
-                    .incorrectEncryption: true
-            default: false
-            }
+        case .enabled(sync: .outOfSync), .enabledNotAvailable: true
         default: false
         }
     }
@@ -70,7 +58,7 @@ public enum CloudState: Equatable {
     public var isSchemeNotSupported: Bool {
         switch self {
         case .enabled(sync: .outOfSync(.schemaNotSupported)),
-             .disabledNotAvailable(reason: .schemaNotSupported):
+             .enabledNotAvailable(reason: .schemaNotSupported):
             return true
         default:
             return false

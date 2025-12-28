@@ -11,7 +11,7 @@ final class LabelRenderer: UIView {
     
     private let roundedRectangle: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 12
+        view.layer.cornerRadius = 16
         view.clipsToBounds = true
         return view
     }()
@@ -26,9 +26,7 @@ final class LabelRenderer: UIView {
         label.minimumScaleFactor = 0.6
         return label
     }()
-    
-    private let gradientView = IconGradientView()
-    
+        
     private var accessibilityColor: String?
     private var accessibilityText: String?
     
@@ -49,10 +47,6 @@ final class LabelRenderer: UIView {
         addSubview(roundedRectangle)
         roundedRectangle.pinToParent()
         
-        gradientView.translatesAutoresizingMaskIntoConstraints  = false
-        roundedRectangle.addSubview(gradientView)
-        gradientView.pinToParent()
-        
         addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         let margin = Spacing.s
@@ -68,13 +62,12 @@ final class LabelRenderer: UIView {
     }
     
     func setColor(_ color: UIColor?, animated: Bool) {
-        roundedRectangle.backgroundColor = color
-        gradientView.isHidden = color != nil
+        roundedRectangle.backgroundColor = color ?? ItemContentType.login.secondaryColor
         
         if let color {
             titleLabel.textColor = color.isDark ? .white : .black
         } else {
-            titleLabel.textColor = UIColor.brand500
+            titleLabel.textColor = ItemContentType.login.primaryColor
         }
         
         accessibilityColor = color?.accessibilityName
@@ -127,39 +120,5 @@ private final class RoundedRectangle: UIView {
     
     func setColor(_ color: UIColor) {
         shapeLayer.fillColor = color.cgColor
-    }
-}
-
-final class IconGradientView: UIView {
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupGradient()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupGradient()
-    }
-    
-    private func setupGradient() {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [
-            UIColor(hexString: "#D1DEFA")!.cgColor,
-            UIColor(hexString: "#C7D8FC")!.cgColor,
-            UIColor(hexString: "#B9D0FF")!.cgColor
-        ]
-        
-        gradientLayer.locations = [0.0, 0.5, 1.0]
-        gradientLayer.startPoint = CGPoint(x: 1, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 0, y: 1)
-        gradientLayer.frame = bounds
-        
-        layer.insertSublayer(gradientLayer, at: 0)
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        layer.sublayers?.first?.frame = bounds
     }
 }

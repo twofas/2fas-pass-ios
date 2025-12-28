@@ -87,8 +87,8 @@ private extension LoginItemInteractor {
             metadata: metadata,
             name: name,
             content: .init(
-                name: name?.nilIfEmpty,
-                username: username?.nilIfEmpty,
+                name: name?.nonBlankTrimmedOrNil,
+                username: username?.nonBlankTrimmedOrNil,
                 password: encryptedPassword,
                 notes: notes,
                 iconType: iconType,

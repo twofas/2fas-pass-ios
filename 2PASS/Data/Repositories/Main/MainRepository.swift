@@ -136,6 +136,9 @@ protocol MainRepository: AnyObject {
     func readFileData(from url: URL) async -> Data?
     func fileExists(at url: URL) -> Bool
     func copyFileToLocalIfNeeded(from url: URL) -> URL?
+    func isDirectory(at url: URL) -> Bool?
+    func readFilesFromFolder(at url: URL, withExtension ext: String, maxFileSize: Int) -> [String: Data]?
+    func readLocalFile(at url: URL) -> Data?
     
     var is2FASAuthInstalled: Bool { get }
     
@@ -319,7 +322,8 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
 
     func updateMetadataItem(
@@ -369,9 +373,10 @@ protocol MainRepository: AnyObject {
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?,
         name: String?,
-        text: Data?
+        text: Data?,
+        additionalInfo: String?
     )
-    
+
     func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func getItemEntity(
@@ -486,6 +491,7 @@ protocol MainRepository: AnyObject {
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
+    func removeDuplicatedEncryptedTags()
     
     // MARK: - Sort
     var sortType: SortType? { get }

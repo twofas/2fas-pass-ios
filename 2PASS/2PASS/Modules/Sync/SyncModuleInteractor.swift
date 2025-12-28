@@ -56,6 +56,8 @@ extension SyncModuleInteractor: SyncModuleInteracting {
     var isCloudEnabled: Bool {
         if case .enabled = cloudState {
             return true
+        } else if case .enabledNotAvailable = cloudState {
+            return true
         } else {
             return false
         }
@@ -90,14 +92,14 @@ extension SyncModuleInteractor: SyncModuleInteracting {
     
     func turnOnCloud() {
         switch cloudSyncInteractor.currentState {
-        case .disabledAvailable: cloudSyncInteractor.enable()
+        case .disabled: cloudSyncInteractor.enable()
         default: break
         }
     }
     
     func turnOffCloud() {
         switch cloudSyncInteractor.currentState {
-        case .enabled: cloudSyncInteractor.disable()
+        case .enabled, .enabledNotAvailable: cloudSyncInteractor.disable()
         default: break
         }
     }
