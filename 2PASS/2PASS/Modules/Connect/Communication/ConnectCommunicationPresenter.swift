@@ -99,6 +99,7 @@ final class ConnectCommunicationPresenter {
                 })
                 state = .finish(.success(()))
             } catch {
+                Log("ConnectCommunicationPresenter - Failed to connect: \(error)", module: .connect, severity: .error)
                 state = .finish(.failure(error))
             }
         }
