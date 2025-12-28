@@ -106,7 +106,7 @@ extension PasswordsPresenter {
         flowController.toQuickSetup()
     }
     
-    func onAdd(sourceItem: (any UIPopoverPresentationControllerSourceItem)?) {
+    func onAdd(sourceItem: UIBarButtonItem?) {
         if interactor.canAddPassword {
             flowController.toContentTypeSelection(sourceItem: sourceItem)
         } else {

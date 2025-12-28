@@ -35,7 +35,11 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
             changeRequest: changeRequest
         )
 
-        navi.configureAsPhoneFullScreenModal()
+        if #available(iOS 26.0, *) {
+            navi.preferredTransition = .zoom(sourceViewProvider: { _ in viewController.view })
+        } else {
+            navi.configureAsPhoneFullScreenModal()
+        }
         viewController.present(navi, animated: true)
     }
 
