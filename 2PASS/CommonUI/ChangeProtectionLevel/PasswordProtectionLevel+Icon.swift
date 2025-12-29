@@ -12,11 +12,11 @@ extension ItemProtectionLevel {
     public var icon: Image {
         switch self {
         case .normal:
-            Image("tier3.icon")
+            Image(.tier3Icon)
         case .confirm:
-            Image("tier2.icon")
+            Image(.tier2Icon)
         case .topSecret:
-            Image("tier1.icon")
+            Image(.tier1Icon)
         }
     }
 }
