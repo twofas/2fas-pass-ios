@@ -19,7 +19,8 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
         on viewController: UIViewController,
         parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
-        changeRequest: (any ItemDataChangeRequest)? = nil
+        changeRequest: (any ItemDataChangeRequest)? = nil,
+        sourceView: UIView? = nil
     ) {
         let flowController = ItemEditorNavigationFlowController()
         flowController.parent = parent
@@ -35,8 +36,8 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
             changeRequest: changeRequest
         )
 
-        if #available(iOS 26.0, *) {
-            navi.preferredTransition = .zoom(sourceViewProvider: { _ in viewController.view })
+        if #available(iOS 26.0, *), let sourceView {
+            navi.preferredTransition = .zoom(sourceViewProvider: { _ in sourceView })
         } else {
             navi.configureAsPhoneFullScreenModal()
         }

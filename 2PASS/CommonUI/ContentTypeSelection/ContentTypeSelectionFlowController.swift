@@ -78,7 +78,8 @@ extension ContentTypeSelectionFlowController: ContentTypeSelectionFlowControllin
             on: viewController,
             parent: self,
             editItemID: nil,
-            changeRequest: changeRequest
+            changeRequest: changeRequest,
+            sourceView: viewController.view
         )
     }
 
