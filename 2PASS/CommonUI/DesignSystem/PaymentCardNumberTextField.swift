@@ -10,50 +10,33 @@ public struct PaymentCardNumberTextField: View {
     let placeholder: String
     let maxLength: Int
     let formatStyle: PaymentCardNumberFormatStyle
-    let showRevealButton: Bool
     let isInvalid: Bool
 
     @Binding
     var text: String
-
-    @Binding
-    var isRevealed: Bool
 
     public init(
         _ placeholder: String,
         text: Binding<String>,
         maxLength: Int,
         formatStyle: PaymentCardNumberFormatStyle,
-        isRevealed: Binding<Bool>,
-        showRevealButton: Bool = true,
         isInvalid: Bool = false
     ) {
         self.placeholder = placeholder
         self._text = text
         self.maxLength = maxLength
         self.formatStyle = formatStyle
-        self._isRevealed = isRevealed
-        self.showRevealButton = showRevealButton
         self.isInvalid = isInvalid
     }
 
     public var body: some View {
-        HStack {
-            _PaymentCardNumberTextField(
-                placeholder: placeholder,
-                maxLength: maxLength,
-                formatStyle: formatStyle,
-                isMasked: !isRevealed,
-                isInvalid: isInvalid,
-                text: $text
-            )
-
-            if showRevealButton {
-                Toggle(isOn: $isRevealed, label: {})
-                    .toggleStyle(.reveal)
-                    .frame(width: 22)
-            }
-        }
+        _PaymentCardNumberTextField(
+            placeholder: placeholder,
+            maxLength: maxLength,
+            formatStyle: formatStyle,
+            isInvalid: isInvalid,
+            text: $text
+        )
     }
 }
 
@@ -61,7 +44,6 @@ private struct _PaymentCardNumberTextField: UIViewRepresentable {
     let placeholder: String
     let maxLength: Int
     let formatStyle: PaymentCardNumberFormatStyle
-    let isMasked: Bool
     let isInvalid: Bool
 
     @Binding
@@ -85,16 +67,16 @@ private struct _PaymentCardNumberTextField: UIViewRepresentable {
     public func updateUIView(_ textField: UITextField, context: Context) {
         context.coordinator.maxLength = maxLength
         context.coordinator.formatStyle = formatStyle
-        context.coordinator.isMasked = isMasked
 
-        if isMasked {
-            if textField.text != text {
-                textField.text = text
-            }
-        } else {
+        let isFocused = textField.isFirstResponder
+        if isFocused {
             let formatted = formatStyle.format(text)
             if textField.text != formatted {
                 textField.text = formatted
+            }
+        } else {
+            if textField.text != text {
+                textField.text = text
             }
         }
         textField.placeholder = placeholder
@@ -109,15 +91,22 @@ private struct _PaymentCardNumberTextField: UIViewRepresentable {
         var parent: _PaymentCardNumberTextField
         var maxLength: Int
         var formatStyle: PaymentCardNumberFormatStyle
-        var isMasked: Bool
         private var previousText = ""
 
         init(_ parent: _PaymentCardNumberTextField) {
             self.parent = parent
             self.maxLength = parent.maxLength
             self.formatStyle = parent.formatStyle
-            self.isMasked = parent.isMasked
             self.previousText = parent.text
+        }
+
+        public func textFieldDidBeginEditing(_ textField: UITextField) {
+            let formatted = formatStyle.format(parent.text)
+            textField.text = formatted
+        }
+
+        public func textFieldDidEndEditing(_ textField: UITextField) {
+            textField.text = parent.text
         }
 
         public func textField(
@@ -125,10 +114,6 @@ private struct _PaymentCardNumberTextField: UIViewRepresentable {
             shouldChangeCharactersIn range: NSRange,
             replacementString string: String
         ) -> Bool {
-            // When masked, don't allow editing - the field will be revealed on focus
-            if isMasked {
-                return false
-            }
 
             let currentText = textField.text ?? ""
 

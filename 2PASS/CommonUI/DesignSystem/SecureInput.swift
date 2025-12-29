@@ -102,6 +102,7 @@ public struct SecureContentInput: View {
                 .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     introspectTextField(textField)
                 }
+            
             SecureContainerView(contentId: value) {
                 RevealedPasswordTextField(placeholder: label, text: $value, isColorized: isColorized)
                     .focused($focusedField, equals: .unsecure)

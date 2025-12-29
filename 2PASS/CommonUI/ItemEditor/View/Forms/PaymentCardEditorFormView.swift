@@ -65,21 +65,13 @@ struct PaymentCardEditorFormView: View {
                     text: $presenter.cardNumber,
                     maxLength: presenter.maxCardNumberLength,
                     formatStyle: presenter.cardNumberFormatStyle,
-                    isRevealed: $presenter.isCardNumberRevealed,
-                    showRevealButton: presenter.isEditMode,
                     isInvalid: presenter.isCardNumberInvalid
                 )
                 .focused($focusField, equals: .cardNumber)
             }
             .formFieldChanged(presenter.cardNumberChanged)
-            .onChange(of: presenter.isCardNumberRevealed, { oldValue, newValue in
-                if newValue == false, focusField == .cardNumber {
-                    focusField = nil
-                }
-            })
             .onChange(of: focusField) { oldValue, newValue in
                 if newValue == .cardNumber {
-                    presenter.revealCardNumber()
                     presenter.onCardNumberFocusChange(isFocused: true)
                 } else if oldValue == .cardNumber {
                     presenter.onCardNumberFocusChange(isFocused: false)

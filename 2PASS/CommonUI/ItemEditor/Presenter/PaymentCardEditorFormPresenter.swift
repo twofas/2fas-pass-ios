@@ -19,7 +19,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
             if isCardNumberRevealed {
                 return decryptedCardNumber ?? ""
             } else {
-                let mask = interactor.paymentCardNumberMask(from: decryptedCardNumber) ?? initialPaymentCardItem?.content.cardNumberMask
+                let mask = decryptedCardNumber == nil ? initialPaymentCardItem?.content.cardNumberMask : interactor.paymentCardNumberMask(from: decryptedCardNumber)
                 return mask?.formatted(.paymentCardNumberMask) ?? ""
             }
         }
@@ -32,7 +32,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     
     var securityCode: String {
         get {
-            decryptedSecurityCode ?? String(repeating: "•", count: maxSecurityCodeLength)
+            decryptedSecurityCode ?? (initialPaymentCardItem?.content.securityCode != nil ? String(repeating: "•", count: maxSecurityCodeLength) : "")
         }
         set {
             if decryptedSecurityCode != nil {
@@ -49,9 +49,9 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         }
     }
         
-    var isSecurityCodeInvalid: Bool = false
-    var isCardNumberInvalid: Bool = false
-    var isExpirationDateInvalid: Bool = false
+    private(set) var isSecurityCodeInvalid: Bool = false
+    private(set) var isCardNumberInvalid: Bool = false
+    private(set) var isExpirationDateInvalid: Bool = false
 
     private var isSecurityCodeLiveValidation: Bool = true
     private var isCardNumberLiveValidation: Bool = false
@@ -93,17 +93,20 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
     override var canSave: Bool {
         guard super.canSave else { return false }
-        let isExpirationDateValid = expirationDate.isEmpty || validateExpirationDate(expirationDate)
-        let isSecurityCodeValid = decryptedSecurityCode?.isEmpty != false || decryptedSecurityCode.map { validateSecurityCode($0) } == true
-        let isCardNumberValid = decryptedCardNumber == nil || decryptedCardNumber?.isEmpty == true || decryptedCardNumber.map { validateCardNumber($0) } == true
+        let isExpirationDateValid = validateExpirationDate(expirationDate)
+        let isSecurityCodeValid = validateSecurityCode(decryptedSecurityCode)
+        let isCardNumberValid = validateCardNumber(decryptedCardNumber)
         return isCardNumberValid && isSecurityCodeValid && isExpirationDateValid
     }
     
     var decryptedSecurityCode: String? {
         didSet {
-            updateSecurityCodeValidity()
+            if isSecurityCodeLiveValidation {
+                updateSecurityCodeValidity()
+            }
         }
     }
+    
     var decryptedCardNumber: String? {
         didSet {
             updateSecurityCodeValidity()
@@ -142,53 +145,6 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     var notesChanged: Bool {
         guard let initialPaymentCardItem else { return false }
         return notes != initialPaymentCardItem.content.notes ?? ""
-    }
-
-
-    func validateExpirationDate(_ value: String) -> Bool {
-        interactor.validatePaymentCardExpirationDate(value)
-    }
-
-    func onExpirationDateFocusChange(isFocused: Bool) {
-        if isFocused {
-            isExpirationDateLiveValidation = !expirationDate.isEmpty
-        } else {
-            isExpirationDateInvalid = !expirationDate.isEmpty && !validateExpirationDate(expirationDate)
-        }
-    }
-
-    func onExpirationDateChange() {
-        if isExpirationDateLiveValidation {
-            isExpirationDateInvalid = !expirationDate.isEmpty && !validateExpirationDate(expirationDate)
-        }
-    }
-
-    func onSecurityCodeFocusChange(isFocused: Bool) {
-        if isFocused {
-            decryptSecurityCodeIfNeeded()
-            isSecurityCodeLiveValidation = decryptedSecurityCode?.isEmpty == false
-        } else {
-            isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
-            isSecurityCodeLiveValidation = true
-        }
-    }
-
-    func validateCardNumber(_ value: String) -> Bool {
-        interactor.validatePaymentCardCardNumber(value, for: paymentCardIssuer)
-    }
-
-    func onCardNumberFocusChange(isFocused: Bool) {
-        if isFocused {
-            isCardNumberLiveValidation = decryptedCardNumber?.isEmpty == false
-        } else {
-            isCardNumberInvalid = decryptedCardNumber?.isEmpty == false && decryptedCardNumber.map { validateCardNumber($0) } == false
-        }
-    }
-
-    func onCardNumberChange() {
-        if isCardNumberLiveValidation {
-            isCardNumberInvalid = decryptedCardNumber?.isEmpty == false && decryptedCardNumber.map { validateCardNumber($0) } == false
-        }
     }
 
     init(
@@ -238,20 +194,41 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
         super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
         
-        if let decryptedCardNumber {
-            isCardNumberInvalid = validateCardNumber(decryptedCardNumber) == false
-        }
-        
-        isExpirationDateInvalid = validateExpirationDate(expirationDate) == false
-        
-        if let decryptedSecurityCode {
-            isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
+        updatePaymentCardNumberValidity()
+        updateExpirationDateValidity()
+        updateSecurityCodeValidity()
+    }
+    
+    func onExpirationDateFocusChange(isFocused: Bool) {
+        isExpirationDateLiveValidation = isFocused ? expirationDate.isEmpty == false : true
+        updateExpirationDateValidity()
+    }
+
+    func onExpirationDateChange() {
+        if isExpirationDateLiveValidation {
+            isExpirationDateInvalid = !expirationDate.isEmpty && !validateExpirationDate(expirationDate)
         }
     }
 
-    func revealCardNumber() {
-        guard !isCardNumberRevealed else { return }
-        isCardNumberRevealed = true
+    func onSecurityCodeFocusChange(isFocused: Bool) {
+        if isFocused {
+            decryptSecurityCodeIfNeeded()
+        }
+        
+        isSecurityCodeLiveValidation = isFocused ? decryptedSecurityCode?.isEmpty == false : true
+        updateSecurityCodeValidity()
+    }
+
+    func onCardNumberFocusChange(isFocused: Bool) {
+        isCardNumberRevealed = isFocused
+        isCardNumberLiveValidation = isFocused ? decryptedCardNumber?.isEmpty == false : true
+        updatePaymentCardNumberValidity()
+    }
+
+    func onCardNumberChange() {
+        if isCardNumberLiveValidation {
+            updatePaymentCardNumberValidity()
+        }
     }
 
     func onSave() -> SaveItemResult {
@@ -271,14 +248,31 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     private func updateSecurityCodeValidity() {
-        if isSecurityCodeLiveValidation {
-            isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
+        isSecurityCodeInvalid = validateSecurityCode(decryptedSecurityCode) == false
+    }
+    
+    private func updatePaymentCardNumberValidity() {
+        isCardNumberInvalid = validateCardNumber(decryptedCardNumber) == false
+    }
+    
+    private func updateExpirationDateValidity() {
+        isExpirationDateInvalid = validateExpirationDate(expirationDate) == false
+    }
+    
+    private func validateCardNumber(_ value: String?) -> Bool {
+        guard let value else {
+            return true
         }
+        return value.isEmpty || interactor.validatePaymentCardCardNumber(value, for: paymentCardIssuer)
+    }
+    
+    private func validateExpirationDate(_ value: String) -> Bool {
+        value.isEmpty || interactor.validatePaymentCardExpirationDate(value)
     }
     
     private func validateSecurityCode(_ value: String?) -> Bool {
         guard let value else {
-            return false
+            return true
         }
         return value.isEmpty || interactor.validatePaymentCardSecurityCode(value, for: paymentCardIssuer)
     }
