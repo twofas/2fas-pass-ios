@@ -214,7 +214,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
 
         let cardNumberString = paymentCard?.cardNumber
         let securityCodeString = paymentCard?.cardSecurityCode
-        let expirationDateString = paymentCard?.cardExpirationDate
+        let expirationDateString = context.formatExpirationDate(paymentCard?.cardExpirationDate)
 
         let cardNumber: Data? = {
             if let value = cardNumberString,

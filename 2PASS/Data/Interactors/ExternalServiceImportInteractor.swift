@@ -275,5 +275,23 @@ extension ExternalServiceImportInteractor {
         func detectCardIssuer(from cardNumber: String?) -> String? {
             paymentCardUtilityInteractor.detectCardIssuer(from: cardNumber)?.rawValue
         }
+
+        /// Converts expiration date from MM/YYYY format to MM/YY format
+        /// - Parameter dateString: Date string in "MM/YYYY" format (e.g., "09/2029")
+        /// - Returns: Date string in "MM/YY" format (e.g., "09/29") or original string if format doesn't match
+        func formatExpirationDate(_ dateString: String?) -> String? {
+            guard let dateString = dateString?.nonBlankTrimmedOrNil else { return nil }
+
+            let components = dateString.split(separator: "/")
+            guard components.count == 2,
+                  let month = components.first,
+                  let year = components.last,
+                  year.count == 4 else {
+                return dateString
+            }
+
+            let shortYear = year.suffix(2)
+            return "\(month)/\(shortYear)"
+        }
     }
 }
