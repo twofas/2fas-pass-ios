@@ -35,6 +35,11 @@ struct PaymentCardDetailFormView: View {
                     ]}
                 )
                 .selected($selectedField, equals: .cardHolder)
+                .onChange(of: selectedField == .cardHolder) { _, newValue in
+                    if newValue {
+                        presenter.onSelectCardHolder()
+                    }
+                }
             }
 
             if let cardNumber = presenter.cardNumber {
@@ -75,6 +80,11 @@ struct PaymentCardDetailFormView: View {
                     ]}
                 )
                 .selected($selectedField, equals: .expirationDate)
+                .onChange(of: selectedField == .expirationDate) { _, newValue in
+                    if newValue {
+                        presenter.onSelectExpirationDate()
+                    }
+                }
             }
 
             if let securityCode = presenter.securityCode {

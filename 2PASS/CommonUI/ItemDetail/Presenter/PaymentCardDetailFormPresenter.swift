@@ -63,6 +63,20 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
             cardNumber = decrypted.formatted(.paymentCardNumber(issuer: issuer))
         }
     }
+    
+    func onSelectCardHolder() {
+        guard let cardHolder, autoFillEnvironment?.isTextToInsert == true else {
+            return
+        }
+        flowController.autoFillTextToInsert(cardHolder)
+    }
+    
+    func onSelectExpirationDate() {
+        guard let expirationDate, autoFillEnvironment?.isTextToInsert == true else {
+            return
+        }
+        flowController.autoFillTextToInsert(expirationDate)
+    }
 
     func onSelectSecurityCode() {
         guard let decrypted = decryptSecurityCode() else { return }
