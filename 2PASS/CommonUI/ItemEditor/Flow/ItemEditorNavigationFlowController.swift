@@ -37,7 +37,9 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
         )
 
         if #available(iOS 26.0, *), let sourceView {
-            navi.preferredTransition = .zoom(sourceViewProvider: { _ in sourceView })
+            let options = UIViewController.Transition.ZoomOptions()
+            options.interactiveDismissShouldBegin = { _ in false }
+            navi.preferredTransition = .zoom(options: options, sourceViewProvider: { _ in sourceView })
         } else {
             navi.configureAsPhoneFullScreenModal()
         }
