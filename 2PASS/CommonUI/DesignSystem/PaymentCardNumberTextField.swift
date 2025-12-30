@@ -30,13 +30,15 @@ public struct PaymentCardNumberTextField: View {
     }
 
     public var body: some View {
-        _PaymentCardNumberTextField(
-            placeholder: placeholder,
-            maxLength: maxLength,
-            formatStyle: formatStyle,
-            isInvalid: isInvalid,
-            text: $text
-        )
+        SecureContainerView {
+            _PaymentCardNumberTextField(
+                placeholder: placeholder,
+                maxLength: maxLength,
+                formatStyle: formatStyle,
+                isInvalid: isInvalid,
+                text: $text
+            )
+        }
     }
 }
 
