@@ -146,7 +146,7 @@ final class PasswordsViewController: UIViewController {
             if #available(iOS 26.0, *) {
                 offset
             } else {
-                offset + 8
+                offset + Spacing.s
             }
         }()
         contentTypePickerTopConstraint?.constant = max(-(contentTypePicker?.frame.height ?? 0), topOffset)
