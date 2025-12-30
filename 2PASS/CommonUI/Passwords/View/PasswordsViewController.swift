@@ -142,13 +142,7 @@ final class PasswordsViewController: UIViewController {
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
-        let topOffset = {
-            if #available(iOS 26.0, *) {
-                offset
-            } else {
-                offset + Spacing.s
-            }
-        }()
+        let topOffset = offset + contentTypePickerTopOffset
         contentTypePickerTopConstraint?.constant = max(-(contentTypePicker?.frame.height ?? 0), topOffset)
         edgeEffectToContentTypePickerConstraint?.constant = max(-view.safeAreaInsets.top, offset)
     }
@@ -162,6 +156,14 @@ final class PasswordsViewController: UIViewController {
 }
 
 private extension PasswordsViewController {
+    
+    var contentTypePickerTopOffset: CGFloat {
+        if #available(iOS 26.0, *) {
+            0
+        } else {
+            Spacing.s
+        }
+    }
     
     @objc
     func addAction(sender: UIBarButtonItem) {
@@ -229,7 +231,7 @@ private extension PasswordsViewController {
         
         view.addSubview(contentTypePicker)
         
-        let contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        let contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: contentTypePickerTopOffset)
         let contentTypePickerHeightConstraint = contentTypePicker.heightAnchor.constraint(equalToConstant: 0)
         NSLayoutConstraint.activate([
             contentTypePickerTopConstraint,
