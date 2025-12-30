@@ -142,7 +142,14 @@ final class PasswordsViewController: UIViewController {
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
-        contentTypePickerTopConstraint?.constant = max(-(contentTypePicker?.frame.height ?? 0), offset)
+        let topOffset = {
+            if #available(iOS 26.0, *) {
+                offset
+            } else {
+                offset + 8
+            }
+        }()
+        contentTypePickerTopConstraint?.constant = max(-(contentTypePicker?.frame.height ?? 0), topOffset)
         edgeEffectToContentTypePickerConstraint?.constant = max(-view.safeAreaInsets.top, offset)
     }
     
