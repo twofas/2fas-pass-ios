@@ -74,16 +74,16 @@ public protocol InMemoryStorageDataSource: AnyObject {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     )
-    
+
     func updateTag(
         tagID: ItemTagID,
         name: String,
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     )
     
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)

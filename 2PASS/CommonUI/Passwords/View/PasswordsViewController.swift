@@ -33,7 +33,7 @@ final class PasswordsViewController: UIViewController {
     
     private var isSearchTransitioning: Bool = false
 
-    private let selectedTagBannerView = SelectedTagBannerView()
+    private let selectedTagBannerView = SelectedFilterView()
 
     private var contentTypePickerViewController: UIViewController?
     private var contentTypePickerTopConstraint: NSLayoutConstraint?
@@ -253,7 +253,7 @@ private extension PasswordsViewController {
         let trailing = selectedTagBannerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
         trailing.priority = .defaultHigh
         
-        let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.m)
+        let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.l)
         top.priority = .defaultHigh
         NSLayoutConstraint.activate([
             selectedTagBannerView.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor, constant: Spacing.m),
@@ -264,7 +264,7 @@ private extension PasswordsViewController {
             selectedTagBannerView.widthAnchor.constraint(lessThanOrEqualToConstant: Constants.maxSelectedTagBannerWidth)
         ])
         
-        selectedTagBannerView.onClear = { [weak self] in
+        selectedTagBannerView.onTagClose = { [weak self] _ in
             self?.presenter.onClearFilterTag()
             self?.didSelectedTagChanged()
         }
@@ -463,8 +463,13 @@ private extension PasswordsViewController {
         let tagActions = tags.map { tag in
             let count = presenter.countPasswordsForTag(tag.tagID)
             let title = "\(tag.name) (\(count))"
+            let colorImage = UIImage.circleImage(
+                color: UIColor(tag.color),
+                size: CGSize(width: ItemTagColorMetrics.small.size, height: ItemTagColorMetrics.small.size)
+            )
             return UIAction(
                 title: title,
+                image: colorImage,
                 state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
             ) { [weak self] _ in
                 self?.presenter.onSelectFilterTag(tag)
@@ -504,8 +509,7 @@ private extension PasswordsViewController {
     
     func updateTagBanner() {
         if let selectedTag = presenter.selectedFilterTag {
-            let itemCount = presenter.countPasswordsForTag(selectedTag.tagID, contentType: presenter.contentTypeFilter.contentType)
-            selectedTagBannerView.configure(tagName: selectedTag.name, itemCount: itemCount)
+            selectedTagBannerView.setTag(selectedTag)
         }
 
         edgeEffectToContentTypePickerConstraint?.isActive = presenter.selectedFilterTag == nil

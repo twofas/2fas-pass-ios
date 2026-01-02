@@ -30,7 +30,7 @@ extension TagEntity {
             tagID: tagID,
             vaultID: vaultID,
             name: name,
-            color:  UIColor(hexString: color),
+            color: ItemTagColor(rawValue: color),
             position: Int(position),
             modificationDate: modificationDate
         )

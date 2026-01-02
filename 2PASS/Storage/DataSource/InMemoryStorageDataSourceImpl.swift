@@ -171,7 +171,7 @@ extension InMemoryStorageDataSourceImpl {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     ) {
         TagEntity
             .create(
@@ -184,14 +184,14 @@ extension InMemoryStorageDataSourceImpl {
                 color: color
             )
     }
-    
+
     public func updateTag(
         tagID: ItemTagID,
         name: String,
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     ) {
         TagEntity
             .update(
@@ -217,7 +217,7 @@ extension InMemoryStorageDataSourceImpl {
                         modificationDate: date,
                         position: Int16(tag.position),
                         vaultID: tag.vaultID,
-                        color: tag.color?.hexString
+                        color: tag.color
                     )
             } else {
                 Log("Error while searching for Tag Entity \(tag.id)")

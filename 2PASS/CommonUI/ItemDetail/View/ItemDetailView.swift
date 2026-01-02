@@ -211,9 +211,9 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
 
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         [
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .systemBlue, position: 0, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .systemGreen, position: 1, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .systemOrange, position: 2, modificationDate: Date())
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .cyan, position: 0, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .green, position: 1, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .indigo, position: 2, modificationDate: Date())
         ]
     }
 

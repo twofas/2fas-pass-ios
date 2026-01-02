@@ -6,17 +6,22 @@
 
 import Common
 import SwiftUI
+import UIKit
 
 extension ItemProtectionLevel {
-    
+
     public var icon: Image {
+        Image(uiImage: uiIcon)
+    }
+
+    public var uiIcon: UIImage {
         switch self {
         case .normal:
-            Image(.tier3Icon)
+            UIImage(resource: .tier3Icon)
         case .confirm:
-            Image(.tier2Icon)
+            UIImage(resource:.tier2Icon)
         case .topSecret:
-            Image(.tier1Icon)
+            UIImage(resource: .tier1Icon)
         }
     }
 }

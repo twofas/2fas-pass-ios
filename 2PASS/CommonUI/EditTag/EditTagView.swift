@@ -1,5 +1,12 @@
 import SwiftUI
+import UIKit
 import Common
+
+private struct Constants {
+    static let sheetHeight = 300.0
+    static let textFieldHeight = 44.0
+    static let textFieldCornerRadius = 10.0
+}
 
 struct EditTagView: View {
     
@@ -14,7 +21,7 @@ struct EditTagView: View {
     
     var body: some View {
         GeometryReader { _ in
-            VStack(spacing: 32) {
+            VStack(spacing: Spacing.xll3) {
                 VStack {
                     Text(presenter.navigationTitle)
                         .font(.title1Emphasized)
@@ -25,21 +32,52 @@ struct EditTagView: View {
                         .foregroundStyle(.neutral600)
                 }
                 
-                TextField(T.tagEditorPlaceholder.localizedKey, text: $presenter.name)
-                    .focused($isFocused)
+                VStack(spacing: Spacing.l) {
+                    HStack(spacing: Spacing.s) {
+                        TextField(T.tagEditorPlaceholder.localizedKey, text: $presenter.name)
+                            .focused($isFocused)
+                            .onChange(of: presenter.name) { _, newValue in
+                                if newValue.count > presenter.limitNameLength {
+                                    presenter.name = String(newValue.prefix(presenter.limitNameLength))
+                                }
+                            }
+                            .onSubmit {
+                                presenter.onSave()
+                            }
+
+                        Circle()
+                            .fill(Color(UIColor(presenter.selectedColor)))
+                            .frame(width: ItemTagColorMetrics.regular.size, height: ItemTagColorMetrics.regular.size)
+                    }
                     .padding(.horizontal, Spacing.l)
-                    .frame(height: 44.0)
+                    .frame(height: Constants.textFieldHeight)
                     .background(Color.neutral50)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: Constants.textFieldCornerRadius))
                     .padding(.horizontal, Spacing.l)
-                    .onChange(of: presenter.name) { _, newValue in
-                        if newValue.count > presenter.limitNameLength {
-                            presenter.name = String(newValue.prefix(presenter.limitNameLength))
+                    
+                    HStack {
+                        ForEach(ItemTagColor.allKnownCases, id: \.self) { color in
+                            let tagColor = Color(UIColor(color))
+                            Button {
+                                presenter.selectedColor = color
+                            } label: {
+                                Circle()
+                                    .fill(tagColor)
+                                    .frame(width: ItemTagColorMetrics.large.size, height: ItemTagColorMetrics.large.size)
+                                    .padding(4)
+                                    .overlay {
+                                        if presenter.selectedColor == color {
+                                            Circle()
+                                                .stroke(tagColor, lineWidth: 2)
+                                        }
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity)
                         }
                     }
-                    .onSubmit {
-                        presenter.onSave()
-                    }
+                    .padding(.horizontal, Spacing.l)
+                }
                 
                 Button {
                     presenter.onSave()
@@ -61,7 +99,7 @@ struct EditTagView: View {
             }
             .padding(Spacing.l)
         }
-        .presentationDetents([.height(270)])
+        .presentationDetents([.height(Constants.sheetHeight)])
         .presentationDragIndicator(.visible)
         .background(Color.base0)
         .onAppear {

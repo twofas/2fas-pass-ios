@@ -235,7 +235,8 @@ public final class InteractorFactory {
             cloudCacheStorage: CloudCacheStorageImpl(mainRepository: MainRepositoryImpl.shared),
             encryptionHandler: EncryptionHandlerImpl(
                 mainRepository: MainRepositoryImpl.shared,
-                itemsInteractor: itemsInteractor()
+                itemsInteractor: itemsInteractor(),
+                tagInteractor: tagInteractor()
             ),
             localStorage: LocalStorageImpl(
                 itemsInteractor: itemsInteractor(),

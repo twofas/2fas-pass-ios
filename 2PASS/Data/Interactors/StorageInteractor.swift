@@ -158,7 +158,7 @@ extension StorageInteractor: StorageInteracting {
         for tag in tags {
             group.enter()
             
-            let decryptedName = decryptData(tag.name, protectionLevel: .normal) ?? "" // no other fail available
+            let decryptedName = decryptData(tag.name, protectionLevel: .normal) ?? ""
             
             DispatchQueue.main.async {
                 self.mainRepository.createTag(
@@ -166,7 +166,7 @@ extension StorageInteractor: StorageInteracting {
                         tagID: tag.tagID,
                         vaultID: tag.vaultID,
                         name: decryptedName,
-                        color: UIColor(hexString: tag.color),
+                        color: ItemTagColor(rawValue: tag.color),
                         position: tag.position,
                         modificationDate: tag.modificationDate
                     )

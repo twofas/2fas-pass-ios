@@ -9,7 +9,9 @@ import Common
 import Storage
 
 public protocol TagInteracting: AnyObject {
-    func createTag(name: String, color: UIColor)
+    func suggestedNewColor() -> ItemTagColor
+
+    func createTag(name: String, color: ItemTagColor)
     func createTag(data: ItemTagData)
     
     func updateTag(data: ItemTagData)
@@ -43,7 +45,26 @@ final class TagInteractor {
 }
 
 extension TagInteractor: TagInteracting {
-    func createTag(name: String, color: UIColor) {
+
+    func suggestedNewColor() -> ItemTagColor {
+        let allTags = listAllTags()
+        var colorUsage: [ItemTagColor: Int] = [:]
+
+        for color in ItemTagColor.allKnownCases {
+            colorUsage[color] = 0
+        }
+
+        for tag in allTags {
+            colorUsage[tag.color, default: 0] += 1
+        }
+
+        let minUsage = colorUsage.values.min() ?? 0
+        let leastUsedColors = colorUsage.filter { $0.value == minUsage }.map { $0.key }
+
+        return leastUsedColors.randomElement() ?? .gray
+    }
+
+    func createTag(name: String, color: ItemTagColor) {
         guard let vaultID = mainRepository.selectedVault?.vaultID else {
             Log("TagInteractor: Error while getting vaultID for tag creation", module: .interactor, severity: .error)
             return
@@ -84,14 +105,14 @@ extension TagInteractor: TagInteracting {
                 tagID: data.id,
                 vaultID: selectedVault.vaultID,
                 name: nameEnc,
-                color: data.color?.hexString,
+                color: data.color.rawValue,
                 position: data.position,
                 modificationDate: data.modificationDate
             )
         )
     }
     
-    func updateTag(tagID: ItemTagID, name: String, color: UIColor?) {
+    func updateTag(tagID: ItemTagID, name: String, color: ItemTagColor) {
         guard let tag = getTag(for: tagID) else {
             Log("TagInteractor: Error while finding tag for tag update", module: .interactor, severity: .error)
             return
@@ -131,7 +152,7 @@ extension TagInteractor: TagInteracting {
                 tagID: data.id,
                 vaultID: selectedVault.vaultID,
                 name: nameEnc,
-                color: data.color?.hexString,
+                color: data.color.rawValue,
                 position: data.position,
                 modificationDate: data.modificationDate
             )
@@ -238,7 +259,7 @@ extension TagInteractor: TagInteracting {
                     tagID: tag.id,
                     vaultID: tag.vaultID,
                     name: nameEnc,
-                    color: tag.color?.hexString,
+                    color: tag.color.rawValue,
                     position: tag.position,
                     modificationDate: date
                 )

@@ -100,7 +100,7 @@ final class ImportInteractor {
     private let uriInteractor: URIInteracting
     private let queue: DispatchQueue
     private let writeQueue: DispatchQueue
-    
+
     init(
         mainRepository: MainRepository,
         itemsInteractor: ItemsInteracting,
@@ -908,7 +908,7 @@ private extension ImportInteractor {
             tagID: tagID,
             vaultID: vaultID,
             name: exchangeTag.name,
-            color: UIColor(hexString: exchangeTag.color),
+            color: .init(rawValue: exchangeTag.color),
             position: exchangeTag.position,
             modificationDate: Date(exportTimestamp: exchangeTag.updatedAt)
         )

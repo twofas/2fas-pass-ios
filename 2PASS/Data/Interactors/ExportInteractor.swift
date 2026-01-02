@@ -458,7 +458,7 @@ private extension ExportInteractor {
         .init(
             id: tag.id.exportString(),
             name: tag.name,
-            color: tag.color?.hexString,
+            color: tag.color.rawValue,
             position: tag.position,
             updatedAt: tag.modificationDate.exportTimestamp
         )

@@ -16,9 +16,10 @@ struct SelectTagsView: View {
                     presenter.toggleTag(tag)
                 } label: {
                     HStack {
-                        Text(tag.name)
-                            .font(.body)
-                            .foregroundStyle(.primary)
+                        TagContentCell(
+                            name: Text(tag.name),
+                            color: tag.color
+                        )
                         
                         Spacer()
                                                    
@@ -26,7 +27,7 @@ struct SelectTagsView: View {
                             if presenter.isTagSelected(tag) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .resizable()
-                                    .foregroundStyle(.accent)
+                                    .foregroundStyle(.white, .accent)
                             } else {
                                 Circle()
                                     .stroke(Color.neutral200)
@@ -68,11 +69,25 @@ struct SelectTagsView: View {
 }
 
 #Preview {
-    SelectTagsView(
-        presenter: SelectTagsPresenter(
-            interactor: ModuleInteractorFactory.shared.selectTagsModuleInteractor(),
-            selectedTags: [],
-            onChange: { _ in }
+    NavigationStack {
+        SelectTagsView(
+            presenter: SelectTagsPresenter(
+                interactor: PreviewSelectTagsModuleInteractor(),
+                selectedTags: [],
+                onChange: { _ in }
+            )
         )
-    )
+    }
+}
+
+private final class PreviewSelectTagsModuleInteractor: SelectTagsModuleInteracting {
+    func listAllTags() -> [ItemTagData] {
+        [
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .indigo, position: 0, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .green, position: 1, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .orange, position: 2, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Social", color: .cyan, position: 3, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Shopping", color: .purple, position: 4, modificationDate: Date())
+        ]
+    }
 }

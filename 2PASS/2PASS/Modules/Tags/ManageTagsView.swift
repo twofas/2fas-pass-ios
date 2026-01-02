@@ -1,4 +1,5 @@
 import SwiftUI
+import Common
 import CommonUI
 
 struct ManageTagsView: View {
@@ -50,7 +51,27 @@ struct ManageTagsView: View {
 }
 
 #Preview {
-    ManageTagsView(
-        presenter: .init(interactor:  ModuleInteractorFactory.shared.manageTagsModuleInteractor())
-    )
+    NavigationStack {
+        ManageTagsView(
+            presenter: .init(interactor: PreviewManageTagsModuleInteractor())
+        )
+    }
+}
+
+private struct PreviewManageTagsModuleInteractor: ManageTagsModuleInteracting {
+    func listAllTags() -> [ItemTagData] {
+        [
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .indigo, position: 0, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .green, position: 1, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .orange, position: 2, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Social", color: .cyan, position: 3, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Shopping", color: .purple, position: 4, modificationDate: Date())
+        ]
+    }
+
+    func deleteTag(tagID: ItemTagID) {}
+
+    func getItemCountForTag(tagID: ItemTagID) -> Int {
+        Int.random(in: 1...15)
+    }
 }

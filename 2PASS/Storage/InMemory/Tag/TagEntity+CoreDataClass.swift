@@ -19,18 +19,18 @@ final class TagEntity: NSManagedObject {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     ) {
         let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! TagEntity
-        
+
         entity.tagID = tagID
         entity.name = name
         entity.modificationDate = modificationDate
         entity.position = position
         entity.vaultID = vaultID
-        entity.color = color?.hexString
+        entity.color = color?.rawValue
     }
-    
+
     @nonobjc static func update(
         on context: NSManagedObjectContext,
         tagID: ItemTagID,
@@ -38,13 +38,13 @@ final class TagEntity: NSManagedObject {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     ) {
         guard let entity = getEntity(on: context, tagID: tagID) else {
             Log("Can't find Tag entity for tagID: \(tagID)", module: .storage)
             return
         }
-        
+
         update(
             on: context,
             entity: entity,
@@ -52,10 +52,10 @@ final class TagEntity: NSManagedObject {
             modificationDate: modificationDate,
             position: position,
             vaultID: vaultID,
-            color: color?.hexString
+            color: color
         )
     }
-    
+
     @nonobjc static func update(
         on context: NSManagedObjectContext,
         entity: TagEntity,
@@ -63,13 +63,13 @@ final class TagEntity: NSManagedObject {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: String?
+        color: ItemTagColor?
     ) {
         entity.name = name
         entity.modificationDate = modificationDate
         entity.position = position
         entity.vaultID = vaultID
-        entity.color = color
+        entity.color = color?.rawValue
     }
     
     @nonobjc static func getEntity(
