@@ -93,6 +93,12 @@ extension TagInteractor: TagInteracting {
             Log("TagInteractor: Error while preparing encrypted tag name for tag creation", module: .interactor, severity: .error)
             return
         }
+        
+        var data = data
+        if shouldMigrateColor(data.color) {
+            data.color = suggestedNewColor()
+        }
+        
         mainRepository.createTag(
             ItemTagData(
                 tagID: data.id,
@@ -139,6 +145,17 @@ extension TagInteractor: TagInteracting {
         guard let nameEnc = encryptName(data.name) else {
             Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
             return
+        }
+        
+        var data = data
+        if shouldMigrateColor(data.color) {
+            if let oldTag = mainRepository.getTag(for: data.id) {
+                if shouldMigrateColor(oldTag.color) {
+                    data.color = suggestedNewColor()
+                } else {
+                    data.color = oldTag.color
+                }
+            }
         }
         
         mainRepository.updateTag(

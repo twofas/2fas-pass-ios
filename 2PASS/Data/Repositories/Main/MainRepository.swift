@@ -440,6 +440,7 @@ protocol MainRepository: AnyObject {
     func updateTag(_ tag: ItemTagData)
     func deleteTag(tagID: ItemTagID)
     func deleteAllTags()
+    func getTag(for tagID: ItemTagID) -> ItemTagData?
     func listTags(options: TagListOptions) -> [ItemTagData]
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
     
