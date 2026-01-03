@@ -27,6 +27,9 @@ public protocol TagInteracting: AnyObject {
     func listTagWith(_ phrase: String) -> [ItemTagData]
     
     func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData])
+
+    func migrateTagColors()
+    func shouldMigrateColor(_ color: ItemTagColor) -> Bool
     
     func saveStorage()
 }
@@ -137,6 +140,7 @@ extension TagInteractor: TagInteracting {
             Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
             return
         }
+        
         mainRepository.updateTag(
             ItemTagData(
                 tagID: data.id,
@@ -248,7 +252,7 @@ extension TagInteractor: TagInteracting {
         }
         let date = mainRepository.currentDate
         var encryptedTags: [ItemTagEncryptedData] = []
-        
+
         for tag in tags {
             guard let nameEnc = encryptName(tag.name) else {
                 Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
@@ -265,11 +269,49 @@ extension TagInteractor: TagInteracting {
                 )
             )
         }
-        
+
         mainRepository.batchUpdateRencryptedTags(tags, date: date)
         mainRepository.encryptedTagBatchUpdate(encryptedTags, in: vaultID)
     }
+
+    func migrateTagColors() {
+        let allColors = ItemTagColor.allKnownCases
+        var colorIndex = 0
+
+        let vaults = mainRepository.listEncryptedVaults()
+
+        for vault in vaults {
+            let encryptedTags = mainRepository.listEncryptedTags(in: vault.vaultID)
+
+            for encryptedTag in encryptedTags {
+                guard shouldMigrateColor(ItemTagColor(rawValue: encryptedTag.color)) else { continue }
+
+                let newColor = allColors[colorIndex % allColors.count]
+                colorIndex += 1
+
+                mainRepository.updateEncryptedTag(
+                    ItemTagEncryptedData(
+                        tagID: encryptedTag.tagID,
+                        vaultID: encryptedTag.vaultID,
+                        name: encryptedTag.name,
+                        color: newColor.rawValue,
+                        position: encryptedTag.position,
+                        modificationDate: encryptedTag.modificationDate
+                    )
+                )
+            }
+        }
+    }
     
+    func shouldMigrateColor(_ color: ItemTagColor) -> Bool {
+        switch color {
+        case .unknown(let rawValue):
+            return rawValue == nil || rawValue?.hasPrefix("#") == true
+        default:
+            return false
+        }
+    }
+
     func saveStorage() {
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()

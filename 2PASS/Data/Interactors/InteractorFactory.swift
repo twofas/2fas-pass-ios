@@ -344,7 +344,10 @@ public final class InteractorFactory {
     }
     
     public func migrationInteractor() -> MigrationInteracting {
-        MigrationInteractor(mainRepository: MainRepositoryImpl.shared)
+        MigrationInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            tagInteractor: tagInteractor()
+        )
     }
     
     public func quickSetupInteractor() -> QuickSetupInteracting {

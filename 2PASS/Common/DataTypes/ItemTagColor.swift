@@ -48,3 +48,13 @@ public enum ItemTagColor: Hashable {
         }
     }
 }
+
+extension ItemTagColor {
+    
+    public var isUnknown: Bool {
+        switch self {
+        case .unknown: true
+        default: false
+        }
+    }
+}

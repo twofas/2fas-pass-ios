@@ -16,11 +16,13 @@ public protocol MigrationInteracting {
 }
 
 final class MigrationInteractor: MigrationInteracting {
-    
+
     private let mainRepository: MainRepository
-    
-    init(mainRepository: MainRepository) {
+    private let tagInteractor: TagInteracting
+
+    init(mainRepository: MainRepository, tagInteractor: TagInteracting) {
         self.mainRepository = mainRepository
+        self.tagInteractor = tagInteractor
     }
     
     func requiresReencryptionMigration() -> Bool {
@@ -53,6 +55,11 @@ final class MigrationInteractor: MigrationInteracting {
 
         if mainRepository.lastKnownAppVersion?.compare("1.3.0", options: .numeric) == .orderedAscending {
             mainRepository.removeDuplicatedEncryptedTags()
+        }
+        
+        if mainRepository.lastKnownAppVersion?.compare("1.3.2", options: .numeric) == .orderedAscending {
+            tagInteractor.migrateTagColors()
+            tagInteractor.saveStorage()
         }
 
         mainRepository.setLastKnownAppVersion(appVersion)
