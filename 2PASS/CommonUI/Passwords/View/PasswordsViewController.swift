@@ -456,7 +456,7 @@ private extension PasswordsViewController {
             let title = "\(level.title) (\(count))"
             return UIAction(
                 title: title,
-                image: level.uiIcon.withRenderingMode(.alwaysTemplate),
+                image: level.uiIcon.withTintColor(.accent),
                 state: presenter.selectedFilterProtectionLevel == level ? .on : .off
             ) { [weak self] _ in
                 self?.presenter.onSelectFilterProtectionLevel(level)

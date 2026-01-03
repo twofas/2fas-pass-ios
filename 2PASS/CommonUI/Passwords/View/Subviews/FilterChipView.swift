@@ -73,7 +73,8 @@ final class FilterChipView: UIView {
         super.init(frame: .zero)
         setupView(showColorDot: false)
 
-        iconImageView.image = protectionLevel.uiIcon
+        iconImageView.image = protectionLevel.uiIcon.withRenderingMode(.alwaysTemplate)
+        iconImageView.tintColor = .accent
         nameLabel.text = protectionLevel.title
         
         nameLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
