@@ -150,6 +150,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                 tagId: nil,
                 vaultId: vault.vaultID,
                 contentTypes: .allKnownTypes,
+                protectionLevel: nil,
                 sortBy: .az,
                 trashed: .no
             )

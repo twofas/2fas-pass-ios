@@ -38,6 +38,7 @@ public protocol ItemsInteracting: AnyObject {
         tagId: ItemTagID?,
         vaultId: VaultID?,
         contentTypes: [ItemContentType]?,
+        protectionLevel: ItemProtectionLevel?,
         sortBy: SortType,
         trashed: ItemsListOptions.TrashOptions
     ) -> [ItemData]
@@ -303,6 +304,7 @@ extension ItemsInteractor: ItemsInteracting {
         tagId: ItemTagID? = nil,
         vaultId: VaultID? = nil,
         contentTypes: [ItemContentType]? = nil,
+        protectionLevel: ItemProtectionLevel? = nil,
         sortBy: SortType = .newestFirst,
         trashed: ItemsListOptions.TrashOptions = .no
     ) -> [ItemData] {
@@ -336,16 +338,22 @@ extension ItemsInteractor: ItemsInteracting {
                     return false
                 }
             }
-  
+
+            if let protectionLevel {
+                guard item.protectionLevel == protectionLevel else {
+                    return false
+                }
+            }
+
             if let searchPhrase {
                 if item.name?.localizedCaseInsensitiveContains(searchPhrase) == true {
                     return true
                 }
-                
+
                 if let loginItem = item.asLoginItem, loginItem.username?.localizedCaseInsensitiveContains(searchPhrase) == true {
                     return true
                 }
-                
+
                 return false
             }
 
@@ -358,7 +366,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func listAllItems() -> [ItemData] {
-        listItems(searchPhrase: nil, vaultId: nil, contentTypes: nil, sortBy: .newestFirst, trashed: .all)
+        listItems(searchPhrase: nil, vaultId: nil, contentTypes: nil, protectionLevel: nil, sortBy: .newestFirst, trashed: .all)
     }
     
     func getPasswordEncryptedContents(for itemID: ItemID, checkInTrash: Bool = false) -> Result<String?, ItemsInteractorGetError> {

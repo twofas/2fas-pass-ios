@@ -41,6 +41,12 @@ final class PasswordsPresenter {
             reload()
         }
     }
+
+    var selectedFilterProtectionLevel: ItemProtectionLevel? {
+        didSet {
+            reload()
+        }
+    }
     
     var showContentTypePicker: Bool {
         if let autoFillEnvironment {
@@ -144,9 +150,17 @@ extension PasswordsPresenter {
     func onSelectFilterTag(_ tag: ItemTagData?) {
         selectedFilterTag = tag
     }
-    
+
     func onClearFilterTag() {
         selectedFilterTag = nil
+    }
+
+    func onSelectFilterProtectionLevel(_ protectionLevel: ItemProtectionLevel?) {
+        selectedFilterProtectionLevel = protectionLevel
+    }
+
+    func onClearFilterProtectionLevel() {
+        selectedFilterProtectionLevel = nil
     }
     
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
@@ -228,8 +242,12 @@ extension PasswordsPresenter {
         interactor.listAllTags()
     }
 
-    func countPasswordsForTag(_ tagID: ItemTagID, contentType: ItemContentType? = nil) -> Int {
-        interactor.countItemsForTag(tagID, contentType: contentType)
+    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
+        interactor.countItemsForTag(tagID)
+    }
+
+    func countPasswordsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
+        interactor.countItemsForProtectionLevel(protectionLevel)
     }
 }
 
@@ -318,7 +336,7 @@ private extension PasswordsPresenter {
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, autoFillEnvironment?.isTextToInsert == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag)
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
             
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             
@@ -357,23 +375,23 @@ private extension PasswordsPresenter {
             view?.reloadData(newSnapshot: snapshot)
             
         } else {
-            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
+            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
             listData[0] = list
             let cells = list.compactMap(makeCellData(for:))
             let section = ItemSectionData()
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             snapshot.appendSections([section])
             snapshot.appendItems(cells, toSection: section)
-        
+
             cellsCount = cells.count
             itemsCount = cellsCount
 
             hasItems = interactor.hasItems
             view?.reloadData(newSnapshot: snapshot)
         }
-        
+
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil || (contentTypeFilter.contentType != nil && hasItems) {
+            if interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || (contentTypeFilter.contentType != nil && hasItems) {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()

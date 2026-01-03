@@ -132,11 +132,12 @@ final class PasswordsViewController: UIViewController {
     
     func reloadLayout() {
         view.layoutIfNeeded()
-        
+
+        let hasActiveFilter = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
         UIView.animate(withDuration: Constants.changeScrollContentInsetAnimationDuration) {
-            self.passwordsList?.contentInset.top = (self.presenter.selectedFilterTag != nil ? self.selectedTagBannerView.frame.height + Spacing.m + (self.presenter.showContentTypePicker ? 0 : Spacing.l) : 0)
+            self.passwordsList?.contentInset.top = (hasActiveFilter ? self.selectedTagBannerView.frame.height + Spacing.m + (self.presenter.showContentTypePicker ? 0 : Spacing.l) : 0)
         }
-        
+
         layout = makeLayout()
         passwordsList?.setCollectionViewLayout(layout, animated: true)
     }
@@ -177,12 +178,12 @@ private extension PasswordsViewController {
     
     func filterBarButton() -> UIBarButtonItem {
         let button = FilterButton()
-        button.isFilterActive = presenter.selectedFilterTag != nil
+        button.isFilterActive = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
         button.menu = filterMenu()
         button.showsMenuAsPrimaryAction = true
         button.clipsToBounds = false
         button.translatesAutoresizingMaskIntoConstraints = false
-        
+
         let container = UIView()
         container.addSubview(button)
 
@@ -191,14 +192,14 @@ private extension PasswordsViewController {
             container.heightAnchor.constraint(equalToConstant: 44)
         ])
         button.pinToParent()
-        
+
         let filterButton = UIBarButtonItem(customView: container)
-        
+
         if #available(iOS 26.0, *) {
             filterButton.sharesBackground = false
             filterButton.hidesSharedBackground = true
         }
-        
+
         return filterButton
     }
     
@@ -246,13 +247,13 @@ private extension PasswordsViewController {
     func addSelectedTagBanner(contentTypePicker: UIView) {
         selectedTagBannerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(selectedTagBannerView)
-        
+
         let leading = selectedTagBannerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l)
         leading.priority = .defaultHigh
-        
+
         let trailing = selectedTagBannerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
         trailing.priority = .defaultHigh
-        
+
         let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.l)
         top.priority = .defaultHigh
         NSLayoutConstraint.activate([
@@ -263,13 +264,18 @@ private extension PasswordsViewController {
             selectedTagBannerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             selectedTagBannerView.widthAnchor.constraint(lessThanOrEqualToConstant: Constants.maxSelectedTagBannerWidth)
         ])
-        
+
         selectedTagBannerView.onTagClose = { [weak self] _ in
             self?.presenter.onClearFilterTag()
-            self?.didSelectedTagChanged()
+            self?.didSelectedFilterChanged()
         }
-        
-        didSelectedTagChanged()
+
+        selectedTagBannerView.onProtectionLevelClose = { [weak self] _ in
+            self?.presenter.onClearFilterProtectionLevel()
+            self?.didSelectedFilterChanged()
+        }
+
+        didSelectedFilterChanged()
     }
     
     func addTopEdgeEffect(contentTypePicker: UIView) {
@@ -440,25 +446,26 @@ private extension PasswordsViewController {
         var menuItems: [UIMenuElement] = []
         menuItems.append(sortMenu())
         menuItems.append(tagMenu())
-        
-        // If a tag is selected, add a clear filter option at the end
-        if presenter.selectedFilterTag != nil {
-            let clearFilterAction = UIAction(
-                title: T.loginFilterModalClear,
-                attributes: .destructive
-            ) { [weak self] _ in
-                self?.presenter.onClearFilterTag()
-                self?.didSelectedTagChanged()
-            }
-            menuItems.append(clearFilterAction)
-        }
-        
         return menuItems
     }
     
     func tagMenu() -> UIMenu {
+        // Create protection level actions
+        let protectionLevelActions = ItemProtectionLevel.allCases.map { level in
+            let count = presenter.countPasswordsForProtectionLevel(level)
+            let title = "\(level.title) (\(count))"
+            return UIAction(
+                title: title,
+                image: level.uiIcon.withRenderingMode(.alwaysTemplate),
+                state: presenter.selectedFilterProtectionLevel == level ? .on : .off
+            ) { [weak self] _ in
+                self?.presenter.onSelectFilterProtectionLevel(level)
+                self?.didSelectedFilterChanged()
+            }
+        }
+
         let tags = presenter.listAllTags()
-        
+
         // Create tag actions
         let tagActions = tags.map { tag in
             let count = presenter.countPasswordsForTag(tag.tagID)
@@ -473,15 +480,18 @@ private extension PasswordsViewController {
                 state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
             ) { [weak self] _ in
                 self?.presenter.onSelectFilterTag(tag)
-                self?.didSelectedTagChanged()
+                self?.didSelectedFilterChanged()
             }
         }
-        
-        // Create a submenu that contains only tags (without "All" option)
+
+        // Create inline menu with protection levels, separator, and tags
+        let protectionLevelSection = UIMenu(title: "", options: .displayInline, children: protectionLevelActions)
+        let tagSection = UIMenu(title: "", options: .displayInline, children: tagActions)
+
         return UIMenu(
             title: T.loginFilterModalTag,
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
-            children: tagActions
+            children: [protectionLevelSection, tagSection]
         )
     }
     
@@ -510,12 +520,21 @@ private extension PasswordsViewController {
     func updateTagBanner() {
         if let selectedTag = presenter.selectedFilterTag {
             selectedTagBannerView.setTag(selectedTag)
+        } else {
+            selectedTagBannerView.setTag(nil)
         }
 
-        edgeEffectToContentTypePickerConstraint?.isActive = presenter.selectedFilterTag == nil
-        edgeEffectToSelectedTagConstraint?.isActive = presenter.selectedFilterTag != nil
-        
-        if presenter.selectedFilterTag != nil {
+        if let selectedProtectionLevel = presenter.selectedFilterProtectionLevel {
+            selectedTagBannerView.setProtectionLevel(selectedProtectionLevel)
+        } else {
+            selectedTagBannerView.setProtectionLevel(nil)
+        }
+
+        let hasActiveFilter = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
+        edgeEffectToContentTypePickerConstraint?.isActive = !hasActiveFilter
+        edgeEffectToSelectedTagConstraint?.isActive = hasActiveFilter
+
+        if hasActiveFilter {
             UIView.animate(withDuration: Constants.showSelectedTagBannerAnimationDuration) {
                 self.selectedTagBannerView.alpha = 1
             }
@@ -523,8 +542,8 @@ private extension PasswordsViewController {
             self.selectedTagBannerView.alpha = 0
         }
     }
-    
-    func didSelectedTagChanged() {
+
+    func didSelectedFilterChanged() {
         updateTagBanner()
         updateNavigationBarButtons()
         reloadLayout()

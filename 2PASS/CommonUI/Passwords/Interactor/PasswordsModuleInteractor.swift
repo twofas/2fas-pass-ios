@@ -11,20 +11,20 @@ import Common
 protocol PasswordsModuleInteracting: AnyObject {
     var hasItems: Bool { get }
     func hasItems(for contentType: ItemContentType) -> Bool
-    
+
     var currentPlanItemsLimit: Int { get }
     var canAddPassword: Bool { get }
     var selectAction: PasswordListAction { get }
-    
+
     var currentSortType: SortType { get }
     func setSortType(_ sortType: SortType)
-    
-    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [ItemData]
-    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData])
+
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> [ItemData]
+    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> (suggested: [ItemData], rest: [ItemData])
 
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
-    
+
     func moveToTrash(_ itemID: ItemID)
     func copyUsername(_ itemID: ItemID) -> Bool
     func copyPassword(_ itemID: ItemID) -> Bool
@@ -34,10 +34,11 @@ protocol PasswordsModuleInteracting: AnyObject {
 
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
-    
+
     func normalizedURL(for uri: String) -> URL?
     func listAllTags() -> [ItemTagData]
-    func countItemsForTag(_ tagID: ItemTagID, contentType: ItemContentType?) -> Int
+    func countItemsForTag(_ tagID: ItemTagID) -> Int
+    func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int
 }
 
 final class PasswordsModuleInteractor {
@@ -86,7 +87,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
 
     func hasItems(for contentType: ItemContentType) -> Bool {
-        !itemsInteractor.listItems(searchPhrase: nil, tagId: nil, vaultId: nil, contentTypes: [contentType], sortBy: .az, trashed: .no).isEmpty
+        !itemsInteractor.listItems(searchPhrase: nil, tagId: nil, vaultId: nil, contentTypes: [contentType], protectionLevel: nil, sortBy: .az, trashed: .no).isEmpty
     }
     
     var canAddPassword: Bool {
@@ -104,7 +105,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         configInteractor.defaultPassswordListAction
     }
     
-    func loadList(contentType: ItemContentType?, tag: ItemTagData?) -> [ItemData] {
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> [ItemData] {
         let contentTypes: [ItemContentType]? = {
             if let contentType {
                 return [contentType]
@@ -112,18 +113,19 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
                 return nil
             }
         }()
-        
+
         return itemsInteractor.listItems(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
             vaultId: nil,
             contentTypes: contentTypes ?? .allKnownTypes,
+            protectionLevel: protectionLevel,
             sortBy: currentSortType,
             trashed: .no
         )
     }
     
-    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?) -> (suggested: [ItemData], rest: [ItemData]) {
+    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> (suggested: [ItemData], rest: [ItemData]) {
         let contentTypes: [ItemContentType]? = {
             if let contentType {
                 return [contentType]
@@ -131,13 +133,13 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
                 return nil
             }
         }()
-        
-        let allPasswords = itemsInteractor.listItems(searchPhrase: searchPhrase, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, sortBy: currentSortType, trashed: .no)
-        
+
+        let allPasswords = itemsInteractor.listItems(searchPhrase: searchPhrase, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, protectionLevel: protectionLevel, sortBy: currentSortType, trashed: .no)
+
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)
         }
-        
+
         var suggested: [ItemData] = []
         var rest: [ItemData] = []
         var processedItemIDs: Set<ItemID> = []
@@ -293,7 +295,19 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             .sorted(by: { $0.name < $1.name })
     }
     
-    func countItemsForTag(_ tagID: ItemTagID, contentType: ItemContentType?) -> Int {
-        itemsInteractor.getItemCountForTag(tagID: tagID, contentType: contentType)
+    func countItemsForTag(_ tagID: ItemTagID) -> Int {
+        itemsInteractor.getItemCountForTag(tagID: tagID, contentType: nil)
+    }
+
+    func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
+        itemsInteractor.listItems(
+            searchPhrase: nil,
+            tagId: nil,
+            vaultId: nil,
+            contentTypes: .allKnownTypes,
+            protectionLevel: protectionLevel,
+            sortBy: currentSortType,
+            trashed: .no
+        ).count
     }
 }

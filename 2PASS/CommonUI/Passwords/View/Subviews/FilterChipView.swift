@@ -9,6 +9,7 @@ import Common
 
 private struct Constants {
     static let colorDotSize: CGFloat = ItemTagColorMetrics.small.size
+    static let iconSize: CGFloat = 16.0
 }
 
 final class FilterChipView: UIView {
@@ -55,7 +56,7 @@ final class FilterChipView: UIView {
         config.image = UIImage(systemName: "xmark")
         config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 12)
         config.baseForegroundColor = .base1000
-        config.contentInsets = .zero
+        config.contentInsets = NSDirectionalEdgeInsets(top: Spacing.s, leading: Spacing.s, bottom: Spacing.s, trailing: Spacing.s)
         let button = UIButton(configuration: config)
         return button
     }()
@@ -74,6 +75,8 @@ final class FilterChipView: UIView {
 
         iconImageView.image = protectionLevel.uiIcon
         nameLabel.text = protectionLevel.title
+        
+        nameLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
     @available(*, unavailable)
@@ -95,6 +98,9 @@ final class FilterChipView: UIView {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         closeButton.translatesAutoresizingMaskIntoConstraints = false
 
+        closeButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        setContentCompressionResistancePriority(.required, for: .horizontal)
+
         addSubview(containerView)
         containerView.addSubview(stackView)
 
@@ -106,6 +112,8 @@ final class FilterChipView: UIView {
         stackView.addArrangedSubview(nameLabel)
         stackView.addArrangedSubview(closeButton)
 
+        stackView.setCustomSpacing(0, after: nameLabel)
+        
         closeButton.addAction(UIAction { [weak self] _ in
             self?.onClose?()
         }, for: .touchUpInside)
@@ -116,16 +124,16 @@ final class FilterChipView: UIView {
             containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
             containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: Spacing.xs),
+            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 0),
             stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Spacing.m),
-            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -Spacing.m),
-            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -Spacing.xs),
+            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: 0),
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 0),
 
             colorDotView.widthAnchor.constraint(equalToConstant: Constants.colorDotSize),
             colorDotView.heightAnchor.constraint(equalToConstant: Constants.colorDotSize),
 
-            iconImageView.widthAnchor.constraint(equalToConstant: Constants.colorDotSize),
-            iconImageView.heightAnchor.constraint(equalToConstant: Constants.colorDotSize)
+            iconImageView.widthAnchor.constraint(equalToConstant: Constants.iconSize),
+            iconImageView.heightAnchor.constraint(equalToConstant: Constants.iconSize)
         ])
     }
 }
