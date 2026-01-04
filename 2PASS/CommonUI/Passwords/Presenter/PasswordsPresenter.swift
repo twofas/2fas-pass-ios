@@ -105,7 +105,17 @@ extension PasswordsPresenter {
     
     func viewWillAppear() {
         canLoadData = true
+        refreshSelectedFilterTag()
         reload()
+    }
+
+    private func refreshSelectedFilterTag() {
+        guard let currentTag = selectedFilterTag else { return }
+        if let freshTag = interactor.getTag(for: currentTag.tagID) {
+            selectedFilterTag = freshTag
+        } else {
+            selectedFilterTag = nil
+        }
     }
     
     func onQuickSetup() {

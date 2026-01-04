@@ -79,9 +79,10 @@ final class PasswordsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         presenter.viewWillAppear()
-        startSafeAreaKeyboardAdjustment()        
+        updateTagBanner()
+        startSafeAreaKeyboardAdjustment()
     }
     
     override func viewWillDisappear(_ animated: Bool) {

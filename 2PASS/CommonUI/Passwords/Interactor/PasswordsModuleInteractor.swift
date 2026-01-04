@@ -37,6 +37,7 @@ protocol PasswordsModuleInteracting: AnyObject {
 
     func normalizedURL(for uri: String) -> URL?
     func listAllTags() -> [ItemTagData]
+    func getTag(for tagID: ItemTagID) -> ItemTagData?
     func countItemsForTag(_ tagID: ItemTagID) -> Int
     func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int
 }
@@ -294,7 +295,11 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         tagInteractor.listAllTags()
             .sorted(by: { $0.name < $1.name })
     }
-    
+
+    func getTag(for tagID: ItemTagID) -> ItemTagData? {
+        tagInteractor.getTag(for: tagID)
+    }
+
     func countItemsForTag(_ tagID: ItemTagID) -> Int {
         itemsInteractor.getItemCountForTag(tagID: tagID, contentType: nil)
     }
