@@ -526,10 +526,10 @@ protocol MainRepository: AnyObject {
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
     func deleteEncryptedTag(tagID: ItemTagID)
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
+    func listAllEncryptedTags() -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
     func deleteAllEncryptedTags()
-    func removeDuplicatedEncryptedTags()
     
     // MARK: - Sort
     var sortType: SortType? { get }

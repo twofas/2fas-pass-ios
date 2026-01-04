@@ -1995,8 +1995,9 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    func removeDuplicatedEncryptedTags() {
+    func listAllEncryptedTags() -> [ItemTagEncryptedData] {
         recordCall()
+        return []
     }
 
     // MARK: Sort

@@ -13,24 +13,25 @@ public protocol TagInteracting: AnyObject {
 
     func createTag(name: String, color: ItemTagColor)
     func createTag(data: ItemTagData)
-    
+
     func updateTag(data: ItemTagData)
-    
+
     func deleteTag(tagID: ItemTagID)
     func externalDeleteTag(tagID: ItemTagID)
-    
+
     func listAllTags() -> [ItemTagData]
     func listAllEncryptedTags() -> [ItemTagEncryptedData]
     func listTags(for vaultID: VaultID) -> [ItemTagData]
     func getTag(for id: ItemTagID) -> ItemTagData?
     func getTags(by tagIDs: [ItemTagID]) -> [ItemTagData]
     func listTagWith(_ phrase: String) -> [ItemTagData]
-    
+
     func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData])
 
+    func removeDuplicatedEncryptedTags()
     func migrateTagColors()
     func shouldMigrateColor(_ color: ItemTagColor) -> Bool
-    
+
     func saveStorage()
 }
 
@@ -319,7 +320,20 @@ extension TagInteractor: TagInteracting {
             }
         }
     }
-    
+
+    func removeDuplicatedEncryptedTags() {
+        let allTags = mainRepository.listAllEncryptedTags()
+        var seenTagIDs: Set<ItemTagID> = []
+
+        for tag in allTags {
+            if seenTagIDs.contains(tag.tagID) {
+                mainRepository.deleteEncryptedTag(tagID: tag.tagID)
+            } else {
+                seenTagIDs.insert(tag.tagID)
+            }
+        }
+    }
+
     func shouldMigrateColor(_ color: ItemTagColor) -> Bool {
         switch color {
         case .unknown(let rawValue):

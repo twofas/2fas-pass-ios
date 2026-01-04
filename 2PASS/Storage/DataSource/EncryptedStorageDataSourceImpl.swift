@@ -307,8 +307,8 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         listAll.forEach { TagEncryptedEntity.delete(on: context, entity: $0) }
     }
 
-    public func removeDuplicatedEncryptedTags() {
-        TagEncryptedEntity.removeDuplicates(on: context)
+    public func listAllEncryptedTags() -> [ItemTagEncryptedData] {
+        TagEncryptedEntity.listAll(on: context).map { ItemTagEncryptedData($0) }
     }
 
     public func warmUp() {

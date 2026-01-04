@@ -91,6 +91,17 @@ extension TagEncryptedEntity {
             return []
         }
     }
+
+    @nonobjc static func listAll(on context: NSManagedObjectContext) -> [TagEncryptedEntity] {
+        let request = TagEncryptedEntity.fetchRequest()
+        do {
+            return try context.fetch(request)
+        } catch {
+            let err = error as NSError
+            Log("TagEncryptedEntity in Storage listAll: \(err.localizedDescription)", module: .storage)
+            return []
+        }
+    }
     
     @nonobjc static func delete(on context: NSManagedObjectContext, tagID: ItemTagID) {
         guard let entity = find(tagID: tagID, on: context) else { return }
@@ -99,25 +110,6 @@ extension TagEncryptedEntity {
     
     @nonobjc static func delete(on context: NSManagedObjectContext, entity: TagEncryptedEntity) {
         context.delete(entity)
-    }
-
-    @nonobjc static func removeDuplicates(on context: NSManagedObjectContext) {
-        let request = TagEncryptedEntity.fetchRequest()
-        do {
-            let allTags = try context.fetch(request)
-            var seenTagIDs: [ItemTagID: TagEncryptedEntity] = [:]
-
-            for tag in allTags {
-                if let existing = seenTagIDs[tag.tagID] {
-                    delete(on: context, entity: existing)
-                } else {
-                    seenTagIDs[tag.tagID] = tag
-                }
-            }
-        } catch {
-            let err = error as NSError
-            Log("TagEncryptedEntity removeDuplicates error: \(err.localizedDescription)", module: .storage)
-        }
     }
 }
 

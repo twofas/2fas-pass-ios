@@ -8,7 +8,8 @@ import Common
 
 public protocol MigrationInteracting {
     func migrateIfNeeded()
-    
+    func migrateStorageIfNeeded()
+
     func requiresReencryptionMigration() -> Bool
     
     @MainActor
@@ -42,7 +43,7 @@ final class MigrationInteractor: MigrationInteracting {
     
     func migrateIfNeeded() {
         let appVersion = mainRepository.currentAppVersion
-        
+
         if mainRepository.lastKnownAppVersion == nil { // Below 1.1.0 or first app run
             if mainRepository.isMainAppProcess {
                 Log("Start app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
@@ -52,15 +53,20 @@ final class MigrationInteractor: MigrationInteracting {
         } else {
             Log("Already migrated for \(appVersion, privacy: .public) version", module: .migration, severity: .info)
         }
+    }
+
+    func migrateStorageIfNeeded() {
+        let appVersion = mainRepository.currentAppVersion
 
         if mainRepository.lastKnownAppVersion?.compare("1.3.0", options: .numeric) == .orderedAscending {
-            mainRepository.removeDuplicatedEncryptedTags()
+            tagInteractor.removeDuplicatedEncryptedTags()
         }
-        
+
         if mainRepository.lastKnownAppVersion?.compare("1.3.2", options: .numeric) == .orderedAscending {
             tagInteractor.migrateTagColors()
-            tagInteractor.saveStorage()
         }
+
+        mainRepository.saveEncryptedStorage()
 
         mainRepository.setLastKnownAppVersion(appVersion)
     }
