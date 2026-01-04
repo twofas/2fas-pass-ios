@@ -771,8 +771,8 @@ internal enum T {
   internal static let loginSelectedTags = T.tr("Localizable", "login_selected_tags", fallback: "Selected Tags")
   /// Tags
   internal static let loginTags = T.tr("Localizable", "login_tags", fallback: "Tags")
-  /// Assign Tags to find your Items more easily.
-  internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to find your Items more easily.")
+  /// Assign Tags to easily find your Items.
+  internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to easily find your Items.")
   /// Tags
   internal static let loginTagsHeader = T.tr("Localizable", "login_tags_header", fallback: "Tags")
   /// Do you want to discard your changes?
@@ -1901,12 +1901,12 @@ internal enum T {
   /// 
   /// Click on your account in the top right corner, select **Settings**, and go to **Export**
   /// 
-  /// Under **Export file**, select JSON as the format and click **Export**.
+  /// Under **Export file**, select **json** as the file format and click **Export**.
   /// 
   /// Enter your Master Password and confirm the export.
   /// 
   /// Copy the exported file to this device and tap **Upload JSON file** below. 
-  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open Keeper on your PC.\n\nClick on your account in the top right corner, select **Settings**, and go to **Export**\n\nUnder **Export file**, select JSON as the format and click **Export**.\n\nEnter your Master Password and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
+  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open Keeper on your PC.\n\nClick on your account in the top right corner, select **Settings**, and go to **Export**\n\nUnder **Export file**, select **json** as the file format and click **Export**.\n\nEnter your Master Password and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Log in to LastPass on your browser and go to **Advanced Options**.
   /// 
   /// Under **Manage Your Vault**, select **Export**. This will send you a verification email.

@@ -467,20 +467,31 @@ private extension PasswordsViewController {
         let tags = presenter.listAllTags()
 
         // Create tag actions
-        let tagActions = tags.map { tag in
-            let count = presenter.countPasswordsForTag(tag.tagID)
-            let title = "\(tag.name) (\(count))"
-            let colorImage = UIImage.circleImage(
-                color: UIColor(tag.color),
-                size: CGSize(width: ItemTagColorMetrics.small.size, height: ItemTagColorMetrics.small.size)
-            )
-            return UIAction(
-                title: title,
-                image: colorImage,
-                state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
+        let tagActions: [UIMenuElement]
+        if tags.isEmpty {
+            let addTagAction = UIAction(
+                title: T.tagsAddNewCta,
+                image: UIImage(systemName: "plus")
             ) { [weak self] _ in
-                self?.presenter.onSelectFilterTag(tag)
-                self?.didSelectedFilterChanged()
+                self?.presenter.onAddTag()
+            }
+            tagActions = [addTagAction]
+        } else {
+            tagActions = tags.map { tag in
+                let count = presenter.countPasswordsForTag(tag.tagID)
+                let title = "\(tag.name) (\(count))"
+                let colorImage = UIImage.circleImage(
+                    color: UIColor(tag.color),
+                    size: CGSize(width: ItemTagColorMetrics.small.size, height: ItemTagColorMetrics.small.size)
+                )
+                return UIAction(
+                    title: title,
+                    image: colorImage,
+                    state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
+                ) { [weak self] _ in
+                    self?.presenter.onSelectFilterTag(tag)
+                    self?.didSelectedFilterChanged()
+                }
             }
         }
 

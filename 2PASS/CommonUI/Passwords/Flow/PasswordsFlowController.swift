@@ -24,6 +24,7 @@ protocol PasswordsFlowControlling: AnyObject {
     func toEditItem(itemID: ItemID)
     func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
+    func toAddTag()
 
     func selectItem(id: ItemID, contentType: ItemContentType)
     func cancel()
@@ -108,6 +109,20 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     
     func toPremiumPlanPrompt(itemsLimit: Int) {
         parent?.toPremiumPlanPrompt(itemsLimit: itemsLimit)
+    }
+
+    @MainActor
+    func toAddTag() {
+        let editTagView = EditTagRouter.buildView(tagID: nil) { [weak self] in
+            self?.viewController.dismiss(animated: true)
+        }
+        let hostingController = UIHostingController(rootView: editTagView)
+        hostingController.modalPresentationStyle = .pageSheet
+        if let sheet = hostingController.sheetPresentationController {
+            sheet.detents = [.custom { _ in 300 }]
+            sheet.prefersGrabberVisible = true
+        }
+        viewController.present(hostingController, animated: true)
     }
 }
 

@@ -162,6 +162,10 @@ extension PasswordsPresenter {
     func onClearFilterProtectionLevel() {
         selectedFilterProtectionLevel = nil
     }
+
+    func onAddTag() {
+        flowController.toAddTag()
+    }
     
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
         switch action {

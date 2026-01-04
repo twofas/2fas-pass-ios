@@ -22,7 +22,7 @@ final class EditTagPresenter {
 
         if let tagID, let tag = interactor.getTag(tagID: tagID) {
             self.name = tag.name
-            self.selectedColor = tag.color ?? .gray
+            self.selectedColor = tag.color.isUnknown ? .gray : tag.color
         } else {
             selectedColor = interactor.suggestNewColor()
         }
