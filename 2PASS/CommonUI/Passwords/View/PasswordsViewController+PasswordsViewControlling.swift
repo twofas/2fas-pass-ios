@@ -17,6 +17,7 @@ protocol PasswordsViewControlling: AnyObject {
     func showList()
     func showEmptyScreen()
     func showSearchEmptyScreen()
+    func filterDidChange()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {

@@ -62,9 +62,9 @@ final class PasswordsViewController: UIViewController {
             addTopEdgeEffect(contentTypePicker: contentTypePicker)
         }
         
-        updateTagBanner()
+        filterDidChange()
     }
-    
+
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
         
@@ -81,10 +81,9 @@ final class PasswordsViewController: UIViewController {
         super.viewWillAppear(animated)
 
         presenter.viewWillAppear()
-        updateTagBanner()
         startSafeAreaKeyboardAdjustment()
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopSafeAreaKeyboardAdjustment()
@@ -141,6 +140,22 @@ final class PasswordsViewController: UIViewController {
 
         layout = makeLayout()
         passwordsList?.setCollectionViewLayout(layout, animated: true)
+    }
+    
+    func filterDidChange() {
+        selectedTagBannerView.setTag(presenter.selectedFilterTag)
+        selectedTagBannerView.setProtectionLevel(presenter.selectedFilterProtectionLevel)
+
+        let hasActiveFilter = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
+        edgeEffectToContentTypePickerConstraint?.isActive = !hasActiveFilter
+        edgeEffectToSelectedTagConstraint?.isActive = hasActiveFilter
+
+        UIView.animate(withDuration: Constants.showSelectedTagBannerAnimationDuration) {
+            self.selectedTagBannerView.alpha = hasActiveFilter ? 1 : 0
+        }
+
+        updateNavigationBarButtons()
+        reloadLayout()
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
@@ -219,8 +234,6 @@ private extension PasswordsViewController {
             filters: filters,
             onChange: { [weak self] filter in
                 self?.presenter.onSetContentTypeFilter(filter)
-                self?.updateTagBanner()
-                self?.reloadLayout()
             }
         ))
         
@@ -268,15 +281,11 @@ private extension PasswordsViewController {
 
         selectedTagBannerView.onTagClose = { [weak self] _ in
             self?.presenter.onClearFilterTag()
-            self?.didSelectedFilterChanged()
         }
 
         selectedTagBannerView.onProtectionLevelClose = { [weak self] _ in
             self?.presenter.onClearFilterProtectionLevel()
-            self?.didSelectedFilterChanged()
         }
-
-        didSelectedFilterChanged()
     }
     
     func addTopEdgeEffect(contentTypePicker: UIView) {
@@ -461,7 +470,6 @@ private extension PasswordsViewController {
                 state: presenter.selectedFilterProtectionLevel == level ? .on : .off
             ) { [weak self] _ in
                 self?.presenter.onSelectFilterProtectionLevel(level)
-                self?.didSelectedFilterChanged()
             }
         }
 
@@ -491,7 +499,6 @@ private extension PasswordsViewController {
                     state: presenter.selectedFilterTag?.tagID == tag.tagID ? .on : .off
                 ) { [weak self] _ in
                     self?.presenter.onSelectFilterTag(tag)
-                    self?.didSelectedFilterChanged()
                 }
             }
         }
@@ -529,37 +536,6 @@ private extension PasswordsViewController {
         }
     }
     
-    func updateTagBanner() {
-        if let selectedTag = presenter.selectedFilterTag {
-            selectedTagBannerView.setTag(selectedTag)
-        } else {
-            selectedTagBannerView.setTag(nil)
-        }
-
-        if let selectedProtectionLevel = presenter.selectedFilterProtectionLevel {
-            selectedTagBannerView.setProtectionLevel(selectedProtectionLevel)
-        } else {
-            selectedTagBannerView.setProtectionLevel(nil)
-        }
-
-        let hasActiveFilter = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
-        edgeEffectToContentTypePickerConstraint?.isActive = !hasActiveFilter
-        edgeEffectToSelectedTagConstraint?.isActive = hasActiveFilter
-
-        if hasActiveFilter {
-            UIView.animate(withDuration: Constants.showSelectedTagBannerAnimationDuration) {
-                self.selectedTagBannerView.alpha = 1
-            }
-        } else {
-            self.selectedTagBannerView.alpha = 0
-        }
-    }
-
-    func didSelectedFilterChanged() {
-        updateTagBanner()
-        updateNavigationBarButtons()
-        reloadLayout()
-    }
 }
 
 extension PasswordsViewController: CommonSearchDataSourceSearchable {

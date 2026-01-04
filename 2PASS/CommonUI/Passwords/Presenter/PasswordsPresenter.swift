@@ -38,12 +38,14 @@ final class PasswordsPresenter {
     
     var selectedFilterTag: ItemTagData? {
         didSet {
+            view?.filterDidChange()
             reload()
         }
     }
 
     var selectedFilterProtectionLevel: ItemProtectionLevel? {
         didSet {
+            view?.filterDidChange()
             reload()
         }
     }
@@ -110,11 +112,14 @@ extension PasswordsPresenter {
     }
 
     private func refreshSelectedFilterTag() {
-        guard let currentTag = selectedFilterTag else { return }
-        if let freshTag = interactor.getTag(for: currentTag.tagID) {
-            selectedFilterTag = freshTag
+        guard let selectedFilterTag else { return }
+
+        if let tag = interactor.getTag(for: selectedFilterTag.tagID) {
+            if tag != selectedFilterTag {
+                self.selectedFilterTag = tag
+            }
         } else {
-            selectedFilterTag = nil
+            self.selectedFilterTag = nil
         }
     }
     
