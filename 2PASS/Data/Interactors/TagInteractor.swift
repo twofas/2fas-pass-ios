@@ -295,29 +295,25 @@ extension TagInteractor: TagInteracting {
     func migrateTagColors() {
         let allColors = ItemTagColor.allKnownCases
         var colorIndex = 0
-
-        let vaults = mainRepository.listEncryptedVaults()
-
-        for vault in vaults {
-            let encryptedTags = mainRepository.listEncryptedTags(in: vault.vaultID)
-
-            for encryptedTag in encryptedTags {
-                guard shouldMigrateColor(ItemTagColor(rawValue: encryptedTag.color)) else { continue }
-
-                let newColor = allColors[colorIndex % allColors.count]
-                colorIndex += 1
-
-                mainRepository.updateEncryptedTag(
-                    ItemTagEncryptedData(
-                        tagID: encryptedTag.tagID,
-                        vaultID: encryptedTag.vaultID,
-                        name: encryptedTag.name,
-                        color: newColor.rawValue,
-                        position: encryptedTag.position,
-                        modificationDate: encryptedTag.modificationDate
-                    )
+        
+        let encryptedTags = mainRepository.listAllEncryptedTags()
+        
+        for encryptedTag in encryptedTags {
+            guard shouldMigrateColor(ItemTagColor(rawValue: encryptedTag.color)) else { continue }
+            
+            let newColor = allColors[colorIndex]
+            colorIndex = (colorIndex + 1) % allColors.count
+            
+            mainRepository.updateEncryptedTag(
+                ItemTagEncryptedData(
+                    tagID: encryptedTag.tagID,
+                    vaultID: encryptedTag.vaultID,
+                    name: encryptedTag.name,
+                    color: newColor.rawValue,
+                    position: encryptedTag.position,
+                    modificationDate: encryptedTag.modificationDate
                 )
-            }
+            )
         }
     }
 
