@@ -3748,6 +3748,17 @@
         }
       }
     },
+    "login_filter_modal_no_tags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tags"
+          }
+        }
+      }
+    },
     "login_filter_modal_sort_creation_date_asc" : {
       "extractionState" : "manual",
       "localizations" : {

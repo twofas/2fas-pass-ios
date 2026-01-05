@@ -478,13 +478,11 @@ private extension PasswordsViewController {
         // Create tag actions
         let tagActions: [UIMenuElement]
         if tags.isEmpty {
-            let addTagAction = UIAction(
-                title: T.tagsAddNewCta,
-                image: UIImage(systemName: "plus")
-            ) { [weak self] _ in
-                self?.presenter.onAddTag()
-            }
-            tagActions = [addTagAction]
+            let noTagsLabel = UIAction(
+                title: T.loginFilterModalNoTags,
+                attributes: .disabled
+            ) { _ in }
+            tagActions = [noTagsLabel]
         } else {
             tagActions = tags.map { tag in
                 let count = presenter.countPasswordsForTag(tag.tagID)

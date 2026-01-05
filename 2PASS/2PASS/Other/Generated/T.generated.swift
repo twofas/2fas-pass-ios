@@ -719,6 +719,8 @@ internal enum T {
   internal static let loginErrorSave = T.tr("Localizable", "login_error_save", fallback: "Error while trying to save Item")
   /// Clear filters
   internal static let loginFilterModalClear = T.tr("Localizable", "login_filter_modal_clear", fallback: "Clear filters")
+  /// No tags
+  internal static let loginFilterModalNoTags = T.tr("Localizable", "login_filter_modal_no_tags", fallback: "No tags")
   /// From oldest
   internal static let loginFilterModalSortCreationDateAsc = T.tr("Localizable", "login_filter_modal_sort_creation_date_asc", fallback: "From oldest")
   /// From newest
