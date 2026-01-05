@@ -1,9 +1,11 @@
 import SwiftUI
+import SwiftUIIntrospect
 import UIKit
 import Common
 
 private struct Constants {
-    static let sheetHeight = 300.0
+    static let sheetHeightPhone = 300.0
+    static let sheetHeightPad = 340.0
     static let textFieldHeight = 44.0
     static let textFieldCornerRadius = 10.0
 }
@@ -15,9 +17,16 @@ struct EditTagView: View {
     
     @FocusState
     private var isFocused: Bool
-    
+
+    @State
+    private var didFocus = false
+
     @Environment(\.dismiss)
     private var dismiss
+
+    private var isPad: Bool {
+        UIDevice.isiPad
+    }
     
     var body: some View {
         GeometryReader { _ in
@@ -44,7 +53,14 @@ struct EditTagView: View {
                             .onSubmit {
                                 presenter.onSave()
                             }
-
+                            .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
+                                guard !didFocus else { return }
+                                didFocus = true
+                                Task { @MainActor in
+                                    textField.becomeFirstResponder()
+                                }
+                            }
+                        
                         Circle()
                             .fill(Color(UIColor(presenter.selectedColor)))
                             .frame(width: ItemTagColorMetrics.regular.size, height: ItemTagColorMetrics.regular.size)
@@ -88,23 +104,19 @@ struct EditTagView: View {
                 .padding(.horizontal, Spacing.l)
                 .buttonStyle(.filled)
                 .controlSize(.large)
-                
-                Spacer()
             }
+            .padding(.top, Spacing.xxl4)
+            .padding(.bottom, Spacing.l)
         }
-        .padding(.top, Spacing.xxl4)
         .overlay(alignment: .topTrailing) {
             CloseButton {
                 presenter.onCancel()
             }
             .padding(Spacing.l)
         }
-        .presentationDetents([.height(Constants.sheetHeight)])
+        .presentationDetents([.height(isPad ? Constants.sheetHeightPad : Constants.sheetHeightPhone)])
         .presentationDragIndicator(.visible)
-        .background(Color.base0)
-        .onAppear {
-            isFocused = true
-        }
+        .presentationBackground(Color.base0)
     }
 }
 
