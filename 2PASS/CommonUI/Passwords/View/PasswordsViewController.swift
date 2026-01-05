@@ -262,22 +262,22 @@ private extension PasswordsViewController {
         selectedTagBannerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(selectedTagBannerView)
 
-        let leading = selectedTagBannerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l)
-        leading.priority = .defaultHigh
-
-        let trailing = selectedTagBannerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
-        trailing.priority = .defaultHigh
-
         let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.l)
         top.priority = .defaultHigh
         NSLayoutConstraint.activate([
             selectedTagBannerView.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor, constant: Spacing.m),
             top,
-            leading,
-            trailing,
-            selectedTagBannerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            selectedTagBannerView.widthAnchor.constraint(lessThanOrEqualToConstant: Constants.maxSelectedTagBannerWidth)
+            selectedTagBannerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l),
+            selectedTagBannerView.trailingAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
         ])
+
+        if UIDevice.isiPad {
+            selectedTagBannerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        } else {
+            let leading = selectedTagBannerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l)
+            leading.priority = .defaultHigh
+            leading.isActive = true
+        }
 
         selectedTagBannerView.onTagClose = { [weak self] _ in
             self?.presenter.onClearFilterTag()
