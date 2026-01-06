@@ -45,7 +45,13 @@ extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let notes = dict["Comments"]?.nonBlankTrimmedOrNil
+
+                    let knownCSVColumns: Set<String> = [
+                        "Account", "Login Name", "Password", "Web Site", "Comments"
+                    ]
+                    let originalNotes = dict["Comments"]?.nonBlankTrimmedOrNil
+                    let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+                    let notes = context.mergeNote(originalNotes, with: csvAdditionalInfo)
 
                     passwords.append(
                         .login(

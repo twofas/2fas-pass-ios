@@ -578,15 +578,6 @@ extension OnePasswordCSVImportInteractorTests {
     }
 }
 
-func decrypt(_ data: Data?, using mainRepository: MainRepository) -> String? {
-    guard let data,
-          let key = mainRepository.getKey(isPassword: true, protectionLevel: .normal),
-          let decrypted = mainRepository.decrypt(data, key: key) else {
-        return nil
-    }
-    return String(data: decrypted, encoding: .utf8)
-}
-
 private enum TestError: Error {
     case resourceNotFound(String)
 }
