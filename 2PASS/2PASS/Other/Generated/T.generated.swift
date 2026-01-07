@@ -719,6 +719,8 @@ internal enum T {
   internal static let loginErrorSave = T.tr("Localizable", "login_error_save", fallback: "Error while trying to save Item")
   /// Clear filters
   internal static let loginFilterModalClear = T.tr("Localizable", "login_filter_modal_clear", fallback: "Clear filters")
+  /// No Tags
+  internal static let loginFilterModalNoTags = T.tr("Localizable", "login_filter_modal_no_tags", fallback: "No Tags")
   /// From oldest
   internal static let loginFilterModalSortCreationDateAsc = T.tr("Localizable", "login_filter_modal_sort_creation_date_asc", fallback: "From oldest")
   /// From newest
@@ -771,8 +773,8 @@ internal enum T {
   internal static let loginSelectedTags = T.tr("Localizable", "login_selected_tags", fallback: "Selected Tags")
   /// Tags
   internal static let loginTags = T.tr("Localizable", "login_tags", fallback: "Tags")
-  /// Assign Tags to find your Items more easily.
-  internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to find your Items more easily.")
+  /// Assign Tags to easily find your Items.
+  internal static let loginTagsDescription = T.tr("Localizable", "login_tags_description", fallback: "Assign Tags to easily find your Items.")
   /// Tags
   internal static let loginTagsHeader = T.tr("Localizable", "login_tags_header", fallback: "Tags")
   /// Do you want to discard your changes?
@@ -1413,6 +1415,10 @@ internal enum T {
   internal static let settings2fasOpen = T.tr("Localizable", "settings_2fas_open", fallback: "Open 2FAS Auth")
   /// About
   internal static let settingsAbout = T.tr("Localizable", "settings_about", fallback: "About")
+  /// Browsers
+  internal static let settingsAutofillBrowsers = T.tr("Localizable", "settings_autofill_browsers", fallback: "Browsers")
+  /// To use 2FAS Pass with browsers that have built-in password autofill, enable support for third-party autofill services in the browser's settings.
+  internal static let settingsAutofillBrowsersDescription = T.tr("Localizable", "settings_autofill_browsers_description", fallback: "To use 2FAS Pass with browsers that have built-in password autofill, enable support for third-party autofill services in the browser's settings.")
   /// Keyboard inline suggestions
   internal static let settingsAutofillKeyboard = T.tr("Localizable", "settings_autofill_keyboard", fallback: "Keyboard inline suggestions")
   /// Display autofill suggestions in your keyboard (if supported).
@@ -1423,6 +1429,8 @@ internal enum T {
   internal static let settingsAutofillService = T.tr("Localizable", "settings_autofill_service", fallback: "Setup Autofill")
   /// Select 2FAS Pass to automatically fill in Item details in other apps.
   internal static let settingsAutofillServiceDescription = T.tr("Localizable", "settings_autofill_service_description", fallback: "Select 2FAS Pass to automatically fill in Item details in other apps.")
+  /// System
+  internal static let settingsAutofillSystem = T.tr("Localizable", "settings_autofill_system", fallback: "System")
   /// Set app as your AutoFill provider
   internal static let settingsAutofillToggle = T.tr("Localizable", "settings_autofill_toggle", fallback: "Set app as your AutoFill provider")
   /// Automatically fill in your information from the keyboard when you need it.
@@ -1773,6 +1781,8 @@ internal enum T {
   internal static let transferImportingSuccessTitle = T.tr("Localizable", "transfer_importing_success_title", fallback: "Imported successfully")
   /// JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoKeepass = T.tr("Localizable", "transfer_instructions_additional_info_keepass", fallback: "XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// 1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoOnepassword = T.tr("Localizable", "transfer_instructions_additional_info_onepassword", fallback: "1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
@@ -1827,6 +1837,8 @@ internal enum T {
   internal static let transferInstructionsCtaGeneric = T.tr("Localizable", "transfer_instructions_cta_generic", fallback: "Upload file")
   /// Upload JSON file
   internal static let transferInstructionsCtaJson = T.tr("Localizable", "transfer_instructions_cta_json", fallback: "Upload JSON file")
+  /// Upload XML/CSV file
+  internal static let transferInstructionsCtaKeepass = T.tr("Localizable", "transfer_instructions_cta_keepass", fallback: "Upload XML/CSV file")
   /// Upload 1PUX/CSV file
   internal static let transferInstructionsCtaOnepassword = T.tr("Localizable", "transfer_instructions_cta_onepassword", fallback: "Upload 1PUX/CSV file")
   /// Upload ZIP/CSV file
@@ -1901,12 +1913,12 @@ internal enum T {
   /// 
   /// Click on your account in the top right corner, select **Settings**, and go to **Export**
   /// 
-  /// Under **Export file**, select JSON as the format and click **Export**.
+  /// Under **Export file**, select **json** as the file format and click **Export**.
   /// 
   /// Enter your Master Password and confirm the export.
   /// 
   /// Copy the exported file to this device and tap **Upload JSON file** below. 
-  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open Keeper on your PC.\n\nClick on your account in the top right corner, select **Settings**, and go to **Export**\n\nUnder **Export file**, select JSON as the format and click **Export**.\n\nEnter your Master Password and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
+  internal static let transferInstructionsKeeper = T.tr("Localizable", "transfer_instructions_keeper", fallback: "Open Keeper on your PC.\n\nClick on your account in the top right corner, select **Settings**, and go to **Export**\n\nUnder **Export file**, select **json** as the file format and click **Export**.\n\nEnter your Master Password and confirm the export.\n\nCopy the exported file to this device and tap **Upload JSON file** below. ")
   /// Log in to LastPass on your browser and go to **Advanced Options**.
   /// 
   /// Under **Manage Your Vault**, select **Export**. This will send you a verification email.

@@ -140,7 +140,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .firefox:
             ExternalServiceImportResult(items: try await FirefoxImporter(context: context).import(content))
         case .keePass:
-            ExternalServiceImportResult(items: try await KeePassImporter(context: context).import(content))
+            try await KeePassImporter(context: context).import(content)
         case .keePassXC:
             ExternalServiceImportResult(items: try await KeePassXCImporter(context: context).import(content))
         case .microsoftEdge:

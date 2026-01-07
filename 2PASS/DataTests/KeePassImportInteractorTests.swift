@@ -46,9 +46,9 @@ struct KeePassImportInteractorTests {
     // MARK: - Full Import Test
 
     @Test
-    func importKeePassFile() async throws {
+    func importFile() async throws {
         // GIVEN
-        let data = try loadKeePassTestData()
+        let data = try loadTestData()
 
         // WHEN
         let result = try await interactor.importService(.keePass, content: .file(data))
@@ -61,6 +61,23 @@ struct KeePassImportInteractorTests {
         // Verify item types
         let logins = result.items.filter { if case .login = $0 { return true } else { return false } }
         #expect(logins.count == 4)
+    }
+
+    @Test
+    func importXMLFile() async throws {
+        // GIVEN
+        let data = try loadXMLTestData()
+
+        // WHEN
+        let result = try await interactor.importService(.keePass, content: .file(data))
+
+        // THEN
+        #expect(result.items.count == 3)
+        #expect(result.tags.count == 2)
+        #expect(result.itemsConvertedToSecureNotes == 0)
+
+        let logins = result.items.filter { if case .login = $0 { return true } else { return false } }
+        #expect(logins.count == 3)
     }
 
     // MARK: - Unknown Headers Test (Critical)
@@ -159,7 +176,7 @@ struct KeePassImportInteractorTests {
     @Test
     func importLoginWithCorrectVaultAndProtectionLevel() async throws {
         // GIVEN
-        let data = try loadKeePassTestData()
+        let data = try loadTestData()
 
         // WHEN
         let result = try await interactor.importService(.keePass, content: .file(data))
@@ -194,7 +211,7 @@ struct KeePassImportInteractorTests {
     func missingVaultThrowsWrongFormat() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
-        let data = try loadKeePassTestData()
+        let data = try loadTestData()
 
         // WHEN/THEN
         await #expect(throws: ExternalServiceImportError.wrongFormat) {
@@ -317,9 +334,16 @@ struct KeePassImportInteractorTests {
 
     // MARK: - Helper Methods
 
-    private func loadKeePassTestData() throws -> Data {
+    private func loadTestData() throws -> Data {
         guard let url = Bundle(for: MockMainRepository.self).url(forResource: "KeePass", withExtension: "csv") else {
             throw TestError.resourceNotFound("KeePass.csv test resource not found")
+        }
+        return try Data(contentsOf: url)
+    }
+
+    private func loadXMLTestData() throws -> Data {
+        guard let url = Bundle(for: MockMainRepository.self).url(forResource: "KeePass", withExtension: "xml") else {
+            throw TestError.resourceNotFound("KeePass.xml test resource not found")
         }
         return try Data(contentsOf: url)
     }
@@ -336,7 +360,7 @@ struct KeePassImportInteractorTests {
 
 extension KeePassImportInteractorTests {
 
-    @Suite("Import KeePass test file - comprehensive verification")
+    @Suite("Import KeePass files - comprehensive verification")
     struct IntegrationTests {
 
         private let mockMainRepository = MockMainRepository.defaultConfiguration()
@@ -348,14 +372,14 @@ extension KeePassImportInteractorTests {
         }
 
         @Test
-        func importKeePassCSVFile() async throws {
+        func importCSVFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
                 uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
-            let data = try loadKeePassTestData()
+            let data = try loadTestData()
 
             // WHEN
             let result = try await interactor.importService(.keePass, content: .file(data))
@@ -443,9 +467,101 @@ extension KeePassImportInteractorTests {
             #expect(entryWithExtras.metadata.tagIds == nil)
         }
 
-        private func loadKeePassTestData() throws -> Data {
+        @Test
+        func importXMLFile() async throws {
+            let interactor = ExternalServiceImportInteractor(
+                mainRepository: mockMainRepository,
+                uriInteractor: uriInteractor,
+                paymentCardUtilityInteractor: paymentCardUtilityInteractor
+            )
+
+            let data = try loadXMLTestData()
+
+            // WHEN
+            let result = try await interactor.importService(.keePass, content: .file(data))
+
+            // THEN - Verify result summary
+            #expect(result.items.count == 3)
+            #expect(result.tags.count == 2)
+            #expect(result.itemsConvertedToSecureNotes == 0)
+
+            let tagIdByName = Dictionary(uniqueKeysWithValues: result.tags.map { ($0.name, $0.tagID) })
+            let tag1Id = try #require(tagIdByName["Tag 1"])
+            let tag2Id = try #require(tagIdByName["Tag 2"])
+
+            let logins = result.items.compactMap { if case .login(let l) = $0 { return l } else { return nil } }
+            #expect(logins.count == 3)
+
+            let dateFormatter = ISO8601DateFormatter()
+
+            // MARK: Login #1 - "Sample Entry"
+            let sampleEntry = try #require(logins.first { $0.name == "Sample Entry" })
+            #expect(sampleEntry.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(sampleEntry.content.username == "User Name")
+
+            let samplePassword = try #require(decrypt(sampleEntry.content.password))
+            #expect(samplePassword == "Password")
+
+            #expect(sampleEntry.content.uris?.count == 1)
+            #expect(sampleEntry.content.uris?[0].uri == "https://keepass.info/")
+            #expect(sampleEntry.content.uris?[0].match == .domain)
+            #expect(sampleEntry.content.notes == "Notes")
+            #expect(sampleEntry.metadata.protectionLevel == .normal)
+            #expect(sampleEntry.metadata.trashedStatus == .no)
+            #expect(Set(sampleEntry.metadata.tagIds ?? []) == Set([tag1Id, tag2Id]))
+            #expect(sampleEntry.metadata.creationDate == dateFormatter.date(from: "2025-12-18T10:54:05Z"))
+            #expect(sampleEntry.metadata.modificationDate == dateFormatter.date(from: "2025-12-22T19:10:05Z"))
+
+            // MARK: Login #2 - "Sample Entry #2"
+            let sampleEntry2 = try #require(logins.first { $0.name == "Sample Entry #2" })
+            #expect(sampleEntry2.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(sampleEntry2.content.username == "Michael321")
+
+            let sample2Password = try #require(decrypt(sampleEntry2.content.password))
+            #expect(sample2Password == "12345")
+
+            #expect(sampleEntry2.content.uris?.count == 1)
+            #expect(sampleEntry2.content.uris?[0].uri == "https://keepass.info/help/kb/testform.html")
+            #expect(sampleEntry2.content.uris?[0].match == .domain)
+            #expect(sampleEntry2.content.notes == nil)
+            #expect(sampleEntry2.metadata.protectionLevel == .normal)
+            #expect(sampleEntry2.metadata.trashedStatus == .no)
+            #expect(Set(sampleEntry2.metadata.tagIds ?? []) == Set([tag2Id]))
+            #expect(sampleEntry2.metadata.creationDate == dateFormatter.date(from: "2025-12-18T10:54:05Z"))
+            #expect(sampleEntry2.metadata.modificationDate == dateFormatter.date(from: "2025-12-22T19:09:56Z"))
+
+            // MARK: Login #3 - "Login z dodatkami"
+            let loginZDodatkami = try #require(logins.first { $0.name == "Login z dodatkami" })
+            #expect(loginZDodatkami.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(loginZDodatkami.content.username == "Batman")
+
+            let loginZPassword = try #require(decrypt(loginZDodatkami.content.password))
+            #expect(loginZPassword == "lwqU3RF0vyYE088f3nYS")
+
+            #expect(loginZDodatkami.content.uris == nil)
+            let expectedNotes = """
+            Notatki do Keepassa
+
+            Pole customowe: Teskt do pola customowego
+            """
+            #expect(loginZDodatkami.content.notes == expectedNotes)
+            #expect(loginZDodatkami.metadata.protectionLevel == .normal)
+            #expect(loginZDodatkami.metadata.trashedStatus == .no)
+            #expect(Set(loginZDodatkami.metadata.tagIds ?? []) == Set([tag1Id]))
+            #expect(loginZDodatkami.metadata.creationDate == dateFormatter.date(from: "2025-12-22T19:07:53Z"))
+            #expect(loginZDodatkami.metadata.modificationDate == dateFormatter.date(from: "2025-12-22T19:09:37Z"))
+        }
+
+        private func loadTestData() throws -> Data {
             guard let url = Bundle(for: MockMainRepository.self).url(forResource: "KeePass", withExtension: "csv") else {
                 throw TestError.resourceNotFound("KeePass.csv test resource not found")
+            }
+            return try Data(contentsOf: url)
+        }
+
+        private func loadXMLTestData() throws -> Data {
+            guard let url = Bundle(for: MockMainRepository.self).url(forResource: "KeePass", withExtension: "xml") else {
+                throw TestError.resourceNotFound("KeePass.xml test resource not found")
             }
             return try Data(contentsOf: url)
         }
