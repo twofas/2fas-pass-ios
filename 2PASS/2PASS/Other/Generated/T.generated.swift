@@ -1783,6 +1783,8 @@ internal enum T {
   internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoKeepass = T.tr("Localizable", "transfer_instructions_additional_info_keepass", fallback: "XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoKeepassxc = T.tr("Localizable", "transfer_instructions_additional_info_keepassxc", fallback: "XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// 1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoOnepassword = T.tr("Localizable", "transfer_instructions_additional_info_onepassword", fallback: "1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
@@ -1839,6 +1841,8 @@ internal enum T {
   internal static let transferInstructionsCtaJson = T.tr("Localizable", "transfer_instructions_cta_json", fallback: "Upload JSON file")
   /// Upload XML/CSV file
   internal static let transferInstructionsCtaKeepass = T.tr("Localizable", "transfer_instructions_cta_keepass", fallback: "Upload XML/CSV file")
+  /// Upload XML/CSV file
+  internal static let transferInstructionsCtaKeepassxc = T.tr("Localizable", "transfer_instructions_cta_keepassxc", fallback: "Upload XML/CSV file")
   /// Upload 1PUX/CSV file
   internal static let transferInstructionsCtaOnepassword = T.tr("Localizable", "transfer_instructions_cta_onepassword", fallback: "Upload 1PUX/CSV file")
   /// Upload ZIP/CSV file

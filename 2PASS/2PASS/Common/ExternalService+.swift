@@ -41,7 +41,7 @@ public extension ExternalService {
         case .applePasswordsDesktop: [UTType.commaSeparatedText]
         case .applePasswordsMobile: [UTType.zip]
         case .firefox: [UTType.commaSeparatedText]
-        case .keePassXC: [UTType.commaSeparatedText]
+        case .keePassXC: [UTType.commaSeparatedText, UTType.xml]
         case .keePass: [UTType.commaSeparatedText, UTType.xml]
         case .microsoftEdge: [UTType.commaSeparatedText]
         case .enpass: [UTType.json]
