@@ -142,7 +142,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .keePass:
             try await KeePassImporter(context: context).import(content)
         case .keePassXC:
-            ExternalServiceImportResult(items: try await KeePassXCImporter(context: context).import(content))
+            try await KeePassXCImporter(context: context).import(content)
         case .microsoftEdge:
             ExternalServiceImportResult(items: try await MicrosoftEdgeImporter(context: context).import(content))
         case .enpass:

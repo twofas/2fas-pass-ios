@@ -577,7 +577,3 @@ extension OnePasswordCSVImportInteractorTests {
         }
     }
 }
-
-private enum TestError: Error {
-    case resourceNotFound(String)
-}

@@ -13,7 +13,7 @@ extension ExternalServiceImportInteractor {
     struct KeePassXCImporter {
         let context: ImportContext
 
-        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
             guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
@@ -21,15 +21,40 @@ extension ExternalServiceImportInteractor {
                 throw .wrongFormat
             }
             var passwords: [ItemData] = []
+            var tagNameToId: [String: ItemTagID] = [:]
+            var tagNames: [String] = []
             let protectionLevel = context.currentProtectionLevel
 
             do {
                 let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                guard csv.header.containsAll(["Title", "Username", "Password", "URL", "Notes", "Last Modified", "Created"]) else {
+                let requiredHeaders = [
+                    "Group",
+                    "Title",
+                    "Username",
+                    "Password",
+                    "URL",
+                    "Notes",
+                    "Last Modified",
+                    "Created"
+                ]
+                guard csv.header.containsAll(requiredHeaders) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
+                let knownCSVColumns = Set(requiredHeaders).union(["Icon"])
+                let dateFormatter = ISO8601DateFormatter()
                 try csv.enumerateAsDict { dict in
                     guard dict.allValuesEmpty == false else { return }
+
+                    let groupTag = groupTagName(from: dict["Group"])
+                    if let groupTag, tagNameToId[groupTag] == nil {
+                        let tagId = ItemTagID()
+                        tagNameToId[groupTag] = tagId
+                        tagNames.append(groupTag)
+                    }
+                    let tagIds: [ItemTagID]? = {
+                        guard let groupTag, let tagId = tagNameToId[groupTag] else { return nil }
+                        return [tagId]
+                    }()
 
                     let name = dict["Title"].formattedName
                     let uris: [PasswordURI]? = {
@@ -45,9 +70,10 @@ extension ExternalServiceImportInteractor {
                         }
                         return nil
                     }()
-                    let notes = dict["Notes"]?.nonBlankTrimmedOrNil
+                    let originalNotes = dict["Notes"]?.nonBlankTrimmedOrNil
+                    let additionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+                    let notes = context.mergeNote(originalNotes, with: additionalInfo)
 
-                    let dateFormatter = ISO8601DateFormatter()
                     let creationDate = dict["Created"]?.nonBlankTrimmedOrNil.flatMap { dateFormatter.date(from: $0) }
                     let modificationDate = dict["Last Modified"]?.nonBlankTrimmedOrNil.flatMap { dateFormatter.date(from: $0) }
 
@@ -61,7 +87,7 @@ extension ExternalServiceImportInteractor {
                                     modificationDate: modificationDate ?? Date.importPasswordPlaceholder,
                                     protectionLevel: protectionLevel,
                                     trashedStatus: .no,
-                                    tagIds: nil
+                                    tagIds: tagIds
                                 ),
                                 name: name,
                                 content: .init(
@@ -82,7 +108,36 @@ extension ExternalServiceImportInteractor {
                 throw .wrongFormat
             }
 
-            return passwords
+            let tags: [ItemTagData] = tagNames.enumerated().compactMap { index, tagName -> ItemTagData? in
+                guard let tagId = tagNameToId[tagName] else { return nil }
+                return ItemTagData(
+                    tagID: tagId,
+                    vaultID: vaultID,
+                    name: tagName,
+                    color: .gray,
+                    position: index,
+                    modificationDate: Date()
+                )
+            }
+
+            return ExternalServiceImportResult(items: passwords, tags: tags)
+        }
+
+        private func groupTagName(from group: String?) -> String? {
+            guard let group = group?.nonBlankTrimmedOrNil else { return nil }
+            let components = group
+                .split(separator: "/")
+                .map { String($0).trim() }
+                .filter { !$0.isEmpty }
+            guard !components.isEmpty else { return nil }
+            if components.count == 1 {
+                return components[0] == "Root" ? nil : components[0]
+            }
+            if components.first == "Root" {
+                let remainder = components.dropFirst()
+                return remainder.isEmpty ? nil : remainder.joined(separator: "/")
+            }
+            return components.joined(separator: "/")
         }
     }
 }

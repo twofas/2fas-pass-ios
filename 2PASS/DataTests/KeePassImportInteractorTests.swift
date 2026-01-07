@@ -571,7 +571,3 @@ extension KeePassImportInteractorTests {
         }
     }
 }
-
-private enum TestError: Error {
-    case resourceNotFound(String)
-}
