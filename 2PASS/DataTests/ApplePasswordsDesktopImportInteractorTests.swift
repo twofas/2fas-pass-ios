@@ -454,7 +454,3 @@ struct ApplePasswordsDesktopImportInteractorTests {
         return String(data: decrypted, encoding: .utf8)
     }
 }
-
-private enum TestError: Error {
-    case resourceNotFound(String)
-}

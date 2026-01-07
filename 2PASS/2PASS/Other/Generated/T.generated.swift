@@ -719,8 +719,8 @@ internal enum T {
   internal static let loginErrorSave = T.tr("Localizable", "login_error_save", fallback: "Error while trying to save Item")
   /// Clear filters
   internal static let loginFilterModalClear = T.tr("Localizable", "login_filter_modal_clear", fallback: "Clear filters")
-  /// No tags
-  internal static let loginFilterModalNoTags = T.tr("Localizable", "login_filter_modal_no_tags", fallback: "No tags")
+  /// No Tags
+  internal static let loginFilterModalNoTags = T.tr("Localizable", "login_filter_modal_no_tags", fallback: "No Tags")
   /// From oldest
   internal static let loginFilterModalSortCreationDateAsc = T.tr("Localizable", "login_filter_modal_sort_creation_date_asc", fallback: "From oldest")
   /// From newest
@@ -1415,6 +1415,10 @@ internal enum T {
   internal static let settings2fasOpen = T.tr("Localizable", "settings_2fas_open", fallback: "Open 2FAS Auth")
   /// About
   internal static let settingsAbout = T.tr("Localizable", "settings_about", fallback: "About")
+  /// Browsers
+  internal static let settingsAutofillBrowsers = T.tr("Localizable", "settings_autofill_browsers", fallback: "Browsers")
+  /// To use 2FAS Pass with browsers that have built-in password autofill, enable support for third-party autofill services in the browser's settings.
+  internal static let settingsAutofillBrowsersDescription = T.tr("Localizable", "settings_autofill_browsers_description", fallback: "To use 2FAS Pass with browsers that have built-in password autofill, enable support for third-party autofill services in the browser's settings.")
   /// Keyboard inline suggestions
   internal static let settingsAutofillKeyboard = T.tr("Localizable", "settings_autofill_keyboard", fallback: "Keyboard inline suggestions")
   /// Display autofill suggestions in your keyboard (if supported).
@@ -1425,6 +1429,8 @@ internal enum T {
   internal static let settingsAutofillService = T.tr("Localizable", "settings_autofill_service", fallback: "Setup Autofill")
   /// Select 2FAS Pass to automatically fill in Item details in other apps.
   internal static let settingsAutofillServiceDescription = T.tr("Localizable", "settings_autofill_service_description", fallback: "Select 2FAS Pass to automatically fill in Item details in other apps.")
+  /// System
+  internal static let settingsAutofillSystem = T.tr("Localizable", "settings_autofill_system", fallback: "System")
   /// Set app as your AutoFill provider
   internal static let settingsAutofillToggle = T.tr("Localizable", "settings_autofill_toggle", fallback: "Set app as your AutoFill provider")
   /// Automatically fill in your information from the keyboard when you need it.
@@ -1775,6 +1781,10 @@ internal enum T {
   internal static let transferImportingSuccessTitle = T.tr("Localizable", "transfer_importing_success_title", fallback: "Imported successfully")
   /// JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoBitwarden = T.tr("Localizable", "transfer_instructions_additional_info_bitwarden", fallback: "JSON file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoKeepass = T.tr("Localizable", "transfer_instructions_additional_info_keepass", fallback: "XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
+  /// XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
+  internal static let transferInstructionsAdditionalInfoKeepassxc = T.tr("Localizable", "transfer_instructions_additional_info_keepassxc", fallback: "XML file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// 1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
   internal static let transferInstructionsAdditionalInfoOnepassword = T.tr("Localizable", "transfer_instructions_additional_info_onepassword", fallback: "1PUX file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.")
   /// ZIP file is recommended to fully transfer your Vault. CSV format doesn't support all Item types.
@@ -1829,6 +1839,10 @@ internal enum T {
   internal static let transferInstructionsCtaGeneric = T.tr("Localizable", "transfer_instructions_cta_generic", fallback: "Upload file")
   /// Upload JSON file
   internal static let transferInstructionsCtaJson = T.tr("Localizable", "transfer_instructions_cta_json", fallback: "Upload JSON file")
+  /// Upload XML/CSV file
+  internal static let transferInstructionsCtaKeepass = T.tr("Localizable", "transfer_instructions_cta_keepass", fallback: "Upload XML/CSV file")
+  /// Upload XML/CSV file
+  internal static let transferInstructionsCtaKeepassxc = T.tr("Localizable", "transfer_instructions_cta_keepassxc", fallback: "Upload XML/CSV file")
   /// Upload 1PUX/CSV file
   internal static let transferInstructionsCtaOnepassword = T.tr("Localizable", "transfer_instructions_cta_onepassword", fallback: "Upload 1PUX/CSV file")
   /// Upload ZIP/CSV file

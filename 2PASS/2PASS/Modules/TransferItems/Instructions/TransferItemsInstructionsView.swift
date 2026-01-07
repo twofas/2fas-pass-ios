@@ -49,6 +49,10 @@ struct TransferItemsInstructionsView: View {
                         Text(T.transferInstructionsCtaProtonPass.localizedKey)
                     case .dashlaneMobile:
                         Text(T.transferInstructionsCtaDashlaneMobile.localizedKey)
+                    case .keePass:
+                        Text(T.transferInstructionsCtaKeepass.localizedKey)
+                    case .keePassXC:
+                        Text(T.transferInstructionsCtaKeepassxc.localizedKey)
                     default:
                         if presenter.service.allowedContentTypes.count > 1 {
                             Text(T.transferInstructionsCtaGeneric.localizedKey)
@@ -138,6 +142,10 @@ struct TransferItemsInstructionsView: View {
             Text(T.transferInstructionsAdditionalInfoOnepassword.localizedKey)
         case .bitWarden:
             Text(T.transferInstructionsAdditionalInfoBitwarden.localizedKey)
+        case .keePass:
+            Text(T.transferInstructionsAdditionalInfoKeepass.localizedKey)
+        case .keePassXC:
+            Text(T.transferInstructionsAdditionalInfoKeepassxc.localizedKey)
         case .protonPass:
             Text(T.transferInstructionsAdditionalInfoProtonPass.localizedKey)
         default:
