@@ -16,12 +16,8 @@ final class FilterChipView: UIView {
 
     var onClose: (() -> Void)?
 
-    private let containerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.neutral200
-        view.clipsToBounds = true
-        return view
-    }()
+    private let containerView = UIView()
+    private var glassEffectView: UIVisualEffectView?
 
     private let stackView: UIStackView = {
         let stack = UIStackView()
@@ -76,7 +72,7 @@ final class FilterChipView: UIView {
         iconImageView.image = protectionLevel.uiIcon.withRenderingMode(.alwaysTemplate)
         iconImageView.tintColor = .accent
         nameLabel.text = protectionLevel.title
-        
+
         nameLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
@@ -87,23 +83,47 @@ final class FilterChipView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+
+        let cornerRadius = containerView.bounds.height / 2
+        containerView.layer.cornerRadius = cornerRadius
+        glassEffectView?.layer.cornerRadius = cornerRadius
+    }
+
+    private func setupContainerView() {
+        containerView.backgroundColor = UIColor(
+            light: .black.withAlphaComponent(0.05),
+            dark: .white.withAlphaComponent(0.15)
+        )
         
-        containerView.layer.cornerRadius = containerView.bounds.height / 2
+        addSubview(containerView)
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.pinToParent()
+        
+        if #available(iOS 26.0, *) {
+            containerView.clipsToBounds = false
+            clipsToBounds = false
+
+            let effectView = UIVisualEffectView(effect: UIGlassEffect())
+            containerView.insertSubview(effectView, at: 0)
+            effectView.pinToParent()
+            glassEffectView = effectView
+        } else {
+            containerView.clipsToBounds = true
+        }
     }
 
     private func setupView(showColorDot: Bool) {
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        colorDotView.translatesAutoresizingMaskIntoConstraints = false
-        iconImageView.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.translatesAutoresizingMaskIntoConstraints = false
-
         closeButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        addSubview(containerView)
-        containerView.addSubview(stackView)
+        setupContainerView()
+
+        containerView.addSubview(stackView, with: [
+            stackView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Spacing.m),
+            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
 
         if showColorDot {
             stackView.addArrangedSubview(colorDotView)
@@ -114,25 +134,14 @@ final class FilterChipView: UIView {
         stackView.addArrangedSubview(closeButton)
 
         stackView.setCustomSpacing(0, after: nameLabel)
-        
+
         closeButton.addAction(UIAction { [weak self] _ in
             self?.onClose?()
         }, for: .touchUpInside)
 
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 0),
-            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Spacing.m),
-            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: 0),
-            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 0),
-
             colorDotView.widthAnchor.constraint(equalToConstant: Constants.colorDotSize),
             colorDotView.heightAnchor.constraint(equalToConstant: Constants.colorDotSize),
-
             iconImageView.widthAnchor.constraint(equalToConstant: Constants.iconSize),
             iconImageView.heightAnchor.constraint(equalToConstant: Constants.iconSize)
         ])
