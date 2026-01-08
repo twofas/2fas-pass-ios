@@ -161,27 +161,37 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
             for rawCard in parsed.paymentCards {
                 let card = ApplePaymentCard(rawCard)
 
-                let cardName = card.cardName?.nonBlankTrimmedOrNil
-                let name: String = {
-                    var output = ""
-                    if let cardName {
-                        output.append("\(cardName) ")
-                    }
-                    return output + "(Payment Card)"
+                let cardNumberString = card.cardNumber?.nonBlankTrimmedOrNil
+                let expirationDateString: String? = {
+                    guard let month = card.cardExpirationMonth,
+                          let year = card.cardExpirationYear else { return nil }
+                    let yearSuffix = year > 99 ? year % 100 : year
+                    return "\(month)/\(yearSuffix)"
                 }()
 
-                // Format all card data as text
-                let cardInfo = context.formatDictionary(card.rawData)
-
-                let text: Data? = {
-                    if let info = cardInfo,
-                       let encrypted = context.encryptSecureField(info, for: protectionLevel) {
+                let cardNumber: Data? = {
+                    if let value = cardNumberString,
+                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
                         return encrypted
                     }
                     return nil
                 }()
 
-                items.append(.secureNote(.init(
+                let expirationDate: Data? = {
+                    if let value = expirationDateString,
+                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                        return encrypted
+                    }
+                    return nil
+                }()
+
+                let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+                let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+                let name = card.cardName?.nonBlankTrimmedOrNil
+                let notes = context.formatDictionary(card.unknownData)
+
+                items.append(.paymentCard(.init(
                     id: .init(),
                     vaultId: vaultID,
                     metadata: .init(
@@ -194,8 +204,13 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
                     name: name,
                     content: .init(
                         name: name,
-                        text: text,
-                        additionalInfo: nil
+                        cardHolder: card.cardholderName?.nonBlankTrimmedOrNil,
+                        cardIssuer: cardIssuer,
+                        cardNumber: cardNumber,
+                        cardNumberMask: cardNumberMask,
+                        expirationDate: expirationDate,
+                        securityCode: nil,
+                        notes: notes
                     )
                 )))
             }

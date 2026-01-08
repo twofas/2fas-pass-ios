@@ -53,12 +53,16 @@ final class ConnectPullReqestCommunicationPresenter {
                 }
             case .action(.changeRequest(.addSecureNote)):
                 iconContent = .contentType(.secureNote)
+            case .action(.changeRequest(.addPaymentCard(let changeRequest))):
+                setPaymentCardIconContent(cardNumber: changeRequest.cardNumber)
             default:
                 switch state.itemData {
                 case .login(let loginItemData):
                     setIconContent(iconType: loginItemData.iconType, name: loginItemData.name)
                 case .secureNote:
                     iconContent = .contentType(.secureNote)
+                case .paymentCard(let paymentCardItemData):
+                    setPaymentCardIconContent(issuerIcon: paymentCardItemData.issuerIcon)
                 default:
                     break
                 }
@@ -135,6 +139,14 @@ final class ConnectPullReqestCommunicationPresenter {
                 destination = .editItem(.secureNote(secureNoteItem), changeRequest: secureNoteChangeRequest, onClose: { [weak self] result in
                     self?.onSaveItem(result: result)
                 })
+            case .addPaymentCard(let paymentCardChangeRequest):
+                destination = .addItem(changeRequest: paymentCardChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
+                })
+            case .updatePaymentCard(let paymentCardItem, let paymentCardChangeRequest):
+                destination = .editItem(.paymentCard(paymentCardItem), changeRequest: paymentCardChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
+                })
             }
             
         case .action(.delete(let loginItem)):
@@ -173,7 +185,7 @@ final class ConnectPullReqestCommunicationPresenter {
     
     private func fetchIcon(from iconURL: URL, name: String) {
         iconContent = .loading
-        
+
         fetchingIconTask?.cancel()
         fetchingIconTask = Task { @MainActor in
             if let imageData = try? await interactor.fetchIconImage(from: iconURL), let image = UIImage(data: imageData) {
@@ -183,7 +195,23 @@ final class ConnectPullReqestCommunicationPresenter {
             }
         }
     }
-    
+
+    private func setPaymentCardIconContent(issuerIcon: UIImage?) {
+        if let issuerIcon {
+            iconContent = .icon(issuerIcon)
+        } else {
+            iconContent = .contentType(.paymentCard)
+        }
+    }
+
+    private func setPaymentCardIconContent(cardNumber: String?) {
+        if let cardNumber, let issuer = interactor.detectPaymentCardIssuer(from: cardNumber) {
+            iconContent = .icon(issuer.icon)
+        } else {
+            iconContent = .contentType(.paymentCard)
+        }
+    }
+
     private func connect() {
         connectingTask = Task {
             do {
@@ -286,6 +314,10 @@ extension ConnectPullReqestCommunicationPresenter {
                 case .changeRequest(.updateSecureNote(let currentSecureNoteData, _)):
                     return .secureNote(currentSecureNoteData)
                 case .changeRequest(.addSecureNote):
+                    return nil
+                case .changeRequest(.updatePaymentCard(let currentPaymentCardData, _)):
+                    return .paymentCard(currentPaymentCardData)
+                case .changeRequest(.addPaymentCard):
                     return nil
                 case .delete(let item):
                     return item

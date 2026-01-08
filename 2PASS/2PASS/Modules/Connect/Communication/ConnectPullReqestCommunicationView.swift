@@ -46,6 +46,10 @@ struct ConnectPullReqestCommunicationView: View {
                         addSecureNoteView(changeRequest: secureNoteDataChangeRequest)
                     case .updateSecureNote(let secureNoteItem, _):
                         updateSecureNoteView(item: secureNoteItem)
+                    case .addPaymentCard(let paymentCardDataChangeRequest):
+                        addPaymentCardView(changeRequest: paymentCardDataChangeRequest)
+                    case .updatePaymentCard(let paymentCardItem, _):
+                        updatePaymentCardView(item: paymentCardItem)
                     }
                     
                 case .action(.delete(let item)):
@@ -54,16 +58,20 @@ struct ConnectPullReqestCommunicationView: View {
                         deleteLoginView(item: loginItem)
                     case .secureNote(let secureNoteItem):
                         deleteSecureNoteView(item: secureNoteItem)
+                    case .paymentCard(let paymentCardItem):
+                        deletePaymentCardView(item: paymentCardItem)
                     default:
                         fatalError("Unsupported item content type")
                     }
-                    
+
                 case .action(.sifRequest(let item)):
                     switch item {
                     case .login(let loginItem):
                         passwordRequestView(item: loginItem)
                     case .secureNote(let secureNoteItem):
                         noteRequestView(item: secureNoteItem)
+                    case .paymentCard(let paymentCardItem):
+                        paymentCardRequestView(item: paymentCardItem)
                     default:
                         fatalError("Unsupported item content type")
                     }
@@ -123,6 +131,10 @@ struct ConnectPullReqestCommunicationView: View {
             Text(T.requestModalToastSuccessUpdateLogin.localizedKey)
         case .changeRequest(.addSecureNote):
             Text(T.requestModalToastSuccessAddLogin.localizedKey)
+        case .changeRequest(.updatePaymentCard):
+            Text(T.requestModalToastSuccessUpdateLogin.localizedKey)
+        case .changeRequest(.addPaymentCard):
+            Text(T.requestModalToastSuccessAddLogin.localizedKey)
         case .delete:
             Text(T.requestModalToastSuccessDeleteLogin.localizedKey)
         case .sifRequest(let item):
@@ -131,6 +143,8 @@ struct ConnectPullReqestCommunicationView: View {
                 Text(T.requestModalToastSuccessPasswordRequest.localizedKey)
             case .secureNote:
                 Text(T.requestModalToastSuccessSecureNoteRequest.localizedKey)
+            case .paymentCard:
+                Text(T.requestModalToastSuccessCardRequest.localizedKey)
             case .raw:
                 Text("")
             }
@@ -173,6 +187,15 @@ struct ConnectPullReqestCommunicationView: View {
             subtitle: Text(T.requestModalSecureNoteRequestSubtitle.localizedKey),
             name: item.name ?? "",
             description: nil
+        )
+    }
+
+    private func paymentCardRequestView(item: PaymentCardItemData) -> some View {
+        itemRequestView(
+            title: Text(T.requestModalCardRequestTitle.localizedKey),
+            subtitle: Text(T.requestModalCardRequestSubtitle.localizedKey),
+            name: item.name ?? "",
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
     }
 
@@ -221,6 +244,14 @@ struct ConnectPullReqestCommunicationView: View {
         )
     }
 
+    private func addPaymentCardView(changeRequest: PaymentCardDataChangeRequest) -> some View {
+        addItemView(
+            title: Text(T.requestModalNewCardTitle.localizedKey),
+            name: changeRequest.name ?? "",
+            description: changeRequest.cardNumber?.formatted(.paymentCardNumberMask)
+        )
+    }
+
     private func addItemView(
         title: Text,
         name: String,
@@ -265,6 +296,14 @@ struct ConnectPullReqestCommunicationView: View {
         )
     }
 
+    private func updatePaymentCardView(item: PaymentCardItemData) -> some View {
+        updateItemView(
+            title: Text(T.requestModalUpdateCardTitle.localizedKey),
+            name: item.name ?? "",
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
+        )
+    }
+
     private func updateItemView(
         title: Text,
         name: String,
@@ -306,6 +345,14 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(T.requestModalRemoveSecureNoteTitle.localizedKey),
             name: item.name ?? "",
             description: nil
+        )
+    }
+
+    private func deletePaymentCardView(item: PaymentCardItemData) -> some View {
+        deleteItemView(
+            title: Text(T.requestModalRemoveCardTitle.localizedKey),
+            name: item.name ?? "",
+            description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
     }
 

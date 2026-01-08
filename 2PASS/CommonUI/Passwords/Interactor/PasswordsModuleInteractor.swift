@@ -29,7 +29,9 @@ protocol PasswordsModuleInteracting: AnyObject {
     func copyUsername(_ itemID: ItemID) -> Bool
     func copyPassword(_ itemID: ItemID) -> Bool
     func copySecureNote(_ itemID: ItemID) -> Bool
-    
+    func copyPaymentCardNumber(_ itemID: ItemID) -> Bool
+    func copyPaymentCardSecurityCode(_ itemID: ItemID) -> Bool
+
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
     
@@ -248,7 +250,29 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         systemInteractor.copyToClipboard(decryptedText)
         return true
     }
-    
+
+    func copyPaymentCardNumber(_ itemID: ItemID) -> Bool {
+        guard let paymentCardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asPaymentCard,
+              let cardNumber = paymentCardItem.content.cardNumber,
+              let decryptedNumber = itemsInteractor.decrypt(cardNumber, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel)
+        else {
+            return false
+        }
+        systemInteractor.copyToClipboard(decryptedNumber)
+        return true
+    }
+
+    func copyPaymentCardSecurityCode(_ itemID: ItemID) -> Bool {
+        guard let paymentCardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asPaymentCard,
+              let securityCode = paymentCardItem.content.securityCode,
+              let decryptedCode = itemsInteractor.decrypt(securityCode, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel)
+        else {
+            return false
+        }
+        systemInteractor.copyToClipboard(decryptedCode)
+        return true
+    }
+
     func cachedImage(from url: URL) -> Data? {
         fileIconInteractor.cachedImage(from: url)
     }

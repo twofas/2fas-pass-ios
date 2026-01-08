@@ -153,6 +153,7 @@ struct LoginEditorFormView: View {
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .textContentType(.URL)
+                        .keyboardType(.URL)
                         .frame(maxWidth: .infinity)
                         .focused($focusField, equals: .uri(uri.id))
 

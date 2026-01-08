@@ -32,7 +32,7 @@ import Testing
             "http://www.domain.com"
         ])
         func match(item: URITestItem, base: String) {
-            #expect(URIInteractor().isMatch(item.uri, to: base, rule: .domain) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: base, rule: .domain) == item.shouldMatch)
         }
     }
     
@@ -53,7 +53,7 @@ import Testing
             URITestItem(uri: "https://domain.com:1234/", shouldMatch: false),
         ])
         func matchToComplexURI(item: URITestItem) {
-            #expect(URIInteractor().isMatch(item.uri, to: "https://www.sd.domain.com/en/my.aspx?error=999", rule: .host) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "https://www.sd.domain.com/en/my.aspx?error=999", rule: .host) == item.shouldMatch)
         }
  
         @Test("Base URI with port", arguments: [
@@ -74,7 +74,7 @@ import Testing
             "http://www.sd.domain.com:1234"
         ])
         func matchToURIWithPort(item: URITestItem, base: String) {
-            #expect(URIInteractor().isMatch(item.uri, to: base, rule: .host) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: base, rule: .host) == item.shouldMatch)
         }
     }
     
@@ -92,7 +92,7 @@ import Testing
             URITestItem(uri: "https://www.domain.com/", shouldMatch: false)
         ])
         func match(item: URITestItem) {
-            #expect(URIInteractor().isMatch(item.uri, to: "https://www.sd.domain.com/en/my", rule: .startsWith) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "https://www.sd.domain.com/en/my", rule: .startsWith) == item.shouldMatch)
         }
         
         @Test("[Match] Base URI with WWW and port", arguments: [
@@ -103,7 +103,7 @@ import Testing
             URITestItem(uri: "http://www.sd.domain.com:1234/en/page/?param=1", shouldMatch: false)
         ])
         func matchURIWithPort(item: URITestItem) {
-            #expect(URIInteractor().isMatch(item.uri, to: "https://www.sd.domain.com:1234/", rule: .startsWith) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "https://www.sd.domain.com:1234/", rule: .startsWith) == item.shouldMatch)
         }
         
         @Test("[Not match] Base URI with WWW and port", arguments: [
@@ -112,7 +112,7 @@ import Testing
             "http://www.sd.domain.com:1234/en/page/?param=1"
         ])
         func notMatchURIWithPort(uri: String) {
-            #expect(URIInteractor().isMatch(uri, to: "https://www.sd.domain.com:1234/", rule: .startsWith) == false)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(uri, to: "https://www.sd.domain.com:1234/", rule: .startsWith) == false)
         }
     }
     
@@ -129,7 +129,7 @@ import Testing
             URITestItem(uri: "https://domain.com:1234/", shouldMatch: false)
         ])
         func matchToComplexURI(_ item: URITestItem) async throws {
-            #expect(URIInteractor().isMatch(item.uri, to: "https://www.domain.com/en/my.aspx?error=999", rule: .exact) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "https://www.domain.com/en/my.aspx?error=999", rule: .exact) == item.shouldMatch)
         }
         
         @Test("Base URI with path", arguments: [
@@ -143,7 +143,7 @@ import Testing
             URITestItem(uri: "https://domain.com:1234/", shouldMatch: false)
         ])
         func matchToURIWithPath(_ item: URITestItem) async throws {
-            #expect(URIInteractor().isMatch(item.uri, to: "https://www.domain.com/en/", rule: .exact) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "https://www.domain.com/en/", rule: .exact) == item.shouldMatch)
         }
         
         @Test("Base simple URI", arguments: [
@@ -157,7 +157,7 @@ import Testing
             URITestItem(uri: "https://domain.com:1234/", shouldMatch: false)
         ])
         func matchToSimpleURI(_ item: URITestItem) async throws {
-            #expect(URIInteractor().isMatch(item.uri, to: "https://www.domain.com", rule: .exact) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "https://www.domain.com", rule: .exact) == item.shouldMatch)
         }
         
         @Test("Base simple URI without SSL", arguments: [
@@ -171,7 +171,7 @@ import Testing
             URITestItem(uri: "https://domain.com:1234/", shouldMatch: false)
         ])
         func matchToSimpleURIWithoutSSL(_ item: URITestItem) async throws {
-            #expect(URIInteractor().isMatch(item.uri, to: "http://www.domain.com", rule: .exact) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "http://www.domain.com", rule: .exact) == item.shouldMatch)
         }
         
         @Test("Base simple URI with port without SSL", arguments: [
@@ -187,7 +187,7 @@ import Testing
             URITestItem(uri: "http://domain.com:1234/", shouldMatch: false)
         ])
         func matchToSimpleURIWithPortWithoutSSL(_ item: URITestItem) async throws {
-            #expect(URIInteractor().isMatch(item.uri, to: "http://www.domain.com:1234/", rule: .exact) == item.shouldMatch)
+            #expect(URIInteractor(mainRepository: MockMainRepository()).isMatch(item.uri, to: "http://www.domain.com:1234/", rule: .exact) == item.shouldMatch)
         }
     }
 }

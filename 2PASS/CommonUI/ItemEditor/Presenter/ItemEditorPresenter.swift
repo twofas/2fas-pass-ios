@@ -15,17 +15,20 @@ final class ItemEditorPresenter {
     enum Form {
         case login(LoginEditorFormPresenter)
         case secureNote(SecureNoteEditorFormPresenter)
+        case paymentCard(PaymentCardEditorFormPresenter)
     }
-    
+
     var contentType: ItemContentType {
         switch form {
         case .login:
             return .login
         case .secureNote:
             return .secureNote
+        case .paymentCard:
+            return .paymentCard
         }
     }
-    
+
     var title: String {
         switch (contentType, isEdit) {
         case (.login, false):
@@ -36,6 +39,10 @@ final class ItemEditorPresenter {
             T.secureNoteAddTitle
         case (.secureNote, true):
             T.secureNoteEditTitle
+        case (.paymentCard, false):
+            T.cardAddTitle
+        case (.paymentCard, true):
+            T.cardEditTitle
         case (.unknown, _):
             ""
         }
@@ -47,6 +54,7 @@ final class ItemEditorPresenter {
     
     var loginFormPresenter: LoginEditorFormPresenter?
     var secureNotePresenter: SecureNoteEditorFormPresenter?
+    var paymentCardPresenter: PaymentCardEditorFormPresenter?
     
     let allowChangeContentType: Bool
     
@@ -72,6 +80,8 @@ final class ItemEditorPresenter {
         case .login(let presenter):
             return presenter
         case .secureNote(let presenter):
+            return presenter
+        case .paymentCard(let presenter):
             return presenter
         }
     }
@@ -103,7 +113,7 @@ final class ItemEditorPresenter {
             )
             self.loginFormPresenter = formPresenter
             self.form = .login(formPresenter)
-            
+
         case .secureNote:
             let formPresenter = SecureNoteEditorFormPresenter(
                 interactor: interactor,
@@ -113,7 +123,17 @@ final class ItemEditorPresenter {
             )
             self.secureNotePresenter = formPresenter
             self.form = .secureNote(formPresenter)
-            
+
+        case .paymentCard:
+            let formPresenter = PaymentCardEditorFormPresenter(
+                interactor: interactor,
+                flowController: flowController,
+                initialData: initalData?.asPaymentCard,
+                changeRequest: interactor.changeRequest as? PaymentCardDataChangeRequest
+            )
+            self.paymentCardPresenter = formPresenter
+            self.form = .paymentCard(formPresenter)
+
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")
         }
@@ -193,7 +213,7 @@ private extension ItemEditorPresenter {
                 }
             }()
             return .login(presenter)
-            
+
         case .secureNote:
             let presenter = {
                 if let secureNotePresenter {
@@ -205,7 +225,19 @@ private extension ItemEditorPresenter {
                 }
             }()
             return .secureNote(presenter)
-            
+
+        case .paymentCard:
+            let presenter = {
+                if let paymentCardPresenter {
+                    return paymentCardPresenter
+                } else {
+                    let presenter = PaymentCardEditorFormPresenter(interactor: interactor, flowController: flowController)
+                    paymentCardPresenter = presenter
+                    return presenter
+                }
+            }()
+            return .paymentCard(presenter)
+
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")
         }

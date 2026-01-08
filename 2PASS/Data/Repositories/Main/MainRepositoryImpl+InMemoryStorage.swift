@@ -97,7 +97,43 @@ extension MainRepositoryImpl {
             additionalInfo: additionalInfo
         )
     }
-    
+
+    func createPaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    ) {
+        inMemoryStorage?.createPaymentCardItem(
+            itemID: itemID,
+            vaultID: vaultID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            cardHolder: cardHolder,
+            cardNumber: cardNumber,
+            expirationDate: expirationDate,
+            securityCode: securityCode,
+            notes: notes,
+            cardNumberMask: cardNumberMask,
+            cardIssuer: cardIssuer
+        )
+    }
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -199,7 +235,41 @@ extension MainRepositoryImpl {
             additionalInfo: additionalInfo
         )
     }
-    
+
+    func updatePaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    ) {
+        inMemoryStorage?.updatePaymentCardItem(
+            itemID: itemID,
+            vaultID: vaultID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            cardHolder: cardHolder,
+            cardNumber: cardNumber,
+            expirationDate: expirationDate,
+            securityCode: securityCode,
+            notes: notes,
+            cardNumberMask: cardNumberMask,
+            cardIssuer: cardIssuer
+        )
+    }
+
     func updateItems(_ items: [RawItemData]) {
         items.forEach { item in
             inMemoryStorage?.updateItem(
@@ -272,6 +342,10 @@ extension MainRepositoryImpl {
     
     func deleteTag(tagID: ItemTagID) {
         inMemoryStorage?.deleteTag(tagID: tagID)
+    }
+
+    func deleteAllTags() {
+        inMemoryStorage?.deleteAllTagEntities()
     }
     
     func listTags(options: TagListOptions) -> [ItemTagData] {

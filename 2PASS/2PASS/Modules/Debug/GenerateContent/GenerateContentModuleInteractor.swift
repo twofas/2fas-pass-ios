@@ -12,10 +12,12 @@ protocol GenerateContentModuleInteracting: AnyObject {
     var itemsCount: Int { get }
     var secureNotesCount: Int { get }
     var unknownCount: Int { get }
+    var tagsCount: Int { get }
     func generateItems(count: Int, completion: @escaping Callback)
     func generateSecureNotes(count: Int, completion: @escaping Callback)
     func generateUnknown(count: Int, completion: @escaping Callback)
     func removeAllItems()
+    func removeAllTags()
 }
 
 final class GenerateContentModuleInteractor {
@@ -42,6 +44,10 @@ extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
         debugInteractor.unknownCount
     }
 
+    var tagsCount: Int {
+        debugInteractor.tagsCount
+    }
+
     func generateItems(count: Int, completion: @escaping Callback) {
         debugInteractor.generateItems(count: count, completion: completion)
         syncChangeTriggerInteractor.trigger()
@@ -59,6 +65,11 @@ extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
 
     func removeAllItems() {
         debugInteractor.deleteAllItems()
+        syncChangeTriggerInteractor.trigger()
+    }
+
+    func removeAllTags() {
+        debugInteractor.deleteAllTags()
         syncChangeTriggerInteractor.trigger()
     }
 }

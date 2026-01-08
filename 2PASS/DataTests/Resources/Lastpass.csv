@@ -1,0 +1,68 @@
+url,username,password,totp,extra,name,grouping,fav
+http://sn,,,,"NoteType:Credit Card
+Language:pl-PL
+Name on Card:Karta 2FAS
+Type:MasterCard
+Number:5597599903700719
+Security Code:824
+Start Date:June,2024
+Expiration Date:November,2030
+Notes:test",Karta 1,Folder 1\Folder 2,0
+http://sn,,,,"NoteType:Credit Card
+Language:pl-PL
+Name on Card:2fas erunestian
+Type:Visa
+Number:4563377592312356
+Security Code:376
+Start Date:November,2020
+Expiration Date:November,2029
+Notes:",Karta 2,Folder 1\Folder 2,0
+http://sn,,,,"NoteType:Credit Card
+Language:pl-PL
+Name on Card:2fas erunestian
+Type:Visa
+Number:3550020566961870
+Security Code:801
+Start Date:April,2022
+Expiration Date:November,2031
+Notes:Karta do eksportu",Karta 3,,0
+http://sn,,,,Notka testowa,Notka 1,Folder 1,0
+http://sn,,,,"<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit. Volutpat odio facilisis mauris sit amet massa. Commodo odio aenean sed adipiscing diam donec adipiscing tristique. Mi eget mauris pharetra et. Non tellus orci ac auctor augue. Elit at imperdiet dui accumsan sit. Ornare arcu dui vivamus arcu felis. Egestas integer eget aliquet nibh praesent. In hac habitasse platea dictumst quisque sagittis purus. Pulvinar elementum integer enim neque volutpat ac.</p><p>Senectus et netus et malesuada. Nunc pulvinar sapien et ligula ullamcorper malesuada proin. Neque convallis a cras semper auctor. Libero id faucibus nisl tincidunt eget. Leo a diam sollicitudin tempor id. A lacus vestibulum sed arcu non odio euismod lacinia. In tellus integer feugiat scelerisque. Feugiat in fermentum posuere urna nec tincidunt praesent. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nisi scelerisque eu ultrices vitae auctor eu augue ut lectus. Ipsum faucibus vitae aliquet nec ullamcorper sit amet risus. Et malesuada fames ac turpis egestas sed. Sit amet nisl suscipit adipiscing bibendum est ultricies. Arcu ac tortor dignissim convallis aenean et tortor at. Pretium viverra suspendisse potenti nullam ac tortor vitae purus. Eros donec ac odio tempor orci dapibus ultrices. Elementum nibh tellus molestie nunc. Et magnis dis parturient montes nascetur. Est placerat in egestas erat imperdiet. Consequat interdum varius sit amet mattis vulputate enim.</p><p>Sit amet nulla facilisi morbi tempus. Nulla facilisi cras fermentum odio eu. Etiam erat velit scelerisque in dictum non consectetur a erat. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere. Ut sem nulla pharetra diam. Fames ac turpis egestas maecenas. Bibendum neque egestas congue quisque egestas diam. Laoreet id donec ultrices tincidunt arcu non sodales neque. Eget felis eget nunc lobortis mattis aliquam faucibus purus. Faucibus interdum posuere lorem ipsum dolor sit.</p><p>Et netus et malesuada fames ac. Erat pellentesque adipiscing commodo elit at imperdiet dui accumsan. Sodales neque sodales ut etiam sit amet nisl purus in. Maecenas volutpat blandit aliquam etiam. Sit amet luctus venenatis lectus magna fringilla urna porttitor rhoncus. Egestas purus viverra accumsan in nisl. Semper feugiat nibh sed pulvinar proin. Duis convallis convallis tellus id interdum velit laoreet. Ante in nibh mauris cursus mattis molestie. Ut etiam sit amet nisl purus in mollis nunc. Feugiat sed lectus vestibulum mattis ullamcorper velit sed ullamcorper. Tellus at urna condimentum mattis pellentesque id nibh tortor id. Tristique magna sit amet purus gravida quis blandit turpis cursus. Dolor sit amet consectetur adipiscing. Consequat ac felis donec et odio pellentesque diam volutpat. Nunc sed augue lacus viverra vitae congue. Mauris in aliquam sem fringilla ut morbi tincidunt augue.</p>",Notka 2,,0
+https://www.youtube.com/feed/subscriptions,Erunestian,zixxUs-dijnej-1rante,,Lorem ipsum,Hasło do eksportu,Folder 1\Folder 2,0
+http://sn,,,,"NoteType:Address
+Language:en-GB
+Title:mr
+First Name:Arthur
+Middle Name:Joe
+Last Name:Morgan
+Username:Erunestian
+Gender:m
+Birthday:August,23,2000
+Company:2FAS
+Address 1:Szara
+Address 2:Długa
+Address 3:Centralna
+City / Town:Gliwice
+County:Śląskie
+State:Jakiś
+Zip / Postal Code:40-789
+Country:PL
+Timezone:+01:00,1
+Email Address:2fas@gmail.com
+Phone:{""num"":""48404505606"",""ext"":""11"",""cc3l"":""POL""}
+Evening Phone:{""num"":""44111222333"",""ext"":""12"",""cc3l"":""GBR""}
+Mobile Phone:{""num"":""591777888999"",""ext"":""13"",""cc3l"":""BOL""}
+Fax:{""num"":""994444555666"",""ext"":""14"",""cc3l"":""AZE""}
+Notes:Notatka do eskportu",Adres do eksportu,,0
+http://sn,,,,"NoteType:Bank Account
+Language:en-GB
+Bank Name:ING
+Account Type:Oszczędnościowe
+Routing Number:3583593
+Account Number:12345678890987654321
+SWIFT Code:INGB PL PW 908
+IBAN Number:214344578799608007
+Pin:1234
+Branch Address:example@gmail.com
+Branch Phone:109802304
+Notes:Konto bankowe do eskportu",Konto bankowe,,0

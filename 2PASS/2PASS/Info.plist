@@ -74,8 +74,6 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>1Password Unencrypted Export</string>
-			<key>UTTypeIconFiles</key>
-			<array/>
 			<key>UTTypeIdentifier</key>
 			<string>com.1password.1pux</string>
 			<key>UTTypeTagSpecification</key>

@@ -43,26 +43,29 @@ public struct ItemMetadata: Hashable {
 public enum ItemContentType: Hashable {
     case login
     case secureNote
+    case paymentCard
     case unknown(String)
-    
-    public static let allKnownTypes: [ItemContentType] = [.login, .secureNote]
-    
+
+    public static let allKnownTypes: [ItemContentType] = [.login, .secureNote, .paymentCard]
+
     public var rawValue: String {
         switch self {
         case .login: "login"
         case .secureNote: "secureNote"
+        case .paymentCard: "paymentCard"
         case .unknown(let contentType): contentType
         }
     }
-    
+
     public init(rawValue: String) {
         switch rawValue {
         case ItemContentType.login.rawValue: self = .login
         case ItemContentType.secureNote.rawValue: self = .secureNote
+        case ItemContentType.paymentCard.rawValue: self = .paymentCard
         default: self = .unknown(rawValue)
         }
     }
-    
+
     public func isSecureField(key: String) -> Bool {
         switch self {
         case .login: key == "password"
@@ -93,27 +96,29 @@ extension ItemDataType {
 public enum ItemData: ItemDataType {
     case login(LoginItemData)
     case secureNote(SecureNoteItemData)
+    case paymentCard(PaymentCardItemData)
     case raw(RawItemData)
-    
+
     public var id: ItemID { base.id }
     public var vaultId: VaultID { base.vaultId }
     public var metadata: ItemMetadata { base.metadata }
     public var name: String? { base.name }
     public var contentType: ItemContentType { base.contentType }
     public var contentVersion: Int { base.contentVersion }
-    
+
     public func encodeContent(using encoder: JSONEncoder) throws -> Data {
         try base.encodeContent(using: encoder)
     }
-    
+
     private var base: any ItemDataType {
         switch self {
         case .login(let data): return data
         case .secureNote(let data): return data
+        case .paymentCard(let data): return data
         case .raw(let data): return data
         }
     }
-    
+
     public init?(_ rawData: RawItemData, decoder: JSONDecoder = .init()) {
         do {
             switch rawData.contentType {
@@ -136,6 +141,16 @@ public enum ItemData: ItemDataType {
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
                     content: try decoder.decode(SecureNoteItemData.Content.self, from: rawData.content)
+                ))
+            case .paymentCard:
+                self = .paymentCard(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(PaymentCardItemData.Content.self, from: rawData.content)
                 ))
             case .unknown:
                 self = .raw(rawData)
@@ -238,6 +253,8 @@ extension ItemData {
             return .login(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .secureNote(let data):
             return .secureNote(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        case .paymentCard(let data):
+            return .paymentCard(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .raw(let data):
             return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
         }

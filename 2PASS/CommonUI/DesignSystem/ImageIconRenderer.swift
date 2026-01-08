@@ -37,12 +37,7 @@ final class ImageIconRenderer: UIView {
         return imageView
     }()
     
-    var image: UIImage? {
-        didSet {
-            imageView.image = image
-            backgroundImageView.image = image
-        }
-    }
+    private var image: UIImage?
         
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -52,6 +47,15 @@ final class ImageIconRenderer: UIView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         commonInit()
+    }
+    
+    func setImage(_ image: UIImage?, ignoreCornerRadius: Bool = false) {
+        self.image = image
+        
+        imageView.image = image
+        backgroundImageView.image = image
+        
+        imageView.layer.cornerRadius = ignoreCornerRadius ? 0 : Constants.innerCornerRadius
     }
     
     private func commonInit() {
@@ -64,7 +68,6 @@ final class ImageIconRenderer: UIView {
             backgroundImageView.heightAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension))
         ])
         
-        imageView.layer.cornerRadius = Constants.innerCornerRadius
         imageView.clipsToBounds = true
         
         addSubview(imageView)

@@ -31,6 +31,11 @@ struct ItemEditorFormView: View {
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )
+            case .paymentCard(let presenter):
+                PaymentCardEditorFormView(
+                    presenter: presenter,
+                    resignFirstResponder: resignFirstResponder
+                )
             }
             
             if presenter.showRemoveItemButton {

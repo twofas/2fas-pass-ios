@@ -83,6 +83,18 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                             items.append(loginItem)
                         }
 
+                    case "creditCard":
+                        if let cardItem = importCreditCardItem(
+                            item: item,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            creationDate: creationDate,
+                            modificationDate: modificationDate,
+                            sourceVaultName: sourceVaultName
+                        ) {
+                            items.append(cardItem)
+                        }
+
                     case "note":
                         if let noteItem = importSecureNoteItem(
                             item: item,
@@ -164,6 +176,18 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                 switch itemType {
                 case "login":
                     if let item = importLoginFromCSV(
+                        dict: dict,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        creationDate: creationDate,
+                        modificationDate: modificationDate,
+                        sourceVaultName: sourceVaultName
+                    ) {
+                        items.append(item)
+                    }
+
+                case "creditCard":
+                    if let item = importCreditCardFromCSV(
                         dict: dict,
                         vaultID: vaultID,
                         protectionLevel: protectionLevel,
@@ -285,6 +309,101 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         ))
     }
     
+    func importCreditCardFromCSV(
+        dict: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        creationDate: Date,
+        modificationDate: Date,
+        sourceVaultName: String?
+    ) -> ItemData? {
+        let name = dict["name"]?.nonBlankTrimmedOrNil
+
+        // Credit card data is in the "note" field as JSON
+        guard let noteJSON = dict["note"]?.nonBlankTrimmedOrNil,
+              let jsonData = noteJSON.data(using: .utf8),
+              let cardData = try? JSONDecoder().decode(ProtonPassCSVCreditCard.self, from: jsonData) else {
+            return nil
+        }
+
+        let cardHolder = cardData.cardholderName?.nonBlankTrimmedOrNil
+        let cardNumberString = cardData.number?.nonBlankTrimmedOrNil
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = cardData.verificationNumber?.nonBlankTrimmedOrNil,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        // Parse expiration date from "YYYY-MM" format to "MM/YY"
+        let expirationDateString: String? = {
+            guard let expDate = cardData.expirationDate?.nonBlankTrimmedOrNil
+            else { return nil }
+            let components = expDate.split(separator: "-")
+            guard components.count == 2,
+                  let year = components.first,
+                  let month = components.last else { return expDate }
+            let yearSuffix = year.suffix(2)
+            return "\(month)/\(yearSuffix)"
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+        var noteComponents: [String] = []
+        if let note = cardData.note?.nonBlankTrimmedOrNil {
+            noteComponents.append(note)
+        }
+        if let pin = cardData.pin?.nonBlankTrimmedOrNil {
+            noteComponents.append("Pin: \(pin)")
+        }
+        if let sourceVaultName {
+            noteComponents.append("Vault: \(sourceVaultName)")
+        }
+        let notes = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: nil
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: notes
+            )
+        ))
+    }
+
     func importSecureNoteFromCSV(
         dict: [String: String],
         vaultID: VaultID,
@@ -490,6 +609,99 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                 notes: notes,
                 iconType: context.makeIconType(uri: uris?.first?.uri),
                 uris: uris
+            )
+        ))
+    }
+    
+    func importCreditCardItem(
+        item: ProtonPassItem,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        creationDate: Date,
+        modificationDate: Date,
+        sourceVaultName: String?
+    ) -> ItemData? {
+        let name = item.data.metadata.name.nonBlankTrimmedOrNil
+        let content = ProtonPassCreditCardContent(item.data.content)
+
+        let cardHolder = content.cardholderName?.nonBlankTrimmedOrNil
+        let cardNumberString = content.number?.nonBlankTrimmedOrNil
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = content.verificationNumber?.nonBlankTrimmedOrNil,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        // Parse expiration date from "YYYY-MM" format to "MM/YY"
+        let expirationDateString: String? = {
+            guard let expDate = content.expirationDate?.nonBlankTrimmedOrNil
+            else { return nil }
+            let components = expDate.split(separator: "-")
+            guard components.count == 2,
+                  let year = components.first,
+                  let month = components.last else { return expDate }
+            let yearSuffix = year.suffix(2)
+            return "\(month)/\(yearSuffix)"
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+        // Build notes from metadata note + unknown data + extra fields
+        var noteComponents: [String] = []
+        if let note = item.data.metadata.note.nonBlankTrimmedOrNil {
+            noteComponents.append(note)
+        }
+        if let unknownContentData = context.formatDictionary(content.unknownData) {
+            noteComponents.append(unknownContentData)
+        }
+        if let extraFieldsNote = formatExtraFields(item.data.extraFields) {
+            noteComponents.append(extraFieldsNote)
+        }
+        if let sourceVaultName {
+            noteComponents.append("Vault: \(sourceVaultName)")
+        }
+        let notes = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
+        
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: nil
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: notes
             )
         ))
     }
@@ -728,7 +940,50 @@ private struct ProtonPassLoginContent {
     }
 }
 
+private struct ProtonPassCreditCardContent {
+    static let usedKeys: Set<String> = ["cardholderName", "number", "verificationNumber", "expirationDate", "cardType"]
+
+    let rawData: [String: Any]
+    let unknownData: [String: Any]
+
+    init(_ rawData: [String: AnyCodable]?) {
+        self.rawData = rawData?.mapValues { $0.value } ?? [:]
+        self.unknownData = self.rawData.filter { !Self.usedKeys.contains($0.key) }
+    }
+
+    var cardholderName: String? {
+        rawData["cardholderName"] as? String
+    }
+
+    var number: String? {
+        rawData["number"] as? String
+    }
+
+    var verificationNumber: String? {
+        rawData["verificationNumber"] as? String
+    }
+
+    var expirationDate: String? {
+        rawData["expirationDate"] as? String
+    }
+
+    var pin: String? {
+        rawData["pin"] as? String
+    }
+}
+
+
 // MARK: - ProtonPass CSV Models
+
+private struct ProtonPassCSVCreditCard: Decodable {
+    let cardholderName: String?
+    let cardType: Int?
+    let number: String?
+    let verificationNumber: String?
+    let expirationDate: String?
+    let pin: String?
+    let note: String?
+}
 
 private struct ProtonPassCSVIdentity: Decodable {
     let fullName: String?

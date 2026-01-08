@@ -408,6 +408,98 @@ extension InMemoryStorageDataSourceImpl {
 }
 
 extension InMemoryStorageDataSourceImpl {
+    public func createPaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    ) {
+        PaymentCardEntity.createPaymentCard(
+            on: context,
+            itemID: itemID,
+            vaultID: vaultID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            cardHolder: cardHolder,
+            cardNumber: cardNumber,
+            expirationDate: expirationDate,
+            securityCode: securityCode,
+            notes: notes,
+            cardNumberMask: cardNumberMask,
+            cardIssuer: cardIssuer
+        )
+    }
+
+    public func updatePaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    ) {
+        PaymentCardEntity.updatePaymentCard(
+            on: context,
+            for: itemID,
+            vaultID: vaultID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            cardHolder: cardHolder,
+            cardNumber: cardNumber,
+            expirationDate: expirationDate,
+            securityCode: securityCode,
+            notes: notes,
+            cardNumberMask: cardNumberMask,
+            cardIssuer: cardIssuer
+        )
+    }
+
+    public func getPaymentCardItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> PaymentCardItemData? {
+        PaymentCardEntity.getPaymentCardEntity(
+            on: context,
+            itemID: itemID,
+            checkInTrash: checkInTrash
+        )?.toData().asPaymentCard
+    }
+
+    public func listPaymentCardItems(
+        options: ItemsListOptions
+    ) -> [PaymentCardItemData] {
+        PaymentCardEntity.listPaymentCardEntities(on: context, options: options)
+            .compactMap { $0.toData().asPaymentCard }
+    }
+}
+
+extension InMemoryStorageDataSourceImpl {
     public func listUsernames() -> [String] {
         LoginEntity.listLoginEntities(on: context, options: .allNotTrashed)
             .compactMap { $0.username }

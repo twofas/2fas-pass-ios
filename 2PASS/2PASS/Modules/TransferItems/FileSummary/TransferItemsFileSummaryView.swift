@@ -110,6 +110,8 @@ struct TransferItemsFileSummaryView: View {
             T.transferFileSummaryLoginsCounterDescription.localizedKey
         case .secureNote:
             T.transferFileSummarySecureNotesCounterDescription.localizedKey
+        case .paymentCard:
+            T.transferFileSummaryPaymentCardsCounterDescription.localizedKey
         case .unknown:
             T.transferFileSummaryOthersCounterDescription.localizedKey
         }

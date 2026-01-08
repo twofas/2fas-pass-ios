@@ -111,6 +111,13 @@ extension TrashPresenter {
 
         case .contentType(let contentType):
             icons[item.id] = .contentType(contentType)
+
+        case .paymentCard(let issuer):
+            if let issuer, let paymentCardIssuer = PaymentCardIssuer(rawValue: issuer) {
+                icons[item.id] = .icon(paymentCardIssuer.icon)
+            } else {
+                icons[item.id] = .contentType(.paymentCard)
+            }
         }
     }
     
@@ -175,6 +182,14 @@ private extension TrashPresenter {
                             description: nil,
                             deletedDate: trashingDate,
                             icon: .contentType(.secureNote)
+                        )
+                    case .paymentCard(let paymentCardItem):
+                        return TrashItemData(
+                            itemID: paymentCardItem.id,
+                            name: paymentCardItem.name,
+                            description: paymentCardItem.content.cardNumberMask?.formatted(.paymentCardNumberMask),
+                            deletedDate: trashingDate,
+                            icon: .paymentCard(issuer: paymentCardItem.content.cardIssuer)
                         )
                     case .raw:
                         return nil

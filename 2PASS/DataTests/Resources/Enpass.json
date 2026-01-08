@@ -1,0 +1,989 @@
+{
+    "folders": [
+        {
+            "icon": "1008",
+            "parent_uuid": "",
+            "title": "Test",
+            "updated_at": 1765904282,
+            "uuid": "2c435f98-469a-4693-a602-8330c13e9c4e"
+        },
+        {
+            "icon": "1008",
+            "parent_uuid": "",
+            "title": "Erunestian",
+            "updated_at": 1765904289,
+            "uuid": "b3c3d461-6b01-4704-94ce-ecd4df66693d"
+        },
+        {
+            "icon": "1008",
+            "parent_uuid": "b3c3d461-6b01-4704-94ce-ecd4df66693d",
+            "title": "Rafael",
+            "updated_at": 1765907235,
+            "uuid": "596496dd-9165-4509-8f57-572a3629ac64"
+        },
+        {
+            "icon": "1008",
+            "parent_uuid": "596496dd-9165-4509-8f57-572a3629ac64",
+            "title": "2",
+            "updated_at": 1765914857,
+            "uuid": "abae5d1d-7566-4ea4-8655-b13f519e5f71"
+        }
+    ],
+    "items": [
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "login",
+            "category_name": "Login",
+            "createdAt": 1758641924,
+            "favorite": 0,
+            "field_updated_at": 1765974423,
+            "fields": [
+                {
+                    "deleted": 0,
+                    "history": [
+                        {
+                            "encrypted": false,
+                            "updated_at": 1758641924,
+                            "value": "sdwasd"
+                        }
+                    ],
+                    "label": "Username",
+                    "order": 1,
+                    "sensitive": 0,
+                    "type": "username",
+                    "uid": 10,
+                    "updated_at": 1765974423,
+                    "value": "",
+                    "value_updated_at": 1765974423
+                },
+                {
+                    "deleted": 0,
+                    "history": [
+                        {
+                            "encrypted": false,
+                            "updated_at": 1758641924,
+                            "value": "wdawdad"
+                        }
+                    ],
+                    "label": "E-mail",
+                    "order": 2,
+                    "sensitive": 0,
+                    "type": "email",
+                    "uid": 12,
+                    "updated_at": 1765974423,
+                    "value": "Example@gmail.com",
+                    "value_updated_at": 1765974423
+                },
+                {
+                    "deleted": 0,
+                    "label": "Password",
+                    "order": 3,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 11,
+                    "updated_at": 1758641924,
+                    "value": "kt{PK\\/l2C\\YvYCebd/9LUI^=b}Sx7MD",
+                    "value_updated_at": 1758641924
+                },
+                {
+                    "deleted": 0,
+                    "label": "Website",
+                    "order": 4,
+                    "sensitive": 0,
+                    "type": "url",
+                    "uid": 13,
+                    "updated_at": 1765974423,
+                    "value": "https://www.amazon.pl/",
+                    "value_updated_at": 1765974423
+                },
+                {
+                    "deleted": 0,
+                    "label": "ADDITIONAL DETAILS",
+                    "order": 5,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 101,
+                    "updated_at": 1758641924,
+                    "value": "",
+                    "value_updated_at": 1758641924
+                },
+                {
+                    "deleted": 0,
+                    "label": "Phone number",
+                    "order": 6,
+                    "sensitive": 0,
+                    "type": "phone",
+                    "uid": 14,
+                    "updated_at": 1758641924,
+                    "value": "",
+                    "value_updated_at": 1758641924
+                },
+                {
+                    "deleted": 0,
+                    "label": "One-time code",
+                    "order": 7,
+                    "sensitive": 0,
+                    "type": "totp",
+                    "uid": 102,
+                    "updated_at": 1758641924,
+                    "value": "",
+                    "value_updated_at": 1758641924
+                },
+                {
+                    "deleted": 0,
+                    "label": "Security question",
+                    "order": 8,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 15,
+                    "updated_at": 1758641924,
+                    "value": "",
+                    "value_updated_at": 1758641924
+                },
+                {
+                    "deleted": 0,
+                    "label": "Security answer",
+                    "order": 9,
+                    "sensitive": 1,
+                    "type": "text",
+                    "uid": 16,
+                    "updated_at": 1758641924,
+                    "value": "",
+                    "value_updated_at": 1758641924
+                }
+            ],
+            "folders": [
+                "596496dd-9165-4509-8f57-572a3629ac64",
+                "2c435f98-469a-4693-a602-8330c13e9c4e"
+            ],
+            "icon": {
+                "fav": "www.amazon.pl",
+                "image": {
+                    "file": "misc/login"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "",
+            "subtitle": "Example@gmail.com",
+            "template_type": "login.default",
+            "title": "Bez username",
+            "trashed": 0,
+            "updated_at": 1765974423,
+            "uuid": "9ab76d56-3afe-451f-b28b-4d9db6f34ebc"
+        },
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "login",
+            "category_name": "Login",
+            "createdAt": 1758641966,
+            "favorite": 0,
+            "field_updated_at": 1765906550,
+            "fields": [
+                {
+                    "deleted": 0,
+                    "label": "Username",
+                    "order": 1,
+                    "sensitive": 0,
+                    "type": "username",
+                    "uid": 10,
+                    "updated_at": 1758641966,
+                    "value": "testenpass",
+                    "value_updated_at": 1758641966
+                },
+                {
+                    "deleted": 0,
+                    "label": "E-mail",
+                    "order": 2,
+                    "sensitive": 0,
+                    "type": "email",
+                    "uid": 12,
+                    "updated_at": 1758641966,
+                    "value": "wdasdwad",
+                    "value_updated_at": 1758641966
+                },
+                {
+                    "deleted": 0,
+                    "label": "Password",
+                    "order": 3,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 11,
+                    "updated_at": 1758641966,
+                    "value": "UyLmhARSgHe5DlS5e]g,G9DydLx]&^67",
+                    "value_updated_at": 1758641966
+                },
+                {
+                    "deleted": 0,
+                    "label": "Website",
+                    "order": 4,
+                    "sensitive": 0,
+                    "type": "url",
+                    "uid": 13,
+                    "updated_at": 1765906550,
+                    "value": "https://www.youtube.com/",
+                    "value_updated_at": 1765906550
+                },
+                {
+                    "deleted": 0,
+                    "label": "ADDITIONAL DETAILS",
+                    "order": 5,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 101,
+                    "updated_at": 1758641966,
+                    "value": "",
+                    "value_updated_at": 1758641966
+                },
+                {
+                    "deleted": 0,
+                    "label": "Phone number",
+                    "order": 6,
+                    "sensitive": 0,
+                    "type": "phone",
+                    "uid": 14,
+                    "updated_at": 1765906550,
+                    "value": "606505404",
+                    "value_updated_at": 1765906550
+                },
+                {
+                    "deleted": 0,
+                    "label": "One-time code",
+                    "order": 7,
+                    "sensitive": 0,
+                    "type": "totp",
+                    "uid": 102,
+                    "updated_at": 1765906550,
+                    "value": "2FASTEST",
+                    "value_updated_at": 1765906550
+                },
+                {
+                    "deleted": 0,
+                    "label": "Security question",
+                    "order": 8,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 15,
+                    "updated_at": 1765906550,
+                    "value": "Dog",
+                    "value_updated_at": 1765906550
+                },
+                {
+                    "deleted": 0,
+                    "label": "Security answer",
+                    "order": 9,
+                    "sensitive": 1,
+                    "type": "text",
+                    "uid": 16,
+                    "updated_at": 1765906550,
+                    "value": "Husky",
+                    "value_updated_at": 1765906550
+                }
+            ],
+            "folders": [
+                "b3c3d461-6b01-4704-94ce-ecd4df66693d"
+            ],
+            "icon": {
+                "fav": "www.youtube.com",
+                "image": {
+                    "file": "web/youtube.com"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "Login test note",
+            "subtitle": "testenpass",
+            "template_type": "login.default",
+            "title": "testenpass",
+            "trashed": 0,
+            "updated_at": 1765906550,
+            "uuid": "059067d9-a06e-4aa7-8c8a-a6c0c9262421"
+        },
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "password",
+            "category_name": "Password",
+            "createdAt": 1765904315,
+            "favorite": 0,
+            "field_updated_at": 1765974325,
+            "fields": [
+                {
+                    "deleted": 0,
+                    "label": "Login",
+                    "order": 1,
+                    "sensitive": 0,
+                    "type": "username",
+                    "uid": 0,
+                    "updated_at": 1765974325,
+                    "value": "Proton",
+                    "value_updated_at": 1765974325
+                },
+                {
+                    "deleted": 0,
+                    "label": "Password",
+                    "order": 2,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 1,
+                    "updated_at": 1765974325,
+                    "value": "9U#@XFq.TM;t]-lc~j^J{[&lcAZE@o64",
+                    "value_updated_at": 1765974325
+                },
+                {
+                    "deleted": 0,
+                    "label": "Access",
+                    "order": 3,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 2,
+                    "updated_at": 1765974325,
+                    "value": "Test do akcesu",
+                    "value_updated_at": 1765974325
+                }
+            ],
+            "folders": [
+                "b3c3d461-6b01-4704-94ce-ecd4df66693d"
+            ],
+            "icon": {
+                "fav": "",
+                "image": {
+                    "file": "misc/password_2"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "Password note",
+            "subtitle": "Proton",
+            "template_type": "password.default",
+            "title": "Password",
+            "trashed": 0,
+            "updated_at": 1765974325,
+            "uuid": "9963ecea-b81e-4fb8-b04d-e8b1fc01f8a3"
+        },
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "creditcard",
+            "category_name": "Credit Card",
+            "createdAt": 1765906569,
+            "favorite": 0,
+            "field_updated_at": 1765906569,
+            "fields": [
+                {
+                    "deleted": 0,
+                    "label": "Cardholder",
+                    "order": 1,
+                    "sensitive": 0,
+                    "type": "ccName",
+                    "uid": 0,
+                    "updated_at": 1765906569,
+                    "value": "Joe Schmoe",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Type",
+                    "order": 2,
+                    "sensitive": 0,
+                    "type": "ccType",
+                    "uid": 17,
+                    "updated_at": 1765906569,
+                    "value": "Visa",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Number",
+                    "order": 3,
+                    "sensitive": 0,
+                    "type": "ccNumber",
+                    "uid": 1,
+                    "updated_at": 1765906569,
+                    "value": "4179078730395581",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "CVC",
+                    "order": 4,
+                    "sensitive": 1,
+                    "type": "ccCvc",
+                    "uid": 2,
+                    "updated_at": 1765906569,
+                    "value": "354",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "PIN",
+                    "order": 5,
+                    "sensitive": 1,
+                    "type": "ccPin",
+                    "uid": 3,
+                    "updated_at": 1765906569,
+                    "value": "4098",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Expiry date",
+                    "order": 6,
+                    "sensitive": 0,
+                    "type": "ccExpiry",
+                    "uid": 4,
+                    "updated_at": 1765906569,
+                    "value": "11/2029",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "INTERNET BANKING",
+                    "order": 7,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 103,
+                    "updated_at": 1765906569,
+                    "value": "",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Username",
+                    "order": 8,
+                    "sensitive": 0,
+                    "type": "username",
+                    "uid": 15,
+                    "updated_at": 1765906569,
+                    "value": "Erunestian",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Login password",
+                    "order": 9,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 16,
+                    "updated_at": 1765906569,
+                    "value": "QWeUc6JG@fyCWB9pkh5=[*XLz2$fvrH)",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Transaction password",
+                    "order": 10,
+                    "sensitive": 1,
+                    "type": "ccTxnpassword",
+                    "uid": 9,
+                    "updated_at": 1765906569,
+                    "value": ")Y*{oO2z(ny<V{>U6-m}6QtL>Sur5WP{",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Website",
+                    "order": 11,
+                    "sensitive": 0,
+                    "type": "url",
+                    "uid": 14,
+                    "updated_at": 1765906569,
+                    "value": "https://login.ingbank.pl/mojeing/app/#login-oauth2/ref=3KtYqj9iTFTBYfpzHk3PmNeTjczqUxnB",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "ADDITIONAL DETAILS",
+                    "order": 12,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 104,
+                    "updated_at": 1765906569,
+                    "value": "",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Issuing bank",
+                    "order": 13,
+                    "sensitive": 0,
+                    "type": "ccBankname",
+                    "uid": 6,
+                    "updated_at": 1765906569,
+                    "value": "ING",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Issued on",
+                    "order": 14,
+                    "sensitive": 0,
+                    "type": "date",
+                    "uid": 7,
+                    "updated_at": 1765906569,
+                    "value": "10/2024",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Valid from",
+                    "order": 15,
+                    "sensitive": 0,
+                    "type": "ccValidfrom",
+                    "uid": 18,
+                    "updated_at": 1765906569,
+                    "value": "11/2024",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Credit limit",
+                    "order": 16,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 10,
+                    "updated_at": 1765906569,
+                    "value": "100000",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Withdrawal limit",
+                    "order": 17,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 11,
+                    "updated_at": 1765906569,
+                    "value": "10000",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "Interest rate",
+                    "order": 18,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 12,
+                    "updated_at": 1765906569,
+                    "value": "4",
+                    "value_updated_at": 1765906569
+                },
+                {
+                    "deleted": 0,
+                    "label": "If lost, call",
+                    "order": 19,
+                    "sensitive": 0,
+                    "type": "phone",
+                    "uid": 8,
+                    "updated_at": 1765906569,
+                    "value": "303202101",
+                    "value_updated_at": 1765906569
+                }
+            ],
+            "folders": [
+                "2c435f98-469a-4693-a602-8330c13e9c4e"
+            ],
+            "icon": {
+                "fav": "login.ingbank.pl",
+                "image": {
+                    "file": "cc/others"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "Karta kredytowa notatka",
+            "subtitle": "***** 5581",
+            "template_type": "creditcard.default",
+            "title": "Credit Card",
+            "trashed": 0,
+            "updated_at": 1765906817,
+            "uuid": "1e8d52d8-a0d7-4b48-804d-b57bb7406ede"
+        },
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "finance",
+            "category_name": "Finance",
+            "createdAt": 1765907066,
+            "favorite": 0,
+            "field_updated_at": 1765978578,
+            "fields": [
+                {
+                    "deleted": 0,
+                    "label": "Bank name",
+                    "order": 1,
+                    "sensitive": 0,
+                    "type": "ccBankname",
+                    "uid": 4,
+                    "updated_at": 1765978578,
+                    "value": "Santander",
+                    "value_updated_at": 1765978578
+                },
+                {
+                    "deleted": 0,
+                    "label": "Account holder",
+                    "order": 2,
+                    "sensitive": 0,
+                    "type": "ccName",
+                    "uid": 0,
+                    "updated_at": 1765978578,
+                    "value": "Erunestian",
+                    "value_updated_at": 1765978578
+                },
+                {
+                    "deleted": 0,
+                    "label": "Account type",
+                    "order": 3,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 1,
+                    "updated_at": 1765978578,
+                    "value": "Oszczędnościowe",
+                    "value_updated_at": 1765978578
+                },
+                {
+                    "deleted": 0,
+                    "label": "Account number",
+                    "order": 4,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 2,
+                    "updated_at": 1765978578,
+                    "value": "12345678909",
+                    "value_updated_at": 1765978578
+                },
+                {
+                    "deleted": 0,
+                    "label": "Customer ID",
+                    "order": 5,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 16,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Phone number",
+                    "order": 6,
+                    "sensitive": 0,
+                    "type": "phone",
+                    "uid": 106,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "IFSC code",
+                    "order": 7,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 169,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Routing number",
+                    "order": 8,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 5,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "SWIFT",
+                    "order": 9,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 8,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "IBAN",
+                    "order": 10,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 9,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "INTERNET BANKING",
+                    "order": 11,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 105,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Website",
+                    "order": 12,
+                    "sensitive": 0,
+                    "type": "url",
+                    "uid": 17,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Username",
+                    "order": 13,
+                    "sensitive": 0,
+                    "type": "username",
+                    "uid": 18,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Login password",
+                    "order": 14,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 19,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Transaction password",
+                    "order": 15,
+                    "sensitive": 1,
+                    "type": "ccTxnpassword",
+                    "uid": 20,
+                    "updated_at": 1765978578,
+                    "value": "$v8?)}p(*}ygBx8wJ)_wW.QhK(wW!Y2o",
+                    "value_updated_at": 1765978578
+                },
+                {
+                    "deleted": 0,
+                    "label": "BRANCH DETAILS",
+                    "order": 16,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 107,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Branch name",
+                    "order": 17,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 6,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Branch code",
+                    "order": 18,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 7,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Branch address",
+                    "order": 19,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 24,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Branch phone",
+                    "order": 20,
+                    "sensitive": 0,
+                    "type": "phone",
+                    "uid": 25,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "LINKED CARD",
+                    "order": 21,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 108,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Debit card number",
+                    "order": 22,
+                    "sensitive": 0,
+                    "type": "ccNumber",
+                    "uid": 11,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": " Card type",
+                    "order": 23,
+                    "sensitive": 0,
+                    "type": "ccType",
+                    "uid": 26,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "PIN",
+                    "order": 24,
+                    "sensitive": 1,
+                    "type": "ccPin",
+                    "uid": 12,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "CVV",
+                    "order": 25,
+                    "sensitive": 1,
+                    "type": "ccCvc",
+                    "uid": 14,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Expiry date",
+                    "order": 26,
+                    "sensitive": 0,
+                    "type": "ccExpiry",
+                    "uid": 13,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "ADDITIONAL DETAILS",
+                    "order": 27,
+                    "sensitive": 0,
+                    "type": "section",
+                    "uid": 109,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Withdrawal limit",
+                    "order": 28,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 27,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "Helpline",
+                    "order": 29,
+                    "sensitive": 0,
+                    "type": "phone",
+                    "uid": 22,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                },
+                {
+                    "deleted": 0,
+                    "label": "T-PIN",
+                    "order": 30,
+                    "sensitive": 1,
+                    "type": "pin",
+                    "uid": 23,
+                    "updated_at": 1765907066,
+                    "value": "",
+                    "value_updated_at": 1765907066
+                }
+            ],
+            "icon": {
+                "fav": "",
+                "image": {
+                    "file": "misc/bank"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "Notatka do banku",
+            "subtitle": "Santander",
+            "template_type": "finance.bankaccount",
+            "title": "Bank account",
+            "trashed": 0,
+            "updated_at": 1765978578,
+            "uuid": "8deab434-2871-4f0c-aa7f-733ed665503c"
+        },
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "note",
+            "category_name": "Note",
+            "createdAt": 1765907279,
+            "favorite": 0,
+            "field_updated_at": 1765907279,
+            "folders": [
+                "b3c3d461-6b01-4704-94ce-ecd4df66693d"
+            ],
+            "icon": {
+                "fav": "",
+                "image": {
+                    "file": "misc/secure_note"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "Lorem ipsum notka",
+            "subtitle": "Lorem ipsum notka",
+            "template_type": "note.default",
+            "title": "Note",
+            "trashed": 0,
+            "updated_at": 1765907279,
+            "uuid": "75372f29-131f-49bb-9b03-d89bbf828641"
+        }
+    ]
+}
+

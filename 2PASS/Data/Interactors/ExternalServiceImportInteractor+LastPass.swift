@@ -64,6 +64,16 @@ extension ExternalServiceImportInteractor {
                         let noteType = fields["NoteType"]
 
                         switch noteType {
+                        case "Credit Card":
+                            if let cardItem = parseCreditCard(
+                                dict: dict,
+                                fields: fields,
+                                vaultID: vaultID,
+                                protectionLevel: protectionLevel,
+                                tagIds: tagIds
+                            ) {
+                                items.append(cardItem)
+                            }
                         case nil:
                             if let noteItem = parseSecureNote(
                                 dict: dict,
@@ -177,7 +187,90 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
             )
         ))
     }
+    
+    func parseCreditCard(
+        dict: [String: String],
+        fields: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = dict["name"].formattedName
+        
+        let cardHolder = fields["Name on Card"]
+        let cardNumberString = fields["Number"]
+        let securityCodeString = fields["Security Code"]
+        let expirationDateString = parseExpirationDate(from: fields["Expiration Date"])
+        let notes = fields["Notes"]?.nonBlankTrimmedOrNil
 
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+        
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+        
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+        
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+        
+        // Build additional info from unknown extra fields
+        let excludedExtraKeys: Set<String> = [
+            "NoteType", "Language", "Name on Card", "Type", "Number",
+            "Security Code", "Expiration Date", "Notes"
+        ]
+        let extraAdditionalInfo = context.formatDictionary(fields, excludingKeys: excludedExtraKeys)
+        
+        // Build additional info from unknown CSV columns
+        let knownCSVColumns: Set<String> = [
+            "url", "username", "password", "extra", "name", "grouping", "fav"
+        ]
+        let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
+        
+        // Merge all additional info
+        let combinedAdditionalInfo = context.mergeNote(extraAdditionalInfo, with: csvAdditionalInfo)
+        let mergedNotes = context.mergeNote(notes, with: combinedAdditionalInfo)
+        
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: Date.importPasswordPlaceholder,
+                modificationDate: Date.importPasswordPlaceholder,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
+            )
+        ))
+    }
+    
     func parseSecureNote(
         dict: [String: String],
         vaultID: VaultID,

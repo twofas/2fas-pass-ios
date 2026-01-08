@@ -70,6 +70,15 @@ extension ExternalServiceImportInteractor {
                     ) {
                         items.append(noteItem)
                     }
+                case "bankCard":
+                    if let cardItem = parsePaymentCard(
+                        record: record,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        tagIds: tagIds
+                    ) {
+                        items.append(cardItem)
+                    }
                 default:
                     // Convert unsupported types to secure notes
                     if let noteItem = parseAsSecureNote(
@@ -185,6 +194,83 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
                 name: name,
                 text: text,
                 additionalInfo: customFieldsInfo
+            )
+        ))
+    }
+
+    func parsePaymentCard(
+        record: Keeper.Record,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = record.title.formattedName
+        let notes = record.notes?.nonBlankTrimmedOrNil
+
+        // Extract card details from custom_fields
+        let paymentCard = record.customFields?.paymentCard
+        let cardHolder = record.customFields?.cardholderName
+        let pinCode = record.customFields?.pinCode
+
+        let cardNumberString = paymentCard?.cardNumber
+        let securityCodeString = paymentCard?.cardSecurityCode
+        let expirationDateString = context.formatExpirationDate(paymentCard?.cardExpirationDate)
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+        // Add PIN code to notes if present
+        var additionalInfo: String?
+        if let pin = pinCode {
+            additionalInfo = "PIN: \(pin)"
+        }
+
+        let mergedNotes = context.mergeNote(notes, with: additionalInfo)
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: Date.importPasswordPlaceholder,
+                modificationDate: Date.importPasswordPlaceholder,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
             )
         ))
     }
