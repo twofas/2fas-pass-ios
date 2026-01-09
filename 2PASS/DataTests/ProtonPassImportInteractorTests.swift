@@ -631,6 +631,64 @@ struct ProtonPassImportInteractorTests {
     }
 
     @Test
+    func importLoginWithMultipleURLsFromCSV() async throws {
+        // GIVEN - CSV with multiple comma-separated URLs
+        let csvContent = """
+        type,name,url,email,username,password,note,totp,vault,createTime,modifyTime
+        login,Test Multiple URLs,"https://example.com, https://example.org, https://example.net",,,testpass,Test note,,,1740854486,1740854486
+        """
+        let data = csvContent.data(using: .utf8)!
+
+        // WHEN
+        let result = try await interactor.importService(.protonPass, content: .file(data))
+
+        // THEN
+        let logins = result.items.compactMap { item -> LoginItemData? in
+            if case .login(let login) = item { return login }
+            return nil
+        }
+
+        let login = try #require(logins.first { $0.name == "Test Multiple URLs" })
+
+        // Verify all three URLs were parsed
+        let uris = try #require(login.content.uris)
+        #expect(uris.count == 3)
+        #expect(uris[0].uri == "https://example.com")
+        #expect(uris[0].match == .domain)
+        #expect(uris[1].uri == "https://example.org")
+        #expect(uris[1].match == .domain)
+        #expect(uris[2].uri == "https://example.net")
+        #expect(uris[2].match == .domain)
+    }
+
+    @Test
+    func importLoginWithSingleURLFromCSV() async throws {
+        // GIVEN - CSV with single URL (backward compatibility test)
+        let csvContent = """
+        type,name,url,email,username,password,note,totp,vault,createTime,modifyTime
+        login,Test Single URL,https://single-example.com,,,testpass,Test note,,,1740854486,1740854486
+        """
+        let data = csvContent.data(using: .utf8)!
+
+        // WHEN
+        let result = try await interactor.importService(.protonPass, content: .file(data))
+
+        // THEN
+        let logins = result.items.compactMap { item -> LoginItemData? in
+            if case .login(let login) = item { return login }
+            return nil
+        }
+
+        let login = try #require(logins.first { $0.name == "Test Single URL" })
+
+        // Verify single URL still works
+        let uris = try #require(login.content.uris)
+        #expect(uris.count == 1)
+        #expect(uris[0].uri == "https://single-example.com")
+        #expect(uris[0].match == .domain)
+    }
+
+    @Test
     func importCreditCardFromCSV() async throws {
         // GIVEN
         mockPaymentCardUtilityInteractor

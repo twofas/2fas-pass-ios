@@ -268,8 +268,15 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         let uris: [PasswordURI]? = {
             guard let urlString = dict["url"]?.nonBlankTrimmedOrNil
             else { return nil }
-            let uri = PasswordURI(uri: urlString, match: .domain)
-            return [uri]
+
+            // Split by comma to handle multiple URLs
+            let urls = urlString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+            let passwordURIs = urls.compactMap { url -> PasswordURI? in
+                guard !url.isEmpty else { return nil }
+                return PasswordURI(uri: url, match: .domain)
+            }
+
+            return passwordURIs.isEmpty ? nil : passwordURIs
         }()
 
         var noteComponents: [String] = []
