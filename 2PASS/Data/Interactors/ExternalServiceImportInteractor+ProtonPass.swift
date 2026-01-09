@@ -270,7 +270,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             else { return nil }
 
             // Split by comma to handle multiple URLs
-            let urls = urlString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+            let urls = urlString.split(separator: ", ").map { String($0) }
             let passwordURIs = urls.compactMap { url -> PasswordURI? in
                 guard !url.isEmpty else { return nil }
                 return PasswordURI(uri: url, match: .domain)
