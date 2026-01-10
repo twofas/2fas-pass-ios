@@ -35,6 +35,7 @@
 		54571D742D688AC200FC2DB3 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54571D732D688AC200FC2DB3 /* AuthenticationServices.framework */; };
 		54571D7F2D688AC200FC2DB3 /* AutoFill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54571D722D688AC200FC2DB3 /* AutoFill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		545B19432D78BBBB00BE2B14 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = 545B19422D78BBBB00BE2B14 /* Gzip */; };
+		545F2E292F123E5500ED9D62 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
 		54820F502DA594B900E29C73 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
 		5485DAD72D68A1C000DCC33C /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 5485DAD62D68A1C000DCC33C /* SwiftUIIntrospect */; };
 		54878E4C2D7ED4D00073BFC8 /* Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C267F9312BE2DDFF005F7B89 /* Common.framework */; };
@@ -1433,6 +1434,7 @@
 			knownRegions = (
 				en,
 				Base,
+				pl,
 			);
 			mainGroup = C27D99E22BD596620008203F;
 			packageReferences = (
@@ -1489,6 +1491,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				54E7B1062D6F320C002B1462 /* Assets.xcassets in Resources */,
+				545F2E292F123E5500ED9D62 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
