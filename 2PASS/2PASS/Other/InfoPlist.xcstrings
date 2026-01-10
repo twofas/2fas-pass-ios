@@ -1,0 +1,87 @@
+{
+  "sourceLanguage" : "en-US",
+  "strings" : {
+    "1Password Unencrypted Export" : {
+
+    },
+    "2FAS Pass Backup" : {
+
+    },
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "2FAS Pass"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "2FAS Pass"
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera is used to scan QR codes when connecting to the Browser Extension or to decrypt your Vault"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera jest używana do skanowania kodów QR podczas łączenia z rozszerzeniem przeglądarki lub odszyfrowywania sejfu"
+          }
+        }
+      }
+    },
+    "NSFaceIDUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometrics are used for user authentication"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biometria służy do uwierzytelniania użytkowników"
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection to the Local Network is used to access the WebDAV backup location"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Połączenie z siecią lokalną służy do dostępu do kopii zapasowej WebDAV"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
