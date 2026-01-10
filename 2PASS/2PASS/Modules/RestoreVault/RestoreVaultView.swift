@@ -47,7 +47,7 @@ struct RestoreVaultView: View {
         }
         .padding(.horizontal, Spacing.xl)
         .router(router: VaultRecoverySelectRouter(), destination: $presenter.destination)
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
         .readableContentMargins()
         .fileImporter(
             isPresented: $presenter.showFileImporter,

@@ -89,7 +89,6 @@
 		C249E77C2BF10B23003464D5 /* Storage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C249E7762BF10B23003464D5 /* Storage.framework */; };
 		C249E77D2BF10B23003464D5 /* Storage.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C249E7762BF10B23003464D5 /* Storage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C25577212DC819790025C09F /* ExternalService+.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25577202DC819590025C09F /* ExternalService+.swift */; };
-		C25D38D72BF94F4200F95A55 /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25D38D52BF94F4200F95A55 /* Assets.swift */; };
 		C267F9222BE2CA6E005F7B89 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C267F9212BE2CA6E005F7B89 /* RootViewController.swift */; };
 		C267F9262BE2CAB8005F7B89 /* RootPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C267F9252BE2CAB8005F7B89 /* RootPresenter.swift */; };
 		C267F92B2BE2DD64005F7B89 /* RootFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C267F92A2BE2DD64005F7B89 /* RootFlowController.swift */; };
@@ -356,7 +355,6 @@
 		C249E7762BF10B23003464D5 /* Storage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Storage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C249E7782BF10B23003464D5 /* Storage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Storage.h; sourceTree = "<group>"; };
 		C25577202DC819590025C09F /* ExternalService+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExternalService+.swift"; sourceTree = "<group>"; };
-		C25D38D52BF94F4200F95A55 /* Assets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
 		C267F9212BE2CA6E005F7B89 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		C267F9252BE2CAB8005F7B89 /* RootPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootPresenter.swift; sourceTree = "<group>"; };
 		C267F92A2BE2DD64005F7B89 /* RootFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootFlowController.swift; sourceTree = "<group>"; };
@@ -740,17 +738,8 @@
 				C27D99F72BD596630008203F /* Assets.xcassets */,
 				54820F4E2DA594B900E29C73 /* Localizable.xcstrings */,
 				54FBB7A42E0D70CC0026E87B /* Settings.bundle */,
-				C25D38D42BF94E9F00F95A55 /* Generated */,
 			);
 			path = Other;
-			sourceTree = "<group>";
-		};
-		C25D38D42BF94E9F00F95A55 /* Generated */ = {
-			isa = PBXGroup;
-			children = (
-				C25D38D52BF94F4200F95A55 /* Assets.swift */,
-			);
-			path = Generated;
 			sourceTree = "<group>";
 		};
 		C267F9202BE2CA61005F7B89 /* Root */ = {
@@ -1641,7 +1630,6 @@
 				8F6F40E32D386EDF0010F7CE /* OnboardingStepDimmedView.swift in Sources */,
 				8F6D5B292D2C3CD4002A7574 /* OnboardingPagePresenter.swift in Sources */,
 				5446178A2D413DB7003A14E1 /* GenerateSecretKeyRouter.swift in Sources */,
-				C25D38D72BF94F4200F95A55 /* Assets.swift in Sources */,
 				8F6D5B272D2C3CC9002A7574 /* OnboardingPageView.swift in Sources */,
 				C288424C2CFD239200FCFF2D /* MainModuleInteractor.swift in Sources */,
 				544617922D415E88003A14E1 /* SetupCompletePresenter.swift in Sources */,

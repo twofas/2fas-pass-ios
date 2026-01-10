@@ -14,8 +14,8 @@ enum SettingsRowActionIcon: String {
     
     var color: Color {
         switch self {
-        case .link, .share: Asset.accentColor.swiftUIColor
-        default: Asset.inactiveColor.swiftUIColor
+        case .link, .share: Color(.accent)
+        default: Color(.inactive)
         }
     }
 }
@@ -104,7 +104,7 @@ struct SettingsRowView<AdditionalInfo>: View where AdditionalInfo: View {
                 }
             }
         }
-        .foregroundStyle(isButtonStyle ? .accentColor : Asset.mainTextColor.swiftUIColor)
+        .foregroundStyle(isButtonStyle ? .accentColor : Color(.mainText))
     }
     
     func titleButtonStyle() -> some View {

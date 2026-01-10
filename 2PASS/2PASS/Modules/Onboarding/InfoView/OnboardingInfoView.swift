@@ -14,7 +14,7 @@ struct OnboardingInfoView: View {
 
     var body: some  View {
         VStack(alignment: .leading, spacing: 0) {
-            Asset.onboardingInfo.swiftUIImage
+            Image(.onboardingInfo)
                 .frame(height: 210)
             
             VStack(alignment: .leading, spacing: 0) {

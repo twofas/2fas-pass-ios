@@ -59,7 +59,7 @@ struct TrashCell: View {
             } label: {
                 Group {
                     Image(systemName: "ellipsis")
-                        .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                        .foregroundStyle(.labelSecondary)
                 }
                 .frame(width: 40, height: 40, alignment: .trailing)
             }

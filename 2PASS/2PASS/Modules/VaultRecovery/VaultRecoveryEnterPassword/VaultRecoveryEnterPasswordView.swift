@@ -23,7 +23,7 @@ struct VaultRecoveryEnterPasswordView: View {
             Form {
                 Section {
                     VStack(alignment: .center, spacing: Spacing.m) {
-                        Asset.smallShield.swiftUIImage
+                        Image(.smallShield)
                             .padding(.bottom, Spacing.xl)
                             .padding(.top, Spacing.m)
                         Text(.restoreVaultVerifyMasterPasswordDescription)
@@ -44,7 +44,7 @@ struct VaultRecoveryEnterPasswordView: View {
                         .onSubmit {
                             presenter.onDecrypt()
                         }
-                        .listRowBackground(Asset.backroundSecondary.swiftUIColor)
+                        .listRowBackground(Color(.backroundSecondary))
                 } header: {
                     Spacer(minLength: 0)
                 } footer: {

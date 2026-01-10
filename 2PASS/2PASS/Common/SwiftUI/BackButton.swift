@@ -15,7 +15,7 @@ struct BackButton: View {
         } label: {
             Image(systemName: "chevron.backward")
                 .font(.title2)
-                .tint(Asset.accentColor.swiftUIColor)
+                .tint(.accent)
         }
         .accessibilityLabel(Text(verbatim: "Back button"))
     }

@@ -75,7 +75,7 @@ private struct ErrorTextView: View {
     var body: some View {
         Text(text)
             .font(.headline)
-            .foregroundColor(Color(Asset.mainInvertedTextColor.swiftUIColor))
+            .foregroundColor(Color(.mainInvertedText))
             .multilineTextAlignment(.center)
             .padding(.horizontal, Spacing.l)
             .frame(maxWidth: .infinity, alignment: .center)

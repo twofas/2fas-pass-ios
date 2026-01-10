@@ -157,7 +157,7 @@ public struct LoginView: View {
                     presenter.onAppReset()
                 } label: {
                     Text(.lockScreenResetApp)
-                        .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                        .foregroundStyle(.destructiveAction)
                 }
             }
             .toolbar {

@@ -59,6 +59,6 @@ struct VaultRecoveryCheckView: View {
         .onAppear {
             presenter.onAppear()
         }
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
     }
 }

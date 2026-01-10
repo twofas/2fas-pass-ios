@@ -28,17 +28,17 @@ struct AppStateView: View {
                         Text(entry.name)
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                            .foregroundStyle(.mainText)
                         if let value = entry.value {
                             Text(value)
                                 .font(.caption2)
                                 .fontWeight(.semibold)
-                                .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                                .foregroundStyle(.labelSecondary)
                         } else {
                             Text(verbatim: "<none>")
                                 .font(.caption2)
                                 .fontWeight(.semibold)
-                                .foregroundStyle(Asset.labelTertiaryColor.swiftUIColor)
+                                .foregroundStyle(.labelTertiary)
                         }
                     }
                     

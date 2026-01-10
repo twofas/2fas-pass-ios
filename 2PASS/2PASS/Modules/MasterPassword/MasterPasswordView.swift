@@ -186,7 +186,7 @@ struct MasterPasswordView: View {
             } catch {}
         }
         .router(router: MasterPasswordRouter(), destination: $presenter.destination)
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
         .readableContentMargins()
     }
     
@@ -232,7 +232,7 @@ struct MasterPasswordView: View {
                 EmptyView()
             case .tooShort:
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(Asset.descriptionTextColor.swiftUIColor)
+                    .foregroundStyle(.descriptionText)
                 Text(.masterPasswordMinLength(presenter.optimalLength))
                     .font(.caption)
             case .dontMatch:

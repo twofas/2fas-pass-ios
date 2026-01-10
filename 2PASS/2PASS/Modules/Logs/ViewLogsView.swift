@@ -67,7 +67,7 @@ struct ViewLogsView: View {
                     .font(.caption2)
                     .fontWeight(.semibold)
                     .monospacedDigit()
-                    .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                    .foregroundStyle(.labelSecondary)
                 Spacer()
                 Text(verbatim: icons)
                     .font(.caption2)

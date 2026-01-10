@@ -164,7 +164,7 @@ struct LoginEditorFormView: View {
                         showURIMatchSettings = true
                     } label: {
                         Image(systemName: "checklist.unchecked")
-                            .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                            .foregroundStyle(.labelSecondary)
                     }
                     .buttonStyle(.borderless)
                     .frame(alignment: .trailing)
@@ -196,10 +196,10 @@ struct LoginEditorFormView: View {
             if let uriError = presenter.uriError {
                 HStack {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                        .foregroundStyle(.destructiveAction)
                     Text(.loginUriError(uriError))
                         .font(.caption)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                        .foregroundStyle(.mainText)
                 }
             }
         }
@@ -410,15 +410,15 @@ struct LoginEditorFormView: View {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(verbatim: match.title)
-                                            .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                                            .foregroundStyle(.mainText)
                                             .font(.body)
                                         Text(verbatim: match.description)
                                             .font(.caption)
-                                            .foregroundStyle(Asset.descriptionTextColor.swiftUIColor)
+                                            .foregroundStyle(.descriptionText)
                                     }
                                     Spacer()
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(Asset.accentColor.swiftUIColor)
+                                        .foregroundStyle(.accent)
                                         .isHidden(match != currentURI.match, remove: false)
                                 }
                             }
@@ -445,7 +445,7 @@ struct LoginEditorFormView: View {
             HStack {
                 Text(.uriSettingsMatchingRuleHeader)
                     .font(.title3Emphasized)
-                    .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    .foregroundStyle(.mainText)
                     .modify {
                         if #available(iOS 26, *) {
                             $0.padding(.leading, Spacing.s)
@@ -499,7 +499,7 @@ struct LoginEditorFormView: View {
                                     }
                                 } label: {
                                     Text(verbatim: username)
-                                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                                        .foregroundStyle(.mainText)
                                         .font(.body)
                                 }
                             }

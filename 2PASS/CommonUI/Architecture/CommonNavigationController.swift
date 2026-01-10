@@ -11,7 +11,7 @@ open class CommonNavigationController: UINavigationController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        let shadowLine = Asset.shadowLine.image
+        let shadowLine = UIImage(resource: .shadowLine)
             .withRenderingMode(.alwaysTemplate)
             .resizableImage(withCapInsets: UIEdgeInsets.zero, resizingMode: .tile)
         
@@ -19,9 +19,9 @@ open class CommonNavigationController: UINavigationController {
         navigationBar.scrollEdgeAppearance = scrollEdgeAppearance
         
         let standardAppearance = makeNavigationBarAppearance()
-        standardAppearance.backgroundColor = Asset.mainBackgroundColor.color
+        standardAppearance.backgroundColor = UIColor(resource: .mainBackground)
         standardAppearance.shadowImage = shadowLine
-        standardAppearance.shadowColor = Asset.dividerColor.color
+        standardAppearance.shadowColor = UIColor(resource: .divider)
         navigationBar.standardAppearance = standardAppearance
         
         navigationBar.prefersLargeTitles = true
@@ -33,8 +33,8 @@ extension CommonNavigationController {
     private func makeNavigationBarAppearance() -> UINavigationBarAppearance {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
-        appearance.titleTextAttributes = [.foregroundColor: Asset.mainTextColor.color]
-        appearance.largeTitleTextAttributes = [.foregroundColor: Asset.mainTextColor.color]
+        appearance.titleTextAttributes = [.foregroundColor: UIColor(resource: .mainText)]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(resource: .mainText)]
         return appearance
     }
 }

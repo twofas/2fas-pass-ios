@@ -85,7 +85,7 @@ struct PasswordGeneratorView: View {
                 .listSectionSpacing(Spacing.l)
                 .contentMargins(.top, 0)
                 .scrollBounceBehavior(.basedOnSize)
-                .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                .foregroundStyle(.mainText)
                 .tint(.brand500)
             }
             .toolbar {

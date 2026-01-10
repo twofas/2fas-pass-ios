@@ -48,7 +48,7 @@ struct EventLogView: View {
     private var generating: some View {
         Text("Generating ..." as String)
             .font(.title3)
-            .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+            .foregroundStyle(.labelSecondary)
     }
     
     @ViewBuilder
@@ -59,7 +59,7 @@ struct EventLogView: View {
                     .font(.caption2)
                     .fontWeight(.semibold)
                     .monospacedDigit()
-                    .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                    .foregroundStyle(.labelSecondary)
                 Spacer()
                 Text(verbatim: icons)
                     .font(.caption2)

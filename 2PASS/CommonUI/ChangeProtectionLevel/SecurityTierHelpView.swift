@@ -67,19 +67,19 @@ struct SecurityTierHelpView: View {
                             tierDescription(
                                 title: Text(.securityTiersHelpTiersSecretTitle),
                                 description: Text(.securityTiersHelpTiersSecretSubtitle),
-                                figure: Image(.secretTierFigure)
+                                figure: Image("secret.tier.figure", bundle: .main)
                             )
                             
                             tierDescription(
                                 title: Text(.securityTiersHelpTiersHighlySecretTitle),
                                 description: Text(.securityTiersHelpTiersHighlySecretSubtitle),
-                                figure: Image(.highlySecretTierFigure)
+                                figure: Image("highly.secret.tier.figure", bundle: .main)
                             )
                             
                             tierDescription(
                                 title: Text(.securityTiersHelpTiersTopSecretTitle),
                                 description: Text(.securityTiersHelpTiersTopSecretSubtitle),
-                                figure: Image(.topSecretTierFigure)
+                                figure: Image("top.secret.tier.figure", bundle: .main)
                             )
                         }
                     }

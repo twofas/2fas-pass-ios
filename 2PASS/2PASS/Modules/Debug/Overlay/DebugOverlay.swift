@@ -91,7 +91,7 @@ final class DebugOverlay {
                 }
             )
         )
-        overlayDebugView.view.backgroundColor = Asset.mainBackgroundColor.color
+        overlayDebugView.view.backgroundColor = UIColor(resource: .mainBackground)
         overlayDebugWindow?.rootViewController = overlayDebugView
     }
 }

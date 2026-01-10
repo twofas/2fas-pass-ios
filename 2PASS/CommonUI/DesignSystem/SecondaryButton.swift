@@ -26,7 +26,7 @@ public struct SecondaryButton: View {
                 .fontWeight(.medium)
                 .frame(maxWidth: .infinity, minHeight: minHeight)
                 .foregroundStyle(
-                    isEnabled ? Asset.accentColor.swiftUIColor : Asset.inactiveColor.swiftUIColor
+                    isEnabled ? .accent : .inactive
                 )
         }
     }

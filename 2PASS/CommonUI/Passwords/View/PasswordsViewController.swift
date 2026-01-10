@@ -46,7 +46,7 @@ final class PasswordsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = Asset.mainBackgroundColor.color
+        view.backgroundColor = UIColor(resource: .mainBackground)
 
         setupNavigationBar()
         setupPasswordsList()

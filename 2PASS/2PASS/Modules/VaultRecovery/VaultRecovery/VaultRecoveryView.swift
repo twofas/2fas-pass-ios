@@ -69,7 +69,7 @@ struct VaultRecoveryView: View {
         }
         .padding(.horizontal, Spacing.xl)
         .router(router: VaultRecoveryRouter(), destination: $presenter.destination)
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(.mainBackground)
         .readableContentMargins()
     }
 }

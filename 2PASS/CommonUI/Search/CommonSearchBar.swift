@@ -24,8 +24,8 @@ final class CommonSearchBar: UISearchBar {
         delegate = self
         barStyle = .default
         searchBarStyle = .minimal
-        tintColor = Asset.accentColor.color
-        barTintColor = Asset.accentColor.color
+        tintColor = UIColor(resource: .accent)
+        barTintColor = UIColor(resource: .accent)
         sizeToFit()
     }
     

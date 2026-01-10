@@ -12,7 +12,7 @@ struct EmptySearchView: View {
             Text(Image(systemName: "exclamationmark.magnifyingglass")) + Text(" ") + Text(.loginSearchNoResultsTitle)
         }
         .font(.subheadline)
-        .foregroundStyle(Asset.inactiveColor.swiftUIColor)
+        .foregroundStyle(.inactive)
     }
 }
 

@@ -78,7 +78,7 @@ struct GenerateContentView: View {
                     presentWarning = true
                 }
                 .padding(.vertical, Spacing.xl)
-                .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                .foregroundStyle(.destructiveAction)
 
                 Section {
                     Text("Tags count: \(presenter.tagsCount)" as String)
@@ -88,7 +88,7 @@ struct GenerateContentView: View {
                     presentTagsWarning = true
                 }
                 .padding(.vertical, Spacing.xl)
-                .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                .foregroundStyle(.destructiveAction)
             }
             .onAppear {
                 presenter.onAppear()

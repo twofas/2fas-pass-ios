@@ -58,10 +58,10 @@ struct BackupAddWebDAVView: View {
                 if let uriError = presenter.uriError {
                     HStack {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                            .foregroundStyle(.destructiveAction)
                         Text(uriError)
                             .font(.caption)
-                            .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                            .foregroundStyle(.mainText)
                     }
                 }
                 

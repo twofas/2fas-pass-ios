@@ -20,7 +20,7 @@ struct ItemEditorProtectionLevelSection: View {
             } label: {
                 HStack(spacing: Spacing.s) {
                     Text(.loginSecurityLevelLabel)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                        .foregroundStyle(.mainText)
 
                     Spacer()
                     
@@ -28,7 +28,7 @@ struct ItemEditorProtectionLevelSection: View {
                         .foregroundStyle(.neutral500)
                     
                     Image(systemName: "chevron.forward")
-                        .foregroundStyle(Asset.inactiveColor.swiftUIColor)
+                        .foregroundStyle(.inactive)
                 }
                 .contentShape(Rectangle())
             }

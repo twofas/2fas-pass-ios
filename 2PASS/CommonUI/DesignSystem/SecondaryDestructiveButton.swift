@@ -26,7 +26,7 @@ public struct SecondaryDestructiveButton: View {
                 .fontWeight(.medium)
                 .frame(maxWidth: .infinity, minHeight: minHeight)
                 .foregroundStyle(
-                    isEnabled ? Asset.destructiveActionColor.swiftUIColor : Asset.inactiveColor.swiftUIColor
+                    isEnabled ? .destructiveAction : .inactive
                 )
         }
     }

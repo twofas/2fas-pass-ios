@@ -20,7 +20,7 @@ struct ItemEditorTagsSection: View {
             } label: {
                 HStack {
                     Text(.loginSelectedTags)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                        .foregroundStyle(.mainText)
                     
                     Spacer()
                     
