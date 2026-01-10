@@ -51,12 +51,12 @@ struct SetupVaultView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.onboardingProgressStartTitle.localizedKey),
-                subtitle: Text(T.onboardingProgressStartDescription.localizedKey)
+                title: Text(.onboardingProgressStartTitle),
+                subtitle: Text(.onboardingProgressStartDescription)
             )
             
             VStack(spacing: 0) {
-                Text(T.onboardingProgressStepsHeader.localizedKey)
+                Text(.onboardingProgressStepsHeader)
                     .font(.footnote)
                     .foregroundStyle(.neutral500)
                     .padding(.bottom, Spacing.m)
@@ -64,8 +64,8 @@ struct SetupVaultView: View {
                     .animation(.easeInOut(duration: Constants.showTitleAnimationDuration), value: appearAnimation)
                 
                 OnboardingStepDimmedView(
-                    title: T.onboardingProgressStep1Title.localizedKey,
-                    subtitle: T.onboardingProgressStep1Description.localizedKey,
+                    title: .onboardingProgressStep1Title,
+                    subtitle: .onboardingProgressStep1Description,
                     isSelected: fisrstStepSelected
                 )
                 .offset(y: appearAnimation ? 0 : Constants.stepAppearVerticalOffset)
@@ -76,8 +76,8 @@ struct SetupVaultView: View {
                 .padding(.bottom, Spacing.s)
                 
                 OnboardingStepDimmedView(
-                    title: T.onboardingProgressStep2Title.localizedKey,
-                    subtitle: T.onboardingProgressStep2Description.localizedKey
+                    title: .onboardingProgressStep2Title,
+                    subtitle: .onboardingProgressStep2Description
                 )
                 .offset(y: appearAnimation ? 0 : Constants.stepAppearVerticalOffset)
                 .animation(.smooth.delay(Constants.secondStepAppearDelay), value: appearAnimation)
@@ -95,7 +95,7 @@ struct SetupVaultView: View {
             
             Spacer()
             
-            Button(T.commonContinue.localizedKey) {
+            Button(.commonContinue) {
                 presenter.onGetStartedTap()
             }
             .buttonStyle(.filled)

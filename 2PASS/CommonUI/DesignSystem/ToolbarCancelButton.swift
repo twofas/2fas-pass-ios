@@ -20,7 +20,7 @@ public struct ToolbarCancelButton: View {
             }
             .tint(nil)
         } else {
-            Button(T.commonCancel.localizedKey) {
+            Button(.commonCancel) {
                 action()
             }
         }

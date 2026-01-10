@@ -18,12 +18,12 @@ struct OnboardingInfoView: View {
                 .frame(height: 210)
             
             VStack(alignment: .leading, spacing: 0) {
-                Text(T.onboardingCreateMasterPasswordGuideTitle.localizedKey)
+                Text(.onboardingCreateMasterPasswordGuideTitle)
                     .foregroundStyle(.neutral950)
                     .font(.title1Emphasized)
                     .padding(.top, Spacing.xl)
                 
-                Text(T.onboardingCreateMasterPasswordGuideDescription.localizedKey)
+                Text(.onboardingCreateMasterPasswordGuideDescription)
                     .foregroundStyle(.neutral600)
                     .font(.subheadline)
                     .padding(.top, Spacing.s)
@@ -37,7 +37,7 @@ struct OnboardingInfoView: View {
                 
                 Spacer()
                 
-                Button(T.commonClose.localizedKey) {
+                Button(.commonClose) {
                     dismiss()
                 }
                 .buttonStyle(.filled)

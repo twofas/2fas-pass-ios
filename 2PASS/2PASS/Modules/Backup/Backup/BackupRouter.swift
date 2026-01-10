@@ -48,8 +48,8 @@ struct BackupRouter: Router {
             BackupExportFileRouter.buildView(onClose: onClose)
         case .upgradePlanPrompt(let itemsLimit):
             PremiumPromptRouter.buildView(
-                title: Text(T.paywallNoticeItemsLimitImportTitle.localizedKey),
-                description: Text(T.paywallNoticeItemsLimitImportMsg(itemsLimit))
+                title: Text(.paywallNoticeItemsLimitImportTitle),
+                description: Text(.paywallNoticeItemsLimitImportMsg(Int32(itemsLimit)))
             )
         case .schemaNotSupported(let schemaVersion, let onClose):
             BackupSchemaNotSupportedView(

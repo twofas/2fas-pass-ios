@@ -206,10 +206,10 @@ private extension AppSecurityPresenter {
             },
             formatter: {
                 switch $0 {
-                case .try3: T.lockoutSettingsAppLockAttemptsCount3
-                case .try5: T.lockoutSettingsAppLockAttemptsCount5
-                case .try10: T.lockoutSettingsAppLockAttemptsCount10
-                case .noLimit: T.lockoutSettingsAppLockAttemptsNoLimit
+                case .try3: String(localized: .lockoutSettingsAppLockAttemptsCount3)
+                case .try5: String(localized: .lockoutSettingsAppLockAttemptsCount5)
+                case .try10: String(localized: .lockoutSettingsAppLockAttemptsCount10)
+                case .noLimit: String(localized: .lockoutSettingsAppLockAttemptsNoLimit)
                 }
             }
         ))

@@ -37,12 +37,12 @@ struct PasswordGeneratorView: View {
                             .frame(minHeight: Constants.minHeightPassword)
                             
                             HStack(spacing: Spacing.xll) {
-                                Button(T.passwordGeneratorCopyCta.localizedKey, symbol: Image(.copyActionIcon).renderingMode(.template)) {
+                                Button(Text(.passwordGeneratorCopyCta), symbol: Image(.copyActionIcon).renderingMode(.template)) {
                                     presenter.onCopy()
                                 }
                                 .buttonStyle(.bezeled)
                                 
-                                Button(T.passwordGeneratorGenerateCta.localizedKey, symbol: Image(.generateIcon).renderingMode(.template)) {
+                                Button(Text(.passwordGeneratorGenerateCta), symbol: Image(.generateIcon).renderingMode(.template)) {
                                     presenter.onGenerate()
                                 }
                                 .buttonStyle(.bezeled)
@@ -53,7 +53,7 @@ struct PasswordGeneratorView: View {
                     
                     Section {
                         HStack {
-                            Text(T.passwordGeneratorCharacters.localizedKey)
+                            Text(.passwordGeneratorCharacters)
                             Spacer(minLength: 32)
                             Text(presenter.passwordLength, format: .number)
                                 .monospaced()
@@ -67,13 +67,13 @@ struct PasswordGeneratorView: View {
                             .sensoryFeedback(.selection, trigger: presenter.passwordLength)
                         }
                         
-                        Toggle(T.passwordGeneratorDigits.localizedKey, isOn: $presenter.hasDigits)
-                        Toggle(T.passwordGeneratorUppercaseCharacters.localizedKey, isOn: $presenter.hasUppercase)
-                        Toggle(T.passwordGeneratorSpecialCharacters.localizedKey, isOn: $presenter.hasSpecial)
+                        Toggle(.passwordGeneratorDigits, isOn: $presenter.hasDigits)
+                        Toggle(.passwordGeneratorUppercaseCharacters, isOn: $presenter.hasUppercase)
+                        Toggle(.passwordGeneratorSpecialCharacters, isOn: $presenter.hasSpecial)
                     }
 
                     Section {
-                        Button(T.passwordGeneratorUseCta.localizedKey) {
+                        Button(.passwordGeneratorUseCta) {
                             presenter.onUse()
                         }
                         .buttonStyle(.filled)
@@ -96,7 +96,7 @@ struct PasswordGeneratorView: View {
                 }
             }
             .toolbarTitleDisplayMode(.inline)
-            .navigationTitle(T.passwordGeneratorHeader.localizedKey)
+            .navigationTitle(.passwordGeneratorHeader)
         }
         .presentationDragIndicator(.hidden)
         .modify {

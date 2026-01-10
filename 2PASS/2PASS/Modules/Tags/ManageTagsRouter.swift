@@ -15,8 +15,8 @@ struct ManageTagsRouter: Router {
         case .addTag, .editTag: .sheet
         case .deleteConfirmation(let tagName, _): 
             .alert(
-                title: T.tagDeleteConfirmTitle.localized,
-                message: T.tagDeleteConfirmDescription(tagName)
+                title: String(localized: .tagDeleteConfirmTitle),
+                message: String(localized: .tagDeleteConfirmDescription(tagName))
             )
         case nil: nil
         }
@@ -30,8 +30,8 @@ struct ManageTagsRouter: Router {
         case .editTag(let tagID, let onClose):
             EditTagRouter.buildView(tagID: tagID, onClose: onClose)
         case .deleteConfirmation(_, let onConfirm):
-            Button(T.commonDelete.localizedKey, role: .destructive, action: onConfirm)
-            Button(T.commonCancel.localizedKey, role: .cancel) {}
+            Button(.commonDelete, role: .destructive, action: onConfirm)
+            Button(.commonCancel, role: .cancel) {}
         }
     }
 }

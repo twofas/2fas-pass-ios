@@ -21,14 +21,14 @@ struct ManageSubscriptionView: View {
     
     var body: some View {
         VStack {
-            SettingsDetailsForm(Text(T.settingsEntrySubscription.localizedKey)) {
+            SettingsDetailsForm(.settingsEntrySubscription) {
                 if let userIdentifier = presenter.userIdentifier{
                     userIdentifierSection(userIdentifier)
                 }
                 
                 Section {
                     HStack {
-                        Text(T.manageSubscriptionItemsTitle.localizedKey)
+                        Text(.manageSubscriptionItemsTitle)
                         
                         Spacer()
                         
@@ -41,7 +41,7 @@ struct ManageSubscriptionView: View {
                 
                 Section {
                     HStack {
-                        Text(T.manageSubscriptionBrowsersTitle.localizedKey)
+                        Text(.manageSubscriptionBrowsersTitle)
                         
                         Spacer()
                         
@@ -54,7 +54,7 @@ struct ManageSubscriptionView: View {
                 
                 Section {
                     HStack {
-                        Text(T.manageSubscriptionMultiDeviceSyncTitle.localizedKey)
+                        Text(.manageSubscriptionMultiDeviceSyncTitle)
                         
                         Spacer()
                         
@@ -81,12 +81,12 @@ struct ManageSubscriptionView: View {
                 SettingsIconView(icon: .app)
             },
             title: {
-                Text(T.manageSubscriptionTitle.localizedKey)
+                Text(.manageSubscriptionTitle)
             },
             description: {
                 VStack {
                     HStack(spacing: 0) {
-                        Text(T.manageSubscriptionPricePrefix.localizedKey)
+                        Text(.manageSubscriptionPricePrefix)
                         
                         if let price = presenter.renewPrice {
                             Text(price)
@@ -102,15 +102,15 @@ struct ManageSubscriptionView: View {
                     Group {
                         if let date = presenter.renewDate {
                             if presenter.willRenew {
-                                Text(T.manageSubscriptionRenewDatePrefix.localizedKey) + Text(date).bold()
+                                Text(.manageSubscriptionRenewDatePrefix) + Text(date).bold()
                             } else {
-                                Text(T.manageSubscriptionEndDatePrefix.localizedKey) + Text(date).bold()
+                                Text(.manageSubscriptionEndDatePrefix) + Text(date).bold()
                             }
                         }
                     }
                     .foregroundStyle(.neutral600)
                     
-                    Text(T.manageSubscriptionAppleInfo.localizedKey)
+                    Text(.manageSubscriptionAppleInfo)
                         .foregroundStyle(.neutral400)
                 }
             }
@@ -125,7 +125,7 @@ struct ManageSubscriptionView: View {
                 showUserIdentifierMenu = true
             } label: {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(T.manageSubscriptionUserIdentifierTitle.localizedKey)
+                    Text(.manageSubscriptionUserIdentifierTitle)
                         
                     Text(userIdentifier.withZeroWidthSpaces)
                         .font(.footnote)
@@ -137,7 +137,7 @@ struct ManageSubscriptionView: View {
             .listRowBackground(showUserIdentifierMenu == true ? Color.neutral100 : nil)
         }
         .editMenu($showUserIdentifierMenu, actions: [
-            UIAction(title: T.commonCopy, handler: { _ in
+            UIAction(title: String(localized: .commonCopy), handler: { _ in
                 presenter.onUserIdentifierCopy()
             })
         ])

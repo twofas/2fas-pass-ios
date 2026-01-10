@@ -46,7 +46,7 @@ struct SelectTagsView: View {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "plus")
                     
-                    Text(T.tagsAddNewCta.localizedKey)
+                    Text(.tagsAddNewCta)
                         .font(.body)
                     
                     Spacer()
@@ -56,7 +56,7 @@ struct SelectTagsView: View {
         }
         .overlay {
             if presenter.tags.isEmpty {
-                EmptyListView(Text(T.tagsEmptyList.localizedKey))
+                EmptyListView(Text(.tagsEmptyList))
             }
         }
         .navigationBarTitleDisplayMode(.inline)

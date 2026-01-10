@@ -20,7 +20,7 @@ struct BackupAddWebDAVRouter: Router {
     func routingType(for destination: BackupAddWebDAVRouteDestination?) -> RoutingType? {
         switch destination {
         case .disableCloudSyncConfirmation:
-            return .alert(title: T.webdavDisableIcloudConfirmTitle.localized, message: T.webdavDisableIcloudConfirmBody.localized)
+            return .alert(title: String(localized: .webdavDisableIcloudConfirmTitle), message: String(localized: .webdavDisableIcloudConfirmBody))
         case .upgradePlanPrompt:
              return .sheet
         default:
@@ -31,12 +31,12 @@ struct BackupAddWebDAVRouter: Router {
     func view(for destination: BackupAddWebDAVRouteDestination) -> some View {
         switch destination {
         case .disableCloudSyncConfirmation(let onConfirm):
-            Button(T.commonCancel.localizedKey, role: .cancel) {}
-            Button(T.commonConfirm.localizedKey, role: .destructive, action: onConfirm)
+            Button(.commonCancel, role: .cancel) {}
+            Button(.commonConfirm, role: .destructive, action: onConfirm)
         case .upgradePlanPrompt:
             PremiumPromptRouter.buildView(
-                title: Text(T.paywallNoticeBrowsersLimitTitle.localizedKey),
-                description: Text(T.paywallNoticeBrowsersLimitMsg.localizedKey)
+                title: Text(.paywallNoticeBrowsersLimitTitle),
+                description: Text(.paywallNoticeBrowsersLimitMsg)
             )
         }
     }

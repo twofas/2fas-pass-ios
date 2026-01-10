@@ -31,7 +31,7 @@ public struct CloseButton: View {
                     .foregroundStyle(.neutral600, colorScheme == .dark ? .neutral300 : .neutral100)
             }
         }
-        .accessibilityLabel(Text(T.commonClose.localizedKey))
+        .accessibilityLabel(Text(.commonClose))
         .modify {
             if #available(iOS 26, *) {
                 $0.buttonStyle(.glass)

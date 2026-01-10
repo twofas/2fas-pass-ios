@@ -10,10 +10,10 @@ import Common
 extension SortType {
     var label: String {
         switch self {
-        case .newestFirst: T.loginFilterModalSortCreationDateDesc
-        case .oldestFirst: T.loginFilterModalSortCreationDateAsc
-        case .az: T.loginFilterModalSortNameAsc
-        case .za: T.loginFilterModalSortNameDesc
+        case .newestFirst: String(localized: .loginFilterModalSortCreationDateDesc)
+        case .oldestFirst: String(localized: .loginFilterModalSortCreationDateAsc)
+        case .az: String(localized: .loginFilterModalSortNameAsc)
+        case .za: String(localized: .loginFilterModalSortNameDesc)
         }
     }
     

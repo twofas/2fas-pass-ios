@@ -30,7 +30,7 @@ struct TrashCell: View {
                         .lineLimit(1)
                 }
                 
-                Text(T.trashDeletedAt(data.deletedDate.formatted(date: .numeric, time: .standard)).localizedKey)
+                Text(.trashDeletedAt(data.deletedDate.formatted(date: .numeric, time: .standard)))
                     .lineLimit(1)
                     .font(.footnote)
                     .foregroundStyle(.neutral500)
@@ -44,7 +44,7 @@ struct TrashCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "arrow.2.squarepath")
-                        Text(T.trashRestore.localizedKey)
+                        Text(.trashRestore)
                     }
                 }
                 
@@ -53,7 +53,7 @@ struct TrashCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash")
-                        Text(T.trashRemovePermanently.localizedKey)
+                        Text(.trashRemovePermanently)
                     }
                 }
             } label: {

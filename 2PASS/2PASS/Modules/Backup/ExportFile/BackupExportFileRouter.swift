@@ -30,7 +30,7 @@ struct BackupExportFileRouter: Router {
         switch destination {
         case .shareFile(let url, let onComplete, let onError):
             ShareSheetView(
-                title: T.exportVaultTitle,
+                title: String(localized: .exportVaultTitle),
                 url: url,
                 activityComplete: onComplete,
                 activityError: onError

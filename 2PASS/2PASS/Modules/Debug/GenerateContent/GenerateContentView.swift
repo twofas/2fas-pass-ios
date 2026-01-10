@@ -98,7 +98,7 @@ struct GenerateContentView: View {
                 Button("Remove all" as String, role: .destructive) {
                     presenter.onRemoveAllItems()
                 }
-                Button(T.commonCancel.localizedKey, role: .cancel) {
+                Button(.commonCancel, role: .cancel) {
                     presentWarning = false
                 }
             })
@@ -106,7 +106,7 @@ struct GenerateContentView: View {
                 Button("Remove all" as String, role: .destructive) {
                     presenter.onRemoveAllTags()
                 }
-                Button(T.commonCancel.localizedKey, role: .cancel) {
+                Button(.commonCancel, role: .cancel) {
                     presentTagsWarning = false
                 }
             })

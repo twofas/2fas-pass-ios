@@ -32,7 +32,7 @@ struct VaultRecoveryRouter: Router {
         case .selectFile:
             EmptyView()
         case .errorReadingFile:
-            Button(T.commonOk.localizedKey) {}
+            Button(.commonOk) {}
         }
     }
     
@@ -43,7 +43,7 @@ struct VaultRecoveryRouter: Router {
         case .restoreFromFile: .push
         case .selectiCloudVault: .sheet
         case .restoreFromWebDAV: .push
-        case .errorReadingFile: .alert(title: T.vaultRecoveryErrorOpenFile, message: T.vaultRecoveryErrorOpenFileAccessExplain)
+        case .errorReadingFile: .alert(title: String(localized: .vaultRecoveryErrorOpenFile), message: String(localized: .vaultRecoveryErrorOpenFileAccessExplain))
         case nil: nil
         }
     }

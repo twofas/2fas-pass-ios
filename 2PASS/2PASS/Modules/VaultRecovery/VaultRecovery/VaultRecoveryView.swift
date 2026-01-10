@@ -15,8 +15,8 @@ struct VaultRecoveryView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.restoreVaultSourceTitle.localizedKey),
-                subtitle: Text(T.restoreVaultSourceDescription.localizedKey),
+                title: Text(.restoreVaultSourceTitle),
+                subtitle: Text(.restoreVaultSourceDescription),
                 icon: Image(systemName: "externaldrive.fill.badge.timemachine")
             )
             .padding(.vertical, Spacing.l)
@@ -26,8 +26,8 @@ struct VaultRecoveryView: View {
                     presenter.onRestoreFromCloud()
                 } label: {
                     OptionButtonLabel(
-                        title: Text(T.restoreVaultSourceOptionIcloud.localizedKey),
-                        subtitle: Text(T.restoreVaultSourceOptionIcloudDescription.localizedKey),
+                        title: Text(.restoreVaultSourceOptionIcloud),
+                        subtitle: Text(.restoreVaultSourceOptionIcloudDescription),
                         icon: {
                             Image(.iCloudLogo)
                         }
@@ -39,8 +39,8 @@ struct VaultRecoveryView: View {
                     presenter.onRestoreFromFile()
                 } label: {
                     OptionButtonLabel(
-                        title: Text(T.restoreVaultSourceOptionFile.localizedKey),
-                        subtitle: Text(T.restoreVaultSourceOptionFileDescription.localizedKey),
+                        title: Text(.restoreVaultSourceOptionFile),
+                        subtitle: Text(.restoreVaultSourceOptionFileDescription),
                         icon: {
                             Image(systemName: "folder.fill")
                                 .font(.system(size: 29))
@@ -53,8 +53,8 @@ struct VaultRecoveryView: View {
                     presenter.onRestoreFromWebDAV()
                 } label: {
                     OptionButtonLabel(
-                        title: Text(T.restoreVaultSourceOptionWebdav.localizedKey),
-                        subtitle: Text(T.restoreVaultSourceOptionWebdavDescription.localizedKey),
+                        title: Text(.restoreVaultSourceOptionWebdav),
+                        subtitle: Text(.restoreVaultSourceOptionWebdavDescription),
                         icon: {
                             Image(systemName: "cloud.fill")
                                 .font(.system(size: 33))

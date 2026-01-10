@@ -48,7 +48,7 @@ struct SettingsRowView<AdditionalInfo>: View where AdditionalInfo: View {
     
     init(
         icon: SettingsIcon? = nil,
-        title: LocalizedStringKey,
+        title: LocalizedStringResource,
         actionIcon: SettingsRowActionIcon? = .chevron,
         showBadge: Bool = false,
         @ViewBuilder additionalInfo: () -> AdditionalInfo
@@ -118,7 +118,7 @@ extension SettingsRowView where AdditionalInfo == EmptyView {
     
     init(
         icon: SettingsIcon? = nil,
-        title: LocalizedStringKey,
+        title: LocalizedStringResource,
         showBadge: Bool = false,
         actionIcon: SettingsRowActionIcon? = .chevron
     ) {
@@ -149,7 +149,7 @@ extension SettingsRowView where AdditionalInfo == Text {
     
     init(
         icon: SettingsIcon? = nil,
-        title: LocalizedStringKey,
+        title: LocalizedStringResource,
         actionIcon: SettingsRowActionIcon? = .chevron,
         showBadge: Bool = false,
         additionalInfo: Text

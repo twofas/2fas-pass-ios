@@ -9,7 +9,7 @@ import Common
 
 struct ItemDetailFormActionsRow<Value>: View where Value: View {
     
-    let key: LocalizedStringKey
+    let key: LocalizedStringResource
     let value: Value
     let actions: [UIAction]
 
@@ -19,7 +19,7 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
     @State
     private var isSelected = false
     
-    init(key: LocalizedStringKey, @ViewBuilder value: () -> Value, actions: () -> [UIAction]) {
+    init(key: LocalizedStringResource, @ViewBuilder value: () -> Value, actions: () -> [UIAction]) {
         self.key = key
         self.actions = actions()
         self.value = value()
@@ -53,8 +53,10 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
     }
     
     private var content: some View {
-        LabeledContent(key) {
+        LabeledContent {
             value
+        } label: {
+            Text(key)
         }
         .contentShape(Rectangle())
         .labeledContentStyle(.listCell(lineLimit: lineLimit))

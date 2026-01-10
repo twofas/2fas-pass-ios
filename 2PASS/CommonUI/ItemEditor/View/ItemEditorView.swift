@@ -43,7 +43,7 @@ struct ItemEditorFormView: View {
                     Button(role: .destructive) {
                         showDeleteConfirmation = true
                     } label: {
-                        Text(T.loginDeleteCta.localizedKey)
+                        Text(.loginDeleteCta)
                     }
                 }
                 .id(presenter.contentType)
@@ -58,33 +58,33 @@ struct ItemEditorFormView: View {
         .onDisappear {
             presenter.onDisappear()
         }
-        .alert(T.loginErrorSave.localizedKey, isPresented: $presenter.cantSave) {
-            Button(T.commonOk.localizedKey, role: .cancel) {
+        .alert(String(localized: .loginErrorSave), isPresented: $presenter.cantSave) {
+            Button(.commonOk, role: .cancel) {
                 presenter.cantSave = false
             }
         }
-        .alert(T.loginErrorEditedOtherDevice.localizedKey, isPresented: $presenter.passwordWasEdited) {
-            Button(T.commonClose.localizedKey, role: .cancel) {
+        .alert(String(localized: .loginErrorEditedOtherDevice), isPresented: $presenter.passwordWasEdited) {
+            Button(.commonClose, role: .cancel) {
                 presenter.onClose()
             }
         }
-        .alert(T.loginErrorDeletedOtherDevice.localizedKey, isPresented: $presenter.passwordWasDeleted) {
-            Button(T.commonClose.localizedKey, role: .cancel) {
+        .alert(String(localized: .loginErrorDeletedOtherDevice), isPresented: $presenter.passwordWasDeleted) {
+            Button(.commonClose, role: .cancel) {
                 presenter.onClose()
             }
         }
-        .alert(T.loginDeleteConfirmTitle.localizedKey, isPresented: $showDeleteConfirmation, actions: {
+        .alert(String(localized: .loginDeleteConfirmTitle), isPresented: $showDeleteConfirmation, actions: {
             Button(role: .destructive) {
                 presenter.onDelete()
             } label: {
-                Text(T.commonYes.localizedKey)
+                Text(.commonYes)
             }
 
             Button(role: .cancel) {} label: {
-                Text(T.commonNo.localizedKey)
+                Text(.commonNo)
             }
         }, message: {
-            Text(T.loginDeleteConfirmBody.localizedKey)
+            Text(.loginDeleteConfirmBody)
         })
     }
 }

@@ -17,7 +17,7 @@ struct KnownBrowsersRouter: Router {
     func routingType(for destination: KnownBrowsersDestination?) -> RoutingType? {
         switch destination {
         case .confirmDeletion:
-            .alert(title: T.knownBrowserDeleteDialogTitle, message: T.knownBrowserDeleteDialogBody)
+            .alert(title: String(localized: .knownBrowserDeleteDialogTitle), message: String(localized: .knownBrowserDeleteDialogBody))
         default:
             nil
         }
@@ -26,8 +26,8 @@ struct KnownBrowsersRouter: Router {
     func view(for destination: KnownBrowsersDestination) -> some View {
         switch destination {
         case .confirmDeletion(let onConfirm):
-            Button(T.knownBrowserDeleteButton.localizedKey, role: .destructive, action: onConfirm)
-            Button(T.commonCancel.localizedKey, role: .cancel, action: {})
+            Button(.knownBrowserDeleteButton, role: .destructive, action: onConfirm)
+            Button(.commonCancel, role: .cancel, action: {})
         }
     }
 }

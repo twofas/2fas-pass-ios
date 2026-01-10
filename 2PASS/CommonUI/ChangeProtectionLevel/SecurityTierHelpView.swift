@@ -19,11 +19,11 @@ struct SecurityTierHelpView: View {
                         Image(.tiersHelpHeader)
                             .padding(.vertical, Spacing.l)
                         
-                        Text(T.securityTiersHelpTitle.localizedKey)
+                        Text(.securityTiersHelpTitle)
                             .font(.title1Emphasized)
                             .foregroundStyle(.neutral950)
                         
-                        Text(T.securityTiersHelpSubtitle.localizedKey)
+                        Text(.securityTiersHelpSubtitle)
                             .font(.subheadline)
                             .foregroundStyle(.neutral600)
                     }
@@ -33,18 +33,18 @@ struct SecurityTierHelpView: View {
                     section {
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             sectionTitle {
-                                Text(T.securityTiersHelpLocalFirstSectionTitle.localizedKey)
+                                Text(.securityTiersHelpLocalFirstSectionTitle)
                             }
                             
                             sectionDescription {
-                                Text(T.securityTiersHelpLocalFirstSectionSubtitle.localizedKey)
+                                Text(.securityTiersHelpLocalFirstSectionSubtitle)
                             }
                         }
                         
                         highlight {
                             VStack(alignment: .leading, spacing: 0) {
                                 sectionHeadline {
-                                    Text(T.securityTiersHelpLocalFirstSectionFigureTitle.localizedKey)
+                                    Text(.securityTiersHelpLocalFirstSectionFigureTitle)
                                 }
                                 
                                 Image(.securityTiersLevelsFigure)
@@ -55,30 +55,30 @@ struct SecurityTierHelpView: View {
                     section {
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             sectionTitle {
-                                Text(T.securityTiersHelpTiersSectionTitle.localizedKey)
+                                Text(.securityTiersHelpTiersSectionTitle)
                             }
                             
                             sectionDescription {
-                                Text(T.securityTiersHelpTiersSectionSubtitle.localizedKey)
+                                Text(.securityTiersHelpTiersSectionSubtitle)
                             }
                         }
                         
                         VStack(alignment: .leading, spacing: Spacing.l) {
                             tierDescription(
-                                title: Text(T.securityTiersHelpTiersSecretTitle.localizedKey),
-                                description: Text(T.securityTiersHelpTiersSecretSubtitle.localizedKey),
+                                title: Text(.securityTiersHelpTiersSecretTitle),
+                                description: Text(.securityTiersHelpTiersSecretSubtitle),
                                 figure: Image(.secretTierFigure)
                             )
                             
                             tierDescription(
-                                title: Text(T.securityTiersHelpTiersHighlySecretTitle.localizedKey),
-                                description: Text(T.securityTiersHelpTiersHighlySecretSubtitle.localizedKey),
+                                title: Text(.securityTiersHelpTiersHighlySecretTitle),
+                                description: Text(.securityTiersHelpTiersHighlySecretSubtitle),
                                 figure: Image(.highlySecretTierFigure)
                             )
                             
                             tierDescription(
-                                title: Text(T.securityTiersHelpTiersTopSecretTitle.localizedKey),
-                                description: Text(T.securityTiersHelpTiersTopSecretSubtitle.localizedKey),
+                                title: Text(.securityTiersHelpTiersTopSecretTitle),
+                                description: Text(.securityTiersHelpTiersTopSecretSubtitle),
                                 figure: Image(.topSecretTierFigure)
                             )
                         }
@@ -86,22 +86,22 @@ struct SecurityTierHelpView: View {
                     
                     section {
                         sectionTitle {
-                            Text(T.securityTiersHelpLayersSectionTitle.localizedKey)
+                            Text(.securityTiersHelpLayersSectionTitle)
                         }
                         
                         layerDescription(
-                            title: Text(T.securityTiersHelpTiersLayersE2eeTitle.localizedKey),
-                            description: Text(T.securityTiersHelpTiersLayersE2eeSubtitle.localizedKey),
+                            title: Text(.securityTiersHelpTiersLayersE2EeTitle),
+                            description: Text(.securityTiersHelpTiersLayersE2EeSubtitle)
                         )
                         
                         layerDescription(
-                            title: Text(T.securityTiersHelpTiersLayersSecureEnclaveTitle.localizedKey),
-                            description: Text(T.securityTiersHelpTiersLayersSecureEnclaveSubtitle.localizedKey),
+                            title: Text(.securityTiersHelpTiersLayersSecureEnclaveTitle),
+                            description: Text(.securityTiersHelpTiersLayersSecureEnclaveSubtitle)
                         )
                         
                         layerDescription(
-                            title: Text(T.securityTiersHelpTiersLayersAdpTitle.localizedKey),
-                            description: Text(T.securityTiersHelpTiersLayersAdpSubtitle.localizedKey),
+                            title: Text(.securityTiersHelpTiersLayersAdpTitle),
+                            description: Text(.securityTiersHelpTiersLayersAdpSubtitle)
                         )
                     }
                 }

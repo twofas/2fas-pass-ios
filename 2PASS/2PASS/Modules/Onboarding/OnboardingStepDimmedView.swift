@@ -8,15 +8,15 @@ import SwiftUI
 import CommonUI
 
 struct OnboardingStepDimmedView: View {
-    let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey
+    let title: LocalizedStringResource
+    let subtitle: LocalizedStringResource
     let isSelected: Bool
     let isChecked: Bool
     let isTitleStrikethrough: Bool
     let areTextsGreyedOut: Bool
     
-    init(title: LocalizedStringKey,
-         subtitle: LocalizedStringKey,
+    init(title: LocalizedStringResource,
+         subtitle: LocalizedStringResource,
          isSelected: Bool = false,
          isChecked: Bool = false,
          isTitleStrikethrough: Bool = false,

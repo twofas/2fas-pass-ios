@@ -55,7 +55,7 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showEmptyScreen() {
-        VoiceOver.say(T.homeEmptyTitle)
+        VoiceOver.say(String(localized: .homeEmptyTitle))
         guard emptyList?.isHidden == true else { return }
         
         emptyList?.alpha = 0
@@ -69,7 +69,7 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showSearchEmptyScreen() {
-        VoiceOver.say(T.loginSearchNoResultsTitle)
+        VoiceOver.say(String(localized: .loginSearchNoResultsTitle))
         
         emptySearchList?.alpha = 0
         emptySearchList?.isHidden = false

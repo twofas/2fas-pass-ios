@@ -14,18 +14,18 @@ struct AutofillSettingsView: View {
         
     var body: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(T.settingsEntryAutofill.localizedKey) {
+            SettingsDetailsForm(.settingsEntryAutofill) {
                 Section {
-                    Toggle(T.settingsAutofillService.localizedKey, isOn: $presenter.isEnabled)
+                    Toggle(.settingsAutofillService, isOn: $presenter.isEnabled)
                         .tint(.accentColor)
                 } footer: {
-                    Text(T.settingsAutofillServiceDescription.localizedKey)
+                    Text(.settingsAutofillServiceDescription)
                         .settingsFooter()
                 }
             }
             
             SettingsSystemLinkButton(
-                description: Text(T.settingsAutofillOpenSystemSettingsDescription.localizedKey),
+                description: Text(.settingsAutofillOpenSystemSettingsDescription),
                 action: {
                     presenter.onSystemSettings()
                 }

@@ -65,7 +65,7 @@ extension VaultRecoveryEnterPasswordPresenter {
         }
         interactor.masterPasswordToMasterKey(password) { [weak self] masterKey in
             guard let self, let masterKey else {
-                self?.destination = .masterPasswordError(message: T.lockScreenUnlockInvalidPassword)
+                self?.destination = .masterPasswordError(message: String(localized: .lockScreenUnlockInvalidPassword))
                 return
             }
             

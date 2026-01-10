@@ -55,15 +55,15 @@ struct CameraViewport: UIViewRepresentable {
             let errorReason: String? = {
                 switch reason {
                 case .videoDeviceInUseByAnotherClient:
-                    return T.cameraErrorOtherAppUsesCamera
+                    return String(localized: .cameraErrorOtherAppUsesCamera)
                 case .videoDeviceNotAvailableDueToSystemPressure:
-                    return T.cameraErrorSystemOverload
+                    return String(localized: .cameraErrorSystemOverload)
                 case .videoDeviceNotAvailableWithMultipleForegroundApps:
-                    return T.cameraErrorSplitMode
+                    return String(localized: .cameraErrorSplitMode)
                 case .videoDeviceNotAvailableInBackground:
                     camera?.stop()
                     return nil
-                default: return T.cameraErrorGeneral
+                default: return String(localized: .cameraErrorGeneral)
                 }
             }()
             parent.didRegisterError(errorReason)

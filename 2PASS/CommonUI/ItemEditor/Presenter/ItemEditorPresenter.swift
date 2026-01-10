@@ -32,17 +32,17 @@ final class ItemEditorPresenter {
     var title: String {
         switch (contentType, isEdit) {
         case (.login, false):
-            T.loginAddTitle
+            String(localized: .loginAddTitle)
         case (.login, true):
-            T.loginEditTitle
+            String(localized: .loginEditTitle)
         case (.secureNote, false):
-            T.secureNoteAddTitle
+            String(localized: .secureNoteAddTitle)
         case (.secureNote, true):
-            T.secureNoteEditTitle
+            String(localized: .secureNoteEditTitle)
         case (.paymentCard, false):
-            T.cardAddTitle
+            String(localized: .cardAddTitle)
         case (.paymentCard, true):
-            T.cardEditTitle
+            String(localized: .cardEditTitle)
         case (.unknown, _):
             ""
         }

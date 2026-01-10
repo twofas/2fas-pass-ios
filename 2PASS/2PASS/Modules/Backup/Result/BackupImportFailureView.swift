@@ -15,10 +15,10 @@ struct BackupImportFailureView: View {
     var body: some View {
         ResultView(
             kind: .failure,
-            title: Text(T.backupImportingFailureTitle),
-            description: Text(T.backupImportingFailureDescription),
+            title: Text(.backupImportingFailureTitle),
+            description: Text(.backupImportingFailureDescription),
             action: {
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     onClose()
                 }
             }

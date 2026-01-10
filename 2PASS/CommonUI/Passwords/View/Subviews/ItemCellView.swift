@@ -216,7 +216,7 @@ private extension ItemCellView {
                 guard uris.isEmpty == false else { continue }
                 list.append(
                     UIMenu(
-                        title: T.loginViewActionUrisTitle,
+                        title: String(localized: .loginViewActionUrisTitle),
                         image: action.icon,
                         children: [UIDeferredMenuElement.uncached { [weak self] completion in
                             completion(self?.urisSubmenu(for: uris, itemID: cellData.itemID) ?? [])

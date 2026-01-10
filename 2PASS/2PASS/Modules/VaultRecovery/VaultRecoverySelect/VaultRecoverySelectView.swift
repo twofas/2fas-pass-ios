@@ -17,8 +17,8 @@ struct VaultRecoverySelectView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.restoreDecryptVaultTitle.localizedKey),
-                subtitle: Text(T.restoreDecryptVaultDescription.localizedKey),
+                title: Text(.restoreDecryptVaultTitle),
+                subtitle: Text(.restoreDecryptVaultDescription),
                 icon: {
                     Image(systemName: "lock.rectangle.stack.fill")
                         .foregroundStyle(.brand500, .brand100)

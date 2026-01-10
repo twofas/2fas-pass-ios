@@ -63,7 +63,7 @@ final class SyncPresenter {
     }
     
     var webDAVEnableStatus: String {
-        isWebDAVEnabled ? T.commonEnabled : T.commonDisabled
+        isWebDAVEnabled ? String(localized: .commonEnabled) : String(localized: .commonDisabled)
     }
     
     private(set) var status: String?
@@ -161,26 +161,26 @@ struct WebDAVStatusFormatStyle: FormatStyle {
     
     func format(_ value: WebDAVState) -> String {
         switch value {
-        case .synced: T.syncStatusSynced
-        case .syncing: T.syncStatusSyncing
-        case .idle: T.syncStatusIdle
+        case .synced: String(localized: .syncStatusSynced)
+        case .syncing: String(localized: .syncStatusSyncing)
+        case .idle: String(localized: .syncStatusIdle)
         case .error(let error):
             switch error {
-            case .forbidden: T.syncStatusErrorForbidden
-            case .methodNotAllowed: T.syncStatusErrorMethodNotAllowed
+            case .forbidden: String(localized: .syncStatusErrorForbidden)
+            case .methodNotAllowed: String(localized: .syncStatusErrorMethodNotAllowed)
             case .networkError(let networkError): networkError
-            case .notConfigured: T.syncStatusErrorNotConfigured
-            case .limitDevicesReached: T.syncStatusErrorLimitDevicesReached
+            case .notConfigured: String(localized: .syncStatusErrorNotConfigured)
+            case .limitDevicesReached: String(localized: .syncStatusErrorLimitDevicesReached)
             case .serverError(let serverError): serverError
-            case .sslError: T.syncStatusErrorSslError
+            case .sslError: String(localized: .syncStatusErrorSslError)
             case .syncError(let syncError): syncError ?? error.localizedDescription
-            case .unauthorized: T.syncStatusErrorUnauthorized
+            case .unauthorized: String(localized: .syncStatusErrorUnauthorized)
             case .urlError(let urlError): urlError
-            case .passwordChanged: T.syncStatusErrorPasswordChanged
-            case .schemaNotSupported(let schemaVersion): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
+            case .passwordChanged: String(localized: .syncStatusErrorPasswordChanged)
+            case .schemaNotSupported(let schemaVersion): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
             }
         case .retry(let reason):
-            reason.map { "\(T.syncStatusRetry) \($0)" } ?? T.syncStatusRetry
+            reason.map { "\(String(localized: .syncStatusRetry)) \($0)" } ?? String(localized: .syncStatusRetry)
             
         }
     }
@@ -189,9 +189,9 @@ struct WebDAVStatusFormatStyle: FormatStyle {
 private extension CloudState.Sync {
     var description: String {
         switch self {
-        case .syncing: T.syncSyncing
-        case .synced: T.syncSynced
-        case .outOfSync(.schemaNotSupported(let schemaVersion)): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
+        case .syncing: String(localized: .syncSyncing)
+        case .synced: String(localized: .syncSynced)
+        case .outOfSync(.schemaNotSupported(let schemaVersion)): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
         }
     }
 }
@@ -199,9 +199,9 @@ private extension CloudState.Sync {
 private extension CloudState {
     var description: String {
         switch self {
-        case .unknown: T.syncChecking
-        case .enabledNotAvailable(let reason): T.syncNotAvailable + "\n" + reason.description
-        case .disabled: T.syncDisabled
+        case .unknown: String(localized: .syncChecking)
+        case .enabledNotAvailable(let reason): String(localized: .syncNotAvailable) + "\n" + reason.description
+        case .disabled: String(localized: .syncDisabled)
         case .enabled(let sync): sync.description
         }
     }
@@ -210,24 +210,24 @@ private extension CloudState {
 private extension CloudState.NotAvailableReason {
     var description: String {
         switch self {
-        case .overQuota: T.syncErrorIcloudQuota
-        case .disabledByUser: T.syncErrorIcloudDisabled
+        case .overQuota: String(localized: .syncErrorIcloudQuota)
+        case .disabledByUser: String(localized: .syncErrorIcloudDisabled)
         case .error(let error):
             if let error {
                 if let error = error as? MergeHandlerError, let description = error.description {
-                    T.syncErrorIcloudErrorDetails(description)
+                    String(localized: .syncErrorIcloudErrorDetails(description))
                 } else {
-                    T.syncErrorIcloudErrorDetails(error)
+                    String(localized: .syncErrorIcloudErrorDetails(error.localizedDescription))
                 }
             } else {
-                T.syncErrorIcloudError
+                String(localized: .syncErrorIcloudError)
             }
-        case .useriCloudProblem: T.syncErrorIcloudErrorUserLoggedIn
-        case .other: T.syncErrorIcloudErrorReboot
-        case .schemaNotSupported(let schemaVersion): T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
-        case .incorrectEncryption: T.syncErrorIcloudErrorDiffrentEncryption
-        case .noAccount: T.syncErrorIcloudErrorNoAccount
-        case .restricted: T.syncErrorIcloudErrorAccessRestricted
+        case .useriCloudProblem: String(localized: .syncErrorIcloudErrorUserLoggedIn)
+        case .other: String(localized: .syncErrorIcloudErrorReboot)
+        case .schemaNotSupported(let schemaVersion): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
+        case .incorrectEncryption: String(localized: .syncErrorIcloudErrorDiffrentEncryption)
+        case .noAccount: String(localized: .syncErrorIcloudErrorNoAccount)
+        case .restricted: String(localized: .syncErrorIcloudErrorAccessRestricted)
         }
     }
 }
@@ -235,11 +235,11 @@ private extension CloudState.NotAvailableReason {
 private extension MergeHandlerError {
     var description: String? {
         switch self {
-        case .schemaNotSupported: T.syncErrorIcloudErrorNewerVersion
-        case .noLocalVault: T.generalErrorNoLocalVault
-        case .incorrectEncryption: T.syncErrorIcloudVaultEncryptionRestore
-        case .mergeError: T.syncErrorIcloudMergeError
-        case .syncNotAllowed: T.syncErrorIcloudSyncNotAllowedDescription
+        case .schemaNotSupported: String(localized: .syncErrorIcloudErrorNewerVersion)
+        case .noLocalVault: String(localized: .generalErrorNoLocalVault)
+        case .incorrectEncryption: String(localized: .syncErrorIcloudVaultEncryptionRestore)
+        case .mergeError: String(localized: .syncErrorIcloudMergeError)
+        case .syncNotAllowed: String(localized: .syncErrorIcloudSyncNotAllowedDescription)
         case .missingEncryption: nil
         }
     }

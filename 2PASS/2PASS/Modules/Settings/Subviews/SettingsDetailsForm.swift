@@ -22,7 +22,7 @@ struct SettingsDetailsForm<Content, Header>: View where Content: View, Header: V
         self.header = header()
     }
     
-    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content, @ViewBuilder header: () -> Header) {
+    init(_ title: LocalizedStringResource, @ViewBuilder content: () -> Content, @ViewBuilder header: () -> Header) {
         self.title = Text(title)
         self.content = content()
         self.header = header()
@@ -76,7 +76,7 @@ extension SettingsDetailsForm where Header == EmptyView {
         self.header = EmptyView()
     }
     
-    init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+    init(_ title: LocalizedStringResource, @ViewBuilder content: () -> Content) {
         self.title = Text(title)
         self.content = content()
         self.header = EmptyView()

@@ -33,7 +33,7 @@ struct ConnectIntroView: View {
             }
             
             VStack(spacing: Spacing.xll) {
-                Text(T.connectIntroHeader.localizedKey)
+                Text(.connectIntroHeader)
                     .font(.title2Emphasized)
                     .foregroundStyle(.neutral950)
                 
@@ -41,7 +41,7 @@ struct ConnectIntroView: View {
                     openURL(presenter.learnMoreURL)
                 } label: {
                     HStack(spacing: Spacing.xs) {
-                        Text(T.connectIntroLearnMoreCta.localizedKey)
+                        Text(.connectIntroLearnMoreCta)
                         Image(systemName: "arrow.up.right")
                     }
                 }
@@ -54,7 +54,7 @@ struct ConnectIntroView: View {
             
             Spacer()
             
-            Button(T.commonContinue.localizedKey) {
+            Button(.commonContinue) {
                 presenter.onContinue()
             }
             .buttonStyle(.filled)

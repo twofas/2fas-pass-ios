@@ -26,7 +26,7 @@ struct VaultRecoveryEnterPasswordView: View {
                         Asset.smallShield.swiftUIImage
                             .padding(.bottom, Spacing.xl)
                             .padding(.top, Spacing.m)
-                        Text(T.restoreVaultVerifyMasterPasswordDescription.localizedKey)
+                        Text(.restoreVaultVerifyMasterPasswordDescription)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, Spacing.xll2)
                     }
@@ -39,7 +39,7 @@ struct VaultRecoveryEnterPasswordView: View {
                 .listSectionSpacing(0)
                 
                 Section {
-                    SecureInput(label: T.masterPasswordLabel.localizedResource, value: $presenter.password)
+                    SecureInput(label: .masterPasswordLabel, value: $presenter.password)
                         .focused($focusedField, equals: .password)
                         .onSubmit {
                             presenter.onDecrypt()
@@ -54,7 +54,7 @@ struct VaultRecoveryEnterPasswordView: View {
             .scrollContentBackground(.hidden)
             
             VStack {
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     presenter.onDecrypt()
                 }
                 .disabled(!presenter.isPasswordAvailable)

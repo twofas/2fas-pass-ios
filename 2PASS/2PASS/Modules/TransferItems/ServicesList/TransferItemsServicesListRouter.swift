@@ -34,8 +34,8 @@ struct TransferItemsServicesListRouter: Router {
             TransferItemsInstructionsRouter.buildView(for: externalService, onClose: onClose)
         case .upgradePlanPrompt(let itemsLimit):
             PremiumPromptRouter.buildView(
-                title: Text(T.paywallNoticeItemsLimitTransferTitle.localizedKey),
-                description: Text(T.paywallNoticeItemsLimitTransferMsg(itemsLimit))
+                title: Text(.paywallNoticeItemsLimitTransferTitle),
+                description: Text(.paywallNoticeItemsLimitTransferMsg(Int32(itemsLimit)))
             )
         }
     }

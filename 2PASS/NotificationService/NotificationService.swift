@@ -17,8 +17,8 @@ final class NotificationService: UNNotificationServiceExtension {
                 
         Task {
             if let bestAttemptContent {
-                bestAttemptContent.title = T.pushBrowserRequestTitle
-                bestAttemptContent.body = T.pushBrowserRequestGenericMessage
+                bestAttemptContent.title = String(localized: .pushBrowserRequestTitle)
+                bestAttemptContent.body = String(localized: .pushBrowserRequestGenericMessage)
                 bestAttemptContent.sound = .default
                 bestAttemptContent.interruptionLevel = .timeSensitive
                 

@@ -38,8 +38,8 @@ struct SecureNoteEditorFormView: View {
         .listRowBackground(Color.clear)
         
         Section {
-            LabeledInput(label: T.secureNoteNameLabel.localizedKey, fieldWidth: $fieldWidth) {
-                TextField(T.loginNameLabel.localizedKey, text: $presenter.name)
+            LabeledInput(label: String(localized: .secureNoteNameLabel), fieldWidth: $fieldWidth) {
+                TextField(String(localized: .loginNameLabel), text: $presenter.name)
             }
             .formFieldChanged(presenter.nameChanged)
         }
@@ -61,7 +61,7 @@ struct SecureNoteEditorFormView: View {
                         focusField = .notes
                     }
             } else {
-                LockButton(text: Text(T.secureNoteTextRevealEditAction.localizedKey)) {
+                LockButton(text: Text(.secureNoteTextRevealEditAction)) {
                     withAnimation {
                         presenter.isReveal = true
                         focusField = .notes
@@ -71,7 +71,7 @@ struct SecureNoteEditorFormView: View {
             }
 
         } header: {
-            Text(T.secureNoteTextLabel.localizedKey)
+            Text(.secureNoteTextLabel)
         }
         .listSectionSpacing(Spacing.l)
         .sensoryFeedback(.selection, trigger: presenter.isReveal) { _, newValue in
@@ -97,7 +97,7 @@ struct SecureNoteEditorFormView: View {
                         focusField = .additionalInfo
                     }
             } header: {
-                Text(T.secureNoteAdditionalInfoLabel.localizedKey)
+                Text(.secureNoteAdditionalInfoLabel)
             }
         }
     }

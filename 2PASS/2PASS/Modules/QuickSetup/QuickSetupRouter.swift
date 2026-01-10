@@ -42,8 +42,8 @@ struct QuickSetupRouter: Router {
             .tint(.accentColor)
         case .syncNotAllowed:
             PremiumPromptRouter.buildView(
-                title: Text(T.syncErrorIcloudSyncNotAllowedTitle.localizedKey),
-                description: Text(T.syncErrorIcloudSyncNotAllowedDescription.localizedKey)
+                title: Text(.syncErrorIcloudSyncNotAllowedTitle),
+                description: Text(.syncErrorIcloudSyncNotAllowedDescription)
             )
         }
     }

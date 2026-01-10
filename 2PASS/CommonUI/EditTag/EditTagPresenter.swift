@@ -13,7 +13,7 @@ final class EditTagPresenter {
     var name: String = ""
     var selectedColor: ItemTagColor
     var isEditMode: Bool { tagID != nil }
-    var navigationTitle: String { isEditMode ? T.tagEditorEditTitle : T.tagEditorNewTitle }
+    var navigationTitle: LocalizedStringResource { isEditMode ? .tagEditorEditTitle : .tagEditorNewTitle }
 
     init(interactor: EditTagModuleInteracting, tagID: ItemTagID? = nil, onClose: @escaping Callback) {
         self.interactor = interactor

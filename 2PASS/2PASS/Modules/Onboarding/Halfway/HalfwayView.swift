@@ -44,19 +44,19 @@ struct HalfwayView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.onboardingProgressHalfwayTitle.localizedKey),
-                subtitle: Text(T.onboardingProgressHalfwayDescription.localizedKey)
+                title: Text(.onboardingProgressHalfwayTitle),
+                subtitle: Text(.onboardingProgressHalfwayDescription)
             )
             
             VStack(spacing: 0) {
-                Text(T.onboardingProgressStepsHeader.localizedKey)
+                Text(.onboardingProgressStepsHeader)
                     .font(.footnote)
                     .foregroundStyle(.neutral500)
                     .padding(.bottom, Spacing.m)
                 
                 OnboardingStepDimmedView(
-                    title: T.onboardingProgressStep1Title.localizedKey,
-                    subtitle: T.onboardingProgressStep1Description.localizedKey,
+                    title: .onboardingProgressStep1Title,
+                    subtitle: .onboardingProgressStep1Description,
                     isChecked: firstStepCompleted,
                     isTitleStrikethrough: false,
                     areTextsGreyedOut: selectedStep == 1
@@ -65,8 +65,8 @@ struct HalfwayView: View {
                 .padding(.bottom, Spacing.s)
                 
                 OnboardingStepDimmedView(
-                    title: T.onboardingProgressStep2Title.localizedKey,
-                    subtitle: T.onboardingProgressStep2Description.localizedKey,
+                    title: .onboardingProgressStep2Title,
+                    subtitle: .onboardingProgressStep2Description,
                     isSelected: false
                 )
                 .opacity(selectedStep == 1 ? 1 : Constants.unselectedStepOpacity)
@@ -90,7 +90,7 @@ struct HalfwayView: View {
             
             Spacer()
             
-            Button(T.onboardingCreateMasterPasswordTitle.localizedKey) {
+            Button(.onboardingCreateMasterPasswordTitle) {
                 presenter.onCreateMasterPasswordTap()
             }
             .buttonStyle(.filled)

@@ -26,10 +26,10 @@ struct PaymentCardDetailFormView: View {
 
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(
-                    key: T.cardHolderLabel.localizedKey,
+                    key: .cardHolderLabel,
                     value: { Text(cardHolder) },
                     actions: {[
-                        UIAction(title: T.cardViewActionCopyCardHolder) { _ in
+                        UIAction(title: String(localized: .cardViewActionCopyCardHolder)) { _ in
                             presenter.onCopyCardHolder()
                         }
                     ]}
@@ -44,7 +44,7 @@ struct PaymentCardDetailFormView: View {
 
             if let cardNumber = presenter.cardNumber {
                 ItemDetailFormActionsRow(
-                    key: T.cardNumberLabel.localizedKey,
+                    key: .cardNumberLabel,
                     value: {
                         SecureContainerView {
                             HStack {
@@ -56,7 +56,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     },
                     actions: {[
-                        UIAction(title: T.cardViewActionCopyCardNumber) { _ in
+                        UIAction(title: String(localized: .cardViewActionCopyCardNumber)) { _ in
                             presenter.onCopyCardNumber()
                         }
                     ]}
@@ -71,10 +71,10 @@ struct PaymentCardDetailFormView: View {
 
             if let expirationDate = presenter.expirationDate {
                 ItemDetailFormActionsRow(
-                    key: T.cardExpirationDateLabel.localizedKey,
+                    key: .cardExpirationDateLabel,
                     value: { Text(expirationDate) },
                     actions: {[
-                        UIAction(title: T.cardViewActionCopyExpirationDate) { _ in
+                        UIAction(title: String(localized: .cardViewActionCopyExpirationDate)) { _ in
                             presenter.onCopyExpirationDate()
                         }
                     ]}
@@ -89,7 +89,7 @@ struct PaymentCardDetailFormView: View {
 
             if let securityCode = presenter.securityCode {
                 ItemDetailFormActionsRow(
-                    key: T.cardSecurityCodeLabel.localizedKey,
+                    key: .cardSecurityCodeLabel,
                     value: {
                         SecureContainerView {
                             HStack {
@@ -99,7 +99,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     },
                     actions: {[
-                        UIAction(title: T.cardViewActionCopySecurityCode) { _ in
+                        UIAction(title: String(localized: .cardViewActionCopySecurityCode)) { _ in
                             presenter.onCopySecurityCode()
                         }
                     ]}

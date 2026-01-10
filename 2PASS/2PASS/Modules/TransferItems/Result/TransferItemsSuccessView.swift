@@ -15,10 +15,10 @@ struct TransferItemsSuccessView: View {
     var body: some View {
         ResultView(
             kind: .success,
-            title: Text(T.transferImportingSuccessTitle.localizedKey),
-            description: Text(T.transferImportingSuccessDescription.localizedKey),
+            title: Text(.transferImportingSuccessTitle),
+            description: Text(.transferImportingSuccessDescription),
             action: {
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     onClose()
                 }
             }

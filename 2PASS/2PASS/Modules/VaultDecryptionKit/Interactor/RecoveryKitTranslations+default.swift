@@ -10,11 +10,11 @@ import Data
 extension RecoveryKitTranslations {
     static var `default`: RecoveryKitTranslations {
         RecoveryKitTranslations(
-            title: T.recoveryKitTitle,
-            author: T.recoveryKitAuthor,
-            creator: T.recoveryKitCreator,
-            header: T.recoveryKitHeader,
-            writeDown: T.recoveryKitWriteDown
+            title: String(localized: .recoveryKitTitle),
+            author: String(localized: .recoveryKitAuthor),
+            creator: String(localized: .recoveryKitCreator),
+            header: String(localized: .recoveryKitHeader),
+            writeDown: String(localized: .recoveryKitWriteDown)
         )
     }
 }

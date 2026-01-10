@@ -71,7 +71,7 @@ extension BackupAddWebDAVPresenter {
     
     func onConnect() {
         guard let normalizedURL = interactor.normalizeURL(url) else {
-            uriError = T.syncStatusErrorWrongDirectoryUrl
+            uriError = String(localized: .syncStatusErrorWrongDirectoryUrl)
             isLoading = false
             isEditable = true
             return
@@ -121,46 +121,46 @@ extension BackupAddWebDAVPresenter {
             uriError = nil
             isEditable = false
         case .unauthorized:
-            uriError = T.syncStatusErrorNotAuthorized
+            uriError = String(localized: .syncStatusErrorNotAuthorized)
         case .forbidden:
-            uriError = T.syncStatusErrorUserIsForbidden
+            uriError = String(localized: .syncStatusErrorUserIsForbidden)
         case .syncError(let string):
             uriError = {
                 if let string {
-                    return T.syncStatusErrorGeneralReason(string)
+                    return String(localized: .syncStatusErrorGeneralReason(string))
                 }
-                return T.commonGeneralErrorTryAgain
+                return String(localized: .commonGeneralErrorTryAgain)
             }()
         case .retrying(let string):
             isLoading = true
             uriError = {
                 if let string {
-                    return T.syncStatusRetryingDetails(string)
+                    return String(localized: .syncStatusRetryingDetails(string))
                 }
-                return T.syncStatusRetrying
+                return String(localized: .syncStatusRetrying)
             }()
             isEditable = false
         case .networkError(let string):
-            uriError = T.generalNetworkErrorDetails(string)
+            uriError = String(localized: .generalNetworkErrorDetails(string))
             isEditable = false
         case .serverError(let string):
-            uriError = T.generalServerErrorDetails(string)
+            uriError = String(localized: .generalServerErrorDetails(string))
         case .synced:
             uriError = nil
             isConnected = true
             isEditable = false
         case .urlError:
-            uriError = T.syncStatusErrorIncorrectUrl
+            uriError = String(localized: .syncStatusErrorIncorrectUrl)
         case .sslError:
-            uriError = T.syncStatusErrorTlsCertFailed
+            uriError = String(localized: .syncStatusErrorTlsCertFailed)
         case .methodNotAllowed:
-            uriError = T.syncStatusErrorNoWebDavServer
+            uriError = String(localized: .syncStatusErrorNoWebDavServer)
         case .limitDevicesReached:
             destination = .upgradePlanPrompt
         case .passwordChanged:
-            uriError = T.syncStatusErrorPasswordChanged
+            uriError = String(localized: .syncStatusErrorPasswordChanged)
         case .schemaNotSupported(let schemaVersion):
-            uriError = T.cloudSyncInvalidSchemaErrorMsg(schemaVersion)
+            uriError = String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
         }
     }
 }

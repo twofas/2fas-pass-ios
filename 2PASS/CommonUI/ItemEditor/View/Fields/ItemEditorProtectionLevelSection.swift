@@ -19,7 +19,7 @@ struct ItemEditorProtectionLevelSection: View {
                 presenter.onChangeProtectionLevel()
             } label: {
                 HStack(spacing: Spacing.s) {
-                    Text(T.loginSecurityLevelLabel.localizedKey)
+                    Text(.loginSecurityLevelLabel)
                         .foregroundStyle(Asset.mainTextColor.swiftUIColor)
 
                     Spacer()
@@ -35,7 +35,7 @@ struct ItemEditorProtectionLevelSection: View {
             .formFieldChanged(presenter.protectionLevelChanged)
             .buttonStyle(.plain)
         } header: {
-            Text(T.loginSecurityLevelHeader.localizedKey)
+            Text(.loginSecurityLevelHeader)
         }
         .listSectionSpacing(Spacing.l)
     }

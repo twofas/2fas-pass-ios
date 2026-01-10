@@ -13,6 +13,11 @@ extension View {
     public func toast(_ text: Text, isPresented: Binding<Bool>, style: ToastStyle, icon: Image? = nil, sensoryFeedback: @escaping SensoryFeedbackConfiguration = { $0 }) -> some View {
         modifier(ToastPresenterViewModifier(text: text, isPresented: isPresented, style: style, icon: icon, sensoryFeedback: sensoryFeedback))
     }
+    
+    @ViewBuilder
+    public func toast(_ text: LocalizedStringResource, isPresented: Binding<Bool>, style: ToastStyle, icon: Image? = nil, sensoryFeedback: @escaping SensoryFeedbackConfiguration = { $0 }) -> some View {
+        toast(Text(text), isPresented: isPresented, style: style, icon: icon, sensoryFeedback: sensoryFeedback)
+    }
 }
 
 final public class ToastPresenter {
@@ -78,6 +83,10 @@ final public class ToastPresenter {
 }
 
 extension ToastPresenter {
+    
+    public func present(_ text: LocalizedStringResource, style: ToastStyle, icon: UIImage? = nil, sensoryFeedback: @escaping SensoryFeedbackConfiguration = { $0 }, onDismiss: @escaping Callback = {}) {
+        self.present(Text(text), style: style, icon: icon.map(Image.init), sensoryFeedback: sensoryFeedback, onDismiss: onDismiss)
+    }
     
     public func present(_ text: String, style: ToastStyle, icon: UIImage? = nil, sensoryFeedback: @escaping SensoryFeedbackConfiguration = { $0 }, onDismiss: @escaping Callback = {}) {
         self.present(Text(text), style: style, icon: icon.map(Image.init), sensoryFeedback: sensoryFeedback, onDismiss: onDismiss)

@@ -34,7 +34,7 @@ struct TrashView: View {
         }
         .overlay {
             if presenter.isTrashEmpty {
-                EmptyListView(T.trashEmpty.localizedKey)
+                EmptyListView(.trashEmpty)
             }
         }
         .scrollBounceBehavior(.basedOnSize)
@@ -42,7 +42,7 @@ struct TrashView: View {
         .listStyle(.plain)
         .listRowSeparator(.visible)
         .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle(T.settingsEntryTrash.localizedKey)
+        .navigationTitle(.settingsEntryTrash)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onAppear()

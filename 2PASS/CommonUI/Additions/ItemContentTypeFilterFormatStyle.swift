@@ -17,13 +17,13 @@ struct ItemContentTypeFilterFormatStyle: FormatStyle {
     func format(_ filter: ItemContentTypeFilter) -> String {
         switch filter {
         case .all:
-            return T.contentTypeFilterAllName
+            return String(localized: .contentTypeFilterAllName)
         case .contentType(.login):
-            return T.contentTypeFilterLoginName
+            return String(localized: .contentTypeFilterLoginName)
         case .contentType(.secureNote):
-            return T.contentTypeFilterSecureNoteName
+            return String(localized: .contentTypeFilterSecureNoteName)
         case .contentType(.paymentCard):
-            return T.contentTypeFilterCardName
+            return String(localized: .contentTypeFilterCardName)
         case .contentType(.unknown):
             return "Unknows"
         }

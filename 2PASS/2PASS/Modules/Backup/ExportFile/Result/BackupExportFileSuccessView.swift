@@ -15,10 +15,10 @@ struct BackupExportFileSuccessView: View {
     var body: some View {
         ResultView(
             kind: .success,
-            title: Text(T.backupExportSuccessTitle.localizedKey),
-            description: Text(T.backupExportSuccessDescription.localizedKey),
+            title: Text(.backupExportSuccessTitle),
+            description: Text(.backupExportSuccessDescription),
             action: {
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     onClose()
                 }
             }

@@ -29,11 +29,11 @@ public struct SecurityTierPickerView: View {
                             .foregroundStyle(.brand500)
                         
                         VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(option.title.localizedKey)
+                            Text(option.title)
                                 .font(.body)
                                 .foregroundStyle(.neutral950)
                             
-                            Text(option.description.localizedKey)
+                            Text(option.description)
                                 .font(.footnote)
                                 .foregroundStyle(.neutral500)
                         }
@@ -44,10 +44,10 @@ public struct SecurityTierPickerView: View {
             .pickerStyle(.inline)
             .listRowInsets(EdgeInsets(top: Spacing.m, leading: Spacing.m, bottom: Spacing.m, trailing: Spacing.m))
         } header: {
-            Text(T.settingsHeaderProtectionLevel.localizedKey)
+            Text(.settingsHeaderProtectionLevel)
                 .padding(.top, Spacing.m)
         } footer: {
-            Text(T.securityTypeModalDescription.localizedKey)
+            Text(.securityTypeModalDescription)
                 .font(.caption)
                 .foregroundStyle(.neutral600)
                 .lineSpacing(2)
@@ -62,7 +62,7 @@ public struct SecurityTierPickerView: View {
                     Image(systemName: "lightbulb")
                         .frame(width: 24, height: 24)
                     
-                    Text(T.settingsProtectionLevelHelp.localizedKey)
+                    Text(.settingsProtectionLevelHelp)
                         .foregroundStyle(.neutral950)
                 }
             }

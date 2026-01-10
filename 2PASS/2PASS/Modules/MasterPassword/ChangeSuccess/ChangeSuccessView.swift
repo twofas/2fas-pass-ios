@@ -15,9 +15,9 @@ struct ChangeSuccessView: View {
     var body: some View {
         ResultView(
             kind: .success,
-            title: Text(T.setNewPasswordSuccessTitle.localizedKey),
+            title: Text(.setNewPasswordSuccessTitle),
             action: {
-                Button(T.commonContinue.localizedKey, action: presenter.onContinue)
+                Button(.commonContinue, action: presenter.onContinue)
             }
         )
         .router(router: ChangeSuccessRouter(), destination: $presenter.destination)

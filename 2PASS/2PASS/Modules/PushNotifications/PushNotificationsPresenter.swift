@@ -12,7 +12,7 @@ final class PushNotificationsPresenter {
     private let interactor: PushNotificationsModuleInteracting
     
     var status: String {
-        isEnabled ? T.commonEnabled : T.commonDisabled
+        isEnabled ? String(localized: .commonEnabled) : String(localized: .commonDisabled)
     }
     
     private(set) var canRequestForPermissions: Bool

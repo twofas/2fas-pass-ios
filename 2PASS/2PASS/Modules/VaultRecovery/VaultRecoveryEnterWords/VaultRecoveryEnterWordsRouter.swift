@@ -29,14 +29,14 @@ struct VaultRecoveryEnterWordsRouter: Router {
     func view(for destination: VaultRecoveryEnterWordsDestination) -> some View {
         switch destination {
         case .incorrectWordsAlert:
-            Button(T.commonOk.localizedKey) {}
+            Button(.commonOk) {}
         }
     }
     
     func routingType(for destination: VaultRecoveryEnterWordsDestination?) -> RoutingType? {
         switch destination {
         case .incorrectWordsAlert:
-            .alert(title: T.commonError, message: T.restoreManualKeyIncorrectWords)
+            .alert(title: String(localized: .commonError), message: String(localized: .restoreManualKeyIncorrectWords))
         default: nil
         }
     }

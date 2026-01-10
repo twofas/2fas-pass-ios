@@ -29,7 +29,7 @@ struct VaultRecoverySelectRouter: Router {
         case .manually(let recoveryData, let onEntropy):
             VaultRecoveryEnterWordsRouter.buildView(recoveryData: recoveryData, onEntropy: onEntropy)
         case .errorOpeningFile(_, let onClose):
-            Button(T.commonOk.localizedKey, action: onClose)
+            Button(.commonOk, action: onClose)
         case .vaultRecovery(let entropy, let masterKey, let recoveryData):
             VaultRecoveryRecoverRouter.buildView(
                 kind: .recoverEncrypted(entropy: entropy, masterKey: masterKey, recoveryData: recoveryData)
@@ -47,7 +47,7 @@ struct VaultRecoverySelectRouter: Router {
         switch destination {
         case .manually: .sheet
         case .camera, .enterMasterPassword, .vaultRecovery, .importVault, .importFailed: .push
-        case .errorOpeningFile(let message, _): .alert(title: T.commonError, message: message)
+        case .errorOpeningFile(let message, _): .alert(title: String(localized: .commonError), message: message)
         case nil: nil
         }
     }
