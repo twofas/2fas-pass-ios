@@ -38,7 +38,7 @@ enum ItemEditorModuleInteractorCheckState {
 
 protocol ItemEditorModuleInteracting: AnyObject {
     var hasItems: Bool { get }
-    
+
     var changeRequest: (any ItemDataChangeRequest)? { get }
 
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
@@ -65,8 +65,26 @@ protocol ItemEditorModuleInteracting: AnyObject {
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
+    func savePaymentCard(
+        name: String?,
+        cardHolder: String?,
+        cardNumber: String?,
+        expirationDate: String?,
+        securityCode: String?,
+        notes: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult
+
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
-    
+    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
+    func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
+    func maxPaymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
+    func paymentCardNumberMask(from cardNumber: String?) -> String?
+    func validatePaymentCardExpirationDate(_ value: String) -> Bool
+    func validatePaymentCardSecurityCode(_ value: String, for issuer: PaymentCardIssuer?) -> Bool
+    func validatePaymentCardCardNumber(_ value: String, for issuer: PaymentCardIssuer?) -> Bool
+
     func mostUsedUsernames() -> [String]
     func normalizeURLString(_ str: String) -> String?
     func extractDomain(from urlString: String) -> String?
@@ -82,6 +100,8 @@ final class ItemEditorModuleInteractor {
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
     private let secureNoteItemInteractor: SecureNoteItemInteracting
+    private let paymentCardItemInteractor: PaymentCardItemInteracting
+    private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
@@ -99,6 +119,8 @@ final class ItemEditorModuleInteractor {
         itemsInteractor: ItemsInteracting,
         loginItemInteractor: LoginItemInteracting,
         secureNoteItemInteractor: SecureNoteItemInteracting,
+        paymentCardItemInteractor: PaymentCardItemInteracting,
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
@@ -114,6 +136,8 @@ final class ItemEditorModuleInteractor {
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor
         self.secureNoteItemInteractor = secureNoteItemInteractor
+        self.paymentCardItemInteractor = paymentCardItemInteractor
+        self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
@@ -150,7 +174,35 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
         itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
     }
-    
+
+    func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
+        paymentCardUtilityInteractor.detectCardIssuer(from: cardNumber)
+    }
+
+    func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardUtilityInteractor.maxCardNumberLength(for: issuer)
+    }
+
+    func maxPaymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        paymentCardUtilityInteractor.maxSecurityCodeLength(for: issuer)
+    }
+
+    func paymentCardNumberMask(from cardNumber: String?) -> String? {
+        paymentCardUtilityInteractor.cardNumberMask(from: cardNumber)
+    }
+
+    func validatePaymentCardExpirationDate(_ value: String) -> Bool {
+        paymentCardUtilityInteractor.validateExpirationDate(value)
+    }
+
+    func validatePaymentCardSecurityCode(_ value: String, for issuer: PaymentCardIssuer?) -> Bool {
+        paymentCardUtilityInteractor.validateSecurityCode(value, for: issuer)
+    }
+
+    func validatePaymentCardCardNumber(_ value: String, for issuer: PaymentCardIssuer?) -> Bool {
+        paymentCardUtilityInteractor.validateCardNumber(value, for: issuer)
+    }
+
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData] {
         tagInteractor.getTags(by: tagIds).sorted(by: { $0.name < $1.name })
     }
@@ -294,6 +346,75 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
                 )
 
                 Log("ItemEditorModuleInteractor - success while adding secure note. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(itemID))
+
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        }
+    }
+
+    func savePaymentCard(
+        name: String?,
+        cardHolder: String?,
+        cardNumber: String?,
+        expirationDate: String?,
+        securityCode: String?,
+        notes: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult {
+        let date = currentDateInteractor.currentDate
+        if let current = getEditItem()?.asPaymentCard {
+            do {
+                try paymentCardItemInteractor.updatePaymentCard(
+                    id: current.id,
+                    metadata: .init(
+                        creationDate: current.creationDate,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds ?? current.tagIds
+                    ),
+                    name: name ?? "",
+                    cardHolder: cardHolder,
+                    cardNumber: cardNumber,
+                    expirationDate: expirationDate,
+                    securityCode: securityCode,
+                    notes: notes
+                )
+
+                Log("ItemEditorModuleInteractor - success while updating payment card. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(current.id))
+
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        } else {
+            let itemID = UUID()
+            do {
+                try paymentCardItemInteractor.createPaymentCard(
+                    id: itemID,
+                    metadata: .init(
+                        creationDate: date,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds
+                    ),
+                    name: name ?? "",
+                    cardHolder: cardHolder,
+                    cardNumber: cardNumber,
+                    expirationDate: expirationDate,
+                    securityCode: securityCode,
+                    notes: notes
+                )
+
+                Log("ItemEditorModuleInteractor - success while adding payment card. Saving storage")
                 didSaveItem()
 
                 return .success(.saved(itemID))

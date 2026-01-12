@@ -326,6 +326,24 @@ protocol MainRepository: AnyObject {
         additionalInfo: String?
     )
 
+    func createPaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    )
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -377,6 +395,23 @@ protocol MainRepository: AnyObject {
         additionalInfo: String?
     )
 
+    func updatePaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    )
+
     func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func getItemEntity(
@@ -404,6 +439,7 @@ protocol MainRepository: AnyObject {
     func createTag(_ tag: ItemTagData)
     func updateTag(_ tag: ItemTagData)
     func deleteTag(tagID: ItemTagID)
+    func deleteAllTags()
     func listTags(options: TagListOptions) -> [ItemTagData]
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
     
@@ -491,6 +527,7 @@ protocol MainRepository: AnyObject {
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
+    func deleteAllEncryptedTags()
     func removeDuplicatedEncryptedTags()
     
     // MARK: - Sort

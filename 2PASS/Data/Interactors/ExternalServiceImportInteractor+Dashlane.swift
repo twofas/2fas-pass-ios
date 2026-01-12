@@ -325,51 +325,120 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
 
                 let paymentType = dict["type"]?.nonBlankTrimmedOrNil ?? "payment_card"
 
-                // All payment types (including payment_card) -> secure note
-                let typeName = formatTypeName(paymentType)
-                let itemName = dict["name"]?.nonBlankTrimmedOrNil
-                let name: String = {
-                    var output = ""
-                    if let itemName {
-                        output.append("\(itemName) ")
-                    }
-                    return output + "(\(typeName))"
-                }()
+                if paymentType == "payment_card" {
+                    let name = dict["name"].formattedName
+                    let cardHolder = dict["account_holder"]?.nonBlankTrimmedOrNil
+                    let cardNumberString = dict["cc_number"]?.nonBlankTrimmedOrNil
+                    let securityCodeString = dict["code"]?.nonBlankTrimmedOrNil
+                    let expirationMonth = dict["expiration_month"]?.nonBlankTrimmedOrNil
+                    let expirationYear = dict["expiration_year"]?.nonBlankTrimmedOrNil
+                    let expirationDateString: String? = {
+                        guard let month = expirationMonth, let year = expirationYear?.suffix(2) else { return nil }
+                        return "\(month)/\(year)"
+                    }()
 
-                let additionalInfo = context.formatDictionary(
-                    dict,
-                    excludingKeys: ["type", "name", "note"]
-                )
-                let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
+                    let cardNumber: Data? = {
+                        if let value = cardNumberString,
+                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let expirationDate: Data? = {
+                        if let value = expirationDateString,
+                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let securityCode: Data? = {
+                        if let value = securityCodeString,
+                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+                    let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+                    let cardIssuer = context.detectCardIssuer(from: cardNumberString)
 
-                let text: Data? = {
-                    if let note = noteText,
-                       let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
+                    let note = dict["note"]?.nonBlankTrimmedOrNil
+                    let additionalInfo = context.formatDictionary(
+                        dict,
+                        excludingKeys: ["name", "account_holder", "cc_number", "code", "expiration_month", "expiration_year", "note", "type"]
+                    )
+                    let notes = context.mergeNote(note, with: additionalInfo)
 
-                items.append(
-                    .secureNote(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: Date.importPasswordPlaceholder,
-                            modificationDate: Date.importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
+                    items.append(
+                        .paymentCard(.init(
+                            id: .init(),
+                            vaultId: vaultID,
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
                             name: name,
-                            text: text,
-                            additionalInfo: nil
-                        )
-                    ))
-                )
-                convertedCount += 1
+                            content: .init(
+                                name: name,
+                                cardHolder: cardHolder,
+                                cardIssuer: cardIssuer,
+                                cardNumber: cardNumber,
+                                cardNumberMask: cardNumberMask,
+                                expirationDate: expirationDate,
+                                securityCode: securityCode,
+                                notes: notes
+                            )
+                        ))
+                    )
+                } else {
+                    // Bank accounts and other payment types -> secure note
+                    let typeName = formatTypeName(paymentType)
+                    let accountName = dict["name"]?.nonBlankTrimmedOrNil
+                    let name: String = {
+                        var output = ""
+                        if let accountName {
+                            output.append("\(accountName) ")
+                        }
+                        return output + "(\(typeName))"
+                    }()
+
+                    let additionalInfo = context.formatDictionary(
+                        dict,
+                        excludingKeys: ["type", "name", "note"]
+                    )
+                    let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
+
+                    let text: Data? = {
+                        if let note = noteText,
+                           let encrypted = context.encryptSecureField(note, for: protectionLevel) {
+                            return encrypted
+                        }
+                        return nil
+                    }()
+
+                    items.append(
+                        .secureNote(.init(
+                            id: .init(),
+                            vaultId: vaultID,
+                            metadata: .init(
+                                creationDate: Date.importPasswordPlaceholder,
+                                modificationDate: Date.importPasswordPlaceholder,
+                                protectionLevel: protectionLevel,
+                                trashedStatus: .no,
+                                tagIds: nil
+                            ),
+                            name: name,
+                            content: .init(
+                                name: name,
+                                text: text,
+                                additionalInfo: nil
+                            )
+                        ))
+                    )
+                    convertedCount += 1
+                }
             }
         } catch let error as ExternalServiceImportError {
             throw error

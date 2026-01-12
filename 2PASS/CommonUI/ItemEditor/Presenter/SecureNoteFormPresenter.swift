@@ -59,7 +59,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
             self.text = changeRequest?.text ?? ""
             self.isReveal = true
         }
-        
+
         super.init(interactor: interactor, flowController: flowController, initialData: initialData, changeRequest: changeRequest)
     }
     

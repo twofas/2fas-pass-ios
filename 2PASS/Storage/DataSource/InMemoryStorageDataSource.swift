@@ -176,7 +176,53 @@ public protocol InMemoryStorageDataSource: AnyObject {
     func listSecureNoteItems(
         options: ItemsListOptions
     ) -> [SecureNoteItemData]
-    
+
+    // MARK: - Payment Card Items
+
+    func createPaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    )
+
+    func updatePaymentCardItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        cardHolder: String?,
+        cardNumber: Data?,
+        expirationDate: Data?,
+        securityCode: Data?,
+        notes: String?,
+        cardNumberMask: String?,
+        cardIssuer: String?
+    )
+
+    func getPaymentCardItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> PaymentCardItemData?
+
+    func listPaymentCardItems(
+        options: ItemsListOptions
+    ) -> [PaymentCardItemData]
+
     // MARK: - Other
     
     func listUsernames() -> [String]

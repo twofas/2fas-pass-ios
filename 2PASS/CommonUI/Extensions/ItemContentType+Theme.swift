@@ -15,6 +15,8 @@ extension ItemContentType {
             return "person.crop.circle"
         case .secureNote:
             return "note.text"
+        case .paymentCard:
+            return "creditcard"
         case .unknown:
             return nil
         }
@@ -37,6 +39,8 @@ extension ItemContentType {
             UIColor(hexString: "#0088FF")!
         case .secureNote:
             UIColor(hexString: "#FF8D28")!
+        case .paymentCard:
+            UIColor(hexString: "#34C759")!
         case .unknown:
             .black
         }
@@ -53,6 +57,11 @@ extension ItemContentType {
             UIColor(
                 light: UIColor(hexString: "#FFF1E4")!,
                 dark: UIColor(hexString: "#482709")!
+            )
+        case .paymentCard:
+            UIColor(
+                light: UIColor(hexString: "#D6FFE0")!,
+                dark: UIColor(hexString: "#043B12")!
             )
         case .unknown:
             .black.withAlphaComponent(0.5)

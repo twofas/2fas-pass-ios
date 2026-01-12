@@ -20,6 +20,8 @@ public struct ItemContentTypeFormatStyle: FormatStyle {
             return T.contentTypeLoginName
         case .secureNote:
             return T.contentTypeSecureNoteName
+        case .paymentCard:
+            return T.contentTypeCardName
         case .unknown:
             return "Unknown"
         }

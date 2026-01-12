@@ -50,11 +50,15 @@ final class ConnectWebSocketSession: NSObject {
     }
 
     func start() {
+        Log("ConnectWebSocketSession - Start", module: .connect, severity: .info)
+        
         webSocketTask?.resume()
         receive()
     }
     
     func close() {
+        Log("ConnectWebSocketSession - Close", module: .connect, severity: .info)
+        
         Task {
             await expectedResponseStorage.finish(with: ConnectWebSocketError.webSocketClosed)
         }
@@ -197,6 +201,12 @@ final class ConnectWebSocketSession: NSObject {
 extension ConnectWebSocketSession: URLSessionWebSocketDelegate {
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        if let reason, let reasonMessage = String(data: reason, encoding: .utf8) {
+            Log("ConnectWebSocketSession - didCloseWith \(closeCode.rawValue) - Reason: \(reasonMessage, privacy: .public)", module: .connect, severity: .info)
+        } else {
+            Log("ConnectWebSocketSession - didCloseWith \(closeCode.rawValue)", module: .connect, severity: .info)
+        }
+        
         close()
         onClose?()
     }

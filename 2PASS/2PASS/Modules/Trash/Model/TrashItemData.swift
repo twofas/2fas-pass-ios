@@ -12,6 +12,7 @@ struct TrashItemData: Identifiable, Hashable {
     enum Icon: Hashable {
         case login(PasswordIconType)
         case contentType(ItemContentType)
+        case paymentCard(issuer: String?)
 
         var iconURL: URL? {
             guard case .login(let value) = self else {

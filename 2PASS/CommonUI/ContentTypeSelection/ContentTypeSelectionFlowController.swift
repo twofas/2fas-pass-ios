@@ -20,10 +20,12 @@ protocol ContentTypeSelectionFlowControlling: AnyObject {
 final class ContentTypeSelectionFlowController: FlowController {
     private weak var parent: ContentTypeSelectionFlowControllerParent?
 
+    private var sourceItem: UIBarButtonItem?
+    
     static func present(
         on viewController: UIViewController,
         parent: ContentTypeSelectionFlowControllerParent,
-        sourceItem: (any UIPopoverPresentationControllerSourceItem)? = nil
+        sourceItem: UIBarButtonItem? = nil
     ) {
         let view = ContentTypeSelectionViewController()
         let flowController = ContentTypeSelectionFlowController(viewController: view)
@@ -46,6 +48,7 @@ final class ContentTypeSelectionFlowController: FlowController {
                 popover.delegate = view
             }
         }
+        flowController.sourceItem = sourceItem
 
         viewController.present(view, animated: true)
     }
@@ -65,6 +68,8 @@ extension ContentTypeSelectionFlowController: ContentTypeSelectionFlowControllin
             }
         case .secureNote:
             changeRequest = SecureNoteDataChangeRequest(allowChangeContentType: true)
+        case .paymentCard:
+            changeRequest = PaymentCardDataChangeRequest(allowChangeContentType: true)
         case .unknown:
             changeRequest = nil
         }
@@ -73,7 +78,8 @@ extension ContentTypeSelectionFlowController: ContentTypeSelectionFlowControllin
             on: viewController,
             parent: self,
             editItemID: nil,
-            changeRequest: changeRequest
+            changeRequest: changeRequest,
+            sourceView: viewController.view
         )
     }
 
@@ -85,6 +91,11 @@ extension ContentTypeSelectionFlowController: ContentTypeSelectionFlowControllin
 extension ContentTypeSelectionFlowController: ItemEditorNavigationFlowControllerParent {
     
     func closeItemEditor(with result: SaveItemResult) {
+        if #available(iOS 26.0, *) {
+            viewController.presentedViewController?.preferredTransition = .zoom(sourceBarButtonItemProvider: { [weak self] _ in
+                self?.sourceItem
+            })
+        }
         parent?.contentTypeSelectionDidClose(with: result)
     }
 }

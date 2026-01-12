@@ -29,10 +29,9 @@ final class BiometricPromptPresenter {
         isEnabling = true
         
         Task {
-            if await interactor.enableBiometric() {
-                interactor.finish()
-                onClose()
-            }
+            _ = await interactor.enableBiometric()
+            interactor.finish()
+            onClose()
             
             isEnabling = false
         }

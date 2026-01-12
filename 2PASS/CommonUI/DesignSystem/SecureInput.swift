@@ -9,25 +9,25 @@ import SwiftUIIntrospect
 
 public struct SecureInput: View {
     let label: LocalizedStringResource
-    
+
     @State
     private var isReveal = false
-    
+
     @Binding
     private var value: String
-    
+
     private var bindingReveal: Binding<Bool>?
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
     private var onSubmit: (() -> Void)?
-    
+
     public init(label: LocalizedStringResource, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
         self.label = label
         self.bindingReveal = reveal
         self._value = value
         self.onSubmit = onSubmit
     }
-    
+
     public var body: some View {
         HStack {
             SecureContentInput(label: label, value: $value, isReveal: isReveal)
@@ -38,7 +38,7 @@ public struct SecureInput: View {
                 }
             
             Spacer()
-            
+
             Toggle(isOn: $isReveal, label: {})
                 .toggleStyle(.reveal)
                 .frame(width: 22)
@@ -74,24 +74,25 @@ public struct SecureContentInput: View {
         case unsecure
         case secure
     }
-    
+
     let label: LocalizedStringResource
     let isReveal: Bool
-    
+
     @Binding
     var value: String
-    
+
     @FocusState
     private var focusedField: Field?
     
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
-    
+
     public init(label: LocalizedStringResource, value: Binding<String>, isReveal: Bool = false) {
         self.label = label
         self._value = value
         self.isReveal = isReveal
     }
+
     
     public var body: some View {
         ZStack {
@@ -144,7 +145,7 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
     let placeholder: LocalizedStringResource
     @Binding var text: String
     let isColorized: Bool
-    
+
     func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
         textField.autocapitalizationType = .none
@@ -153,18 +154,18 @@ private struct RevealedPasswordTextField: UIViewRepresentable {
         textField.smartQuotesType = .no
         textField.smartDashesType = .no
         textField.smartInsertDeleteType = .no
-        
+
         textField.delegate = context.coordinator
         textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        
+
         return textField
     }
-    
+
     func updateUIView(_ uiView: UITextField, context: Context) {
         let selectedRange = uiView.selectedTextRange
-        
+
         if isColorized {
             uiView.attributedText = PasswordRenderer(password: text).makeColorizedNSAttributedString()
         } else {

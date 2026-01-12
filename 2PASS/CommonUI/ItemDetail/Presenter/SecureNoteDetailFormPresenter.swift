@@ -39,7 +39,7 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         note = decryptNote()
         isReveal = true
     }
-    
+
     func onSelectNote() {
         guard let note else { return }
         flowController.autoFillTextToInsert(note)
@@ -62,12 +62,12 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     
     private func refreshValues() {
         isReveal = (isReveal || protectionLevel == .normal)
-        
+
         if isReveal {
             note = decryptNote()
         }
     }
-    
+
     private func decryptNote() -> String? {
         guard let encrypted = secureNoteItem.content.text else { return nil }
         return interactor.decryptSecureField(encrypted, protectionLevel: secureNoteItem.protectionLevel)

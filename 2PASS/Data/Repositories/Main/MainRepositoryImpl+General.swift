@@ -151,11 +151,11 @@ extension MainRepositoryImpl {
                 do {
                     let fileManager = FileManager.default
                     let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
-                    
+
                     if fileManager.fileExists(atPath: destinationURL.path) {
                         try fileManager.removeItem(at: destinationURL)
                     }
-                    
+
                     try fileManager.copyItem(at: newURL, to: destinationURL)
 
                     resultURL = destinationURL
@@ -164,34 +164,34 @@ extension MainRepositoryImpl {
                     Log("Error copying file at: \(url)", module: .mainRepository, severity: .error)
                 }
             }
-            
+
             if error != nil {
                 Log("Error copying file at: \(url)", module: .mainRepository, severity: .error)
                 return nil
             }
-            
+
             return resultURL
         }
-         
+
         if url.startAccessingSecurityScopedResource() {
             defer {
                 url.stopAccessingSecurityScopedResource()
             }
-            
+
             guard fileExists(at: url) == false else {
                 return url
             }
-            
+
             return copyFile()
         } else {
             guard fileExists(at: url) == false else {
                 return url
             }
-            
+
             return copyFile()
         }
     }
-    
+
     func isDirectory(at url: URL) -> Bool? {
         try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory
     }

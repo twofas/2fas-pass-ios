@@ -75,7 +75,6 @@ public extension View {
                 text.wrappedValue = String(text.wrappedValue.prefix(newValue))
             }
         }
-
     }
 }
 

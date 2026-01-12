@@ -1,0 +1,5 @@
+"Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"
+"Root","Pierwszy element","Arthur","l<~A_AH_KSgJ<NERw($P","https://www.youtube.com/watch?v=H48B0qhEVGw","Notka do pierwszego elementu","","0","2025-12-22T19:33:17Z","2025-12-22T19:32:17Z"
+"Root","Drugi element","Morgan","~M""e5iS**h*U\[""7aT%\","https://2fas.com/","Notka do drugiego elementu","","0","2025-12-22T19:33:57Z","2025-12-22T19:33:19Z"
+"Root","Element z custom fieldami","Erunestian","0:Eg4V7N][/:GOFDF44_","https://2fas.com/pass/","Notka do 3 elementu","","0","2025-12-22T19:35:15Z","2025-12-22T19:33:59Z"
+"Root/podgrupa","Login do podgrupy","2","us~a@8RdFZPgHtG(F)%a","https://www.youtube.com/watch?v=nHi-LjQ4528&t=5459s","Notka do podgrupy","","0","2026-01-07T14:11:36Z","2026-01-07T14:11:04Z"

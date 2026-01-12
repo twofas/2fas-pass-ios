@@ -47,11 +47,13 @@ final class ExternalServiceImportInteractor {
     init(
         mainRepository: MainRepository,
         uriInteractor: URIInteracting,
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     ) {
         self.mainRepository = mainRepository
         self.context = ImportContext(
             mainRepository: mainRepository,
             uriInteractor: uriInteractor,
+            paymentCardUtilityInteractor: paymentCardUtilityInteractor
         )
     }
 }
@@ -138,9 +140,9 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         case .firefox:
             ExternalServiceImportResult(items: try await FirefoxImporter(context: context).import(content))
         case .keePass:
-            ExternalServiceImportResult(items: try await KeePassImporter(context: context).import(content))
+            try await KeePassImporter(context: context).import(content)
         case .keePassXC:
-            ExternalServiceImportResult(items: try await KeePassXCImporter(context: context).import(content))
+            try await KeePassXCImporter(context: context).import(content)
         case .microsoftEdge:
             ExternalServiceImportResult(items: try await MicrosoftEdgeImporter(context: context).import(content))
         case .enpass:
@@ -170,6 +172,7 @@ extension ExternalServiceImportInteractor {
     struct ImportContext {
         let mainRepository: MainRepository
         let uriInteractor: URIInteracting
+        let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
 
         var selectedVaultId: VaultID? {
             mainRepository.selectedVault?.vaultID
@@ -263,6 +266,32 @@ extension ExternalServiceImportInteractor {
             }
             let domain = uriInteractor.extractDomain(from: uri)
             return .createDefault(domain: domain)
+        }
+
+        func cardNumberMask(from cardNumber: String?) -> String? {
+            paymentCardUtilityInteractor.cardNumberMask(from: cardNumber)
+        }
+
+        func detectCardIssuer(from cardNumber: String?) -> String? {
+            paymentCardUtilityInteractor.detectCardIssuer(from: cardNumber)?.rawValue
+        }
+
+        /// Converts expiration date from MM/YYYY format to MM/YY format
+        /// - Parameter dateString: Date string in "MM/YYYY" format (e.g., "09/2029")
+        /// - Returns: Date string in "MM/YY" format (e.g., "09/29") or original string if format doesn't match
+        func formatExpirationDate(_ dateString: String?) -> String? {
+            guard let dateString = dateString?.nonBlankTrimmedOrNil else { return nil }
+
+            let components = dateString.split(separator: "/")
+            guard components.count == 2,
+                  let month = components.first,
+                  let year = components.last,
+                  year.count == 4 else {
+                return dateString
+            }
+
+            let shortYear = year.suffix(2)
+            return "\(month)/\(shortYear)"
         }
     }
 }

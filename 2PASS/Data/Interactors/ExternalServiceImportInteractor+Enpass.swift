@@ -80,6 +80,15 @@ extension ExternalServiceImportInteractor {
                     ) {
                         items.append(loginItem)
                     }
+                case "creditcard":
+                    if let cardItem = parseCreditCard(
+                        item: item,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        tagIds: tagIds
+                    ) {
+                        items.append(cardItem)
+                    }
                 case "note":
                     if let noteItem = parseSecureNote(
                         item: item,
@@ -90,7 +99,7 @@ extension ExternalServiceImportInteractor {
                         items.append(noteItem)
                     }
                 default:
-                    // creditcard, finance, identity, and other categories -> secure note
+                    // finance, identity, and other categories -> secure note
                     if let noteItem = parseAsSecureNote(
                         item: item,
                         vaultID: vaultID,
@@ -203,6 +212,137 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
                 notes: mergedNotes,
                 iconType: context.makeIconType(uri: uris?.first?.uri),
                 uris: uris
+            )
+        ))
+    }
+
+    func parseCreditCard(
+        item: Enpass.Item,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = item.title.formattedName
+        let notes = item.note?.nonBlankTrimmedOrNil
+
+        var cardHolder: String?
+        var cardNumberString: String?
+        var securityCodeString: String?
+        var pinString: String?
+        var expirationMonth: String?
+        var expirationYear: String?
+        var additionalFields: [(label: String, value: String)] = []
+
+        item.fields?.forEach { field in
+            guard field.deleted != 1 else { return }
+            guard let value = field.value?.nonBlankTrimmedOrNil else { return }
+
+            switch field.type {
+            case "ccName":
+                if cardHolder == nil {
+                    cardHolder = value
+                } else {
+                    additionalFields.append((field.label ?? "Cardholder", value))
+                }
+            case "ccNumber":
+                if cardNumberString == nil {
+                    cardNumberString = value
+                } else {
+                    additionalFields.append((field.label ?? "Card number", value))
+                }
+            case "ccCvc":
+                if securityCodeString == nil {
+                    securityCodeString = value
+                } else {
+                    additionalFields.append((field.label ?? "CVC", value))
+                }
+            case "ccPin":
+                if pinString == nil {
+                    pinString = value
+                } else {
+                    additionalFields.append((field.label ?? "PIN", value))
+                }
+            case "ccExpiry":
+                // Format is usually "MM/YYYY" or "MM/YY"
+                let parts = value.split(separator: "/")
+                if parts.count == 2 {
+                    expirationMonth = String(parts[0])
+                    expirationYear = String(parts[1])
+                } else {
+                    additionalFields.append((field.label ?? "Expiry", value))
+                }
+            case "section", "ccType":
+                // Skip section headers
+                break
+            case "ccBankname", "ccValidfrom", "ccTxnpassword":
+                additionalFields.append((field.label ?? formatFieldType(field.type), value))
+            default:
+                let label = field.label ?? formatFieldType(field.type)
+                additionalFields.append((label, value))
+            }
+        }
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let expirationDateString: String? = {
+            guard let month = expirationMonth, let year = expirationYear else { return nil }
+            let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
+            return "\(month)/\(yearSuffix)"
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        // Add PIN to additional fields if present
+        if let pin = pinString {
+            additionalFields.insert((label: "PIN", value: pin), at: 0)
+        }
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+        let additionalInfo = formatAdditionalFields(additionalFields)
+        let mergedNotes = context.mergeNote(notes, with: additionalInfo)
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate(from: item),
+                modificationDate: modificationDate(from: item),
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
             )
         ))
     }

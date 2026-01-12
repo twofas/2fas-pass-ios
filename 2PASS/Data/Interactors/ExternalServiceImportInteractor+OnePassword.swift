@@ -38,6 +38,21 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         var items: [ItemData] = []
         let protectionLevel = context.currentProtectionLevel
 
+        // Track tags for tag creation
+        var tagNames: Set<String> = []
+        var tagNameToId: [String: ItemTagID] = [:]
+
+        // Structure to hold parsed item data before tag resolution
+        struct ParsedItem {
+            let name: String?
+            let uris: [PasswordURI]?
+            let username: String?
+            let password: Data?
+            let notes: String?
+            let tagStrings: [String]
+        }
+        var parsedItems: [ParsedItem] = []
+
         do {
             let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
 
@@ -45,13 +60,15 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             guard csv.header.containsAll(requiredHeaders) else {
                 throw ExternalServiceImportError.wrongFormat
             }
+
+            // First pass: parse items and collect tag names
             try csv.enumerateAsDict { dict in
                 guard dict.allValuesEmpty == false else { return }
-                
+
                 if dict["Archived"] == "true" {
                     return
                 }
-                
+
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["Url"]?.nonBlankTrimmedOrNil else { return nil }
@@ -67,34 +84,33 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                     return nil
                 }()
 
+                // Parse tags (semicolon-separated)
+                let tagStrings: [String] = {
+                    guard let tagsString = dict["Tags"]?.nonBlankTrimmedOrNil else { return [] }
+                    return tagsString
+                        .split(separator: ";")
+                        .compactMap { $0.trimmingCharacters(in: .whitespaces).nonBlankTrimmedOrNil }
+                }()
+
+                // Collect unique tag names
+                for tagName in tagStrings {
+                    tagNames.insert(tagName)
+                }
+
                 let additionalInfo = context.formatDictionary(
                     dict,
-                    excludingKeys: Set(requiredHeaders).union(["Archived", "Favorite"])
+                    excludingKeys: Set(requiredHeaders).union(["Archived", "Favorite", "Tags"])
                 )
                 let notes = context.mergeNote(dict["Notes"]?.nonBlankTrimmedOrNil, with: additionalInfo)
 
-                items.append(
-                    .login(.init(
-                        id: .init(),
-                        vaultId: vaultID,
-                        metadata: .init(
-                            creationDate: .importPasswordPlaceholder,
-                            modificationDate: .importPasswordPlaceholder,
-                            protectionLevel: protectionLevel,
-                            trashedStatus: .no,
-                            tagIds: nil
-                        ),
-                        name: name,
-                        content: .init(
-                            name: name,
-                            username: username,
-                            password: password,
-                            notes: notes,
-                            iconType: context.makeIconType(uri: uris?.first?.uri),
-                            uris: uris
-                        )
-                    ))
-                )
+                parsedItems.append(ParsedItem(
+                    name: name,
+                    uris: uris,
+                    username: username,
+                    password: password,
+                    notes: notes,
+                    tagStrings: tagStrings
+                ))
             }
         } catch let error as ExternalServiceImportError {
             throw error
@@ -102,7 +118,56 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             throw .wrongFormat
         }
 
-        return ExternalServiceImportResult(items: items)
+        // Create tag IDs for each unique tag
+        for tagName in tagNames {
+            tagNameToId[tagName] = ItemTagID()
+        }
+
+        // Second pass: create items with tag references
+        for parsedItem in parsedItems {
+            let itemTagIds: [ItemTagID]? = {
+                let ids = parsedItem.tagStrings.compactMap { tagNameToId[$0] }
+                return ids.isEmpty ? nil : ids
+            }()
+
+            items.append(
+                .login(.init(
+                    id: .init(),
+                    vaultId: vaultID,
+                    metadata: .init(
+                        creationDate: .importPasswordPlaceholder,
+                        modificationDate: .importPasswordPlaceholder,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: itemTagIds
+                    ),
+                    name: parsedItem.name,
+                    content: .init(
+                        name: parsedItem.name,
+                        username: parsedItem.username,
+                        password: parsedItem.password,
+                        notes: parsedItem.notes,
+                        iconType: context.makeIconType(uri: parsedItem.uris?.first?.uri),
+                        uris: parsedItem.uris
+                    )
+                ))
+            )
+        }
+
+        // Create tags from collected tag names
+        let tags: [ItemTagData] = tagNames.enumerated().compactMap { index, tagName -> ItemTagData? in
+            guard let tagId = tagNameToId[tagName] else { return nil }
+            return ItemTagData(
+                tagID: tagId,
+                vaultID: vaultID,
+                name: tagName,
+                color: .gray,
+                position: index,
+                modificationDate: Date()
+            )
+        }
+
+        return ExternalServiceImportResult(items: items, tags: tags)
     }
 }
 
@@ -199,8 +264,17 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                             items.append(noteItem)
                         }
 
-                    case OnePassword1Pux.categoryCreditCard,
-                         OnePassword1Pux.categoryIdentity:
+                    case OnePassword1Pux.categoryCreditCard:
+                        if let cardItem = parseCreditCard(
+                            item: item,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            tagIds: itemTagIds
+                        ) {
+                            items.append(cardItem)
+                        }
+
+                    case OnePassword1Pux.categoryIdentity:
                         // Convert known non-login types to secure notes
                         if let noteItem = parseAsSecureNote(
                             item: item,
@@ -413,6 +487,136 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                 name: name,
                 text: text,
                 additionalInfo: additionalInfo
+            )
+        ))
+    }
+
+    private func parseCreditCard(
+        item: OnePassword1Pux.Item,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = item.overview?.title.formattedName
+        let notes = item.details?.notesPlain?.nonBlankTrimmedOrNil
+
+        // Extract card details from sections
+        var cardNumberString: String?
+        var cardHolder: String?
+        var expirationDateString: String?
+        var securityCodeString: String?
+        var pinCode: String?
+        var additionalFields: [String] = []
+
+        for section in item.details?.sections ?? [] {
+            for field in section.fields ?? [] {
+                let fieldId = field.id?.lowercased() ?? ""
+                let fieldTitle = field.title?.lowercased() ?? ""
+
+                // Card number
+                if fieldId == "ccnum" || fieldTitle.contains("card number") {
+                    cardNumberString = field.value?.creditCardNumber ?? field.value?.stringValue
+                }
+                // Cardholder name
+                else if fieldId == "cardholder" || fieldTitle.contains("cardholder") {
+                    cardHolder = field.value?.stringValue
+                }
+                // Expiration date (stored as YYYYMM integer)
+                else if fieldId == "expiry" || fieldTitle.contains("expir") {
+                    if let monthYear = field.value?.monthYear {
+                        // Convert YYYYMM to MM/YY format
+                        let year = monthYear / 100
+                        let month = monthYear % 100
+                        let shortYear = year % 100
+                        expirationDateString = String(format: "%02d/%02d", month, shortYear)
+                    } else if let expString = field.value?.stringValue {
+                        expirationDateString = expString
+                    }
+                }
+                // Security code (CVV)
+                else if fieldId == "cvv" || fieldTitle.contains("security code") || fieldTitle.contains("cvv") {
+                    securityCodeString = field.value?.concealed ?? field.value?.stringValue
+                }
+                // PIN code
+                else if fieldId == "pin" || fieldTitle.contains("pin") {
+                    pinCode = field.value?.concealed ?? field.value?.stringValue
+                }
+                // Other fields go to additional info
+                else if let value = field.value?.stringValue?.nonBlankTrimmedOrNil,
+                        let title = field.title?.nonBlankTrimmedOrNil {
+                    additionalFields.append("\(title): \(value)")
+                }
+            }
+        }
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString)
+
+        // Add PIN code to additional fields if present
+        if let pin = pinCode {
+            additionalFields.insert("PIN: \(pin)", at: 0)
+        }
+        let additionalInfo = additionalFields.isEmpty ? nil : additionalFields.joined(separator: "\n")
+        let mergedNotes = context.mergeNote(notes, with: additionalInfo)
+
+        let creationDate: Date = {
+            if let timestamp = item.createdAt {
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
+            return .importPasswordPlaceholder
+        }()
+
+        let modificationDate: Date = {
+            if let timestamp = item.updatedAt {
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
+            return .importPasswordPlaceholder
+        }()
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
             )
         ))
     }

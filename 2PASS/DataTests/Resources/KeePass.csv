@@ -1,0 +1,5 @@
+"Account","Login Name","Password","Web Site","Comments","Custom Field","Another Extra"
+"Sample Entry","User Name","Password","https://keepass.info/","Notes","",""
+"Sample Entry #2","Michael321","12345","https://keepass.info/help/kb/testform.html","","",""
+"Login z dodatkami","Batman","lwqU3RF0vyYE088f3nYS","","Notatki do Keepassa","",""
+"Entry with extras","extrauser","extrapass123","https://example.com/","Original note","Custom value here","Extra data"

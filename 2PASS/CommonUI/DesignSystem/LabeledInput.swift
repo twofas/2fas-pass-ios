@@ -42,12 +42,11 @@ public struct LabeledInput<Content: View>: View {
     }
     
     public var body: some View {
-        LabeledContent {
-            content()
-        } label: {
+        HStack {
             label
                 .observeWidth { updateWidth($0) }
                 .frame(width: fieldWidth, alignment: .leading)
+            content()
         }
         .labeledContentStyle(InputLabeledStyle())
     }

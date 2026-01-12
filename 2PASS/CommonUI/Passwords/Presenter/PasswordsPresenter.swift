@@ -106,7 +106,7 @@ extension PasswordsPresenter {
         flowController.toQuickSetup()
     }
     
-    func onAdd(sourceItem: (any UIPopoverPresentationControllerSourceItem)?) {
+    func onAdd(sourceItem: UIBarButtonItem?) {
         if interactor.canAddPassword {
             flowController.toContentTypeSelection(sourceItem: sourceItem)
         } else {
@@ -167,7 +167,13 @@ extension PasswordsPresenter {
             
         case .copy(.secureNoteText):
             copySecureNote(id: itemID)
-            
+
+        case .copy(.paymentCardNumber):
+            copyPaymentCardNumber(id: itemID)
+
+        case .copy(.paymentCardSecurityCode):
+            copyPaymentCardSecurityCode(id: itemID)
+
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
         }
@@ -195,6 +201,8 @@ extension PasswordsPresenter {
                 copyPassword(id: itemData.id)
             case .secureNote:
                 copySecureNote(id: itemData.id)
+            case .paymentCard:
+                copyPaymentCardNumber(id: itemData.id)
             case .raw:
                 break
             }
@@ -272,7 +280,29 @@ private extension PasswordsPresenter {
             )
         }
     }
-    
+
+    func copyPaymentCardNumber(id: ItemID) {
+        if interactor.copyPaymentCardNumber(id) {
+            toastPresenter.presentPaymentCardNumberCopied()
+        } else {
+            toastPresenter.present(
+                T.cardErrorCopyNumber,
+                style: .failure
+            )
+        }
+    }
+
+    func copyPaymentCardSecurityCode(id: ItemID) {
+        if interactor.copyPaymentCardSecurityCode(id) {
+            toastPresenter.presentPaymentCardSecurityCodeCopied()
+        } else {
+            toastPresenter.present(
+                T.cardErrorCopySecurityCode,
+                style: .failure
+            )
+        }
+    }
+
     func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
@@ -381,6 +411,26 @@ private extension PasswordsPresenter {
                     .view,
                     .edit,
                     secureNoteItem.content.text != nil ? .copy(.secureNoteText) : nil,
+                    isAutoFillExtension ? nil : .moveToTrash
+                ]
+                .compactMap { $0 }
+            )
+        case .paymentCard(let paymentCardItem):
+            let description: String? = if let mask = paymentCardItem.content.cardNumberMask {
+                mask.formatted(.paymentCardNumberMask)
+            } else {
+                paymentCardItem.content.cardHolder
+            }
+            return ItemCellData(
+                itemID: paymentCardItem.id,
+                name: paymentCardItem.name,
+                description: description,
+                iconType: .paymentCard(issuer: paymentCardItem.content.cardIssuer),
+                actions: [
+                    .view,
+                    .edit,
+                    .copy(.paymentCardNumber),
+                    .copy(.paymentCardSecurityCode),
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

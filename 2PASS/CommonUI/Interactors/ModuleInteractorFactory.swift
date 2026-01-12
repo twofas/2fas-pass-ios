@@ -30,6 +30,8 @@ public final class ModuleInteractorFactory {
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),
             secureNoteItemInteractor: InteractorFactory.shared.secureNoteInteractor(),
+            paymentCardItemInteractor: InteractorFactory.shared.paymentCardItemInteractor(),
+            paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
@@ -73,7 +75,8 @@ public final class ModuleInteractorFactory {
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
-            tagInteractor: InteractorFactory.shared.tagInteractor()
+            tagInteractor: InteractorFactory.shared.tagInteractor(),
+            paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor()
         )
     }
     

@@ -156,6 +156,24 @@ extension ItemsInteractor: ItemsInteracting {
                 text: secureNoteItem.content.text,
                 additionalInfo: secureNoteItem.content.additionalInfo
             )
+        case .paymentCard(let paymentCardItem):
+            mainRepository.createPaymentCardItem(
+                itemID: paymentCardItem.id,
+                vaultID: selectedVault.id,
+                creationDate: paymentCardItem.creationDate,
+                modificationDate: paymentCardItem.modificationDate,
+                trashedStatus: paymentCardItem.trashedStatus,
+                protectionLevel: paymentCardItem.protectionLevel,
+                tagIds: paymentCardItem.tagIds,
+                name: paymentCardItem.name,
+                cardHolder: paymentCardItem.content.cardHolder,
+                cardNumber: paymentCardItem.content.cardNumber,
+                expirationDate: paymentCardItem.content.expirationDate,
+                securityCode: paymentCardItem.content.securityCode,
+                notes: paymentCardItem.content.notes,
+                cardNumberMask: paymentCardItem.content.cardNumberMask,
+                cardIssuer: paymentCardItem.content.cardIssuer
+            )
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
@@ -229,6 +247,23 @@ extension ItemsInteractor: ItemsInteracting {
                 name: secureNoteItem.name,
                 text: secureNoteItem.content.text,
                 additionalInfo: secureNoteItem.content.additionalInfo
+            )
+        case .paymentCard(let paymentCardItem):
+            mainRepository.updatePaymentCardItem(
+                itemID: paymentCardItem.id,
+                vaultID: selectedVault.id,
+                modificationDate: paymentCardItem.modificationDate,
+                trashedStatus: paymentCardItem.trashedStatus,
+                protectionLevel: paymentCardItem.protectionLevel,
+                tagIds: paymentCardItem.tagIds,
+                name: paymentCardItem.name,
+                cardHolder: paymentCardItem.content.cardHolder,
+                cardNumber: paymentCardItem.content.cardNumber,
+                expirationDate: paymentCardItem.content.expirationDate,
+                securityCode: paymentCardItem.content.securityCode,
+                notes: paymentCardItem.content.notes,
+                cardNumberMask: paymentCardItem.content.cardNumberMask,
+                cardIssuer: paymentCardItem.content.cardIssuer
             )
         case .raw:
             mainRepository.updateItem(

@@ -86,16 +86,14 @@ extension ExternalServiceImportInteractor {
                         items.append(noteItem)
                     }
                 case .card:
-                    if let cardItem = parseAsSecureNote(
+                    if let cardItem = parseCard(
+                        card: BitWarden.Card(item.card),
                         item: item,
                         vaultID: vaultID,
                         protectionLevel: protectionLevel,
-                        contentTypeName: "Card",
-                        data: item.card,
                         tagIds: tagIds
                     ) {
                         items.append(cardItem)
-                        itemsConvertedToSecureNotes += 1
                     }
                 case .identity:
                     if let identityItem = parseAsSecureNote(
@@ -180,6 +178,10 @@ extension ExternalServiceImportInteractor {
                     case "note":
                         if let noteItem = parseCSVSecureNote(dict: dict, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
                             items.append(noteItem)
+                        }
+                    case "card":
+                        if let cardItem = parseCSVCard(dict: dict, vaultID: vaultID, protectionLevel: protectionLevel, tagIds: tagIds) {
+                            items.append(cardItem)
                         }
                     default:
                         break
@@ -280,6 +282,79 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
                 name: name,
                 text: text,
                 additionalInfo: fieldsInfo
+            )
+        ))
+    }
+
+    func parseCSVCard(
+        dict: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = dict["name"].formattedName
+        let notes = dict["notes"]?.nonBlankTrimmedOrNil
+
+        let cardHolder = dict["card_cardholderName"]?.nonBlankTrimmedOrNil
+        let cardNumberString = dict["card_number"]?.nonBlankTrimmedOrNil
+        let securityCodeString = dict["card_code"]?.nonBlankTrimmedOrNil
+
+        let expirationDateString: String? = {
+            guard let month = dict["card_expMonth"]?.nonBlankTrimmedOrNil,
+                  let year = dict["card_expYear"]?.nonBlankTrimmedOrNil else { return nil }
+            let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
+            return "\(month)/\(yearSuffix)"
+        }()
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? dict["card_brand"]?.nonBlankTrimmedOrNil
+
+        let mergedNotes = context.mergeNote(notes, with: dict["fields"]?.nonBlankTrimmedOrNil)
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: Date.importPasswordPlaceholder,
+                modificationDate: Date.importPasswordPlaceholder,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
             )
         ))
     }
@@ -414,6 +489,86 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
                 name: name,
                 text: text,
                 additionalInfo: additionalInfo
+            )
+        ))
+    }
+
+    func parseCard(
+        card: BitWarden.Card,
+        item: BitWarden.Item,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = item.name.formattedName
+        let notes = item.notes?.nonBlankTrimmedOrNil
+
+        let cardHolder = card.cardholderName?.nonBlankTrimmedOrNil
+        let cardNumberString = card.number?.nonBlankTrimmedOrNil
+        let securityCodeString = card.code?.nonBlankTrimmedOrNil
+
+        let expirationDateString: String? = {
+            guard let month = card.expMonth?.nonBlankTrimmedOrNil,
+                  let year = card.expYear?.nonBlankTrimmedOrNil else { return nil }
+            let yearSuffix = year.count > 2 ? String(year.suffix(2)) : year
+            return "\(month)/\(yearSuffix)"
+        }()
+
+        let cardNumber: Data? = {
+            if let value = cardNumberString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let expirationDate: Data? = {
+            if let value = expirationDateString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityCode: Data? = {
+            if let value = securityCodeString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let cardNumberMask = context.cardNumberMask(from: cardNumberString)
+        let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? card.brand?.nonBlankTrimmedOrNil
+
+        let cardAdditionalInfo = context.formatDictionary(card.unknownData)
+        let fieldsInfo = formatCustomFields(item.fields)
+        let additionalInfo = context.mergeNote(cardAdditionalInfo, with: fieldsInfo)
+        let mergedNotes = context.mergeNote(notes, with: additionalInfo)
+
+        let creationDate = item.creationDate ?? .importPasswordPlaceholder
+        let modificationDate = item.revisionDate ?? .importPasswordPlaceholder
+
+        return .paymentCard(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                cardHolder: cardHolder,
+                cardIssuer: cardIssuer,
+                cardNumber: cardNumber,
+                cardNumberMask: cardNumberMask,
+                expirationDate: expirationDate,
+                securityCode: securityCode,
+                notes: mergedNotes
             )
         ))
     }

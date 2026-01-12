@@ -24,6 +24,8 @@ struct ItemDetailView: View {
                         LoginDetailFormView(presenter: formPresenter)
                     case .secureNote(let formPresenter):
                         SecureNoteDetailFormView(presenter: formPresenter)
+                    case .paymentCard(let formPresenter):
+                        PaymentCardDetailFormView(presenter: formPresenter)
                     default:
                         EmptyView()
                     }
@@ -165,6 +167,29 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         additionalInfo: nil
                     )
                 ))
+        case .paymentCard:
+                .paymentCard(PaymentCardItemData(
+                    id: itemID,
+                    vaultId: UUID(),
+                    metadata: .init(
+                        creationDate: Date(),
+                        modificationDate: Date(),
+                        protectionLevel: .topSecret,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: "Preview Card",
+                    content: .init(
+                        name: "Preview Card",
+                        cardHolder: "John Doe",
+                        cardIssuer: "Visa",
+                        cardNumber: nil,
+                        cardNumberMask: "1234",
+                        expirationDate: nil,
+                        securityCode: nil,
+                        notes: "Notes"
+                    )
+                ))
         case .unknown:
             fatalError()
         }
@@ -175,21 +200,25 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
     }
     
     func copy(_ str: String) {}
-    
+
     func fetchIconImage(from url: URL) async throws -> Data {
         Data()
     }
-    
+
     func normalizedURL(for uri: PasswordURI) -> URL? {
         nil
     }
-    
+
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         [
             ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .systemBlue, position: 0, modificationDate: Date()),
             ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .systemGreen, position: 1, modificationDate: Date()),
             ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .systemOrange, position: 2, modificationDate: Date())
         ]
+    }
+
+    func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
+        issuer == .americanExpress ? 4 : 3
     }
 }
 

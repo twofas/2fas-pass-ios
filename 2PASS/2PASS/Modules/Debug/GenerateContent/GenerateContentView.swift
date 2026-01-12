@@ -10,7 +10,9 @@ import CommonUI
 struct GenerateContentView: View {
     @State
     private var presentWarning = false
-    
+    @State
+    private var presentTagsWarning = false
+
     @Bindable
     var presenter: GenerateContentPresenter
     
@@ -77,6 +79,16 @@ struct GenerateContentView: View {
                 }
                 .padding(.vertical, Spacing.xl)
                 .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+
+                Section {
+                    Text("Tags count: \(presenter.tagsCount)" as String)
+                }
+
+                PrimaryButton(title: "Remove All Tags") {
+                    presentTagsWarning = true
+                }
+                .padding(.vertical, Spacing.xl)
+                .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
             }
             .onAppear {
                 presenter.onAppear()
@@ -88,6 +100,14 @@ struct GenerateContentView: View {
                 }
                 Button(T.commonCancel.localizedKey, role: .cancel) {
                     presentWarning = false
+                }
+            })
+            .alert("Remove all tags?" as String, isPresented: $presentTagsWarning, actions: {
+                Button("Remove all" as String, role: .destructive) {
+                    presenter.onRemoveAllTags()
+                }
+                Button(T.commonCancel.localizedKey, role: .cancel) {
+                    presentTagsWarning = false
                 }
             })
             .listStyle(.grouped)
