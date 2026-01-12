@@ -78,6 +78,7 @@ final class PasswordsPresenter {
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private var listData: [Int: [ItemData]] = [:]
+    private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
     private var canLoadData: Bool = false
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
@@ -150,6 +151,7 @@ extension PasswordsPresenter {
     }
     
     func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
+        view?.clearSelectionForContentTypeChange()
         contentTypeFilter = filter
         reload()
     }
@@ -242,6 +244,18 @@ extension PasswordsPresenter {
             }
         case .edit:
             flowController.toEditItem(itemID: itemData.id)
+        }
+    }
+
+    @MainActor
+    func onDeleteItems(_ itemIDs: [ItemID], source: UIBarButtonItem?) {
+        guard itemIDs.isEmpty == false else { return }
+
+        Task { @MainActor in
+            if await flowController.toConfirmMultiselectDelete(selectedCount: itemIDs.count, source: source) {
+                itemIDs.forEach { interactor.moveToTrash($0) }
+                reload()
+            }
         }
     }
     
@@ -347,6 +361,7 @@ private extension PasswordsPresenter {
         
         listData.removeAll()
         hasSuggestedItems = false
+        tagColorsByID = Dictionary(uniqueKeysWithValues: listAllTags().map { ($0.tagID, $0.color) })
         
         let cellsCount: Int
         
@@ -424,6 +439,7 @@ private extension PasswordsPresenter {
                 name: loginItem.name,
                 description: loginItem.content.username,
                 iconType: .login(loginItem.content.iconType),
+                tagColors: tagColors(for: itemData),
                 actions: [
                     .view,
                     .edit,
@@ -440,6 +456,7 @@ private extension PasswordsPresenter {
                 name: secureNoteItem.name,
                 description: nil,
                 iconType: .contentType(itemData.contentType),
+                tagColors: tagColors(for: itemData),
                 actions: [
                     .view,
                     .edit,
@@ -459,6 +476,7 @@ private extension PasswordsPresenter {
                 name: paymentCardItem.name,
                 description: description,
                 iconType: .paymentCard(issuer: paymentCardItem.content.cardIssuer),
+                tagColors: tagColors(for: itemData),
                 actions: [
                     .view,
                     .edit,
@@ -471,6 +489,13 @@ private extension PasswordsPresenter {
         case .raw:
             return nil
         }
+    }
+
+    func tagColors(for itemData: ItemData) -> [ItemTagColor] {
+        guard let tagIds = itemData.tagIds, tagIds.isEmpty == false else {
+            return []
+        }
+        return tagIds.compactMap { tagColorsByID[$0] }
     }
     
     @objc

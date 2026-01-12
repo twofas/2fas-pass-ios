@@ -17,6 +17,9 @@ public protocol PasswordsFlowControllerParent: AnyObject {
     
     @MainActor
     func toConfirmDelete() async -> Bool
+    
+    @MainActor
+    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool
 }
 
 protocol PasswordsFlowControlling: AnyObject {
@@ -33,6 +36,9 @@ protocol PasswordsFlowControlling: AnyObject {
 
     @MainActor
     func toConfirmDelete() async -> Bool
+    
+    @MainActor
+    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool
 }
 
 public final class PasswordsFlowController: FlowController {
@@ -104,6 +110,10 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     @MainActor
     func toConfirmDelete() async -> Bool {
         await parent?.toConfirmDelete() ?? false
+    }
+
+    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool {
+        await parent?.toConfirmMultiselectDelete(selectedCount: selectedCount, source: source) ?? false
     }
     
     func toPremiumPlanPrompt(itemsLimit: Int) {

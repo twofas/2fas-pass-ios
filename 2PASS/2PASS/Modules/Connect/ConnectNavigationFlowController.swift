@@ -27,7 +27,7 @@ final class ConnectNavigationFlowController: NavigationFlowController {
         
         let connectViewController = UIHostingController(rootView: view)
         connectViewController.tabBarItem = UITabBarItem(
-            title: "Connect",
+            title: String(localized: .bottomBarConnect),
             image: UIImage(systemName: "personalhotspot"),
             selectedImage: UIImage(systemName: "personalhotspot")
         )

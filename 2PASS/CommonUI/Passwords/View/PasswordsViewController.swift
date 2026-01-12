@@ -26,6 +26,13 @@ final class PasswordsViewController: UIViewController {
 
     private(set) var emptyList: UIView?
     private(set) var emptySearchList: UIView?
+
+    private var selectAllButton: UIBarButtonItem?
+    private var selectedItemIDs: [ItemID] {
+        passwordsList?.indexPathsForSelectedItems?.compactMap { indexPath in
+            dataSource?.itemIdentifier(for: indexPath)?.itemID
+        } ?? []
+    }
     
     var contentTypePicker: UIView? {
         contentTypePickerViewController?.view
@@ -42,6 +49,7 @@ final class PasswordsViewController: UIViewController {
     private var edgeEffectView: UIView?
     private var edgeEffectToContentTypePickerConstraint: NSLayoutConstraint?
     private var edgeEffectToSelectedTagConstraint: NSLayoutConstraint?
+    private var deleteBarButton: UIBarButtonItem?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -88,8 +96,37 @@ final class PasswordsViewController: UIViewController {
         super.viewWillDisappear(animated)
         stopSafeAreaKeyboardAdjustment()
     }
+
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        
+        if editing == false {
+            navigationItem.title = String(localized: .homeTitle)
+            if presenter.isAutoFillExtension {
+                navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
+            } else {
+                navigationItem.leftBarButtonItem = nil
+            }
+        }
+
+        searchController.searchBar.isEnabled = !editing
+
+        passwordsList?.isEditing = editing
+        if editing == false {
+            clearSelection()
+        }
+
+        updateNavigationBarButtons(animated: animated)
+        updateTabBarAndToolbar(isEditing: editing, animated: animated)
+        updateSelectionUI()
+    }
     
     func updateNavigationBarButtons() {
+        if isEditing {
+            configureSelectionNavigationItems()
+            return
+        }
+
         if #available(iOS 26, *) {
             let addButton = UIBarButtonItem(
                 image: UIImage(systemName: "plus"),
@@ -156,6 +193,7 @@ final class PasswordsViewController: UIViewController {
 
         updateNavigationBarButtons()
         reloadLayout()
+        clearSelection()
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
@@ -169,6 +207,13 @@ final class PasswordsViewController: UIViewController {
         contentTypePicker?.alpha = flag ? 1 : 0
         
         reloadLayout()
+    }
+    
+    func clearSelection() {
+        passwordsList?.indexPathsForSelectedItems?.forEach { indexPath in
+            passwordsList?.deselectItem(at: indexPath, animated: false)
+        }
+        updateSelectionUI()
     }
 }
 
@@ -190,6 +235,39 @@ private extension PasswordsViewController {
     @objc
     func cancel() {
         presenter.onCancel()
+    }
+
+    @objc
+    func startEditingMode() {
+        setEditing(true, animated: true)
+    }
+
+    @objc
+    func stopEditingMode() {
+        setEditing(false, animated: true)
+    }
+
+    @objc
+    func selectAllAction() {
+        guard let dataSource else { return }
+        let allItems = dataSource.snapshot().itemIdentifiers
+        if selectedItemIDs.count == allItems.count, allItems.isEmpty == false {
+            passwordsList?.indexPathsForSelectedItems?.forEach { indexPath in
+                passwordsList?.deselectItem(at: indexPath, animated: false)
+            }
+        } else {
+            for item in allItems {
+                guard let indexPath = dataSource.indexPath(for: item) else { continue }
+                passwordsList?.selectItem(at: indexPath, animated: false, scrollPosition: [])
+            }
+        }
+
+        updateSelectionUI()
+    }
+
+    @objc
+    func deleteSelectedItems() {
+        presenter.onDeleteItems(selectedItemIDs, source: deleteBarButton)
     }
     
     func filterBarButton() -> UIBarButtonItem {
@@ -311,6 +389,8 @@ private extension PasswordsViewController {
     func setupPasswordsList() {
         layout = makeLayout()
         let passwordsList = PasswordsListView(frame: .zero, collectionViewLayout: layout)
+        passwordsList.allowsSelectionDuringEditing = true
+        passwordsList.allowsMultipleSelectionDuringEditing = true
         self.passwordsList = passwordsList
         view.addSubview(passwordsList)
         passwordsList.pinToParent()
@@ -451,11 +531,108 @@ private extension PasswordsViewController {
             }]
         )
     }
+
+    func selectMenuAction() -> UIAction {
+        UIAction(
+            title: String(localized: .homeListMenuSelect),
+            image: UIImage(systemName: "checkmark.circle")
+        ) { [weak self] _ in
+            self?.startEditingMode()
+        }
+    }
+
+    func configureSelectionNavigationItems() {
+        let selectAllButton = UIBarButtonItem(title: selectAllButtonTitle(), style: .plain, target: self, action: #selector(selectAllAction))
+        self.selectAllButton = selectAllButton
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(stopEditingMode))
+        navigationItem.rightBarButtonItems = [
+            selectAllButton,
+            filterBarButton()
+        ]
+        updateSelectionUI()
+    }
+
+    func selectAllButtonTitle() -> String {
+        guard let dataSource else {
+            return String(localized: .homeSelectionSelectAll)
+        }
+        let allCount = dataSource.snapshot().itemIdentifiers.count
+        return selectedItemIDs.count == allCount && allCount > 0
+            ? String(localized: .homeSelectionDeselectAll)
+            : String(localized: .homeSelectionSelectAll)
+    }
+
+    func selectionCountTitle(for count: Int) -> String {
+        let value = Int32(count)
+        if count == 1 {
+            return String(localized: .homeSelectionCountSingle(value))
+        } else {
+            return String(localized: .homeSelectionCountPlural(value))
+        }
+    }
+
+    func updateNavigationBarButtons(animated: Bool = false) {
+        if animated, let navigationBar = navigationController?.navigationBar {
+            UIView.transition(with: navigationBar, duration: 0.25, options: .transitionCrossDissolve) {
+                self.updateNavigationBarButtons()
+            }
+        } else {
+            updateNavigationBarButtons()
+        }
+    }
+
+    func updateTabBarAndToolbar(isEditing: Bool, animated: Bool) {
+        let deleteBarButton = UIBarButtonItem(
+            image: UIImage(systemName: "trash"),
+            style: .plain,
+            target: self,
+            action: #selector(deleteSelectedItems)
+        )
+        deleteBarButton.isEnabled = selectedItemIDs.isEmpty == false
+        self.deleteBarButton = deleteBarButton
+        let toolbarItems = [
+            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
+            deleteBarButton
+        ]
+        setToolbarItems(toolbarItems, animated: false)
+        navigationController?.setToolbarHidden(!isEditing, animated: animated)
+
+        guard let tabBar = tabBarController?.tabBar else { return }
+        if isEditing {
+            if animated {
+                tabBar.isHidden = false
+                UIView.animate(withDuration: 0.25, animations: {
+                    tabBar.alpha = 0
+                }, completion: { _ in
+                    tabBar.isHidden = true
+                })
+            } else {
+                tabBar.alpha = 0
+                tabBar.isHidden = true
+            }
+        } else {
+            if animated {
+                tabBar.isHidden = false
+                tabBar.alpha = 0
+                UIView.animate(withDuration: 0.25) {
+                    tabBar.alpha = 1
+                }
+            } else {
+                tabBar.alpha = 1
+                tabBar.isHidden = false
+            }
+        }
+    }
+
     
     func filterMenuItems() -> [UIMenuElement] {
         var menuItems: [UIMenuElement] = []
         menuItems.append(sortMenu())
         menuItems.append(tagMenu())
+        if isEditing == false, presenter.isAutoFillExtension == false {
+            let selectSection = UIMenu(title: "", options: .displayInline, children: [selectMenuAction()])
+            menuItems.append(selectSection)
+        }
         return menuItems
     }
     
@@ -507,7 +684,7 @@ private extension PasswordsViewController {
 
         return UIMenu(
             title: String(localized: .loginFilterModalTag),
-            image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+            image: UIImage(systemName: "line.3.horizontal.decrease"),
             children: [protectionLevelSection, tagSection]
         )
     }
@@ -546,6 +723,15 @@ extension PasswordsViewController: CommonSearchDataSourceSearchable {
     }
 }
 
+extension PasswordsViewController {
+    func updateSelectionUI() {
+        guard isEditing else { return }
+        navigationItem.title = selectionCountTitle(for: selectedItemIDs.count)
+        selectAllButton?.title = selectAllButtonTitle()
+        deleteBarButton?.isEnabled = selectedItemIDs.isEmpty == false
+    }
+}
+
 extension PasswordsViewController: UISearchControllerDelegate {
     
     func willPresentSearchController(_ searchController: UISearchController) {
@@ -564,4 +750,3 @@ extension PasswordsViewController: UISearchControllerDelegate {
         isSearchTransitioning = false
     }
 }
-

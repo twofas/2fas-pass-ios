@@ -7,8 +7,8 @@
 import Foundation
 
 public enum SortType: String, CaseIterable, Hashable {
-    case newestFirst
-    case oldestFirst
     case az
     case za
+    case newestFirst
+    case oldestFirst
 }

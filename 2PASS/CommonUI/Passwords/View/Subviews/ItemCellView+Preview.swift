@@ -16,6 +16,7 @@ struct ItemCellViewPreview: UIViewRepresentable {
             name: "Name",
             description: "Description",
             iconType: .contentType(.secureNote),
+            tagColors: [],
             actions: []
         ))
         return view

@@ -18,6 +18,7 @@ protocol PasswordsViewControlling: AnyObject {
     func showEmptyScreen()
     func showSearchEmptyScreen()
     func filterDidChange()
+    func clearSelectionForContentTypeChange()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {
@@ -56,6 +57,9 @@ extension PasswordsViewController: PasswordsViewControlling {
     
     func showEmptyScreen() {
         VoiceOver.say(String(localized: .homeEmptyTitle))
+        
+        setEditing(false, animated: true)
+        
         guard emptyList?.isHidden == true else { return }
         
         emptyList?.alpha = 0
@@ -83,5 +87,9 @@ extension PasswordsViewController: PasswordsViewControlling {
         ) {
             self.emptySearchList?.alpha = 1
         }
+    }
+
+    func clearSelectionForContentTypeChange() {
+        clearSelection()
     }
 }
