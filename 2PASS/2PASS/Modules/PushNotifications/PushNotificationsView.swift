@@ -17,29 +17,29 @@ struct PushNotificationsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(T.settingsEntryPushNotifications.localizedKey) {
+            SettingsDetailsForm(.settingsEntryPushNotifications) {
                 Section {
-                    LabeledContent(T.settingsPushNotificationsStatusLabel.localizedKey, value: presenter.status)
+                    LabeledContent(String(localized: .settingsPushNotificationsStatusLabel), value: presenter.status)
                 }
             } header: {
                 SettingsHeaderView(
                     icon: .pushNotifications,
-                    title: Text(T.settingsEntryPushNotifications.localizedKey),
-                    description: Text(T.settingsEntryPushNotificationsDescription.localizedKey)
+                    title: Text(.settingsEntryPushNotifications),
+                    description: Text(.settingsEntryPushNotificationsDescription)
                 )
             }
             
             Group {
                 if presenter.canRequestForPermissions == false {
                     SettingsSystemLinkButton(
-                        description: Text(T.settingsPushNotificationsOpenSystemSettingsDescription.localizedKey),
+                        description: Text(.settingsPushNotificationsOpenSystemSettingsDescription),
                         action: {
                             guard let url = presenter.systemSettingsURL else { return }
                             openURL(url)
                         }
                     )
                 } else {
-                    Button(T.settingsPushNotificationsEnableCta.localizedKey) {
+                    Button(.settingsPushNotificationsEnableCta) {
                         presenter.turnOn()
                     }
                     .buttonStyle(.filled)

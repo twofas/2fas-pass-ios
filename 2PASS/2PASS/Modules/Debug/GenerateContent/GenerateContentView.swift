@@ -78,7 +78,7 @@ struct GenerateContentView: View {
                     presentWarning = true
                 }
                 .padding(.vertical, Spacing.xl)
-                .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                .foregroundStyle(.destructiveAction)
 
                 Section {
                     Text("Tags count: \(presenter.tagsCount)" as String)
@@ -88,7 +88,7 @@ struct GenerateContentView: View {
                     presentTagsWarning = true
                 }
                 .padding(.vertical, Spacing.xl)
-                .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                .foregroundStyle(.destructiveAction)
             }
             .onAppear {
                 presenter.onAppear()
@@ -98,7 +98,7 @@ struct GenerateContentView: View {
                 Button("Remove all" as String, role: .destructive) {
                     presenter.onRemoveAllItems()
                 }
-                Button(T.commonCancel.localizedKey, role: .cancel) {
+                Button(.commonCancel, role: .cancel) {
                     presentWarning = false
                 }
             })
@@ -106,7 +106,7 @@ struct GenerateContentView: View {
                 Button("Remove all" as String, role: .destructive) {
                     presenter.onRemoveAllTags()
                 }
-                Button(T.commonCancel.localizedKey, role: .cancel) {
+                Button(.commonCancel, role: .cancel) {
                     presentTagsWarning = false
                 }
             })

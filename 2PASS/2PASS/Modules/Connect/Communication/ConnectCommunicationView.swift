@@ -37,7 +37,7 @@ struct ConnectCommunicationView: View {
     
     var body: some View {
         ConnectCommunicationSheetView(
-            title: Text(T.connectConnectionHeader.localizedKey),
+            title: Text(.connectConnectionHeader),
             identicon: presenter.identicon,
             webBrowser: presenter.webBrowser,
             onClose: { dismiss() },
@@ -64,7 +64,7 @@ struct ConnectCommunicationView: View {
                 dismiss()
             }
         })
-        .toast(Text(T.connectConnectionSuccessTitle.localizedKey), isPresented: isPresentedSuccessToast, style: .success)
+        .toast(Text(.connectConnectionSuccessTitle), isPresented: isPresentedSuccessToast, style: .success)
         .interactiveDismissDisabled(presenter.interactiveDismissDisabled)
     }
     
@@ -74,16 +74,16 @@ struct ConnectCommunicationView: View {
             case .newBrowser:
                 ConnectCommunicationContentView(
                     iconColor: .danger500,
-                    title: Label(T.connectConnectionSecurityCheckTitle.localizedKey, image: .customExclamationmarkShieldFill),
-                    description: Text(T.connectConnectionSecurityCheckDescription.localizedKey),
+                    title: Label(.connectConnectionSecurityCheckTitle, image: .customExclamationmarkShieldFill),
+                    description: Text(.connectConnectionSecurityCheckDescription),
                     actions: {
                         HStack(spacing: Spacing.m) {
-                            Button(T.connectConnectionSecurityCheckAcceptCta.localizedKey) {
+                            Button(.connectConnectionSecurityCheckAcceptCta) {
                                 presenter.onProceed()
                             }
                             .buttonStyle(.bezeledGray)
                             
-                            Button(T.commonCancel.localizedKey) {
+                            Button(.commonCancel) {
                                 dismiss()
                             }
                             .buttonStyle(.bezeled)
@@ -94,10 +94,10 @@ struct ConnectCommunicationView: View {
             case .limitReached:
                 ConnectCommunicationContentView(
                     iconColor: .danger500,
-                    title: Label(T.connectModalErrorExtensionsLimitTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                    description: Text(T.connectModalErrorExtensionsLimitSubtitle.localizedKey),
+                    title: Label(.connectModalErrorExtensionsLimitTitle, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(.connectModalErrorExtensionsLimitSubtitle),
                     actions: {
-                        Button(T.connectModalErrorExtensionsLimitCta.localizedKey) {
+                        Button(.connectModalErrorExtensionsLimitCta) {
                             dismiss()
                             presenter.onUpgradePlan()
                         }
@@ -107,7 +107,7 @@ struct ConnectCommunicationView: View {
             
             case .connecting, .finish(.success):
                 ProgressView(value: presenter.progress) {
-                    Text(T.connectConnectionConnecting.localizedKey)
+                    Text(.connectConnectionConnecting)
                 }
                 .progressViewStyle(.circle)
                 .frame(maxWidth: .infinity)
@@ -115,10 +115,10 @@ struct ConnectCommunicationView: View {
             case .finish(.failure(ConnectWebSocketError.browserExtensionUpdateRequired)):
                 ConnectCommunicationContentView(
                     iconColor: .danger500,
-                    title: Label(T.connectModalErrorBrowserExtensionUpdateRequiredTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                    description: Text(T.connectModalErrorBrowserExtensionUpdateRequiredSubtitle.localizedKey),
+                    title: Label(.connectModalErrorBrowserExtensionUpdateRequiredTitle, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(.connectModalErrorBrowserExtensionUpdateRequiredSubtitle),
                     actions: {
-                        Button(T.commonClose.localizedKey) {
+                        Button(.commonClose) {
                             dismiss()
                             presenter.onScanAgain()
                         }
@@ -129,17 +129,17 @@ struct ConnectCommunicationView: View {
             case .finish(.failure(ConnectWebSocketError.appUpdateRequired)):
                 ConnectCommunicationContentView(
                     iconColor: .danger500,
-                    title: Label(T.connectModalErrorAppUpdateRequiredTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                    description: Text(T.connectModalErrorAppUpdateRequiredSubtitle.localizedKey),
+                    title: Label(.connectModalErrorAppUpdateRequiredTitle, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(.connectModalErrorAppUpdateRequiredSubtitle),
                     actions: {
                         HStack(spacing: Spacing.m) {
-                            Button(T.commonClose.localizedKey) {
+                            Button(.commonClose) {
                                 dismiss()
                                 presenter.onScanAgain()
                             }
                             .buttonStyle(.bezeledGray)
                             
-                            Button(T.connectModalErrorAppUpdateRequiredCta.localizedKey) {
+                            Button(.connectModalErrorAppUpdateRequiredCta) {
                                 dismiss()
                                 presenter.onUpdateApp()
                             }
@@ -151,10 +151,10 @@ struct ConnectCommunicationView: View {
             case .finish(.failure(URLError.notConnectedToInternet)):
                 ConnectCommunicationContentView(
                     iconColor: .danger500,
-                    title: Label(T.connectModalErrorNoInternetTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                    description: Text(T.connectModalErrorNoInternetSubtitle.localizedKey),
+                    title: Label(.connectModalErrorNoInternetTitle, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(.connectModalErrorNoInternetSubtitle),
                     actions: {
-                        Button(T.connectConnectionFailedCta.localizedKey) {
+                        Button(.connectConnectionFailedCta) {
                             dismiss()
                             presenter.onScanAgain()
                         }
@@ -165,10 +165,10 @@ struct ConnectCommunicationView: View {
             case .finish(.failure):
                 ConnectCommunicationContentView(
                     iconColor: .danger500,
-                    title: Label(T.connectConnectionFailedTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                    description: Text(T.connectConnectionFailedDescription.localizedKey),
+                    title: Label(.connectConnectionFailedTitle, systemImage: "exclamationmark.triangle.fill"),
+                    description: Text(.connectConnectionFailedDescription),
                     actions: {
-                        Button(T.connectConnectionFailedCta.localizedKey) {
+                        Button(.connectConnectionFailedCta) {
                             dismiss()
                             presenter.onScanAgain()
                         }

@@ -187,7 +187,7 @@ extension PasswordsPresenter {
                 toastPresenter.presentUsernameCopied()
             } else {
                 toastPresenter.present(
-                    T.passwordErrorCopyUsername,
+                    .passwordErrorCopyUsername,
                     style: .failure
                 )
             }
@@ -297,7 +297,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentPasswordCopied()
         } else {
             toastPresenter.present(
-                T.passwordErrorCopyPassword,
+                .passwordErrorCopyPassword,
                 style: .failure
             )
         }
@@ -308,7 +308,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentSecureNoteCopied()
         } else {
             toastPresenter.present(
-                T.secureNoteErrorCopy,
+                .secureNoteErrorCopy,
                 style: .failure
             )
         }
@@ -319,7 +319,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentPaymentCardNumberCopied()
         } else {
             toastPresenter.present(
-                T.cardErrorCopyNumber,
+                .cardErrorCopyNumber,
                 style: .failure
             )
         }
@@ -330,7 +330,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentPaymentCardSecurityCodeCopied()
         } else {
             toastPresenter.present(
-                T.cardErrorCopySecurityCode,
+                .cardErrorCopySecurityCode,
                 style: .failure
             )
         }
@@ -374,8 +374,8 @@ private extension PasswordsPresenter {
 
                 let suggestedCells = list.suggested.compactMap(makeCellData(for:))
                 let restCells = list.rest.compactMap(makeCellData(for:))
-                let suggestedSection = ItemSectionData(title: T.commonSuggested)
-                let section = ItemSectionData(title: T.commonOther)
+                let suggestedSection = ItemSectionData(title: String(localized: .commonSuggested))
+                let section = ItemSectionData(title: String(localized: .commonOther))
                 
                 snapshot.appendSections([suggestedSection])
                 snapshot.appendItems(suggestedCells, toSection: suggestedSection)

@@ -12,24 +12,24 @@ struct SyncView: View {
     var presenter: SyncPresenter
     
     var body: some View {
-        SettingsDetailsForm(T.settingsEntryCloudSync.localizedKey) {
+        SettingsDetailsForm(.settingsEntryCloudSync) {
             Section {
-                Toggle(T.settingsCloudSyncIcloudLabel.localizedKey, isOn: $presenter.icloudSyncEnabled)
+                Toggle(.settingsCloudSyncIcloudLabel, isOn: $presenter.icloudSyncEnabled)
                     .tint(.accentColor)
                 
                 Button {
                     presenter.onWebDAV()
                 } label: {
-                    SettingsRowView(title: T.settingsCloudSyncWebdavLabel.localizedKey, additionalInfo: Text(presenter.webDAVEnableStatus))
+                    SettingsRowView(title: .settingsCloudSyncWebdavLabel, additionalInfo: Text(presenter.webDAVEnableStatus))
                 }
             } footer: {
                 VStack(alignment: .leading) {
                     if let status = presenter.status {
-                        Text(T.settingsCloudSyncStatus(status).localizedKey)
+                        Text(.settingsCloudSyncStatus(status))
                     }
                     
                     if let date = presenter.lastSyncDate {
-                        Text(T.settingsCloudSyncLastSync(date.formatted(date: .numeric, time: .standard)).localizedKey)
+                        Text(.settingsCloudSyncLastSync(date.formatted(date: .numeric, time: .standard)))
                     }
                 }
                 .settingsFooter()
@@ -37,7 +37,7 @@ struct SyncView: View {
             
             if presenter.showUpgradePlanButton {
                 Section {
-                    Button(T.paywallNoticeCta.localizedKey) {
+                    Button(.paywallNoticeCta) {
                         presenter.onUpgradePlan()
                     }
                 }
@@ -46,7 +46,7 @@ struct SyncView: View {
             
             if presenter.showUpdateAppButton {
                 Section {
-                    Button(T.cloudSyncInvalidSchemaErrorCta.localizedKey) {
+                    Button(.cloudSyncInvalidSchemaErrorCta) {
                         presenter.onUpdateApp()
                     }
                 }
@@ -56,8 +56,8 @@ struct SyncView: View {
         } header: {
             SettingsHeaderView(
                 icon: .sync,
-                title: Text(T.settingsCloudSyncTitle.localizedKey),
-                description: Text(T.settingsCloudSyncDescription.localizedKey)
+                title: Text(.settingsCloudSyncTitle),
+                description: Text(.settingsCloudSyncDescription)
             )
         }
         .onAppear {

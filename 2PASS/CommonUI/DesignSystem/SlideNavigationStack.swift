@@ -69,7 +69,7 @@ public struct SlideNavigationStack<RootView: View>: View {
                             toolbarItem = nil
                             back()
                         } label: {
-                            Label(title: { Text(T.commonBack.localizedKey) }, icon: { Image(systemName: "chevron.backward").font(.title2) })
+                            Label(title: { Text(.commonBack) }, icon: { Image(systemName: "chevron.backward").font(.title2) })
                                 .labelStyle(ButtonLabelStyle())
                         }
                     }

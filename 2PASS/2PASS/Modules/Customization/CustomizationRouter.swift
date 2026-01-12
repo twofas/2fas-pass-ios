@@ -29,8 +29,8 @@ struct CustomizationRouter: Router {
         switch destination {
         case .defaultPasswordsListAction(let picker):
             SettingsPickerView(
-                title: Text(T.settingsEntryLoginClickAction.localizedKey),
-                footer: Text(T.settingsEntryLoginClickActionDescription.localizedKey),
+                title: Text(.settingsEntryLoginClickAction),
+                footer: Text(.settingsEntryLoginClickActionDescription),
                 picker: picker
             )
             

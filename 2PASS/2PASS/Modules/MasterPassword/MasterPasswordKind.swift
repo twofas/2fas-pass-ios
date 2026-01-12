@@ -34,8 +34,8 @@ extension MasterPasswordKind {
     
     var header: String {
         switch self {
-        case .unencryptedVaultRecovery, .onboarding: T.masterPasswordDefine
-        case .change: T.masterPasswordCreateNew
+        case .unencryptedVaultRecovery, .onboarding: String(localized: .masterPasswordDefine)
+        case .change: String(localized: .masterPasswordCreateNew)
         }
     }
     

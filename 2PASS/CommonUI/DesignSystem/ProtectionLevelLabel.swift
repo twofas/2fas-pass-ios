@@ -11,7 +11,7 @@ struct ProtectionLevelLabel: View {
     
     var body: some View {
         Label {
-            Text(level.title.localizedKey)
+            Text(level.title)
         } icon: {
             level.icon
                 .renderingMode(.template)

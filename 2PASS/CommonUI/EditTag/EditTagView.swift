@@ -36,14 +36,14 @@ struct EditTagView: View {
                         .font(.title1Emphasized)
                         .foregroundStyle(.neutral950)
                     
-                    Text(T.tagEditorDescription.localizedKey)
+                    Text(.tagEditorDescription)
                         .font(.subheadline)
                         .foregroundStyle(.neutral600)
                 }
                 
                 VStack(spacing: Spacing.l) {
                     HStack(spacing: Spacing.s) {
-                        TextField(T.tagEditorPlaceholder.localizedKey, text: $presenter.name)
+                        TextField(String(localized: .tagEditorPlaceholder), text: $presenter.name)
                             .focused($isFocused)
                             .onChange(of: presenter.name) { _, newValue in
                                 if newValue.count > presenter.limitNameLength {
@@ -98,7 +98,7 @@ struct EditTagView: View {
                 Button {
                     presenter.onSave()
                 } label: {
-                    Text(T.commonSave.localizedKey)
+                    Text(.commonSave)
                 }
                 .disabled(presenter.canSave == false)
                 .padding(.horizontal, Spacing.l)

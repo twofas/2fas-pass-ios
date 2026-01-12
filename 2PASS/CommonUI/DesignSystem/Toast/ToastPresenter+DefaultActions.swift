@@ -9,30 +9,30 @@ import UIKit
 extension ToastPresenter {
 
     public func presentUsernameCopied() {
-        presentCopied(T.toastUsernameCopied)
+        presentCopied(.toastUsernameCopied)
     }
 
     public func presentPasswordCopied() {
-        presentCopied(T.toastPasswordCopied)
+        presentCopied(.toastPasswordCopied)
     }
 
     public func presentSecureNoteCopied() {
-        presentCopied(T.toastSecureNoteCopied)
+        presentCopied(.toastSecureNoteCopied)
     }
 
     public func presentPaymentCardNumberCopied() {
-        presentCopied(T.toastCardNumberCopied)
+        presentCopied(.toastCardNumberCopied)
     }
 
     public func presentPaymentCardSecurityCodeCopied() {
-        presentCopied(T.toastCardSecurityCodeCopied)
+        presentCopied(.toastCardSecurityCodeCopied)
     }
 
     public func presentCopied() {
-        presentCopied(T.commonCopied)
+        presentCopied(.commonCopied)
     }
 
-    private func presentCopied(_ text: String) {
+    private func presentCopied(_ text: LocalizedStringResource) {
         present(
             text,
             style: .info,

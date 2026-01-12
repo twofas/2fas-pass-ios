@@ -43,7 +43,7 @@ struct VaultRecoveryCell: View {
                         Text("This Vault was created using newer version of the app. Update the app" as String)
                             .multilineTextAlignment(.leading)
                             .font(.caption)
-                            .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                            .foregroundStyle(.destructiveAction)
                     }
                 }
             }

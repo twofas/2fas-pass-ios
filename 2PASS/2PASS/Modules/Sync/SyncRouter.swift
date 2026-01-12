@@ -19,11 +19,11 @@ struct SyncRouter: Router {
         case .webDAV:
             .push
         case .iCloudNotAvailable(let reason):
-            .alert(title: T.generalNotAvailable, message: reason)
+            .alert(title: String(localized: .generalNotAvailable), message: reason)
         case .iCloudSchemeNotSupported(let schemeVersion, _):
-            .alert(title: T.appUpdateModalTitle, message: T.cloudSyncInvalidSchemaErrorMsg(schemeVersion))
+            .alert(title: String(localized: .appUpdateModalTitle), message: String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemeVersion))))
         case .disableWebDAVConfirmation:
-            .alert(title: T.webdavDisableIcloudConfirmTitle, message: T.webdavDisableWebdavConfirmBody)
+            .alert(title: String(localized: .webdavDisableIcloudConfirmTitle), message: String(localized: .webdavDisableWebdavConfirmBody))
         case .syncNotAllowed:
             .sheet
         case nil:
@@ -36,17 +36,17 @@ struct SyncRouter: Router {
         case .webDAV:
             BackupAddWebDAVRouter.buildView()
         case .iCloudNotAvailable:
-            Button(T.commonOk.localizedKey) {}
+            Button(.commonOk) {}
         case .iCloudSchemeNotSupported(_, let onUpdateApp):
-            Button(T.appUpdateModalCtaNegative.localizedKey, role: .cancel) {}
-            Button(T.appUpdateModalCtaPositive.localizedKey, action: onUpdateApp)
+            Button(.appUpdateModalCtaNegative, role: .cancel) {}
+            Button(.appUpdateModalCtaPositive, action: onUpdateApp)
         case .disableWebDAVConfirmation(onConfirm: let onConfirm):
-            Button(T.commonCancel.localizedKey, role: .cancel) {}
-            Button(T.commonConfirm.localizedKey, role: .destructive, action: onConfirm)
+            Button(.commonCancel, role: .cancel) {}
+            Button(.commonConfirm, role: .destructive, action: onConfirm)
         case .syncNotAllowed:
             PremiumPromptRouter.buildView(
-                title: Text(T.syncErrorIcloudSyncNotAllowedTitle.localizedKey),
-                description: Text(T.syncErrorIcloudSyncNotAllowedDescription.localizedKey)
+                title: Text(.syncErrorIcloudSyncNotAllowedTitle),
+                description: Text(.syncErrorIcloudSyncNotAllowedDescription)
             )
         }
     }

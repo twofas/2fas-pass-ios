@@ -17,7 +17,7 @@ struct VaultRecoveryWebDAVView: View {
             Form {
                 HStack {
                     Spacer()
-                    Text(T.settingsCloudSyncWebdavLabel.localizedKey)
+                    Text(.settingsCloudSyncWebdavLabel)
                         .font(.title1Emphasized)
                         .foregroundStyle(Color.neutral950)
                         .padding(.bottom, Spacing.xll3)
@@ -25,7 +25,7 @@ struct VaultRecoveryWebDAVView: View {
                 }
                 .listRowBackground(Color.clear)
                 
-                Section(T.webdavServerUrl.localizedKey) {
+                Section(.webdavServerUrl) {
                     TextField("https://host:port/path/" as String, text: $presenter.url)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
@@ -33,20 +33,20 @@ struct VaultRecoveryWebDAVView: View {
                         .frame(maxWidth: .infinity)
                         .disabled(presenter.isLoading)
                     
-                    Toggle(T.webdavAllowUntrustedCertificates.localizedKey, isOn: $presenter.allowTLSOff)
+                    Toggle(.webdavAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
                         .frame(maxWidth: .infinity)
                         .tint(.accentColor)
                 }
                 
                 
-                Section(T.webdavCredentials.localizedKey) {
-                    TextField(T.webdavUsername.localizedKey, text: $presenter.username)
+                Section(.webdavCredentials) {
+                    TextField(String(localized: .webdavUsername), text: $presenter.username)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
                         .textContentType(.username)
                         .disabled(presenter.isLoading)
                     
-                    SecureInput(label: T.webdavPassword.localizedResource, value: $presenter.password)
+                    SecureInput(label: .webdavPassword, value: $presenter.password)
                         .disabled(presenter.isLoading)
                 }
             }
@@ -57,7 +57,7 @@ struct VaultRecoveryWebDAVView: View {
                 Button {
                     presenter.onConnect()
                 } label: {
-                    Text(presenter.isLoading ? T.webdavConnecting.localizedKey : T.commonContinue.localizedKey)
+                    Text(presenter.isLoading ? .webdavConnecting : .commonContinue)
                         .accessoryLoader(presenter.isLoading)
                 }
                 .buttonStyle(.filled)

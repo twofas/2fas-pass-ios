@@ -82,7 +82,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
             toastPresenter.presentUsernameCopied()
         } else {
             toastPresenter.present(
-                T.passwordErrorCopyUsername,
+                .passwordErrorCopyUsername,
                 style: .failure
             )
         }
@@ -94,7 +94,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
             toastPresenter.presentPasswordCopied()
         } else {
             toastPresenter.present(
-                T.passwordErrorCopyPassword,
+                .passwordErrorCopyPassword,
                 style: .failure
             )
         }
@@ -109,8 +109,8 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
         toastPresenter.presentCopied()
     }
     
-    func uriKey(at index: Int) -> LocalizedStringKey {
-        uri.count == 1 ? T.loginUriLabel.localizedKey : T.loginUriLabelLld(index+1).localizedKey
+    func uriKey(at index: Int) -> LocalizedStringResource {
+        uri.count == 1 ? .loginUriLabel : .loginUriLabel(index + 1)
     }
     
     func reload() {

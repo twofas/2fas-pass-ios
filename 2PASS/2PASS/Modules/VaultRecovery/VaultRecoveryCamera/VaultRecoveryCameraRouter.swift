@@ -24,13 +24,13 @@ struct VaultRecoveryCameraRouter: Router {
     func view(for destination: VaultRecoveryCameraDestination) -> some View {
         switch destination {
         case .cameraQRCodeError(let onClose):
-            Button(T.commonOk.localizedKey, action: onClose)
+            Button(.commonOk, action: onClose)
         }
     }
     
     func routingType(for destination: VaultRecoveryCameraDestination?) -> RoutingType? {
         switch destination {
-        case .cameraQRCodeError: .alert(title: T.commonError, message: T.cameraQrCodeError)
+        case .cameraQRCodeError: .alert(title: String(localized: .commonError), message: String(localized: .cameraQrCodeError))
         case nil: nil
         }
     }

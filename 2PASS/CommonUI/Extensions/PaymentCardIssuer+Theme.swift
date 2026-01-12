@@ -10,21 +10,25 @@ import UIKit
 extension PaymentCardIssuer {
 
     public var icon: UIImage {
+        UIImage(resource: iconResource)
+    }
+    
+    private var iconResource: ImageResource {
         switch self {
         case .visa:
-            return UIImage(resource: .visaIcon)
+            return .visaIcon
         case .mastercard:
-            return UIImage(resource: .mastercardIcon)
+            return .mastercardIcon
         case .americanExpress:
-            return UIImage(resource: .amexIcon)
+            return .amexIcon
         case .discover:
-            return UIImage(resource: .discoverIcon)
+            return .discoverIcon
         case .dinersClub:
-            return UIImage(resource: .dinersclubIcon)
+            return .dinersclubIcon
         case .jcb:
-            return UIImage(resource: .jcbIcon)
+            return .jcbIcon
         case .unionPay:
-            return UIImage(resource: .unionpayIcon)
+            return .unionpayIcon
         }
     }
 }

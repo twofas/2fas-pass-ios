@@ -15,8 +15,8 @@ struct VaultRecoveryScanQRCodeIntroView: View {
     var body: some View {
         VStack {
             HeaderContentView(
-                title: Text(T.restoreQrCodeIntroTitle.localizedKey),
-                subtitle: Text(T.restoreQrCodeIntroDescription.localizedKey),
+                title: Text(.restoreQrCodeIntroTitle),
+                subtitle: Text(.restoreQrCodeIntroDescription),
                 icon: {
                     Image(.lockFileHeaderIcon)
                 }
@@ -31,7 +31,7 @@ struct VaultRecoveryScanQRCodeIntroView: View {
             
             Spacer()
             
-            Button(T.restoreQrCodeIntroCta.localizedKey) {
+            Button(.restoreQrCodeIntroCta) {
                 presenter.onContinue()
             }
             .buttonStyle(.filled)
@@ -39,7 +39,7 @@ struct VaultRecoveryScanQRCodeIntroView: View {
         }
         .padding(.vertical, Spacing.l)
         .padding(.horizontal, Spacing.xl)
-        .navigationTitle(T.restoreDecryptVaultOptionScanQr.localizedKey)
+        .navigationTitle(.restoreDecryptVaultOptionScanQr)
         .navigationBarTitleDisplayMode(.inline)
         .router(router: VaultRecoveryScanQRCodeIntroRouter(), destination: $presenter.destination)
         .readableContentMargins()

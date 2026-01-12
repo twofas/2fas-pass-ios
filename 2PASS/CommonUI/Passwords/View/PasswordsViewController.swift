@@ -46,7 +46,7 @@ final class PasswordsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = Asset.mainBackgroundColor.color
+        view.backgroundColor = UIColor(resource: .mainBackground)
 
         setupNavigationBar()
         setupPasswordsList()
@@ -322,7 +322,7 @@ private extension PasswordsViewController {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .never
-        title = T.homeTitle
+        title = String(localized: .homeTitle)
         
         updateNavigationBarButtons()
         
@@ -479,7 +479,7 @@ private extension PasswordsViewController {
         let tagActions: [UIMenuElement]
         if tags.isEmpty {
             let noTagsLabel = UIAction(
-                title: T.loginFilterModalNoTags,
+                title: String(localized: .loginFilterModalNoTags),
                 attributes: .disabled
             ) { _ in }
             tagActions = [noTagsLabel]
@@ -506,7 +506,7 @@ private extension PasswordsViewController {
         let tagSection = UIMenu(title: "", options: .displayInline, children: tagActions)
 
         return UIMenu(
-            title: T.loginFilterModalTag,
+            title: String(localized: .loginFilterModalTag),
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             children: [protectionLevelSection, tagSection]
         )
@@ -514,7 +514,7 @@ private extension PasswordsViewController {
     
     func sortMenu() -> UIMenu {
         UIMenu(
-            title: T.loginFilterModalTitle,
+            title: String(localized: .loginFilterModalTitle),
             image: UIImage(systemName: "arrow.up.arrow.down"),
             children: [UIDeferredMenuElement.uncached { [weak self] completion in
                 completion(self?.sortMenuItems() ?? [])

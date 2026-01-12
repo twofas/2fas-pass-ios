@@ -15,14 +15,14 @@ struct VaultRecoveryWrongDecryptionKitView: View {
     var body: some View {
         ResultView(
             kind: .failure,
-            title: Text(T.vaultRecoveryWrongDecryptionKitTitle.localizedKey),
-            description: Text(T.vaultRecoveryWrongDecryptionKitDescription.localizedKey),
+            title: Text(.vaultRecoveryWrongDecryptionKitTitle),
+            description: Text(.vaultRecoveryWrongDecryptionKitDescription),
             action: {
                 VStack {
-                    Button(T.vaultRecoveryWrongDecryptionKitAnotherDecryptionKitCta.localizedKey) {
+                    Button(.vaultRecoveryWrongDecryptionKitAnotherDecryptionKitCta) {
                         presenter.onSelectDecryptionKit()
                     }
-                    Button(T.vaultRecoveryWrongDecryptionKitAnotherBackupCta.localizedKey) {
+                    Button(.vaultRecoveryWrongDecryptionKitAnotherBackupCta) {
                         presenter.onSelectVault()
                     }
                     .buttonStyle(.twofasBorderless)

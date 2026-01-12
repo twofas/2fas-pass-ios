@@ -24,7 +24,7 @@ final class SettingsNavigationFlowController: NavigationFlowController {
 
         let settingsViewController = UIHostingController(rootView: SettingsRouter.buildView())
         settingsViewController.tabBarItem = UITabBarItem(
-            title: T.commonSettings,
+            title: String(localized: .commonSettings),
             image: UIImage(systemName: "gear"),
             selectedImage: UIImage(systemName: "gear")
         )

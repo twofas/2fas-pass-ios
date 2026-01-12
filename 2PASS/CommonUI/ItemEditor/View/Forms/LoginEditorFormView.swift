@@ -57,7 +57,7 @@ struct LoginEditorFormView: View {
                             presenter.onCustomizeIcon()
                         }
                     
-                    Button(T.loginEditIconCta.localizedKey) {
+                    Button(.loginEditIconCta) {
                         presenter.onCustomizeIcon()
                     }
                     .controlSize(.small)
@@ -69,8 +69,8 @@ struct LoginEditorFormView: View {
             .listRowBackground(Color.clear)
             
             Section {
-                LabeledInput(label: T.loginNameLabel.localizedKey, fieldWidth: $fieldWidth) {
-                    TextField(T.loginNameLabel.localizedKey, text: $presenter.name)
+                LabeledInput(label: String(localized: .loginNameLabel), fieldWidth: $fieldWidth) {
+                    TextField(String(localized: .loginNameLabel), text: $presenter.name)
                 }
                 .formFieldChanged(presenter.nameChanged)
                 
@@ -114,9 +114,9 @@ struct LoginEditorFormView: View {
     }
     
     private var usernameField: some View {
-        LabeledInput(label: T.loginUsernameLabel.localizedKey, fieldWidth: $fieldWidth) {
+        LabeledInput(label: String(localized: .loginUsernameLabel), fieldWidth: $fieldWidth) {
             HStack {
-                TextField(T.loginUsernameLabel.localizedKey, text: $presenter.username)
+                TextField(String(localized: .loginUsernameLabel), text: $presenter.username)
                     .textContentType(.username)
                     .autocorrectionDisabled(true)
                     .textInputAutocapitalization(.never)
@@ -132,8 +132,8 @@ struct LoginEditorFormView: View {
 
     @ViewBuilder
     private var passwordField: some View {
-        LabeledInput(label: T.loginPasswordLabel.localizedKey, fieldWidth: $fieldWidth) {
-            SecureInput(label: T.loginPasswordPlaceholder.localizedResource, value: $presenter.password)
+        LabeledInput(label: String(localized: .loginPasswordLabel), fieldWidth: $fieldWidth) {
+            SecureInput(label: .loginPasswordPlaceholder, value: $presenter.password)
                 .colorized()
                 .introspect { textField in
                     setupPasswordTextField(textField)
@@ -149,7 +149,7 @@ struct LoginEditorFormView: View {
         Section {
             ForEach($presenter.uri, id: \.id) { uri in
                 HStack {
-                    TextField(T.loginUriLabel.localizedKey, text: uri.uri)
+                    TextField(String(localized: .loginUriLabel), text: uri.uri)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .textContentType(.URL)
@@ -164,7 +164,7 @@ struct LoginEditorFormView: View {
                         showURIMatchSettings = true
                     } label: {
                         Image(systemName: "checklist.unchecked")
-                            .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                            .foregroundStyle(.labelSecondary)
                     }
                     .buttonStyle(.borderless)
                     .frame(alignment: .trailing)
@@ -176,7 +176,7 @@ struct LoginEditorFormView: View {
             }
 
             if presenter.uri.count < presenter.maxURICount {
-                Button(T.loginAddUriCta.localizedKey) {
+                Button(.loginAddUriCta) {
                     withAnimation {
                         presenter.onAddURI()
 
@@ -188,7 +188,7 @@ struct LoginEditorFormView: View {
             }
 
         } header: {
-            Text(T.loginUriHeader.localizedKey)
+            Text(.loginUriHeader)
                 .sheet(isPresented: $showURIMatchSettings) { // placed here to work around an iOS auto-close bug
                     matchingRuleSheet()
                 }
@@ -196,10 +196,10 @@ struct LoginEditorFormView: View {
             if let uriError = presenter.uriError {
                 HStack {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
-                    Text(T.loginUriError(uriError).localizedKey)
+                        .foregroundStyle(.destructiveAction)
+                    Text(.loginUriError(uriError))
                         .font(.caption)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                        .foregroundStyle(.mainText)
                 }
             }
         }
@@ -224,7 +224,7 @@ struct LoginEditorFormView: View {
                 .contentShape(Rectangle())
                 .formFieldChanged(presenter.notesChanged)
         } header: {
-            Text(T.loginNotesLabel.localizedKey)
+            Text(.loginNotesLabel)
         }
         .onTapGesture {
             focusField = .notes
@@ -275,10 +275,10 @@ struct LoginEditorFormView: View {
         }()
 
         let stackView = UIStackView(arrangedSubviews: [
-            UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordGeneratorCta, image: UIImage(systemName: generateIconName), handler: { [weak presenter] _ in
+            UIButton(configuration: config, primaryAction: UIAction(title: String(localized: .loginPasswordGeneratorCta), image: UIImage(systemName: generateIconName), handler: { [weak presenter] _ in
                 presenter?.showGeneratePassword = true
             })),
-            UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordAutogenerateCta, image: UIImage(systemName: "arrow.clockwise"), handler: { [weak presenter] _ in
+            UIButton(configuration: config, primaryAction: UIAction(title: String(localized: .loginPasswordAutogenerateCta), image: UIImage(systemName: "arrow.clockwise"), handler: { [weak presenter] _ in
                 guard let presenter else { return }
                 presenter.randomPassword()
                 feedback.impactOccurred(intensity: 0.5)
@@ -410,15 +410,15 @@ struct LoginEditorFormView: View {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(verbatim: match.title)
-                                            .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                                            .foregroundStyle(.mainText)
                                             .font(.body)
                                         Text(verbatim: match.description)
                                             .font(.caption)
-                                            .foregroundStyle(Asset.descriptionTextColor.swiftUIColor)
+                                            .foregroundStyle(.descriptionText)
                                     }
                                     Spacer()
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(Asset.accentColor.swiftUIColor)
+                                        .foregroundStyle(.accent)
                                         .isHidden(match != currentURI.match, remove: false)
                                 }
                             }
@@ -426,7 +426,7 @@ struct LoginEditorFormView: View {
                     } header: {
                         Spacer(minLength: Spacing.xxl4)
                     } footer: {
-                        Text(T.uriSettingsModalDescription.localizedKey)
+                        Text(.uriSettingsModalDescription)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
                             .padding(.top, Spacing.s)
@@ -443,9 +443,9 @@ struct LoginEditorFormView: View {
             }
 
             HStack {
-                Text(T.uriSettingsMatchingRuleHeader.localizedKey)
+                Text(.uriSettingsMatchingRuleHeader)
                     .font(.title3Emphasized)
-                    .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    .foregroundStyle(.mainText)
                     .modify {
                         if #available(iOS 26, *) {
                             $0.padding(.leading, Spacing.s)
@@ -484,7 +484,7 @@ struct LoginEditorFormView: View {
             VStack(alignment: .leading) {
                 let usernames = presenter.mostUsedUsernames()
                 if usernames.isEmpty {
-                    Text(T.loginUsernameMostUsedEmpty.localizedKey)
+                    Text(.loginUsernameMostUsedEmpty)
                         .font(.subheadline)
                 } else {
                     Form {
@@ -499,7 +499,7 @@ struct LoginEditorFormView: View {
                                     }
                                 } label: {
                                     Text(verbatim: username)
-                                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                                        .foregroundStyle(.mainText)
                                         .font(.body)
                                 }
                             }
@@ -516,7 +516,7 @@ struct LoginEditorFormView: View {
                     }
                 }
             }
-            .navigationTitle(T.loginUsernameMostUsedHeader.localizedKey)
+            .navigationTitle(.loginUsernameMostUsedHeader)
         }
         .presentationDragIndicator(.hidden)
         .presentationDetents([.medium])

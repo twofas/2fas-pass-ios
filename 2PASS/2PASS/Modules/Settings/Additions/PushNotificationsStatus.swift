@@ -19,9 +19,9 @@ struct PushNotificationsStatusFormatStyle: FormatStyle {
         case .unknown:
             return ""
         case .on:
-            return T.commonOn
+            return String(localized: .commonOn)
         case .off:
-            return T.commonOff
+            return String(localized: .commonOff)
         }
     }
 }

@@ -17,7 +17,7 @@ struct TransferItemsFileSummaryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(Text(T.transferInstructionsHeader(presenter.service.name).localizedKey)) {
+            SettingsDetailsForm(.transferInstructionsHeader(presenter.service.name)) {
                 ForEach(presenter.contentTypes, id: \.self) { contentType in
                     summarySection(
                         count: presenter.summary[contentType] ?? 0,
@@ -30,7 +30,7 @@ struct TransferItemsFileSummaryView: View {
                     summarySection(
                         count: presenter.itemsConvertedToSecureNotes,
                         icon: Image(systemName: "questionmark.circle"),
-                        description: T.transferFileSummaryOthersCounterDescription.localizedKey
+                        description: .transferFileSummaryOthersCounterDescription
                     )
                 }
                 
@@ -38,7 +38,7 @@ struct TransferItemsFileSummaryView: View {
                     summarySection(
                         count: presenter.tagsCount,
                         icon: Image(systemName: "tag"),
-                        description: T.transferFileSummaryTagsCounterDescription.localizedKey
+                        description: .transferFileSummaryTagsCounterDescription
                     )
                 }
 
@@ -51,11 +51,11 @@ struct TransferItemsFileSummaryView: View {
                         HStack(spacing: Spacing.s) {
                             Text(presenter.service.name)
                             Image(.transferIcon)
-                            Text(T.appName.localizedKey)
+                            Text(.appName)
                         }
                     },
                     description: {
-                        Text(T.transferFileSummaryDescription.localizedKey)
+                        Text(.transferFileSummaryDescription)
                             .foregroundStyle(.neutral600)
                     }
                 )
@@ -63,7 +63,7 @@ struct TransferItemsFileSummaryView: View {
             }
             .listSectionSpacing(Spacing.m)
             
-            Button(T.transferFileSummaryCta.localizedKey) {
+            Button(.transferFileSummaryCta) {
                 presenter.onProceed()
             }
             .buttonStyle(.filled)
@@ -76,7 +76,7 @@ struct TransferItemsFileSummaryView: View {
     }
 
     @ViewBuilder
-    private func summarySection(count: Int, icon: Image?, description: LocalizedStringKey) -> some View {
+    private func summarySection(count: Int, icon: Image?, description: LocalizedStringResource) -> some View {
         Section {
             HStack(spacing: Spacing.s) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -104,16 +104,16 @@ struct TransferItemsFileSummaryView: View {
         .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
     }
 
-    private func descriptionForContentType(_ contentType: ItemContentType) -> LocalizedStringKey {
+    private func descriptionForContentType(_ contentType: ItemContentType) -> LocalizedStringResource {
         switch contentType {
         case .login:
-            T.transferFileSummaryLoginsCounterDescription.localizedKey
+            .transferFileSummaryLoginsCounterDescription
         case .secureNote:
-            T.transferFileSummarySecureNotesCounterDescription.localizedKey
+            .transferFileSummarySecureNotesCounterDescription
         case .paymentCard:
-            T.transferFileSummaryPaymentCardsCounterDescription.localizedKey
+            .transferFileSummaryPaymentCardsCounterDescription
         case .unknown:
-            T.transferFileSummaryOthersCounterDescription.localizedKey
+            .transferFileSummaryOthersCounterDescription
         }
     }
 }

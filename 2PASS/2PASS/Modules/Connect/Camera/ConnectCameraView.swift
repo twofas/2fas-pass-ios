@@ -16,8 +16,8 @@ struct ConnectCameraView: View {
         
     var body: some View {
         ScanQRCodeCameraView(
-            title: Text(T.restoreQrCodeCameraTitle.localizedKey),
-            description: Text(T.connectQrcodeCameraDescription.localizedKey),
+            title: Text(.restoreQrCodeCameraTitle),
+            description: Text(.connectQrcodeCameraDescription),
             codeFound: {
                 presenter.onScannedQRCode($0)
             }
@@ -27,7 +27,7 @@ struct ConnectCameraView: View {
         })
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(T.commonHelp.localizedKey) {
+                Button(.commonHelp) {
                     presenter.onHelp()
                 }
                 .foregroundStyle(.baseStatic0)

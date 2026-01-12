@@ -63,16 +63,16 @@ struct GenerateSecretKeyView: View {
             ZStack {
                 if presenter.isFinished {
                     HeaderContentView(
-                        title: Text(T.onboardingGenerateSecretKeySuccessTitle.localizedKey),
-                        subtitle: Text(T.onboardingGenerateSecretKeySuccessDescription.localizedKey)
+                        title: Text(.onboardingGenerateSecretKeySuccessTitle),
+                        subtitle: Text(.onboardingGenerateSecretKeySuccessDescription)
                     )
                     .readableContentMargins()
                     .frame(maxWidth: .infinity)
                     .transition(.move(edge: .trailing))
                 } else {
                     HeaderContentView(
-                        title: Text(T.onboardingGenerateSecretKeyTitle.localizedKey),
-                        subtitle: Text(T.onboardingGenerateSecretKeyDescription.localizedKey)
+                        title: Text(.onboardingGenerateSecretKeyTitle),
+                        subtitle: Text(.onboardingGenerateSecretKeyDescription)
                     )
                     .readableContentMargins()
                     .frame(maxWidth: .infinity)
@@ -147,7 +147,7 @@ struct GenerateSecretKeyView: View {
     private func bottomButton() -> some View {
         ZStack {
             if presenter.isFinished {
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     presenter.onContinueTap()
                 }
                 .buttonStyle(.filled)
@@ -169,7 +169,7 @@ struct GenerateSecretKeyView: View {
     
     @ViewBuilder
     private var tapAndHoldLongPressView: some View {
-        Text(T.onboardingGenerateSecretKeyCta.localizedKey)
+        Text(.onboardingGenerateSecretKeyCta)
             .frame(height: Constants.Button.height)
             .frame(maxWidth: .infinity)
             .foregroundStyle(.baseStatic0)

@@ -16,35 +16,35 @@ struct BackupAddWebDAVView: View {
         
     var body: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(T.settingsEntryWebdav.localizedKey) {
-                Section(T.webdavServerUrl.localizedKey) {
+            SettingsDetailsForm(.settingsEntryWebdav) {
+                Section(.webdavServerUrl) {
                     TextField("https://host:port/path/" as String, text: $presenter.url)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .textContentType(.URL)
                         .frame(maxWidth: .infinity)
                         .disabled(!presenter.isEditable)
-                    Toggle(T.webdavAllowUntrustedCertificates.localizedKey, isOn: $presenter.allowTLSOff)
+                    Toggle(.webdavAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
                         .frame(maxWidth: .infinity)
                         .disabled(!presenter.isEditable)
                         .tint(.accentColor)
                 }
                 
-                Section(T.webdavCredentials.localizedKey) {
-                    TextField(T.webdavUsername.localizedKey, text: $presenter.username)
+                Section(.webdavCredentials) {
+                    TextField(String(localized:.webdavUsername), text: $presenter.username)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
                         .textContentType(.username)
                         .disabled(!presenter.isEditable)
                     
-                    SecureInput(label: T.webdavPassword.localizedResource, value: $presenter.password)
+                    SecureInput(label: .webdavPassword, value: $presenter.password)
                         .disabled(!presenter.isEditable)
                 }
   
             } header: {
                 HStack {
                     Spacer()
-                    Text(T.settingsCloudSyncWebdavLabel.localizedKey)
+                    Text(.settingsCloudSyncWebdavLabel)
                         .font(.title1Emphasized)
                         .foregroundStyle(Color.neutral950)
                         .padding(.bottom, Spacing.xll3)
@@ -58,15 +58,15 @@ struct BackupAddWebDAVView: View {
                 if let uriError = presenter.uriError {
                     HStack {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                            .foregroundStyle(.destructiveAction)
                         Text(uriError)
                             .font(.caption)
-                            .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                            .foregroundStyle(.mainText)
                     }
                 }
                 
                 if presenter.isConnected {
-                    Button(T.webdavDisconnect.localizedKey, role: .destructive) {
+                    Button(.webdavDisconnect, role: .destructive) {
                         presenter.onDisconnect()
                     }
                     .buttonStyle(.filled)
@@ -74,7 +74,7 @@ struct BackupAddWebDAVView: View {
                     Button {
                         presenter.onConnect()
                     } label: {
-                        Text(presenter.isLoading ? T.webdavConnecting.localizedKey : T.webdavConnect.localizedKey)
+                        Text(presenter.isLoading ? .webdavConnecting : .webdavConnect)
                             .accessoryLoader(presenter.isLoading)
                     }
                     .allowsHitTesting(presenter.isLoading == false)

@@ -13,8 +13,8 @@ extension RecoveryKitPDFConfig {
         .init(
             wordsSpacing: Spacing.m,
             lineHeight: Spacing.m,
-            logo: Asset._2PASSLogoRecoveryKit.image,
-            qrCodeLogo: Asset._2PASSShieldRecoveryKit.image
+            logo: UIImage(resource: ._2PASSLogoRecoveryKit),
+            qrCodeLogo: UIImage(resource: ._2PASSShieldRecoveryKit)
         )
     }
 }

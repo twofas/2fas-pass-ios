@@ -23,7 +23,7 @@ struct VaultRecoveryRecoverView: View {
             switch presenter.state {
             case .loading:
                 ProgressView(label: {
-                    Text(T.restoreImportingFileText.localizedKey)
+                    Text(.restoreImportingFileText)
                 })
                 .progressViewStyle(.circular)
                 .tint(nil)
@@ -31,10 +31,10 @@ struct VaultRecoveryRecoverView: View {
             case .success:
                 ResultView(
                     kind: .success,
-                    title: Text(T.restoreSuccessTitle.localizedKey),
-                    description: Text(T.restoreSuccessDescription.localizedKey),
+                    title: Text(.restoreSuccessTitle),
+                    description: Text(.restoreSuccessDescription),
                     action: {
-                        Button(T.restoreSuccessCta.localizedKey) {
+                        Button(.restoreSuccessCta) {
                             dismissFlow()
                         }
                     }
@@ -42,10 +42,10 @@ struct VaultRecoveryRecoverView: View {
             case .error:
                 ResultView(
                     kind: .failure,
-                    title: Text(T.restoreFailureTitle.localizedKey),
-                    description: Text(T.restoreFailureDescription.localizedKey),
+                    title: Text(.restoreFailureTitle),
+                    description: Text(.restoreFailureDescription),
                     action: {
-                        Button(T.commonTryAgain.localizedKey) {
+                        Button(.commonTryAgain) {
                             dismiss()
                         }
                     }

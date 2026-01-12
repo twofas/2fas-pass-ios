@@ -27,7 +27,7 @@ public final class PasswordsNavigationFlowController: NavigationFlowController {
 
         let navi = CommonNavigationControllerFlow(flowController: flowController)
         navi.tabBarItem = UITabBarItem(
-            title: T.commonPasswords,
+            title: String(localized: .commonPasswords),
             image: UIImage(systemName: "lock.rectangle.stack"),
             selectedImage: UIImage(systemName: "lock.rectangle.stack")
         )

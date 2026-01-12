@@ -36,7 +36,7 @@ public struct EmptyListView: View {
 
 extension EmptyListView {
     
-    public init(_ text: LocalizedStringKey) {
+    public init(_ text: LocalizedStringResource) {
         self.init(Text(text))
     }
 }

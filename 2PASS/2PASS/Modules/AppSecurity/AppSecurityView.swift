@@ -22,30 +22,30 @@ struct AppSecurityView: View {
     
     @ViewBuilder
     private var content: some View {
-        SettingsDetailsForm(T.settingsEntrySecurity.localizedKey) {
+        SettingsDetailsForm(.settingsEntrySecurity) {
             Section {
                 Button {
                     presenter.onChangePassword()
                 } label: {
-                    Text(T.settingsEntryChangePassword.localizedKey)
+                    Text(.settingsEntryChangePassword)
                 }
                 .disabled(presenter.lockInteraction)
                 
-                Toggle(T.settingsEntryBiometricsToggle.localizedKey, isOn: $presenter.isBiometryEnabled)
+                Toggle(.settingsEntryBiometricsToggle, isOn: $presenter.isBiometryEnabled)
                     .disabled(
                         !presenter.isBiometryAvailable || !presenter.enableBiometryToggle || presenter.lockInteraction
                     )
                     .tint(.accentColor)
                 
             } header: {
-                Text(T.settingsEntryAppAccess.localizedKey)
+                Text(.settingsEntryAppAccess)
                     .padding(.top, Spacing.m)
                 
             } footer: {
                 if presenter.isBiometryAvailable {
-                    Text(T.settingsEntryBiometricsDescription.localizedKey)
+                    Text(.settingsEntryBiometricsDescription)
                 } else {
-                    Text(T.settingsEntryBiometricsNotAvailable.localizedKey)
+                    Text(.settingsEntryBiometricsNotAvailable)
                 }
             }
             
@@ -53,11 +53,11 @@ struct AppSecurityView: View {
                 Button {
                     presenter.onLimitOfFailedAttempts()
                 } label: {
-                    SettingsRowView(title: T.settingsEntryAppLockAttempts.localizedKey)
+                    SettingsRowView(title: .settingsEntryAppLockAttempts)
                 }
                 .disabled(presenter.lockInteraction)
             } footer: {
-                Text(T.settingsEntryAppLockAttemptsFooter.localizedKey)
+                Text(.settingsEntryAppLockAttemptsFooter)
                     .settingsFooter()
             }
             
@@ -66,10 +66,10 @@ struct AppSecurityView: View {
                     presenter.onDefaultSecurityTier()
                 } label: {
                     SettingsRowView(
-                        title: T.settingsEntryProtectionLevel.localizedKey,
+                        title: .settingsEntryProtectionLevel,
                         additionalInfo: {
                             Label {
-                                Text(presenter.defaultSecurityTier.title.localizedKey)
+                                Text(presenter.defaultSecurityTier.title)
                             } icon: {
                                 presenter.defaultSecurityTier.icon
                                     .renderingMode(.template)
@@ -81,9 +81,9 @@ struct AppSecurityView: View {
                 }
                 .disabled(presenter.lockInteraction)
             } header: {
-                Text(T.settingsEntryDataAccess.localizedKey)
+                Text(.settingsEntryDataAccess)
             } footer: {
-                Text(T.settingsEntryProtectionLevelDescription.localizedKey)
+                Text(.settingsEntryProtectionLevelDescription)
                     .settingsFooter()
             }
             
@@ -92,14 +92,14 @@ struct AppSecurityView: View {
                     presenter.onVaultDecryptionKit()
                 } label: {
                     SettingsRowView(
-                        title: T.settingsEntryDecryptionKit.localizedKey
+                        title: .settingsEntryDecryptionKit
                     )
                 }
                 .disabled(presenter.lockInteraction)
             } header: {
-                Text(T.commonOther.localizedKey)
+                Text(.commonOther)
             } footer: {
-                Text(T.settingsEntryDecryptionKitDescription.localizedKey)
+                Text(.settingsEntryDecryptionKitDescription)
                     .settingsFooter()
             }
         }

@@ -47,10 +47,10 @@ struct SecureNoteDetailFormView: View {
                     SecureNoteTextView(text: presenter.note ?? "", height: $noteHeight)
                         .linkContextMenu({ url in
                             UIMenu(children: [
-                                UIAction(title: T.commonOpen) { [weak presenter] _ in
+                                UIAction(title: String(localized: .commonOpen)) { [weak presenter] _ in
                                     presenter?.onOpen(url)
                                 },
-                                UIAction(title: T.commonCopy) { [weak presenter] _ in
+                                UIAction(title: String(localized: .commonCopy)) { [weak presenter] _ in
                                     presenter?.onCopy(url)
                                 }
                             ])
@@ -84,7 +84,7 @@ struct SecureNoteDetailFormView: View {
                             presenter.isNoteExpanded.toggle()
                         }
                     } label: {
-                        Text(T.secureNoteTextMoreAction.localizedKey)
+                        Text(.secureNoteTextMoreAction)
                             .padding(.leading, Constants.moreGradientWidth)
                             .padding(.bottom, 1)
                     }
@@ -110,14 +110,14 @@ struct SecureNoteDetailFormView: View {
             }
         }
         .editMenu($selectedField, equals: .note, actions: [
-            UIAction(title: T.commonCopy) { _ in
+            UIAction(title: String(localized: .commonCopy)) { _ in
                 presenter.onCopyNote()
             }
         ])
     }
     
     private var lockedNoteView: some View {
-        LockButton(text: Text(T.secureNoteTextRevealViewAction.localizedKey)) {
+        LockButton(text: Text(.secureNoteTextRevealViewAction)) {
             presenter.onViewNote()
         }
         .frame(maxWidth: .infinity, minHeight: Constants.minHeightNotes, alignment: .center)

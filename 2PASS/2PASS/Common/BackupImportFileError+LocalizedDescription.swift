@@ -12,9 +12,9 @@ extension BackupImportFileError {
         switch self {
         case .cantReadFile(let reason):
             if let reason {
-                T.vaultRecoveryErrorOpenFileDetails(reason)
+                String(localized: .vaultRecoveryErrorOpenFileDetails(reason))
             } else {
-                T.vaultRecoveryErrorOpenFile
+                String(localized: .vaultRecoveryErrorOpenFile)
             }
         }
     }

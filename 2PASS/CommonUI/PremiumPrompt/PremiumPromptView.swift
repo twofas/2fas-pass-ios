@@ -41,7 +41,7 @@ struct PremiumPromptView: View {
             
             if presenter.allowsUpgrade {
                 VStack(spacing: Spacing.s) {
-                    Button(T.paywallNoticeCta.localizedKey) {
+                    Button(.paywallNoticeCta) {
                         dismiss()
                         
                         Task {
@@ -51,14 +51,14 @@ struct PremiumPromptView: View {
                     }
                     .buttonStyle(.filled)
                     
-                    Button(T.commonCancel.localizedKey) {
+                    Button(.commonCancel) {
                         dismiss()
                     }
                     .buttonStyle(.twofasBorderless)
                 }
                 .controlSize(.large)
             } else {
-                Button(T.commonClose.localizedKey) {
+                Button(.commonClose) {
                     dismiss()
                 }
                 .buttonStyle(.filled)
@@ -77,8 +77,8 @@ struct PremiumPromptView: View {
     Color.white
         .sheet(isPresented: .constant(true)) {
             PremiumPromptView(
-                title: Text(T.paywallNoticeBrowsersLimitTitle.localizedKey),
-                description: Text(T.paywallNoticeBrowsersLimitMsg.localizedKey),
+                title: Text(.paywallNoticeBrowsersLimitTitle),
+                description: Text(.paywallNoticeBrowsersLimitMsg),
                 presenter: .init(interactor: ModuleInteractorFactory.shared.premiumPromptModuleInteractor())
             )
             .presentationDetents([.height(PremiumPromptViewConstants.sheetHeight)])

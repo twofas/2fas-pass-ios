@@ -26,12 +26,12 @@ struct VaultRecoveryEnterWordsView: View {
                         .alignmentGuide(.listRowSeparatorLeading) { _ in 38 }
                         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                 } header: {
-                    Text(T.restoreManualKeyInputDescription.localizedKey)
+                    Text(.restoreManualKeyInputDescription)
                         .padding(.top, 12)
                 }
             }
             
-            Button(T.commonContinue.localizedKey) {
+            Button(.commonContinue) {
                 focusedField = nil
                 presenter.onWordsSave()
             }
@@ -53,7 +53,7 @@ struct VaultRecoveryEnterWordsView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(T.restoreManualKeyInputTitle.localizedKey)
+        .navigationTitle(.restoreManualKeyInputTitle)
         .router(router: VaultRecoveryEnterWordsRouter(), destination: $presenter.destination)
     }
     
@@ -64,7 +64,7 @@ struct VaultRecoveryEnterWordsView: View {
             
             LabeledContent {
                 HStack {
-                    TextField(T.restoreManualWord(index).localizedKey, text: wordStorage.word)
+                    TextField(String(localized: .restoreManualWord(String(index))), text: wordStorage.word)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled(true)
                         .focused($focusedField, equals: index)

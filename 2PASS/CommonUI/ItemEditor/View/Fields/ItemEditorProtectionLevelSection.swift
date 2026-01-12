@@ -19,8 +19,8 @@ struct ItemEditorProtectionLevelSection: View {
                 presenter.onChangeProtectionLevel()
             } label: {
                 HStack(spacing: Spacing.s) {
-                    Text(T.loginSecurityLevelLabel.localizedKey)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    Text(.loginSecurityLevelLabel)
+                        .foregroundStyle(.mainText)
 
                     Spacer()
                     
@@ -28,14 +28,14 @@ struct ItemEditorProtectionLevelSection: View {
                         .foregroundStyle(.neutral500)
                     
                     Image(systemName: "chevron.forward")
-                        .foregroundStyle(Asset.inactiveColor.swiftUIColor)
+                        .foregroundStyle(.inactive)
                 }
                 .contentShape(Rectangle())
             }
             .formFieldChanged(presenter.protectionLevelChanged)
             .buttonStyle(.plain)
         } header: {
-            Text(T.loginSecurityLevelHeader.localizedKey)
+            Text(.loginSecurityLevelHeader)
         }
         .listSectionSpacing(Spacing.l)
     }

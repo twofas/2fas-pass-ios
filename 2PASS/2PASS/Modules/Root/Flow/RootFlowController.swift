@@ -126,8 +126,8 @@ extension RootFlowController: RootFlowControlling {
     }
     
     func toStorageError(error: String) {
-        let alert = UIAlertController(title: T.commonError.localized, message: error, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: T.commonOk.localized, style: .cancel, handler: nil))
+        let alert = UIAlertController(title: String(localized: .commonError), message: error, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: String(localized: .commonOk), style: .cancel, handler: nil))
         viewController.present(alert, animated: false, completion: nil)
     }
     
@@ -174,26 +174,26 @@ extension RootFlowController: RootFlowControlling {
     }
     
     func toOpenExternalFileError() {
-        let alert = UIAlertController(title: T.commonError, message: T.openExternalFileErrorBody, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: T.commonOk, style: .cancel, handler: nil))
+        let alert = UIAlertController(title: String(localized: .commonError), message: String(localized: .openExternalFileErrorBody), preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: String(localized: .commonOk), style: .cancel, handler: nil))
         viewController.present(alert, animated: true, completion: nil)
     }
     
     func toUpdateAppForNewSyncScheme(schemaVersion: Int) {
         let alert = UIAlertController(
-            title: T.appUpdateModalTitle,
-            message: T.cloudSyncInvalidSchemaErrorMsg(schemaVersion),
+            title: String(localized: .appUpdateModalTitle),
+            message: String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion))),
             preferredStyle: .alert
         )
         
         alert.addAction(UIAlertAction(
-            title: T.appUpdateModalCtaNegative,
+            title: String(localized: .appUpdateModalCtaNegative),
             style: .cancel,
             handler: nil
         ))
         
         alert.addAction(UIAlertAction(
-            title: T.appUpdateModalCtaPositive,
+            title: String(localized: .appUpdateModalCtaPositive),
             style: .default,
             handler: { _ in
                 UIApplication.shared.open(Config.appStoreURL)
@@ -205,19 +205,19 @@ extension RootFlowController: RootFlowControlling {
     
     func toUpdateAppForUnsupportedVersion(minimalVersion: String) {        
         let alert = UIAlertController(
-            title: T.appUpdateModalTitle,
-            message: T.appUpdateModalSubtitle,
+            title: String(localized: .appUpdateModalTitle),
+            message: String(localized: .appUpdateModalSubtitle),
             preferredStyle: .alert
         )
         
         alert.addAction(UIAlertAction(
-            title: T.appUpdateModalCtaNegative,
+            title: String(localized: .appUpdateModalCtaNegative),
             style: .cancel,
             handler: nil
         ))
         
         alert.addAction(UIAlertAction(
-            title: T.appUpdateModalCtaPositive,
+            title: String(localized: .appUpdateModalCtaPositive),
             style: .default,
             handler: { _ in
                 UIApplication.shared.open(Config.appStoreURL)

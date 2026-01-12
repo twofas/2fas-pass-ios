@@ -16,7 +16,7 @@ struct TransferItemsImportingView: View {
             switch presenter.state {
             case .idle, .importing:
                 ProgressView(label: {
-                    Text(T.backupImportingFileText.localizedKey)
+                    Text(.backupImportingFileText)
                 })
                 .progressViewStyle(.circular)
                 .tint(nil)

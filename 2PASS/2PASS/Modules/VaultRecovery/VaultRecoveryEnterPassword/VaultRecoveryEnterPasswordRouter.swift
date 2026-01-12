@@ -38,14 +38,14 @@ struct VaultRecoveryEnterPasswordRouter: Router {
         case .importVault(let entropy, let masterKey, let vault, let onClose):
             BackupImportImportingRouter.buildView(input: .encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: onClose)
         case .masterPasswordError:
-            Button(T.commonOk.localizedKey, action: {})
+            Button(.commonOk, action: {})
         }
     }
     
     func routingType(for destination: VaultRecoveryEnterPasswordDestination?) -> RoutingType? {
         switch destination {
         case .recover, .importVault: .push
-        case .masterPasswordError(let message): .alert(title: T.commonError, message: message)
+        case .masterPasswordError(let message): .alert(title: String(localized: .commonError), message: message)
         default: nil
         }
     }

@@ -36,8 +36,8 @@ struct VaultDecryptionKitView: View {
     private var content: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.decryptionKitTitle.localizedKey),
-                subtitle: Text(T.decryptionKitDescription.localizedKey),
+                title: Text(.decryptionKitTitle),
+                subtitle: Text(.decryptionKitDescription),
                 icon: {
                     if presenter.kind != .onboarding {
                         Image(.lockFileHeaderIcon)
@@ -47,8 +47,8 @@ struct VaultDecryptionKitView: View {
             .padding(.top, Spacing.l)
             
             VStack(spacing: Spacing.s) {
-                Label(T.decryptionKitStep1.localizedKey, systemImage: "arrow.down.circle.fill")
-                Label(T.decryptionKitStep2.localizedKey, systemImage: "printer.fill")
+                Label(.decryptionKitStep1, systemImage: "arrow.down.circle.fill")
+                Label(.decryptionKitStep2, systemImage: "printer.fill")
             }
             .padding(.top, Spacing.xl)
             .labelStyle(StepLabelStyle())
@@ -62,8 +62,8 @@ struct VaultDecryptionKitView: View {
             
             InfoToggle(
                 icon: Image(.warningIcon),
-                title: Text(T.decryptionKitNoticeTitle.localizedKey),
-                description: Text(T.decryptionKitNoticeMsg.localizedKey),
+                title: Text(.decryptionKitNoticeTitle),
+                description: Text(.decryptionKitNoticeMsg),
                 isOn: $presenter.isToggleOn
             )
             .disabled(presenter.isPDFSaving)
@@ -71,7 +71,7 @@ struct VaultDecryptionKitView: View {
             Button {
                 presenter.onSaveRecoveryKit()
             } label: {
-                Text(T.decryptionKitCta.localizedKey)
+                Text(.decryptionKitCta)
                     .accessoryLoader(presenter.isPDFSaving)
             }
             .buttonStyle(.filled)

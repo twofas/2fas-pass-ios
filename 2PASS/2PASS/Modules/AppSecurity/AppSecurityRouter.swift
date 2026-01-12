@@ -35,8 +35,8 @@ struct AppSecurityRouter: Router {
             
         case .limitOfFailedAttempts(let picker):
             SettingsPickerView(
-                title: Text(T.settingsEntryAppLockAttempts.localizedKey),
-                footer: Text(T.settingsEntryAppLockAttemptsDescription.localizedKey),
+                title: Text(.settingsEntryAppLockAttempts),
+                footer: Text(.settingsEntryAppLockAttemptsDescription),
                 picker: picker
             )
             

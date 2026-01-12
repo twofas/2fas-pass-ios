@@ -14,7 +14,7 @@ struct ManageTagCell: View {
             TagContentCell(
                 name: Text(tag.name),
                 color: tag.color,
-                subtitle: Text(T.tagDescription(tag.itemCount).localizedKey)
+                subtitle: Text(.tagDescription(String(tag.itemCount)))
             )
             
             Spacer()
@@ -25,7 +25,7 @@ struct ManageTagCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "pencil")
-                        Text(T.commonEdit.localizedKey)
+                        Text(.commonEdit)
                     }
                 }
                 
@@ -34,7 +34,7 @@ struct ManageTagCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash")
-                        Text(T.tagDeleteCta.localizedKey)
+                        Text(.tagDeleteCta)
                     }
                 }
             } label: {

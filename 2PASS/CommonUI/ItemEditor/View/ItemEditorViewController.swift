@@ -27,13 +27,13 @@ final class ItemEditorViewController: UIViewController {
             navigationItem.rightBarButtonItem = saveButton
         } else {
             navigationItem.leftBarButtonItem = UIBarButtonItem(
-                title: T.commonCancel,
+                title: String(localized: .commonCancel),
                 style: .plain,
                 target: self,
                 action: #selector(actionCancel)
             )
             navigationItem.rightBarButtonItem = UIBarButtonItem(
-                title: T.commonSave,
+                title: String(localized: .commonSave),
                 style: .plain,
                 target: self,
                 action: #selector(saveAction)

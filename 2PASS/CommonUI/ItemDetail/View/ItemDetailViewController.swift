@@ -15,7 +15,7 @@ final class ItemDetailViewController: UIViewController {
         
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: T.loginEdit,
+            title: String(localized: .loginEdit),
             style: .plain,
             target: self,
             action: #selector(editAction)

@@ -33,10 +33,10 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
             case .error(let string):
                 ResultView(
                     kind: .failure,
-                    title: Text(T.restoreIcloudFilesError.localizedKey),
+                    title: Text(.restoreIcloudFilesError),
                     description: Text(string),
                     action: {
-                        Button(T.commonTryAgain.localizedKey) {
+                        Button(.commonTryAgain) {
                             presenter.retry()
                         }
                     }
@@ -45,11 +45,11 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
             case .list(let vaults):
                 list(for: vaults)
             case .empty:
-                EmptyListView(T.restoreCloudFilesEmptyDescription.localizedKey)
+                EmptyListView(.restoreCloudFilesEmptyDescription)
             }
         }
         .animation(.easeInOut(duration: 0.1), value: presenter.state)
-        .navigationTitle(T.restoreIcloudFilesTitle.localizedKey)
+        .navigationTitle(.restoreIcloudFilesTitle)
         .navigationBarTitleDisplayMode(.inline)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(UIColor.systemGroupedBackground))
@@ -64,13 +64,13 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
                 ToolbarItem(placement: .primaryAction) {
                     switch editMode {
                     case .inactive:
-                        Button(T.commonEdit.localizedKey) {
+                        Button(.commonEdit) {
                             withAnimation {
                                 editMode = .active
                             }
                         }
                     case .active:
-                        Button(T.commonDone.localizedKey) {
+                        Button(.commonDone) {
                             withAnimation {
                                 editMode = .inactive
                             }
@@ -129,14 +129,14 @@ private struct VaultListContentView: View {
                     Button {
                         presenter.onDelete(at: index)
                     } label: {
-                        Label(T.knownBrowserDeleteButton.localizedKey, systemImage: "trash")
+                        Label(.knownBrowserDeleteButton, systemImage: "trash")
                     }
                     .tint(.danger500)
                 }
                 
             } header: {
                 if index == 0 {
-                    Text(T.restoreCloudFilesHeader.localizedKey)
+                    Text(.restoreCloudFilesHeader)
                         .padding(.top, Spacing.s)
                 }
             }

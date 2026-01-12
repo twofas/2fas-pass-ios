@@ -56,7 +56,7 @@ extension VaultRecoveryWebDAVPresenter {
         isLoading = true
 
         guard let normalizedURL = interactor.normalizeURL(url) else {
-            showError(T.syncStatusErrorWrongDirectoryUrl)
+            showError(String(localized: .syncStatusErrorWrongDirectoryUrl))
             isLoading = false
             return
         }

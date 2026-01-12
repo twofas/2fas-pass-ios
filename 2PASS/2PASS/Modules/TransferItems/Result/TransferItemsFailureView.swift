@@ -15,10 +15,10 @@ struct TransferItemsFailureView: View {
     var body: some View {
         ResultView(
             kind: .failure,
-            title: Text(T.transferImportingFailureTitle.localizedKey),
-            description: Text(T.transferImportingFailureDescription.localizedKey),
+            title: Text(.transferImportingFailureTitle),
+            description: Text(.transferImportingFailureDescription),
             action: {
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     onClose()
                 }
             }

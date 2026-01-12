@@ -227,7 +227,7 @@ extension LoginPresenter {
                 self?.refreshStatus()
                 
                 Task { @MainActor in
-                    self?.errorDescription = T.lockScreenUnlockInvalidPassword
+                    self?.errorDescription = String(localized: .lockScreenUnlockInvalidPassword)
                     self?.inputError = true
                 }
             case .invalidPasswordAppLocked:
@@ -240,7 +240,7 @@ extension LoginPresenter {
     func onBiometry() {
         isBiometryScanning = true
         biometryFailed = false
-        interactor.loginUsingBiometry(reason: T.lockScreenUnlockBiometricsReason) { [weak self] result in
+        interactor.loginUsingBiometry(reason: String(localized: .lockScreenUnlockBiometricsReason)) { [weak self] result in
             self?.isBiometryScanning = false
             
             switch result {
@@ -249,7 +249,7 @@ extension LoginPresenter {
                 self?.loginSuccessful()
             case .failure, .unavailable:
                 self?.biometryFailed = true
-                self?.errorDescription = T.lockScreenUnlockBiometricsError
+                self?.errorDescription = String(localized: .lockScreenUnlockBiometricsError)
                 self?.refreshStatus()
             case .appLocked:
                 self?.loginInput = ""

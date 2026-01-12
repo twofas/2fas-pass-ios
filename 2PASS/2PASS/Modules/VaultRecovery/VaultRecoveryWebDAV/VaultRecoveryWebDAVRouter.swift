@@ -24,7 +24,7 @@ struct VaultRecoveryWebDAVRouter: Router {
     func view(for destination: VaultRecoveryWebDAVDestination) -> some View {
         switch destination {
         case .error(_, let onClose):
-            Button(T.commonOk.localizedKey, action: onClose)
+            Button(.commonOk, action: onClose)
         case .selectVault(let index, let baseURL, let allowTLSOff, let login, let password, let onSelect):
             VaultRecoverySelectWebDAVIndexRouter.buildView(
                 index: index,
@@ -43,7 +43,7 @@ struct VaultRecoveryWebDAVRouter: Router {
         switch destination {
         case .selectVault: .sheet
         case .select: .push
-        case .error(let message, _): .alert(title: T.commonError, message: message)
+        case .error(let message, _): .alert(title: String(localized: .commonError), message: message)
         case nil: nil
         }
     }

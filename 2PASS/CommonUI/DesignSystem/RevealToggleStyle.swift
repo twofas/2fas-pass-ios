@@ -15,7 +15,7 @@ public struct RevealToggleStyle: ToggleStyle {
             configuration.$isOn.wrappedValue.toggle()
         } label: {
             Image(systemName: configuration.isOn ? "eye.slash" : "eye")
-                .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                .foregroundStyle(.labelSecondary)
         }
     }
 }

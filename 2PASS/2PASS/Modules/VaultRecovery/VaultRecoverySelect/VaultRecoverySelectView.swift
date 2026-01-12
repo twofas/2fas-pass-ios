@@ -17,8 +17,8 @@ struct VaultRecoverySelectView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.restoreDecryptVaultTitle.localizedKey),
-                subtitle: Text(T.restoreDecryptVaultDescription.localizedKey),
+                title: Text(.restoreDecryptVaultTitle),
+                subtitle: Text(.restoreDecryptVaultDescription),
                 icon: {
                     Image(systemName: "lock.rectangle.stack.fill")
                         .foregroundStyle(.brand500, .brand100)
@@ -37,7 +37,7 @@ struct VaultRecoverySelectView: View {
         }
         .padding(.horizontal, Spacing.xl)
         .router(router: VaultRecoverySelectRouter(), destination: $presenter.destination)
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
         .readableContentMargins()
         .fileImporter(
             isPresented: $presenter.showFileImporter,

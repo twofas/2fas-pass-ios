@@ -28,8 +28,8 @@ struct VaultDescryptionKitSettingsView: View {
             Spacer(minLength: 0)
             
             HeaderContentView(
-                title: Text(T.decryptionKitSettingsTitle.localizedKey),
-                subtitle: Text(T.decryptionKitSettingsDescription.localizedKey)
+                title: Text(.decryptionKitSettingsTitle),
+                subtitle: Text(.decryptionKitSettingsDescription)
             )
 
             Spacer(minLength: Spacing.s)
@@ -46,7 +46,7 @@ struct VaultDescryptionKitSettingsView: View {
                     }
                 }
             
-            Text(T.decryptionKitSettingsQrLabel.localizedKey)
+            Text(.decryptionKitSettingsQrLabel)
                 .font(.footnote)
                 .foregroundStyle(.neutral600)
             
@@ -56,11 +56,11 @@ struct VaultDescryptionKitSettingsView: View {
                 .padding(.bottom, Constants.arrowBottomPadding)
             
             VStack(spacing: Spacing.s) {
-                Text(T.decryptionKitSettingsSecretWordsIos.localizedKey)
+                Text(.decryptionKitSettingsSecretWordsIos)
                     .font(.subheadline)
                     .foregroundStyle(.neutral950)
                 
-                Text(T.decryptionKitSettingsMasterKey.localizedKey)
+                Text(.decryptionKitSettingsMasterKey)
                     .font(.subheadline.bold())
                     .strikethrough(includeMasterKey == false)
                     .foregroundStyle(includeMasterKey ? .neutral950 : .neutral600)
@@ -69,12 +69,12 @@ struct VaultDescryptionKitSettingsView: View {
             Spacer()
             
             InfoToggle(
-                title: Text(T.decryptionKitSettingsToggleTitle.localizedKey),
-                description: Text(T.decryptionKitSettingsToggleMsg.localizedKey),
+                title: Text(.decryptionKitSettingsToggleTitle),
+                description: Text(.decryptionKitSettingsToggleMsg),
                 isOn: $includeMasterKey
             )
             
-            Button(T.decryptionKitSettingsCta.localizedKey) {
+            Button(.decryptionKitSettingsCta) {
                 dismiss()
             }
             .buttonStyle(.filled)

@@ -11,18 +11,18 @@ final class RootViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = Asset.mainBackgroundColor.color
+        view.backgroundColor = UIColor(resource: .mainBackground)
         applyAppearance()
     }
     
     override var shouldAutorotate: Bool { UIDevice.isiPad }
     
     private func applyAppearance() {
-        UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = Asset.accentColor.color
+        UIView.appearance(whenContainedInInstancesOf: [UIAlertController.self]).tintColor = UIColor(resource: .accent)
         
         let tabBarAppearance = UITabBar.appearance()
-        tabBarAppearance.tintColor = Asset.accentColor.color
-        tabBarAppearance.unselectedItemTintColor = Asset.inactiveColor.color
+        tabBarAppearance.tintColor = UIColor(resource: .accent)
+        tabBarAppearance.unselectedItemTintColor = UIColor(resource: .inactive)
         
         UIPageControl.appearance().currentPageIndicatorTintColor = .neutral950
         UIPageControl.appearance().pageIndicatorTintColor = .neutral200

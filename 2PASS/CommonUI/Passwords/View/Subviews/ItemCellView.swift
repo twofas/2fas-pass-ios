@@ -28,7 +28,7 @@ class ItemCellView: UICollectionViewListCell {
         let config: UIImage.SymbolConfiguration = .init(font: UIFont.systemFont(ofSize: 22, weight: .medium))
         let image = UIImage(systemName: "ellipsis", withConfiguration: config)
         button.setImage(image, for: .normal)
-        button.tintColor = Asset.labelSecondaryColor.color
+        button.tintColor = UIColor(resource: .labelSecondary)
         button.showsMenuAsPrimaryAction = true
         return button
     }()
@@ -82,13 +82,13 @@ class ItemCellView: UICollectionViewListCell {
         var content = defaultContentConfiguration().updated(for: state)
         content.text = ItemNameFormatStyle().format(cellData.name)
         content.textProperties.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        content.textProperties.color = Asset.mainTextColor.color
+        content.textProperties.color = UIColor(resource: .mainText)
         content.textProperties.numberOfLines = 1
 
         if let secondaryText = cellData.description {
             content.secondaryText = secondaryText
             content.secondaryTextProperties.font = UIFont.systemFont(ofSize: 15)
-            content.secondaryTextProperties.color = Asset.labelSecondaryColor.color
+            content.secondaryTextProperties.color = UIColor(resource: .labelSecondary)
             content.secondaryTextProperties.numberOfLines = 1
         }
 
@@ -216,7 +216,7 @@ private extension ItemCellView {
                 guard uris.isEmpty == false else { continue }
                 list.append(
                     UIMenu(
-                        title: T.loginViewActionUrisTitle,
+                        title: String(localized: .loginViewActionUrisTitle),
                         image: action.icon,
                         children: [UIDeferredMenuElement.uncached { [weak self] completion in
                             completion(self?.urisSubmenu(for: uris, itemID: cellData.itemID) ?? [])

@@ -129,7 +129,7 @@ extension VaultRecoverySelectPresenter {
                     
                     guard let image else {
                         DispatchQueue.main.async {
-                            self?.destination = .errorOpeningFile(message: T.vaultRecoveryErrorOpenFile) { [weak self] in
+                            self?.destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorOpenFile)) { [weak self] in
                                 self?.destination = nil
                             }
                         }
@@ -141,7 +141,7 @@ extension VaultRecoverySelectPresenter {
                         switch error {
                         case .cantReadFile(let reason):
                             let reason = reason ?? ""
-                            self?.destination = .errorOpeningFile(message: T.vaultRecoveryErrorOpenFileDetails(reason)) { [weak self] in
+                            self?.destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorOpenFileDetails(reason))) { [weak self] in
                                 self?.destination = nil
                             }
                         }
@@ -162,7 +162,7 @@ extension VaultRecoverySelectPresenter {
     }
     
     func onGalleryError() {
-        destination = .errorOpeningFile(message: T.vaultRecoveryErrorGalleryAccess) { [weak self] in
+        destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorGalleryAccess)) { [weak self] in
             self?.destination = nil
         }
     }
@@ -172,7 +172,7 @@ private extension VaultRecoverySelectPresenter {
     func scan(_ image: UIImage) {
         func showError() {
             DispatchQueue.main.async {
-                self.destination = .errorOpeningFile(message: T.vaultRecoveryErrorScanningFile) { [weak self] in
+                self.destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorScanningFile)) { [weak self] in
                     self?.destination = nil
                 }
             }

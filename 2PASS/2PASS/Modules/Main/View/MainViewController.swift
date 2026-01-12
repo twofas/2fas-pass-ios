@@ -43,23 +43,23 @@ final class MainViewController: UITabBarController {
     
     private func changeStyling() {
         let app = tabBar.standardAppearance.copy()
-        app.backgroundColor = Asset.mainBackgroundColor.color
-        app.shadowColor = Asset.dividerColor.color
-        app.shadowImage = Asset.shadowLine.image
+        app.backgroundColor = UIColor(resource: .mainBackground)
+        app.shadowColor = UIColor(resource: .divider)
+        app.shadowImage = UIImage(resource: .shadowLine)
             .resizableImage(withCapInsets: UIEdgeInsets.zero, resizingMode: .tile)
         
         let tabBarItemFont = UIFont.preferredFont(forTextStyle: .caption2)
         let tabBarItemAppearance = UITabBarItemAppearance()
         tabBarItemAppearance.normal.titleTextAttributes = [
-            NSAttributedString.Key.foregroundColor: Asset.inactiveColor.color,
+            NSAttributedString.Key.foregroundColor: UIColor(resource: .inactive),
             NSAttributedString.Key.font: tabBarItemFont
         ]
         tabBarItemAppearance.selected.titleTextAttributes = [
-            NSAttributedString.Key.foregroundColor: Asset.accentColor.color,
+            NSAttributedString.Key.foregroundColor: UIColor(resource: .accent),
             NSAttributedString.Key.font: tabBarItemFont
         ]
         tabBarItemAppearance.focused.titleTextAttributes = [
-            NSAttributedString.Key.foregroundColor: Asset.accentColor.color,
+            NSAttributedString.Key.foregroundColor: UIColor(resource: .accent),
             NSAttributedString.Key.font: tabBarItemFont
         ]
         

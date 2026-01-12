@@ -19,7 +19,7 @@ extension ItemProtectionLevel {
         case .normal:
             UIImage(resource: .tier3Icon)
         case .confirm:
-            UIImage(resource:.tier2Icon)
+            UIImage(resource: .tier2Icon)
         case .topSecret:
             UIImage(resource: .tier1Icon)
         }

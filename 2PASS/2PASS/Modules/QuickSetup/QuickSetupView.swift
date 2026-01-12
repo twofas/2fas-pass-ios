@@ -45,11 +45,11 @@ struct QuickSetupView: View {
                         StepView(
                             title: {
                                 HStack(spacing: Spacing.s) {
-                                    Text(T.quickSetupAutofillTitle.localizedKey)
+                                    Text(.quickSetupAutofillTitle)
                                     RecommendedLabel()
                                 }
                             },
-                            subtitle: Text(T.quickSetupAutofillDescription.localizedKey),
+                            subtitle: Text(.quickSetupAutofillDescription),
                             accessory: {
                                 Toggle(isOn: $presenter.autofillIsEnabled, label: {})
                                     .layoutPriority(-1)
@@ -60,11 +60,11 @@ struct QuickSetupView: View {
                         StepView(
                             title: {
                                 HStack(spacing: Spacing.s) {
-                                    Text(T.quickSetupIcloudSyncTitle.localizedKey)
+                                    Text(.quickSetupIcloudSyncTitle)
                                     RecommendedLabel()
                                 }
                             },
-                            subtitle: Text(T.quickSetupIcloudSyncDescription.localizedKey),
+                            subtitle: Text(.quickSetupIcloudSyncDescription),
                             accessory: {
                                 Toggle(isOn: $presenter.iCloudSyncEnabled, label: {})
                                     .layoutPriority(-1)
@@ -87,7 +87,7 @@ struct QuickSetupView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             
-            Button(T.commonClose.localizedKey) {
+            Button(.commonClose) {
                 presenter.onClose()
                 dismiss()
             }
@@ -103,7 +103,7 @@ struct QuickSetupView: View {
         .background(Color.base0)
         .router(router: QuickSetupRouter(), destination: $presenter.destination)
         .sensoryFeedback(.selection, trigger: appearFeedback)
-        .toast(Text(T.quickSetupIcloudSyncFailure.localizedKey), isPresented: $presenter.showVaultSyncFailure, style: .failure)
+        .toast(Text(.quickSetupIcloudSyncFailure), isPresented: $presenter.showVaultSyncFailure, style: .failure)
         .task {
             await presenter.onAppear()
         }
@@ -125,11 +125,11 @@ struct QuickSetupView: View {
                 .padding(.bottom, Spacing.m)
                 .padding(.top, Spacing.xll2)
             
-            Text(T.quickSetupTitle.localizedKey)
+            Text(.quickSetupTitle)
                 .font(.title1Emphasized)
                 .foregroundStyle(.neutral950)
             
-            Text(T.quickSetupSubtitle.localizedKey)
+            Text(.quickSetupSubtitle)
                 .font(.subheadline)
                 .foregroundStyle(.neutral600)
         }
@@ -138,8 +138,8 @@ struct QuickSetupView: View {
     
     private var securityTierStep: some View {
         StepView(
-            title: Text(T.quickSetupSecurityTierTitle.localizedKey),
-            subtitle: Text(T.quickSetupSecurityTierDescription.localizedKey),
+            title: Text(.quickSetupSecurityTierTitle),
+            subtitle: Text(.quickSetupSecurityTierDescription),
             accessory: {},
             footer: {
                 Divider()
@@ -149,14 +149,14 @@ struct QuickSetupView: View {
                     presenter.onChangeDefaultSecurityTier()
                 } label: {
                     HStack(spacing: Spacing.s) {
-                        Text(T.quickSetupSecurityTierDefaultLabel.localizedKey)
+                        Text(.quickSetupSecurityTierDefaultLabel)
                             .font(.body)
                             .foregroundStyle(.neutral950)
                         
                         Spacer()
                         
                         Label {
-                            Text(presenter.defaultSecurityTier.title.localizedKey)
+                            Text(presenter.defaultSecurityTier.title)
                                 .foregroundStyle(.neutral500)
                         } icon: {
                             presenter.defaultSecurityTier.icon
@@ -183,7 +183,7 @@ struct QuickSetupView: View {
                 presenter.onImportItems()
             } label: {
                 Label {
-                    Text(T.quickSetupImportItemsCta.localizedKey)
+                    Text(.quickSetupImportItemsCta)
                 } icon: {
                     Image(.importItemsIcon)
                         .renderingMode(.template)
@@ -194,7 +194,7 @@ struct QuickSetupView: View {
                 presenter.onTransferItems()
             } label: {
                 Label {
-                    Text(T.quickSetupTransferItemsCta.localizedKey)
+                    Text(.quickSetupTransferItemsCta)
                 } icon: {
                     Image(.transferItemsIcon)
                         .renderingMode(.template)
@@ -211,7 +211,7 @@ private struct RecommendedLabel: View {
     var body: some View {
         HStack(spacing: Spacing.xxs) {
             Image(systemName: "info.circle.fill")
-            Text(T.quickSetupRecommended.localizedKey)
+            Text(.quickSetupRecommended)
         }
         .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(.white)

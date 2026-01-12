@@ -20,12 +20,12 @@ final class CommonSearchBar: UISearchBar {
     }
     
     private func commonInit() {
-        placeholder = T.commonSearch
+        placeholder = String(localized: .commonSearch)
         delegate = self
         barStyle = .default
         searchBarStyle = .minimal
-        tintColor = Asset.accentColor.color
-        barTintColor = Asset.accentColor.color
+        tintColor = UIColor(resource: .accent)
+        barTintColor = UIColor(resource: .accent)
         sizeToFit()
     }
     
