@@ -50,6 +50,7 @@ final class PasswordsViewController: UIViewController {
     private var edgeEffectToContentTypePickerConstraint: NSLayoutConstraint?
     private var edgeEffectToSelectedTagConstraint: NSLayoutConstraint?
     private var deleteBarButton: UIBarButtonItem?
+    private var protectionLevelBarButton: UIBarButtonItem?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -268,6 +269,12 @@ private extension PasswordsViewController {
     @objc
     func deleteSelectedItems() {
         presenter.onDeleteItems(selectedItemIDs, source: deleteBarButton)
+    }
+
+    @objc
+    func changeProtectionLevel() {
+        guard selectedItemIDs.isEmpty == false else { return }
+        presentBulkProtectionLevelSelection(for: selectedItemIDs)
     }
     
     func filterBarButton() -> UIBarButtonItem {
@@ -585,7 +592,19 @@ private extension PasswordsViewController {
         )
         deleteBarButton.isEnabled = selectedItemIDs.isEmpty == false
         self.deleteBarButton = deleteBarButton
+        
+        let protectionLevelBarButton = UIBarButtonItem(
+            image: UIImage(resource: .tier3Icon),
+            style: .plain,
+            target: self,
+            action: #selector(changeProtectionLevel)
+        )
+        protectionLevelBarButton.accessibilityLabel = String(localized: .settingsEntryProtectionLevel)
+        protectionLevelBarButton.isEnabled = selectedItemIDs.isEmpty == false
+        self.protectionLevelBarButton = protectionLevelBarButton
+        
         let toolbarItems = [
+            protectionLevelBarButton,
             UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
             deleteBarButton
         ]
@@ -619,7 +638,10 @@ private extension PasswordsViewController {
         }
     }
 
-    
+    func presentBulkProtectionLevelSelection(for itemIDs: [ItemID]) {
+        presenter.toBulkProtectionLevelSelection(selectedItemIDs: itemIDs)
+    }
+
     func filterMenuItems() -> [UIMenuElement] {
         var menuItems: [UIMenuElement] = []
         menuItems.append(sortMenu())
@@ -724,6 +746,7 @@ extension PasswordsViewController {
         navigationItem.title = selectionCountTitle(for: selectedItemIDs.count)
         selectAllButton?.title = selectAllButtonTitle()
         deleteBarButton?.isEnabled = selectedItemIDs.isEmpty == false
+        protectionLevelBarButton?.isEnabled = selectedItemIDs.isEmpty == false
     }
 }
 
@@ -731,8 +754,8 @@ extension PasswordsViewController: UISearchControllerDelegate {
     
     func willPresentSearchController(_ searchController: UISearchController) {
         isSearchTransitioning = true
-    }
-    
+}
+
     func didPresentSearchController(_ searchController: UISearchController) {
         isSearchTransitioning = false
     }

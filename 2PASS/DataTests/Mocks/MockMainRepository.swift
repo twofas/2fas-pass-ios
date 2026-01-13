@@ -1781,15 +1781,21 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    private var stubbedListEncryptedItemsExcluding: (VaultID, Set<ItemProtectionLevel>) -> [ItemEncryptedData] = { _, _ in [] }
-    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData] {
+    private var stubbedListEncryptedItemsFiltered: (VaultID, [ItemID]?, Set<ItemProtectionLevel>?) -> [ItemEncryptedData] = { _, _, _ in [] }
+    func listEncryptedItems(
+        in vaultID: VaultID,
+        itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData] {
         recordCall()
-        return stubbedListEncryptedItemsExcluding(vaultID, excludeProtectionLevels)
+        return stubbedListEncryptedItemsFiltered(vaultID, itemIDs, excludeProtectionLevels)
     }
 
     @discardableResult
-    func withListEncryptedItemsExcluding(_ handler: @escaping (VaultID, Set<ItemProtectionLevel>) -> [ItemEncryptedData]) -> Self {
-        stubbedListEncryptedItemsExcluding = handler
+    func withListEncryptedItemsFiltered(
+        _ handler: @escaping (VaultID, [ItemID]?, Set<ItemProtectionLevel>?) -> [ItemEncryptedData]
+    ) -> Self {
+        stubbedListEncryptedItemsFiltered = handler
         return self
     }
 

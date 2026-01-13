@@ -194,14 +194,28 @@ final class ItemEncryptedEntity: NSManagedObject {
     
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
-        excludeProtectionLevels: Set<ItemProtectionLevel>,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?,
+        itemIDs: [ItemID]?,
         vaultID: VaultID? = nil
     ) -> [ItemEncryptedEntity] {
-        listItems(
-            on: context,
-            predicate:  NSPredicate(format: "NOT (level IN %@)", excludeProtectionLevels.map({ $0.rawValue })),
-            vaultID: vaultID
-        )
+        var predicates: [NSPredicate] = []
+        if let excludeProtectionLevels, excludeProtectionLevels.isEmpty == false {
+            predicates.append(NSPredicate(format: "NOT (level IN %@)", excludeProtectionLevels.map({ $0.rawValue })))
+        }
+        if let itemIDs, itemIDs.isEmpty == false {
+            predicates.append(NSPredicate(format: "itemID IN %@", itemIDs))
+        }
+        
+        let predicate: NSPredicate?
+        if predicates.isEmpty {
+            predicate = nil
+        } else if predicates.count == 1 {
+            predicate = predicates[0]
+        } else {
+            predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        }
+        
+        return listItems(on: context, predicate: predicate, vaultID: vaultID)
     }
     
     @nonobjc static func delete(on context: NSManagedObjectContext, entity: ItemEncryptedEntity) {

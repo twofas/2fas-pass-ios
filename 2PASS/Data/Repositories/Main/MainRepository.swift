@@ -476,7 +476,11 @@ protocol MainRepository: AnyObject {
     func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData])
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
-    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
+    func listEncryptedItems(
+        in vaultID: VaultID,
+        itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData]
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
     func deleteEncryptedItem(itemID: ItemID)
     func deleteAllEncryptedItems()

@@ -110,7 +110,8 @@ extension StorageInteractor: StorageInteracting {
         mainRepository.createInMemoryStorage()
         let items = mainRepository.listEncryptedItems(
             in: vaultID,
-            excludeProtectionLevels: mainRepository.isMainAppProcess ? [] : Config.autoFillExcludeProtectionLevels
+            itemIDs: nil,
+            excludeProtectionLevels: mainRepository.isMainAppProcess ? nil : Config.autoFillExcludeProtectionLevels
         )
         
         let tags = mainRepository.listEncryptedTags(in: vaultID)

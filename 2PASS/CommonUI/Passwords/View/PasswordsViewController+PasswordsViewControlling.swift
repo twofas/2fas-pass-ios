@@ -19,6 +19,7 @@ protocol PasswordsViewControlling: AnyObject {
     func showSearchEmptyScreen()
     func filterDidChange()
     func clearSelectionForContentTypeChange()
+    func exitEditingMode()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {
@@ -91,5 +92,9 @@ extension PasswordsViewController: PasswordsViewControlling {
 
     func clearSelectionForContentTypeChange() {
         clearSelection()
+    }
+
+    func exitEditingMode() {
+        setEditing(false, animated: true)
     }
 }

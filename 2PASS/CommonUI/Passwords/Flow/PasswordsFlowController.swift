@@ -27,6 +27,10 @@ protocol PasswordsFlowControlling: AnyObject {
     func toEditItem(itemID: ItemID)
     func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
+    func toBulkProtectionLevelSelection(
+        countsByLevel: [ItemProtectionLevel: Int],
+        selectedItemIDs: [ItemID]
+    )
 
     func selectItem(id: ItemID, contentType: ItemContentType)
     func cancel()
@@ -44,6 +48,7 @@ protocol PasswordsFlowControlling: AnyObject {
 public final class PasswordsFlowController: FlowController {
     private weak var parent: PasswordsFlowControllerParent?
     private var autoFillEnvironment: AutoFillEnvironment?
+    private var bulkProtectionLevelItemIDs: [ItemID] = []
     
     public static func setAsRoot(
         on navigationController: UINavigationController,
@@ -93,6 +98,18 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     
     func toURI(_ selectedURI: URL) {
         UIApplication.shared.openInBrowser(selectedURI)
+    }
+    
+    func toBulkProtectionLevelSelection(
+        countsByLevel: [ItemProtectionLevel: Int],
+        selectedItemIDs: [ItemID]
+    ) {
+        bulkProtectionLevelItemIDs = selectedItemIDs
+        BulkProtectionLevelFlowController.present(
+            on: viewController,
+            parent: self,
+            countsByLevel: countsByLevel
+        )
     }
     
     func selectItem(id: ItemID, contentType: ItemContentType) {
@@ -146,5 +163,19 @@ extension PasswordsFlowController: ContentTypeSelectionFlowControllerParent {
 
     func getAutoFillEnvironment() -> AutoFillEnvironment? {
         return autoFillEnvironment
+    }
+}
+
+extension PasswordsFlowController: BulkProtectionLevelFlowControllerParent {
+    func bulkProtectionLevelDidCancel() {
+        bulkProtectionLevelItemIDs = []
+        viewController.dismiss(animated: true)
+    }
+    
+    func bulkProtectionLevelDidConfirmChange(to level: ItemProtectionLevel) {
+        let itemIDs = bulkProtectionLevelItemIDs
+        bulkProtectionLevelItemIDs = []
+        viewController.dismiss(animated: true)
+        viewController.presenter.applyProtectionLevel(level, to: itemIDs)
     }
 }

@@ -76,6 +76,53 @@
         }
       }
     },
+    " home_multiselect_security_tier_change_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Change %lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Change %lld items"
+                }
+              }
+            }
+          }
+        },
+        "pl-PL" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zmień %lld elementy"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zmień %lld element"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zmień %lld elementy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     " login_view_action_common_copy" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -269,13 +316,13 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your data is protected with a unique, randomly generated SEED combined with your Master Password.\\nOn your device, the SEED is securely stored in Apple's Secure Enclave, so you only need your Master Password to access your data."
+            "value" : "Your data is protected with a unique, randomly generated SEED combined with your Master Password.\nOn your device, the SEED is securely stored in Apple's Secure Enclave, so you only need your Master Password to access your data."
           }
         },
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Twoje dane są chronione za pomocą unikalnego, losowo wygenerowanego SEED-u połączonego z Twoim hasłem głównym.\\nSEED jest bezpiecznie przechowywany w Apple Secure Enclave, dzięki czemu do dostępu do danych potrzebujesz tylko hasła głównego."
+            "value" : "Twoje dane są chronione za pomocą unikalnego, losowo wygenerowanego SEED-u połączonego z Twoim hasłem głównym.\nSEED jest bezpiecznie przechowywany w Apple Secure Enclave, dzięki czemu do dostępu do danych potrzebujesz tylko hasła głównego."
           }
         }
       }
@@ -954,7 +1001,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biometryka"
+            "value" : "Biometria"
           }
         }
       }
@@ -1651,7 +1698,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biometryka"
+            "value" : "Biometria"
           }
         }
       }
@@ -2433,7 +2480,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Potwierdzam"
+            "value" : "Przypisz"
           }
         }
       }
@@ -2655,6 +2702,53 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pomoc"
+          }
+        }
+      }
+    },
+    "common_items_count" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items"
+                }
+              }
+            }
+          }
+        },
+        "pl-PL" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld elementy"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld element"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld elementów"
+                }
+              }
+            }
           }
         }
       }
@@ -4337,7 +4431,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Etykiera"
+            "value" : "Etykieta"
           }
         }
       }
@@ -4354,7 +4448,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wpisz tekst etykiety"
+            "value" : "Wpisz treść etykiety"
           }
         }
       }
@@ -5375,6 +5469,57 @@
         }
       }
     },
+    "home_multiselect_security_tier_change_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will change Security Tier for selected Items."
+          }
+        },
+        "pl-PL" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will change Security Tier for selected Items."
+          }
+        }
+      }
+    },
+    "home_multiselect_security_tier_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit for selected items"
+          }
+        },
+        "pl-PL" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edycja zaznaczonych elementów"
+          }
+        }
+      }
+    },
+    "home_multiselect_security_tier_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security Tier"
+          }
+        },
+        "pl-PL" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poziom bezpieczeństwa"
+          }
+        }
+      }
+    },
     "home_selection_count" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5553,7 +5698,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bezpiecznie przechowuj dane sejfu na swoim urządzeniu. Zrób import wcześniejszej kopii zapasowej, aby przywrócić dane, lub eksportuj bieżące dane w celu ich zabezpieczenia."
+            "value" : "Bezpiecznie przechowuj dane sejfu na swoim urządzeniu. Zrób import kopii zapasowej, aby przywrócić dane, lub eksportuj bieżące dane w celu ich zabezpieczenia."
           }
         }
       }
@@ -5774,7 +5919,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Brak przeglądarek."
+            "value" : "Brak przeglądarek"
           }
         }
       }
@@ -5893,7 +6038,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biometryka"
+            "value" : "Biometria"
           }
         }
       }
@@ -10313,7 +10458,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rozszerzenie przeglądarki prosi o dostęp do hasła tego elementu"
+            "value" : "Rozszerzenie przeglądarki prosi o dostęp do tego loginu"
           }
         }
       }
@@ -15713,13 +15858,13 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the name of the new Tag and confirm"
+            "value" : "Enter the name of the new Tag"
           }
         },
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wprowadź nazwę nowego Taga i potwierdź"
+            "value" : "Wprowadź nazwę nowego Taga"
           }
         }
       }
@@ -17113,7 +17258,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pozwól na nieuznane certyfikaty"
+            "value" : "Pozwól na niezaufane certyfikaty"
           }
         }
       }

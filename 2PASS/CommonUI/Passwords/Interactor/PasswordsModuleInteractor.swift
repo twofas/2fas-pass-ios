@@ -40,6 +40,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     func getTag(for tagID: ItemTagID) -> ItemTagData?
     func countItemsForTag(_ tagID: ItemTagID) -> Int
     func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int
+    func updateProtectionLevel(_ protectionLevel: ItemProtectionLevel, for itemIDs: [ItemID]) throws(ItemsInteractorSaveError)
 }
 
 final class PasswordsModuleInteractor {
@@ -314,5 +315,22 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             sortBy: currentSortType,
             trashed: .no
         ).count
+    }
+
+    func updateProtectionLevel(_ protectionLevel: ItemProtectionLevel, for itemIDs: [ItemID]) throws(ItemsInteractorSaveError) {
+        guard itemIDs.isEmpty == false else { return }
+        let updatedItems = try itemsInteractor.updateItems(
+            itemIDs,
+            to: protectionLevel
+        )
+        let loginItems = updatedItems.compactMap(\.asLoginItem)
+        if loginItems.isEmpty == false {
+            Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
+                try await autoFillCredentialsInteractor.replaceSuggestions(
+                    for: loginItems
+                )
+            }
+        }
+        syncChangeTriggerInteractor.trigger()
     }
 }

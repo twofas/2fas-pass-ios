@@ -30,6 +30,10 @@ public protocol ItemsInteracting: AnyObject {
 
     func createItem(_ item: ItemData) throws(ItemsInteractorSaveError)
     func updateItem(_ item: ItemData) throws(ItemsInteractorSaveError)
+    func updateItems(
+        _ itemIDs: [ItemID],
+        to protectionLevel: ItemProtectionLevel
+    ) throws(ItemsInteractorSaveError) -> [ItemData]
     
     func saveStorage()
     
@@ -573,6 +577,111 @@ extension ItemsInteractor: ItemsInteracting {
             return nil
         }
         return try? mainRepository.jsonDecoder.decode(T.self, from: decryptedData)
+    }
+
+    func updateItems(
+        _ itemIDs: [ItemID],
+        to protectionLevel: ItemProtectionLevel
+    ) throws(ItemsInteractorSaveError) -> [ItemData] {
+        guard itemIDs.isEmpty == false else { return [] }
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("ItemsInteractor: Reencrypt items. No vault", module: .interactor, severity: .error)
+            throw .noVault
+        }
+        let modificationDate = mainRepository.currentDate
+        let encryptedItems = mainRepository.listEncryptedItems(
+            in: selectedVault.vaultID,
+            itemIDs: itemIDs,
+            excludeProtectionLevels: nil
+        )
+        var updatedItems: [ItemData] = []
+        var updatedRawItems: [RawItemData] = []
+        var updatedEncryptedItems: [ItemEncryptedData] = []
+        updatedItems.reserveCapacity(encryptedItems.count)
+        updatedRawItems.reserveCapacity(encryptedItems.count)
+        updatedEncryptedItems.reserveCapacity(encryptedItems.count)
+        
+        for encryptedItem in encryptedItems {
+            guard encryptedItem.protectionLevel != protectionLevel else { continue }
+            guard let decryptedContent = decryptData(
+                encryptedItem.content,
+                isSecureField: false,
+                protectionLevel: encryptedItem.protectionLevel
+            ) else {
+                throw .encryptionError
+            }
+            guard let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: decryptedContent).value as? [String: Any] else {
+                throw .contentEncodingFailure
+            }
+            
+            var updatedContentDict = contentDict
+            for (key, value) in contentDict where encryptedItem.contentType.isSecureField(key: key) {
+                guard let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) else {
+                    throw .contentEncodingFailure
+                }
+                guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: encryptedItem.protectionLevel),
+                      let encrypted = encrypt(decrypted, isSecureField: true, protectionLevel: protectionLevel) else {
+                    throw .encryptionError
+                }
+                updatedContentDict[key] = encrypted.base64EncodedString()
+            }
+            
+            guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(updatedContentDict)) else {
+                throw .contentEncodingFailure
+            }
+            
+            let metadata = ItemMetadata(
+                creationDate: encryptedItem.creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: encryptedItem.trashedStatus,
+                tagIds: encryptedItem.tagIds
+            )
+            
+            let updatedRawItem = RawItemData(
+                id: encryptedItem.itemID,
+                vaultId: encryptedItem.vaultID,
+                metadata: metadata,
+                name: updatedContentDict[ItemContentNameKey] as? String,
+                contentType: encryptedItem.contentType,
+                contentVersion: encryptedItem.contentVersion,
+                content: contentData
+            )
+            
+            guard let encryptedContent = encryptData(
+                contentData,
+                isSecureField: false,
+                protectionLevel: protectionLevel
+            ) else {
+                throw .encryptionError
+            }
+            
+            updatedEncryptedItems.append(.init(
+                itemID: encryptedItem.itemID,
+                creationDate: encryptedItem.creationDate,
+                modificationDate: modificationDate,
+                trashedStatus: encryptedItem.trashedStatus,
+                protectionLevel: protectionLevel,
+                contentType: encryptedItem.contentType,
+                contentVersion: encryptedItem.contentVersion,
+                content: encryptedContent,
+                vaultID: selectedVault.vaultID,
+                tagIds: encryptedItem.tagIds
+            ))
+            updatedRawItems.append(updatedRawItem)
+            
+            guard let updatedItem = ItemData(updatedRawItem, decoder: mainRepository.jsonDecoder) else {
+                throw .contentEncodingFailure
+            }
+            updatedItems.append(updatedItem)
+        }
+        
+        guard updatedRawItems.isEmpty == false else { return [] }
+        mainRepository.itemsBatchUpdate(updatedRawItems)
+        mainRepository.encryptedItemsBatchUpdate(updatedEncryptedItems)
+        saveStorage()
+        
+        return updatedItems
     }
     
     // MARK: - Change Password

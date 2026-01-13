@@ -278,6 +278,24 @@ extension PasswordsPresenter {
     func countPasswordsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
         interactor.countItemsForProtectionLevel(protectionLevel)
     }
+    
+    func applyProtectionLevel(_ protectionLevel: ItemProtectionLevel, to itemIDs: [ItemID]) {
+        do {
+            try interactor.updateProtectionLevel(protectionLevel, for: itemIDs)
+            view?.exitEditingMode()
+            handleRefresh()
+        } catch {
+            Log("PasswordsPresenter: Failed to update protection level", module: .ui, severity: .error)
+            toastPresenter.present(.commonGeneralErrorTryAgain, style: .failure)
+        }
+    }
+
+    func toBulkProtectionLevelSelection(selectedItemIDs: [ItemID]) {
+        flowController.toBulkProtectionLevelSelection(
+            countsByLevel: protectionLevelCounts(for: selectedItemIDs),
+            selectedItemIDs: selectedItemIDs
+        )
+    }
 }
 
 extension PasswordsPresenter {
@@ -496,6 +514,24 @@ private extension PasswordsPresenter {
             return []
         }
         return tagIds.compactMap { tagColorsByID[$0] }
+    }
+    
+    func selectedItems(for itemIDs: [ItemID]) -> [ItemData] {
+        guard itemIDs.isEmpty == false else { return [] }
+        let selectedIDs = Set(itemIDs)
+        var results: [ItemData] = []
+        results.reserveCapacity(itemIDs.count)
+        for list in listData.values {
+            for item in list where selectedIDs.contains(item.id) {
+                results.append(item)
+            }
+        }
+        return results
+    }
+    
+    func protectionLevelCounts(for itemIDs: [ItemID]) -> [ItemProtectionLevel: Int] {
+        Dictionary(grouping: selectedItems(for: itemIDs).map(\.protectionLevel), by: { $0 })
+            .mapValues { $0.count }
     }
     
     @objc
