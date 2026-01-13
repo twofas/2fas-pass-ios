@@ -563,12 +563,7 @@ private extension PasswordsViewController {
     }
 
     func selectionCountTitle(for count: Int) -> String {
-        let value = Int32(count)
-        if count == 1 {
-            return String(localized: .homeSelectionCountSingle(value))
-        } else {
-            return String(localized: .homeSelectionCountPlural(value))
-        }
+        String(localized: .homeSelectionCount(Int32(count)))
     }
 
     func updateNavigationBarButtons(animated: Bool = false) {
