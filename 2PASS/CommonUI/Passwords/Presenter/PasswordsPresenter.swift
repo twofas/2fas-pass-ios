@@ -79,7 +79,10 @@ final class PasswordsPresenter {
     private let toastPresenter: ToastPresenter
     private var listData: [Int: [ItemData]] = [:]
     private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
-    private var canLoadData: Bool = false
+    private var isViewReady: Bool = false
+    private var canLoadData: Bool {
+        isViewReady && interactor.isUserLoggedIn
+    }
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
@@ -107,7 +110,7 @@ final class PasswordsPresenter {
 extension PasswordsPresenter {
     
     func viewWillAppear() {
-        canLoadData = true
+        isViewReady = true
         refreshSelectedFilterTag()
         reload()
     }
@@ -376,7 +379,7 @@ private extension PasswordsPresenter {
         guard canLoadData else {
             return
         }
-        
+
         listData.removeAll()
         hasSuggestedItems = false
         tagColorsByID = Dictionary(uniqueKeysWithValues: listAllTags().map { ($0.tagID, $0.color) })

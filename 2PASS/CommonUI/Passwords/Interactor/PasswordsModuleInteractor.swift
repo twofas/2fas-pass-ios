@@ -9,6 +9,7 @@ import Data
 import Common
 
 protocol PasswordsModuleInteracting: AnyObject {
+    var isUserLoggedIn: Bool { get }
     var hasItems: Bool { get }
     func hasItems(for contentType: ItemContentType) -> Bool
 
@@ -44,6 +45,7 @@ protocol PasswordsModuleInteracting: AnyObject {
 }
 
 final class PasswordsModuleInteractor {
+    private let securityInteractor: SecurityInteracting
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let systemInteractor: SystemInteracting
@@ -58,6 +60,7 @@ final class PasswordsModuleInteractor {
     private var searchPhrase: String?
     
     init(
+        securityInteractor: SecurityInteracting,
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
         systemInteractor: SystemInteracting,
@@ -69,6 +72,7 @@ final class PasswordsModuleInteractor {
         passwordListInteractor: PasswordListInteracting,
         tagInteractor: TagInteracting
     ) {
+        self.securityInteractor = securityInteractor
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.systemInteractor = systemInteractor
@@ -83,6 +87,10 @@ final class PasswordsModuleInteractor {
 }
 
 extension PasswordsModuleInteractor: PasswordsModuleInteracting {
+
+    var isUserLoggedIn: Bool {
+        securityInteractor.isUserLoggedIn
+    }
 
     var hasItems: Bool {
         itemsInteractor.hasItems

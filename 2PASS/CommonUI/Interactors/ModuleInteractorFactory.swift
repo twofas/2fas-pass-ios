@@ -48,6 +48,7 @@ public final class ModuleInteractorFactory {
     
     func passwordInteractor() -> PasswordsModuleInteracting {
         PasswordsModuleInteractor(
+            securityInteractor: InteractorFactory.shared.securityInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
