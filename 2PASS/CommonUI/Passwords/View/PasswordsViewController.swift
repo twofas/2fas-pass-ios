@@ -103,11 +103,15 @@ final class PasswordsViewController: UIViewController {
         
         if editing == false {
             navigationItem.title = String(localized: .homeTitle)
+            navigationItem.searchController = searchController
+
             if presenter.isAutoFillExtension {
                 navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
             } else {
                 navigationItem.leftBarButtonItem = nil
             }
+        } else {
+            navigationItem.searchController = nil
         }
 
         searchController.searchBar.isEnabled = !editing
@@ -570,7 +574,11 @@ private extension PasswordsViewController {
     }
 
     func selectionCountTitle(for count: Int) -> String {
-        String(localized: .homeSelectionCount(Int32(count)))
+        if UIDevice.isiPad {
+            String(localized: .commonItemsCount(count))
+        } else {
+            String(localized: .homeSelectionCount(Int32(count)))
+        }
     }
 
     func updateNavigationBarButtons(animated: Bool = false) {
@@ -612,28 +620,33 @@ private extension PasswordsViewController {
         navigationController?.setToolbarHidden(!isEditing, animated: animated)
 
         guard let tabBar = tabBarController?.tabBar else { return }
-        if isEditing {
-            if animated {
-                tabBar.isHidden = false
-                UIView.animate(withDuration: 0.25, animations: {
-                    tabBar.alpha = 0
-                }, completion: { _ in
-                    tabBar.isHidden = true
-                })
-            } else {
-                tabBar.alpha = 0
-                tabBar.isHidden = true
-            }
+        
+        if #available(iOS 18.0, *), UIDevice.isiPad {
+            tabBarController?.setTabBarHidden(isEditing, animated: animated)
         } else {
-            if animated {
-                tabBar.isHidden = false
-                tabBar.alpha = 0
-                UIView.animate(withDuration: 0.25) {
-                    tabBar.alpha = 1
+            if isEditing {
+                if animated {
+                    tabBar.isHidden = false
+                    UIView.animate(withDuration: 0.25, animations: {
+                        tabBar.alpha = 0
+                    }, completion: { _ in
+                        tabBar.isHidden = true
+                    })
+                } else {
+                    tabBar.alpha = 0
+                    tabBar.isHidden = true
                 }
             } else {
-                tabBar.alpha = 1
-                tabBar.isHidden = false
+                if animated {
+                    tabBar.isHidden = false
+                    tabBar.alpha = 0
+                    UIView.animate(withDuration: 0.25) {
+                        tabBar.alpha = 1
+                    }
+                } else {
+                    tabBar.alpha = 1
+                    tabBar.isHidden = false
+                }
             }
         }
     }
