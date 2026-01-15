@@ -46,13 +46,13 @@ private struct BulkProtectionLevelRow: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(level.title)
                         .font(.subheadlineEmphasized)
-                        .foregroundStyle(.base1000)
+                        .foregroundStyle(.primary)
                     
                     if count > 0 {
                         Text(.commonItemsCount(count))
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(.neutral900)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 
@@ -71,13 +71,9 @@ private struct BulkProtectionLevelRow: View {
     let flowController = BulkProtectionLevelPreviewFlowController()
     let presenter = BulkProtectionLevelPresenter(
         flowController: flowController,
-        countsByLevel: [
-            .topSecret: 2,
-            .confirm: 1,
-            .normal: 3
-        ]
+        selectedItems: []
     )
-    return BulkProtectionLevelSelectionView(presenter: presenter)
+    BulkProtectionLevelSelectionView(presenter: presenter)
 }
 
 private final class BulkProtectionLevelPreviewFlowController: BulkProtectionLevelFlowControlling {

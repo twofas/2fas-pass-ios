@@ -10,12 +10,6 @@ import Common
 public protocol PasswordsNavigationFlowControllerParent: AnyObject {
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
-
-    @MainActor
-    func toConfirmDelete() async -> Bool
-    
-    @MainActor
-    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool
 }
 
 public final class PasswordsNavigationFlowController: NavigationFlowController {
@@ -62,17 +56,7 @@ extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
     public func toQuickSetup() {
         parent?.toQuickSetup()
     }
-    
-    @MainActor
-    public func toConfirmDelete() async -> Bool {
-        await parent?.toConfirmDelete() ?? false
-    }
 
-    @MainActor
-    public func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool {
-        await parent?.toConfirmMultiselectDelete(selectedCount: selectedCount, source: source) ?? false
-    }
-    
     public func toPremiumPlanPrompt(itemsLimit: Int) {
         parent?.toPremiumPlanPrompt(itemsLimit: itemsLimit)
     }

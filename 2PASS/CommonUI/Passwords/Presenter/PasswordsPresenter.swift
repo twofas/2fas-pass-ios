@@ -257,6 +257,7 @@ extension PasswordsPresenter {
         Task { @MainActor in
             if await flowController.toConfirmMultiselectDelete(selectedCount: itemIDs.count, source: source) {
                 itemIDs.forEach { interactor.moveToTrash($0) }
+                view?.exitEditingMode()
                 reload()
             }
         }
@@ -295,15 +296,13 @@ extension PasswordsPresenter {
 
     func toBulkProtectionLevelSelection(selectedItemIDs: [ItemID]) {
         flowController.toBulkProtectionLevelSelection(
-            countsByLevel: protectionLevelCounts(for: selectedItemIDs),
-            selectedItemIDs: selectedItemIDs
+            selectedItems: selectedItems(for: selectedItemIDs)
         )
     }
 
     func toBulkTagsSelection(selectedItemIDs: [ItemID]) {
         flowController.toBulkTagsSelection(
-            tagCountsByID: tagCountsByID(for: selectedItemIDs),
-            selectedItemIDs: selectedItemIDs
+            selectedItems: selectedItems(for: selectedItemIDs)
         )
     }
 
@@ -549,23 +548,7 @@ private extension PasswordsPresenter {
         }
         return results
     }
-    
-    func protectionLevelCounts(for itemIDs: [ItemID]) -> [ItemProtectionLevel: Int] {
-        Dictionary(grouping: selectedItems(for: itemIDs).map(\.protectionLevel), by: { $0 })
-            .mapValues { $0.count }
-    }
 
-    func tagCountsByID(for itemIDs: [ItemID]) -> [ItemTagID: Int] {
-        var counts: [ItemTagID: Int] = [:]
-        for item in selectedItems(for: itemIDs) {
-            guard let tagIds = item.tagIds else { continue }
-            for tagID in tagIds {
-                counts[tagID, default: 0] += 1
-            }
-        }
-        return counts
-    }
-    
     @objc
     func syncFinished(_ event: Notification) {
         guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {

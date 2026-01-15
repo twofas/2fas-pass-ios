@@ -10,33 +10,32 @@ import Observation
 
 @Observable
 final class BulkProtectionLevelPresenter {
-    
-    private(set) var totalSelectedCount: Int
+
     private let flowController: BulkProtectionLevelFlowControlling
+    private let selectedItems: [ItemData]
     private let countsByLevel: [ItemProtectionLevel: Int]
     private let initialUniformLevel: ItemProtectionLevel?
-    
+
     private(set) var pendingProtectionLevel: ItemProtectionLevel?
-    
+
     @ObservationIgnored
     var onChange: (() -> Void)?
-    
-    init(flowController: BulkProtectionLevelFlowControlling, countsByLevel: [ItemProtectionLevel: Int]) {
+
+    init(flowController: BulkProtectionLevelFlowControlling, selectedItems: [ItemData]) {
         self.flowController = flowController
-        self.countsByLevel = countsByLevel
-        let totalSelectedCount = countsByLevel.values.reduce(0, +)
-        self.totalSelectedCount = totalSelectedCount
-        
-        if totalSelectedCount > 0, countsByLevel.count == 1 {
-            self.initialUniformLevel = countsByLevel.keys.first
-        } else {
-            self.initialUniformLevel = nil
-        }
+        self.selectedItems = selectedItems
+        self.countsByLevel = Dictionary(grouping: selectedItems.map(\.protectionLevel), by: { $0 })
+            .mapValues { $0.count }
+        self.initialUniformLevel = countsByLevel.count == 1 ? countsByLevel.keys.first : nil
     }
     
     var hasPendingChanges: Bool {
         guard let pendingProtectionLevel else { return false }
         return pendingProtectionLevel != initialUniformLevel
+    }
+
+    var totalSelectedCount: Int {
+        selectedItems.count
     }
 
     func selectProtectionLevel(_ level: ItemProtectionLevel) {

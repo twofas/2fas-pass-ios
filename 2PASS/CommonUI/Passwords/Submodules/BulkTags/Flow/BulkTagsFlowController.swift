@@ -18,8 +18,7 @@ final class BulkTagsFlowController: FlowController {
     static func present(
         on viewController: UIViewController,
         parent: BulkTagsFlowControllerParent,
-        selectedItemIDs: [ItemID],
-        tagCountsByID: [ItemTagID: Int]
+        selectedItems: [ItemData]
     ) {
         let view = BulkTagsViewController()
         let flowController = BulkTagsFlowController(viewController: view)
@@ -29,8 +28,7 @@ final class BulkTagsFlowController: FlowController {
         let presenter = BulkTagsPresenter(
             flowController: flowController,
             interactor: interactor,
-            selectedItemIDs: selectedItemIDs,
-            tagCountsByID: tagCountsByID
+            selectedItems: selectedItems
         )
         view.presenter = presenter
 

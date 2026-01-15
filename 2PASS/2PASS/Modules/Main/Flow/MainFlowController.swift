@@ -118,47 +118,6 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
         biometricPromptViewController?.dismiss(animated: false)
         biometricPromptViewController = nil
     }
-    
-    @MainActor
-    func toConfirmDelete() async -> Bool {
-        await withCheckedContinuation { continuation in
-            let alert = UIAlertController(
-                title: String(localized: .loginDeleteConfirmTitle),
-                message: String(localized: .loginDeleteConfirmBody),
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: String(localized: .commonYes), style: .destructive, handler: { _ in
-                continuation.resume(returning: true)
-            }))
-            alert.addAction(UIAlertAction(title: String(localized: .commonNo), style: .cancel, handler: { _ in
-                continuation.resume(returning: false)
-            }))
-            viewController.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    @MainActor
-    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool {
-        await withCheckedContinuation { continuation in
-            let title = String(localized: .homeMultiselectDeleteButton(Int32(selectedCount)))
-
-            let alert = UIAlertController(
-                title: nil,
-                message: String(localized: .homeMultiselectDeleteBody),
-                preferredStyle: .actionSheet
-            )
-            alert.addAction(UIAlertAction(title: title, style: .destructive, handler: { _ in
-                continuation.resume(returning: true)
-            }))
-            alert.addAction(UIAlertAction(title: String(localized: .commonCancel), style: .cancel, handler: { _ in
-                continuation.resume(returning: false)
-            }))
-            if let source {
-                alert.popoverPresentationController?.barButtonItem = source
-            }
-            viewController.present(alert, animated: true, completion: nil)
-        }
-    }
 }
 
 extension MainFlowController: ConnectNavigationFlowControllerParent {}

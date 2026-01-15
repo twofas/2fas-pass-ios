@@ -36,8 +36,7 @@ final class BulkTagsPresenter {
 
     private let flowController: BulkTagsFlowControlling
     private let interactor: BulkTagsModuleInteracting
-    private let selectedItemIDs: [ItemID]
-    private let totalSelectedCount: Int
+    private let selectedItems: [ItemData]
 
     private var initialStates: [ItemTagID: SelectionIndicatorState] = [:]
     private var currentStates: [ItemTagID: SelectionIndicatorState] = [:]
@@ -57,15 +56,13 @@ final class BulkTagsPresenter {
     init(
         flowController: BulkTagsFlowControlling,
         interactor: BulkTagsModuleInteracting,
-        selectedItemIDs: [ItemID],
-        tagCountsByID: [ItemTagID: Int]
+        selectedItems: [ItemData]
     ) {
         self.flowController = flowController
         self.interactor = interactor
-        self.selectedItemIDs = selectedItemIDs
-        self.totalSelectedCount = selectedItemIDs.count
+        self.selectedItems = selectedItems
 
-        loadTags(tagCountsByID: tagCountsByID)
+        loadTags()
     }
 
     func toggleTag(_ tag: ItemTagData) {
@@ -101,8 +98,9 @@ final class BulkTagsPresenter {
 
     // MARK: - Private
 
-    private func loadTags(tagCountsByID: [ItemTagID: Int]) {
+    private func loadTags() {
         let allTags = interactor.listAllTags()
+        let tagCountsByID = computeTagCounts()
 
         var items: [BulkTagSelectionItem] = []
 
@@ -121,6 +119,17 @@ final class BulkTagsPresenter {
         }
 
         tagItems = items
+    }
+
+    private func computeTagCounts() -> [ItemTagID: Int] {
+        var counts: [ItemTagID: Int] = [:]
+        for item in selectedItems {
+            guard let tagIds = item.tagIds else { continue }
+            for tagID in tagIds {
+                counts[tagID, default: 0] += 1
+            }
+        }
+        return counts
     }
 
     private func reloadTags() {
@@ -164,7 +173,7 @@ final class BulkTagsPresenter {
 
     private func calculateInitialState(itemsWithTagCount: Int) -> SelectionIndicatorState {
         guard itemsWithTagCount > 0 else { return .unselected }
-        return itemsWithTagCount == totalSelectedCount ? .selected : .mixed
+        return itemsWithTagCount == selectedItems.count ? .selected : .mixed
     }
 
     private func nextCycleState(
@@ -194,15 +203,12 @@ final class BulkTagsPresenter {
 
             guard initial != current else { continue }
 
-            switch (initial, current) {
-            case (_, .selected):
-                // Moving to selected: add tag to all items
+            switch current {
+            case .selected:
                 tagsToAdd.insert(tagID)
-            case (_, .unselected):
-                // Moving to unselected: remove tag from all items
+            case .unselected:
                 tagsToRemove.insert(tagID)
-            case (_, .mixed):
-                // Moving back to mixed means no change from initial mixed state
+            case .mixed:
                 break
             }
         }

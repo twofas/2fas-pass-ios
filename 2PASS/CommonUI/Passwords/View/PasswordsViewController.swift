@@ -562,7 +562,7 @@ private extension PasswordsViewController {
     func configureSelectionNavigationItems() {
         let selectAllButton = UIBarButtonItem(title: selectAllButtonTitle(), style: .plain, target: self, action: #selector(selectAllAction))
         self.selectAllButton = selectAllButton
-        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(stopEditingMode))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(stopEditingMode))
         navigationItem.rightBarButtonItems = [
             selectAllButton,
             filterBarButton()
@@ -638,10 +638,8 @@ private extension PasswordsViewController {
         navigationController?.setToolbarHidden(!isEditing, animated: animated)
 
         guard let tabBar = tabBarController?.tabBar else { return }
-        
-        if #available(iOS 18.0, *), UIDevice.isiPad {
-            tabBarController?.setTabBarHidden(isEditing, animated: animated)
-        } else {
+            
+        if #available(iOS 26.0, *), UIDevice.isiPad == false  {
             if isEditing {
                 if animated {
                     tabBar.isHidden = false
@@ -666,6 +664,8 @@ private extension PasswordsViewController {
                     tabBar.isHidden = false
                 }
             }
+        } else if #available(iOS 18.0, *) {
+            tabBarController?.setTabBarHidden(isEditing, animated: animated)
         }
     }
 

@@ -29,14 +29,14 @@ final class BulkProtectionLevelFlowController: FlowController {
     static func present(
         on viewController: UIViewController,
         parent: BulkProtectionLevelFlowControllerParent,
-        countsByLevel: [ItemProtectionLevel: Int]
+        selectedItems: [ItemData]
     ) {
         let view = BulkProtectionLevelViewController()
         let flowController = BulkProtectionLevelFlowController(viewController: view)
         flowController.parent = parent
-        let presenter = BulkProtectionLevelPresenter(flowController: flowController, countsByLevel: countsByLevel)
+        let presenter = BulkProtectionLevelPresenter(flowController: flowController, selectedItems: selectedItems)
         view.presenter = presenter
-        
+
         let navigationController = UINavigationController(rootViewController: view)
         flowController.configureSheet(for: navigationController)
         viewController.present(navigationController, animated: true)

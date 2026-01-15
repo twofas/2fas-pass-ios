@@ -94,16 +94,6 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
         
         navigationController?.present(controller, animated: true)
     }
-    
-    @MainActor
-    public func toConfirmDelete() async -> Bool {
-        false
-    }
-    
-    @MainActor
-    public func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool {
-        false
-    }
 }
 
 extension AutofillPasswordsNavigationFlowController: ItemDetailFlowControllerParent {
