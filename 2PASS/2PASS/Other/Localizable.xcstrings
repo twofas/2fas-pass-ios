@@ -85,13 +85,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Change %lld item"
+                  "value" : "Change %lld Item"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Change %lld items"
+                  "value" : "Change %lld Items"
                 }
               }
             }
@@ -2715,13 +2715,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld item"
+                  "value" : "%lld Item"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld items"
+                  "value" : "%lld Items"
                 }
               }
             }
@@ -5258,7 +5258,7 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "(%d items)"
+            "value" : "(%d Items)"
           }
         },
         "pl-PL" : {
@@ -5569,7 +5569,7 @@
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%d items"
+                  "value" : "%d Items"
                 }
               }
             }
@@ -16425,7 +16425,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otwórz Bitwarden i przejdź do sekcji **Ustawienia** (koło zębate).\n\nPrzejdź do **Narzędzia/Sejf**, a następnie wybierz **Eksportuj sejf**.\n\nWybierz format pliku **JSON lub CSV** i wybierz **Eksportuj sejf*.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik JSON/CSV** poniżej."
+            "value" : "Otwórz Bitwarden i przejdź do sekcji **Ustawienia** (koło zębate).\n\nPrzejdź do **Narzędzia/Sejf**, a następnie wybierz **Eksportuj sejf**.\n\nWybierz format pliku **JSON lub CSV** i wybierz **Eksportuj sejf**.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik JSON/CSV** poniżej."
           }
         }
       }

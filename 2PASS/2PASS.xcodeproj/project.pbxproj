@@ -1370,12 +1370,12 @@
 			};
 			buildConfigurationList = C27D99E62BD596620008203F /* Build configuration list for PBXProject "2PASS" */;
 			compatibilityVersion = "Xcode 15.0";
-			developmentRegion = en;
+			developmentRegion = "en-US";
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
-				pl,
+				"pl-PL",
+				"en-US",
 			);
 			mainGroup = C27D99E22BD596620008203F;
 			packageReferences = (
@@ -1851,7 +1851,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Prod.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 314;
+				CURRENT_PROJECT_VERSION = 320;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -2666,7 +2666,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 314;
+				CURRENT_PROJECT_VERSION = 320;
 				ENABLE_MODULE_VERIFIER = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
@@ -2707,7 +2707,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 314;
+				CURRENT_PROJECT_VERSION = 320;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
