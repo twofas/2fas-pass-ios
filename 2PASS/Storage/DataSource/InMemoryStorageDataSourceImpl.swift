@@ -131,7 +131,23 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
             )
         }
     }
-    
+
+    public func batchUpdateMetadataItems(_ items: [any ItemDataType], date: Date) {
+        for item in items {
+            ItemMetadataEntity.updateMetadata(
+                on: context,
+                for: item.id,
+                modificationDate: date,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion
+            )
+        }
+    }
+
     public func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool

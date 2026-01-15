@@ -1612,6 +1612,10 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func metadataItemsBatchUpdate(_ items: [any ItemDataType]) {
+        recordCall()
+    }
+
     private var stubbedGetItemEntity: (ItemID, Bool) -> ItemData? = { _, _ in nil }
     func getItemEntity(itemID: ItemID, checkInTrash: Bool) -> ItemData? {
         recordCall()

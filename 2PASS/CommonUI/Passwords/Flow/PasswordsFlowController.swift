@@ -31,6 +31,10 @@ protocol PasswordsFlowControlling: AnyObject {
         countsByLevel: [ItemProtectionLevel: Int],
         selectedItemIDs: [ItemID]
     )
+    func toBulkTagsSelection(
+        tagCountsByID: [ItemTagID: Int],
+        selectedItemIDs: [ItemID]
+    )
 
     func selectItem(id: ItemID, contentType: ItemContentType)
     func cancel()
@@ -40,7 +44,7 @@ protocol PasswordsFlowControlling: AnyObject {
 
     @MainActor
     func toConfirmDelete() async -> Bool
-    
+
     @MainActor
     func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool
 }
@@ -49,6 +53,7 @@ public final class PasswordsFlowController: FlowController {
     private weak var parent: PasswordsFlowControllerParent?
     private var autoFillEnvironment: AutoFillEnvironment?
     private var bulkProtectionLevelItemIDs: [ItemID] = []
+    private var bulkTagsItemIDs: [ItemID] = []
     
     public static func setAsRoot(
         on navigationController: UINavigationController,
@@ -111,6 +116,19 @@ extension PasswordsFlowController: PasswordsFlowControlling {
             countsByLevel: countsByLevel
         )
     }
+
+    func toBulkTagsSelection(
+        tagCountsByID: [ItemTagID: Int],
+        selectedItemIDs: [ItemID]
+    ) {
+        bulkTagsItemIDs = selectedItemIDs
+        BulkTagsFlowController.present(
+            on: viewController,
+            parent: self,
+            selectedItemIDs: selectedItemIDs,
+            tagCountsByID: tagCountsByID
+        )
+    }
     
     func selectItem(id: ItemID, contentType: ItemContentType) {
         parent?.selectItem(id: id, contentType: contentType)
@@ -171,11 +189,25 @@ extension PasswordsFlowController: BulkProtectionLevelFlowControllerParent {
         bulkProtectionLevelItemIDs = []
         viewController.dismiss(animated: true)
     }
-    
+
     func bulkProtectionLevelDidConfirmChange(to level: ItemProtectionLevel) {
         let itemIDs = bulkProtectionLevelItemIDs
         bulkProtectionLevelItemIDs = []
         viewController.dismiss(animated: true)
         viewController.presenter.applyProtectionLevel(level, to: itemIDs)
+    }
+}
+
+extension PasswordsFlowController: BulkTagsFlowControllerParent {
+    func bulkTagsDidCancel() {
+        bulkTagsItemIDs = []
+        viewController.dismiss(animated: true)
+    }
+
+    func bulkTagsDidConfirmChanges(tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) {
+        let itemIDs = bulkTagsItemIDs
+        bulkTagsItemIDs = []
+        viewController.dismiss(animated: true)
+        viewController.presenter.applyTagChanges(to: itemIDs, tagsToAdd: tagsToAdd, tagsToRemove: tagsToRemove)
     }
 }

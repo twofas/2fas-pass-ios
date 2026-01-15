@@ -43,13 +43,13 @@ private struct BulkProtectionLevelRow: View {
                     .foregroundStyle(.accent)
                     .frame(width: 24, height: 24)
 
-                VStack(alignment: .leading, spacing: Spacing.xs) {
+                VStack(alignment: .leading, spacing: 0) {
                     Text(level.title)
                         .font(.subheadlineEmphasized)
                         .foregroundStyle(.base1000)
                     
                     if count > 0 {
-                        Text(.homeSelectionCount(Int32(count)))
+                        Text(.commonItemsCount(count))
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundStyle(.neutral900)

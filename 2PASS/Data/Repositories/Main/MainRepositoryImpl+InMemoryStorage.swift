@@ -290,7 +290,11 @@ extension MainRepositoryImpl {
     func itemsBatchUpdate(_ items: [RawItemData]) {
         inMemoryStorage?.batchUpdateRencryptedItems(items, date: currentDate)
     }
-    
+
+    func metadataItemsBatchUpdate(_ items: [any ItemDataType]) {
+        inMemoryStorage?.batchUpdateMetadataItems(items, date: currentDate)
+    }
+
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool

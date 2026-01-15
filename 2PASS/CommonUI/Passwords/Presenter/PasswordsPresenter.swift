@@ -299,6 +299,24 @@ extension PasswordsPresenter {
             selectedItemIDs: selectedItemIDs
         )
     }
+
+    func toBulkTagsSelection(selectedItemIDs: [ItemID]) {
+        flowController.toBulkTagsSelection(
+            tagCountsByID: tagCountsByID(for: selectedItemIDs),
+            selectedItemIDs: selectedItemIDs
+        )
+    }
+
+    func applyTagChanges(to itemIDs: [ItemID], tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) {
+        do {
+            try interactor.applyTagChanges(to: itemIDs, tagsToAdd: tagsToAdd, tagsToRemove: tagsToRemove)
+            view?.exitEditingMode()
+            handleRefresh()
+        } catch {
+            Log("PasswordsPresenter: Failed to apply tag changes", module: .ui, severity: .error)
+            toastPresenter.present(.commonGeneralErrorTryAgain, style: .failure)
+        }
+    }
 }
 
 extension PasswordsPresenter {
@@ -535,6 +553,17 @@ private extension PasswordsPresenter {
     func protectionLevelCounts(for itemIDs: [ItemID]) -> [ItemProtectionLevel: Int] {
         Dictionary(grouping: selectedItems(for: itemIDs).map(\.protectionLevel), by: { $0 })
             .mapValues { $0.count }
+    }
+
+    func tagCountsByID(for itemIDs: [ItemID]) -> [ItemTagID: Int] {
+        var counts: [ItemTagID: Int] = [:]
+        for item in selectedItems(for: itemIDs) {
+            guard let tagIds = item.tagIds else { continue }
+            for tagID in tagIds {
+                counts[tagID, default: 0] += 1
+            }
+        }
+        return counts
     }
     
     @objc

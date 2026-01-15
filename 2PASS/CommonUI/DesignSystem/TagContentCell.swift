@@ -1,5 +1,10 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
 import SwiftUI
-import UIKit
 import Common
 
 public struct TagContentCell: View {
@@ -15,20 +20,23 @@ public struct TagContentCell: View {
     }
 
     public var body: some View {
-        if let color {
-            Circle()
-                .fill(Color(UIColor(color)))
-                .frame(width: ItemTagColorMetrics.regular.size, height: ItemTagColorMetrics.regular.size)
-        }
+        HStack(spacing: Spacing.m) {
+            if let color {
+                Circle()
+                    .fill(Color(UIColor(color)))
+                    .frame(width: ItemTagColorMetrics.regular.size, height: ItemTagColorMetrics.regular.size)
+            }
 
-        VStack(alignment: .leading, spacing: 0) {
-            name
-                .foregroundStyle(.neutral950)
-                .font(.bodyEmphasized)
+            VStack(alignment: .leading, spacing: 0) {
+                name
+                    .foregroundStyle(.primary)
+                    .font(.bodyEmphasized)
 
-            subtitle
-                .foregroundStyle(.neutral500)
-                .font(.footnote)
+                subtitle
+                    .foregroundStyle(.secondary)
+                    .fontWeight(.medium)
+                    .font(.footnote)
+            }
         }
     }
 }

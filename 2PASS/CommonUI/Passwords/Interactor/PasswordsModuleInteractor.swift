@@ -42,6 +42,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     func countItemsForTag(_ tagID: ItemTagID) -> Int
     func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int
     func updateProtectionLevel(_ protectionLevel: ItemProtectionLevel, for itemIDs: [ItemID]) throws(ItemsInteractorSaveError)
+    func applyTagChanges(to itemIDs: [ItemID], tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) throws
 }
 
 final class PasswordsModuleInteractor {
@@ -339,6 +340,19 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
                 )
             }
         }
+        syncChangeTriggerInteractor.trigger()
+    }
+
+    func applyTagChanges(to itemIDs: [ItemID], tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) throws {
+        guard itemIDs.isEmpty == false else { return }
+        guard tagsToAdd.isEmpty == false || tagsToRemove.isEmpty == false else { return }
+
+        tagInteractor.applyTagChangesToItems(
+            itemIDs,
+            tagsToAdd: tagsToAdd,
+            tagsToRemove: tagsToRemove
+        )
+        tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }
 }

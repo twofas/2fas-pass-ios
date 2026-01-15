@@ -51,6 +51,7 @@ final class PasswordsViewController: UIViewController {
     private var edgeEffectToSelectedTagConstraint: NSLayoutConstraint?
     private var deleteBarButton: UIBarButtonItem?
     private var protectionLevelBarButton: UIBarButtonItem?
+    private var tagsBarButton: UIBarButtonItem?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -110,7 +111,7 @@ final class PasswordsViewController: UIViewController {
             } else {
                 navigationItem.leftBarButtonItem = nil
             }
-        } else {
+        } else if UIDevice.isiPad {
             navigationItem.searchController = nil
         }
 
@@ -279,6 +280,12 @@ private extension PasswordsViewController {
     func changeProtectionLevel() {
         guard selectedItemIDs.isEmpty == false else { return }
         presentBulkProtectionLevelSelection(for: selectedItemIDs)
+    }
+
+    @objc
+    func changeTagsForSelectedItems() {
+        guard selectedItemIDs.isEmpty == false else { return }
+        presentBulkTagsSelection(for: selectedItemIDs)
     }
     
     func filterBarButton() -> UIBarButtonItem {
@@ -610,9 +617,20 @@ private extension PasswordsViewController {
         protectionLevelBarButton.accessibilityLabel = String(localized: .settingsEntryProtectionLevel)
         protectionLevelBarButton.isEnabled = selectedItemIDs.isEmpty == false
         self.protectionLevelBarButton = protectionLevelBarButton
-        
+
+        let tagsBarButton = UIBarButtonItem(
+            image: UIImage(systemName: "tag"),
+            style: .plain,
+            target: self,
+            action: #selector(changeTagsForSelectedItems)
+        )
+        tagsBarButton.isEnabled = selectedItemIDs.isEmpty == false
+        self.tagsBarButton = tagsBarButton
+
         let toolbarItems = [
             protectionLevelBarButton,
+            UIBarButtonItem.fixedSpace(0),
+            tagsBarButton,
             UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
             deleteBarButton
         ]
@@ -653,6 +671,10 @@ private extension PasswordsViewController {
 
     func presentBulkProtectionLevelSelection(for itemIDs: [ItemID]) {
         presenter.toBulkProtectionLevelSelection(selectedItemIDs: itemIDs)
+    }
+
+    func presentBulkTagsSelection(for itemIDs: [ItemID]) {
+        presenter.toBulkTagsSelection(selectedItemIDs: itemIDs)
     }
 
     func filterMenuItems() -> [UIMenuElement] {
@@ -760,6 +782,7 @@ extension PasswordsViewController {
         selectAllButton?.title = selectAllButtonTitle()
         deleteBarButton?.isEnabled = selectedItemIDs.isEmpty == false
         protectionLevelBarButton?.isEnabled = selectedItemIDs.isEmpty == false
+        tagsBarButton?.isEnabled = selectedItemIDs.isEmpty == false
     }
 }
 

@@ -8,78 +8,78 @@ import UIKit
 import SwiftUI
 import Common
 
-final class BulkProtectionLevelViewController: UIViewController {
-    var presenter: BulkProtectionLevelPresenter!
+final class BulkTagsViewController: UIViewController {
+    var presenter: BulkTagsPresenter!
 
     private lazy var titleView: UIStackView = {
         let titleLabel = UILabel()
-        titleLabel.text = String(localized: .homeMultiselectSecurityTierTitle)
+        titleLabel.text = String(localized: .homeMultiselectTagsTitle)
         titleLabel.font = .headlineEmphasized
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         titleLabel.adjustsFontForContentSizeCategory = true
-        
+
         let subtitleLabel = UILabel()
-        subtitleLabel.text = String(localized: .homeMultiselectSecurityTierSubtitle)
+        subtitleLabel.text = String(localized: .homeMultiselectTagsSubtitle)
         subtitleLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.textAlignment = .center
         subtitleLabel.adjustsFontForContentSizeCategory = true
-        
+
         let stackView = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
         stackView.axis = .vertical
         stackView.alignment = .center
-        stackView.spacing = Spacing.xxs
+        stackView.spacing = 0
         return stackView
     }()
-    
-    private lazy var saveBarButton = UIBarButtonItem(
+
+    private lazy var doneBarButton = UIBarButtonItem(
         barButtonSystemItem: .done,
         target: self,
-        action: #selector(onSaveTapped)
+        action: #selector(onDoneTapped)
     )
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .base0
-        
+
         navigationItem.titleView = titleView
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .cancel,
             target: self,
-            action: #selector(onCancelTapped)
+            action: #selector(onCancel)
         )
-        
+
         if #available(iOS 26.0, *) {
-            saveBarButton.style = .prominent
+            doneBarButton.style = .prominent
         }
-        
-        navigationItem.rightBarButtonItem = saveBarButton
-        updateSaveButtonState()
-        
-        let contentController = UIHostingController(rootView: BulkProtectionLevelSelectionView(presenter: presenter))
-        self.presenter.onChange = { [weak self] in
-            self?.updateSaveButtonState()
+
+        navigationItem.rightBarButtonItem = doneBarButton
+        updateDoneButtonState()
+
+        let contentController = UIHostingController(rootView: BulkTagsRouter.buildView(presenter: presenter))
+        presenter.onChange = { [weak self] in
+            self?.updateDoneButtonState()
         }
-        
+
         placeChild(contentController)
     }
 }
 
-private extension BulkProtectionLevelViewController {
-    
-    func updateSaveButtonState() {
-        saveBarButton.isEnabled = presenter.hasPendingChanges
+private extension BulkTagsViewController {
+
+    func updateDoneButtonState() {
+        doneBarButton.isEnabled = presenter.hasPendingChanges
     }
-    
+
     @objc
-    func onCancelTapped() {
+    func onCancel() {
         presenter.handleCancel()
     }
-    
+
     @objc
-    func onSaveTapped() {
-        presenter.handleSave(source: saveBarButton)
+    func onDoneTapped() {
+        presenter.handleSave()
     }
 }

@@ -97,7 +97,13 @@ public final class ModuleInteractorFactory {
             tagInteractor: InteractorFactory.shared.tagInteractor()
         )
     }
-    
+
+    func bulkTagsModuleInteractor() -> BulkTagsModuleInteracting {
+        BulkTagsModuleInteractor(
+            tagInteractor: InteractorFactory.shared.tagInteractor()
+        )
+    }
+
     func editTagModuleInteractor() -> EditTagModuleInteracting {
         EditTagModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),

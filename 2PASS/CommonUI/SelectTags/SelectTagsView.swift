@@ -22,18 +22,9 @@ struct SelectTagsView: View {
                         )
                         
                         Spacer()
-                                                   
-                        Group {
-                            if presenter.isTagSelected(tag) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .resizable()
-                                    .foregroundStyle(.white, .accent)
-                            } else {
-                                Circle()
-                                    .stroke(Color.neutral200)
-                            }
-                        }
-                        .frame(width: 20, height: 20)
+                              
+                        SelectionIndicatorIcon(presenter.isTagSelected(tag) ? .selected : .unselected)
+                            .unselectedStyle(.circle)
                     }
                     .contentShape(Rectangle())
                 }

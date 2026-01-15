@@ -414,6 +414,7 @@ protocol MainRepository: AnyObject {
 
     func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
+    func metadataItemsBatchUpdate(_ items: [any ItemDataType])
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool

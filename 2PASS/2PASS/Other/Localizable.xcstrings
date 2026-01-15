@@ -3564,7 +3564,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wystąpoł błąd"
+            "value" : "Wystąpił błąd"
           }
         }
       }
@@ -4567,7 +4567,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "utrata tego pliku spowoduje utratę dostępu do wszystkich danych zawartch w 2FAS Pass."
+            "value" : "utrata tego pliku spowoduje utratę dostępu do wszystkich danych zawartych w 2FAS Pass."
           }
         }
       }
@@ -4618,7 +4618,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zapisz do pliku"
+            "value" : "Zapisz plik"
           }
         }
       }
@@ -4856,7 +4856,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wydrukuj i trzymaj w bezpiecznym miejscu."
+            "value" : "Wydrukuj go i trzymaj w bezpiecznym miejscu"
           }
         }
       }
@@ -4958,7 +4958,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zapisz do pliku"
+            "value" : "Zapisz plik"
           }
         }
       }
@@ -5475,13 +5475,13 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This will change Security Tier for selected Items."
+            "value" : "Change the Security Tier of selected Items."
           }
         },
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This will change Security Tier for selected Items."
+            "value" : "Zmień poziom bezpieczeństwa wybranych elementów."
           }
         }
       }
@@ -5492,13 +5492,13 @@
         "en-US" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit for selected items"
+            "value" : "Edit selected Items"
           }
         },
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edycja zaznaczonych elementów"
+            "value" : "Edytuj zaznaczone elementy"
           }
         }
       }
@@ -5516,6 +5516,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Poziom bezpieczeństwa"
+          }
+        }
+      }
+    },
+    "home_multiselect_tags_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit selected Items"
+          }
+        },
+        "pl-PL" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj zaznaczone elementy"
+          }
+        }
+      }
+    },
+    "home_multiselect_tags_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "pl-PL" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagi"
           }
         }
       }
@@ -11053,7 +11087,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Drukowany zestaw deszyfrujący"
+            "value" : "Wydrukowany zestaw deszyfrujący"
           }
         }
       }
@@ -13535,7 +13569,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ustawienia blokady aplikacji"
+            "value" : "Nieudane próby logowania"
           }
         }
       }
@@ -13552,7 +13586,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Po tej liczbie nieudanych prób aplikacja zostanie zablokowana na 1 minutę. Czas blokady będzie stopniowo wydłużany do 3, 5 i 15 minut, aż do 1 godziny."
+            "value" : "Po tej liczbie nieudanych prób logowania aplikacja zostanie zablokowana na 1 minutę. Czas blokady będzie stopniowo wydłużany do 3, 5 i 15 minut, aż do 1 godziny."
           }
         }
       }
@@ -16714,7 +16748,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otwórz Keeper na komputerze.\n\nKliknij na twoje konto w prawym górnym rogu, wybierz **Ustawienia**, a następnie **Eksport**.\n\nW **Eksport pliku** wybierz **format json** a następnie kliknij **Eksportuj**.\n\nWpisz swoje hasło główne i potwierdź ekposrt*.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik JSON** poniżej."
+            "value" : "Otwórz Keeper na komputerze.\n\nKliknij na twoje konto w prawym górnym rogu, wybierz **Ustawienia**, a następnie **Eksport**.\n\nW **Eksport pliku** wybierz **format json** a następnie kliknij **Eksportuj**.\n\nWpisz swoje hasło główne i potwierdź eksport*.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik JSON** poniżej."
           }
         }
       }
@@ -16748,7 +16782,7 @@
         "pl-PL" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otwórz Microsoft Edge na komputerze.\n\nWybierz 3 kropki obok ikony profilu w prawym górnym rogu, a następnie wybierz **Hasła**.\n\nWybierz 3 kropki obok kluczy dostępu i kliknij **Eksportuj hasła**.\n\nPotwierdź ekposrt.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik CSV** poniżej."
+            "value" : "Otwórz Microsoft Edge na komputerze.\n\nWybierz 3 kropki obok ikony profilu w prawym górnym rogu, a następnie wybierz **Hasła**.\n\nWybierz 3 kropki obok kluczy dostępu i kliknij **Eksportuj hasła**.\n\nPotwierdź eksport.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik CSV** poniżej."
           }
         }
       }

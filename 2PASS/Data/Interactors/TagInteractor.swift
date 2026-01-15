@@ -28,6 +28,12 @@ public protocol TagInteracting: AnyObject {
 
     func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData])
 
+    func applyTagChangesToItems(
+        _ itemIDs: [ItemID],
+        tagsToAdd: Set<ItemTagID>,
+        tagsToRemove: Set<ItemTagID>
+    )
+
     func removeDuplicatedEncryptedTags()
     func migrateTagColors()
     func shouldMigrateColor(_ color: ItemTagColor) -> Bool
@@ -337,6 +343,57 @@ extension TagInteractor: TagInteracting {
         default:
             return false
         }
+    }
+
+    func applyTagChangesToItems(
+        _ itemIDs: [ItemID],
+        tagsToAdd: Set<ItemTagID>,
+        tagsToRemove: Set<ItemTagID>
+    ) {
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("TagInteractor: Apply tag changes. No vault", module: .interactor, severity: .error)
+            return
+        }
+
+        guard tagsToAdd.isEmpty == false || tagsToRemove.isEmpty == false else { return }
+
+        let currentDate = mainRepository.currentDate
+
+        // Build updates for metadata items (no content re-encoding needed)
+        let updatedItems: [ItemData] = mainRepository.listItems(options: .includeItems(itemIDs)).map { item in
+            var currentTagIds = Set(item.tagIds ?? [])
+            currentTagIds.formUnion(tagsToAdd)
+            currentTagIds.subtract(tagsToRemove)
+            let updatedTagIds: [ItemTagID]? = currentTagIds.isEmpty ? nil : Array(currentTagIds)
+            return item.update(modificationDate: currentDate, tagIds: updatedTagIds)
+        }
+        mainRepository.metadataItemsBatchUpdate(updatedItems)
+
+        // Build updates for encrypted items
+        let updatedEncryptedItems: [ItemEncryptedData] = mainRepository.listEncryptedItems(
+            in: selectedVault.vaultID,
+            itemIDs: itemIDs,
+            excludeProtectionLevels: nil
+        ).map { item in
+            var currentTagIds = Set(item.tagIds ?? [])
+            currentTagIds.formUnion(tagsToAdd)
+            currentTagIds.subtract(tagsToRemove)
+            let updatedTagIds: [ItemTagID]? = currentTagIds.isEmpty ? nil : Array(currentTagIds)
+
+            return ItemEncryptedData(
+                itemID: item.itemID,
+                creationDate: item.creationDate,
+                modificationDate: currentDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: item.content,
+                vaultID: item.vaultID,
+                tagIds: updatedTagIds
+            )
+        }
+        mainRepository.encryptedItemsBatchUpdate(updatedEncryptedItems)
     }
 
     func saveStorage() {
