@@ -133,10 +133,18 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
     }
 
     public func batchUpdateMetadataItems(_ items: [any ItemDataType], date: Date) {
+        let itemIDs = items.map(\.id)
+        let entities = ItemMetadataEntity.listItems(on: context, options: .includeItems(itemIDs))
+        let entitiesByID = Dictionary(uniqueKeysWithValues: entities.map { ($0.itemID, $0) })
+
         for item in items {
+            guard let entity = entitiesByID[item.id] else {
+                Log("Can't find entity for itemID: \(item.id)", module: .storage)
+                continue
+            }
             ItemMetadataEntity.updateMetadata(
                 on: context,
-                for: item.id,
+                entity: entity,
                 modificationDate: date,
                 trashedStatus: item.trashedStatus,
                 protectionLevel: item.protectionLevel,
