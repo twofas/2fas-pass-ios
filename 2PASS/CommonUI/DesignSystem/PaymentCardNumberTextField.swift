@@ -53,12 +53,21 @@ private struct _PaymentCardNumberTextField: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UITextField {
         let textField = UITextField()
-        textField.placeholder = placeholder
         textField.keyboardType = .asciiCapableNumberPad
         textField.textContentType = .creditCardNumber
         textField.delegate = context.coordinator
         let bodyFont = UIFont.preferredFont(forTextStyle: .body)
         textField.font = .monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
+
+        // Set placeholder with regular (non-monospace) font
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [
+                .font: bodyFont,
+                .foregroundColor: UIColor.placeholderText
+            ]
+        )
+
         textField.setContentHuggingPriority(.required, for: .vertical)
         textField.setContentCompressionResistancePriority(.required, for: .vertical)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -81,7 +90,17 @@ private struct _PaymentCardNumberTextField: UIViewRepresentable {
                 textField.text = text
             }
         }
-        textField.placeholder = placeholder
+
+        // Update placeholder with regular (non-monospace) font
+        let bodyFont = UIFont.preferredFont(forTextStyle: .body)
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [
+                .font: bodyFont,
+                .foregroundColor: UIColor.placeholderText
+            ]
+        )
+
         textField.textColor = isInvalid ? UIColor(.danger500) : .label
     }
 
