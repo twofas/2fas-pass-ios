@@ -53,13 +53,14 @@ private struct _ExpirationDateTextField: UIViewRepresentable {
 
     class Coordinator: NSObject, UITextFieldDelegate {
         @Binding var text: String
-        var previousText = ""
         var isEditing = false
         var shouldAdjustCursorOnFocus = false
 
+        private let separator = " / "
+        private let maxDigits = 4
+
         init(text: Binding<String>) {
             self._text = text
-            self.previousText = text.wrappedValue
         }
 
         func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -72,20 +73,18 @@ private struct _ExpirationDateTextField: UIViewRepresentable {
         }
 
         func textFieldDidChangeSelection(_ textField: UITextField) {
-            // Only adjust cursor position on initial focus
             guard shouldAdjustCursorOnFocus else { return }
             shouldAdjustCursorOnFocus = false
 
-            // If cursor is exactly after "/", move it before
             guard let currentText = textField.text,
-                  let slashIndex = currentText.firstIndex(of: "/"),
+                  let sepRange = currentText.range(of: separator),
                   let selectedRange = textField.selectedTextRange else { return }
 
-            let cursorPosition = textField.offset(from: textField.beginningOfDocument, to: selectedRange.start)
-            let slashPosition = currentText.distance(from: currentText.startIndex, to: slashIndex)
+            let cursor = textField.offset(from: textField.beginningOfDocument, to: selectedRange.start)
+            let sepStart = currentText.distance(from: currentText.startIndex, to: sepRange.lowerBound)
 
-            if cursorPosition == slashPosition + 1 {
-                setCursorPosition(textField, offset: slashPosition)
+            if cursor > sepStart && cursor <= sepStart + separator.count {
+                setCursor(textField, at: sepStart)
             }
         }
 
@@ -95,118 +94,118 @@ private struct _ExpirationDateTextField: UIViewRepresentable {
             replacementString string: String
         ) -> Bool {
             let currentText = textField.text ?? ""
-            guard let textRange = Range(range, in: currentText) else { return false }
 
-            let newText = currentText.replacingCharacters(in: textRange, with: string)
+            if string.isEmpty {
+                return handleDeletion(textField, text: currentText, range: range)
+            } else {
+                return handleInsertion(textField, text: currentText, range: range, input: string)
+            }
+        }
 
-            let isAdding = newText.count > currentText.count
-            let isDeleting = newText.count < currentText.count
+        // MARK: - Insertion
 
-            if isAdding {
-                let insertedDigit = string.filter { $0.isNumber }
-                guard !insertedDigit.isEmpty else { return false }
+        private func handleInsertion(
+            _ textField: UITextField,
+            text currentText: String,
+            range: NSRange,
+            input: String
+        ) -> Bool {
+            guard let digit = input.first(where: { $0.isNumber }) else { return false }
 
-                let isAtEnd = range.location >= currentText.count
-                let currentDigits = currentText.filter { $0.isNumber }
+            var digits = Array(currentText.filter { $0.isNumber })
+            let isAtEnd = range.location >= currentText.count
+            let digitPos = digitPosition(in: currentText, at: range.location)
 
-                // If at end and already have 4 digits, ignore
-                if isAtEnd && currentDigits.count >= 4 {
-                    return false
-                }
+            if isAtEnd {
+                guard digits.count < maxDigits else { return false }
+                digits.append(digit)
+            } else if digits.count < maxDigits {
+                digits.insert(digit, at: digitPos)
+                if digits.count > maxDigits { digits.removeLast() }
+            } else {
+                digits[digitPos] = digit
+            }
 
-                // Replace mode: if not at end, replace the next digit
-                var resultDigits: String
-                var cursorDigitPosition: Int
+            let cursorDigitPos = isAtEnd ? digits.count : digitPos + 1
+            let (formatted, cursorOffset) = format(String(digits), cursorAt: cursorDigitPos)
+            apply(textField, text: formatted, cursor: cursorOffset)
+            return false
+        }
 
-                if isAtEnd {
-                    // Add mode at the end
-                    resultDigits = currentDigits + insertedDigit
-                    cursorDigitPosition = resultDigits.count
-                } else {
-                    // Replace mode: figure out which digit position we're at
-                    var digitPosition = 0
-                    for (index, char) in currentText.enumerated() {
-                        if index >= range.location { break }
-                        if char.isNumber { digitPosition += 1 }
-                    }
+        // MARK: - Deletion
 
-                    // Replace digit at this position
-                    var digits = Array(currentDigits)
-                    if digitPosition < digits.count {
-                        digits[digitPosition] = insertedDigit.first!
-                    } else {
-                        digits.append(insertedDigit.first!)
-                    }
-                    resultDigits = String(digits)
-                    cursorDigitPosition = digitPosition + 1
-                }
+        private func handleDeletion(
+            _ textField: UITextField,
+            text currentText: String,
+            range: NSRange
+        ) -> Bool {
+            // Deleting within separator with year present → remove last month digit
+            if let sepRange = currentText.range(of: separator) {
+                let sepStart = currentText.distance(from: currentText.startIndex, to: sepRange.lowerBound)
+                let sepEnd = sepStart + separator.count
 
-                // Format with slash
-                let formatted: String
-                let cursorOffset: Int
-
-                if resultDigits.count >= 2 {
-                    let month = String(resultDigits.prefix(2))
-                    let year = String(resultDigits.dropFirst(2).prefix(2))
-                    formatted = month + "/" + year
-
-                    // Calculate cursor position accounting for "/"
-                    if cursorDigitPosition <= 2 {
-                        cursorOffset = cursorDigitPosition
-                    } else {
-                        cursorOffset = cursorDigitPosition + 1 // +1 for "/"
-                    }
-                } else {
-                    formatted = resultDigits
-                    cursorOffset = cursorDigitPosition
-                }
-
-                textField.text = formatted
-                text = formatted
-                previousText = formatted
-                setCursorPosition(textField, offset: cursorOffset)
-                return false
-                
-            } else if isDeleting {
-                // When trying to remove "/" with digits after it, remove digit before "/" instead
-                if currentText.contains("/") && !newText.contains("/") {
-                    let parts = currentText.split(separator: "/", omittingEmptySubsequences: false)
+                if range.location >= sepStart && range.location < sepEnd {
+                    let parts = currentText.components(separatedBy: separator)
                     if parts.count > 1 && !parts[1].isEmpty {
                         let month = String(parts[0].dropLast())
-                        let year = String(parts[1])
-                        let formatted = month.isEmpty ? "/" + year : month + "/" + year
-                        textField.text = formatted
-                        text = formatted
-                        previousText = formatted
-                        // Keep cursor before the "/"
-                        setCursorPosition(textField, offset: month.count)
+                        let year = parts[1]
+                        let formatted = month.isEmpty ? separator + year : month + separator + year
+                        apply(textField, text: formatted, cursor: month.count)
                         return false
                     }
                 }
-                // Auto-remove trailing "/"
-                if newText.hasSuffix("/") {
-                    let formatted = String(newText.dropLast())
-                    textField.text = formatted
-                    text = formatted
-                    previousText = formatted
-                    setCursorPosition(textField, offset: formatted.count)
-                    return false
-                }
+            }
 
-                text = newText
-                previousText = newText
-                return true
+            // Apply deletion and clean trailing separator fragments
+            guard let textRange = Range(range, in: currentText) else { return false }
+            let newText = currentText.replacingCharacters(in: textRange, with: "")
+            let cleaned = newText.replacingOccurrences(of: "[ /]+$", with: "", options: .regularExpression)
+
+            if cleaned != newText {
+                apply(textField, text: cleaned, cursor: cleaned.count)
+                return false
             }
 
             text = newText
-            previousText = newText
             return true
         }
 
-        private func setCursorPosition(_ textField: UITextField, offset: Int) {
-            if let position = textField.position(from: textField.beginningOfDocument, offset: offset) {
-                textField.selectedTextRange = textField.textRange(from: position, to: position)
+        // MARK: - Helpers
+
+        private func digitPosition(in text: String, at location: Int) -> Int {
+            text.prefix(location).filter { $0.isNumber }.count
+        }
+
+        private func format(_ digits: String, cursorAt cursorDigitPos: Int) -> (String, Int) {
+            guard digits.count >= 2 else {
+                return (digits, cursorDigitPos)
             }
+
+            let month = String(digits.prefix(2))
+            let year = String(digits.dropFirst(2).prefix(2))
+            let formatted = month + separator + year
+
+            let cursorOffset: Int
+            if cursorDigitPos < 2 {
+                cursorOffset = cursorDigitPos
+            } else if cursorDigitPos == 2 && year.isEmpty {
+                cursorOffset = formatted.count
+            } else {
+                cursorOffset = cursorDigitPos + separator.count
+            }
+
+            return (formatted, cursorOffset)
+        }
+
+        private func apply(_ textField: UITextField, text newText: String, cursor offset: Int) {
+            textField.text = newText
+            text = newText
+            setCursor(textField, at: offset)
+        }
+
+        private func setCursor(_ textField: UITextField, at offset: Int) {
+            guard let pos = textField.position(from: textField.beginningOfDocument, offset: offset) else { return }
+            textField.selectedTextRange = textField.textRange(from: pos, to: pos)
         }
     }
 }
