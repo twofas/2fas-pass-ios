@@ -518,8 +518,8 @@ private extension PasswordsPresenter {
                 actions: [
                     .view,
                     .edit,
-                    .copy(.paymentCardNumber),
-                    .copy(.paymentCardSecurityCode),
+                    paymentCardItem.content.cardNumber != nil ? .copy(.paymentCardNumber) : nil,
+                    paymentCardItem.content.securityCode != nil ? .copy(.paymentCardSecurityCode) : nil,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

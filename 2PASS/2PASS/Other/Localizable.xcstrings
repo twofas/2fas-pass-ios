@@ -7466,7 +7466,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kopiuj nazwę użytkownika"
+            "value" : "Kopiuj użytkownika"
           }
         }
       }
@@ -7528,7 +7528,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Item details"
+            "value" : "Details"
           }
         },
         "pl" : {
@@ -8809,7 +8809,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Błąd podczas kopiowania nazwy użytkownika"
+            "value" : "Błąd podczas kopiowania użytkownika"
           }
         }
       }
@@ -16085,7 +16085,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skopiowano nazwę użytkownika"
+            "value" : "Skopiowano użytkownika"
           }
         }
       }

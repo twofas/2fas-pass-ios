@@ -82,7 +82,11 @@ struct GenerateSecretKeyView: View {
             .animation(.default, value: presenter.isFinished)
             
             Spacer(minLength: 0)
-            
+
+            bottomButton()
+                .padding(.bottom, Spacing.xl)
+        }
+        .overlay {
             ZStack {
                 ZStack {
                     if presenter.isFinished {
@@ -104,11 +108,6 @@ struct GenerateSecretKeyView: View {
             .scaleEffect(1 + (Constants.Animation.finalProgressScale - 1) * generateSecretKeyAnimator.progress)
             .padding(.bottom, 30)
             .sensoryFeedback(.success, trigger: presenter.isFinished)
-            
-            Spacer(minLength: 0)
-
-            bottomButton()
-                .padding(.bottom, Spacing.xl)
         }
         .onAppear { presenter.onAppear() }
         .onChange(of: generateSecretKeyAnimator.isFinished) { _, newValue in
