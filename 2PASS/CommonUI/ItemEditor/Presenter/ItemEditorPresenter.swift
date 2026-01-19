@@ -177,6 +177,11 @@ final class ItemEditorPresenter {
     }
     
     func onSave() {
+        guard currentPresenter.canSave else {
+            updateSaveState()
+            return
+        }
+        
         let result = currentPresenter.onSave()
         
         if result.isSuccess {
