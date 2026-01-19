@@ -23,7 +23,6 @@
 		5415C9362E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9352E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		5415C9382E2AC4FA00FBEE71 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9372E2AC4FA00FBEE71 /* FirebaseCrashlytics */; };
 		5415C93A2E2AC4FA00FBEE71 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9392E2AC4FA00FBEE71 /* FirebaseMessaging */; };
-		543A57E42DAFB5C6001A8FF9 /* ScanQRCodeCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543A57E22DAFB58D001A8FF9 /* ScanQRCodeCameraView.swift */; };
 		544617862D413B4B003A14E1 /* OnboardingPagesRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544617852D413B49003A14E1 /* OnboardingPagesRouter.swift */; };
 		544617882D413C51003A14E1 /* SetupVaultRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544617872D413C4C003A14E1 /* SetupVaultRouter.swift */; };
 		5446178A2D413DB7003A14E1 /* GenerateSecretKeyRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544617892D413DAE003A14E1 /* GenerateSecretKeyRouter.swift */; };
@@ -42,7 +41,6 @@
 		54878E4C2D7ED4D00073BFC8 /* Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C267F9312BE2DDFF005F7B89 /* Common.framework */; };
 		549200602DD4D83100C2431E /* ios-secret-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 5492005F2DD4D83100C2431E /* ios-secret-key.json */; };
 		549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */; };
-		549B1F712E8C035600228FE2 /* CameraViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B1F6F2E8C035600228FE2 /* CameraViewport.swift */; };
 		549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
@@ -130,12 +128,6 @@
 		C2B0FC272CE91C5C005CFADD /* Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C267F9312BE2DDFF005F7B89 /* Common.framework */; };
 		C2BCEE142DB6DC2300763C8B /* Kronos in Frameworks */ = {isa = PBXBuildFile; productRef = C2BCEE132DB6DC2300763C8B /* Kronos */; };
 		C2C3BE842DC41954006E7DCE /* SwiftCSV in Frameworks */ = {isa = PBXBuildFile; productRef = C2C3BE832DC41954006E7DCE /* SwiftCSV */; };
-		C2CD74072C7FBCA200B8E9FE /* CameraOutputModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD73FE2C7FBCA200B8E9FE /* CameraOutputModule.swift */; };
-		C2CD74082C7FBCA200B8E9FE /* CameraOutputQRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD73FF2C7FBCA200B8E9FE /* CameraOutputQRScanner.swift */; };
-		C2CD74092C7FBCA200B8E9FE /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74012C7FBCA200B8E9FE /* Camera.swift */; };
-		C2CD740A2C7FBCA200B8E9FE /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74022C7FBCA200B8E9FE /* CameraController.swift */; };
-		C2CD740B2C7FBCA200B8E9FE /* CameraControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74032C7FBCA200B8E9FE /* CameraControllerDelegate.swift */; };
-		C2CD740C2C7FBCA200B8E9FE /* CameraDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CD74042C7FBCA200B8E9FE /* CameraDelegate.swift */; };
 		C2D8995C2E2C4A69008521D1 /* ItemCachedEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D899592E2C49DC008521D1 /* ItemCachedEntity+CoreDataProperties.swift */; };
 		C2D8995D2E2C4A69008521D1 /* ItemCachedEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D899582E2C49DC008521D1 /* ItemCachedEntity+CoreDataClass.swift */; };
 		C2DCD9172DC6C96300CBF641 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = C2DCD9162DC6C96300CBF641 /* ZIPFoundation */; };
@@ -306,7 +298,6 @@
 		5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveProgressAnimator.swift; sourceTree = "<group>"; };
 		540D6A8D2E15C64D000834DE /* Dev.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Dev.entitlements; sourceTree = "<group>"; };
 		540D6A8E2E15C64D000834DE /* Prod.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Prod.entitlements; sourceTree = "<group>"; };
-		543A57E22DAFB58D001A8FF9 /* ScanQRCodeCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQRCodeCameraView.swift; sourceTree = "<group>"; };
 		544617852D413B49003A14E1 /* OnboardingPagesRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPagesRouter.swift; sourceTree = "<group>"; };
 		544617872D413C4C003A14E1 /* SetupVaultRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultRouter.swift; sourceTree = "<group>"; };
 		544617892D413DAE003A14E1 /* GenerateSecretKeyRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecretKeyRouter.swift; sourceTree = "<group>"; };
@@ -321,7 +312,6 @@
 		54820F4E2DA594B900E29C73 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5492005F2DD4D83100C2431E /* ios-secret-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ios-secret-key.json"; sourceTree = "<group>"; };
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
-		549B1F6F2E8C035600228FE2 /* CameraViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewport.swift; sourceTree = "<group>"; };
 		549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDecryptionMethod.swift; sourceTree = "<group>"; };
 		54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -387,12 +377,6 @@
 		C2AA587E2CCE8A4800DC3613 /* BackupImportParseError+LocalizedDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupImportParseError+LocalizedDescription.swift"; sourceTree = "<group>"; };
 		C2AA58802CCE8AD000DC3613 /* BackupImportFileError+LocalizedDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupImportFileError+LocalizedDescription.swift"; sourceTree = "<group>"; };
 		C2B0FC1B2CE91C4D005CFADD /* Backup.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Backup.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C2CD73FE2C7FBCA200B8E9FE /* CameraOutputModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraOutputModule.swift; sourceTree = "<group>"; };
-		C2CD73FF2C7FBCA200B8E9FE /* CameraOutputQRScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraOutputQRScanner.swift; sourceTree = "<group>"; };
-		C2CD74012C7FBCA200B8E9FE /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
-		C2CD74022C7FBCA200B8E9FE /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
-		C2CD74032C7FBCA200B8E9FE /* CameraControllerDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraControllerDelegate.swift; sourceTree = "<group>"; };
-		C2CD74042C7FBCA200B8E9FE /* CameraDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraDelegate.swift; sourceTree = "<group>"; };
 		C2D899582E2C49DC008521D1 /* ItemCachedEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemCachedEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		C2D899592E2C49DC008521D1 /* ItemCachedEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemCachedEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C2F489502D3C761C00F3761B /* CloudCached.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCached.swift; sourceTree = "<group>"; };
@@ -783,17 +767,14 @@
 		C267F93F2BE30046005F7B89 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				549B1F6F2E8C035600228FE2 /* CameraViewport.swift */,
 				549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */,
 				54EABA712DD2537B0018189F /* ShareSheetView.swift */,
 				C2AA58802CCE8AD000DC3613 /* BackupImportFileError+LocalizedDescription.swift */,
 				C2AA587E2CCE8A4800DC3613 /* BackupImportParseError+LocalizedDescription.swift */,
-				C2CD74062C7FBCA200B8E9FE /* Camera */,
 				54C7EBFD2D5CCE35000E79D0 /* SwiftUI */,
 				C246BAFF2C46FE01007CF48D /* SocialChannel.swift */,
 				5402A76B2D63A2EA0092765B /* ShieldProgressStyle.swift */,
 				5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */,
-				543A57E22DAFB58D001A8FF9 /* ScanQRCodeCameraView.swift */,
 				C25577202DC819590025C09F /* ExternalService+.swift */,
 			);
 			path = Common;
@@ -988,27 +969,6 @@
 				545579222DD27ADB00712716 /* TransferItems */,
 			);
 			path = Modules;
-			sourceTree = "<group>";
-		};
-		C2CD74002C7FBCA200B8E9FE /* Output */ = {
-			isa = PBXGroup;
-			children = (
-				C2CD73FE2C7FBCA200B8E9FE /* CameraOutputModule.swift */,
-				C2CD73FF2C7FBCA200B8E9FE /* CameraOutputQRScanner.swift */,
-			);
-			path = Output;
-			sourceTree = "<group>";
-		};
-		C2CD74062C7FBCA200B8E9FE /* Camera */ = {
-			isa = PBXGroup;
-			children = (
-				C2CD74002C7FBCA200B8E9FE /* Output */,
-				C2CD74012C7FBCA200B8E9FE /* Camera.swift */,
-				C2CD74022C7FBCA200B8E9FE /* CameraController.swift */,
-				C2CD74032C7FBCA200B8E9FE /* CameraControllerDelegate.swift */,
-				C2CD74042C7FBCA200B8E9FE /* CameraDelegate.swift */,
-			);
-			path = Camera;
 			sourceTree = "<group>";
 		};
 		C2D8995E2E2C4A6D008521D1 /* ItemCached */ = {
@@ -1622,10 +1582,8 @@
 				C267F92B2BE2DD64005F7B89 /* RootFlowController.swift in Sources */,
 				5402A74D2D63A2180092765B /* OnboardingStepsStack.swift in Sources */,
 				C246BB002C46FE01007CF48D /* SocialChannel.swift in Sources */,
-				C2CD740C2C7FBCA200B8E9FE /* CameraDelegate.swift in Sources */,
 				C28E9E2A2C1CE436008B99F8 /* MainFlowController.swift in Sources */,
 				5402A74A2D63A1E90092765B /* SetupCompleteModuleInteractor.swift in Sources */,
-				C2CD74082C7FBCA200B8E9FE /* CameraOutputQRScanner.swift in Sources */,
 				C25577212DC819790025C09F /* ExternalService+.swift in Sources */,
 				C2F81EBC2BE42325008FD374 /* RootModuleInteractor.swift in Sources */,
 				549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */,
@@ -1643,7 +1601,6 @@
 				8FDFEA442D3478BA00A1899A /* GenerateSecretKeyView.swift in Sources */,
 				C28E9E2E2C1CE5EE008B99F8 /* MainViewController.swift in Sources */,
 				C2AA587F2CCE8A4800DC3613 /* BackupImportParseError+LocalizedDescription.swift in Sources */,
-				543A57E42DAFB5C6001A8FF9 /* ScanQRCodeCameraView.swift in Sources */,
 				C267F9222BE2CA6E005F7B89 /* RootViewController.swift in Sources */,
 				8F6F40E12D386DED0010F7CE /* HalfwayView.swift in Sources */,
 				5446178C2D41410C003A14E1 /* HalfwayRouter.swift in Sources */,
@@ -1651,19 +1608,14 @@
 				8F6D5B2B2D2C9317002A7574 /* OnboardingPagesView.swift in Sources */,
 				C27D99EF2BD596620008203F /* AppDelegate.swift in Sources */,
 				8F6F40F12D387E4D0010F7CE /* SetupCompleteView.swift in Sources */,
-				C2CD740B2C7FBCA200B8E9FE /* CameraControllerDelegate.swift in Sources */,
 				C28E9E2C2C1CE5A8008B99F8 /* MainPresenter.swift in Sources */,
-				C2CD74092C7FBCA200B8E9FE /* Camera.swift in Sources */,
-				C2CD740A2C7FBCA200B8E9FE /* CameraController.swift in Sources */,
 				5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */,
 				8F6F40E92D3878460010F7CE /* HalfwayPresenter.swift in Sources */,
 				8FDFEA3F2D34780300A1899A /* SetupVaultPresenter.swift in Sources */,
 				544617962D419441003A14E1 /* OnboardingFlowController.swift in Sources */,
 				8F6F40CE2D3723340010F7CE /* GenerateSecretKeyPresenter.swift in Sources */,
-				C2CD74072C7FBCA200B8E9FE /* CameraOutputModule.swift in Sources */,
 				C2AA58812CCE8AD600DC3613 /* BackupImportFileError+LocalizedDescription.swift in Sources */,
 				54C090552D6E6B4C00954E76 /* ModuleInteractorFactory.swift in Sources */,
-				549B1F712E8C035600228FE2 /* CameraViewport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

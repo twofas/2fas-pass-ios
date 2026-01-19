@@ -5,7 +5,6 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import CommonUI
 
 private struct Constants {
     static let overlayColor = Color.black.opacity(0.7)
@@ -15,13 +14,23 @@ private struct Constants {
     static let activeSquareCornerOffset = 105.0
 }
 
-struct ScanQRCodeCameraView: View {
+public struct ScanQRCodeCameraView: View {
     
     let title: Text
     let description: Text
     let codeFound: (String) -> Void
+
+    public init(
+        title: Text,
+        description: Text,
+        codeFound: @escaping (String) -> Void
+    ) {
+        self.title = title
+        self.description = description
+        self.codeFound = codeFound
+    }
     
-    var body: some View {
+    public var body: some View {
         CameraScanningView_UIKit(codeFound: codeFound)
             .ignoresSafeArea()
             .overlay {
