@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to update locale identifiers in Localizable.xcstrings
+# Script to update locale identifiers in .xcstrings files
 # Changes region-specific codes to language-only codes:
 #   en-US → en
 #   pl-PL → pl
@@ -9,30 +9,49 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-XCSTRINGS_FILE="$PROJECT_ROOT/2PASS/2PASS/Other/Localizable.xcstrings"
+XCSTRINGS_DIR="$PROJECT_ROOT/2PASS/2PASS/Other"
 
-if [[ ! -f "$XCSTRINGS_FILE" ]]; then
-    echo "Error: Localizable.xcstrings not found at $XCSTRINGS_FILE"
-    exit 1
-fi
+FILES=(
+    "Localizable.xcstrings"
+    "InfoPlist.xcstrings"
+)
 
-echo "Updating locale codes in: $XCSTRINGS_FILE"
+total_replaced=0
 
-# Count occurrences before
-before_count=$(grep -o '"en-US"\|"pl-PL"' "$XCSTRINGS_FILE" | wc -l | tr -d ' ')
-echo "Found $before_count occurrences to replace"
+for file in "${FILES[@]}"; do
+    filepath="$XCSTRINGS_DIR/$file"
 
-# Perform replacements
-sed -i '' -e 's/"en-US"/"en"/g' -e 's/"pl-PL"/"pl"/g' "$XCSTRINGS_FILE"
+    if [[ ! -f "$filepath" ]]; then
+        echo "Warning: $file not found at $filepath, skipping"
+        continue
+    fi
 
-# Verify no old codes remain
-after_count=$(grep -o '"en-US"\|"pl-PL"' "$XCSTRINGS_FILE" | wc -l | tr -d ' ')
+    echo "Processing: $file"
 
-if [[ "$after_count" -eq 0 ]]; then
-    echo "✓ Successfully replaced $before_count occurrences"
-    echo "  - en-US → en"
-    echo "  - pl-PL → pl"
-else
-    echo "Warning: $after_count occurrences still remain"
-    exit 1
-fi
+    # Count occurrences before
+    before_count=$(grep -o '"en-US"\|"pl-PL"' "$filepath" | wc -l | tr -d ' ')
+
+    if [[ "$before_count" -eq 0 ]]; then
+        echo "  No changes needed"
+        continue
+    fi
+
+    # Perform replacements
+    sed -i '' -e 's/"en-US"/"en"/g' -e 's/"pl-PL"/"pl"/g' "$filepath"
+
+    # Verify no old codes remain
+    after_count=$(grep -o '"en-US"\|"pl-PL"' "$filepath" | wc -l | tr -d ' ')
+
+    if [[ "$after_count" -eq 0 ]]; then
+        echo "  ✓ Replaced $before_count occurrences"
+        total_replaced=$((total_replaced + before_count))
+    else
+        echo "  Error: $after_count occurrences still remain"
+        exit 1
+    fi
+done
+
+echo ""
+echo "Done! Total replacements: $total_replaced"
+echo "  - en-US → en"
+echo "  - pl-PL → pl"

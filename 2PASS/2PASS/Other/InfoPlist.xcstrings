@@ -1,5 +1,5 @@
 {
-  "sourceLanguage" : "en-US",
+  "sourceLanguage" : "en",
   "strings" : {
     "1Password Unencrypted Export" : {
 
@@ -11,7 +11,7 @@
       "comment" : "Bundle display name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en-US" : {
+        "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "2FAS Pass"
@@ -23,7 +23,7 @@
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en-US" : {
+        "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "2FAS Pass"
@@ -34,7 +34,7 @@
     "NSCameraUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en-US" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Camera is used to scan QR codes when connecting to the Browser Extension or to decrypt your Vault"
@@ -51,7 +51,7 @@
     "NSFaceIDUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en-US" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Biometrics are used for user authentication"
@@ -68,7 +68,7 @@
     "NSLocalNetworkUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en-US" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connection to the Local Network is used to access the WebDAV backup location"

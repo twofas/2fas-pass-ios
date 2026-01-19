@@ -1370,12 +1370,12 @@
 			};
 			buildConfigurationList = C27D99E62BD596620008203F /* Build configuration list for PBXProject "2PASS" */;
 			compatibilityVersion = "Xcode 15.0";
-			developmentRegion = "en-US";
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
-				"pl-PL",
-				"en-US",
+				pl,
+				en,
 			);
 			mainGroup = C27D99E22BD596620008203F;
 			packageReferences = (
