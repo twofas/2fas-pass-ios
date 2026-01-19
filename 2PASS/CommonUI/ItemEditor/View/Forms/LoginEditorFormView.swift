@@ -116,14 +116,18 @@ struct LoginEditorFormView: View {
     private var usernameField: some View {
         LabeledInput(label: String(localized: .loginUsernameLabel), fieldWidth: $fieldWidth) {
             HStack {
-                TextField(String(localized: .loginUsernameLabel), text: $presenter.username)
-                    .textContentType(.username)
-                    .autocorrectionDisabled(true)
-                    .textInputAutocapitalization(.never)
-                    .focused($focusField, equals: .username)
-                    .introspect(.textField, on: .iOS(.v17, .v18, .v26)) {
-                        setupUsernameTextField($0)
+                UsernameTextField(
+                    text: $presenter.username,
+                    placeholder: .loginUsernameLabel,
+                    mostUsedUsernames: presenter.mostUsedUsernamesForKeyboard(),
+                    onSelectUsername: { username in
+                        presenter.username = username
+                        presenter.onFocusField?(presenter.password.isEmpty ? .password : nil)
+                    },
+                    onShowMoreTapped: {
+                        presenter.showMostUsed = true
                     }
+                )
             }
         }
         .formFieldChanged(presenter.usernameChanged)
@@ -296,101 +300,6 @@ struct LoginEditorFormView: View {
         } else {
             stackView.pinToParent(with: .init(top: 5, left: 0, bottom: 0, right: 0))
         }
-
-        textField.inputAccessoryView = inputView
-    }
-
-    private func setupUsernameTextField(_ textField: UITextField) {
-        textField.textContentType = .none
-        textField.autocorrectionType = .no
-        textField.spellCheckingType = .no
-        textField.smartQuotesType = .no
-        textField.smartDashesType = .no
-        textField.smartInsertDeleteType = .no
-        textField.keyboardType = .asciiCapable
-        textField.inputAssistantItem.leadingBarButtonGroups = []
-        textField.inputAssistantItem.trailingBarButtonGroups = []
-
-        guard textField.inputAccessoryView == nil else { return }
-        
-        let mostUsedUsernames = presenter.mostUsedUsernamesForKeyboard()
-        guard mostUsedUsernames.isEmpty == false else { return }
-
-        let frame: CGRect
-        if #available(iOS 26, *) {
-            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeightLiquidGlass)
-        } else {
-            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
-        }
-
-        let inputView = UIInputView(frame: frame, inputViewStyle: .keyboard)
-
-        let buttons = mostUsedUsernames.map { username in
-            var config: UIButton.Configuration
-            if #available(iOS 26, *) {
-                config = UIButton.Configuration.glass()
-            } else {
-                config = UIButton.Configuration.plain()
-                config.baseForegroundColor = .label
-            }
-
-            config.titleAlignment = .center
-            config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { container in
-                var container = container
-                container.font = UIFont.preferredFont(forTextStyle: .footnote)
-                return container
-            }
-
-            let button = UIButton(configuration: config, primaryAction: UIAction(title: username, handler: { [weak presenter] _ in
-                guard let presenter else { return }
-                presenter.username = username
-                presenter.onFocusField?(presenter.password.isEmpty ? .password : nil)
-            }))
-            button.titleLabel?.textAlignment = .center
-            button.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
-            return button
-        }
-
-        var config: UIButton.Configuration
-        if #available(iOS 26, *) {
-            config = UIButton.Configuration.glass()
-        } else {
-            config = UIButton.Configuration.plain()
-            config.baseForegroundColor = .label
-        }
-
-        let showMoreButton = UIButton(configuration: config, primaryAction: UIAction(image: UIImage(systemName: "person.badge.key"), handler: { [weak presenter] _ in
-            presenter?.showMostUsed = true
-        }))
-        showMoreButton.translatesAutoresizingMaskIntoConstraints = false
-        inputView.addSubview(showMoreButton)
-
-        let stackView = UIStackView(arrangedSubviews: buttons)
-        stackView.axis = .horizontal
-        stackView.distribution = .fillEqually
-        stackView.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        inputView.addSubview(stackView)
-
-        let isLiquidGlass: Bool
-        if #available(iOS 26, *) {
-            isLiquidGlass = true
-            stackView.spacing = 8
-        } else {
-            isLiquidGlass = false
-        }
-
-        NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor, constant: isLiquidGlass ? 16 : 0),
-            stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
-            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor, constant: isLiquidGlass ? -16 : 0),
-
-            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: isLiquidGlass ? -20 : -4),
-            showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
-            showMoreButton.widthAnchor.constraint(equalTo: showMoreButton.heightAnchor)
-        ])
 
         textField.inputAccessoryView = inputView
     }
