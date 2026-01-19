@@ -265,7 +265,7 @@ extension StartupInteractor: StartupInteracting {
         }
         migrationInteractor.migrateStorageIfNeeded()
 
-        guard protectionInteractor.verifyMasterKeyForVault(masterKey) else {
+        guard protectionInteractor.verifyMasterKeyUsingVault(masterKey) else {
             return false
         }
                 

@@ -83,6 +83,8 @@ public protocol LoginInteracting: AnyObject {
         vaultID: VaultID,
         completion: @escaping (MasterKey?) -> Void
     )
+
+    func loginUsingMasterKey(_ masterKey: MasterKey) async -> Bool
 }
 
 final class LoginInteractor {
@@ -318,7 +320,30 @@ extension LoginInteractor: LoginInteracting {
         }
         completion(masterKey)
     }
-    
+
+    func loginUsingMasterKey(_ masterKey: MasterKey) async -> Bool {
+        Log("LoginInteractor: login using Master Key", module: .interactor)
+        guard !securityInteractor.isAppLocked else {
+            Log("LoginInteractor: App Locked", module: .interactor)
+            return false
+        }
+
+        guard protectionInteractor.verifyMasterKey(masterKey) else {
+            Log("LoginInteractor: Master Key verification failed", module: .interactor, severity: .error)
+            securityInteractor.markWrongPassword()
+            return false
+        }
+
+        securityInteractor.markCorrectLogin()
+        await withCheckedContinuation { continuation in
+            userLoggedInUsingMasterKey(masterKey) { [weak self] in
+                self?.protectionInteractor.clearAfterInit()
+                continuation.resume()
+            }
+        }
+        return true
+    }
+
     func saveMasterPassword(_ masterPassword: MasterPassword) {
         protectionInteractor.setMasterPassword(masterPassword)
     }
@@ -389,7 +414,7 @@ private extension LoginInteractor {
             case .success(let masterKey):
                 self?.securityInteractor.markCorrectLogin()
                 if login {
-                    self?.userLoggedInUsingBiometry(with: masterKey, completion: { [weak self] in
+                    self?.userLoggedInUsingMasterKey(masterKey, completion: { [weak self] in
                         completion(.success)
                         self?.protectionInteractor.clearAfterInit()
                     })
@@ -418,7 +443,7 @@ private extension LoginInteractor {
         }
     }
     
-    func userLoggedInUsingBiometry(with masterKey: MasterKey, completion: @escaping () -> Void) {
+    func userLoggedInUsingMasterKey(_ masterKey: MasterKey, completion: @escaping () -> Void) {
         Log("LoginInteractor: login using Biometry", module: .interactor)
         protectionInteractor.restoreEntropy()
         protectionInteractor.createSeed()
