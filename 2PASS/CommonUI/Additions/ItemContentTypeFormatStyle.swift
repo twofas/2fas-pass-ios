@@ -12,6 +12,13 @@ extension FormatStyle where Self == ItemContentTypeFormatStyle {
     }
 }
 
+extension ItemContentType {
+    
+    public func formatted() -> String {
+        ItemContentTypeFormatStyle().format(self)
+    }
+}
+
 public struct ItemContentTypeFormatStyle: FormatStyle {
     
     public func format(_ contentType: ItemContentType) -> String {

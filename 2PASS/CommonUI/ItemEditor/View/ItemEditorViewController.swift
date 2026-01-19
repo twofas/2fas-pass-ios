@@ -11,8 +11,6 @@ import SwiftUI
 final class ItemEditorViewController: UIViewController {
     var presenter: ItemEditorPresenter!
     
-    private let contentTypePicker = DropdownPicker()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
                 
@@ -64,18 +62,22 @@ final class ItemEditorViewController: UIViewController {
     
     private func addContentTypePicker() {        
         if presenter.allowChangeContentType {
-            contentTypePicker.selectedTitle = presenter.title
-            contentTypePicker.menuItems = ItemContentType.allKnownTypes.map { contentType in
-                let name = ItemContentTypeFormatStyle().format(contentType)
-                let action = UIAction(title: name, image: contentType.icon, state: presenter.contentType == contentType ? .on : .off) { [weak self] _ in
-                    self?.presenter.setContentType(contentType)
-                    self?.contentTypePicker.selectedTitle = self?.presenter.title ?? ""
+            navigationItem.title = presenter.title
+            navigationItem.titleMenuProvider = { [weak self] _ in
+                guard let self else { return nil }
+                let actions = ItemContentType.allKnownTypes.map { contentType in
+                    let name = contentType.formatted()
+                    return UIAction(title: name, image: contentType.icon, state: self.presenter.contentType == contentType ? .on : .off) { [weak self] _ in
+                        guard let self else { return }
+                        self.presenter.setContentType(contentType)
+                        self.navigationItem.title = self.presenter.title
+                    }
                 }
-                return action
+                return UIMenu(options: [.singleSelection], children: actions)
             }
-            navigationItem.titleView = contentTypePicker
         } else {
             navigationItem.title = presenter.title
+            navigationItem.titleMenuProvider = nil
         }
         
         navigationItem.largeTitleDisplayMode = .never
