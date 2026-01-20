@@ -614,7 +614,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wprowadź swoje hasło główne aby oblokować aplikację"
+            "value" : "Wprowadź swoje hasło główne, aby oblokować aplikację"
           }
         }
       }
@@ -801,7 +801,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autoryzacja jest wymagana aby odszyfrować hasło elementu do autouzupełnienia"
+            "value" : "Autoryzacja jest wymagana, aby odszyfrować hasło elementu do autouzupełnienia."
           }
         }
       }
@@ -920,7 +920,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Użyj eksportu, aby zapisać swoje elementy lokalnie"
+            "value" : "Użyj eksportu, aby zapisać swoje elementy lokalnie."
           }
         }
       }
@@ -971,7 +971,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Twoje elementy 2FAS Pass zostaną zaszyfrowane hasłem głównym i tajnymi słowami dla większego bezpieczeństwa"
+            "value" : "Twoje elementy 2FAS Pass zostaną zaszyfrowane hasłem głównym i tajnymi słowami dla większego bezpieczeństwa."
           }
         }
       }
@@ -1090,7 +1090,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zaimportuj elementy 2FAS Pass aby zwiększyć (nie zastąpić) liczbę elementów przechowywanych w aplikacji"
+            "value" : "Zaimportuj elementy 2FAS Pass, aby zwiększyć (nie zastąpić) liczbę elementów przechowywanych w aplikacji."
           }
         }
       }
@@ -1991,7 +1991,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Na pewno chcesz skasować tą kopię zapasową? Nie można jej przywrócić później"
+            "value" : "Na pewno chcesz skasować tą kopię zapasową? Nie można jej przywrócić później."
           }
         }
       }
@@ -2178,7 +2178,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stworzono:"
+            "value" : "Dodano:"
           }
         }
       }
@@ -2514,7 +2514,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otwórz ustawienia systemowe"
+            "value" : "Przejdź do ustawień"
           }
         }
       }
@@ -3041,7 +3041,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Proszę zaktualizować aplikację aby połączyć się z rozszerzeniem przeglądarki"
+            "value" : "Proszę zaktualizować aplikację, aby połączyć się z rozszerzeniem przeglądarki"
           }
         }
       }
@@ -3126,7 +3126,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Osiągnięto limit połączonych przeglądarek. Rozłącz jedną aby kontynuować, lub rozważ ulepszenie swojego planu dla większej swobody."
+            "value" : "Osiągnięto limit połączonych przeglądarek. Rozłącz jedną, aby kontynuować, lub rozważ ulepszenie swojego planu dla większej swobody."
           }
         }
       }
@@ -4469,7 +4469,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dodaj hash hasła głównego"
+            "value" : "Dodaj hash hasła głównego,"
           }
         }
       }
@@ -4537,7 +4537,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autoryzacja jest wymagana aby zmienić hasło główne"
+            "value" : "Autoryzacja jest wymagana, aby zmienić hasło główne."
           }
         }
       }
@@ -4775,7 +4775,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nie znaleziono lokalnego sejfu. Zainstaluj ponownie aplikację."
+            "value" : "Nie znaleziono lokalnego sejfu. Zainstaluj ponownie aplikację"
           }
         }
       }
@@ -5358,7 +5358,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autoryzacja jest wymagana aby wyeksportować kopię zapasową"
+            "value" : "Autoryzacja jest wymagana, aby wyeksportować kopię zapasową"
           }
         }
       }
@@ -5522,7 +5522,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Item"
+            "value" : "Edit"
           }
         },
         "pl" : {
@@ -5630,7 +5630,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lista zaufanych rozszerzeń przeglądarki, które zostały zatwierdzone przez Ciebie i nie wymagają potwierdzenia, aby połączyć się z tym urządzeniem."
+            "value" : "Lista zaufanych rozszerzeń przeglądarki, które mogą łączyć się z tym urządzeniem bez konieczności potwierdzania."
           }
         }
       }
@@ -5726,7 +5726,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Too many failed attempts. You can enable biometrics later in Settings -> Security."
+            "value" : "Too many failed attempts. You can enable biometrics later in Settings → Security."
           }
         },
         "pl" : {
@@ -5936,7 +5936,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dostęp do 2FAS Pass został tymczasowo zablokowany z powodu nieudanych prób wpisania hasła głównego."
+            "value" : "Dostęp do 2FAS Pass został tymczasowo zablokowany z powodu nieudanych prób wpisania hasła głównego"
           }
         }
       }
@@ -5970,7 +5970,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Błąd podczas odblokowywania za pomocą biometrii."
+            "value" : "Błąd podczas odblokowywania za pomocą biometrii"
           }
         }
       }
@@ -6021,7 +6021,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wprowadź hasło główne, aby odblokować aplikację."
+            "value" : "Wprowadź hasło główne, aby odblokować aplikację"
           }
         }
       }
@@ -6508,7 +6508,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Item"
+            "value" : "Edit"
           }
         },
         "pl" : {
@@ -7398,7 +7398,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Najczęściej używane nazwy użytkownika"
+            "value" : "Najczęstsze nazwy użytkownika"
           }
         }
       }
@@ -7755,7 +7755,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coroczna subskrypcja"
+            "value" : "Roczna subskrypcja"
           }
         }
       }
@@ -8078,7 +8078,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ten prosty poradnik pomoże Ci przygotować i zapamiętać Twoje hasło główne."
+            "value" : "Ten prosty poradnik pomoże w przygotowaniu i zapamiętaniu hasła głównego."
           }
         }
       }
@@ -9370,7 +9370,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bezpiecznie synchronizuj swoje dane za pomocą Google Drive na wypadek uszkodzenia lub utraty tego urządzenia."
+            "value" : "Bezpiecznie synchronizuj swoje dane za pomocą Google Drive w przypadku uszkodzenia lub utraty tego urządzenia."
           }
         }
       }
@@ -9404,7 +9404,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bezpiecznie synchronizuj swoje dane za pomocą iCloud na wypadek uszkodzenia lub utraty tego urządzenia."
+            "value" : "Bezpiecznie synchronizuj swoje dane za pomocą iCloud w przypadku uszkodzenia lub utraty tego urządzenia."
           }
         }
       }
@@ -10373,7 +10373,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rozszerzenie przeglądarki chce usunac poniższy element z twojego sejfu."
+            "value" : "Rozszerzenie przeglądarki chce usunac poniższy element z twojego sejfu"
           }
         }
       }
@@ -11461,7 +11461,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aby go zaimportować, stwórz nowy sejf i przejdź do **Ustawienia→ Import/Eksport**."
+            "value" : "Aby go zaimportować, stwórz nowy sejf i przejdź do **Ustawienia → Import/Eksport**."
           }
         }
       }
@@ -11971,7 +11971,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dotknij aby edytować"
+            "value" : "Dotknij, aby edytować"
           }
         }
       }
@@ -11988,7 +11988,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dotknij aby zobaczyć"
+            "value" : "Dotknij, aby zobaczyć"
           }
         }
       }
@@ -12090,7 +12090,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hasło główne jest wymagane aby pobrać nowy zestaw deszyfrujący"
+            "value" : "Hasło główne jest wymagane, aby pobrać nowy zestaw deszyfrujący"
           }
         }
       }
@@ -12141,7 +12141,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autoryzacja jest wymagana aby zmienić ustawienia blokady"
+            "value" : "Autoryzacja jest wymagana, aby zmienić ustawienia blokady"
           }
         }
       }
@@ -12192,7 +12192,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autoryzacja jest wymagana aby pozwolić na zrzuty ekranu"
+            "value" : "Autoryzacja jest wymagana, aby pozwolić na zrzuty ekranu"
           }
         }
       }
@@ -12481,7 +12481,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dzięki poziomom bezpieczeństwa ty decydujesz o dostępie autouzupełniania i rozszerzenia przeglądarki do każdego elementu."
+            "value" : "Dzięki poziomom bezpieczeństwa decydujesz o dostępie autouzupełniania i rozszerzenia przeglądarki do każdego elementu."
           }
         }
       }
@@ -12566,7 +12566,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dzięki poziomom bezpieczeństwa ty decydujesz o dostępie autouzupełniania i rozszerzenia przeglądarki do każdego elementu."
+            "value" : "Dzięki poziomom bezpieczeństwa decydujesz o dostępie autouzupełniania i rozszerzenia przeglądarki do każdego elementu."
           }
         }
       }
@@ -12917,13 +12917,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configure AutoFill: Settings -> General -> AutoFill & Passwords"
+            "value" : "Configure AutoFill: Settings → General → AutoFill & Passwords"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Konfiguruj autouzupełnianie: Ustawienia -> Ogólne -> Wypełnianie i Hasła"
+            "value" : "Konfiguruj autouzupełnianie: Ustawienia → Ogólne → Wypełnianie i Hasła"
           }
         }
       }
@@ -13348,7 +13348,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bezpiecznie synchronizuj swój sejf 2FAS Pass z iCloud lub WebDAV, aby chronić dane na wypadek uszkodzenia lub utraty tego urządzenia."
+            "value" : "Bezpiecznie synchronizuj swój sejf 2FAS Pass z iCloud lub WebDAV, aby chronić dane w przypadku uszkodzenia lub utraty tego urządzenia."
           }
         }
       }
@@ -13365,7 +13365,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bezpiecznie synchronizuj sejf 2FAS Pass z Google Drive lub WebDAV, aby chronić swoje dane na wypadek uszkodzenia lub utraty tego urządzenia."
+            "value" : "Bezpiecznie synchronizuj sejf 2FAS Pass z Google Drive lub WebDAV, aby chronić swoje dane w przypadku uszkodzenia lub utraty tego urządzenia."
           }
         }
       }
@@ -13467,7 +13467,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O 2FAS Pass"
+            "value" : "O aplikacji"
           }
         }
       }
@@ -13688,7 +13688,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biometria niedostępna"
+            "value" : "Biometria niedostępna."
           }
         }
       }
@@ -14181,7 +14181,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zarządzaj zaufanymi rozszerzeniami przeglądarki"
+            "value" : "Zarządzaj zaufanymi rozszerzeniami przeglądarki."
           }
         }
       }
@@ -14283,7 +14283,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tagi umożliwiają ci przypisywanie i filtrowanie twoich elementów."
+            "value" : "Tagi umożliwiają przypisywanie i filtrowanie twoich elementów."
           }
         }
       }
@@ -14317,7 +14317,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dzięki poziomom bezpieczeństwa Ty decydujesz o dostępie autouzupełniania i rozszerzenia przeglądarki do każdego elementu."
+            "value" : "Dzięki poziomom bezpieczeństwa decydujesz o dostępie autouzupełniania i rozszerzenia przeglądarki do każdego elementu."
           }
         }
       }
@@ -14504,7 +14504,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jesteś pewien? Ta opcja umożliwia robienie zrzutów ekranu i nagrywanie wszystkiego w aplikacji. Jednocześnie umożliwia ona próby przechwycenia ekranu przez zewnętrzne aplikacje. Aby zapewnić bezpieczeństwo, opcja ta wyłącza się automatycznie po 5 minutach."
+            "value" : "Jesteś pewien? Ta opcja pozwala na wykonywanie zrzutów ekranu i nagrywanie wszystkiego w aplikacji. Jednocześnie umożliwia ona próby przechwycenia ekranu przez zewnętrzne aplikacje. Aby zapewnić bezpieczeństwo, opcja ta wyłącza się automatycznie po 5 minutach."
           }
         }
       }
@@ -14742,7 +14742,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Przywróc lub skasuj elementy które usunąłeś z aplikacji."
+            "value" : "Przywróc lub skasuj elementy, które usunąłeś z aplikacji."
           }
         }
       }
@@ -15008,7 +15008,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configure Push notifications: Settings -> Notifications -> 2FAS Pass"
+            "value" : "Configure Push notifications: Settings → Notifications → 2FAS Pass"
           }
         },
         "pl" : {
@@ -15286,7 +15286,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nastąpił problem z synchronizacją iClouda. Spróbuj zrestartować urządzenie."
+            "value" : "Nastąpił problem z synchronizacją iClouda. Spróbuj zrestartować urządzenie"
           }
         }
       }
@@ -15388,7 +15388,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sejf w iCloud ma inne hasło lub szyfrowanie. Przywróć kopię zapasową z iCloud, aby z niego korzystać."
+            "value" : "Sejf w iCloud ma inne hasło lub szyfrowanie. Przywróć kopię zapasową z iCloud, aby z niego korzystać"
           }
         }
       }
@@ -15541,7 +15541,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Błąd serwera: Metoda niedozwolona. Upewnij się, że łączysz się z serwerem WebDAV.\n"
+            "value" : "Błąd serwera: Metoda niedozwolona. Upewnij się, że łączysz się z serwerem WebDAV."
           }
         }
       }
@@ -15558,7 +15558,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Brak autoryzacji dostępu do tej ścieżki."
+            "value" : "Brak autoryzacji dostępu do tej ścieżki"
           }
         }
       }
@@ -15660,7 +15660,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Użytkownik nie ma uprawnień do tej ścieżki."
+            "value" : "Użytkownik nie ma uprawnień do tej ścieżki"
           }
         }
       }
@@ -16068,7 +16068,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notatka skopiowana"
+            "value" : "Skopiowano notatkę"
           }
         }
       }
