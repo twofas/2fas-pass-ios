@@ -582,7 +582,7 @@ private extension PasswordsViewController {
 
     func selectionCountTitle(for count: Int) -> String {
         if UIDevice.isiPad {
-            String(localized: .commonItemsCount(count))
+            String(localized: .commonItemsCount(Int32(count)))
         } else {
             String(localized: .homeSelectionCount(Int32(count)))
         }

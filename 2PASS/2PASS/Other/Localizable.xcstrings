@@ -2345,13 +2345,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Item"
+                  "value" : "%d Item"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Items"
+                  "value" : "%d Items"
                 }
               }
             }
@@ -2363,19 +2363,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld elementy"
+                  "value" : "%d elementy"
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld element"
+                  "value" : "%d element"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld elementów"
+                  "value" : "%d elementów"
                 }
               }
             }
@@ -5142,13 +5142,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Change %lld Item"
+                  "value" : "Change %d Item"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Change %lld Items"
+                  "value" : "Change %d Items"
                 }
               }
             }
@@ -5160,19 +5160,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Zmień %lld elementy"
+                  "value" : "Zmień %d elementy"
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Zmień %lld element"
+                  "value" : "Zmień %d element"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Zmień %lld elementy"
+                  "value" : "Zmień %d elementy"
                 }
               }
             }
@@ -7205,13 +7205,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "URL %lld"
+            "value" : "URL %d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "URL %lld"
+            "value" : "URL %d"
           }
         }
       }
@@ -7970,13 +7970,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use at least %lld characters"
+            "value" : "Use at least %d characters"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Użyj co najmniej %lld znaków"
+            "value" : "Użyj co najmniej %d znaków"
           }
         }
       }
@@ -16748,7 +16748,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otwórz Keeper na komputerze.\n\nKliknij na twoje konto w prawym górnym rogu, wybierz **Ustawienia**, a następnie **Eksport**.\n\nW **Eksport pliku** wybierz **format json** a następnie kliknij **Eksportuj**.\n\nWpisz swoje hasło główne i potwierdź eksport*.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik JSON** poniżej."
+            "value" : "Otwórz Keeper na komputerze.\n\nKliknij na twoje konto w prawym górnym rogu, wybierz **Ustawienia**, a następnie **Eksport**.\n\nW **Eksport pliku** wybierz **format json** a następnie kliknij **Eksportuj**.\n\nWpisz swoje hasło główne i potwierdź eksport.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik JSON** poniżej."
           }
         }
       }
@@ -16776,13 +16776,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Microsoft Edge on your PC\n\nSelect the 3 dots next to your profile icon at the top right, then select **Passwords**.\n\nSelect the 3 dots next to Passkeys and click **Export passwords**.\n\nConfirm the export.\n\nCopy the exported file to this device and tap **Upload CSV file** below. "
+            "value" : "Open Microsoft Edge on your PC\n\nSelect the 3 dots next to your profile icon at the top right, then select **Passwords**.\n\nSelect the 3 dots next to Passkey, click **Export passwords** and confirm the export.\n\nCopy the exported file to this device and tap **Upload CSV file** below. "
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otwórz Microsoft Edge na komputerze.\n\nWybierz 3 kropki obok ikony profilu w prawym górnym rogu, a następnie wybierz **Hasła**.\n\nWybierz 3 kropki obok kluczy dostępu i kliknij **Eksportuj hasła**.\n\nPotwierdź eksport.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik CSV** poniżej."
+            "value" : "Otwórz Microsoft Edge na komputerze.\n\nWybierz 3 kropki obok ikony profilu w prawym górnym rogu, a następnie wybierz **Hasła**.\n\nWybierz 3 kropki obok kluczy dostępu, kliknij **Eksportuj hasła** i potwierdź eksport.\n\nSkopiuj wyeksportowany plik na to urządzenie i kliknij **Wgraj plik CSV** poniżej."
           }
         }
       }

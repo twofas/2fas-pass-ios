@@ -60,7 +60,7 @@ private struct BulkTagRow: View {
                 TagContentCell(
                     name: Text(tag.name),
                     color: tag.color,
-                    subtitle: count > 0 ? Text(.commonItemsCount(count)) : nil
+                    subtitle: count > 0 ? Text(.commonItemsCount(Int32(count))) : nil
                 )
 
                 Spacer()
