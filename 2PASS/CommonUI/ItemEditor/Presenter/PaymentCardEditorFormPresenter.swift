@@ -267,7 +267,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     private func validateExpirationDate(_ value: String) -> Bool {
-        let value = value.filter { $0 != " " }
+        let value = value.filter { $0.isNumber || $0 == "/" }
         return value.isEmpty || interactor.validatePaymentCardExpirationDate(value)
     }
     
