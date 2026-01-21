@@ -27,27 +27,27 @@ struct ChangePasswordConfirmView: View {
                 .padding(.bottom, Spacing.l)
                 .foregroundStyle(.brand500)
             
-            Text(T.setNewPasswordConfirmTitle.localizedKey)
+            Text(.setNewPasswordConfirmTitle)
                 .font(.title1Emphasized)
                 .foregroundStyle(.neutral950)
             
-            Text(T.setNewPasswordConfirmBodyPart1Ios.localizedKey)
+            Text(.setNewPasswordConfirmBodyPart1Ios)
                 .font(.subheadline)
                 .foregroundStyle(.neutral600)
             
-            Text(T.setNewPasswordConfirmBodyPart2Ios.localizedKey)
+            Text(.setNewPasswordConfirmBodyPart2Ios)
                 .font(.subheadline)
                 .foregroundStyle(.neutral600)
             
             Spacer()
             
             VStack(spacing: Spacing.m) {
-                Button(T.commonConfirm.localizedKey) {
+                Button(.commonConfirm) {
                     onConfirm()
                 }
                 .buttonStyle(.filled)
                 
-                Button(T.commonCancel.localizedKey) {
+                Button(.commonCancel) {
                     dismiss()
                 }
                 .buttonStyle(.twofasBorderless)

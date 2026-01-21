@@ -31,7 +31,7 @@ final class SettingsPresenter {
     private let interactor: SettingsModuleInteracting
     
     private(set) var autoFillStatus: String = ""
-    private(set) var subscriptionStatus: String = T.subscriptionFreePlan
+    private(set) var subscriptionStatus: String = String(localized: .subscriptionFreePlan)
     private(set) var pushNotificationsStatus: PushNotificationsStatus = .unknown
     private(set) var syncStatus: String = ""
     private(set) var hasSyncError: Bool = false
@@ -146,7 +146,7 @@ extension SettingsPresenter {
     }
     
     private func refreshAutoFillStatus() {
-        autoFillStatus = interactor.isAutoFillEnabled ? T.commonEnabled : T.commonDisabled
+        autoFillStatus = interactor.isAutoFillEnabled ? String(localized: .commonEnabled) : String(localized: .commonDisabled)
     }
     
     private func refreshPushNotificationsStatus() {
@@ -157,9 +157,9 @@ extension SettingsPresenter {
         let hasError = interactor.syncHasError
         self.syncStatus = {
             guard !hasError else {
-                return T.commonError
+                return String(localized: .commonError)
             }
-            return self.interactor.isSyncEnabled ? T.commonEnabled : T.commonDisabled
+            return self.interactor.isSyncEnabled ? String(localized: .commonEnabled) : String(localized: .commonDisabled)
         }()
         self.hasSyncError = hasError
     }
@@ -167,10 +167,10 @@ extension SettingsPresenter {
     private func refreshSubscriptionStatus() {
         if interactor.isPaidUser {
             isPaidUser = true
-            subscriptionStatus = T.subscriptionUnlimitedPlan.localized
+            subscriptionStatus = String(localized: .subscriptionUnlimitedPlan)
         } else {
             isPaidUser = false
-            subscriptionStatus = T.subscriptionFreePlan.localized
+            subscriptionStatus = String(localized: .subscriptionFreePlan)
         }
     }
 }

@@ -12,6 +12,7 @@ struct ItemCellData: Hashable {
     let name: String?
     let description: String?
     let iconType: Icon
+    let tagColors: [ItemTagColor]
     let actions: [PasswordCellMenu]
 }
 

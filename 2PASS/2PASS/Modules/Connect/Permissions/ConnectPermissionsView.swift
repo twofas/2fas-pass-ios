@@ -65,17 +65,17 @@ struct ConnectPermissionsView: View {
                     .padding(.bottom, Spacing.xl)
                 
                 HeaderContentView(
-                    title: Text(T.connectSetupHeader.localizedKey),
-                    subtitle: Text(T.connectSetupDescription.localizedKey)
+                    title: Text(.connectSetupHeader),
+                    subtitle: Text(.connectSetupDescription)
                 )
                 
                 Spacer(minLength: Spacing.s)
                     .frame(maxHeight: Constants.stepsTopPadding)
                 
-                StepsContainerView(title: Text(T.connectSetupStepsHeader.localizedKey)) {
+                StepsContainerView(title: Text(.connectSetupStepsHeader)) {
                     StepView(
-                        title: Text(T.connectSetupCameraStepTitle.localizedKey),
-                        subtitle: Text(T.connectSetupCameraStepDescription.localizedKey),
+                        title: Text(.connectSetupCameraStepTitle),
+                        subtitle: Text(.connectSetupCameraStepDescription),
                         accessory: {
                             ConnectPermissionsStepAccessoryView(status: presenter.stepsStatus[.camera])
                         }
@@ -85,8 +85,8 @@ struct ConnectPermissionsView: View {
                     .matchedGeometryEffect(id: ConnectPermissionsPresenter.Step.camera, in: namespace)
                     
                     StepView(
-                        title: Text(T.connectSetupPushStepTitle.localizedKey),
-                        subtitle: Text(T.connectSetupPushStepDescription.localizedKey),
+                        title: Text(.connectSetupPushStepTitle),
+                        subtitle: Text(.connectSetupPushStepDescription),
                         accessory: {
                             ConnectPermissionsStepAccessoryView(status: presenter.stepsStatus[.pushNotifications])
                         }
@@ -149,21 +149,21 @@ struct ConnectPermissionsView: View {
                                     .multilineTextAlignment(.center)
                             }
                             
-                            Button(T.connectSetupFinishCta.localizedKey) {
+                            Button(.connectSetupFinishCta) {
                                 presenter.finishOnboarding()
                                 dismissFlow()
                             }
                         }
                         .padding(.horizontal, Spacing.xl)
                     } else if presenter.stepsStatus[.camera] == .failed {
-                        SettingsSystemLinkButton(description: Text(T.connectSetupCameraError.localizedKey)) {
+                        SettingsSystemLinkButton(description: Text(.connectSetupCameraError)) {
                             if let url = presenter.appSettingsURL {
                                 openURL(url)
                             }
                         }
                         .fixedSize(horizontal: false, vertical: true)
                     } else {
-                        Button(presenter.currentStep == .camera ? T.connectSetupCameraCta.localizedKey : T.connectSetupPushCta.localizedKey) {
+                        Button(presenter.currentStep == .camera ? .connectSetupCameraCta : .connectSetupPushCta) {
                             if presenter.shouldDismiss {
                                 presenter.finishOnboarding()
                                 dismissFlow()

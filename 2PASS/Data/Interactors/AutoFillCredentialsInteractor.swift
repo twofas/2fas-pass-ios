@@ -12,6 +12,7 @@ public protocol AutoFillCredentialsInteracting: AnyObject {
     
     func addSuggestions(itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
     func replaceSuggestions(from passwordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
+    func replaceSuggestions(for items: [LoginItemData]) async throws
     func removeSuggestions(for passwordData: LoginItemData) async throws
     
     func syncSuggestions() async throws
@@ -63,6 +64,20 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
     func replaceSuggestions(from oldPasswordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         try await removeSuggestions(for: oldPasswordData)
         try await addSuggestions(itemID: itemID, username: username, uris: uris, protectionLevel: protectionLevel)
+    }
+
+    func replaceSuggestions(for items: [LoginItemData]) async throws {
+        for item in items {
+            try await removeSuggestions(for: item)
+        }
+        for item in items {
+            try await addSuggestions(
+                itemID: item.id,
+                username: item.username,
+                uris: item.uris,
+                protectionLevel: item.protectionLevel
+            )
+        }
     }
     
     func removeSuggestions(for passwordData: LoginItemData) async throws {

@@ -29,12 +29,12 @@ struct OnboardingPagesView: View {
             .indexViewStyle(.page(backgroundDisplayMode: .always))
             
             VStack(spacing: 8) {
-                Button(T.onboardingWelcomeCta1.localizedKey) {
+                Button(.onboardingWelcomeCta1) {
                     presenter.onGetStartedTap()
                 }
                 .buttonStyle(.filled)
                 
-                Button(T.onboardingWelcomeCta2.localizedKey) {
+                Button(.onboardingWelcomeCta2) {
                     presenter.onRecoverTap()
                 }
                 .buttonStyle(.twofasBorderless)

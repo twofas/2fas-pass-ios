@@ -10,9 +10,6 @@ import Common
 public protocol PasswordsNavigationFlowControllerParent: AnyObject {
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
-
-    @MainActor
-    func toConfirmDelete() async -> Bool
 }
 
 public final class PasswordsNavigationFlowController: NavigationFlowController {
@@ -27,7 +24,7 @@ public final class PasswordsNavigationFlowController: NavigationFlowController {
 
         let navi = CommonNavigationControllerFlow(flowController: flowController)
         navi.tabBarItem = UITabBarItem(
-            title: T.commonPasswords,
+            title: String(localized: .commonPasswords),
             image: UIImage(systemName: "lock.rectangle.stack"),
             selectedImage: UIImage(systemName: "lock.rectangle.stack")
         )
@@ -59,12 +56,7 @@ extension PasswordsNavigationFlowController: PasswordsFlowControllerParent {
     public func toQuickSetup() {
         parent?.toQuickSetup()
     }
-    
-    @MainActor
-    public func toConfirmDelete() async -> Bool {
-        await parent?.toConfirmDelete() ?? false
-    }
-    
+
     public func toPremiumPlanPrompt(itemsLimit: Int) {
         parent?.toPremiumPlanPrompt(itemsLimit: itemsLimit)
     }

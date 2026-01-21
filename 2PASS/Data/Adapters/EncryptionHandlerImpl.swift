@@ -12,10 +12,12 @@ import CryptoKit
 final class EncryptionHandlerImpl {
     private let mainRepository: MainRepository
     private let itemsInteractor: ItemsInteracting
-    
-    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting) {
+    private let tagInteractor: TagInteracting
+
+    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, tagInteractor: TagInteracting) {
         self.mainRepository = mainRepository
         self.itemsInteractor = itemsInteractor
+        self.tagInteractor = tagInteractor
     }
 }
 
@@ -154,7 +156,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
             tagID: tag.id,
             vaultID: tag.vaultID,
             name: nameEnc,
-            color: tag.color?.hexString,
+            color: tag.color.rawValue,
             position: tag.position,
             modificationDate: tag.modificationDate
         )
@@ -171,7 +173,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
             tagID: tagEncrypted.id,
             vaultID: tagEncrypted.vaultID,
             name: name,
-            color: UIColor(hexString: tagEncrypted.color),
+            color: ItemTagColor(rawValue: tagEncrypted.color),
             position: tagEncrypted.position,
             modificationDate: tagEncrypted.modificationDate
         )

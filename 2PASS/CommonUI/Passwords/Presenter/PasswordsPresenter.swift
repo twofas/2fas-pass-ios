@@ -38,6 +38,14 @@ final class PasswordsPresenter {
     
     var selectedFilterTag: ItemTagData? {
         didSet {
+            view?.filterDidChange()
+            reload()
+        }
+    }
+
+    var selectedFilterProtectionLevel: ItemProtectionLevel? {
+        didSet {
+            view?.filterDidChange()
             reload()
         }
     }
@@ -70,7 +78,11 @@ final class PasswordsPresenter {
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private var listData: [Int: [ItemData]] = [:]
-    private var canLoadData: Bool = false
+    private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
+    private var isViewReady: Bool = false
+    private var canLoadData: Bool {
+        isViewReady && interactor.isUserLoggedIn
+    }
     
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
@@ -98,8 +110,21 @@ final class PasswordsPresenter {
 extension PasswordsPresenter {
     
     func viewWillAppear() {
-        canLoadData = true
+        isViewReady = true
+        refreshSelectedFilterTag()
         reload()
+    }
+
+    private func refreshSelectedFilterTag() {
+        guard let selectedFilterTag else { return }
+
+        if let tag = interactor.getTag(for: selectedFilterTag.tagID) {
+            if tag != selectedFilterTag {
+                self.selectedFilterTag = tag
+            }
+        } else {
+            self.selectedFilterTag = nil
+        }
     }
     
     func onQuickSetup() {
@@ -129,6 +154,7 @@ extension PasswordsPresenter {
     }
     
     func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
+        view?.clearSelectionForContentTypeChange()
         contentTypeFilter = filter
         reload()
     }
@@ -144,9 +170,17 @@ extension PasswordsPresenter {
     func onSelectFilterTag(_ tag: ItemTagData?) {
         selectedFilterTag = tag
     }
-    
+
     func onClearFilterTag() {
         selectedFilterTag = nil
+    }
+
+    func onSelectFilterProtectionLevel(_ protectionLevel: ItemProtectionLevel?) {
+        selectedFilterProtectionLevel = protectionLevel
+    }
+
+    func onClearFilterProtectionLevel() {
+        selectedFilterProtectionLevel = nil
     }
     
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
@@ -158,7 +192,7 @@ extension PasswordsPresenter {
                 toastPresenter.presentUsernameCopied()
             } else {
                 toastPresenter.present(
-                    T.passwordErrorCopyUsername,
+                    .passwordErrorCopyUsername,
                     style: .failure
                 )
             }
@@ -215,6 +249,19 @@ extension PasswordsPresenter {
             flowController.toEditItem(itemID: itemData.id)
         }
     }
+
+    @MainActor
+    func onDeleteItems(_ itemIDs: [ItemID], source: UIBarButtonItem?) {
+        guard itemIDs.isEmpty == false else { return }
+
+        Task { @MainActor in
+            if await flowController.toConfirmMultiselectDelete(selectedCount: itemIDs.count, source: source) {
+                itemIDs.forEach { interactor.moveToTrash($0) }
+                view?.exitEditingMode()
+                reload()
+            }
+        }
+    }
     
     func normalizedURL(for uri: String) -> URL? {
         interactor.normalizedURL(for: uri)
@@ -228,8 +275,46 @@ extension PasswordsPresenter {
         interactor.listAllTags()
     }
 
-    func countPasswordsForTag(_ tagID: ItemTagID, contentType: ItemContentType? = nil) -> Int {
-        interactor.countItemsForTag(tagID, contentType: contentType)
+    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
+        interactor.countItemsForTag(tagID)
+    }
+
+    func countPasswordsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
+        interactor.countItemsForProtectionLevel(protectionLevel)
+    }
+    
+    func applyProtectionLevel(_ protectionLevel: ItemProtectionLevel, to itemIDs: [ItemID]) {
+        do {
+            try interactor.updateProtectionLevel(protectionLevel, for: itemIDs)
+            view?.exitEditingMode()
+            handleRefresh()
+        } catch {
+            Log("PasswordsPresenter: Failed to update protection level", module: .ui, severity: .error)
+            toastPresenter.present(.commonGeneralErrorTryAgain, style: .failure)
+        }
+    }
+
+    func toBulkProtectionLevelSelection(selectedItemIDs: [ItemID]) {
+        flowController.toBulkProtectionLevelSelection(
+            selectedItems: selectedItems(for: selectedItemIDs)
+        )
+    }
+
+    func toBulkTagsSelection(selectedItemIDs: [ItemID]) {
+        flowController.toBulkTagsSelection(
+            selectedItems: selectedItems(for: selectedItemIDs)
+        )
+    }
+
+    func applyTagChanges(to itemIDs: [ItemID], tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) {
+        do {
+            try interactor.applyTagChanges(to: itemIDs, tagsToAdd: tagsToAdd, tagsToRemove: tagsToRemove)
+            view?.exitEditingMode()
+            handleRefresh()
+        } catch {
+            Log("PasswordsPresenter: Failed to apply tag changes", module: .ui, severity: .error)
+            toastPresenter.present(.commonGeneralErrorTryAgain, style: .failure)
+        }
     }
 }
 
@@ -264,7 +349,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentPasswordCopied()
         } else {
             toastPresenter.present(
-                T.passwordErrorCopyPassword,
+                .passwordErrorCopyPassword,
                 style: .failure
             )
         }
@@ -275,7 +360,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentSecureNoteCopied()
         } else {
             toastPresenter.present(
-                T.secureNoteErrorCopy,
+                .secureNoteErrorCopy,
                 style: .failure
             )
         }
@@ -286,7 +371,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentPaymentCardNumberCopied()
         } else {
             toastPresenter.present(
-                T.cardErrorCopyNumber,
+                .cardErrorCopyNumber,
                 style: .failure
             )
         }
@@ -297,7 +382,7 @@ private extension PasswordsPresenter {
             toastPresenter.presentPaymentCardSecurityCodeCopied()
         } else {
             toastPresenter.present(
-                T.cardErrorCopySecurityCode,
+                .cardErrorCopySecurityCode,
                 style: .failure
             )
         }
@@ -311,14 +396,15 @@ private extension PasswordsPresenter {
         guard canLoadData else {
             return
         }
-        
+
         listData.removeAll()
         hasSuggestedItems = false
+        tagColorsByID = Dictionary(uniqueKeysWithValues: listAllTags().map { ($0.tagID, $0.color) })
         
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, autoFillEnvironment?.isTextToInsert == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag)
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
             
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             
@@ -341,8 +427,8 @@ private extension PasswordsPresenter {
 
                 let suggestedCells = list.suggested.compactMap(makeCellData(for:))
                 let restCells = list.rest.compactMap(makeCellData(for:))
-                let suggestedSection = ItemSectionData(title: T.commonSuggested)
-                let section = ItemSectionData(title: T.commonOther)
+                let suggestedSection = ItemSectionData(title: String(localized: .commonSuggested))
+                let section = ItemSectionData(title: String(localized: .commonOther))
                 
                 snapshot.appendSections([suggestedSection])
                 snapshot.appendItems(suggestedCells, toSection: suggestedSection)
@@ -357,23 +443,23 @@ private extension PasswordsPresenter {
             view?.reloadData(newSnapshot: snapshot)
             
         } else {
-            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag)
+            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
             listData[0] = list
             let cells = list.compactMap(makeCellData(for:))
             let section = ItemSectionData()
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             snapshot.appendSections([section])
             snapshot.appendItems(cells, toSection: section)
-        
+
             cellsCount = cells.count
             itemsCount = cellsCount
 
             hasItems = interactor.hasItems
             view?.reloadData(newSnapshot: snapshot)
         }
-        
+
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil || (contentTypeFilter.contentType != nil && hasItems) {
+            if interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || (contentTypeFilter.contentType != nil && hasItems) {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()
@@ -391,6 +477,7 @@ private extension PasswordsPresenter {
                 name: loginItem.name,
                 description: loginItem.content.username,
                 iconType: .login(loginItem.content.iconType),
+                tagColors: tagColors(for: itemData),
                 actions: [
                     .view,
                     .edit,
@@ -407,6 +494,7 @@ private extension PasswordsPresenter {
                 name: secureNoteItem.name,
                 description: nil,
                 iconType: .contentType(itemData.contentType),
+                tagColors: tagColors(for: itemData),
                 actions: [
                     .view,
                     .edit,
@@ -426,11 +514,12 @@ private extension PasswordsPresenter {
                 name: paymentCardItem.name,
                 description: description,
                 iconType: .paymentCard(issuer: paymentCardItem.content.cardIssuer),
+                tagColors: tagColors(for: itemData),
                 actions: [
                     .view,
                     .edit,
-                    .copy(.paymentCardNumber),
-                    .copy(.paymentCardSecurityCode),
+                    paymentCardItem.content.cardNumber != nil ? .copy(.paymentCardNumber) : nil,
+                    paymentCardItem.content.securityCode != nil ? .copy(.paymentCardSecurityCode) : nil,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }
@@ -439,7 +528,27 @@ private extension PasswordsPresenter {
             return nil
         }
     }
+
+    func tagColors(for itemData: ItemData) -> [ItemTagColor] {
+        guard let tagIds = itemData.tagIds, tagIds.isEmpty == false else {
+            return []
+        }
+        return tagIds.compactMap { tagColorsByID[$0] }
+    }
     
+    func selectedItems(for itemIDs: [ItemID]) -> [ItemData] {
+        guard itemIDs.isEmpty == false else { return [] }
+        let selectedIDs = Set(itemIDs)
+        var results: [ItemData] = []
+        results.reserveCapacity(itemIDs.count)
+        for list in listData.values {
+            for item in list where selectedIDs.contains(item.id) {
+                results.append(item)
+            }
+        }
+        return results
+    }
+
     @objc
     func syncFinished(_ event: Notification) {
         guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {

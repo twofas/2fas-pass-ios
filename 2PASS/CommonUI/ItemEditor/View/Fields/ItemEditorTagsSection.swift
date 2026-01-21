@@ -19,8 +19,8 @@ struct ItemEditorTagsSection: View {
                 presenter.onSelectTags()
             } label: {
                 HStack {
-                    Text(T.loginSelectedTags.localizedKey)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    Text(.loginSelectedTags)
+                        .foregroundStyle(.mainText)
                     
                     Spacer()
                     
@@ -40,9 +40,9 @@ struct ItemEditorTagsSection: View {
             .formFieldChanged(presenter.tagsChanged)
             .buttonStyle(.plain)
         } header: {
-            Text(T.loginTagsHeader.localizedKey)
+            Text(.loginTagsHeader)
         } footer: {
-            Text(T.loginTagsDescription.localizedKey)
+            Text(.loginTagsDescription)
         }
         .listSectionSpacing(Spacing.l)
     }

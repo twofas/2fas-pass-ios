@@ -12,13 +12,13 @@ struct PasswordListActionFormatStyle: FormatStyle {
     func format(_ action: PasswordListAction) -> String {
         switch action {
         case .copy:
-            T.loginViewActionCommonCopy
+            String(localized: .loginViewActionCommonCopy)
         case .edit:
-            T.loginEdit
+            String(localized: .loginEdit)
         case .viewDetails:
-            T.loginViewActionViewDetails
+            String(localized: .loginViewActionViewDetails)
         case .goToURI:
-            T.loginViewActionOpenUri
+            String(localized: .loginViewActionOpenUri)
         }
     }
 }

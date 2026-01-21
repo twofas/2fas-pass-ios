@@ -57,7 +57,7 @@ struct LoginEditorFormView: View {
                             presenter.onCustomizeIcon()
                         }
                     
-                    Button(T.loginEditIconCta.localizedKey) {
+                    Button(.loginEditIconCta) {
                         presenter.onCustomizeIcon()
                     }
                     .controlSize(.small)
@@ -69,14 +69,26 @@ struct LoginEditorFormView: View {
             .listRowBackground(Color.clear)
             
             Section {
-                LabeledInput(label: T.loginNameLabel.localizedKey, fieldWidth: $fieldWidth) {
-                    TextField(T.loginNameLabel.localizedKey, text: $presenter.name)
+                LabeledInput(label: String(localized: .loginNameLabel), fieldWidth: $fieldWidth) {
+                    TextField(String(localized: .loginNameLabel), text: $presenter.name)
                 }
                 .formFieldChanged(presenter.nameChanged)
                 
                 usernameField
                     .sheet(isPresented: $presenter.showMostUsed) {
-                        mostUsedSheet()
+                        MostUsedUsernamesSheet(
+                            usernames: presenter.mostUsedUsernames(),
+                            onSelect: { username in
+                                presenter.username = username
+                                presenter.showMostUsed = false
+                                Task {
+                                    focusField = nil
+                                }
+                            },
+                            onCancel: {
+                                presenter.showMostUsed = false
+                            }
+                        )
                     }
                 
                 passwordField
@@ -114,16 +126,20 @@ struct LoginEditorFormView: View {
     }
     
     private var usernameField: some View {
-        LabeledInput(label: T.loginUsernameLabel.localizedKey, fieldWidth: $fieldWidth) {
+        LabeledInput(label: String(localized: .loginUsernameLabel), fieldWidth: $fieldWidth) {
             HStack {
-                TextField(T.loginUsernameLabel.localizedKey, text: $presenter.username)
-                    .textContentType(.username)
-                    .autocorrectionDisabled(true)
-                    .textInputAutocapitalization(.never)
-                    .focused($focusField, equals: .username)
-                    .introspect(.textField, on: .iOS(.v17, .v18, .v26)) {
-                        setupUsernameTextField($0)
+                UsernameTextField(
+                    text: $presenter.username,
+                    placeholder: .loginUsernameLabel,
+                    mostUsedUsernames: presenter.mostUsedUsernamesForKeyboard(),
+                    onSelectUsername: { username in
+                        presenter.username = username
+                        presenter.onFocusField?(presenter.password.isEmpty ? .password : nil)
+                    },
+                    onShowMoreTapped: {
+                        presenter.showMostUsed = true
                     }
+                )
             }
         }
         .formFieldChanged(presenter.usernameChanged)
@@ -132,8 +148,8 @@ struct LoginEditorFormView: View {
 
     @ViewBuilder
     private var passwordField: some View {
-        LabeledInput(label: T.loginPasswordLabel.localizedKey, fieldWidth: $fieldWidth) {
-            SecureInput(label: T.loginPasswordPlaceholder.localizedResource, value: $presenter.password)
+        LabeledInput(label: String(localized: .loginPasswordLabel), fieldWidth: $fieldWidth) {
+            SecureInput(label: .loginPasswordPlaceholder, value: $presenter.password)
                 .colorized()
                 .introspect { textField in
                     setupPasswordTextField(textField)
@@ -149,7 +165,7 @@ struct LoginEditorFormView: View {
         Section {
             ForEach($presenter.uri, id: \.id) { uri in
                 HStack {
-                    TextField(T.loginUriLabel.localizedKey, text: uri.uri)
+                    TextField(String(localized: .loginUriLabel), text: uri.uri)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .textContentType(.URL)
@@ -164,7 +180,7 @@ struct LoginEditorFormView: View {
                         showURIMatchSettings = true
                     } label: {
                         Image(systemName: "checklist.unchecked")
-                            .foregroundStyle(Asset.labelSecondaryColor.swiftUIColor)
+                            .foregroundStyle(.labelSecondary)
                     }
                     .buttonStyle(.borderless)
                     .frame(alignment: .trailing)
@@ -176,7 +192,7 @@ struct LoginEditorFormView: View {
             }
 
             if presenter.uri.count < presenter.maxURICount {
-                Button(T.loginAddUriCta.localizedKey) {
+                Button(.loginAddUriCta) {
                     withAnimation {
                         presenter.onAddURI()
 
@@ -188,7 +204,7 @@ struct LoginEditorFormView: View {
             }
 
         } header: {
-            Text(T.loginUriHeader.localizedKey)
+            Text(.loginUriHeader)
                 .sheet(isPresented: $showURIMatchSettings) { // placed here to work around an iOS auto-close bug
                     matchingRuleSheet()
                 }
@@ -196,10 +212,10 @@ struct LoginEditorFormView: View {
             if let uriError = presenter.uriError {
                 HStack {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
-                    Text(T.loginUriError(uriError).localizedKey)
+                        .foregroundStyle(.destructiveAction)
+                    Text(.loginUriError(uriError))
                         .font(.caption)
-                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                        .foregroundStyle(.mainText)
                 }
             }
         }
@@ -224,7 +240,7 @@ struct LoginEditorFormView: View {
                 .contentShape(Rectangle())
                 .formFieldChanged(presenter.notesChanged)
         } header: {
-            Text(T.loginNotesLabel.localizedKey)
+            Text(.loginNotesLabel)
         }
         .onTapGesture {
             focusField = .notes
@@ -275,10 +291,10 @@ struct LoginEditorFormView: View {
         }()
 
         let stackView = UIStackView(arrangedSubviews: [
-            UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordGeneratorCta, image: UIImage(systemName: generateIconName), handler: { [weak presenter] _ in
+            UIButton(configuration: config, primaryAction: UIAction(title: String(localized: .loginPasswordGeneratorCta), image: UIImage(systemName: generateIconName), handler: { [weak presenter] _ in
                 presenter?.showGeneratePassword = true
             })),
-            UIButton(configuration: config, primaryAction: UIAction(title: T.loginPasswordAutogenerateCta, image: UIImage(systemName: "arrow.clockwise"), handler: { [weak presenter] _ in
+            UIButton(configuration: config, primaryAction: UIAction(title: String(localized: .loginPasswordAutogenerateCta), image: UIImage(systemName: "arrow.clockwise"), handler: { [weak presenter] _ in
                 guard let presenter else { return }
                 presenter.randomPassword()
                 feedback.impactOccurred(intensity: 0.5)
@@ -300,101 +316,6 @@ struct LoginEditorFormView: View {
         textField.inputAccessoryView = inputView
     }
 
-    private func setupUsernameTextField(_ textField: UITextField) {
-        textField.textContentType = .none
-        textField.autocorrectionType = .no
-        textField.spellCheckingType = .no
-        textField.smartQuotesType = .no
-        textField.smartDashesType = .no
-        textField.smartInsertDeleteType = .no
-        textField.keyboardType = .asciiCapable
-        textField.inputAssistantItem.leadingBarButtonGroups = []
-        textField.inputAssistantItem.trailingBarButtonGroups = []
-
-        guard textField.inputAccessoryView == nil else { return }
-        
-        let mostUsedUsernames = presenter.mostUsedUsernamesForKeyboard()
-        guard mostUsedUsernames.isEmpty == false else { return }
-
-        let frame: CGRect
-        if #available(iOS 26, *) {
-            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeightLiquidGlass)
-        } else {
-            frame = CGRect(x: 0, y: 0, width: 0, height: Constants.inputAccessoryHeight)
-        }
-
-        let inputView = UIInputView(frame: frame, inputViewStyle: .keyboard)
-
-        let buttons = mostUsedUsernames.map { username in
-            var config: UIButton.Configuration
-            if #available(iOS 26, *) {
-                config = UIButton.Configuration.glass()
-            } else {
-                config = UIButton.Configuration.plain()
-                config.baseForegroundColor = .label
-            }
-
-            config.titleAlignment = .center
-            config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { container in
-                var container = container
-                container.font = UIFont.preferredFont(forTextStyle: .footnote)
-                return container
-            }
-
-            let button = UIButton(configuration: config, primaryAction: UIAction(title: username, handler: { [weak presenter] _ in
-                guard let presenter else { return }
-                presenter.username = username
-                presenter.onFocusField?(presenter.password.isEmpty ? .password : nil)
-            }))
-            button.titleLabel?.textAlignment = .center
-            button.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
-            return button
-        }
-
-        var config: UIButton.Configuration
-        if #available(iOS 26, *) {
-            config = UIButton.Configuration.glass()
-        } else {
-            config = UIButton.Configuration.plain()
-            config.baseForegroundColor = .label
-        }
-
-        let showMoreButton = UIButton(configuration: config, primaryAction: UIAction(image: UIImage(systemName: "person.badge.key"), handler: { [weak presenter] _ in
-            presenter?.showMostUsed = true
-        }))
-        showMoreButton.translatesAutoresizingMaskIntoConstraints = false
-        inputView.addSubview(showMoreButton)
-
-        let stackView = UIStackView(arrangedSubviews: buttons)
-        stackView.axis = .horizontal
-        stackView.distribution = .fillEqually
-        stackView.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        inputView.addSubview(stackView)
-
-        let isLiquidGlass: Bool
-        if #available(iOS 26, *) {
-            isLiquidGlass = true
-            stackView.spacing = 8
-        } else {
-            isLiquidGlass = false
-        }
-
-        NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: inputView.leadingAnchor, constant: isLiquidGlass ? 16 : 0),
-            stackView.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            stackView.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
-            stackView.trailingAnchor.constraint(equalTo: showMoreButton.leadingAnchor, constant: isLiquidGlass ? -16 : 0),
-
-            showMoreButton.trailingAnchor.constraint(equalTo: inputView.trailingAnchor, constant: isLiquidGlass ? -20 : -4),
-            showMoreButton.topAnchor.constraint(equalTo: inputView.topAnchor, constant: 5),
-            showMoreButton.bottomAnchor.constraint(equalTo: inputView.bottomAnchor, constant: isLiquidGlass ? -12 : 0),
-            showMoreButton.widthAnchor.constraint(equalTo: showMoreButton.heightAnchor)
-        ])
-
-        textField.inputAccessoryView = inputView
-    }
-
     @ViewBuilder
     private func matchingRuleSheet() -> some View {
         ZStack(alignment: .top) {
@@ -410,15 +331,15 @@ struct LoginEditorFormView: View {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(verbatim: match.title)
-                                            .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                                            .foregroundStyle(.mainText)
                                             .font(.body)
                                         Text(verbatim: match.description)
                                             .font(.caption)
-                                            .foregroundStyle(Asset.descriptionTextColor.swiftUIColor)
+                                            .foregroundStyle(.descriptionText)
                                     }
                                     Spacer()
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(Asset.accentColor.swiftUIColor)
+                                        .foregroundStyle(.accent)
                                         .isHidden(match != currentURI.match, remove: false)
                                 }
                             }
@@ -426,7 +347,7 @@ struct LoginEditorFormView: View {
                     } header: {
                         Spacer(minLength: Spacing.xxl4)
                     } footer: {
-                        Text(T.uriSettingsModalDescription.localizedKey)
+                        Text(.uriSettingsModalDescription)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
                             .padding(.top, Spacing.s)
@@ -443,9 +364,9 @@ struct LoginEditorFormView: View {
             }
 
             HStack {
-                Text(T.uriSettingsMatchingRuleHeader.localizedKey)
+                Text(.uriSettingsMatchingRuleHeader)
                     .font(.title3Emphasized)
-                    .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    .foregroundStyle(.mainText)
                     .modify {
                         if #available(iOS 26, *) {
                             $0.padding(.leading, Spacing.s)
@@ -478,47 +399,4 @@ struct LoginEditorFormView: View {
         }
     }
 
-    @ViewBuilder
-    private func mostUsedSheet() -> some View {
-        NavigationStack {
-            VStack(alignment: .leading) {
-                let usernames = presenter.mostUsedUsernames()
-                if usernames.isEmpty {
-                    Text(T.loginUsernameMostUsedEmpty.localizedKey)
-                        .font(.subheadline)
-                } else {
-                    Form {
-                        Section {
-                            ForEach(presenter.mostUsedUsernames(), id: \.self) { username in
-                                Button {
-                                    presenter.username = username
-                                    presenter.showMostUsed = false
-
-                                    Task {
-                                        focusField = nil
-                                    }
-                                } label: {
-                                    Text(verbatim: username)
-                                        .foregroundStyle(Asset.mainTextColor.swiftUIColor)
-                                        .font(.body)
-                                }
-                            }
-                        }
-                    }
-                    .scrollBounceBehavior(.basedOnSize)
-                }
-            }
-            .toolbarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    ToolbarCancelButton {
-                        presenter.showMostUsed = false
-                    }
-                }
-            }
-            .navigationTitle(T.loginUsernameMostUsedHeader.localizedKey)
-        }
-        .presentationDragIndicator(.hidden)
-        .presentationDetents([.medium])
-    }
 }

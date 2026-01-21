@@ -50,7 +50,7 @@ struct ItemDetailView: View {
     private var tagsView: some View {
         if !presenter.tags.isEmpty {
             VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(T.loginTags)
+                Text(.loginTags)
                     .font(.footnote)
                     .fontWeight(.semibold)
                     .foregroundStyle(.neutral500)
@@ -75,7 +75,7 @@ struct ItemDetailView: View {
                 } label: {
                     HStack {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(T.commonModified)
+                            Text(.commonModified)
                                 .fontWeight(.semibold)
                             Text(modifiedAt)
                         }
@@ -94,7 +94,7 @@ struct ItemDetailView: View {
                 if datesExpanded {
                     HStack {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(T.commonCreated)
+                            Text(.commonCreated)
                                 .fontWeight(.semibold)
                             Text(createdAt)
                         }
@@ -211,9 +211,9 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
 
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData] {
         [
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .systemBlue, position: 0, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .systemGreen, position: 1, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .systemOrange, position: 2, modificationDate: Date())
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .cyan, position: 0, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .green, position: 1, modificationDate: Date()),
+            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .indigo, position: 2, modificationDate: Date())
         ]
     }
 

@@ -30,7 +30,7 @@ struct ConnectPullReqestCommunicationView: View {
     private var questionSensoryFeedback: Bool = false
     
     var body: some View {
-        ConnectCommunicationSheetView(title: Text(T.requestModalHeaderTitle), identicon: presenter.identicon, webBrowser: presenter.webBrowser, onClose: onClose) {
+        ConnectCommunicationSheetView(title: Text(.requestModalHeaderTitle), identicon: presenter.identicon, webBrowser: presenter.webBrowser, onClose: onClose) {
             ZStack {
                 switch presenter.state {
                 case .connecting, .finish(.success):
@@ -124,32 +124,32 @@ struct ConnectPullReqestCommunicationView: View {
     private var toastText: Text {
         switch presenter.action {
         case .changeRequest(.updateLogin):
-            Text(T.requestModalToastSuccessUpdateLogin.localizedKey)
+            Text(.requestModalToastSuccessUpdateLogin)
         case .changeRequest(.addLogin):
-            Text(T.requestModalToastSuccessAddLogin.localizedKey)
+            Text(.requestModalToastSuccessAddLogin)
         case .changeRequest(.updateSecureNote):
-            Text(T.requestModalToastSuccessUpdateLogin.localizedKey)
+            Text(.requestModalToastSuccessUpdateLogin)
         case .changeRequest(.addSecureNote):
-            Text(T.requestModalToastSuccessAddLogin.localizedKey)
+            Text(.requestModalToastSuccessAddLogin)
         case .changeRequest(.updatePaymentCard):
-            Text(T.requestModalToastSuccessUpdateLogin.localizedKey)
+            Text(.requestModalToastSuccessUpdateLogin)
         case .changeRequest(.addPaymentCard):
-            Text(T.requestModalToastSuccessAddLogin.localizedKey)
+            Text(.requestModalToastSuccessAddLogin)
         case .delete:
-            Text(T.requestModalToastSuccessDeleteLogin.localizedKey)
+            Text(.requestModalToastSuccessDeleteLogin)
         case .sifRequest(let item):
             switch item {
             case .login:
-                Text(T.requestModalToastSuccessPasswordRequest.localizedKey)
+                Text(.requestModalToastSuccessPasswordRequest)
             case .secureNote:
-                Text(T.requestModalToastSuccessSecureNoteRequest.localizedKey)
+                Text(.requestModalToastSuccessSecureNoteRequest)
             case .paymentCard:
-                Text(T.requestModalToastSuccessCardRequest.localizedKey)
+                Text(.requestModalToastSuccessCardRequest)
             case .raw:
                 Text("")
             }
         case .sync:
-            Text(T.requestModalToastSuccessFullSync.localizedKey)
+            Text(.requestModalToastSuccessFullSync)
         case nil:
             Text("")
         }
@@ -166,7 +166,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private var progressView: some View {
         ProgressView(value: presenter.progress) {
-            Text(T.connectConnectionConnecting.localizedKey)
+            Text(.connectConnectionConnecting)
         }
         .progressViewStyle(.circle)
         .frame(maxWidth: .infinity)
@@ -174,8 +174,8 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func passwordRequestView(item: LoginItemData) -> some View {
         itemRequestView(
-            title: Text(T.requestModalPasswordRequestTitle.localizedKey),
-            subtitle: Text(T.requestModalPasswordRequestSubtitle.localizedKey),
+            title: Text(.requestModalPasswordRequestTitle),
+            subtitle: Text(.requestModalPasswordRequestSubtitle),
             name: item.name ?? "",
             description: item.username
         )
@@ -183,8 +183,8 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func noteRequestView(item: SecureNoteItemData) -> some View {
         itemRequestView(
-            title: Text(T.requestModalSecureNoteRequestTitle.localizedKey),
-            subtitle: Text(T.requestModalSecureNoteRequestSubtitle.localizedKey),
+            title: Text(.requestModalSecureNoteRequestTitle),
+            subtitle: Text(.requestModalSecureNoteRequestSubtitle),
             name: item.name ?? "",
             description: nil
         )
@@ -192,8 +192,8 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func paymentCardRequestView(item: PaymentCardItemData) -> some View {
         itemRequestView(
-            title: Text(T.requestModalCardRequestTitle.localizedKey),
-            subtitle: Text(T.requestModalCardRequestSubtitle.localizedKey),
+            title: Text(.requestModalCardRequestTitle),
+            subtitle: Text(.requestModalCardRequestSubtitle),
             name: item.name ?? "",
             description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
@@ -214,12 +214,12 @@ struct ConnectPullReqestCommunicationView: View {
                     .foregroundStyle(.brand500)
             },
             actions: {
-                Button(T.requestModalPasswordRequestCtaNegative) {
+                Button(.requestModalPasswordRequestCtaNegative) {
                     presenter.onCancel()
                 }
                 .buttonStyle(.bezeledGray)
 
-                Button(T.requestModalPasswordRequestCtaPositive) {
+                Button(.requestModalPasswordRequestCtaPositive) {
                     presenter.onContinue()
                 }
                 .buttonStyle(.bezeled)
@@ -230,7 +230,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func addLoginView(changeRequest: LoginDataChangeRequest) -> some View {
         addItemView(
-            title: Text(T.requestModalNewLoginTitle.localizedKey),
+            title: Text(.requestModalNewLoginTitle),
             name: changeRequest.name ?? "",
             description: changeRequest.username?.value
         )
@@ -238,7 +238,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func addSecureNoteView(changeRequest: SecureNoteDataChangeRequest) -> some View {
         addItemView(
-            title: Text(T.requestModalNewSecureNoteTitle.localizedKey),
+            title: Text(.requestModalNewSecureNoteTitle),
             name: changeRequest.name ?? "",
             description: nil
         )
@@ -246,7 +246,7 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func addPaymentCardView(changeRequest: PaymentCardDataChangeRequest) -> some View {
         addItemView(
-            title: Text(T.requestModalNewCardTitle.localizedKey),
+            title: Text(.requestModalNewCardTitle),
             name: changeRequest.name ?? "",
             description: changeRequest.cardNumber?.formatted(.paymentCardNumberMask)
         )
@@ -259,19 +259,19 @@ struct ConnectPullReqestCommunicationView: View {
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
-            description: Text(T.requestModalNewItemSubtitle.localizedKey),
+            description: Text(.requestModalNewItemSubtitle),
             item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "arrow.clockwise.circle.fill")
                     .foregroundStyle(.brand500)
             },
             actions: {
-                Button(T.requestModalNewItemCtaNegative) {
+                Button(.requestModalNewItemCtaNegative) {
                     presenter.onCancel()
                 }
                 .buttonStyle(.bezeledGray)
 
-                Button(T.requestModalNewItemCtaPositive) {
+                Button(.requestModalNewItemCtaPositive) {
                     presenter.onContinue()
                 }
                 .buttonStyle(.bezeled)
@@ -282,7 +282,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func updateLoginView(item: LoginItemData) -> some View {
         updateItemView(
-            title: Text(T.requestModalUpdateLoginTitle.localizedKey),
+            title: Text(.requestModalUpdateLoginTitle),
             name: item.name ?? "",
             description: item.username
         )
@@ -290,7 +290,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func updateSecureNoteView(item: SecureNoteItemData) -> some View {
         updateItemView(
-            title: Text(T.requestModalUpdateSecureNoteTitle.localizedKey),
+            title: Text(.requestModalUpdateSecureNoteTitle),
             name: item.name ?? "",
             description: nil
         )
@@ -298,7 +298,7 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func updatePaymentCardView(item: PaymentCardItemData) -> some View {
         updateItemView(
-            title: Text(T.requestModalUpdateCardTitle.localizedKey),
+            title: Text(.requestModalUpdateCardTitle),
             name: item.name ?? "",
             description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
@@ -311,19 +311,19 @@ struct ConnectPullReqestCommunicationView: View {
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
-            description: Text(T.requestModalUpdateItemSubtitle.localizedKey),
+            description: Text(.requestModalUpdateItemSubtitle),
             item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "arrow.clockwise.circle.fill")
                     .foregroundStyle(.brand500)
             },
             actions: {
-                Button(T.requestModalUpdateItemCtaNegative) {
+                Button(.requestModalUpdateItemCtaNegative) {
                     presenter.onCancel()
                 }
                 .buttonStyle(.bezeledGray)
 
-                Button(T.requestModalUpdateItemCtaPositive) {
+                Button(.requestModalUpdateItemCtaPositive) {
                     presenter.onContinue()
                 }
                 .buttonStyle(.bezeled)
@@ -334,7 +334,7 @@ struct ConnectPullReqestCommunicationView: View {
     
     private func deleteLoginView(item: LoginItemData) -> some View {
         deleteItemView(
-            title: Text(T.requestModalRemoveLoginTitle.localizedKey),
+            title: Text(.requestModalRemoveLoginTitle),
             name: item.name ?? "",
             description: item.username
         )
@@ -342,7 +342,7 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func deleteSecureNoteView(item: SecureNoteItemData) -> some View {
         deleteItemView(
-            title: Text(T.requestModalRemoveSecureNoteTitle.localizedKey),
+            title: Text(.requestModalRemoveSecureNoteTitle),
             name: item.name ?? "",
             description: nil
         )
@@ -350,7 +350,7 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func deletePaymentCardView(item: PaymentCardItemData) -> some View {
         deleteItemView(
-            title: Text(T.requestModalRemoveCardTitle.localizedKey),
+            title: Text(.requestModalRemoveCardTitle),
             name: item.name ?? "",
             description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
         )
@@ -363,19 +363,19 @@ struct ConnectPullReqestCommunicationView: View {
     ) -> some View {
         ConnectPullReqestContentView(
             title: title,
-            description: Text(T.requestModalRemoveItemSubtitle.localizedKey),
+            description: Text(.requestModalRemoveItemSubtitle),
             item: .init(name: name, description: description, iconContent: presenter.iconContent),
             icon: {
                 Image(systemName: "trash.circle.fill")
                     .foregroundStyle(.danger500)
             },
             actions: {
-                Button(T.requestModalRemoveItemCtaNegative) {
+                Button(.requestModalRemoveItemCtaNegative) {
                     presenter.onCancel()
                 }
                 .buttonStyle(.bezeledGray)
 
-                Button(T.requestModalRemoveItemCtaPositive) {
+                Button(.requestModalRemoveItemCtaPositive) {
                     presenter.onContinue()
                 }
                 .buttonStyle(.bezeled)
@@ -386,20 +386,20 @@ struct ConnectPullReqestCommunicationView: View {
 
     private func syncView() -> some View {
         ConnectPullReqestContentView(
-            title: Text(T.requestModalFullSyncTitle.localizedKey),
-            description: Text(T.requestModalFullSyncSubtitle.localizedKey),
+            title: Text(.requestModalFullSyncTitle),
+            description: Text(.requestModalFullSyncSubtitle),
             item: nil,
             icon: {
                 Image(systemName: "arrow.down.circle.fill")
                     .foregroundStyle(.brand500)
             },
             actions: {
-                Button(T.requestModalFullSyncCtaNegative) {
+                Button(.requestModalFullSyncCtaNegative) {
                     presenter.onCancel()
                 }
                 .buttonStyle(.bezeledGray)
                 
-                Button(T.requestModalFullSyncCtaPositive) {
+                Button(.requestModalFullSyncCtaPositive) {
                     presenter.onContinue()
                 }
                 .buttonStyle(.bezeled)
@@ -413,7 +413,7 @@ struct ConnectPullReqestCommunicationView: View {
         switch error {
         case is CancellationError, ConnectError.cancelled:
             ProgressView(value: presenter.progress) {
-                Text(T.connectConnectionConnecting.localizedKey)
+                Text(.connectConnectionConnecting)
             }
             .progressViewStyle(.circle)
             .frame(maxWidth: .infinity)
@@ -421,10 +421,10 @@ struct ConnectPullReqestCommunicationView: View {
         case ConnectError.missingItem:
             ConnectCommunicationContentView(
                 iconColor: .danger500,
-                title: Label(T.requestModalErrorNoItemTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                description: Text(T.requestModalErrorNoItemSubtitle.localizedKey),
+                title: Label(.requestModalErrorNoItemTitle, systemImage: "exclamationmark.triangle.fill"),
+                description: Text(.requestModalErrorNoItemSubtitle),
                 actions: {
-                    Button(T.requestModalErrorNoItemCta) {
+                    Button(.requestModalErrorNoItemCta) {
                         dismiss()
                     }
                     .buttonStyle(.bezeled)
@@ -433,10 +433,10 @@ struct ConnectPullReqestCommunicationView: View {
         case ConnectPullReqestCommunicationError.sendPasswordDataFailure:
             ConnectCommunicationContentView(
                 iconColor: .warning500,
-                title: Label(T.requestModalErrorSendDataTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                description: Text(T.requestModalErrorSendDataSubtitle.localizedKey),
+                title: Label(.requestModalErrorSendDataTitle, systemImage: "exclamationmark.triangle.fill"),
+                description: Text(.requestModalErrorSendDataSubtitle),
                 actions: {
-                    Button(T.requestModalErrorGenericCta) {
+                    Button(.requestModalErrorGenericCta) {
                         dismiss()
                     }
                     .buttonStyle(.bezeled)
@@ -445,10 +445,10 @@ struct ConnectPullReqestCommunicationView: View {
         case URLError.notConnectedToInternet:
             ConnectCommunicationContentView(
                 iconColor: .danger500,
-                title: Label(T.connectModalErrorNoInternetTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                description: Text(T.connectModalErrorNoInternetSubtitle.localizedKey),
+                title: Label(.connectModalErrorNoInternetTitle, systemImage: "exclamationmark.triangle.fill"),
+                description: Text(.connectModalErrorNoInternetSubtitle),
                 actions: {
-                    Button(T.requestModalErrorGenericCta) {
+                    Button(.requestModalErrorGenericCta) {
                         dismiss()
                     }
                     .buttonStyle(.bezeled)
@@ -457,10 +457,10 @@ struct ConnectPullReqestCommunicationView: View {
         default:
             ConnectCommunicationContentView(
                 iconColor: .danger500,
-                title: Label(T.requestModalErrorGenericTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-                description: Text(T.requestModalErrorGenericSubtitle.localizedKey),
+                title: Label(.requestModalErrorGenericTitle, systemImage: "exclamationmark.triangle.fill"),
+                description: Text(.requestModalErrorGenericSubtitle),
                 actions: {
-                    Button(T.requestModalErrorGenericCta) {
+                    Button(.requestModalErrorGenericCta) {
                         dismiss()
                     }
                     .buttonStyle(.bezeled)
@@ -472,10 +472,10 @@ struct ConnectPullReqestCommunicationView: View {
     private func itemsLimitReachedView(limit: Int) -> some View {
         ConnectCommunicationContentView(
             iconColor: .danger500,
-            title: Label(T.requestModalErrorItemsLimitTitle.localizedKey, systemImage: "exclamationmark.triangle.fill"),
-            description: Text(T.requestModalErrorItemsLimitSubtitle(limit).localizedKey),
+            title: Label(.requestModalErrorItemsLimitTitle, systemImage: "exclamationmark.triangle.fill"),
+            description: Text(.requestModalErrorItemsLimitSubtitle(Int32(limit))),
             actions: {
-                Button(T.requestModalErrorItemsLimitCta.localizedKey) {
+                Button(.requestModalErrorItemsLimitCta) {
                     dismiss()
                     presenter.onContinue()
                 }

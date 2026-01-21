@@ -13,7 +13,7 @@ final class CustomizeIconViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = T.customizeIcon
+        navigationItem.title = String(localized: .customizeIcon)
         
         if #available(iOS 26.0, *) {
             let saveButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(saveAction))
@@ -22,7 +22,7 @@ final class CustomizeIconViewController: UIViewController {
             navigationItem.rightBarButtonItem = saveButton
         } else {
             navigationItem.rightBarButtonItem = UIBarButtonItem(
-                title: T.commonSave,
+                title: String(localized: .commonSave),
                 style: .plain,
                 target: self,
                 action: #selector(saveAction)

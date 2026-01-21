@@ -16,7 +16,7 @@ struct KnownBrowsersView: View {
     private var colorScheme
     
     var body: some View {
-        SettingsDetailsForm(T.knownBrowsersTitle.localizedKey) {
+        SettingsDetailsForm(.knownBrowsersTitle) {
             if presenter.isEmptyList == false {
                 Section {
                     ForEach(presenter.browsers) { browser in
@@ -25,15 +25,15 @@ struct KnownBrowsersView: View {
                                 Button {
                                     presenter.onDelete(browser)
                                 } label: {
-                                    Label(T.knownBrowserDeleteButton.localizedKey, systemImage: "trash")
+                                    Label(.knownBrowserDeleteButton, systemImage: "trash")
                                 }
                                 .tint(.danger500)
                             }
                     }
                 } header: {
-                    Text(T.knownBrowsersHeader.localizedKey)
+                    Text(.knownBrowsersHeader)
                 } footer: {
-                    Text(T.knownBrowsersDescription.localizedKey)
+                    Text(.knownBrowsersDescription)
                         .settingsFooter()
                 }
                 .listRowInsets(EdgeInsets(Spacing.s))
@@ -41,7 +41,7 @@ struct KnownBrowsersView: View {
         }
         .overlay {
             if presenter.isEmptyList {
-                EmptyListView(T.knownBrowsersEmpty.localizedKey)
+                EmptyListView(.knownBrowsersEmpty)
             }
         }
         .animation(.default, value: presenter.browsers.count)

@@ -11,15 +11,11 @@ struct ManageTagCell: View {
     
     var body: some View {
         HStack(spacing: Spacing.m) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(tag.name)
-                    .foregroundStyle(.neutral950)
-                    .font(.body)
-                
-                Text(T.tagDescription(tag.itemCount).localizedKey)
-                    .foregroundStyle(.neutral500)
-                    .font(.footnote)
-            }
+            TagContentCell(
+                name: Text(tag.name),
+                color: tag.color,
+                subtitle: Text(.tagDescription(String(tag.itemCount)))
+            )
             
             Spacer()
             
@@ -29,7 +25,7 @@ struct ManageTagCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "pencil")
-                        Text(T.commonEdit.localizedKey)
+                        Text(.commonEdit)
                     }
                 }
                 
@@ -38,7 +34,7 @@ struct ManageTagCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash")
-                        Text(T.tagDeleteCta.localizedKey)
+                        Text(.tagDeleteCta)
                     }
                 }
             } label: {

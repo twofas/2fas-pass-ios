@@ -82,7 +82,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                 ConnectTag(
                     id: $0.id.exportString(),
                     name: $0.name,
-                    color: $0.color?.hexString,
+                    color: $0.color.rawValue,
                     position: $0.position,
                     updatedAt: $0.modificationDate.exportTimestamp
                 )
@@ -139,7 +139,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                     ConnectTag(
                         id: $0.id.exportString(),
                         name: $0.name,
-                        color: $0.color?.hexString,
+                        color: $0.color.rawValue,
                         position: $0.position,
                         updatedAt: $0.modificationDate.exportTimestamp
                     )
@@ -150,6 +150,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
                 tagId: nil,
                 vaultId: vault.vaultID,
                 contentTypes: .allKnownTypes,
+                protectionLevel: nil,
                 sortBy: .az,
                 trashed: .no
             )

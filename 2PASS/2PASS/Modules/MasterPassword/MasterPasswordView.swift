@@ -84,7 +84,7 @@ struct MasterPasswordView: View {
                     
                     VStack(spacing: 0) {
                         HStack {
-                            FloatingField(placeholder: Text(T.masterPasswordLabel.localizedKey), isEmpty: presenter.firstInput.isEmpty) {
+                            FloatingField(placeholder: Text(.masterPasswordLabel), isEmpty: presenter.firstInput.isEmpty) {
                                 SecureContentInput(
                                     label: "",
                                     value: $presenter.firstInput,
@@ -112,7 +112,7 @@ struct MasterPasswordView: View {
                         
                         if presenter.isRetype {
                             HStack {
-                                FloatingField(placeholder: Text(T.masterPasswordConfirmLabel.localizedKey), isEmpty: presenter.secondInput.isEmpty) {
+                                FloatingField(placeholder: Text(.masterPasswordConfirmLabel), isEmpty: presenter.secondInput.isEmpty) {
                                     SecureContentInput(
                                         label: "",
                                         value: $presenter.secondInput,
@@ -160,7 +160,7 @@ struct MasterPasswordView: View {
                     }
                 }
                 
-                Button(T.commonContinue.localizedKey) {
+                Button(.commonContinue) {
                     if presenter.isRetype == false {
                         focusSecondField()
                         scrollToInfoState(in: scrollProxy)
@@ -186,7 +186,7 @@ struct MasterPasswordView: View {
             } catch {}
         }
         .router(router: MasterPasswordRouter(), destination: $presenter.destination)
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
         .readableContentMargins()
     }
     
@@ -195,18 +195,18 @@ struct MasterPasswordView: View {
         switch presenter.kind {
         case .onboarding:
             HeaderContentView(
-                title: Text(T.onboardingCreateMasterPasswordTitle.localizedKey),
-                subtitle: Text(T.onboardingCreateMasterPasswordDescription.localizedKey)
+                title: Text(.onboardingCreateMasterPasswordTitle),
+                subtitle: Text(.onboardingCreateMasterPasswordDescription)
             )
         case .change:
             HeaderContentView(
-                title: Text(T.setNewPasswordScreenTitle.localizedKey),
-                subtitle: Text(T.setNewPasswordScreenDescription.localizedKey)
+                title: Text(.setNewPasswordScreenTitle),
+                subtitle: Text(.setNewPasswordScreenDescription)
             )
         case .unencryptedVaultRecovery:
             HeaderContentView(
-                title: Text(T.onboardingCreateMasterPasswordTitle.localizedKey),
-                subtitle: Text(T.onboardingCreateMasterPasswordDescription.localizedKey)
+                title: Text(.onboardingCreateMasterPasswordTitle),
+                subtitle: Text(.onboardingCreateMasterPasswordDescription)
             )
         }
     }
@@ -232,14 +232,14 @@ struct MasterPasswordView: View {
                 EmptyView()
             case .tooShort:
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(Asset.descriptionTextColor.swiftUIColor)
-                Text(T.masterPasswordMinLengthLld(presenter.optimalLength).localizedKey)
+                    .foregroundStyle(.descriptionText)
+                Text(.masterPasswordMinLength(Int32(presenter.optimalLength)))
                     .font(.caption)
             case .dontMatch:
                 if presenter.showError {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.danger600)
-                    Text(T.masterPasswordNotMatch.localizedKey)
+                    Text(.masterPasswordNotMatch)
                         .font(.caption)
                         .foregroundStyle(.danger600)
                 }

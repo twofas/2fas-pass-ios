@@ -15,8 +15,8 @@ struct RestoreVaultView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.restoreVaultTitle.localizedKey),
-                subtitle: Text(T.restoreVaultMessage.localizedKey),
+                title: Text(.restoreVaultTitle),
+                subtitle: Text(.restoreVaultMessage),
                 icon: {
                     Image(._2PASSShield)
                 }
@@ -38,7 +38,7 @@ struct RestoreVaultView: View {
                     .font(.system(size: 32))
                     .foregroundStyle(.warning600)
                 
-                Text(T.restoreVaultWarning.localizedKey)
+                Text(.restoreVaultWarning)
                     .font(.subheadline)
                     .foregroundStyle(.warning600)
                     .multilineTextAlignment(.center)
@@ -47,7 +47,7 @@ struct RestoreVaultView: View {
         }
         .padding(.horizontal, Spacing.xl)
         .router(router: VaultRecoverySelectRouter(), destination: $presenter.destination)
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
         .readableContentMargins()
         .fileImporter(
             isPresented: $presenter.showFileImporter,

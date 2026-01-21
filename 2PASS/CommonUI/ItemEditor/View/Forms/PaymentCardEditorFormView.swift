@@ -43,8 +43,8 @@ struct PaymentCardEditorFormView: View {
         .listRowBackground(Color.clear)
 
         Section {
-            LabeledInput(label: T.cardNameLabel.localizedKey, fieldWidth: $fieldWidth) {
-                TextField(T.cardNameLabel.localizedKey, text: $presenter.name)
+            LabeledInput(label: String(localized: .cardNameLabel), fieldWidth: $fieldWidth) {
+                TextField(String(localized: .cardNameLabel), text: $presenter.name)
             }
             .formFieldChanged(presenter.nameChanged)
         }
@@ -52,16 +52,16 @@ struct PaymentCardEditorFormView: View {
         .listSectionSpacing(Spacing.m)
 
         Section {
-            LabeledInput(label: T.cardHolderLabel.localizedKey, fieldWidth: $fieldWidth) {
-                TextField(T.cardHolderLabel.localizedKey, text: $presenter.cardHolder)
+            LabeledInput(label: String(localized: .cardHolderLabel), fieldWidth: $fieldWidth) {
+                TextField(String(localized: .cardHolderLabel), text: $presenter.cardHolder)
                     .textContentType(.name)
                     .focused($focusField, equals: .cardHolder)
             }
             .formFieldChanged(presenter.cardHolderChanged)
 
-            LabeledInput(label: T.cardNumberLabel.localizedKey, fieldWidth: $fieldWidth) {
+            LabeledInput(label: String(localized: .cardNumberLabel), fieldWidth: $fieldWidth) {
                 PaymentCardNumberTextField(
-                    T.cardNumberLabel,
+                    String(localized: .cardNumberLabel),
                     text: $presenter.cardNumber,
                     maxLength: presenter.maxCardNumberLength,
                     formatStyle: presenter.cardNumberFormatStyle,
@@ -81,9 +81,9 @@ struct PaymentCardEditorFormView: View {
                 presenter.onCardNumberChange()
             }
 
-            LabeledInput(label: T.cardExpirationDateLabel.localizedKey, fieldWidth: $fieldWidth) {
+            LabeledInput(label: String(localized: .cardExpirationDateLabel), fieldWidth: $fieldWidth) {
                 ExpirationDateField(
-                    T.cardExpirationDatePlaceholder,
+                    String(localized: .cardExpirationDatePlaceholder),
                     text: $presenter.expirationDate,
                     isInvalid: presenter.isExpirationDateInvalid
                 )
@@ -102,8 +102,8 @@ struct PaymentCardEditorFormView: View {
                 presenter.onExpirationDateChange()
             }
 
-            LabeledInput(label: T.cardSecurityCodeLabel.localizedKey, fieldWidth: $fieldWidth) {
-                SecureInput(label: T.cardSecurityCodeLabel.localizedResource, value: $presenter.securityCode, reveal: $presenter.securityCodeRevealed)
+            LabeledInput(label: String(localized: .cardSecurityCodeLabel), fieldWidth: $fieldWidth) {
+                SecureInput(label: .cardSecurityCodeLabel, value: $presenter.securityCode, reveal: $presenter.securityCodeRevealed)
                     .introspect { textField in
                         textField.keyboardType = .numberPad
                         textField.textContentType = .creditCardSecurityCode
@@ -121,7 +121,7 @@ struct PaymentCardEditorFormView: View {
                 }
             }
         } header: {
-            Text(T.cardDetailsHeader.localizedKey)
+            Text(.cardDetailsHeader)
         }
         .font(.body)
         .listSectionSpacing(Spacing.m)
@@ -143,7 +143,7 @@ struct PaymentCardEditorFormView: View {
                     focusField = .notes
                 }
         } header: {
-            Text(T.cardNotesLabel.localizedKey)
+            Text(.cardNotesLabel)
         }
         .listSectionSpacing(Spacing.l)
     }

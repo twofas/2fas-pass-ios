@@ -9,10 +9,10 @@ import SwiftUI
 struct EmptySearchView: View {
     var body: some View {
         Group {
-            Text(Image(systemName: "exclamationmark.magnifyingglass")) + Text(" ") + Text(T.loginSearchNoResultsTitle.localizedKey)
+            Text(Image(systemName: "exclamationmark.magnifyingglass")) + Text(" ") + Text(.loginSearchNoResultsTitle)
         }
         .font(.subheadline)
-        .foregroundStyle(Asset.inactiveColor.swiftUIColor)
+        .foregroundStyle(.inactive)
     }
 }
 

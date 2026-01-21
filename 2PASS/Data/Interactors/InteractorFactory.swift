@@ -235,7 +235,8 @@ public final class InteractorFactory {
             cloudCacheStorage: CloudCacheStorageImpl(mainRepository: MainRepositoryImpl.shared),
             encryptionHandler: EncryptionHandlerImpl(
                 mainRepository: MainRepositoryImpl.shared,
-                itemsInteractor: itemsInteractor()
+                itemsInteractor: itemsInteractor(),
+                tagInteractor: tagInteractor()
             ),
             localStorage: LocalStorageImpl(
                 itemsInteractor: itemsInteractor(),
@@ -343,7 +344,10 @@ public final class InteractorFactory {
     }
     
     public func migrationInteractor() -> MigrationInteracting {
-        MigrationInteractor(mainRepository: MainRepositoryImpl.shared)
+        MigrationInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            tagInteractor: tagInteractor()
+        )
     }
     
     public func quickSetupInteractor() -> QuickSetupInteracting {

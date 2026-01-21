@@ -16,8 +16,8 @@ public struct ShieldProgressStyle: ProgressViewStyle {
     
     public func makeBody(configuration: Configuration) -> some View {
         ZStack {
-            Asset.shieldBorder.swiftUIImage
-            Asset.shieldFill.swiftUIImage
+            Image(.shieldBorder)
+            Image(.shieldFill)
                 .mask(alignment: .leading) {
                     Rectangle()
                         .frame(width: (configuration.fractionCompleted ?? 0) * Constants.shieldFillWidth)

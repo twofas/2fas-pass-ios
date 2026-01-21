@@ -13,16 +13,16 @@ struct BackupView: View {
     var presenter: BackupPresenter
     
     var body: some View {
-        SettingsDetailsForm(Text(T.settingsEntryImportExport.localizedKey)) {
+        SettingsDetailsForm(.settingsEntryImportExport) {
             Section {
-                Button(T.backupImportCta.localizedKey) {
+                Button(.backupImportCta) {
                     presenter.onImport()
                 }
             } header: {
-                Text(T.backupImportHeader.localizedKey)
+                Text(.backupImportHeader)
                     .padding(.top, Spacing.l)
             } footer: {
-                Text(T.backupImportFooter.localizedKey)
+                Text(.backupImportFooter)
                     .settingsFooter()
             }
             
@@ -31,16 +31,16 @@ struct BackupView: View {
                     presenter.onExport()
                 } label: {
                     SettingsRowView(
-                        title: T.backupExportCta.localizedKey,
+                        title: .backupExportCta,
                         actionIcon: .chevron
                     )
                 }
                 .disabled(presenter.isExportDisabled)
                 
             } header: {
-                Text(T.backupExportHeader)
+                Text(.backupExportHeader)
             } footer: {
-                Text(T.backupExportFooter)
+                Text(.backupExportFooter)
                     .settingsFooter()
             }
         }

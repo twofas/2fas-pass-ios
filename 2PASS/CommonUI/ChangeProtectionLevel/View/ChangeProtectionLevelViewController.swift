@@ -13,7 +13,7 @@ final class ChangeProtectionLevelViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = T.loginSecurityLevelLabel
+        navigationItem.title = String(localized: .loginSecurityLevelLabel)
         
         let vc = UIHostingController(rootView: ChangeProtectionLevelView(presenter: presenter))
         placeChild(vc)

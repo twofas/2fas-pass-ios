@@ -45,7 +45,11 @@ public protocol EncryptedStorageDataSource: AnyObject {
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
     
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
-    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
+    func listEncryptedItems(
+        in vaultID: VaultID,
+        itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData]
     
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
     
@@ -89,9 +93,9 @@ public protocol EncryptedStorageDataSource: AnyObject {
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
     func deleteEncryptedTag(tagID: ItemTagID)
     func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData]
+    func listAllEncryptedTags() -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
-    func removeDuplicatedEncryptedTags()
     
     // MARK: Storage
     

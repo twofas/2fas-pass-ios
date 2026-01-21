@@ -110,7 +110,8 @@ extension StorageInteractor: StorageInteracting {
         mainRepository.createInMemoryStorage()
         let items = mainRepository.listEncryptedItems(
             in: vaultID,
-            excludeProtectionLevels: mainRepository.isMainAppProcess ? [] : Config.autoFillExcludeProtectionLevels
+            itemIDs: nil,
+            excludeProtectionLevels: mainRepository.isMainAppProcess ? nil : Config.autoFillExcludeProtectionLevels
         )
         
         let tags = mainRepository.listEncryptedTags(in: vaultID)
@@ -158,7 +159,7 @@ extension StorageInteractor: StorageInteracting {
         for tag in tags {
             group.enter()
             
-            let decryptedName = decryptData(tag.name, protectionLevel: .normal) ?? "" // no other fail available
+            let decryptedName = decryptData(tag.name, protectionLevel: .normal) ?? ""
             
             DispatchQueue.main.async {
                 self.mainRepository.createTag(
@@ -166,7 +167,7 @@ extension StorageInteractor: StorageInteracting {
                         tagID: tag.tagID,
                         vaultID: tag.vaultID,
                         name: decryptedName,
-                        color: UIColor(hexString: tag.color),
+                        color: ItemTagColor(rawValue: tag.color),
                         position: tag.position,
                         modificationDate: tag.modificationDate
                     )

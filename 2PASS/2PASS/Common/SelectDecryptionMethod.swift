@@ -17,7 +17,8 @@ struct SelectDecryptionMethod: View {
     var body: some View {
         VStack(spacing: Spacing.m) {
             HStack(spacing: 0) {
-                Text(T.restoreDecryptVaultOptionTitle.uppercased().localizedKey)
+                Text(.restoreDecryptVaultOptionTitle)
+                    .textCase(.uppercase)
                 Spacer(minLength: 0)
             }
             .font(.subheadline)
@@ -27,8 +28,8 @@ struct SelectDecryptionMethod: View {
                 onFiles()
             } label: {
                 OptionButtonLabel(
-                    title: Text(T.restoreDecryptVaultOptionFile.localizedKey),
-                    subtitle: Text(T.restoreDecryptVaultOptionFileDescription.localizedKey),
+                    title: Text(.restoreDecryptVaultOptionFile),
+                    subtitle: Text(.restoreDecryptVaultOptionFileDescription),
                     icon: {
                         if #available(iOS 18, *) {
                             Image(systemName: "document.fill")
@@ -44,8 +45,8 @@ struct SelectDecryptionMethod: View {
                 onCamera()
             } label: {
                 OptionButtonLabel(
-                    title: Text(T.restoreDecryptVaultOptionScanQr.localizedKey),
-                    subtitle: Text(T.restoreDecryptVaultOptionScanQrDescription.localizedKey),
+                    title: Text(.restoreDecryptVaultOptionScanQr),
+                    subtitle: Text(.restoreDecryptVaultOptionScanQrDescription),
                     icon: {
                         Image(systemName: "qrcode.viewfinder")
                     }
@@ -57,8 +58,8 @@ struct SelectDecryptionMethod: View {
                 onEnterManually()
             } label: {
                 OptionButtonLabel(
-                    title: Text(T.restoreDecryptVaultOptionManual.localizedKey),
-                    subtitle: Text(T.restoreDecryptVaultOptionManualDescription.localizedKey),
+                    title: Text(.restoreDecryptVaultOptionManual),
+                    subtitle: Text(.restoreDecryptVaultOptionManualDescription),
                     icon: {
                         Image(.manualInputIcon)
                             .renderingMode(.template)

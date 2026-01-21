@@ -27,58 +27,58 @@ final class OnboardingPagesPresenter {
     var pages: [OnboardingPage] = [
         .init(
             animationName: "ios-onboarding-01",
-            title: T.onboardingWelcome1Title,
-            subtitle: T.onboardingWelcome1Description,
+            title: String(localized: .onboardingWelcome1Title),
+            subtitle: String(localized: .onboardingWelcome1Description),
             features: [
                 .init(
                     icon: .sfSymbol("network.badge.shield.half.filled"),
-                    title: T.onboardingWelcome1Feature1
+                    title: String(localized: .onboardingWelcome1Feature1)
                 ),
                 .init(
                     icon: .sfSymbol("eye.slash.circle"),
-                    title: T.onboardingWelcome1Feature2
+                    title: String(localized: .onboardingWelcome1Feature2)
                 ),
                 .init(
                     icon: .sfSymbol("person.crop.circle.badge.xmark"),
-                    title: T.onboardingWelcome1Feature3
+                    title: String(localized: .onboardingWelcome1Feature3)
                 )
             ]
         ),
         .init(
             animationName: "ios-onboarding-02",
-            title: T.onboardingWelcome2Title,
-            subtitle: T.onboardingWelcome2Description,
+            title: String(localized: .onboardingWelcome2Title),
+            subtitle: String(localized: .onboardingWelcome2Description),
             features: [
                 .init(
                     icon: .sfSymbol("infinity.circle"),
-                    title: T.onboardingWelcome2Feature1
+                    title: String(localized: .onboardingWelcome2Feature1)
                 ),
                 .init(
                     icon: .sfSymbol("square.and.arrow.up"),
-                    title: T.onboardingWelcome2Feature2
+                    title: String(localized: .onboardingWelcome2Feature2)
                 ),
                 .init(
                     icon: .sfSymbol("lock.slash.fill"),
-                    title: T.onboardingWelcome2Feature3
+                    title: String(localized: .onboardingWelcome2Feature3)
                 )
             ]
         ),
         .init(
             animationName: "ios-onboarding-03",
-            title: T.onboardingWelcome3Title,
-            subtitle: T.onboardingWelcome3Description,
+            title: String(localized: .onboardingWelcome3Title),
+            subtitle: String(localized: .onboardingWelcome3Description),
             features: [
                 .init(
                     icon: .sfSymbol("iphone.radiowaves.left.and.right"),
-                    title: T.onboardingWelcome3Feature1
+                    title: String(localized: .onboardingWelcome3Feature1)
                 ),
                 .init(
                     icon: .sfSymbol("lock.shield"),
-                    title: T.onboardingWelcome3Feature2
+                    title: String(localized: .onboardingWelcome3Feature2)
                 ),
                 .init(
                     icon: .asset("Maze"),
-                    title: T.onboardingWelcome3Feature3
+                    title: String(localized: .onboardingWelcome3Feature3)
                 )
             ]
         )

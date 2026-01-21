@@ -9,23 +9,35 @@ import Common
 import Storage
 
 public protocol TagInteracting: AnyObject {
-    func createTag(name: String, color: UIColor)
+    func suggestedNewColor() -> ItemTagColor
+
+    func createTag(name: String, color: ItemTagColor)
     func createTag(data: ItemTagData)
-    
+
     func updateTag(data: ItemTagData)
-    
+
     func deleteTag(tagID: ItemTagID)
     func externalDeleteTag(tagID: ItemTagID)
-    
+
     func listAllTags() -> [ItemTagData]
     func listAllEncryptedTags() -> [ItemTagEncryptedData]
     func listTags(for vaultID: VaultID) -> [ItemTagData]
     func getTag(for id: ItemTagID) -> ItemTagData?
     func getTags(by tagIDs: [ItemTagID]) -> [ItemTagData]
     func listTagWith(_ phrase: String) -> [ItemTagData]
-    
+
     func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData])
-    
+
+    func applyTagChangesToItems(
+        _ itemIDs: [ItemID],
+        tagsToAdd: Set<ItemTagID>,
+        tagsToRemove: Set<ItemTagID>
+    )
+
+    func removeDuplicatedEncryptedTags()
+    func migrateTagColors()
+    func shouldMigrateColor(_ color: ItemTagColor) -> Bool
+
     func saveStorage()
 }
 
@@ -43,7 +55,26 @@ final class TagInteractor {
 }
 
 extension TagInteractor: TagInteracting {
-    func createTag(name: String, color: UIColor) {
+
+    func suggestedNewColor() -> ItemTagColor {
+        let allTags = listAllTags()
+        var colorUsage: [ItemTagColor: Int] = [:]
+
+        for color in ItemTagColor.allKnownCases {
+            colorUsage[color] = 0
+        }
+
+        for tag in allTags {
+            colorUsage[tag.color, default: 0] += 1
+        }
+
+        let minUsage = colorUsage.values.min() ?? 0
+        let leastUsedColors = colorUsage.filter { $0.value == minUsage }.map { $0.key }
+
+        return leastUsedColors.randomElement() ?? .gray
+    }
+
+    func createTag(name: String, color: ItemTagColor) {
         guard let vaultID = mainRepository.selectedVault?.vaultID else {
             Log("TagInteractor: Error while getting vaultID for tag creation", module: .interactor, severity: .error)
             return
@@ -69,6 +100,12 @@ extension TagInteractor: TagInteracting {
             Log("TagInteractor: Error while preparing encrypted tag name for tag creation", module: .interactor, severity: .error)
             return
         }
+        
+        var data = data
+        if shouldMigrateColor(data.color) {
+            data.color = suggestedNewColor()
+        }
+        
         mainRepository.createTag(
             ItemTagData(
                 tagID: data.id,
@@ -84,14 +121,14 @@ extension TagInteractor: TagInteracting {
                 tagID: data.id,
                 vaultID: selectedVault.vaultID,
                 name: nameEnc,
-                color: data.color?.hexString,
+                color: data.color.rawValue,
                 position: data.position,
                 modificationDate: data.modificationDate
             )
         )
     }
     
-    func updateTag(tagID: ItemTagID, name: String, color: UIColor?) {
+    func updateTag(tagID: ItemTagID, name: String, color: ItemTagColor) {
         guard let tag = getTag(for: tagID) else {
             Log("TagInteractor: Error while finding tag for tag update", module: .interactor, severity: .error)
             return
@@ -116,6 +153,18 @@ extension TagInteractor: TagInteracting {
             Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
             return
         }
+        
+        var data = data
+        if shouldMigrateColor(data.color) {
+            if let oldTag = mainRepository.getTag(for: data.id) {
+                if shouldMigrateColor(oldTag.color) {
+                    data.color = suggestedNewColor()
+                } else {
+                    data.color = oldTag.color
+                }
+            }
+        }
+        
         mainRepository.updateTag(
             ItemTagData(
                 tagID: data.id,
@@ -131,7 +180,7 @@ extension TagInteractor: TagInteracting {
                 tagID: data.id,
                 vaultID: selectedVault.vaultID,
                 name: nameEnc,
-                color: data.color?.hexString,
+                color: data.color.rawValue,
                 position: data.position,
                 modificationDate: data.modificationDate
             )
@@ -227,7 +276,7 @@ extension TagInteractor: TagInteracting {
         }
         let date = mainRepository.currentDate
         var encryptedTags: [ItemTagEncryptedData] = []
-        
+
         for tag in tags {
             guard let nameEnc = encryptName(tag.name) else {
                 Log("TagInteractor: Error while preparing encrypted tag name for tag update", module: .interactor, severity: .error)
@@ -238,17 +287,115 @@ extension TagInteractor: TagInteracting {
                     tagID: tag.id,
                     vaultID: tag.vaultID,
                     name: nameEnc,
-                    color: tag.color?.hexString,
+                    color: tag.color.rawValue,
                     position: tag.position,
                     modificationDate: date
                 )
             )
         }
-        
+
         mainRepository.batchUpdateRencryptedTags(tags, date: date)
         mainRepository.encryptedTagBatchUpdate(encryptedTags, in: vaultID)
     }
-    
+
+    func migrateTagColors() {
+        let allColors = ItemTagColor.allKnownCases
+        var colorIndex = 0
+        
+        let encryptedTags = mainRepository.listAllEncryptedTags()
+        
+        for encryptedTag in encryptedTags {
+            guard shouldMigrateColor(ItemTagColor(rawValue: encryptedTag.color)) else { continue }
+            
+            let newColor = allColors[colorIndex]
+            colorIndex = (colorIndex + 1) % allColors.count
+            
+            mainRepository.updateEncryptedTag(
+                ItemTagEncryptedData(
+                    tagID: encryptedTag.tagID,
+                    vaultID: encryptedTag.vaultID,
+                    name: encryptedTag.name,
+                    color: newColor.rawValue,
+                    position: encryptedTag.position,
+                    modificationDate: encryptedTag.modificationDate
+                )
+            )
+        }
+    }
+
+    func removeDuplicatedEncryptedTags() {
+        let allTags = mainRepository.listAllEncryptedTags()
+        var seenTagIDs: Set<ItemTagID> = []
+
+        for tag in allTags {
+            if seenTagIDs.contains(tag.tagID) {
+                mainRepository.deleteEncryptedTag(tagID: tag.tagID)
+            } else {
+                seenTagIDs.insert(tag.tagID)
+            }
+        }
+    }
+
+    func shouldMigrateColor(_ color: ItemTagColor) -> Bool {
+        switch color {
+        case .unknown(let rawValue):
+            return rawValue == nil || rawValue?.hasPrefix("#") == true
+        default:
+            return false
+        }
+    }
+
+    func applyTagChangesToItems(
+        _ itemIDs: [ItemID],
+        tagsToAdd: Set<ItemTagID>,
+        tagsToRemove: Set<ItemTagID>
+    ) {
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("TagInteractor: Apply tag changes. No vault", module: .interactor, severity: .error)
+            return
+        }
+
+        guard tagsToAdd.isEmpty == false || tagsToRemove.isEmpty == false else { return }
+
+        let currentDate = mainRepository.currentDate
+
+        // Build updates for metadata items (no content re-encoding needed)
+        let updatedItems: [ItemData] = mainRepository.listItems(options: .includeItems(itemIDs)).map { item in
+            var currentTagIds = Set(item.tagIds ?? [])
+            currentTagIds.formUnion(tagsToAdd)
+            currentTagIds.subtract(tagsToRemove)
+            let updatedTagIds: [ItemTagID]? = currentTagIds.isEmpty ? nil : Array(currentTagIds)
+            return item.update(modificationDate: currentDate, tagIds: updatedTagIds)
+        }
+        mainRepository.metadataItemsBatchUpdate(updatedItems)
+
+        // Build updates for encrypted items
+        let updatedEncryptedItems: [ItemEncryptedData] = mainRepository.listEncryptedItems(
+            in: selectedVault.vaultID,
+            itemIDs: itemIDs,
+            excludeProtectionLevels: nil
+        ).map { item in
+            var currentTagIds = Set(item.tagIds ?? [])
+            currentTagIds.formUnion(tagsToAdd)
+            currentTagIds.subtract(tagsToRemove)
+            let updatedTagIds: [ItemTagID]? = currentTagIds.isEmpty ? nil : Array(currentTagIds)
+
+            return ItemEncryptedData(
+                itemID: item.itemID,
+                creationDate: item.creationDate,
+                modificationDate: currentDate,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion,
+                content: item.content,
+                vaultID: item.vaultID,
+                tagIds: updatedTagIds
+            )
+        }
+        mainRepository.encryptedItemsBatchUpdate(updatedEncryptedItems)
+    }
+
     func saveStorage() {
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()

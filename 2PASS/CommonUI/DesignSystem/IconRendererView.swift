@@ -60,10 +60,10 @@ public struct IconRendererView: View {
                 loginLabelView(title: title, color: color)
             case .placeholder:
                 RoundedRectangle(cornerRadius: Constants.iconCornerRadius)
-                    .foregroundStyle(Asset.inactiveControlColor.swiftUIColor)
+                    .foregroundStyle(.inactiveControl)
                     .overlay {
                         Image(systemName: "photo")
-                            .foregroundStyle(Asset.inactiveColor.swiftUIColor)
+                            .foregroundStyle(.inactive)
                     }
             case nil:
                 EmptyView()

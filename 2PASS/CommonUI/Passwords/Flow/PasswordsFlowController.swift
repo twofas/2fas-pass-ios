@@ -14,9 +14,6 @@ public protocol PasswordsFlowControllerParent: AnyObject {
     func cancel()
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
-    
-    @MainActor
-    func toConfirmDelete() async -> Bool
 }
 
 protocol PasswordsFlowControlling: AnyObject {
@@ -24,6 +21,8 @@ protocol PasswordsFlowControlling: AnyObject {
     func toEditItem(itemID: ItemID)
     func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
+    func toBulkProtectionLevelSelection(selectedItems: [ItemData])
+    func toBulkTagsSelection(selectedItems: [ItemData])
 
     func selectItem(id: ItemID, contentType: ItemContentType)
     func cancel()
@@ -33,11 +32,16 @@ protocol PasswordsFlowControlling: AnyObject {
 
     @MainActor
     func toConfirmDelete() async -> Bool
+
+    @MainActor
+    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool
 }
 
 public final class PasswordsFlowController: FlowController {
     private weak var parent: PasswordsFlowControllerParent?
     private var autoFillEnvironment: AutoFillEnvironment?
+    private var bulkProtectionLevelItemIDs: [ItemID] = []
+    private var bulkTagsItemIDs: [ItemID] = []
     
     public static func setAsRoot(
         on navigationController: UINavigationController,
@@ -89,6 +93,24 @@ extension PasswordsFlowController: PasswordsFlowControlling {
         UIApplication.shared.openInBrowser(selectedURI)
     }
     
+    func toBulkProtectionLevelSelection(selectedItems: [ItemData]) {
+        bulkProtectionLevelItemIDs = selectedItems.map(\.id)
+        BulkProtectionLevelFlowController.present(
+            on: viewController,
+            parent: self,
+            selectedItems: selectedItems
+        )
+    }
+
+    func toBulkTagsSelection(selectedItems: [ItemData]) {
+        bulkTagsItemIDs = selectedItems.map(\.id)
+        BulkTagsFlowController.present(
+            on: viewController,
+            parent: self,
+            selectedItems: selectedItems
+        )
+    }
+    
     func selectItem(id: ItemID, contentType: ItemContentType) {
         parent?.selectItem(id: id, contentType: contentType)
     }
@@ -103,7 +125,44 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     
     @MainActor
     func toConfirmDelete() async -> Bool {
-        await parent?.toConfirmDelete() ?? false
+        guard autoFillEnvironment == nil else { return false }
+        return await withCheckedContinuation { continuation in
+            let alert = UIAlertController(
+                title: String(localized: .loginDeleteConfirmTitle),
+                message: String(localized: .loginDeleteConfirmBody),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: String(localized: .commonYes), style: .destructive, handler: { _ in
+                continuation.resume(returning: true)
+            }))
+            alert.addAction(UIAlertAction(title: String(localized: .commonNo), style: .cancel, handler: { _ in
+                continuation.resume(returning: false)
+            }))
+            viewController.present(alert, animated: true, completion: nil)
+        }
+    }
+
+    @MainActor
+    func toConfirmMultiselectDelete(selectedCount: Int, source: UIBarButtonItem?) async -> Bool {
+        guard autoFillEnvironment == nil else { return false }
+        return await withCheckedContinuation { continuation in
+            let title = String(localized: .homeMultiselectDeleteButton(Int32(selectedCount)))
+            let alert = UIAlertController(
+                title: nil,
+                message: String(localized: .homeMultiselectDeleteBody),
+                preferredStyle: .actionSheet
+            )
+            alert.addAction(UIAlertAction(title: title, style: .destructive, handler: { _ in
+                continuation.resume(returning: true)
+            }))
+            alert.addAction(UIAlertAction(title: String(localized: .commonCancel), style: .cancel, handler: { _ in
+                continuation.resume(returning: false)
+            }))
+            if let source {
+                alert.popoverPresentationController?.barButtonItem = source
+            }
+            viewController.present(alert, animated: true, completion: nil)
+        }
     }
     
     func toPremiumPlanPrompt(itemsLimit: Int) {
@@ -136,5 +195,33 @@ extension PasswordsFlowController: ContentTypeSelectionFlowControllerParent {
 
     func getAutoFillEnvironment() -> AutoFillEnvironment? {
         return autoFillEnvironment
+    }
+}
+
+extension PasswordsFlowController: BulkProtectionLevelFlowControllerParent {
+    func bulkProtectionLevelDidCancel() {
+        bulkProtectionLevelItemIDs = []
+        viewController.dismiss(animated: true)
+    }
+
+    func bulkProtectionLevelDidConfirmChange(to level: ItemProtectionLevel) {
+        let itemIDs = bulkProtectionLevelItemIDs
+        bulkProtectionLevelItemIDs = []
+        viewController.dismiss(animated: true)
+        viewController.presenter.applyProtectionLevel(level, to: itemIDs)
+    }
+}
+
+extension PasswordsFlowController: BulkTagsFlowControllerParent {
+    func bulkTagsDidCancel() {
+        bulkTagsItemIDs = []
+        viewController.dismiss(animated: true)
+    }
+
+    func bulkTagsDidConfirmChanges(tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) {
+        let itemIDs = bulkTagsItemIDs
+        bulkTagsItemIDs = []
+        viewController.dismiss(animated: true)
+        viewController.presenter.applyTagChanges(to: itemIDs, tagsToAdd: tagsToAdd, tagsToRemove: tagsToRemove)
     }
 }

@@ -14,10 +14,10 @@ enum SocialChannel: CaseIterable {
     
     var image: Image {
         switch self {
-        case .discord: Asset.socialDiscord.swiftUIImage
-        case .youtube: Asset.socialYoutube.swiftUIImage
-        case .twitter: Asset.socialTwitter.swiftUIImage
-        case .github: Asset.socialGithub.swiftUIImage
+        case .discord: Image(.socialDiscord)
+        case .youtube: Image(.socialYoutube)
+        case .twitter: Image(.socialTwitter)
+        case .github: Image(.socialGithub)
         }
     }
     

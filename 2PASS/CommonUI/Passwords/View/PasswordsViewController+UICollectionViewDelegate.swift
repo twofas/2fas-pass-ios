@@ -38,8 +38,18 @@ extension PasswordsViewController: UICollectionViewDelegate {
     // MARK: - Select
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: false)
-        presenter.onDidSelectAt(indexPath)
+        if collectionView.isEditing {
+            updateSelectionUI()
+        } else {
+            collectionView.deselectItem(at: indexPath, animated: false)
+            presenter.onDidSelectAt(indexPath)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        if collectionView.isEditing {
+            updateSelectionUI()
+        }
     }
     
     // MARK: - Cell Display
@@ -72,6 +82,7 @@ extension PasswordsViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
+        guard collectionView.isEditing == false else { return nil }
         guard let indexPath = indexPaths.first,
               let item = dataSource?.itemIdentifier(for: indexPath),
               let cell = collectionView.cellForItem(at: indexPath) as? ItemCellView else {
@@ -116,4 +127,3 @@ extension PasswordsViewController: UICollectionViewDelegate {
         }
     }
 }
-

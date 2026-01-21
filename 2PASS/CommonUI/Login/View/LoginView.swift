@@ -55,8 +55,8 @@ public struct LoginView: View {
         }
         .readableContentMargins()
         .navigationDestination(isPresented: $presenter.showMigrationFailed) {
-            ResultView(kind: .failure, title: Text(T.migrationErrorTitle.localizedKey)) {
-                Button(T.commonClose) {
+            ResultView(kind: .failure, title: Text(.migrationErrorTitle)) {
+                Button(.commonClose) {
                     presenter.onMigrationFailedClose()
                 }
             }
@@ -104,7 +104,7 @@ public struct LoginView: View {
                 
             VStack(spacing: 0) {
                 HeaderContentView(
-                    title: Text(T.lockScreenUnlockTitleIos.localizedKey),
+                    title: Text(.lockScreenUnlockTitleIos),
                     subtitle: presenter.isAppLocked ? nil : welcomeText
                 )
                 .padding(.bottom, presenter.isAppLocked ? Spacing.s : 40)
@@ -128,13 +128,13 @@ public struct LoginView: View {
                 
                 VStack(spacing: Spacing.m) {
                     if presenter.isAppLocked {
-                        Text(T.lockScreenTooManyAttemptsDescription.localizedKey)
+                        Text(.lockScreenTooManyAttemptsDescription)
                             .font(.system(.caption))
                             .foregroundStyle(.neutral600)
                             .multilineTextAlignment(.center)
                     }
                     
-                    Button(T.lockScreenUnlockCta.localizedKey) {
+                    Button(.lockScreenUnlockCta) {
                         presenter.onLogin()
                     }
                     .buttonStyle(.filled)
@@ -142,7 +142,7 @@ public struct LoginView: View {
                     .disabled(!presenter.isUnlockAvailable)
                     
                     if presenter.hasAppReset {
-                        SecondaryDestructiveButton(title: T.lockScreenResetApp) {
+                        SecondaryDestructiveButton(title: String(localized: .lockScreenResetApp)) {
                             showResetApp = true
                         }
                     }
@@ -152,12 +152,12 @@ public struct LoginView: View {
             .disabled(presenter.screenDisabled)
             .opacity(presenter.isEnterPasswordVisible ? 1 : 0)
             .padding(Spacing.xl)
-            .alert(T.lockScreenResetAppTitle, isPresented: $showResetApp) {
+            .alert(String(localized: .lockScreenResetAppTitle), isPresented: $showResetApp) {
                 Button(role: .destructive) {
                     presenter.onAppReset()
                 } label: {
-                    Text(T.lockScreenResetApp.localizedKey)
-                        .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                    Text(.lockScreenResetApp)
+                        .foregroundStyle(.destructiveAction)
                 }
             }
             .toolbar {
@@ -189,7 +189,7 @@ public struct LoginView: View {
     
     @ViewBuilder
     private var passwordInput: some View {
-        SecureInput(label: T.masterPasswordLabel.localizedResource, value: $presenter.loginInput)
+        SecureInput(label: .masterPasswordLabel, value: $presenter.loginInput)
             .focused($focusedField, equals: .login)
             .onSubmit {
                 presenter.onLogin()
@@ -238,9 +238,9 @@ public struct LoginView: View {
         } label: {
             switch presenter.biometryType {
             case .faceID:
-                Label(T.lockScreenUnlockUseFaceid.localizedKey, systemImage: "faceid")
+                Label(.lockScreenUnlockUseFaceid, systemImage: "faceid")
             case .touchID:
-                Label(T.lockScreenUnlockUseTouchid.localizedKey, systemImage: "touchid")
+                Label(.lockScreenUnlockUseTouchid, systemImage: "touchid")
             case .missing:
                 EmptyView()
             }
@@ -251,8 +251,8 @@ public struct LoginView: View {
     
     private var welcomeText: Text {
         switch presenter.loginType {
-        case .login: Text(T.lockScreenUnlockDescription.localizedKey)
-        case .verify, .restore: Text(T.lockScreenEnterMasterPassword.localizedKey)
+        case .login: Text(.lockScreenUnlockDescription)
+        case .verify, .restore: Text(.lockScreenEnterMasterPassword)
         }
     }
 }

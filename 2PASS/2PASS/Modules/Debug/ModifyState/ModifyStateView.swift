@@ -22,7 +22,7 @@ struct ModifyStateView: View {
                     presenter.onReboot()
                 }
                 .padding(.vertical, Spacing.xl)
-                .foregroundStyle(Asset.destructiveActionColor.swiftUIColor)
+                .foregroundStyle(.destructiveAction)
                 .disabled(!presenter.rebootButtonEnabled)
 
             }

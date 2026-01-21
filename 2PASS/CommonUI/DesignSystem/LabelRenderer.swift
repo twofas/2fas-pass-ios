@@ -18,7 +18,7 @@ final class LabelRenderer: UIView {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = Asset.mainTextColor.color
+        label.textColor = UIColor(resource: .mainText)
         label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.numberOfLines = 1
         label.textAlignment = .center

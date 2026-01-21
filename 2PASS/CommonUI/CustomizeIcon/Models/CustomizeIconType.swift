@@ -17,9 +17,9 @@ enum CustomizeIconType: CaseIterable, Hashable, Identifiable {
 extension CustomizeIconType {
     var label: String {
         switch self {
-        case .label: T.customizeIconLabelKey
-        case .icon: T.customizeIconIcon
-        case .custom: T.customizeIconCustom
+        case .label: String(localized: .customizeIconLabelKey)
+        case .icon: String(localized: .customizeIconIcon)
+        case .custom: String(localized: .customizeIconCustom)
         }
     }
     

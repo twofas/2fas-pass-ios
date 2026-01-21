@@ -35,9 +35,9 @@ struct BiometricPromptView: View {
                 Group {
                     switch presenter.biometryType {
                     case .faceID:
-                        Text(T.lockScreenBiometricsPromptFaceidTitle.localizedKey)
+                        Text(.lockScreenBiometricsPromptFaceidTitle)
                     case .touchID:
-                        Text(T.lockScreenBiometricsPromptTouchidTitle.localizedKey)
+                        Text(.lockScreenBiometricsPromptTouchidTitle)
                     case .missing:
                         EmptyView()
                     }
@@ -45,7 +45,7 @@ struct BiometricPromptView: View {
                 .font(.title1Emphasized)
                 .foregroundStyle(.neutral950)
                 
-                Text(T.lockScreenBiometricsPromptBody.localizedKey)
+                Text(.lockScreenBiometricsPromptBody)
                     .font(.subheadline)
                     .foregroundStyle(.neutral600)
             }
@@ -56,13 +56,13 @@ struct BiometricPromptView: View {
                 Button {
                     presenter.onEnable()
                 } label: {
-                    Text(T.lockScreenBiometricsPromptAccept.localizedKey)
+                    Text(.lockScreenBiometricsPromptAccept)
                         .accessoryLoader(presenter.isEnabling)
                 }
                 .allowsHitTesting(presenter.isEnabling == false)
                 .buttonStyle(.filled)
                 
-                Button(T.lockScreenBiometricsPromptCancel.localizedKey) {
+                Button(.lockScreenBiometricsPromptCancel) {
                     presenter.onCancel()
                     dismiss()
                 }

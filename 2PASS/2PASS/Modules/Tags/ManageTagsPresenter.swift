@@ -19,9 +19,10 @@ enum ManageTagsDestination: RouterDestination {
 struct TagViewItem: Equatable {
     let tag: ItemTagData
     let itemCount: Int
-    
+
     var tagID: ItemTagID { tag.tagID }
     var name: String { tag.name }
+    var color: ItemTagColor? { tag.color }
 }
 
 @Observable @MainActor

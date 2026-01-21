@@ -12,16 +12,23 @@ extension FormatStyle where Self == ItemContentTypeFormatStyle {
     }
 }
 
+extension ItemContentType {
+    
+    public func formatted() -> String {
+        ItemContentTypeFormatStyle().format(self)
+    }
+}
+
 public struct ItemContentTypeFormatStyle: FormatStyle {
     
     public func format(_ contentType: ItemContentType) -> String {
         switch contentType {
         case .login:
-            return T.contentTypeLoginName
+            return String(localized: .contentTypeLoginName)
         case .secureNote:
-            return T.contentTypeSecureNoteName
+            return String(localized: .contentTypeSecureNoteName)
         case .paymentCard:
-            return T.contentTypeCardName
+            return String(localized: .contentTypeCardName)
         case .unknown:
             return "Unknown"
         }

@@ -15,8 +15,8 @@ struct BackupExportFileView: View {
     var body: some View {
         VStack(spacing: Spacing.xll2) {
             HeaderContentView(
-                title: Text(T.backupExportSaveTitle.localizedKey),
-                subtitle: Text(T.backupExportSaveSubtitle.localizedKey),
+                title: Text(.backupExportSaveTitle),
+                subtitle: Text(.backupExportSaveSubtitle),
                 icon: {
                     Image(.lockFileHeaderIcon)
                 }
@@ -25,8 +25,8 @@ struct BackupExportFileView: View {
             Spacer()
                         
             InfoToggle(
-                title: Text(T.backupExportSaveEncryptToggleTitle.localizedKey),
-                description: Text(T.backupExportSaveEncryptToggleDescription.localizedKey),
+                title: Text(.backupExportSaveEncryptToggleTitle),
+                description: Text(.backupExportSaveEncryptToggleDescription),
                 isOn: $presenter.encryptFile
             )
             .disabled(presenter.isExporting)
@@ -34,7 +34,7 @@ struct BackupExportFileView: View {
             Button {
                 presenter.onExport()
             } label: {
-                Text(T.backupExportSaveCta.localizedKey)
+                Text(.backupExportSaveCta)
                     .accessoryLoader(presenter.isExporting)
             }
             .buttonStyle(.filled)

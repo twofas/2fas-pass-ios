@@ -29,7 +29,7 @@ struct EmptyPasswordListView: View {
                         .frame(width: 85, height: 85)
                         .foregroundStyle(.brand500)
                     
-                    Text(T.homeEmptyTitle.localizedKey)
+                    Text(.homeEmptyTitle)
                         .font(.title2Emphasized)
                 }
                 
@@ -43,7 +43,7 @@ struct EmptyPasswordListView: View {
                     onQuickSetup()
                 } label: {
                     HStack(spacing: Spacing.xs) {
-                        Text(T.homeEmptyImportCta.localizedKey)
+                        Text(.homeEmptyImportCta)
                         Image(.quickSetupSmallIcon)
                             .renderingMode(.template)
                     }

@@ -108,7 +108,7 @@ extension ItemEditorNavigationFlowController: ItemEditorFlowControllerParent {
         )
 
         let hostingController = UIHostingController(rootView: selectTagsView)
-        hostingController.title = T.selectTagsTitle
+        hostingController.title = String(localized: .selectTagsTitle)
         navigationController.pushViewController(hostingController, animated: true)
     }
 }

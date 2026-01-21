@@ -24,7 +24,7 @@ struct VaultRecoveryiCloudVaultSelectionRouter: Router {
     func routingType(for destination: VaultRecoveryiCloudVaultSelectionDestination?) -> RoutingType? {
         switch destination {
         case .confirmDeletion:
-            return .alert(title: T.cloudVaultDeleteConfirmTitle, message: T.cloudVaultDeleteConfirmBody)
+            return .alert(title: String(localized: .cloudVaultDeleteConfirmTitle), message: String(localized: .cloudVaultDeleteConfirmBody))
         case nil:
             return nil
         }
@@ -33,8 +33,8 @@ struct VaultRecoveryiCloudVaultSelectionRouter: Router {
     func view(for destination: VaultRecoveryiCloudVaultSelectionDestination) -> some View {
         switch destination {
         case .confirmDeletion(let onConfirm):
-            Button(T.knownBrowserDeleteButton.localizedKey, role: .destructive, action: onConfirm)
-            Button(T.commonCancel.localizedKey, role: .cancel, action: {})
+            Button(.knownBrowserDeleteButton, role: .destructive, action: onConfirm)
+            Button(.commonCancel, role: .cancel, action: {})
         }
     }
 }

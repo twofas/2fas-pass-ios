@@ -13,8 +13,8 @@ public struct PasswordRenderer {
     public let password: String
         
     private let digitColor = UIColor(hexString: "#1FA85B")!
-    private let specialColor = UIColor(hexString: "#FF0000")!
-    private let letterColor = Asset.mainTextColor.color
+    private let specialColor = UIColor(hexString: "#FF0000")!    
+    private let letterColor = UIColor(resource: .mainText)
     
     public init(password: String) {
         self.password = password

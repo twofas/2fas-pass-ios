@@ -24,8 +24,8 @@ struct KnownBrowsersCell: View {
                     .foregroundStyle(.neutral950)
                 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(T.knownBrowserLastConnectionPrefix.localizedKey) + Text(verbatim: " ") + Text(data.lastConnectionDate, format: .dateTime)
-                    Text(T.knownBrowserFirstConnectionPrefix.localizedKey) + Text(verbatim: " ") + Text(data.firstConnectionDate, format: .dateTime)
+                    Text(.knownBrowserLastConnectionPrefix) + Text(verbatim: " ") + Text(data.lastConnectionDate, format: .dateTime)
+                    Text(.knownBrowserFirstConnectionPrefix) + Text(verbatim: " ") + Text(data.firstConnectionDate, format: .dateTime)
                 }
                 .font(.caption2)
                 .foregroundStyle(.neutral600)

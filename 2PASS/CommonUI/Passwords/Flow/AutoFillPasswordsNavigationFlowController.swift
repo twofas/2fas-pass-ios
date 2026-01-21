@@ -77,8 +77,8 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
     public func toPremiumPlanPrompt(itemsLimit: Int) {
         let controller = UIHostingController(
             rootView: PremiumPromptRouter.buildView(
-                title: Text(T.paywallNoticeItemsLimitReachedTitle.localizedKey),
-                description: Text(T.paywallNoticeItemsLimitReachedMsg(itemsLimit))
+                title: Text(.paywallNoticeItemsLimitReachedTitle),
+                description: Text(.paywallNoticeItemsLimitReachedMsg(Int32(itemsLimit)))
             )
         )
         
@@ -93,11 +93,6 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
         }
         
         navigationController?.present(controller, animated: true)
-    }
-    
-    @MainActor
-    public func toConfirmDelete() async -> Bool {
-        false
     }
 }
 

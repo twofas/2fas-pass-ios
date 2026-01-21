@@ -149,7 +149,7 @@ private extension VaultRecoveryiCloudVaultSelectionPresenter {
             do {
                 try await self.interactor.deleteVault(id: vaultId)
             } catch {
-                ToastPresenter.shared.present(T.cloudVaultRemovingFailure, style: .failure)
+                ToastPresenter.shared.present(.cloudVaultRemovingFailure, style: .failure)
                 self.fetchList()
             }
         }

@@ -414,6 +414,7 @@ protocol MainRepository: AnyObject {
 
     func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
+    func metadataItemsBatchUpdate(_ items: [any ItemDataType])
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
@@ -440,6 +441,7 @@ protocol MainRepository: AnyObject {
     func updateTag(_ tag: ItemTagData)
     func deleteTag(tagID: ItemTagID)
     func deleteAllTags()
+    func getTag(for tagID: ItemTagID) -> ItemTagData?
     func listTags(options: TagListOptions) -> [ItemTagData]
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
     
@@ -475,7 +477,11 @@ protocol MainRepository: AnyObject {
     func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData])
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
-    func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData]
+    func listEncryptedItems(
+        in vaultID: VaultID,
+        itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData]
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
     func deleteEncryptedItem(itemID: ItemID)
     func deleteAllEncryptedItems()
@@ -525,10 +531,10 @@ protocol MainRepository: AnyObject {
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
     func deleteEncryptedTag(tagID: ItemTagID)
     func listEncryptedTags(in vault: VaultID) -> [ItemTagEncryptedData]
+    func listAllEncryptedTags() -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
     func deleteAllEncryptedTags()
-    func removeDuplicatedEncryptedTags()
     
     // MARK: - Sort
     var sortType: SortType? { get }

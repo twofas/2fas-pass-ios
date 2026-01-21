@@ -75,7 +75,7 @@ extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
         }
         
         return await withCheckedContinuation { continuation in
-            loginInteractor.verifyUsingBiometry(reason: T.biometryReason) { result in
+            loginInteractor.verifyUsingBiometry(reason: String(localized: .biometryReason)) { result in
                 switch result {
                 case .success:
                     continuation.resume(returning: true)
@@ -92,7 +92,7 @@ extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
         }
         
         return await withCheckedContinuation { continuation in
-            loginInteractor.loginUsingBiometry(reason: T.biometryReason) { result in
+            loginInteractor.loginUsingBiometry(reason: String(localized: .biometryReason)) { result in
                 switch result {
                 case .success:
                     continuation.resume(returning: true)

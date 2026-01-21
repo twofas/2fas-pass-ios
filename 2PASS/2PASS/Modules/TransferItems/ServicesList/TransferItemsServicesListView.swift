@@ -13,7 +13,7 @@ struct TransferItemsServicesListView: View {
     @State var presenter: TransferItemsServicesListPresenter
     
     var body: some View {
-        SettingsDetailsForm(Text(T.settingsEntryTransferFromOtherApps.localizedKey)) {
+        SettingsDetailsForm(.settingsEntryTransferFromOtherApps) {
             Section {
                 ForEach(ExternalService.allCases.sorted(by: { $0.name < $1.name }), id: \.self) { service in
                     Button {
@@ -24,9 +24,9 @@ struct TransferItemsServicesListView: View {
                     }
                 }
             } header: {
-                Text(T.transferServicesListHeader.localizedKey)
+                Text(.transferServicesListHeader)
             } footer: {
-                Text(T.transferServicesListFooter.localizedKey)
+                Text(.transferServicesListFooter)
                     .settingsFooter()
             }
         }

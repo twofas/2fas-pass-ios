@@ -53,7 +53,8 @@ public protocol InMemoryStorageDataSource: AnyObject {
     )
     
     func batchUpdateRencryptedItems(_ items: [RawItemData], date: Date)
-    
+    func batchUpdateMetadataItems(_ items: [any ItemDataType], date: Date)
+
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
@@ -74,16 +75,16 @@ public protocol InMemoryStorageDataSource: AnyObject {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     )
-    
+
     func updateTag(
         tagID: ItemTagID,
         name: String,
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     )
     
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)

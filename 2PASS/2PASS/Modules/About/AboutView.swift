@@ -15,7 +15,7 @@ struct AboutView: View {
     @Environment(\.openURL) private var openURL
     
     var body: some View {
-        SettingsDetailsForm(T.settingsEntryAbout.localizedKey) {
+        SettingsDetailsForm(.settingsEntryAbout) {
             general
             share
             connect
@@ -23,8 +23,8 @@ struct AboutView: View {
         } header: {
             SettingsHeaderView(
                 icon: .app,
-                title: Text(T.aboutTagline.localizedKey),
-                description: Text(T.aboutVersionIos(presenter.appVersion).localizedKey)
+                title: Text(.aboutTagline),
+                description: Text(.aboutVersionIos(presenter.appVersion))
             )
             .settingsIconStyle(.border)
         }
@@ -32,7 +32,7 @@ struct AboutView: View {
     }
     
     private var general: some View {
-        Section(T.aboutSectionGeneral.localizedKey) {
+        Section(.aboutSectionGeneral) {
             ForEach(presenter.generalLinks) { link in
                 Button {
                     openURL(link.url)
@@ -48,15 +48,15 @@ struct AboutView: View {
     }
     
     private var share: some View {
-        Section(T.aboutSectionShare.localizedKey) {
+        Section(.aboutSectionShare) {
             ShareLink(
                 item: URL(string: "http://2fas.com/pass/download")!,
-                subject: Text(T.shareLinkSubject.localizedKey),
-                message: Text(T.shareLinkMessage.localizedKey),
+                subject: Text(.shareLinkSubject),
+                message: Text(.shareLinkMessage),
                 label: {
                     SettingsRowView(
                         icon: .invite,
-                        title: T.aboutInviteFriends.localizedKey,
+                        title: .aboutInviteFriends,
                         actionIcon: nil
                     )
                     .titleButtonStyle()
@@ -66,7 +66,7 @@ struct AboutView: View {
     }
     
     private var connect: some View {
-        Section(T.aboutSectionConnect.localizedKey) {
+        Section(.aboutSectionConnect) {
             ForEach(presenter.connectLinks) { link in
                 Button {
                     openURL(link.url)
@@ -84,15 +84,15 @@ struct AboutView: View {
     
     private var crashReporting: some View {
         Section {
-            Button(T.aboutSendLogsCta.localizedKey) {
+            Button(.aboutSendLogsCta) {
                 presenter.onSendLogs()
             }
-            Toggle(T.aboutSendCrashReports.localizedKey, isOn: $presenter.anonymousCrashReports)
+            Toggle(.aboutSendCrashReports, isOn: $presenter.anonymousCrashReports)
                 .tint(.accentColor)
         } header: {
-            Text(T.aboutSectionCrashReporting.localizedKey)
+            Text(.aboutSectionCrashReporting)
         } footer: {
-            Text(T.aboutCrashReportsDescription.localizedKey)
+            Text(.aboutCrashReportsDescription)
                 .settingsFooter()
                 .padding(.bottom, Spacing.xll)
         }

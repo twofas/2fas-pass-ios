@@ -18,15 +18,15 @@ struct BackupSchemaNotSupportedView: View {
     var body: some View {
         ResultView(
             kind: .failure,
-            title: Text(T.backupImportingFailureTitle),
-            description: Text(T.importInvalidSchemaErrorMsg(schemaVersion)),
+            title: Text(.backupImportingFailureTitle),
+            description: Text(.importInvalidSchemaErrorMsg(Int32(schemaVersion))),
             action: {
                 VStack {
-                    Button(T.importInvalidSchemaErrorCta.localizedKey) {
+                    Button(.importInvalidSchemaErrorCta) {
                         openURL(Config.appStoreURL)
                     }
                     
-                    Button(T.commonClose.localizedKey) {
+                    Button(.commonClose) {
                         onClose()
                     }
                     .buttonStyle(.twofasBorderless)

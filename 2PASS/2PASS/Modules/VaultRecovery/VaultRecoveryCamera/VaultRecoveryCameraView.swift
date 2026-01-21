@@ -22,8 +22,8 @@ struct VaultRecoveryCameraView: View {
         Group {
             if presenter.isCameraAvailable {
                 ScanQRCodeCameraView(
-                    title: Text(T.restoreQrCodeCameraTitle.localizedKey),
-                    description: Text(T.restoreQrCodeCameraDescription.localizedKey),
+                    title: Text(.restoreQrCodeCameraTitle),
+                    description: Text(.restoreQrCodeCameraDescription),
                     codeFound: { code in
                         presenter.onFoundCode(code: code)
                     }
@@ -56,8 +56,8 @@ struct VaultRecoveryCameraView: View {
         if let errorReason {
             return AttributedString(errorReason)
         }
-        var result = AttributedString(T.restoreQrCodeError)
-        if let range = result.range(of: T.restoreQrCodeErrorSystemSettings) {
+        var result = AttributedString(String(localized: .restoreQrCodeError))
+        if let range = result.range(of: String(localized: .restoreQrCodeErrorSystemSettings)) {
             result[range].underlineStyle = .single
         }
         
@@ -75,7 +75,7 @@ private struct ErrorTextView: View {
     var body: some View {
         Text(text)
             .font(.headline)
-            .foregroundColor(Color(Asset.mainInvertedTextColor.swiftUIColor))
+            .foregroundColor(Color(.mainInvertedText))
             .multilineTextAlignment(.center)
             .padding(.horizontal, Spacing.l)
             .frame(maxWidth: .infinity, alignment: .center)

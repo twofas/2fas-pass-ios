@@ -131,7 +131,31 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
             )
         }
     }
-    
+
+    public func batchUpdateMetadataItems(_ items: [any ItemDataType], date: Date) {
+        let itemIDs = items.map(\.id)
+        let entities = ItemMetadataEntity.listItems(on: context, options: .includeItems(itemIDs))
+        let entitiesByID = Dictionary(uniqueKeysWithValues: entities.map { ($0.itemID, $0) })
+
+        for item in items {
+            guard let entity = entitiesByID[item.id] else {
+                Log("Can't find entity for itemID: \(item.id)", module: .storage)
+                continue
+            }
+            ItemMetadataEntity.updateMetadata(
+                on: context,
+                entity: entity,
+                modificationDate: date,
+                trashedStatus: item.trashedStatus,
+                protectionLevel: item.protectionLevel,
+                tagIds: item.tagIds,
+                name: item.name,
+                contentType: item.contentType,
+                contentVersion: item.contentVersion
+            )
+        }
+    }
+
     public func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
@@ -171,7 +195,7 @@ extension InMemoryStorageDataSourceImpl {
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     ) {
         TagEntity
             .create(
@@ -184,14 +208,14 @@ extension InMemoryStorageDataSourceImpl {
                 color: color
             )
     }
-    
+
     public func updateTag(
         tagID: ItemTagID,
         name: String,
         modificationDate: Date,
         position: Int16,
         vaultID: VaultID,
-        color: UIColor?
+        color: ItemTagColor?
     ) {
         TagEntity
             .update(
@@ -217,7 +241,7 @@ extension InMemoryStorageDataSourceImpl {
                         modificationDate: date,
                         position: Int16(tag.position),
                         vaultID: tag.vaultID,
-                        color: tag.color?.hexString
+                        color: tag.color
                     )
             } else {
                 Log("Error while searching for Tag Entity \(tag.id)")

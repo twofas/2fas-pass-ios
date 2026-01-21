@@ -14,7 +14,7 @@ struct DefaultSecurityTierView: View {
     var presenter: DefaultSecurityTierPresenter
     
     var body: some View {
-        SettingsDetailsForm(T.settingsEntryProtectionLevel.localizedKey) {
+        SettingsDetailsForm(.settingsEntryProtectionLevel) {
             SecurityTierPickerView(selected: $presenter.selected)
         }
     }

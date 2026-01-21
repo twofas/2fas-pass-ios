@@ -10,17 +10,17 @@ import Common
 public extension ItemProtectionLevel {
     var title: String {
         switch self {
-        case .normal: T.settingsEntryProtectionLevel2
-        case .confirm: T.settingsEntryProtectionLevel1
-        case .topSecret: T.settingsEntryProtectionLevel0
+        case .normal: String(localized: .settingsEntryProtectionLevel2)
+        case .confirm: String(localized: .settingsEntryProtectionLevel1)
+        case .topSecret: String(localized: .settingsEntryProtectionLevel0)
         }
     }
     
-    var description: String {
+    var description: LocalizedStringResource {
         switch self {
-        case .normal: T.settingsEntryProtectionLevel2Description
-        case .confirm: T.settingsEntryProtectionLevel1Description
-        case .topSecret: T.settingsEntryProtectionLevel0Description
+        case .normal: .settingsEntryProtectionLevel2Description
+        case .confirm: .settingsEntryProtectionLevel1Description
+        case .topSecret: .settingsEntryProtectionLevel0Description
         }
     }
 }

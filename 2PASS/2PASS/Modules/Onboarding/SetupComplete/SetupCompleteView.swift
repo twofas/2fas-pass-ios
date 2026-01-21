@@ -36,19 +36,19 @@ struct SetupCompleteView: View {
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
-                title: Text(T.onboardingProgressCompletedTitle.localizedKey),
-                subtitle: Text(T.onboardingProgressCompletedDescription.localizedKey)
+                title: Text(.onboardingProgressCompletedTitle),
+                subtitle: Text(.onboardingProgressCompletedDescription)
             )
             
             VStack(spacing: 0) {
-                Text(T.onboardingProgressStepsHeader.localizedKey)
+                Text(.onboardingProgressStepsHeader)
                     .font(.footnote)
                     .foregroundStyle(.neutral500)
                     .padding(.bottom, Spacing.m)
                 
                 OnboardingStepDimmedView(
-                    title: T.onboardingProgressStep1Title.localizedKey,
-                    subtitle: T.onboardingProgressStep1Description.localizedKey,
+                    title: .onboardingProgressStep1Title,
+                    subtitle: .onboardingProgressStep1Description,
                     isChecked: true,
                     isTitleStrikethrough: true,
                     areTextsGreyedOut: true
@@ -56,8 +56,8 @@ struct SetupCompleteView: View {
                 .padding(.bottom, Spacing.s)
                 
                 OnboardingStepDimmedView(
-                    title: T.onboardingProgressStep2Title.localizedKey,
-                    subtitle: T.onboardingProgressStep2Description.localizedKey,
+                    title: .onboardingProgressStep2Title,
+                    subtitle: .onboardingProgressStep2Description,
                     isSelected: finished == false,
                     isChecked: firstStepCompleted,
                     areTextsGreyedOut: finished
@@ -73,7 +73,7 @@ struct SetupCompleteView: View {
             
             Spacer()
             
-            Button(T.onboardingProgressCompletedCta.localizedKey) {
+            Button(.onboardingProgressCompletedCta) {
                 presenter.onFinish(using: dismissFlow)
             }
             .buttonStyle(.filled)

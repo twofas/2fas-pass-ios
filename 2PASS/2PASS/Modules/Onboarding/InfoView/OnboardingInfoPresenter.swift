@@ -15,9 +15,9 @@ final class OnboardingInfoPresenter {
     }
 
     let guideItems: [OnboardingGuideItem] =  [
-        .init(image: Image(systemName: "mail.and.text.magnifyingglass"), message: T.onboardingGuide1),
-        .init(image: Image(systemName: "brain.filled.head.profile"), message: T.onboardingGuide2),
-        .init(image: Image(systemName: "number.square"), message: T.onboardingGuide3),
-        .init(image: Image(systemName: "key.viewfinder"), message: T.onboardingGuide4)
+        .init(image: Image(systemName: "mail.and.text.magnifyingglass"), message: String(localized: .onboardingGuide1)),
+        .init(image: Image(systemName: "brain.filled.head.profile"), message: String(localized: .onboardingGuide2)),
+        .init(image: Image(systemName: "number.square"), message: String(localized: .onboardingGuide3)),
+        .init(image: Image(systemName: "key.viewfinder"), message: String(localized: .onboardingGuide4))
     ]
 }

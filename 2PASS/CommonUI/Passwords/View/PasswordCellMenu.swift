@@ -24,15 +24,15 @@ enum PasswordCellMenu: Hashable {
     
     var label: String {
         switch self {
-        case .view: T.loginViewActionViewDetails
-        case .edit: T.loginEdit
-        case .copy(.loginUsername): T.loginViewActionCopyUsername
-        case .copy(.loginPassword): T.loginViewActionCopyPassword
-        case .copy(.secureNoteText): T.secureNoteViewActionCopy
-        case .copy(.paymentCardNumber): T.cardViewActionCopyCardNumber
-        case .copy(.paymentCardSecurityCode): T.cardViewActionCopySecurityCode
-        case .goToURI: T.loginViewActionOpenUri
-        case .moveToTrash: T.loginViewActionDelete
+        case .view: String(localized: .loginViewActionViewDetails)
+        case .edit: String(localized: .loginEdit)
+        case .copy(.loginUsername): String(localized: .loginViewActionCopyUsername)
+        case .copy(.loginPassword): String(localized: .loginViewActionCopyPassword)
+        case .copy(.secureNoteText): String(localized: .secureNoteViewActionCopy)
+        case .copy(.paymentCardNumber): String(localized: .cardViewActionCopyCardNumber)
+        case .copy(.paymentCardSecurityCode): String(localized: .cardViewActionCopySecurityCode)
+        case .goToURI: String(localized: .loginViewActionOpenUri)
+        case .moveToTrash: String(localized: .loginViewActionDelete)
         }
     }
     

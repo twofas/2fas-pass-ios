@@ -74,8 +74,16 @@ extension MainRepositoryImpl {
         encryptedStorage.listEncryptedItems(in: vaultID)
     }
     
-    func listEncryptedItems(in vaultID: Common.VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData] {
-        encryptedStorage.listEncryptedItems(in: vaultID, excludeProtectionLevels: excludeProtectionLevels)
+    func listEncryptedItems(
+        in vaultID: VaultID,
+        itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData] {
+        encryptedStorage.listEncryptedItems(
+            in: vaultID,
+            itemIDs: itemIDs,
+            excludeProtectionLevels: excludeProtectionLevels
+        )
     }
     
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
@@ -275,9 +283,9 @@ extension MainRepositoryImpl {
         guard let vaultID = selectedVault?.vaultID else { return }
         encryptedStorage.deleteAllEncryptedTags(in: vaultID)
     }
-    
-    func removeDuplicatedEncryptedTags() {
-        encryptedStorage.removeDuplicatedEncryptedTags()
+
+    func listAllEncryptedTags() -> [ItemTagEncryptedData] {
+        encryptedStorage.listAllEncryptedTags()
     }
 
     // MARK: Web Browser Extension

@@ -8,7 +8,8 @@ import Common
 
 public protocol MigrationInteracting {
     func migrateIfNeeded()
-    
+    func migrateStorageIfNeeded()
+
     func requiresReencryptionMigration() -> Bool
     
     @MainActor
@@ -16,11 +17,13 @@ public protocol MigrationInteracting {
 }
 
 final class MigrationInteractor: MigrationInteracting {
-    
+
     private let mainRepository: MainRepository
-    
-    init(mainRepository: MainRepository) {
+    private let tagInteractor: TagInteracting
+
+    init(mainRepository: MainRepository, tagInteractor: TagInteracting) {
         self.mainRepository = mainRepository
+        self.tagInteractor = tagInteractor
     }
     
     func requiresReencryptionMigration() -> Bool {
@@ -40,7 +43,7 @@ final class MigrationInteractor: MigrationInteracting {
     
     func migrateIfNeeded() {
         let appVersion = mainRepository.currentAppVersion
-        
+
         if mainRepository.lastKnownAppVersion == nil { // Below 1.1.0 or first app run
             if mainRepository.isMainAppProcess {
                 Log("Start app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
@@ -50,10 +53,20 @@ final class MigrationInteractor: MigrationInteracting {
         } else {
             Log("Already migrated for \(appVersion, privacy: .public) version", module: .migration, severity: .info)
         }
+    }
+
+    func migrateStorageIfNeeded() {
+        let appVersion = mainRepository.currentAppVersion
 
         if mainRepository.lastKnownAppVersion?.compare("1.3.0", options: .numeric) == .orderedAscending {
-            mainRepository.removeDuplicatedEncryptedTags()
+            tagInteractor.removeDuplicatedEncryptedTags()
         }
+
+        if mainRepository.lastKnownAppVersion?.compare("1.5.0", options: .numeric) == .orderedAscending {
+            tagInteractor.migrateTagColors()
+        }
+
+        mainRepository.saveEncryptedStorage()
 
         mainRepository.setLastKnownAppVersion(appVersion)
     }

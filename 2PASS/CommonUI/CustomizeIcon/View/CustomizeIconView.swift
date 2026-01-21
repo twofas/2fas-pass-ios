@@ -31,7 +31,7 @@ struct CustomizeIconView: View {
     
     var body: some View {
         Form {
-            Section(T.customizeIconHeader.localizedKey) {
+            Section(.customizeIconHeader) {
                 HStack {
                     Spacer(minLength: 0)
                     selectIconPicker
@@ -104,13 +104,13 @@ struct CustomizeIconView: View {
     
     @ViewBuilder
     private func showLabel() -> some View {
-        Section(T.customizeIconLabelHeader.localizedKey) {
-            LabeledInput(label: T.customizeIconLabelKey.localizedKey, fieldWidth: $fieldWidth, minWidth: Constants.labelSettingsMinWidthLabels) {
-                TextField(T.customizeIconLabelPlaceholder.localizedKey, text: $presenter.labelTitle)
+        Section(.customizeIconLabelHeader) {
+            LabeledInput(label: String(localized: .customizeIconLabelKey), fieldWidth: $fieldWidth, minWidth: Constants.labelSettingsMinWidthLabels) {
+                TextField(String(localized: .customizeIconLabelPlaceholder), text: $presenter.labelTitle)
                     .autocorrectionDisabled()
             }
 
-            LabeledInput(label: T.customizeIconLabelColor.localizedKey, fieldWidth: $fieldWidth, minWidth: Constants.labelSettingsMinWidthLabels) {
+            LabeledInput(label: String(localized: .customizeIconLabelColor), fieldWidth: $fieldWidth, minWidth: Constants.labelSettingsMinWidthLabels) {
                 HStack {
                     Spacer()
                         .frame(maxWidth: .infinity)
@@ -118,7 +118,7 @@ struct CustomizeIconView: View {
                 }
             }
             
-            Button(T.customizeIconLabelReset.localizedKey) {
+            Button(.customizeIconLabelReset) {
                 presenter.onResetColor()
             }
         }
@@ -139,8 +139,8 @@ struct CustomizeIconView: View {
     
     @ViewBuilder
     private func showCustom() -> some View {
-        Section(T.customizeIconCustomHeader.localizedKey) {
-            TextField(T.customizeIconCustomPlaceholder.localizedKey, text: $presenter.urlString)
+        Section(.customizeIconCustomHeader) {
+            TextField(String(localized: .customizeIconCustomPlaceholder), text: $presenter.urlString)
                 .autocorrectionDisabled()
                 .autocapitalization(.none)
                 .keyboardType(.URL)

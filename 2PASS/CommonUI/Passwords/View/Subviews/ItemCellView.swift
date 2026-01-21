@@ -9,6 +9,9 @@ import Common
 
 private struct Constants {
     static let minimalCellHeight = 68.0
+    static let maxTagIndicatorsCount = 3
+    static let tagIndicatorBorderWidth: CGFloat = 2
+    static let tagIndicatorTotalSize = ItemTagColorMetrics.small.size + tagIndicatorBorderWidth * 2
 }
 
 class ItemCellView: UICollectionViewListCell {
@@ -28,9 +31,18 @@ class ItemCellView: UICollectionViewListCell {
         let config: UIImage.SymbolConfiguration = .init(font: UIFont.systemFont(ofSize: 22, weight: .medium))
         let image = UIImage(systemName: "ellipsis", withConfiguration: config)
         button.setImage(image, for: .normal)
-        button.tintColor = Asset.labelSecondaryColor.color
+        button.tintColor = UIColor(resource: .labelSecondary)
         button.showsMenuAsPrimaryAction = true
         return button
+    }()
+    
+    private lazy var tagIndicatorsView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = -Constants.tagIndicatorTotalSize * 0.35
+        stack.isUserInteractionEnabled = false
+        return stack
     }()
 
     override init(frame: CGRect) {
@@ -63,32 +75,41 @@ class ItemCellView: UICollectionViewListCell {
         var state = super.configurationState
         state.itemCellData = cellData
         state.loginIconImage = loginIconImage
-        state.isMenuButtonHidden = isMenuButtonHidden
+        state.isMenuButtonHidden = isMenuButtonHidden || state.isEditing
         return state
     }
 
     override func updateConfiguration(using state: UICellConfigurationState) {
-        setupContent(with: state)
-        setupBackground(with: state)
+        let resolvedBackgroundColor = setupBackground(with: state)
+        setupContent(with: state, backgroundColor: resolvedBackgroundColor)
+    }
+
+    @discardableResult
+    private func setupBackground(with state: UICellConfigurationState) -> UIColor {
+        var config = defaultBackgroundConfiguration().updated(for: state)
+
+        // Use neutral gray for selected state
+        if state.isSelected {
+            config.backgroundColor = UIColor(resource: .neutral100)
+        }
+
+        backgroundConfiguration = config
+        return config.backgroundColor ?? .systemBackground
     }
     
-    private func setupBackground(with state: UICellConfigurationState) {
-        backgroundConfiguration = defaultBackgroundConfiguration().updated(for: state)
-    }
-    
-    private func setupContent(with state: UICellConfigurationState) {
+    private func setupContent(with state: UICellConfigurationState, backgroundColor: UIColor) {
         guard let cellData = state.itemCellData else { return }
-        
+
         var content = defaultContentConfiguration().updated(for: state)
         content.text = ItemNameFormatStyle().format(cellData.name)
         content.textProperties.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        content.textProperties.color = Asset.mainTextColor.color
+        content.textProperties.color = UIColor(resource: .mainText)
         content.textProperties.numberOfLines = 1
 
         if let secondaryText = cellData.description {
             content.secondaryText = secondaryText
             content.secondaryTextProperties.font = UIFont.systemFont(ofSize: 15)
-            content.secondaryTextProperties.color = Asset.labelSecondaryColor.color
+            content.secondaryTextProperties.color = UIColor(resource: .labelSecondary)
             content.secondaryTextProperties.numberOfLines = 1
         }
 
@@ -103,9 +124,15 @@ class ItemCellView: UICollectionViewListCell {
             iconRenderer.configure(with: cellData.iconType, name: cellData.name ?? "")
         }
 
-        accessories = [
-            .customView(configuration: menuAccessoryConfiguration(for: cellData, isHidden: state.isMenuButtonHidden)),
-        ]
+        var accessories: [UICellAccessory] = []
+        if state.isEditing {
+            accessories.append(.multiselect())
+            accessories.append(.customView(configuration: tagIndicatorsAccessoryConfiguration(for: cellData.tagColors, backgroundColor: backgroundColor)))
+        } else {
+            accessories.append(.customView(configuration: menuAccessoryConfiguration(for: cellData, isHidden: state.isMenuButtonHidden)))
+        }
+
+        self.accessories = accessories
     }
 
     func update(with cellData: ItemCellData) {
@@ -190,6 +217,68 @@ private extension ItemCellView {
         return configuration
     }
 
+    func tagIndicatorsAccessoryConfiguration(for colors: [ItemTagColor], backgroundColor: UIColor) -> UICellAccessory.CustomViewConfiguration {
+        let limitedColors = Array(colors.prefix(Constants.maxTagIndicatorsCount))
+        updateTagIndicators(with: limitedColors, backgroundColor: backgroundColor)
+        let totalSize = Constants.tagIndicatorTotalSize
+        let maxCount = CGFloat(Constants.maxTagIndicatorsCount)
+        let reservedWidth = max(0, maxCount * totalSize + (maxCount - 1) * tagIndicatorsView.spacing)
+        let visibleCount = CGFloat(limitedColors.count)
+        let indicatorsWidth = visibleCount == 0 ? 0 : (visibleCount * totalSize + (visibleCount - 1) * tagIndicatorsView.spacing)
+        tagIndicatorsView.frame = CGRect(
+            x: max(0, (reservedWidth - indicatorsWidth) / 2),
+            y: 0,
+            width: indicatorsWidth,
+            height: totalSize
+        )
+
+        return UICellAccessory.CustomViewConfiguration(
+            customView: tagIndicatorsView,
+            placement: .trailing(),
+            reservedLayoutWidth: .custom(reservedWidth),
+            maintainsFixedSize: true
+        )
+    }
+
+    func updateTagIndicators(with colors: [ItemTagColor], backgroundColor: UIColor) {
+        tagIndicatorsView.arrangedSubviews.forEach { view in
+            tagIndicatorsView.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+
+        let totalSize = Constants.tagIndicatorTotalSize
+        let circleSize = ItemTagColorMetrics.small.size
+        let limitedColors = Array(colors.prefix(Constants.maxTagIndicatorsCount))
+
+        for (index, color) in limitedColors.enumerated() {
+            // Outer container with background color (creates the "cut" effect)
+            let containerView = UIView()
+            containerView.backgroundColor = backgroundColor
+            containerView.layer.cornerRadius = totalSize / 2
+            containerView.layer.zPosition = CGFloat(limitedColors.count - index)
+            containerView.translatesAutoresizingMaskIntoConstraints = false
+
+            // Inner colored circle
+            let circleView = UIView()
+            circleView.backgroundColor = UIColor(color)
+            circleView.layer.cornerRadius = circleSize / 2
+            circleView.translatesAutoresizingMaskIntoConstraints = false
+
+            containerView.addSubview(circleView)
+
+            NSLayoutConstraint.activate([
+                containerView.widthAnchor.constraint(equalToConstant: totalSize),
+                containerView.heightAnchor.constraint(equalToConstant: totalSize),
+                circleView.widthAnchor.constraint(equalToConstant: circleSize),
+                circleView.heightAnchor.constraint(equalToConstant: circleSize),
+                circleView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+                circleView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
+            ])
+
+            tagIndicatorsView.addArrangedSubview(containerView)
+        }
+    }
+
     func menuItems(for cellData: ItemCellData) -> [UIMenuElement] {
         var list: [UIMenuElement] = []
 
@@ -216,7 +305,7 @@ private extension ItemCellView {
                 guard uris.isEmpty == false else { continue }
                 list.append(
                     UIMenu(
-                        title: T.loginViewActionUrisTitle,
+                        title: String(localized: .loginViewActionUrisTitle),
                         image: action.icon,
                         children: [UIDeferredMenuElement.uncached { [weak self] completion in
                             completion(self?.urisSubmenu(for: uris, itemID: cellData.itemID) ?? [])

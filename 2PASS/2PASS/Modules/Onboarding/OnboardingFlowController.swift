@@ -27,7 +27,7 @@ final class OnboardingFlowController: NavigationFlowController {
         })
         
         let vc = UIHostingController(rootView: view)
-        vc.view.backgroundColor = Asset.mainBackgroundColor.color
+        vc.view.backgroundColor = UIColor(resource: .mainBackground)
         vc.navigationController?.navigationItem.backButtonDisplayMode = .minimal
                 
         viewController.placeChild(vc)

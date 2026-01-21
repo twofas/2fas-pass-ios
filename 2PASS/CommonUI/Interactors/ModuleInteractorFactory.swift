@@ -48,6 +48,7 @@ public final class ModuleInteractorFactory {
     
     func passwordInteractor() -> PasswordsModuleInteracting {
         PasswordsModuleInteractor(
+            securityInteractor: InteractorFactory.shared.securityInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
@@ -96,7 +97,13 @@ public final class ModuleInteractorFactory {
             tagInteractor: InteractorFactory.shared.tagInteractor()
         )
     }
-    
+
+    func bulkTagsModuleInteractor() -> BulkTagsModuleInteracting {
+        BulkTagsModuleInteractor(
+            tagInteractor: InteractorFactory.shared.tagInteractor()
+        )
+    }
+
     func editTagModuleInteractor() -> EditTagModuleInteracting {
         EditTagModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),

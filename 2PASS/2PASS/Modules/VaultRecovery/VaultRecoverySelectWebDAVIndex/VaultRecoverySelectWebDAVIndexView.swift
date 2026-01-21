@@ -39,7 +39,7 @@ struct VaultRecoverySelectWebDAVIndexView: View {
                             }
                         } header: {
                             if index == 0 {
-                                Text(T.restoreCloudFilesHeader.localizedKey)
+                                Text(.restoreCloudFilesHeader)
                             }
                         }
                     }
@@ -55,7 +55,7 @@ struct VaultRecoverySelectWebDAVIndexView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(T.restoreCloudFilesTitle.localizedKey)
+        .navigationTitle(.restoreCloudFilesTitle)
         .router(router: VaultRecoverySelectWebDAVIndexRouter(), destination: $presenter.destination)
     }
 }

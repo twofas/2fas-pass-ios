@@ -145,7 +145,8 @@ extension StartupInteractor: StartupInteracting {
         }
         
         await storageInteractor.loadStore()
-        
+        migrationInteractor.migrateStorageIfNeeded()
+
         guard protectionInteractor.hasVault, onboardingInteractor.isOnboardingCompleted else {
             Log("StartupInteractor: Select Vault", module: .interactor)
             return .selectVault
@@ -262,7 +263,8 @@ extension StartupInteractor: StartupInteracting {
         } else {
             await storageInteractor.loadStore()
         }
-        
+        migrationInteractor.migrateStorageIfNeeded()
+
         guard protectionInteractor.verifyMasterKeyForVault(masterKey) else {
             return false
         }

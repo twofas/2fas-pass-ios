@@ -243,6 +243,24 @@ extension _ItemData {
             content: content
         )
     }
+
+    public func update(modificationDate: Date, tagIds: [ItemTagID]?) -> Self {
+        _ItemData(
+            id: id,
+            vaultId: vaultId,
+            metadata: ItemMetadata(
+                creationDate: metadata.creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: metadata.protectionLevel,
+                trashedStatus: metadata.trashedStatus,
+                tagIds: tagIds
+            ),
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
+        )
+    }
 }
 
 extension ItemData {
@@ -257,6 +275,19 @@ extension ItemData {
             return .paymentCard(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .raw(let data):
             return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        }
+    }
+
+    public func update(modificationDate: Date, tagIds: [ItemTagID]?) -> Self {
+        switch self {
+        case .login(let data):
+            return .login(data.update(modificationDate: modificationDate, tagIds: tagIds))
+        case .secureNote(let data):
+            return .secureNote(data.update(modificationDate: modificationDate, tagIds: tagIds))
+        case .paymentCard(let data):
+            return .paymentCard(data.update(modificationDate: modificationDate, tagIds: tagIds))
+        case .raw(let data):
+            return .raw(data.update(modificationDate: modificationDate, tagIds: tagIds))
         }
     }
 }

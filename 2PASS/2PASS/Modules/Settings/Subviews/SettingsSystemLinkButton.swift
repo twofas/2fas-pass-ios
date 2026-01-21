@@ -20,7 +20,7 @@ struct SettingsSystemLinkButton: View {
                 .font(.caption)
                 .foregroundStyle(.neutral600)
             
-            Button(T.commonOpenSystemSettings.localizedKey, action: action)
+            Button(.commonOpenSystemSettings, action: action)
                 .buttonStyle(.filled)
                 .controlSize(.large)
         }

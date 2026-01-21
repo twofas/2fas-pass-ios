@@ -19,11 +19,11 @@ struct ButtonsPreviewView: View {
         let content = VStack(spacing: 4) {
             switch layout {
             case .rectangle:
-                Button("Play", symbol: image) {}
+                Button("Play" as String, symbol: image) {}
             case .circle:
                 Button(symbol: image) {}
             }
-            Button("Delete", role: .destructive) {}
+            Button("Delete" as String, role: .destructive) {}
         }
         
         VStack {

@@ -25,7 +25,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .lock,
-                            title: T.settingsEntrySecurity.localizedKey
+                            title: .settingsEntrySecurity
                         )
                     }
                     
@@ -34,7 +34,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .customization,
-                            title: T.settingsEntryCustomization.localizedKey
+                            title: .settingsEntryCustomization
                         )
                     }
                     
@@ -43,7 +43,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .autofill,
-                            title: T.settingsEntryAutofill.localizedKey,
+                            title: .settingsEntryAutofill,
                             additionalInfo: Text(presenter.autoFillStatus)
                         )
                     }
@@ -53,21 +53,21 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .deletedData,
-                            title: T.settingsEntryTrash.localizedKey
+                            title: .settingsEntryTrash
                         )
                     }
                 } header: {
-                    Text(T.settingsHeaderMobileApp.localizedKey)
+                    Text(.settingsHeaderMobileApp)
                         .padding(.top, Spacing.xll)
                 }
                 
-                Section(T.settingsHeaderBrowserExtension.localizedKey) {
+                Section(.settingsHeaderBrowserExtension) {
                     Button {
                         presenter.onKnownWebBrowsers()
                     } label: {
                         SettingsRowView(
                             icon: .knownWebBrowsers,
-                            title: T.settingsEntryKnownBrowsers.localizedKey
+                            title: .settingsEntryKnownBrowsers
                         )
                     }
                     
@@ -76,19 +76,19 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .pushNotifications,
-                            title: T.settingsEntryPushNotifications.localizedKey,
+                            title: .settingsEntryPushNotifications,
                             additionalInfo: Text(presenter.pushNotificationsStatus)
                         )
                     }
                 }
                 
-                Section(T.settingsHeaderBackup.localizedKey) {
+                Section(.settingsHeaderBackup) {
                     Button {
                         presenter.onSync()
                     } label: {
                         SettingsRowView(
                             icon: .sync,
-                            title: T.settingsEntryCloudSync.localizedKey,
+                            title: .settingsEntryCloudSync,
                             additionalInfo: {
                                 if presenter.hasSyncError {
                                     BadgeView(value: 1)
@@ -104,7 +104,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .importExport,
-                            title: T.settingsEntryImportExport.localizedKey
+                            title: .settingsEntryImportExport
                         )
                     }
                     
@@ -113,12 +113,12 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .transferItems,
-                            title: T.settingsEntryTransferFromOtherApps.localizedKey
+                            title: .settingsEntryTransferFromOtherApps
                         )
                     }
                 }
                 
-                Section(T.settingsManageTokensTitle) {
+                Section(.settingsManageTokensTitle) {
                     Button {
                         if presenter.is2FASAuthInstalled {
                             openURL(Config.twofasAuthOpenLink)
@@ -128,20 +128,20 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .twoFASAuth,
-                            title: presenter.is2FASAuthInstalled ? T.settings2fasOpen.localizedKey : T.settings2fasGet.localizedKey,
+                            title: presenter.is2FASAuthInstalled ? .settings2FasOpen : .settings2FasGet,
                             actionIcon: .link
                         )
                     }
                 }
                 
-                Section(T.settingsHeaderAbout.localizedKey) {
+                Section(.settingsHeaderAbout) {
                     if presenter.isPaidUser {
                         Button {
                             presenter.onSubscription()
                         } label: {
                             SettingsRowView(
                                 icon: .subscription,
-                                title: T.settingsEntrySubscription.localizedKey,
+                                title: .settingsEntrySubscription,
                                 actionIcon: .chevron,
                                 additionalInfo: Text(presenter.subscriptionStatus)
                             )
@@ -152,7 +152,7 @@ struct SettingsView: View {
                         } label: {
                             SettingsRowView(
                                 icon: .subscription,
-                                title: T.settingsEntrySubscription.localizedKey,
+                                title: .settingsEntrySubscription,
                                 actionIcon: .chevron,
                                 additionalInfo: Text(presenter.subscriptionStatus)
                             )
@@ -164,7 +164,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .about,
-                            title: T.settingsEntryAbout.localizedKey
+                            title: .settingsEntryAbout
                         )
                     }
                     
@@ -173,7 +173,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .help,
-                            title: T.settingsEntryHelpCenter.localizedKey,
+                            title: .settingsEntryHelpCenter,
                             actionIcon: .link
                         )
                     }
@@ -183,7 +183,7 @@ struct SettingsView: View {
                     } label: {
                         SettingsRowView(
                             icon: .discord,
-                            title: T.settingsEntryDiscord.localizedKey,
+                            title: .settingsEntryDiscord,
                             actionIcon: .link
                         )
                     }
@@ -204,7 +204,7 @@ struct SettingsView: View {
                 #endif
             }
             .router(router: SettingsRouter(), destination: $presenter.destination)
-            .navigationTitle(T.settingsTitle.localizedKey)
+            .navigationTitle(.settingsTitle)
             .onAppear {
                 presenter.onAppear()
             }

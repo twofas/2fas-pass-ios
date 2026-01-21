@@ -16,8 +16,8 @@ public struct ItemNameFormatStyle: FormatStyle {
     
     public func format(_ value: String?) -> String {
         guard let value else {
-            return T.loginNoItemName
+            return String(localized: .loginNoItemName)
         }
-        return value.isEmpty ? T.loginNoItemName : value
+        return value.isEmpty ? String(localized: .loginNoItemName) : value
     }
 }

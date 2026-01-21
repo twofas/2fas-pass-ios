@@ -26,10 +26,10 @@ struct LoginDetailFormView: View {
 
             if let username = presenter.username {
                 ItemDetailFormActionsRow(
-                    key: T.loginUsernameLabel.localizedKey,
+                    key: .loginUsernameLabel,
                     value: { Text(username) },
                     actions: {[
-                        UIAction(title: T.loginViewActionCopyUsername, handler: { _ in
+                        UIAction(title: String(localized: .loginViewActionCopyUsername), handler: { _ in
                             presenter.onCopyUsername()
                         })
                     ]}
@@ -44,7 +44,7 @@ struct LoginDetailFormView: View {
 
             if presenter.isPasswordAvailable, let password = presenter.password {
                 ItemDetailFormActionsRow(
-                    key: T.loginPasswordLabel.localizedKey,
+                    key: .loginPasswordLabel,
                     value: {
                         SecureContainerView {
                             HStack {
@@ -56,7 +56,7 @@ struct LoginDetailFormView: View {
                         }
                     },
                     actions: {[
-                        UIAction(title: T.loginViewActionCopyPassword, handler: { _ in
+                        UIAction(title: String(localized: .loginViewActionCopyPassword), handler: { _ in
                             presenter.onCopyPassword()
                         })
                     ]}
@@ -71,14 +71,14 @@ struct LoginDetailFormView: View {
 
             ForEach(Array(presenter.uri.filter({ $0.uriNormalized != nil }).enumerated()), id: \.element.id) { index, uri in
                 if let uriNormalized = uri.uriNormalized {
-                    ItemDetailFormActionsRow(
-                        key: presenter.uriKey(at: index),
-                        value: { Text(uri.uri.withZeroWidthSpaces) },
-                        actions: {[
-                            UIAction(title: T.loginViewActionOpenUri) { _ in
+                ItemDetailFormActionsRow(
+                    key: presenter.uriKey(at: index),
+                    value: { Text(uri.uri.withZeroWidthSpaces) },
+                    actions: {[
+                        UIAction(title: String(localized: .loginViewActionOpenUri)) { _ in
                                 presenter.onOpenURI(uriNormalized)
                             },
-                            UIAction(title: T.loginViewActionCopyUri) { _ in
+                            UIAction(title: String(localized: .loginViewActionCopyUri)) { _ in
                                 presenter.onCopyURI(uriNormalized)
                             }
                         ]}

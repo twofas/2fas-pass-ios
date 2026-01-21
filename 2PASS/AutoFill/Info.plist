@@ -4,20 +4,20 @@
 <dict>
 	<key>NSExtension</key>
 	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>ASCredentialProviderExtensionCapabilities</key>
+			<dict>
+				<key>ProvidesPasswords</key>
+				<true/>
+				<key>ProvidesTextToInsert</key>
+				<true/>
+			</dict>
+		</dict>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.authentication-services-credential-provider-ui</string>
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).CredentialProviderViewController</string>
-        <key>NSExtensionAttributes</key>
-        <dict>
-            <key>ASCredentialProviderExtensionCapabilities</key>
-            <dict>
-                <key>ProvidesPasswords</key>
-                <true/>
-                <key>ProvidesTextToInsert</key>
-                <true/>
-            </dict>
-        </dict>
 	</dict>
 </dict>
 </plist>

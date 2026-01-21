@@ -20,7 +20,7 @@ struct VaultRecoveryCheckView: View {
             switch presenter.state {
             case .checking:
                 ProgressView(label: {
-                    Text(T.restoreReadingFileText.localizedKey)
+                    Text(.restoreReadingFileText)
                 })
                 .progressViewStyle(.circular)
                 .tint(nil)
@@ -28,16 +28,16 @@ struct VaultRecoveryCheckView: View {
             case .decrypted:
                 ResultView(
                     kind: .info,
-                    title: Text(T.restoreUnencryptedFileTitle.localizedKey),
-                    description: Text(T.restoreUnencryptedFileDescription.localizedKey),
+                    title: Text(.restoreUnencryptedFileTitle),
+                    description: Text(.restoreUnencryptedFileDescription),
                     action: {
                         VStack(spacing: Spacing.m) {
-                            Text(T.restoreUnencryptedFileCtaDescriptionIos.localizedKey)
+                            Text(.restoreUnencryptedFileCtaDescriptionIos)
                                 .lineSpacing(2)
                                 .font(.caption)
                                 .foregroundStyle(.neutral600)
                             
-                            Button(T.commonTryAgain.localizedKey) {
+                            Button(.commonTryAgain) {
                                 dismiss()
                             }
                         }
@@ -46,10 +46,10 @@ struct VaultRecoveryCheckView: View {
             case .error(let error):
                 ResultView(
                     kind: .failure,
-                    title: Text(T.commonError.localizedKey),
+                    title: Text(.commonError),
                     description: Text(error),
                     action: {
-                        Button(T.commonTryAgain.localizedKey) {
+                        Button(.commonTryAgain) {
                             dismiss()
                         }
                     }
@@ -59,6 +59,6 @@ struct VaultRecoveryCheckView: View {
         .onAppear {
             presenter.onAppear()
         }
-        .background(Color(Asset.mainBackgroundColor.color))
+        .background(Color(.mainBackground))
     }
 }

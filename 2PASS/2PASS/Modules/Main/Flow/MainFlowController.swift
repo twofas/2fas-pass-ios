@@ -72,8 +72,8 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
     func toPremiumPlanPrompt(itemsLimit: Int) {
         let controller = UIHostingController(
             rootView: PremiumPromptRouter.buildView(
-                title: Text(T.paywallNoticeItemsLimitReachedTitle.localizedKey),
-                description: Text(T.paywallNoticeItemsLimitReachedMsg(itemsLimit))
+                title: Text(.paywallNoticeItemsLimitReachedTitle),
+                description: Text(.paywallNoticeItemsLimitReachedMsg(Int32(itemsLimit)))
             )
         )
         
@@ -117,20 +117,6 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
         guard biometricPromptViewController != nil else { return }
         biometricPromptViewController?.dismiss(animated: false)
         biometricPromptViewController = nil
-    }
-    
-    @MainActor
-    func toConfirmDelete() async -> Bool {
-        await withCheckedContinuation { continuation in
-            let alert = UIAlertController(title: T.loginDeleteConfirmTitle, message: T.loginDeleteConfirmBody, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: T.commonYes, style: .destructive, handler: { _ in
-                continuation.resume(returning: true)
-            }))
-            alert.addAction(UIAlertAction(title: T.commonNo, style: .cancel, handler: { _ in
-                continuation.resume(returning: false)
-            }))
-            viewController.present(alert, animated: true, completion: nil)
-        }
     }
 }
 

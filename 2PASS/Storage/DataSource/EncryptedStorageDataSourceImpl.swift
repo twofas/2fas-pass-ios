@@ -128,23 +128,34 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     }
 
     public func listAllEncryptedItems() -> [ItemEncryptedData] {
-        ItemEncryptedEntity.listItems(on: context, excludeProtectionLevels: [])
+        ItemEncryptedEntity.listItems(on: context, excludeProtectionLevels: nil, itemIDs: nil)
             .map({ $0.toData() })
     }
     
     public func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
-        listEncryptedItems(in: vaultID, excludeProtectionLevels: [])
+        listEncryptedItems(in: vaultID, itemIDs: nil, excludeProtectionLevels: nil)
     }
     
-    public func listEncryptedItems(in vaultID: VaultID, excludeProtectionLevels: Set<ItemProtectionLevel>) -> [ItemEncryptedData] {
+    public func listEncryptedItems(
+        in vaultID: VaultID,
+        itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData] {
         guard let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID) else { return [] }
         
-        if excludeProtectionLevels.isEmpty {
+        let normalizedItemIDs = itemIDs?.isEmpty == true ? nil : itemIDs
+        let normalizedExcludedLevels = excludeProtectionLevels?.isEmpty == true ? nil : excludeProtectionLevels
+        
+        if normalizedExcludedLevels == nil && normalizedItemIDs == nil {
             return VaultEncryptedEntity.listItems(on: context, vault: vault).map({ $0.toData() })
-        } else {
-            return ItemEncryptedEntity.listItems(on: context, excludeProtectionLevels: excludeProtectionLevels, vaultID: vaultID)
-                .map({ $0.toData() })
         }
+        
+        return ItemEncryptedEntity.listItems(
+            on: context,
+            excludeProtectionLevels: normalizedExcludedLevels,
+            itemIDs: normalizedItemIDs,
+            vaultID: vaultID
+        ).map({ $0.toData() })
     }
     
     public func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
@@ -307,8 +318,8 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         listAll.forEach { TagEncryptedEntity.delete(on: context, entity: $0) }
     }
 
-    public func removeDuplicatedEncryptedTags() {
-        TagEncryptedEntity.removeDuplicates(on: context)
+    public func listAllEncryptedTags() -> [ItemTagEncryptedData] {
+        TagEncryptedEntity.listAll(on: context).map { ItemTagEncryptedData($0) }
     }
 
     public func warmUp() {

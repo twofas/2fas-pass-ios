@@ -52,7 +52,7 @@ struct VaultDecryptionKitRouter: Router {
             VaultDescryptionKitSettingsView(includeMasterKey: includeMasterKey)
         case .shareSheet(url: let url, complete: let complete, error: let error):
             ShareSheetView(
-                title: T.decryptionKeyShareSheetTitle,
+                title: String(localized: .decryptionKeyShareSheetTitle),
                 url: url,
                 activityComplete: complete,
                 activityError: error

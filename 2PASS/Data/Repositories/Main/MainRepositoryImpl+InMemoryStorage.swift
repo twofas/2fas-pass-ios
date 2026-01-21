@@ -290,7 +290,11 @@ extension MainRepositoryImpl {
     func itemsBatchUpdate(_ items: [RawItemData]) {
         inMemoryStorage?.batchUpdateRencryptedItems(items, date: currentDate)
     }
-    
+
+    func metadataItemsBatchUpdate(_ items: [any ItemDataType]) {
+        inMemoryStorage?.batchUpdateMetadataItems(items, date: currentDate)
+    }
+
     func getItemEntity(
         itemID: ItemID,
         checkInTrash: Bool
@@ -347,7 +351,11 @@ extension MainRepositoryImpl {
     func deleteAllTags() {
         inMemoryStorage?.deleteAllTagEntities()
     }
-    
+
+    func getTag(for tagID: ItemTagID) -> ItemTagData? {
+        inMemoryStorage?.listTags(options: .tag(tagID)).first
+    }
+
     func listTags(options: TagListOptions) -> [ItemTagData] {
         inMemoryStorage?.listTags(options: options) ?? []
     }

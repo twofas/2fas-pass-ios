@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Foundation
 import CommonUI
 
 struct TransferItemsInstructionsView: View {
@@ -13,7 +14,7 @@ struct TransferItemsInstructionsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(Text(T.transferInstructionsHeader(presenter.service.name).localizedKey)) {
+            SettingsDetailsForm(Text(.transferInstructionsHeader(presenter.service.name))) {
                 Section {
                     instructions
                 }
@@ -29,7 +30,7 @@ struct TransferItemsInstructionsView: View {
             } header: {
                 SettingsHeaderView(
                     icon: { SettingsIconView(icon: presenter.service.settingsIcon) },
-                    title: { Text(T.transferInstructionsHeader(presenter.service.name).localizedKey) },
+                    title: { Text(.transferInstructionsHeader(presenter.service.name)) },
                     description: {}
                 )
                 .settingsIconStyle(.border)
@@ -42,33 +43,33 @@ struct TransferItemsInstructionsView: View {
                 Group {
                     switch presenter.service {
                     case .onePassword:
-                        Text(T.transferInstructionsCtaOnepassword.localizedKey)
+                        Text(.transferInstructionsCtaOnepassword)
                     case .bitWarden:
-                        Text(T.transferInstructionsCtaBitwarden.localizedKey)
+                        Text(.transferInstructionsCtaBitwarden)
                     case .protonPass:
-                        Text(T.transferInstructionsCtaProtonPass.localizedKey)
+                        Text(.transferInstructionsCtaProtonPass)
                     case .dashlaneMobile:
-                        Text(T.transferInstructionsCtaDashlaneMobile.localizedKey)
+                        Text(.transferInstructionsCtaDashlaneMobile)
                     case .keePass:
-                        Text(T.transferInstructionsCtaKeepass.localizedKey)
+                        Text(.transferInstructionsCtaKeepass)
                     case .keePassXC:
-                        Text(T.transferInstructionsCtaKeepassxc.localizedKey)
+                        Text(.transferInstructionsCtaKeepassxc)
                     default:
                         if presenter.service.allowedContentTypes.count > 1 {
-                            Text(T.transferInstructionsCtaGeneric.localizedKey)
+                            Text(.transferInstructionsCtaGeneric)
                         } else if let contentType = presenter.service.allowedContentTypes.first {
                             switch contentType {
                             case .json:
-                                Text(T.transferInstructionsCtaJson.localizedKey)
+                                Text(.transferInstructionsCtaJson)
                             case .zip:
-                                Text(T.transferInstructionsCtaZip.localizedKey)
+                                Text(.transferInstructionsCtaZip)
                             case .commaSeparatedText:
-                                Text(T.transferInstructionsCtaCsv.localizedKey)
+                                Text(.transferInstructionsCtaCsv)
                             default:
-                                Text(T.transferInstructionsCtaGeneric.localizedKey)
+                                Text(.transferInstructionsCtaGeneric)
                             }
                         } else {
-                            Text(T.transferInstructionsCtaGeneric.localizedKey)
+                            Text(.transferInstructionsCtaGeneric)
                         }
                     }
                 }
@@ -89,7 +90,7 @@ struct TransferItemsInstructionsView: View {
         ForEach(Array(instructionsSteps.enumerated()), id: \.offset) { index, step in
             HStack(alignment: .top) {
                 Text("\(index + 1).")
-                Text(step.localizedKey)
+                Text(step)
                 Spacer()
             }
             .foregroundStyle(.neutral950)
@@ -98,56 +99,59 @@ struct TransferItemsInstructionsView: View {
         }
     }
     
-    private var instructionsSteps: [String] {
-        let input = {
+    private var instructionsSteps: [AttributedString] {
+        let resource: LocalizedStringResource = {
             switch presenter.service {
             case .bitWarden:
-                T.transferInstructionsBitwarden
+                .transferInstructionsBitwarden
             case .chrome:
-                T.transferInstructionsChrome
+                .transferInstructionsChrome
             case .dashlaneMobile:
-                T.transferInstructionsDashlaneMobile
+                .transferInstructionsDashlaneMobile
             case .dashlaneDesktop:
-                T.transferInstructionsDashlanePc
+                .transferInstructionsDashlanePc
             case .lastPass:
-                T.transferInstructionsLastpass
+                .transferInstructionsLastpass
             case .onePassword:
-                T.transferInstructionsOnepassword
+                .transferInstructionsOnepassword
             case .protonPass:
-                T.transferInstructionsProtonpass
+                .transferInstructionsProtonpass
             case .applePasswordsDesktop:
-                T.transferInstructionsApplePasswordsPc
+                .transferInstructionsApplePasswordsPc
             case .applePasswordsMobile:
-                T.transferInstructionsApplePasswordsMobile
+                .transferInstructionsApplePasswordsMobile
             case .firefox:
-                T.transferInstructionsFirefox
+                .transferInstructionsFirefox
             case .keePassXC:
-                T.transferInstructionsKeepassxc
+                .transferInstructionsKeepassxc
             case .keePass:
-                T.transferInstructionsKeepass
+                .transferInstructionsKeepass
             case .microsoftEdge:
-                T.transferInstructionsMicrosoftEdge
+                .transferInstructionsMicrosoftEdge
             case .enpass:
-                T.transferInstructionsEnpass
+                .transferInstructionsEnpass
             case .keeper:
-                T.transferInstructionsKeeper
+                .transferInstructionsKeeper
             }
         }()
-        return input.components(separatedBy: "\n\n")
+        let input = String(localized: resource)
+        return input.components(separatedBy: "\n\n").map { step in
+            (try? AttributedString(markdown: step)) ?? AttributedString(step)
+        }
     }
     
     private var instructionsAdditionalInfo: Text? {
         switch presenter.service {
         case .onePassword:
-            Text(T.transferInstructionsAdditionalInfoOnepassword.localizedKey)
+            Text(.transferInstructionsAdditionalInfoOnepassword)
         case .bitWarden:
-            Text(T.transferInstructionsAdditionalInfoBitwarden.localizedKey)
+            Text(.transferInstructionsAdditionalInfoBitwarden)
         case .keePass:
-            Text(T.transferInstructionsAdditionalInfoKeepass.localizedKey)
+            Text(.transferInstructionsAdditionalInfoKeepass)
         case .keePassXC:
-            Text(T.transferInstructionsAdditionalInfoKeepassxc.localizedKey)
+            Text(.transferInstructionsAdditionalInfoKeepassxc)
         case .protonPass:
-            Text(T.transferInstructionsAdditionalInfoProtonPass.localizedKey)
+            Text(.transferInstructionsAdditionalInfoProtonPass)
         default:
             nil
         }

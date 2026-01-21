@@ -13,16 +13,16 @@ struct CustomizationView: View {
     var presenter: CustomizationPresenter
     
     var body: some View {
-        SettingsDetailsForm(T.settingsEntryCustomization.localizedKey) {
+        SettingsDetailsForm(.settingsEntryCustomization) {
             Section {
                 Button {
                     presenter.onChangeDefaultAction()
                 } label: {
-                    LabeledContent(T.settingsEntryLoginClickAction.localizedKey, value: presenter.selectedDefaultActionDesctiption)
+                    LabeledContent(String(localized: .settingsEntryLoginClickAction), value: presenter.selectedDefaultActionDesctiption)
                         .labeledContentStyle(.navigationSettings)
                 }
             } footer: {
-                Text(T.settingsEntryLoginClickActionDescription.localizedKey)
+                Text(.settingsEntryLoginClickActionDescription)
                     .settingsFooter()
             }
             
@@ -30,10 +30,10 @@ struct CustomizationView: View {
                 Button {
                     presenter.onManageTags()
                 } label: {
-                    SettingsRowView(title: T.settingsEntryManageTags.localizedKey)
+                    SettingsRowView(title: .settingsEntryManageTags)
                 }
             } footer: {
-                Text(T.settingsEntryManageTagsDescription.localizedKey)
+                Text(.settingsEntryManageTagsDescription)
                     .settingsFooter()
             }
         }

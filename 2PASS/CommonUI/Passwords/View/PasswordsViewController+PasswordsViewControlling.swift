@@ -17,6 +17,9 @@ protocol PasswordsViewControlling: AnyObject {
     func showList()
     func showEmptyScreen()
     func showSearchEmptyScreen()
+    func filterDidChange()
+    func clearSelectionForContentTypeChange()
+    func exitEditingMode()
 }
 
 extension PasswordsViewController: PasswordsViewControlling {
@@ -54,7 +57,10 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showEmptyScreen() {
-        VoiceOver.say(T.homeEmptyTitle)
+        VoiceOver.say(String(localized: .homeEmptyTitle))
+        
+        setEditing(false, animated: true)
+        
         guard emptyList?.isHidden == true else { return }
         
         emptyList?.alpha = 0
@@ -68,7 +74,7 @@ extension PasswordsViewController: PasswordsViewControlling {
     }
     
     func showSearchEmptyScreen() {
-        VoiceOver.say(T.loginSearchNoResultsTitle)
+        VoiceOver.say(String(localized: .loginSearchNoResultsTitle))
         
         emptySearchList?.alpha = 0
         emptySearchList?.isHidden = false
@@ -82,5 +88,13 @@ extension PasswordsViewController: PasswordsViewControlling {
         ) {
             self.emptySearchList?.alpha = 1
         }
+    }
+
+    func clearSelectionForContentTypeChange() {
+        clearSelection()
+    }
+
+    func exitEditingMode() {
+        setEditing(false, animated: true)
     }
 }

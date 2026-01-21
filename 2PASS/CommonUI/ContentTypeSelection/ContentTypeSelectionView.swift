@@ -63,7 +63,7 @@ private struct ContentTypeRow: View {
                 
                 Text(option, format: .itemContentType)
                     .font(.system(size: 17))
-                    .foregroundStyle(Asset.mainTextColor.swiftUIColor)
+                    .foregroundStyle(.mainText)
                 
                 Spacer()
             }
