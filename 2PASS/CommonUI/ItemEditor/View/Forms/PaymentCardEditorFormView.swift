@@ -103,7 +103,8 @@ struct PaymentCardEditorFormView: View {
             }
 
             LabeledInput(label: String(localized: .cardSecurityCodeLabel), fieldWidth: $fieldWidth) {
-                SecureInput(label: .cardSecurityCodeLabel, value: $presenter.securityCode, reveal: $presenter.securityCodeRevealed)
+                SecureInput(label: .cardSecurityCodeLabel, value: $presenter.securityCode)
+                    .reveal($presenter.securityCodeRevealed)
                     .introspect { textField in
                         textField.keyboardType = .numberPad
                         textField.textContentType = .creditCardSecurityCode
