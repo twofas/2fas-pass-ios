@@ -106,12 +106,14 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
         _ service: ExternalService,
         content: ImportContent
     ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
+        let result: ExternalServiceImportResult
         switch content {
         case .file(let data):
-            try await importServiceFromFile(service, content: data)
+            result = try await importServiceFromFile(service, content: data)
         case .folder(let files):
-            try await importServiceFromFolder(service, files: files)
+            result = try await importServiceFromFolder(service, files: files)
         }
+        return assignTagColors(result)
     }
 
     private func importServiceFromFile(
@@ -161,6 +163,29 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             try await DashlaneImporter(context: context).importMobileCSV(Array(files.values))
         default:
             throw .wrongFormat
+        }
+    }
+
+    private func assignTagColors(_ result: ExternalServiceImportResult) -> ExternalServiceImportResult {
+        let updatedTags = assignTagColors(result.tags)
+        guard updatedTags != result.tags else { return result }
+        return ExternalServiceImportResult(
+            items: result.items,
+            tags: updatedTags,
+            itemsConvertedToSecureNotes: result.itemsConvertedToSecureNotes
+        )
+    }
+
+    private func assignTagColors(_ tags: [ItemTagData]) -> [ItemTagData] {
+        let allColors = ItemTagColor.allKnownCases
+        var colorIndex = 0
+        
+        return tags.map { tag in
+            let newColor = allColors[colorIndex]
+            colorIndex = (colorIndex + 1) % allColors.count
+            var updatedTag = tag
+            updatedTag.color = newColor
+            return updatedTag
         }
     }
 }

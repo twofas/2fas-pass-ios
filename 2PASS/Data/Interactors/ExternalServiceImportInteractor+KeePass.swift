@@ -168,7 +168,7 @@ extension ExternalServiceImportInteractor {
                     tagID: tagId,
                     vaultID: vaultID,
                     name: tagName,
-                    color: .gray,
+                    color: .unknown(nil),
                     position: index,
                     modificationDate: Date()
                 )

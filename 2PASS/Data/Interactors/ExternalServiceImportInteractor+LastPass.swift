@@ -119,7 +119,7 @@ extension ExternalServiceImportInteractor {
                     tagID: tagId,
                     vaultID: vaultID,
                     name: folderName,
-                    color: .gray,
+                    color: .unknown(nil),
                     position: index,
                     modificationDate: Date()
                 )

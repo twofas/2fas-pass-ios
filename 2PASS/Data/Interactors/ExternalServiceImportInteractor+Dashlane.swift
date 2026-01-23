@@ -760,7 +760,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 tagID: newTagId,
                 vaultID: vaultID,
                 name: category,
-                color: .gray,
+                color: .unknown(nil),
                 position: tags.count,
                 modificationDate: Date()
             ))
