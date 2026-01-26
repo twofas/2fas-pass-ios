@@ -26,6 +26,7 @@ public extension ExternalService {
         case .microsoftEdge: "Microsoft Edge"
         case .enpass: "Enpass"
         case .keeper: "Keeper"
+        case .nordPass: "NordPass"
         }
     }
 
@@ -46,6 +47,7 @@ public extension ExternalService {
         case .microsoftEdge: [UTType.commaSeparatedText]
         case .enpass: [UTType.json]
         case .keeper: [UTType.json]
+        case .nordPass: [UTType.commaSeparatedText]
         }
     }
 }

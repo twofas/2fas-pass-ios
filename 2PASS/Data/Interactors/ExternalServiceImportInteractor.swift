@@ -151,6 +151,8 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             try await EnpassImporter(context: context).import(content)
         case .keeper:
             try await KeeperImporter(context: context).import(content)
+        case .nordPass:
+            try await NordPassImporter(context: context).import(content)
         }
     }
 
