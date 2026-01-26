@@ -85,17 +85,18 @@ struct MasterPasswordView: View {
                     VStack(spacing: 0) {
                         HStack {
                             FloatingField(placeholder: Text(.masterPasswordLabel), isEmpty: presenter.firstInput.isEmpty) {
-                                SecureContentInput(
+                                SecureInput(
                                     label: "",
-                                    value: $presenter.firstInput,
-                                    isReveal: presenter.firstInputReveal
+                                    value: $presenter.firstInput
                                 )
+                                .showsToggle(false)
+                                .reveal($presenter.firstInputReveal)
+                                .onSubmit {
+                                    focusSecondField()
+                                    scrollToInfoState(in: scrollProxy)
+                                }
                             }
                             .focused($focusedField, equals: .first)
-                            .onSubmit {
-                                focusSecondField()
-                                scrollToInfoState(in: scrollProxy)
-                            }
                             
                             Spacer()
                             
@@ -113,15 +114,16 @@ struct MasterPasswordView: View {
                         if presenter.isRetype {
                             HStack {
                                 FloatingField(placeholder: Text(.masterPasswordConfirmLabel), isEmpty: presenter.secondInput.isEmpty) {
-                                    SecureContentInput(
+                                    SecureInput(
                                         label: "",
-                                        value: $presenter.secondInput,
-                                        isReveal: presenter.secondInputReveal
+                                        value: $presenter.secondInput
                                     )
-                                    .focused($focusedField, equals: .second)
+                                    .showsToggle(false)
+                                    .reveal($presenter.secondInputReveal)
                                     .onSubmit {
                                         presenter.onSavePassword()
                                     }
+                                    .focused($focusedField, equals: .second)
                                 }
                                 
                                 Spacer()
