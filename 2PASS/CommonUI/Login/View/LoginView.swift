@@ -170,6 +170,13 @@ public struct LoginView: View {
                 }
             }
         }
+        .background(
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    focusedField = nil
+                }
+        )
         .animation(.smooth, value: presenter.errorDescription.isEmpty)
     }
     
