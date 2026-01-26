@@ -110,7 +110,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     }
     
     func uriKey(at index: Int) -> LocalizedStringResource {
-        uri.count == 1 ? .loginUriLabel : .loginUriLabel(index + 1)
+        uri.count == 1 ? .loginUriLabel : .loginUriLabel(Int32(index + 1))
     }
     
     func reload() {

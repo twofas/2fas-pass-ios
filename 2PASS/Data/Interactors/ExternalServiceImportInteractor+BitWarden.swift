@@ -51,7 +51,7 @@ extension ExternalServiceImportInteractor {
                     tagID: tagId,
                     vaultID: vaultID,
                     name: folder.name,
-                    color: .gray,
+                    color: .unknown(nil),
                     position: index,
                     modificationDate: Date()
                 )
@@ -161,7 +161,7 @@ extension ExternalServiceImportInteractor {
                             tagID: newTagId,
                             vaultID: vaultID,
                             name: folderName,
-                            color: .gray,
+                            color: .unknown(nil),
                             position: tags.count,
                             modificationDate: Date()
                         ))

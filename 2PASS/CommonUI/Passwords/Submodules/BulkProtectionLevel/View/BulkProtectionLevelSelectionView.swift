@@ -49,7 +49,7 @@ private struct BulkProtectionLevelRow: View {
                         .foregroundStyle(.primary)
                     
                     if count > 0 {
-                        Text(.commonItemsCount(count))
+                        Text(.commonItemsCount(Int32(count)))
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundStyle(.secondary)

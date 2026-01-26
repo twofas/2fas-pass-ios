@@ -260,7 +260,7 @@ private extension ItemEditorPresenter {
     }
     
     func updateSaveState() {
-        saveEnabled?(!currentPresenter.canSave)
+        saveEnabled?(currentPresenter.canSave)
     }
 
     @objc

@@ -76,7 +76,19 @@ struct LoginEditorFormView: View {
                 
                 usernameField
                     .sheet(isPresented: $presenter.showMostUsed) {
-                        mostUsedSheet()
+                        MostUsedUsernamesSheet(
+                            usernames: presenter.mostUsedUsernames(),
+                            onSelect: { username in
+                                presenter.username = username
+                                presenter.showMostUsed = false
+                                Task {
+                                    focusField = nil
+                                }
+                            },
+                            onCancel: {
+                                presenter.showMostUsed = false
+                            }
+                        )
                     }
                 
                 passwordField
@@ -387,47 +399,4 @@ struct LoginEditorFormView: View {
         }
     }
 
-    @ViewBuilder
-    private func mostUsedSheet() -> some View {
-        NavigationStack {
-            VStack(alignment: .leading) {
-                let usernames = presenter.mostUsedUsernames()
-                if usernames.isEmpty {
-                    Text(.loginUsernameMostUsedEmpty)
-                        .font(.subheadline)
-                } else {
-                    Form {
-                        Section {
-                            ForEach(presenter.mostUsedUsernames(), id: \.self) { username in
-                                Button {
-                                    presenter.username = username
-                                    presenter.showMostUsed = false
-
-                                    Task {
-                                        focusField = nil
-                                    }
-                                } label: {
-                                    Text(verbatim: username)
-                                        .foregroundStyle(.mainText)
-                                        .font(.body)
-                                }
-                            }
-                        }
-                    }
-                    .scrollBounceBehavior(.basedOnSize)
-                }
-            }
-            .toolbarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    ToolbarCancelButton {
-                        presenter.showMostUsed = false
-                    }
-                }
-            }
-            .navigationTitle(.loginUsernameMostUsedHeader)
-        }
-        .presentationDragIndicator(.hidden)
-        .presentationDetents([.medium])
-    }
 }

@@ -68,7 +68,7 @@ extension BulkProtectionLevelFlowController: BulkProtectionLevelFlowControlling 
                 preferredStyle: .actionSheet
             )
             alert.addAction(UIAlertAction(
-                title: String(localized: .homeMultiselectSecurityTierChangeButton(selectedCount)),
+                title: String(localized: .homeMultiselectSecurityTierChangeButton(Int32(selectedCount))),
                 style: .default,
                 handler: { _ in
                     continuation.resume(returning: true)

@@ -42,7 +42,7 @@ extension ExternalServiceImportInteractor {
                         tagID: newTagId,
                         vaultID: vaultID,
                         name: folderName,
-                        color: .gray,
+                        color: .unknown(nil),
                         position: tags.count,
                         modificationDate: Date()
                     ))

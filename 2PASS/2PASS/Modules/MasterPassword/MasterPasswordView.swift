@@ -233,7 +233,7 @@ struct MasterPasswordView: View {
             case .tooShort:
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.descriptionText)
-                Text(.masterPasswordMinLength(presenter.optimalLength))
+                Text(.masterPasswordMinLength(Int32(presenter.optimalLength)))
                     .font(.caption)
             case .dontMatch:
                 if presenter.showError {
