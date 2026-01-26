@@ -40,10 +40,10 @@ struct VaultRecoveryEnterPasswordView: View {
                 
                 Section {
                     SecureInput(label: .masterPasswordLabel, value: $presenter.password)
-                        .focused($focusedField, equals: .password)
                         .onSubmit {
                             presenter.onDecrypt()
                         }
+                        .focused($focusedField, equals: .password)
                         .listRowBackground(Color(.backroundSecondary))
                 } header: {
                     Spacer(minLength: 0)
