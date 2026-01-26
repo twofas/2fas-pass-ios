@@ -132,6 +132,8 @@ struct TransferItemsInstructionsView: View {
                 .transferInstructionsEnpass
             case .keeper:
                 .transferInstructionsKeeper
+            case .nordPass:
+                .transferInstructionsNordpass
             }
         }()
         let input = String(localized: resource)

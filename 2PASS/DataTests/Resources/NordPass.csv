@@ -1,0 +1,13 @@
+name,url,additional_urls,username,password,note,cardholdername,cardnumber,cvc,pin,expirydate,zipcode,folder,full_name,phone_number,email,address1,address2,city,country,state,type,custom_fields
+Login dla Maćka,2fas.com,,Rafael,UXcDQuZuE9ohNoWAgnFi,Login z wieloma tagami,,,,,,,,,,,,,,,,password,"[{""type"":""text"",""label"":""Tags"",""value"":""3 tag, Rafael, Starter Kit""}]"
+Password,https://2fas.com,"[""https://www.youtube.com"",""https://www.nexusmods.com""]",rafols,y8gL676v7iyNrQWL7shE,Notka password,,,,,,,Folder 1,,,,,,,,,password,"[{""type"":""text"",""label"":""Pole tekstowe 1"",""value"":""Rafael""},{""type"":""date"",""label"":""Pole tekstowe 2 - data"",""value"":""1772150400""}]"
+Folder 1,,,,,,,,,,,,,,,,,,,,,folder,
+Folder 2,,,,,,,,,,,,,,,,,,,,,folder,
+Bezpieczna notatka,,,,,Notatka Nordpassowa,,,,,,,Folder 2,,,,,,,,,note,"[{""type"":""text"",""label"":""Pole tekstowe notatka"",""value"":""Jolo""}]"
+Karta kredytowa Nordpass,,,,,Notatka do karty kredytowej,Rafael,6739428148934312,420,1234,12/30,40-503,,,,,,,,,,credit_card,"[{""type"":""text"",""label"":""Pole tekstowe karta"",""value"":""Nie wiem""}]"
+Folder 3,,,,,,,,,,,,,,,,,,,,,folder,
+Moje dane kontaktowe,,,,,Notatka do kontaktu,,,,,,40-809,Folder 3,Erunestian,409508607,2fas@gmail.com,Szara 13,Długa 5,Gliwice,Poland,Śląskie,identity,"[{""type"":""text"",""label"":""Tekst do kontakty"",""value"":""whatever fits""}]"
+Tożsamość,,,,,Notatka ID,,,,,,,Folder 1,,,,,,,,,document,"[{""type"":""hidden"",""label"":""Ukryty tekst"",""value"":""Sono stelte""}]"
+Prawko,,,,,Notatka do prawka,,,,,,,Folder 2,,,,,,,,,document,
+Paszport,,,,,Notatka do paszportu,,,,,,,Folder 3,,,,,,,,,document,
+Randomowy dokument,,,,,Coś,,,,,,,,,,,,,,,,document,

@@ -23,6 +23,7 @@ extension ExternalService {
         case .microsoftEdge: .microsoftEdge
         case .enpass: .enpass
         case .keeper: .keeper
+        case .nordPass: .nordPass
         }
     }
 }
