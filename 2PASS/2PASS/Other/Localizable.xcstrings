@@ -5907,6 +5907,17 @@
         }
       }
     },
+    "lock_screen_forgot_master_password_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To access your Vault, you need the Decryption Kit that contains the Master Password hash."
+          }
+        }
+      }
+    },
     "lock_screen_reset_app" : {
       "extractionState" : "manual",
       "localizations" : {
