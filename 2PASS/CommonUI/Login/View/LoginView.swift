@@ -197,10 +197,10 @@ public struct LoginView: View {
     @ViewBuilder
     private var passwordInput: some View {
         SecureInput(label: .masterPasswordLabel, value: $presenter.loginInput)
-            .focused($focusedField, equals: .login)
             .onSubmit {
                 presenter.onLogin()
             }
+            .focused($focusedField, equals: .login)
             .padding(.leading, Spacing.l)
             .padding(.trailing, 11)
             .frame(height: Constants.passwordInputHeight)
