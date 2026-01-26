@@ -5890,6 +5890,23 @@
         }
       }
     },
+    "lock_screen_forgot_master_password" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forgot your Master Password?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapomniałeś Hasło Główne?"
+          }
+        }
+      }
+    },
     "lock_screen_reset_app" : {
       "extractionState" : "manual",
       "localizations" : {

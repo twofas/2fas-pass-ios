@@ -28,6 +28,9 @@ public struct LoginView: View {
     @State
     private var showResetApp = false
     
+    @State
+    private var keyboardObserver = KeyboardObserver()
+    
     @Environment(\.dismiss)
     private var dismiss
     
@@ -42,7 +45,7 @@ public struct LoginView: View {
     
     @ViewBuilder
     public var body: some View {
-        ZStack {
+        VStack {
             if presenter.showSplashScreen {
                 splashView
             } else {
@@ -50,6 +53,7 @@ public struct LoginView: View {
             }
         }
         .toolbar(.visible, for: .navigationBar)
+        .router(router: LoginRouter(), destination: $presenter.destination)
         .onAppear {
             presenter.onAppear()
         }
@@ -94,90 +98,106 @@ public struct LoginView: View {
     
     @ViewBuilder
     private var enterPasswordView: some View {
-        VStack(spacing: 0) {
-            Image(.smallShield)
-                .matchedGeometryEffect(id: logoId, in: namespace)
-                .transition(.identity)
-                .padding(.top, Spacing.m)
-                .padding(.bottom, Spacing.xs)
-                .zIndex(1)
-                
+        GeometryReader { proxy in
             VStack(spacing: 0) {
-                HeaderContentView(
-                    title: Text(.lockScreenUnlockTitleIos),
-                    subtitle: presenter.isAppLocked ? nil : welcomeText
-                )
-                .padding(.bottom, presenter.isAppLocked ? Spacing.s : 40)
+                Image(.smallShield)
+                    .matchedGeometryEffect(id: logoId, in: namespace)
+                    .transition(.identity)
+                    .padding(.top, Spacing.m)
+                    .padding(.bottom, Spacing.xs)
+                    .zIndex(1)
                 
-                if let lockTimeRemaining = presenter.lockTimeRemaining {
-                    lockTimeInfo(remaining: lockTimeRemaining)
-                }
-                
-                Section {
-                    passwordInput
-                } footer: {
-                    errorDescription
-                }
-                .padding(.bottom, Spacing.s)
-                
-                if presenter.showBiometryButton {
-                    biometryButton
-                }
-                
-                Spacer(minLength: Spacing.l)
-                
-                VStack(spacing: Spacing.m) {
-                    if presenter.isAppLocked {
-                        Text(.lockScreenTooManyAttemptsDescription)
-                            .font(.system(.caption))
-                            .foregroundStyle(.neutral600)
-                            .multilineTextAlignment(.center)
+                VStack(spacing: 0) {
+                    HeaderContentView(
+                        title: Text(.lockScreenUnlockTitleIos),
+                        subtitle: presenter.isAppLocked ? nil : welcomeText
+                    )
+                    
+                    Spacer()
+                        .frame(maxHeight: presenter.isAppLocked ? Spacing.s : 40)
+                    
+                    if let lockTimeRemaining = presenter.lockTimeRemaining {
+                        lockTimeInfo(remaining: lockTimeRemaining)
                     }
                     
-                    Button(.lockScreenUnlockCta) {
-                        presenter.onLogin()
+                    Section {
+                        passwordInput
+                    } footer: {
+                        errorDescription
                     }
-                    .buttonStyle(.filled)
-                    .controlSize(.large)
-                    .disabled(!presenter.isUnlockAvailable)
                     
-                    if presenter.hasAppReset {
-                        SecondaryDestructiveButton(title: String(localized: .lockScreenResetApp)) {
-                            showResetApp = true
+                    if presenter.showBiometryButton {
+                        biometryButton
+                    }
+                    
+                    Spacer(minLength: Spacing.xs)
+                    
+                    VStack(spacing: Spacing.m) {
+                        if presenter.isAppLocked {
+                            Text(.lockScreenTooManyAttemptsDescription)
+                                .font(.system(.caption))
+                                .foregroundStyle(.neutral600)
+                                .multilineTextAlignment(.center)
+                        }
+                        
+                        Button(.lockScreenUnlockCta) {
+                            focusedField = nil
+                            presenter.onLogin()
+                        }
+                        .buttonStyle(.filled)
+                        .controlSize(.large)
+                        .disabled(!presenter.isUnlockAvailable)
+                        
+                        if presenter.hasAppReset {
+                            SecondaryDestructiveButton(title: String(localized: .lockScreenResetApp)) {
+                                showResetApp = true
+                            }
+                        }
+                    }
+                    .animation(.easeInOut(duration: Constants.appLockTooltipAnimationDuration), value: presenter.isAppLocked)
+                }
+                .disabled(presenter.screenDisabled)
+                .opacity(presenter.isEnterPasswordVisible ? 1 : 0)
+                .padding(.horizontal, Spacing.xl)
+                .alert(String(localized: .lockScreenResetAppTitle), isPresented: $showResetApp) {
+                    Button(role: .destructive) {
+                        presenter.onAppReset()
+                    } label: {
+                        Text(.lockScreenResetApp)
+                            .foregroundStyle(.destructiveAction)
+                    }
+                }
+                .toolbar {
+                    if presenter.showCancel {
+                        ToolbarItem(placement: .cancellationAction) {
+                            ToolbarCancelButton {
+                                dismiss()
+                            }
                         }
                     }
                 }
-                .animation(.easeInOut(duration: Constants.appLockTooltipAnimationDuration), value: presenter.isAppLocked)
             }
-            .disabled(presenter.screenDisabled)
-            .opacity(presenter.isEnterPasswordVisible ? 1 : 0)
-            .padding(Spacing.xl)
-            .alert(String(localized: .lockScreenResetAppTitle), isPresented: $showResetApp) {
-                Button(role: .destructive) {
-                    presenter.onAppReset()
-                } label: {
-                    Text(.lockScreenResetApp)
-                        .foregroundStyle(.destructiveAction)
-                }
-            }
-            .toolbar {
-                if presenter.showCancel {
-                    ToolbarItem(placement: .cancellationAction) {
-                        ToolbarCancelButton {
-                            dismiss()
-                        }
+            .padding(.bottom, max(0, keyboardObserver.keyboardHeight - proxy.safeAreaInsets.bottom + Spacing.m))
+            .animation(.smooth(duration: 0.2), value: keyboardObserver.keyboardHeight)
+            .background(
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        focusedField = nil
                     }
-                }
-            }
+            )
+            .animation(.smooth, value: presenter.errorDescription.isEmpty)
         }
-        .background(
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    focusedField = nil
-                }
-        )
-        .animation(.smooth, value: presenter.errorDescription.isEmpty)
+        .safeAreaInset(edge: .bottom, content: {
+            Button(.lockScreenForgotMasterPassword) {
+                presenter.onForgotMasterPassword()
+            }
+            .buttonStyle(.twofasBorderless)
+            .controlSize(.large)
+            .padding(.horizontal, Spacing.xl)
+            .padding(.bottom, Spacing.m)
+        })
+        .ignoresSafeArea(.keyboard)
     }
     
     @ViewBuilder
@@ -201,6 +221,7 @@ public struct LoginView: View {
                 presenter.onLogin()
             }
             .focused($focusedField, equals: .login)
+            .submitLabel(.go)
             .padding(.leading, Spacing.l)
             .padding(.trailing, 11)
             .frame(height: Constants.passwordInputHeight)

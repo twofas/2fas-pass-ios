@@ -15,12 +15,22 @@ private struct Constants {
     static let showPasswordViewAnimationDelay: Duration = .milliseconds(300)
 }
 
+public enum LoginDestination: RouterDestination {
+    case forgotMasterPassword
+}
+
 @Observable
 public final class LoginPresenter {
     
     var loginInput = "" {
         didSet {
             isUnlockAvailable = !interactor.isAppLocked && hasInput
+            
+            guard oldValue != loginInput else {
+                return
+            }
+            inputError = false
+            errorDescription = ""
         }
     }
     
@@ -40,6 +50,7 @@ public final class LoginPresenter {
     private(set) var showKeyboard = false
     
     var showMigrationFailed = false
+    var destination: LoginDestination?
     
     var showBiometryButton: Bool {
         isBiometryAvailable && isBiometryAllowed
@@ -55,6 +66,13 @@ public final class LoginPresenter {
     
     var showCancel: Bool {
         if case .verify = interactor.loginType {
+            return true
+        }
+        return false
+    }
+
+    var allowsForgotMasterPassword: Bool {
+        if case .login = interactor.loginType {
             return true
         }
         return false
@@ -266,6 +284,10 @@ extension LoginPresenter {
     
     func onMigrationFailedClose() {
         loginSuccessful()
+    }
+    
+    func onForgotMasterPassword() {
+        destination = .forgotMasterPassword
     }
 }
 

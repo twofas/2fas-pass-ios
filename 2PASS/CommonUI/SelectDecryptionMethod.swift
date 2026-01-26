@@ -6,15 +6,24 @@
 
 import SwiftUI
 import Common
-import CommonUI
 
-struct SelectDecryptionMethod: View {
+public struct SelectDecryptionMethod: View {
     
-    let onFiles: Callback
-    let onCamera: Callback
-    let onEnterManually: Callback
+    private let onFiles: Callback
+    private let onCamera: Callback
+    private let onEnterManually: Callback?
     
-    var body: some View {
+    public init(
+        onFiles: @escaping Callback,
+        onCamera: @escaping Callback,
+        onEnterManually: Callback? = nil
+    ) {
+        self.onFiles = onFiles
+        self.onCamera = onCamera
+        self.onEnterManually = onEnterManually
+    }
+    
+    public var body: some View {
         VStack(spacing: Spacing.m) {
             HStack(spacing: 0) {
                 Text(.restoreDecryptVaultOptionTitle)
@@ -54,19 +63,21 @@ struct SelectDecryptionMethod: View {
             }
             .buttonStyle(.option)
             
-            Button {
-                onEnterManually()
-            } label: {
-                OptionButtonLabel(
-                    title: Text(.restoreDecryptVaultOptionManual),
-                    subtitle: Text(.restoreDecryptVaultOptionManualDescription),
-                    icon: {
-                        Image(.manualInputIcon)
-                            .renderingMode(.template)
-                    }
-                )
+            if let onEnterManually {
+                Button {
+                    onEnterManually()
+                } label: {
+                    OptionButtonLabel(
+                        title: Text(.restoreDecryptVaultOptionManual),
+                        subtitle: Text(.restoreDecryptVaultOptionManualDescription),
+                        icon: {
+                            Image(.manualInputIcon)
+                                .renderingMode(.template)
+                        }
+                    )
+                }
+                .buttonStyle(.option)
             }
-            .buttonStyle(.option)
         }
     }
 }

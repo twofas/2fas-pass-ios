@@ -104,6 +104,10 @@ public final class ModuleInteractorFactory {
         )
     }
 
+    func forgotMasterPasswordModuleInteractor() -> ForgotMasterPasswordModuleInteracting {
+        ForgotMasterPasswordModuleInteractor()
+    }
+
     func editTagModuleInteractor() -> EditTagModuleInteracting {
         EditTagModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
