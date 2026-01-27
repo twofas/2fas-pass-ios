@@ -75,7 +75,7 @@ final class RecoveryKitPDFGenerator {
         date: Date,
         completion: @escaping (Result<Data, Error>) -> Void
     ) {
-        guard let templateURL = Bundle.main.url(forResource: templateResourceName(), withExtension: "pdf"),
+        guard let templateURL = Bundle.main.url(forResource: "vault-decription-kit-template", withExtension: "pdf"),
               let templatePDF = PDFDocument(url: templateURL),
               let templatePage = templatePDF.page(at: 0) else {
             completion(.failure(RecoveryKitPDFError.loadTemplateFailed))
@@ -110,14 +110,6 @@ final class RecoveryKitPDFGenerator {
             kCGPDFContextAuthor: translations.author,
             kCGPDFContextCreator: translations.creator
         ] as [String: Any]
-    }
-
-    private func templateResourceName() -> String {
-        let preferredLanguage = Locale.preferredLanguages.first?.lowercased() ?? ""
-        if preferredLanguage.hasPrefix("pl") {
-            return "vault-decription-kit-template-pl"
-        }
-        return "vault-decription-kit-template"
     }
     
     private func drawTemplate(_ templatePage: PDFPage, in context: UIGraphicsPDFRendererContext, pageSize: CGSize) {

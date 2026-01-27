@@ -20,8 +20,8 @@
 		5402A7612D63A2390092765B /* ios-tick-dark.json in Resources */ = {isa = PBXBuildFile; fileRef = 5402A7572D63A2390092765B /* ios-tick-dark.json */; };
 		5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A76B2D63A2EA0092765B /* ShieldProgressStyle.swift */; };
 		5402A8CE2D6452DF0092765B /* InteractiveProgressAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */; };
-		54128C8C2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 54128C8B2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf */; };
 		54128C8D2F28CA2C00DA9D16 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
+		54128C902F28CA8E00DA9D16 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 54128C8F2F28CA8E00DA9D16 /* vault-decription-kit-template.pdf */; };
 		5415C9362E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9352E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		5415C9382E2AC4FA00FBEE71 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9372E2AC4FA00FBEE71 /* FirebaseCrashlytics */; };
 		5415C93A2E2AC4FA00FBEE71 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9392E2AC4FA00FBEE71 /* FirebaseMessaging */; };
@@ -42,7 +42,6 @@
 		5485DAD72D68A1C000DCC33C /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 5485DAD62D68A1C000DCC33C /* SwiftUIIntrospect */; };
 		54878E4C2D7ED4D00073BFC8 /* Common.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C267F9312BE2DDFF005F7B89 /* Common.framework */; };
 		549200602DD4D83100C2431E /* ios-secret-key.json in Resources */ = {isa = PBXBuildFile; fileRef = 5492005F2DD4D83100C2431E /* ios-secret-key.json */; };
-		549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
 		54BB9E5E2DC8AC4800BDD13F /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54BB9E572DC8AC4800BDD13F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -299,7 +298,8 @@
 		5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveProgressAnimator.swift; sourceTree = "<group>"; };
 		540D6A8D2E15C64D000834DE /* Dev.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Dev.entitlements; sourceTree = "<group>"; };
 		540D6A8E2E15C64D000834DE /* Prod.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Prod.entitlements; sourceTree = "<group>"; };
-		54128C8B2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template-pl.pdf"; sourceTree = "<group>"; };
+		54128C8E2F28CA8E00DA9D16 /* Base */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = Base; path = "Base.lproj/vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
+		54128C912F28CA9200DA9D16 /* pl */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = pl; path = "pl.lproj/vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		544617852D413B49003A14E1 /* OnboardingPagesRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPagesRouter.swift; sourceTree = "<group>"; };
 		544617872D413C4C003A14E1 /* SetupVaultRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultRouter.swift; sourceTree = "<group>"; };
 		544617892D413DAE003A14E1 /* GenerateSecretKeyRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecretKeyRouter.swift; sourceTree = "<group>"; };
@@ -313,7 +313,6 @@
 		545F7EC02F12E8AF00ED9D62 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		54820F4E2DA594B900E29C73 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5492005F2DD4D83100C2431E /* ios-secret-key.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ios-secret-key.json"; sourceTree = "<group>"; };
-		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -721,8 +720,7 @@
 				5402A7572D63A2390092765B /* ios-tick-dark.json */,
 				5402A7582D63A2390092765B /* ios-tick-light.json */,
 				5492005F2DD4D83100C2431E /* ios-secret-key.json */,
-				549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */,
-				54128C8B2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf */,
+				54128C8F2F28CA8E00DA9D16 /* vault-decription-kit-template.pdf */,
 				C27D99F72BD596630008203F /* Assets.xcassets */,
 				545F7EC02F12E8AF00ED9D62 /* InfoPlist.xcstrings */,
 				54820F4E2DA594B900E29C73 /* Localizable.xcstrings */,
@@ -1426,7 +1424,6 @@
 				5402A75A2D63A2390092765B /* ios-onboarding-02-dark.json in Resources */,
 				5402A75B2D63A2390092765B /* ios-onboarding-03-dark.json in Resources */,
 				C286E9A82E3778050019CF79 /* icon_64.png in Resources */,
-				54128C8C2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf in Resources */,
 				54DBB76B2E789EEE003E7342 /* AppIcon.icon in Resources */,
 				545F7EC12F12E8AF00ED9D62 /* InfoPlist.xcstrings in Resources */,
 				54DBB76C2E789EEE003E7342 /* AppIcon.dev.icon in Resources */,
@@ -1440,7 +1437,7 @@
 				5402A7612D63A2390092765B /* ios-tick-dark.json in Resources */,
 				54820F502DA594B900E29C73 /* Localizable.xcstrings in Resources */,
 				C27D99FB2BD596630008203F /* Base in Resources */,
-				549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */,
+				54128C902F28CA8E00DA9D16 /* vault-decription-kit-template.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1725,6 +1722,15 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		54128C8F2F28CA8E00DA9D16 /* vault-decription-kit-template.pdf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				54128C8E2F28CA8E00DA9D16 /* Base */,
+				54128C912F28CA9200DA9D16 /* pl */,
+			);
+			name = "vault-decription-kit-template.pdf";
+			sourceTree = "<group>";
+		};
 		C27D99F92BD596630008203F /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
