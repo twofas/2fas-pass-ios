@@ -20,6 +20,8 @@
 		5402A7612D63A2390092765B /* ios-tick-dark.json in Resources */ = {isa = PBXBuildFile; fileRef = 5402A7572D63A2390092765B /* ios-tick-dark.json */; };
 		5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A76B2D63A2EA0092765B /* ShieldProgressStyle.swift */; };
 		5402A8CE2D6452DF0092765B /* InteractiveProgressAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */; };
+		54128C8C2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 54128C8B2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf */; };
+		54128C8D2F28CA2C00DA9D16 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
 		5415C9362E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9352E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		5415C9382E2AC4FA00FBEE71 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9372E2AC4FA00FBEE71 /* FirebaseCrashlytics */; };
 		5415C93A2E2AC4FA00FBEE71 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9392E2AC4FA00FBEE71 /* FirebaseMessaging */; };
@@ -297,6 +299,7 @@
 		5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveProgressAnimator.swift; sourceTree = "<group>"; };
 		540D6A8D2E15C64D000834DE /* Dev.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Dev.entitlements; sourceTree = "<group>"; };
 		540D6A8E2E15C64D000834DE /* Prod.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Prod.entitlements; sourceTree = "<group>"; };
+		54128C8B2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template-pl.pdf"; sourceTree = "<group>"; };
 		544617852D413B49003A14E1 /* OnboardingPagesRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPagesRouter.swift; sourceTree = "<group>"; };
 		544617872D413C4C003A14E1 /* SetupVaultRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultRouter.swift; sourceTree = "<group>"; };
 		544617892D413DAE003A14E1 /* GenerateSecretKeyRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateSecretKeyRouter.swift; sourceTree = "<group>"; };
@@ -719,6 +722,7 @@
 				5402A7582D63A2390092765B /* ios-tick-light.json */,
 				5492005F2DD4D83100C2431E /* ios-secret-key.json */,
 				549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */,
+				54128C8B2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf */,
 				C27D99F72BD596630008203F /* Assets.xcassets */,
 				545F7EC02F12E8AF00ED9D62 /* InfoPlist.xcstrings */,
 				54820F4E2DA594B900E29C73 /* Localizable.xcstrings */,
@@ -1422,6 +1426,7 @@
 				5402A75A2D63A2390092765B /* ios-onboarding-02-dark.json in Resources */,
 				5402A75B2D63A2390092765B /* ios-onboarding-03-dark.json in Resources */,
 				C286E9A82E3778050019CF79 /* icon_64.png in Resources */,
+				54128C8C2F28C9F400DA9D16 /* vault-decription-kit-template-pl.pdf in Resources */,
 				54DBB76B2E789EEE003E7342 /* AppIcon.icon in Resources */,
 				545F7EC12F12E8AF00ED9D62 /* InfoPlist.xcstrings in Resources */,
 				54DBB76C2E789EEE003E7342 /* AppIcon.dev.icon in Resources */,
@@ -1450,6 +1455,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54128C8D2F28CA2C00DA9D16 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
