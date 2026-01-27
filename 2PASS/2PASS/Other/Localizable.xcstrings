@@ -4462,13 +4462,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Secret Words** (15-word phrase),"
+            "value" : "**Secret Words** (15-word phrase)"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Tajne słowa** (15-wyrazowa fraza),"
+            "value" : "**Tajnych słów** (15-wyrazowa fraza)"
           }
         }
       }
