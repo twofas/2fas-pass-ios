@@ -20,6 +20,7 @@
 		5402A7612D63A2390092765B /* ios-tick-dark.json in Resources */ = {isa = PBXBuildFile; fileRef = 5402A7572D63A2390092765B /* ios-tick-dark.json */; };
 		5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A76B2D63A2EA0092765B /* ShieldProgressStyle.swift */; };
 		5402A8CE2D6452DF0092765B /* InteractiveProgressAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402A8CD2D6452DB0092765B /* InteractiveProgressAnimator.swift */; };
+		541277842F28C22300DA9D16 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
 		5415C9362E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9352E2AC4FA00FBEE71 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		5415C9382E2AC4FA00FBEE71 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9372E2AC4FA00FBEE71 /* FirebaseCrashlytics */; };
 		5415C93A2E2AC4FA00FBEE71 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5415C9392E2AC4FA00FBEE71 /* FirebaseMessaging */; };
@@ -45,6 +46,7 @@
 		549B1F712E8C035600228FE2 /* CameraViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B1F6F2E8C035600228FE2 /* CameraViewport.swift */; };
 		549B2AD12E8D44F400228FE2 /* SelectDecryptionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */; };
 		549BF4962D7B091E00E0C297 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 549BF4952D7B091E00E0C297 /* SVGView */; };
+		54B1C0A52E1F123400ABCDEF /* vault-decription-kit-template-pl.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 54B1C0A42E1F123400ABCDEF /* vault-decription-kit-template-pl.pdf */; };
 		54BB9E522DC8AAB400BDD13F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */; };
 		54BB9E5E2DC8AC4800BDD13F /* NotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 54BB9E572DC8AC4800BDD13F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		54BB9E652DC8ACFE00BDD13F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 54820F4E2DA594B900E29C73 /* Localizable.xcstrings */; };
@@ -323,6 +325,7 @@
 		549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		549B1F6F2E8C035600228FE2 /* CameraViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewport.swift; sourceTree = "<group>"; };
 		549B2AD02E8D44F300228FE2 /* SelectDecryptionMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDecryptionMethod.swift; sourceTree = "<group>"; };
+		54B1C0A42E1F123400ABCDEF /* vault-decription-kit-template-pl.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "vault-decription-kit-template-pl.pdf"; sourceTree = "<group>"; };
 		54BB9E512DC8AAB400BDD13F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		54BB9E572DC8AC4800BDD13F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		54C0900A2D6E658300954E76 /* CommonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -737,6 +740,7 @@
 				5402A7582D63A2390092765B /* ios-tick-light.json */,
 				5492005F2DD4D83100C2431E /* ios-secret-key.json */,
 				549A982C2D630684008ADCE1 /* vault-decription-kit-template.pdf */,
+				54B1C0A42E1F123400ABCDEF /* vault-decription-kit-template-pl.pdf */,
 				C27D99F72BD596630008203F /* Assets.xcassets */,
 				545F7EC02F12E8AF00ED9D62 /* InfoPlist.xcstrings */,
 				54820F4E2DA594B900E29C73 /* Localizable.xcstrings */,
@@ -1479,6 +1483,7 @@
 				54820F502DA594B900E29C73 /* Localizable.xcstrings in Resources */,
 				C27D99FB2BD596630008203F /* Base in Resources */,
 				549A982D2D630684008ADCE1 /* vault-decription-kit-template.pdf in Resources */,
+				54B1C0A52E1F123400ABCDEF /* vault-decription-kit-template-pl.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1493,6 +1498,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				541277842F28C22300DA9D16 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

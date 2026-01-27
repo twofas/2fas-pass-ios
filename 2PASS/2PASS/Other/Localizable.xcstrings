@@ -4202,6 +4202,57 @@
         }
       }
     },
+    "decryption_kit_file_date" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created on %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stworzono %@"
+          }
+        }
+      }
+    },
+    "decryption_kit_file_qr_code_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan this QR code instead of retyping your Secret Key."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeskanuj ten kod QR zamiast wpisywać tajne słowa."
+          }
+        }
+      }
+    },
+    "decryption_kit_file_qr_code_master_key_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan this QR code instead of retyping your Secret Key and Master Password."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeskanuj ten kod QR zamiast wpisywać tajne słowa i hasło główne."
+          }
+        }
+      }
+    },
     "decryption_kit_notice_msg" : {
       "extractionState" : "manual",
       "localizations" : {
