@@ -24,15 +24,8 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         paymentCardItem.content.cardNumberMask
     }
 
-    var paymentCardIssuer: String? {
-        paymentCardItem.content.cardIssuer
-    }
-
-    var paymentCardIcon: IconContent {
-        if let icon = paymentCardItem.issuerIcon {
-            return .icon(icon, ignoreCornerRadius: true)
-        }
-        return .contentType(.paymentCard)
+    var paymentCardIssuer: PaymentCardIssuer? {
+        paymentCardItem.content.cardIssuer.flatMap(PaymentCardIssuer.init)
     }
 
     var cardNumber: String?
@@ -59,8 +52,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         if autoFillEnvironment?.isTextToInsert == true {
             flowController.autoFillTextToInsert(decrypted)
         } else {
-            let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
-            cardNumber = decrypted.formatted(.paymentCardNumber(issuer: issuer))
+            cardNumber = decrypted.formatted(.paymentCardNumber(issuer: paymentCardIssuer))
         }
     }
     
@@ -130,8 +122,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         }
 
         if paymentCardItem.content.securityCode != nil {
-            let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
-            let length = interactor.paymentCardSecurityCodeLength(for: issuer)
+            let length = interactor.paymentCardSecurityCodeLength(for: paymentCardIssuer)
             securityCode = String(repeating: "•", count: length)
         } else {
             securityCode = nil

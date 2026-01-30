@@ -22,8 +22,6 @@ struct PaymentCardDetailFormView: View {
 
     var body: some View {
         Group {
-            ItemDetailFormTitle(name: presenter.name, icon: presenter.paymentCardIcon)
-
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(
                     key: .cardHolderLabel,
