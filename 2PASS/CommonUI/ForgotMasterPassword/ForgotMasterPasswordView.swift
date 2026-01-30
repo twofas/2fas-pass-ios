@@ -5,9 +5,9 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
 
 private struct Constants {
-    static let imageSize = 260.0
     static let imageMaxHeight = 260.0
     static let imageTopPadding = 20.0
     static let imageCornerRadius = 16.0
@@ -17,9 +17,6 @@ private struct Constants {
 struct ForgotMasterPasswordView: View {
 
     @State var presenter: ForgotMasterPasswordPresenter
-
-    @Environment(\.dismiss)
-    private var dismiss
     
     @Environment(\.colorScheme)
     private var colorScheme
@@ -30,8 +27,6 @@ struct ForgotMasterPasswordView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: Constants.imageMaxHeight)
-                .frame(width: Constants.imageSize)
-                .padding(.top, Constants.imageTopPadding)
                 .background {
                     RoundedRectangle(cornerRadius: Constants.imageCornerRadius)
                         .fill(.neutral50)
@@ -39,26 +34,40 @@ struct ForgotMasterPasswordView: View {
                 }
             
             HeaderContentView(
-                title: Text(.lockScreenForgotMasterPassword),
-                subtitle: Text(.lockScreenForgotMasterPasswordDescription)
+                title: Text(.forgotMasterPasswordTitle),
+                subtitle: Text(.forgotMasterPasswordDescription)
             )
             .padding(.top, Spacing.l)
             .padding(.bottom, Spacing.m)
             
             SelectDecryptionMethod(
-                onFiles: {},
-                onCamera: {}
+                onFiles: { presenter.onFiles() },
+                onCamera: { presenter.onCamera() }
             )
             
             Spacer(minLength: 0)
         }
         .padding(.horizontal, Spacing.xl)
         .padding(.bottom, Spacing.m)
-        .router(router: ForgotMasterPasswordRouter(), destination: $presenter.destination)
+        .router(
+            router: ForgotMasterPasswordRouter(),
+            destination: $presenter.destination
+        )
+        .fileImporter(
+            isPresented: $presenter.showFileImporter,
+            allowedContentTypes: [.pdf, .png, .jpeg],
+            onCompletion: { result in
+                Task { @MainActor in
+                    switch result {
+                    case .success(let url): presenter.onFileOpen(url)
+                    case .failure(let error): presenter.onFileError(error)
+                    }
+                }
+            })
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 ToolbarCancelButton {
-                    dismiss()
+                    presenter.close()
                 }
             }
         }
@@ -69,5 +78,9 @@ struct ForgotMasterPasswordView: View {
 }
 
 #Preview {
-    ForgotMasterPasswordRouter.buildView()
+    ForgotMasterPasswordRouter.buildView(
+        config: .init(allowBiometrics: false, loginType: .login),
+        onSuccess: {},
+        onClose: {}
+    )
 }

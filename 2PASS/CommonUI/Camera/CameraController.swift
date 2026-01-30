@@ -27,8 +27,8 @@ final class CameraController {
     private weak var layer: AVCaptureVideoPreviewLayer?
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
     
-    private let notificationCenter = NotificationCenter.default
-    
+    private var videoRotationObservation: NSKeyValueObservation?
+
     weak var delegate: CameraControllerDelegate?
     
     var isRunning: Bool { captureSession?.isRunning ?? false }
@@ -47,13 +47,6 @@ final class CameraController {
         Log("CameraController - initialize", module: .camera)
         let captureSession = AVCaptureSession()
         captureSession.sessionPreset = .high
-        
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(updateOrientation),
-            name: UIDevice.orientationDidChangeNotification,
-            object: nil
-        )
         
         self.outputs = outputs
         
@@ -111,6 +104,9 @@ final class CameraController {
                 device: captureDevice,
                 previewLayer: layer
             )
+            videoRotationObservation = rotationCoordinator?.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.old, .new]) { [weak self] object, change in
+                self?.updateOrientation()
+            }
         }
         
         self.layer = layer
@@ -165,7 +161,6 @@ final class CameraController {
         clearSession(useAsync: true)
     }
     
-    @objc
     func updateOrientation() {
         guard
             let rotationCoordinator,
@@ -229,7 +224,6 @@ final class CameraController {
     
     deinit {
         Log("CameraController - deinit!", module: .camera)
-        notificationCenter.removeObserver(self)
         clearSession(useAsync: false)
     }
 }

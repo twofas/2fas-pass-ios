@@ -23,7 +23,7 @@ final class AutoFillRootPresenter {
         self.extensionContext = extensionContext
         self.interactor = interactor
         
-        let loginInteractor = ModuleInteractorFactory.shared.loginModuleInteractor(config: .init(allowBiometrics: true, loginType: .login))
+        let loginInteractor = ModuleInteractorFactory.shared.loginModuleInteractor(config: .init(allowBiometrics: true, loginType: .login, showForgotPassword: false))
         loginPresenter = LoginPresenter(loginSuccessful: { [weak self] in
             self?.onLoginSuccessful()
         }, interactor: loginInteractor)

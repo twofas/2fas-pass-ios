@@ -16,7 +16,14 @@ private struct Constants {
 }
 
 public enum LoginDestination: RouterDestination {
-    case forgotMasterPassword
+    case forgotMasterPassword(config: LoginModuleInteractorConfig, onSuccess: Callback, onClose: Callback)
+
+    public var id: String {
+        switch self {
+        case .forgotMasterPassword:
+            return "forgotMasterPassword"
+        }
+    }
 }
 
 @Observable
@@ -50,6 +57,7 @@ public final class LoginPresenter {
     private(set) var showKeyboard = false
     
     var showMigrationFailed = false
+    var shouldDismiss = false
     var destination: LoginDestination?
     
     var showBiometryButton: Bool {
@@ -72,10 +80,7 @@ public final class LoginPresenter {
     }
 
     var allowsForgotMasterPassword: Bool {
-        if case .login = interactor.loginType {
-            return true
-        }
-        return false
+        interactor.showForgotPassword
     }
     
     var loginType: LoginModuleInteractorConfig.LoginType {
@@ -87,8 +92,9 @@ public final class LoginPresenter {
     private let coldRun: Bool
     private let loginSuccessful: Callback
     private let appReset: Callback?
-    
+
     private var lockTimer: Timer?
+    private var loginStatusTask: Task<Void, Never>?
     
     public init(
         coldRun: Bool = false,
@@ -102,10 +108,9 @@ public final class LoginPresenter {
         self.appReset = appReset
         self.biometryType = interactor.biometryType
         self.notficationCenter = .default
-                
-        interactor.lockLogin = { [weak self] in self?.refreshStatus() }
-        interactor.unlockLogin = { [weak self] in self?.refreshStatus() }
+
         loginInput = interactor.prefillMasterPassword ?? ""
+        observeLoginStatus()
         isBiometryAllowed = interactor.isBiometryAllowed
         isBiometryAvailable = interactor.isBiometryAvailable
         hasAppReset = interactor.hasAppReset
@@ -134,7 +139,40 @@ public final class LoginPresenter {
     }
     
     deinit {
+        loginStatusTask?.cancel()
         notficationCenter.removeObserver(self)
+    }
+
+    private func observeLoginStatus() {
+        loginStatusTask = Task { [weak self] in
+            guard let self else { return }
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { [weak self] in
+                    guard let self else { return }
+                    for await _ in self.interactor.didLoginLock {
+                        await MainActor.run { [weak self] in
+                            self?.refreshStatus()
+                        }
+                    }
+                }
+                group.addTask { [weak self] in
+                    guard let self else { return }
+                    for await _ in self.interactor.didLoginUnlock {
+                        await MainActor.run { [weak self] in
+                            self?.refreshStatus()
+                        }
+                    }
+                }
+                group.addTask { [weak self] in
+                    guard let self else { return }
+                    for await _ in self.interactor.didLogoutApp {
+                        await MainActor.run { [weak self] in
+                            self?.shouldDismiss = true
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -193,6 +231,10 @@ extension LoginPresenter {
         isBiometryAvailable = interactor.isBiometryAvailable
         
         startLockTimerIfNeeded()
+        
+        guard destination == nil else {
+            return
+        }
         
         if canUseBiometry {
             if biometrySuccess == false, isBiometryScanning == false {
@@ -287,7 +329,19 @@ extension LoginPresenter {
     }
     
     func onForgotMasterPassword() {
-        destination = .forgotMasterPassword
+        let config = LoginModuleInteractorConfig(
+            allowBiometrics: interactor.isBiometryAllowed,
+            loginType: interactor.loginType
+        )
+        destination = .forgotMasterPassword(
+            config: config,
+            onSuccess: { [weak self] in
+                self?.loginSuccessful()
+            },
+            onClose: { [weak self] in
+                self?.destination = nil
+            }
+        )
     }
 }
 

@@ -78,6 +78,7 @@ public protocol ProtectionInteracting: AnyObject {
 
     func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool
     func verifyMasterKey(_ masterKey: MasterKey) -> Bool
+    func validateEntropyMatchesCurrentVault(_ entropy: Entropy) -> Bool
 }
 
 extension ProtectionInteracting {
@@ -426,6 +427,13 @@ extension ProtectionInteractor: ProtectionInteracting {
             return false
         }
         return mainRepository.verifyEncryptionReference(using: masterKey, with: deviceID)
+    }
+
+    func validateEntropyMatchesCurrentVault(_ entropy: Entropy) -> Bool {
+        guard let storedEntropy = mainRepository.masterKeyEntropy else {
+            return true
+        }
+        return storedEntropy == entropy
     }
 
     func setMasterKey(_ masterKey: MasterKey) {

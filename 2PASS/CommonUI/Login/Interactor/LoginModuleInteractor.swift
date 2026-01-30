@@ -8,11 +8,13 @@ import Foundation
 import Data
 
 public protocol LoginModuleInteracting: AnyObject {
-    var lockLogin: (() -> Void)? { get set }
-    var unlockLogin: (() -> Void)? { get set }
-    
+    var didLoginLock: NotificationCenter.Notifications { get }
+    var didLoginUnlock: NotificationCenter.Notifications { get }
+    var didLogoutApp: NotificationCenter.Notifications { get }
+
     var loginType: LoginModuleInteractorConfig.LoginType { get }
-    
+    var showForgotPassword: Bool { get }
+
     var prefillMasterPassword: String? { get }
     
     var isBiometryAllowed: Bool { get }
@@ -46,21 +48,24 @@ public struct LoginModuleInteractorConfig {
     }
     public let allowBiometrics: Bool
     public let loginType: LoginType
-    
-    public init(allowBiometrics: Bool, loginType: LoginType) {
+    public let showForgotPassword: Bool
+
+    public init(allowBiometrics: Bool, loginType: LoginType, showForgotPassword: Bool = true) {
         self.allowBiometrics = allowBiometrics
         self.loginType = loginType
+        self.showForgotPassword = showForgotPassword
     }
 }
 
 final class LoginModuleInteractor {
-    var lockLogin: (() -> Void)?
-    var unlockLogin: (() -> Void)?
-    
     var loginType: LoginModuleInteractorConfig.LoginType {
         config.loginType
     }
-    
+
+    var showForgotPassword: Bool {
+        config.showForgotPassword
+    }
+
     var hasAppReset: Bool {
         config.loginType == .restore
     }
@@ -68,11 +73,11 @@ final class LoginModuleInteractor {
     var isUserLoggedIn: Bool {
         securityInteractor.isUserLoggedIn
     }
-    
+
     private let config: LoginModuleInteractorConfig
     private let loginInteractor: LoginInteracting
     private let securityInteractor: SecurityInteracting
-    
+
     init(
         config: LoginModuleInteractorConfig,
         loginInteractor: LoginInteracting,
@@ -81,18 +86,22 @@ final class LoginModuleInteractor {
         self.config = config
         self.loginInteractor = loginInteractor
         self.securityInteractor = securityInteractor
-        
-        loginInteractor.lockLogin = { [weak self] in
-            self?.lockLogin?()
-        }
-        
-        loginInteractor.unlockLogin = { [weak self] in
-            self?.unlockLogin?()
-        }
     }
 }
 
 extension LoginModuleInteractor: LoginModuleInteracting {
+    var didLoginLock: NotificationCenter.Notifications {
+        loginInteractor.didLoginLock
+    }
+
+    var didLoginUnlock: NotificationCenter.Notifications {
+        loginInteractor.didLoginUnlock
+    }
+
+    var didLogoutApp: NotificationCenter.Notifications {
+        securityInteractor.didLogoutApp
+    }
+
     var isBiometryAvailable: Bool {
         loginInteractor.canUseBiometryToLogin
     }

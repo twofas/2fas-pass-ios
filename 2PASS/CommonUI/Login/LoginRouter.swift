@@ -25,8 +25,8 @@ public struct LoginRouter: Router {
     @MainActor @ViewBuilder
     public func view(for destination: LoginDestination) -> some View {
         switch destination {
-        case .forgotMasterPassword:
-            ForgotMasterPasswordRouter.buildView()
+        case .forgotMasterPassword(let config, let onSuccess, let onClose):
+            ForgotMasterPasswordRouter.buildView(config: config, onSuccess: onSuccess, onClose: onClose)
         }
     }
     

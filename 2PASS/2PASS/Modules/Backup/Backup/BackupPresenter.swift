@@ -38,7 +38,7 @@ enum BackupDestination: RouterDestination {
     case currentPassword(config: LoginModuleInteractorConfig, onSuccess: Callback)
     case export(onClose: Callback)
     case importFile(onClose: (FileImportResult) -> Void)
-    case recoveryEnterPassword(ExchangeVaultVersioned, entropy: Entropy, onClose: Callback)
+    case recoveryEnterPassword(ExchangeVaultVersioned, entropy: Entropy, onClose: Callback, onTryAgain: Callback)
     case recovery(ExchangeVaultVersioned, onClose: Callback)
     case importing(BackupImportInput, onClose: Callback)
     case importingFailure(onClose: Callback)
@@ -130,9 +130,16 @@ extension BackupPresenter {
                             }
                         case .encrypted(let vault, let entropy):
                             if let entropy {
-                                destination = .recoveryEnterPassword(vault, entropy: entropy, onClose: { [weak self] in
-                                    self?.close()
-                                })
+                                destination = .recoveryEnterPassword(
+                                    vault,
+                                    entropy: entropy,
+                                    onClose: { [weak self] in
+                                        self?.close()
+                                    },
+                                    onTryAgain: { [weak self] in
+                                        self?.destination = nil
+                                    }
+                                )
                             } else {
                                 destination = .recovery(vault, onClose: { [weak self] in
                                     self?.close()

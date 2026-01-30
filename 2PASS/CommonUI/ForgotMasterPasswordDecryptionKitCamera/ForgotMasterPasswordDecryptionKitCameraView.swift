@@ -5,19 +5,12 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import CommonUI
+import Common
 
-struct VaultRecoveryCameraView: View {
-
+struct ForgotMasterPasswordDecryptionKitCameraView: View {
+    
     @State
-    var presenter: VaultRecoveryCameraPresenter
-
-    @Environment(\.dismiss)
-    private var dismiss
-
-    init(presenter: VaultRecoveryCameraPresenter) {
-        self.presenter = presenter
-    }
+    var presenter: ForgotMasterPasswordDecryptionKitCameraPresenter
 
     var body: some View {
         Group {
@@ -35,18 +28,33 @@ struct VaultRecoveryCameraView: View {
                 )
             } else {
                 NoAccessCameraView(onSettings: {
-                    presenter.onToAppSettings()
+                    presenter.onAppSettings()
                 })
             }
         }
         .onAppear {
             presenter.onAppear()
         }
+        .router(
+            router: ForgotMasterPasswordDecryptionKitCameraRouter(),
+            destination: $presenter.destination
+        )
         .onTapGesture {
             guard !presenter.isCameraAvailable else { return }
-            presenter.onToAppSettings()
+            presenter.onAppSettings()
         }
         .colorScheme(.light)
-        .router(router: VaultRecoveryCameraRouter(), destination: $presenter.destination)
     }
+}
+
+#Preview {
+    ForgotMasterPasswordDecryptionKitCameraView(
+        presenter: .init(
+            interactor: ModuleInteractorFactory.shared.forgotMasterPasswordDecryptionKitCameraModuleInteractor(),
+            config: .init(allowBiometrics: false, loginType: .login),
+            onSuccess: {},
+            onTryAgain: {},
+            onClose: {}
+        )
+    )
 }

@@ -35,11 +35,16 @@ final class RootPresenter {
     private let interactor: RootModuleInteracting
     private let toastPresenter: ToastPresenter
     private var appNotificationsQueue: [AppNotification] = []
-    
+    private var logoutObservationTask: Task<Void, Never>?
+
     init(flowController: RootFlowControlling, interactor: RootModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
         self.toastPresenter = .shared
+    }
+
+    deinit {
+        logoutObservationTask?.cancel()
     }
     
     func initialize() {
@@ -49,7 +54,7 @@ final class RootPresenter {
         interactor.storageError = { [weak self] error in
             self?.flowController.toStorageError(error: error)
         }
-        
+
         handleViewFlow { [weak self] in
             self?.flowController.toRemoveCover()
         }
@@ -59,7 +64,19 @@ final class RootPresenter {
             self?.interactor.markAppVersionPromptAsShown()
         }
 
+        observeLogout()
         fetchAppNotifications()
+    }
+
+    private func observeLogout() {
+        logoutObservationTask = Task { [weak self] in
+            guard let self else { return }
+            for await _ in interactor.didLogoutApp {
+                await MainActor.run { [weak self] in
+                    self?.presentLoginIfNeeded()
+                }
+            }
+        }
     }
     
     // MARK: - App flow

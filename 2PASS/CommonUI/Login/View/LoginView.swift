@@ -70,16 +70,16 @@ public struct LoginView: View {
                 focusedField = .login
             }
         }
-        .onAppear {
-            if presenter.showKeyboard {
-                focusedField = .login
-            }
-        }
         .onChange(of: presenter.showKeyboard) { _, newValue in
             if newValue {
                 focusedField = .login
             } else {
                 focusedField = nil
+            }
+        }
+        .onChange(of: presenter.shouldDismiss) { _, shouldDismiss in
+            if shouldDismiss {
+                dismiss()
             }
         }
     }
@@ -177,7 +177,7 @@ public struct LoginView: View {
                     }
                 }
             }
-            .padding(.bottom, max(0, keyboardObserver.keyboardHeight - proxy.safeAreaInsets.bottom + Spacing.m))
+            .padding(.bottom, max(Spacing.m, keyboardObserver.keyboardHeight - proxy.safeAreaInsets.bottom + Spacing.m))
             .animation(.smooth(duration: 0.2), value: keyboardObserver.keyboardHeight)
             .background(
                 Color.clear
@@ -189,13 +189,16 @@ public struct LoginView: View {
             .animation(.smooth, value: presenter.errorDescription.isEmpty)
         }
         .safeAreaInset(edge: .bottom, content: {
-            Button(.lockScreenForgotMasterPassword) {
-                presenter.onForgotMasterPassword()
+            if presenter.allowsForgotMasterPassword {
+                Button(.lockScreenForgotMasterPasswordCta) {
+                    presenter.onForgotMasterPassword()
+                }
+                .buttonStyle(.twofasBorderless)
+                .controlSize(.large)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, Spacing.m)
+                .disabled(presenter.isAppLocked)
             }
-            .buttonStyle(.twofasBorderless)
-            .controlSize(.large)
-            .padding(.horizontal, Spacing.xl)
-            .padding(.bottom, Spacing.m)
         })
         .ignoresSafeArea(.keyboard)
     }

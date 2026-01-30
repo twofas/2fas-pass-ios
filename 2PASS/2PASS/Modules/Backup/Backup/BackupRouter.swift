@@ -36,8 +36,8 @@ struct BackupRouter: Router {
             BackupImportFailureView(onClose: onClose)
         case .importing(let input, let onClose):
             BackupImportImportingRouter.buildView(input: input, onClose: onClose)
-        case .recoveryEnterPassword(let vault, let entropy, let onClose):
-            VaultRecoveryEnterPasswordRouter.buildView(flowContext: .importVault(onClose: onClose), entropy: entropy, recoveryData: .file(vault))
+        case .recoveryEnterPassword(let vault, let entropy, let onClose, let onTryAgain):
+            VaultRecoveryEnterPasswordRouter.buildView(flowContext: .importVault(onClose: onClose), entropy: entropy, recoveryData: .file(vault), onTryAgain: onTryAgain)
         case .recovery(let vault, let onClose):
             VaultRecoverySelectRouter.buildView(flowContext: .importVault(onClose: onClose), recoveryData: .file(vault))
         case .importFile:

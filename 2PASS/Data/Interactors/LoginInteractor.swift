@@ -30,8 +30,8 @@ public protocol LoginInteracting: AnyObject {
     var shouldRequestForBiometryToLogin: Bool { get }
     func finishRequestForBiometryToLogin()
     
-    var lockLogin: (() -> Void)? { get set }
-    var unlockLogin: (() -> Void)? { get set }
+    var didLoginLock: NotificationCenter.Notifications { get }
+    var didLoginUnlock: NotificationCenter.Notifications { get }
     var appLockRemainingSeconds: Int? { get }
     var isAppLocked: Bool { get }
 
@@ -84,7 +84,8 @@ public protocol LoginInteracting: AnyObject {
         completion: @escaping (MasterKey?) -> Void
     )
 
-    func loginUsingMasterKey(_ masterKey: MasterKey) async -> Bool
+    func loginUsingMasterKey(_ masterKey: MasterKey, entropy: Entropy) async -> Bool
+    func verifyMasterKey(_ masterKey: MasterKey, entropy: Entropy) -> Bool
 }
 
 final class LoginInteractor {
@@ -139,25 +140,15 @@ extension LoginInteractor: LoginInteracting {
     var isAppLocked: Bool {
         securityInteractor.isAppLocked
     }
-    
-    var lockLogin: (() -> Void)? {
-        get {
-            securityInteractor.lockLogin
-        }
-        set {
-            securityInteractor.unlockLogin = newValue
-        }
+
+    var didLoginLock: NotificationCenter.Notifications {
+        securityInteractor.didLoginLock
     }
-    
-    var unlockLogin: (() -> Void)? {
-        get {
-            securityInteractor.unlockLogin
-        }
-        set {
-            securityInteractor.unlockLogin = newValue
-        }
+
+    var didLoginUnlock: NotificationCenter.Notifications {
+        securityInteractor.didLoginUnlock
     }
-    
+
     func loginUsingMasterPassword(
         _ masterPassword: MasterPassword,
         completion: @escaping (LoginMasterPasswordResult) -> Void
@@ -321,26 +312,41 @@ extension LoginInteractor: LoginInteracting {
         completion(masterKey)
     }
 
-    func loginUsingMasterKey(_ masterKey: MasterKey) async -> Bool {
-        Log("LoginInteractor: login using Master Key", module: .interactor)
-        guard !securityInteractor.isAppLocked else {
-            Log("LoginInteractor: App Locked", module: .interactor)
-            return false
-        }
-
-        guard protectionInteractor.verifyMasterKey(masterKey) else {
-            Log("LoginInteractor: Master Key verification failed", module: .interactor, severity: .error)
+    @MainActor
+    func loginUsingMasterKey(_ masterKey: MasterKey, entropy: Entropy) async -> Bool {
+        guard protectionInteractor.validateEntropyMatchesCurrentVault(entropy) else {
             securityInteractor.markWrongPassword()
             return false
         }
-
-        securityInteractor.markCorrectLogin()
+        
+        guard useMasterKey(masterKey) else {
+            return false
+        }
+        
         await withCheckedContinuation { continuation in
             userLoggedInUsingMasterKey(masterKey) { [weak self] in
                 self?.protectionInteractor.clearAfterInit()
                 continuation.resume()
             }
         }
+        return true
+    }
+    
+    func verifyMasterKey(_ masterKey: MasterKey, entropy: Entropy) -> Bool {
+        guard protectionInteractor.validateEntropyMatchesCurrentVault(entropy) else {
+            securityInteractor.markWrongPassword()
+            return false
+        }
+        
+        guard useMasterKey(masterKey) else {
+            return false
+        }
+        
+        protectionInteractor.restoreEntropy()
+        protectionInteractor.createSeed()
+        protectionInteractor.createSalt()
+        protectionInteractor.setMasterKey(masterKey)
+        
         return true
     }
 
@@ -402,6 +408,25 @@ private extension LoginInteractor {
         }
     }
     
+    func useMasterKey(_ masterKey: MasterKey) -> Bool {
+        Log("LoginInteractor: login using Master Key", module: .interactor)
+        guard !securityInteractor.isAppLocked else {
+            Log("LoginInteractor: App Locked", module: .interactor)
+            return false
+        }
+
+        guard protectionInteractor.verifyMasterKey(masterKey) else {
+            Log("LoginInteractor: Master Key verification failed", module: .interactor, severity: .error)
+            securityInteractor.markWrongPassword()
+            return false
+        }
+
+        securityInteractor.markCorrectLogin()
+        
+        return true
+    }
+
+    
     func useBiometry(reason: String, login: Bool, completion: @escaping (LoginBiometryResult) -> Void) {
         Log("LoginInteractor: Login using Biometry", module: .interactor)
         guard !securityInteractor.isAppLocked else {
@@ -419,7 +444,10 @@ private extension LoginInteractor {
                         self?.protectionInteractor.clearAfterInit()
                     })
                 } else {
-                    self?.protectionInteractor.clearAfterInit()
+                    self?.protectionInteractor.restoreEntropy()
+                    self?.protectionInteractor.createSeed()
+                    self?.protectionInteractor.createSalt()
+                    self?.protectionInteractor.setMasterKey(masterKey)
                     completion(.success)
                 }
             case .failure:

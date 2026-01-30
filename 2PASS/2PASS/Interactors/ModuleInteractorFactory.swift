@@ -205,7 +205,8 @@ extension ModuleInteractorFactory {
     
     func vaultRecoverySelectModuleInteractor() -> VaultRecoverySelectModuleInteracting {
         VaultRecoverySelectModuleInteractor(
-            importInteractor: InteractorFactory.shared.importInteractor()
+            importInteractor: InteractorFactory.shared.importInteractor(),
+            recoveryKitScanInteractor: InteractorFactory.shared.recoveryKitScanInteractor()
         )
     }
     
