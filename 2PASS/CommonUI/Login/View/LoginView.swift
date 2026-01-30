@@ -177,7 +177,7 @@ public struct LoginView: View {
                     }
                 }
             }
-            .padding(.bottom, max(Spacing.m, keyboardObserver.keyboardHeight - proxy.safeAreaInsets.bottom + Spacing.m))
+            .padding(.bottom, max(presenter.allowsForgotMasterPassword ? 0 : Spacing.m, keyboardObserver.keyboardHeight - proxy.safeAreaInsets.bottom + Spacing.m))
             .animation(.smooth(duration: 0.2), value: keyboardObserver.keyboardHeight)
             .background(
                 Color.clear
