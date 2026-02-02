@@ -10,7 +10,7 @@ import CommonUI
 
 struct VaultRecoveryCameraRouter: Router {
 
-    @ViewBuilder
+    @MainActor @ViewBuilder
     static func buildView(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData, onTryAgain: @escaping Callback) -> some View {
         let presenter = VaultRecoveryCameraPresenter(
             interactor: ModuleInteractorFactory.shared.vaultRecoveryCameraModuleInteractor(),

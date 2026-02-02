@@ -18,21 +18,15 @@ struct ConnectCameraView: View {
         ScanQRCodeCameraView(
             title: Text(.restoreQrCodeCameraTitle),
             description: Text(.connectQrcodeCameraDescription),
+            error: presenter.showInvalidCodeError ? Text(.cameraQrCodeUnsupportedCode) : nil,
             codeFound: {
                 presenter.onScannedQRCode($0)
+            },
+            codeLost: {
+                presenter.onCodeLost()
             }
         )
-        .sensoryFeedback(.selection, trigger: presenter.lastQrCode, condition: { oldValue, newValue in
-            newValue != nil
-        })
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(.commonHelp) {
-                    presenter.onHelp()
-                }
-                .foregroundStyle(.baseStatic0)
-            }
-        }
+        .sensoryFeedback(.selection, trigger: presenter.destination?.id)
         .router(router: ConnectCameraRouter(), destination: $presenter.destination)
         .onAppear {
             presenter.onAppear()

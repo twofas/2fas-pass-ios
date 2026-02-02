@@ -23,14 +23,11 @@ enum VaultRecoveryCameraDestination: RouterDestination {
     }
 }
 
-@Observable
+@MainActor @Observable
 final class VaultRecoveryCameraPresenter {
     var freezeCamera = false
     var isCameraAvailable = false
     var showInvalidCodeError = false
-
-    private var pendingTask: Task<Void, Never>?
-    private var pendingCode: String?
 
     var destination: VaultRecoveryCameraDestination?
 
@@ -38,6 +35,7 @@ final class VaultRecoveryCameraPresenter {
     private let flowContext: VaultRecoveryFlowContext
     private let recoveryData: VaultRecoveryData
     private let onTryAgain: Callback
+    private let scanDebouncer = ScanDebouncer()
 
     init(
         interactor: VaultRecoveryCameraModuleInteracting,
@@ -53,8 +51,8 @@ final class VaultRecoveryCameraPresenter {
 
     func onAppear() {
         freezeCamera = false
-        pendingCode = nil
-        
+        scanDebouncer.reset()
+
         interactor.checkCameraPermission { isCameraAvailable in
             self.isCameraAvailable = isCameraAvailable
         }
@@ -81,21 +79,19 @@ final class VaultRecoveryCameraPresenter {
 
 private extension VaultRecoveryCameraPresenter {
     func scheduleDetected(code: String) {
-        guard pendingCode != code else { return }
-        pendingCode = code
-        cancelPendingTask()
-        pendingTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
-            guard let self, self.pendingCode == code else { return }
-            if let result = self.interactor.parseQRCodeContents(code) {
-                self.freezeCamera = true
-                self.showInvalidCodeError = false
-                self.navigateToNextScreen(entropy: result.entropy, masterKey: result.masterKey)
-            } else {
-                self.freezeCamera = false
-                self.showInvalidCodeError = true
+        scanDebouncer.scheduleDetected(
+            code: code,
+            task: { [weak self] code in
+                if let result = self?.interactor.parseQRCodeContents(code) {
+                    self?.freezeCamera = true
+                    self?.showInvalidCodeError = false
+                    self?.navigateToNextScreen(entropy: result.entropy, masterKey: result.masterKey)
+                } else {
+                    self?.freezeCamera = false
+                    self?.showInvalidCodeError = true
+                }
             }
-        }
+        )
     }
 
     func navigateToNextScreen(entropy: Entropy, masterKey: MasterKey?) {
@@ -124,19 +120,9 @@ private extension VaultRecoveryCameraPresenter {
     }
 
     func scheduleLost() {
-        guard pendingCode != nil else { return }
-        pendingCode = nil
-        cancelPendingTask()
-        pendingTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
-            guard let self, self.pendingCode == nil else { return }
-            self.freezeCamera = false
-            self.showInvalidCodeError = false
+        scanDebouncer.scheduleLost { [weak self] in
+            self?.freezeCamera = false
+            self?.showInvalidCodeError = false
         }
-    }
-
-    func cancelPendingTask() {
-        pendingTask?.cancel()
-        pendingTask = nil
     }
 }

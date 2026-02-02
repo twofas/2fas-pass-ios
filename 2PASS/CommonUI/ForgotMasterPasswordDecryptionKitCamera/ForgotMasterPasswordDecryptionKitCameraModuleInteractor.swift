@@ -14,9 +14,14 @@ protocol ForgotMasterPasswordDecryptionKitCameraModuleInteracting: AnyObject {
 
 final class ForgotMasterPasswordDecryptionKitCameraModuleInteractor {
     private let cameraPermissionInteractor: CameraPermissionInteracting
-    
-    init(cameraPermissionInteractor: CameraPermissionInteracting) {
+    private let recoveryKitScanner: RecoveryKitScanCameraInteracting
+
+    init(
+        cameraPermissionInteractor: CameraPermissionInteracting,
+        recoveryKitScanner: RecoveryKitScanCameraInteracting
+    ) {
         self.cameraPermissionInteractor = cameraPermissionInteractor
+        self.recoveryKitScanner = recoveryKitScanner
     }
 }
 
@@ -30,21 +35,8 @@ extension ForgotMasterPasswordDecryptionKitCameraModuleInteractor: ForgotMasterP
             completion(value)
         }
     }
-    
+
     func parseQRCodeContents(_ str: String) -> (entropy: Entropy, masterKey: MasterKey?)? {
-        guard let result = RecoveryKitLink.parse(from: str) else {
-            return nil
-        }
-        let entropy = Data(base64Encoded: result.entropy)
-        let masterKey = {
-            if let masterKey = result.masterKey {
-                return Data(base64Encoded: masterKey)
-            }
-            return nil
-        }()
-        guard let entropy else {
-            return nil
-        }
-        return (entropy: entropy, masterKey: masterKey)
+        recoveryKitScanner.parseQRCodeContents(str)
     }
 }

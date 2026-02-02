@@ -94,7 +94,8 @@ public final class ModuleInteractorFactory {
 
     func forgotMasterPasswordDecryptionKitCameraModuleInteractor() -> ForgotMasterPasswordDecryptionKitCameraModuleInteracting {
         ForgotMasterPasswordDecryptionKitCameraModuleInteractor(
-            cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor()
+            cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
+            recoveryKitScanner: InteractorFactory.shared.recoveryKitScanCameraInteractor()
         )
     }
     
