@@ -251,9 +251,7 @@ public final class SecureInputView: UIView {
 
         let currentText = plainTextField.text ?? ""
         if isSecure == false, currentText.isEmpty == false {
-            let monoBase = UIFont.monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
-            plainTextField.font = UIFontMetrics(forTextStyle: .body).scaledFont(for: monoBase)
-            plainTextField.adjustsFontForContentSizeCategory = true
+            plainTextField.font = UIFont.monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
         } else {
             plainTextField.font = bodyFont
         }

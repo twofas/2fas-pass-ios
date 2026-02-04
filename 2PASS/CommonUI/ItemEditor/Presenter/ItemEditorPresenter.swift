@@ -140,7 +140,7 @@ final class ItemEditorPresenter {
         
         if initalData != nil {
             notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
-            notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudStateChanged, object: nil)
+            notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
         }
         
         observeCurrentPresenterChanges()

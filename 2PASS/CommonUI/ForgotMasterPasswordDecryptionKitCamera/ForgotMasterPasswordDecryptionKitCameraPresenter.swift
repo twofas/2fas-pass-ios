@@ -25,22 +25,20 @@ public enum ForgotMasterPasswordDecryptionKitCameraDestination: RouterDestinatio
     )
 }
 
-@Observable
+@MainActor @Observable
 final class ForgotMasterPasswordDecryptionKitCameraPresenter {
     var freezeCamera = false
     var isCameraAvailable = false
     var showInvalidCodeError = false
-    
-    private var pendingTask: Task<Void, Never>?
-    private var pendingCode: String?
-    
+
     var destination: ForgotMasterPasswordDecryptionKitCameraDestination?
-    
+
     private let interactor: ForgotMasterPasswordDecryptionKitCameraModuleInteracting
     private let config: LoginModuleInteractorConfig
     private let onSuccess: Callback
     private let onTryAgain: Callback
     private let onClose: Callback
+    private let scanDebouncer = ScanDebouncer()
 
     init(
         interactor: ForgotMasterPasswordDecryptionKitCameraModuleInteracting,
@@ -55,16 +53,16 @@ final class ForgotMasterPasswordDecryptionKitCameraPresenter {
         self.onTryAgain = onTryAgain
         self.onClose = onClose
     }
-    
+
     func onAppear() {
         freezeCamera = false
-        pendingCode = nil
-        
+        scanDebouncer.reset()
+
         interactor.checkCameraPermission { isCameraAvailable in
             self.isCameraAvailable = isCameraAvailable
         }
     }
-    
+
     func onFoundCode(code: String) {
         guard !freezeCamera else { return }
         Log("ForgotMasterPasswordDecryptionKitCameraPresenter: Found code: \(code)")
@@ -74,53 +72,42 @@ final class ForgotMasterPasswordDecryptionKitCameraPresenter {
     func onCodeLost() {
         scheduleLost()
     }
-    
+
     func onAppSettings() {
         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
     }
 }
 
 private extension ForgotMasterPasswordDecryptionKitCameraPresenter {
-    
     func scheduleDetected(code: String) {
-        guard pendingCode != code else { return }
-        pendingCode = code
-        cancelPendingTask()
-        pendingTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
-            guard let self, self.pendingCode == code else { return }
-            if let result = self.interactor.parseQRCodeContents(code) {
-                self.freezeCamera = true
-                self.showInvalidCodeError = false
-                self.destination = .recovery(
-                    entropy: result.entropy,
-                    masterKey: result.masterKey,
-                    config: self.config,
-                    onSuccess: self.onSuccess,
-                    onTryAgain: self.onTryAgain,
-                    onClose: self.onClose
-                )
-            } else {
-                self.freezeCamera = false
-                self.showInvalidCodeError = true
+        scanDebouncer.scheduleDetected(
+            code: code,
+            task: { [weak self] code in
+                guard let self else { return }
+                
+                if let result = self.interactor.parseQRCodeContents(code) {
+                    self.freezeCamera = true
+                    self.showInvalidCodeError = false
+                    self.destination = .recovery(
+                        entropy: result.entropy,
+                        masterKey: result.masterKey,
+                        config: self.config,
+                        onSuccess: self.onSuccess,
+                        onTryAgain: self.onTryAgain,
+                        onClose: self.onClose
+                    )
+                } else {
+                    self.freezeCamera = false
+                    self.showInvalidCodeError = true
+                }
             }
-        }
+        )
     }
-    
+
     func scheduleLost() {
-        guard pendingCode != nil else { return }
-        pendingCode = nil
-        cancelPendingTask()
-        pendingTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
-            guard let self, self.pendingCode == nil else { return }
-            self.freezeCamera = false
-            self.showInvalidCodeError = false
+        scanDebouncer.scheduleLost { [weak self] in
+            self?.freezeCamera = false
+            self?.showInvalidCodeError = false
         }
-    }
-    
-    func cancelPendingTask() {
-        pendingTask?.cancel()
-        pendingTask = nil
     }
 }

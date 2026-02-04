@@ -20,33 +20,23 @@ struct VaultRecoveryCameraView: View {
     }
 
     var body: some View {
-        Group {
-            if presenter.isCameraAvailable {
-                ScanQRCodeCameraView(
-                    title: Text(.restoreQrCodeCameraTitle),
-                    description: Text(.restoreQrCodeCameraDescription),
-                    error: presenter.showInvalidCodeError ? Text(.cameraQrCodeUnsupportedCode) : nil,
-                    codeFound: { code in
-                        presenter.onFoundCode(code: code)
-                    },
-                    codeLost: {
-                        presenter.onCodeLost()
-                    }
-                )
-            } else {
-                NoAccessCameraView(onSettings: {
-                    presenter.onToAppSettings()
-                })
+        RecoveryKitCameraView(
+            isCameraAvailable: presenter.isCameraAvailable,
+            showInvalidCodeError: presenter.showInvalidCodeError,
+            onCodeFound: { code in
+                presenter.onFoundCode(code: code)
+            },
+            onCodeLost: {
+                presenter.onCodeLost()
+            },
+            onAppSettings: {
+                presenter.onToAppSettings()
             }
-        }
+        )
+        .sensoryFeedback(.selection, trigger: presenter.destination?.id)
         .onAppear {
             presenter.onAppear()
         }
-        .onTapGesture {
-            guard !presenter.isCameraAvailable else { return }
-            presenter.onToAppSettings()
-        }
-        .colorScheme(.light)
         .router(router: VaultRecoveryCameraRouter(), destination: $presenter.destination)
     }
 }

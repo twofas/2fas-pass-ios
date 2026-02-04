@@ -9,7 +9,7 @@ import Common
 
 public struct ForgotMasterPasswordDecryptionKitCameraRouter: Router {
 
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public static func buildView(
         config: LoginModuleInteractorConfig,
         onSuccess: @escaping Callback,

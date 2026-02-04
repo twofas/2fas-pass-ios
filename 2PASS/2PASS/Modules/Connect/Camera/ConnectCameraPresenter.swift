@@ -7,6 +7,7 @@
 import Foundation
 import Data
 import Common
+import CommonUI
 
 enum ConnectCameraDestination: Identifiable {
     case connecting(ConnectSession, onScanAgain: Callback)
@@ -21,38 +22,48 @@ enum ConnectCameraDestination: Identifiable {
 
 @Observable
 final class ConnectCameraPresenter {
-    
     var destination: ConnectCameraDestination?
+    var showInvalidCodeError = false
 
     private let onScanAgain: Callback
     private let _onScannedQRCode: Callback
-    
-    private(set) var lastQrCode: String?
-    
+    private let scanDebouncer = ScanDebouncer()
+
     init(onScannedQRCode: @escaping Callback, onScanAgain: @escaping Callback) {
         self._onScannedQRCode = onScannedQRCode
         self.onScanAgain = onScanAgain
     }
-    
+
+    @MainActor
     func onAppear() {
-        lastQrCode = nil
+        scanDebouncer.reset()
+        showInvalidCodeError = false
     }
-    
+
+    @MainActor
     func onScannedQRCode(_ code: String) {
-        guard code != lastQrCode else {
-            return
-        }
-        
-        lastQrCode = code
+        scanDebouncer.scheduleDetected(code: code) { [weak self] code in
+            guard let self else { return }
 
-        guard let session = ConnectSession(qrCode: code), session.verify() else {
-            return
+            guard let session = ConnectSession(qrCode: code) else {
+                self.showInvalidCodeError = true
+                return
+            }
+            
+            guard session.verify() else {
+                return
+            }
+
+            self.showInvalidCodeError = false
+            self.destination = .connecting(session, onScanAgain: self.onScanAgain)
+            self._onScannedQRCode()
         }
-        
-        destination = .connecting(session, onScanAgain: onScanAgain)
-        _onScannedQRCode()
     }
 
-    func onHelp() {
+    @MainActor
+    func onCodeLost() {
+        scanDebouncer.scheduleLost { [weak self] in
+            self?.showInvalidCodeError = false
+        }
     }
 }
