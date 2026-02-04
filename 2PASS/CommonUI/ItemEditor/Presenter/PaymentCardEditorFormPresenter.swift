@@ -294,8 +294,12 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     
     private func decryptSecurityCodeIfNeeded() {
         guard decryptedSecurityCode == nil else { return }
-        guard let item = initialPaymentCardItem, let encrypted = item.content.securityCode else { return }
-        
+        guard let item = initialPaymentCardItem, let encrypted = item.content.securityCode else {
+            decryptedSecurityCode = ""
+            initialSecurityCode = initialSecurityCode ?? ""
+            return
+        }
+
         let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel)
         decryptedSecurityCode = decrypted
         initialSecurityCode = decrypted
