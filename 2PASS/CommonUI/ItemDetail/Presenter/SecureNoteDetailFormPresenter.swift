@@ -41,7 +41,7 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     }
 
     func onSelectNote() {
-        guard let note else { return }
+        guard #available(iOS 18.0, *), let note else { return }
         flowController.autoFillTextToInsert(note)
     }
     

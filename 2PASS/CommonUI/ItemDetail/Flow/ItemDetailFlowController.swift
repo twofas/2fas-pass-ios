@@ -9,6 +9,8 @@ import Common
 
 protocol ItemDetailFlowControllerParent: AnyObject {
     func itemDetailClose()
+    
+    @available(iOS 18.0, *)
     func itemDetailAutoFillTextToInsert(_ text: String)
 }
 
@@ -16,6 +18,8 @@ protocol ItemDetailFlowControlling: AnyObject {
     func toEdit(_ itemID: ItemID)
     func toOpenURI(_ url: URL)
     func close()
+    
+    @available(iOS 18.0, *)
     func autoFillTextToInsert(_ text: String)
 }
 
@@ -68,6 +72,7 @@ extension ItemDetailFlowController: ItemDetailFlowControlling {
         parent?.itemDetailClose()
     }
 
+    @available(iOS 18.0, *)
     func autoFillTextToInsert(_ text: String) {
         parent?.itemDetailAutoFillTextToInsert(text)
     }
