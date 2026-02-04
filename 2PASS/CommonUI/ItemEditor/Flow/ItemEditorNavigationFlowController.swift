@@ -40,9 +40,10 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
             let options = UIViewController.Transition.ZoomOptions()
             options.interactiveDismissShouldBegin = { _ in false }
             navi.preferredTransition = .zoom(options: options, sourceViewProvider: { _ in sourceView })
-        } else {
-            navi.configureAsPhoneFullScreenModal()
         }
+        
+        navi.configureAsPhoneFullScreenModal()
+        
         viewController.present(navi, animated: true)
     }
 
