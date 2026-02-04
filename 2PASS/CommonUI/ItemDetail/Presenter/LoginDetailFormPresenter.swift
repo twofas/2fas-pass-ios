@@ -61,7 +61,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     }
     
     func onSelectUsername() {
-        if let username, autoFillEnvironment?.isTextToInsert == true {
+        if #available(iOS 18.0, *), let username, autoFillEnvironment?.isTextToInsert == true {
             flowController.autoFillTextToInsert(username)
         }
     }
@@ -70,7 +70,9 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
         guard isPasswordAvailable, let passwordDecrypted else { return }
         
         if autoFillEnvironment?.isTextToInsert == true {
-            flowController.autoFillTextToInsert(passwordDecrypted)
+            if #available(iOS 18.0, *) {
+                flowController.autoFillTextToInsert(passwordDecrypted)
+            }
         } else {
             password = PasswordRenderer(password: passwordDecrypted.withZeroWidthSpaces).makeColorizedAttributedString()
         }

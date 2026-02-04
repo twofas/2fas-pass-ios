@@ -42,6 +42,7 @@ struct AutoFillPasswordsListView: UIViewControllerRepresentable {
             parent.context.completeRequest(withSelectedCredential: credential)
         }
         
+        @available(iOS 18.0, *)
         func textToInsert(_ text: String) {
             Task { @MainActor in
                 await parent.context.completeRequest(withTextToInsert: text)
