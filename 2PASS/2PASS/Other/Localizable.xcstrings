@@ -3896,6 +3896,74 @@
         }
       }
     },
+    "credential_exchange_export_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj"
+          }
+        }
+      }
+    },
+    "credential_exchange_export_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Failed"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksport nie powiódł się"
+          }
+        }
+      }
+    },
+    "credential_exchange_export_idle_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export your credentials to another password manager."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyeksportuj swoje dane logowania do innego menedżera haseł."
+          }
+        }
+      }
+    },
+    "credential_exchange_export_idle_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export to Another App"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj do innej aplikacji"
+          }
+        }
+      }
+    },
     "credit_card_cardholder_label" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -14267,6 +14335,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eksport"
+          }
+        }
+      }
+    },
+    "settings_entry_export_to_another_app" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export to Another App"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj do innej aplikacji"
           }
         }
       }

@@ -341,6 +341,14 @@ extension ModuleInteractorFactory {
         )
     }
     
+    @available(iOS 26.0, *)
+    func credentialExchangeExportModuleInteractor() -> CredentialExchangeExportModuleInteracting {
+        CredentialExchangeExportModuleInteractor(
+            exporter: InteractorFactory.shared.credentialExchangeExporter(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor()
+        )
+    }
+
     func transferItemsServicesListInteractor() -> TransferItemsServicesListInteracting {
         TransferItemsServicesListInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),

@@ -116,6 +116,7 @@ protocol MainRepository: AnyObject {
     func initialPermissionStateInitialize()
     
     var appBundleIdentifier: String? { get }
+    var appDisplayName: String? { get }
     var dateOfFirstRun: Date? { get }
     func saveDateOfFirstRun(_ date: Date)
     

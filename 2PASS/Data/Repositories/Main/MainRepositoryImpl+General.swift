@@ -51,6 +51,11 @@ extension MainRepositoryImpl {
     var appBundleIdentifier: String? {
         Bundle.main.bundleIdentifier
     }
+
+    var appDisplayName: String? {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
+    }
     
     func saveDateOfFirstRun(_ date: Date) {
         userDefaultsDataSource.saveDateOfFirstRun(date)
