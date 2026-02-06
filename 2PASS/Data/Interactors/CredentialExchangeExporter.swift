@@ -18,11 +18,13 @@ public final class CredentialExchangeExporter: CredentialExchangeExporting {
 
     private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
+    private let uriInteractor: URIInteracting
     private let mainRepository: MainRepository
 
-    init(itemsInteractor: ItemsInteracting, tagInteractor: TagInteracting, mainRepository: MainRepository) {
+    init(itemsInteractor: ItemsInteracting, tagInteractor: TagInteracting, uriInteractor: URIInteracting, mainRepository: MainRepository) {
         self.itemsInteractor = itemsInteractor
         self.tagInteractor = tagInteractor
+        self.uriInteractor = uriInteractor
         self.mainRepository = mainRepository
     }
 
@@ -107,7 +109,7 @@ private extension CredentialExchangeExporter {
 
         let scope: ASImportableCredentialScope? = {
             guard let uris = data.uris, !uris.isEmpty else { return nil }
-            let urls = uris.compactMap { URL(string: $0.uri) }
+            let urls = uris.compactMap { uriInteractor.normalizeURL($0.uri) }
             guard !urls.isEmpty else { return nil }
             return ASImportableCredentialScope(urls: urls)
         }()

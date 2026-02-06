@@ -309,6 +309,7 @@ public final class InteractorFactory {
         CredentialExchangeExporter(
             itemsInteractor: itemsInteractor(),
             tagInteractor: tagInteractor(),
+            uriInteractor: uriInteractor(),
             mainRepository: MainRepositoryImpl.shared
         )
     }
