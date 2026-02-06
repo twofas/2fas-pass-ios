@@ -68,7 +68,9 @@ struct CredentialExchangeImportView: View {
             } header: {
                 SettingsHeaderView(
                     icon: {
-                        SettingsIconView(icon: iconForRelyingParty(presenter.exporterRelyingPartyIdentifier))
+                        let icon = iconForRelyingParty(presenter.exporterRelyingPartyIdentifier)
+                        SettingsIconView(icon: icon)
+                            .iconColor(icon == .transferItems ? .black : nil)
                     },
                     title: {
                         HStack(spacing: Spacing.s) {
@@ -161,33 +163,4 @@ struct CredentialExchangeImportView: View {
             }
         }
     }
-}
-
-// MARK: - Preview
-
-@available(iOS 26.0, *)
-private final class PreviewInteractor: CredentialExchangeImportModuleInteracting {
-    func convertCredentials(_ data: ASExportedCredentialData) throws(CredentialExchangeImportError) -> ExternalServiceImportResult {
-        ExternalServiceImportResult(items: [], tags: [])
-    }
-}
-
-@available(iOS 26.0, *)
-#Preview {
-    CredentialExchangeImportView(
-        presenter: {
-            let presenter = CredentialExchangeImportPresenter(
-                interactor: PreviewInteractor(),
-                onClose: {}
-            )
-            presenter.previewSetup(
-                exporterDisplayName: "Apple Passwords",
-                exporterRelyingPartyIdentifier: "apple.com",
-                summary: [.login: 42, .paymentCard: 5, .secureNote: 3],
-                tagsCount: 7,
-                itemsConvertedToSecureNotes: 2
-            )
-            return presenter
-        }()
-    )
 }

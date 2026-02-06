@@ -43,7 +43,7 @@ final class CredentialExchangeImportPresenter {
     private(set) var tagsCount: Int = 0
     private(set) var itemsConvertedToSecureNotes: Int = 0
 
-    private let credentials: ASExportedCredentialData?
+    private let credentials: ASExportedCredentialData
     
     private let interactor: CredentialExchangeImportModuleInteracting
     let onClose: Callback
@@ -56,7 +56,6 @@ final class CredentialExchangeImportPresenter {
 
     func onAppear() async {
         guard viewState == .loading else { return }
-        guard let credentials else { return }
 
         exporterDisplayName = credentials.exporterDisplayName
         exporterRelyingPartyIdentifier = credentials.exporterRelyingPartyIdentifier
@@ -100,31 +99,4 @@ final class CredentialExchangeImportPresenter {
             onClose: onClose
         )
     }
-    
-    #if DEBUG
-    /// Preview-only initializer
-    init(interactor: CredentialExchangeImportModuleInteracting, onClose: @escaping Callback) {
-        self.credentials = nil
-        self.interactor = interactor
-        self.onClose = onClose
-    }
-
-    /// Preview-only setup method
-    func previewSetup(
-        exporterDisplayName: String,
-        exporterRelyingPartyIdentifier: String,
-        summary: [ItemContentType: Int],
-        tagsCount: Int,
-        itemsConvertedToSecureNotes: Int
-    ) {
-        self.exporterDisplayName = exporterDisplayName
-        self.exporterRelyingPartyIdentifier = exporterRelyingPartyIdentifier
-        self.summary = summary
-        self.contentTypes = ItemContentType.allKnownTypes.filter { summary[$0] != nil }
-        self.tagsCount = tagsCount
-        self.itemsConvertedToSecureNotes = itemsConvertedToSecureNotes
-        self.importResult = ExternalServiceImportResult(items: [])
-        self.viewState = .summary
-    }
-    #endif
 }
