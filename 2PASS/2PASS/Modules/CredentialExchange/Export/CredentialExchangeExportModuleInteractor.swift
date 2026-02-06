@@ -11,7 +11,7 @@ import AuthenticationServices
 
 @available(iOS 26.0, *)
 protocol CredentialExchangeExportModuleInteracting: AnyObject {
-    func performExport(anchor: ASPresentationAnchor) async throws
+    @MainActor func performExport(anchor: ASPresentationAnchor) async throws
 }
 
 @available(iOS 26.0, *)
@@ -28,6 +28,7 @@ final class CredentialExchangeExportModuleInteractor: CredentialExchangeExportMo
         self.itemsInteractor = itemsInteractor
     }
 
+    @MainActor
     func performExport(anchor: ASPresentationAnchor) async throws {
         let items = itemsInteractor.listItems(
             searchPhrase: nil,

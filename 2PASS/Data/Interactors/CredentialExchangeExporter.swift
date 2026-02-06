@@ -100,15 +100,8 @@ private extension CredentialExchangeExporter {
             )))
         }
 
-        // TOTP from notes
-        var notesWithoutTOTP = data.notes
-        if let totp = parseTOTPFromNotes(data.notes, userName: data.username) {
-            credentials.append(.totp(totp))
-            notesWithoutTOTP = stripTOTPFromNotes(data.notes)
-        }
-
-        // Notes (without TOTP if it was extracted)
-        if let notes = notesWithoutTOTP?.nonBlankTrimmedOrNil {
+        // Notes
+        if let notes = data.notes?.nonBlankTrimmedOrNil {
             let noteField = ASImportableEditableField(id: nil, fieldType: .string, value: notes)
             credentials.append(.note(.init(content: noteField)))
         }
@@ -235,77 +228,6 @@ private extension CredentialExchangeExporter {
             credentials: credentials,
             tags: tags
         )
-    }
-
-    // MARK: - TOTP Parsing
-
-    func parseTOTPFromNotes(_ notes: String?, userName: String?) -> ASImportableCredential.TOTP? {
-        guard let notes, let range = notes.range(of: "otpauth://totp/") else { return nil }
-        let uriSubstring = notes[range.lowerBound...]
-        guard let uriString = uriSubstring.components(separatedBy: .whitespacesAndNewlines).first,
-              let components = URLComponents(string: uriString) else { return nil }
-
-        let queryItems = components.queryItems ?? []
-
-        guard let secretString = queryItems.first(where: { $0.name == "secret" })?.value,
-              let secret = base32Decode(secretString),
-              !secret.isEmpty else { return nil }
-
-        let digits: UInt16 = queryItems.first(where: { $0.name == "digits" })
-            .flatMap { UInt16($0.value ?? "") } ?? 6
-
-        let period: UInt16 = queryItems.first(where: { $0.name == "period" })
-            .flatMap { UInt16($0.value ?? "") } ?? 30
-
-        let algorithm: ASImportableCredential.TOTP.Algorithm = {
-            switch queryItems.first(where: { $0.name == "algorithm" })?.value?.uppercased() {
-            case "SHA256": return .sha256
-            case "SHA512": return .sha512
-            default: return .sha1
-            }
-        }()
-
-        let issuer = queryItems.first(where: { $0.name == "issuer" })?.value
-
-        return .init(
-            secret: secret,
-            period: period,
-            digits: digits,
-            userName: userName,
-            algorithm: algorithm,
-            issuer: issuer
-        )
-    }
-
-    func stripTOTPFromNotes(_ notes: String?) -> String? {
-        guard let notes, let range = notes.range(of: "otpauth://totp/") else { return notes }
-        let uriSubstring = notes[range.lowerBound...]
-        guard let uriString = uriSubstring.components(separatedBy: .whitespacesAndNewlines).first,
-              let uriRange = notes.range(of: uriString) else { return notes }
-        return notes.replacingCharacters(in: uriRange, with: "").trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    func base32Decode(_ string: String) -> Data? {
-        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-        let uppercased = string.uppercased().filter { $0 != "=" }
-
-        var buffer: UInt64 = 0
-        var bitsLeft = 0
-        var result: [UInt8] = []
-
-        for char in uppercased {
-            guard let index = alphabet.firstIndex(of: char) else { return nil }
-            let value = UInt64(alphabet.distance(from: alphabet.startIndex, to: index))
-            buffer = (buffer << 5) | value
-            bitsLeft += 5
-
-            if bitsLeft >= 8 {
-                bitsLeft -= 8
-                result.append(UInt8((buffer >> bitsLeft) & 0xFF))
-            }
-        }
-
-        return Data(result)
     }
 
     // MARK: - Expiration Date Conversion

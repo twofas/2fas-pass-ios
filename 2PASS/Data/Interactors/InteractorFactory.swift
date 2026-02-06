@@ -315,6 +315,16 @@ public final class InteractorFactory {
         )
     }
 
+    public func credentialExchangeImporter() -> CredentialExchangeImporting {
+        CredentialExchangeImporter(
+            context: ExternalServiceImportInteractor.ImportContext(
+                mainRepository: MainRepositoryImpl.shared,
+                uriInteractor: uriInteractor(),
+                paymentCardUtilityInteractor: paymentCardUtilityInteractor()
+            )
+        )
+    }
+
     public func currentDateInteractor() -> CurrentDateInteracting {
         CurrentDateInteractor(mainRepository: MainRepositoryImpl.shared)
     }

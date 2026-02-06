@@ -4,11 +4,12 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import UIKit
+import AuthenticationServices
 import Common
-import Data
 import CommonUI
+import Data
 import SwiftUI
+import UIKit
 
 extension UIWindow.Level {
     static let cover = UIWindow.Level.normal + 3
@@ -34,6 +35,8 @@ protocol RootFlowControlling: AnyObject {
     func toOpenExternalFileError()
     func toUpdateAppForNewSyncScheme(schemaVersion: Int)
     func toUpdateAppForUnsupportedVersion(minimalVersion: String)
+    @available(iOS 26.0, *)
+    @MainActor func toCredentialExchange(data: ASExportedCredentialData)
 }
 
 final class RootFlowController: FlowController {
@@ -225,6 +228,16 @@ extension RootFlowController: RootFlowControlling {
         ))
         
         viewController.topViewController.present(alert, animated: true, completion: nil)
+    }
+
+    @available(iOS 26.0, *)
+    @MainActor func toCredentialExchange(data: ASExportedCredentialData) {
+        let view = CredentialExchangeImportRouter.buildView(data: data, onClose: { [weak self] in
+            self?.viewController.topViewController.dismiss(animated: true)
+        })
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.modalPresentationStyle = .fullScreen
+        viewController.topViewController.present(hostingController, animated: true)
     }
 }
 

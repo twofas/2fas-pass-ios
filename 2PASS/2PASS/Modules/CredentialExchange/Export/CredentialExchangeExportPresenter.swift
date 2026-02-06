@@ -50,7 +50,7 @@ final class CredentialExchangeExportPresenter {
     func startExport() {
         guard case .idle = state else { return }
         state = .exporting
-        Task {
+        Task { @MainActor in
             do {
                 guard let window = UIApplication.shared.connectedScenes
                     .compactMap({ $0 as? UIWindowScene })
