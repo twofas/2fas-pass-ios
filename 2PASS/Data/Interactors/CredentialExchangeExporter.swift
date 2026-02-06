@@ -101,8 +101,16 @@ private extension CredentialExchangeExporter {
         }
 
         // TOTP from notes
+        var notesWithoutTOTP = data.notes
         if let totp = parseTOTPFromNotes(data.notes, userName: data.username) {
             credentials.append(.totp(totp))
+            notesWithoutTOTP = stripTOTPFromNotes(data.notes)
+        }
+
+        // Notes (without TOTP if it was extracted)
+        if let notes = notesWithoutTOTP?.nonBlankTrimmedOrNil {
+            let noteField = ASImportableEditableField(id: nil, fieldType: .string, value: notes)
+            credentials.append(.note(.init(content: noteField)))
         }
 
         guard !credentials.isEmpty else { return nil }
@@ -178,9 +186,10 @@ private extension CredentialExchangeExporter {
             guard let encrypted = data.content.expirationDate,
                   let decrypted = itemsInteractor.decrypt(
                       encrypted, isSecureField: true, protectionLevel: protectionLevel
-                  ) else { return nil }
+                  ),
+                  let isoDate = convertExpirationDateToISO(decrypted) else { return nil }
             return ASImportableEditableField(
-                id: nil, fieldType: .yearMonth, value: decrypted
+                id: nil, fieldType: .yearMonth, value: isoDate
             )
         }()
 
@@ -201,7 +210,7 @@ private extension CredentialExchangeExporter {
             )
         }()
 
-        let credential = ASImportableCredential.creditCard(.init(
+        let cardCredential = ASImportableCredential.creditCard(.init(
             number: number,
             fullName: fullName,
             cardType: nil,
@@ -211,12 +220,19 @@ private extension CredentialExchangeExporter {
             validFrom: nil
         ))
 
+        var credentials: [ASImportableCredential] = [cardCredential]
+
+        if let notes = data.content.notes?.nonBlankTrimmedOrNil {
+            let noteField = ASImportableEditableField(id: nil, fieldType: .string, value: notes)
+            credentials.append(.note(.init(content: noteField)))
+        }
+
         return ASImportableItem(
             id: Data(data.id.uuidString.utf8),
             created: data.creationDate,
             lastModified: data.modificationDate,
             title: data.name ?? "",
-            credentials: [credential],
+            credentials: credentials,
             tags: tags
         )
     }
@@ -261,6 +277,14 @@ private extension CredentialExchangeExporter {
         )
     }
 
+    func stripTOTPFromNotes(_ notes: String?) -> String? {
+        guard let notes, let range = notes.range(of: "otpauth://totp/") else { return notes }
+        let uriSubstring = notes[range.lowerBound...]
+        guard let uriString = uriSubstring.components(separatedBy: .whitespacesAndNewlines).first,
+              let uriRange = notes.range(of: uriString) else { return notes }
+        return notes.replacingCharacters(in: uriRange, with: "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     func base32Decode(_ string: String) -> Data? {
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
         let uppercased = string.uppercased().filter { $0 != "=" }
@@ -282,5 +306,21 @@ private extension CredentialExchangeExporter {
         }
 
         return Data(result)
+    }
+
+    // MARK: - Expiration Date Conversion
+
+    /// Converts "MM / YY" format to ISO 8601 "YYYY-MM" format
+    func convertExpirationDateToISO(_ dateString: String) -> String? {
+        let digits = dateString.filter { $0.isNumber }
+        guard digits.count == 4 else { return nil }
+
+        let month = String(digits.prefix(2))
+        let year = String(digits.suffix(2))
+
+        guard let monthInt = Int(month), (1...12).contains(monthInt) else { return nil }
+
+        let fullYear = "20" + year
+        return "\(fullYear)-\(month)"
     }
 }
