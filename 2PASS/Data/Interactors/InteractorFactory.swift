@@ -127,6 +127,7 @@ public final class InteractorFactory {
             mainRepository: MainRepositoryImpl.shared,
             itemsInteractor: itemsInteractor(),
             loginItemInteractor: loginItemInteractor(),
+            paymentCardItemInteractor: paymentCardItemInteractor(),
             secureNoteItemInteractor: secureNoteInteractor()
         )
     }

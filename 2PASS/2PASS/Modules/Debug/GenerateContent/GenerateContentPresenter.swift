@@ -12,6 +12,7 @@ final class GenerateContentPresenter {
     var itemsCount: Int = 0
     var secureNotesCount = 0
     var unknownCount = 0
+    var paymentCardsCount = 0
     var tagsCount = 0
 
     private let interactor: GenerateContentModuleInteracting
@@ -57,6 +58,14 @@ extension GenerateContentPresenter {
         }
     }
 
+    func onGeneratePaymentCards(count: Int) {
+        isWorking = true
+        interactor.generatePaymentCards(count: count) { [weak self] in
+            self?.refreshCount()
+            self?.isWorking = false
+        }
+    }
+
     func onRemoveAllTags() {
         isWorking = true
         interactor.removeAllTags()
@@ -68,6 +77,7 @@ extension GenerateContentPresenter {
         itemsCount = interactor.itemsCount
         secureNotesCount = interactor.secureNotesCount
         unknownCount = interactor.unknownCount
+        paymentCardsCount = interactor.paymentCardsCount
         tagsCount = interactor.tagsCount
     }
 }
