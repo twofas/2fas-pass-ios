@@ -70,6 +70,8 @@ public protocol DebugInteracting: AnyObject {
 
     var unknownCount: Int { get }
     func generateUnknown(count: Int, completion: @escaping Callback)
+    var paymentCardsCount: Int { get }
+    func generatePaymentCards(count: Int, completion: @escaping Callback)
 
     var tagsCount: Int { get }
     func deleteAllTags()
@@ -89,12 +91,20 @@ final class DebugInteractor {
     private let mainRepository: MainRepository
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
+    private let paymentCardItemInteractor: PaymentCardItemInteracting
     private let secureNoteItemInteractor: SecureNoteItemInteracting
 
-    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, loginItemInteractor: LoginItemInteracting, secureNoteItemInteractor: SecureNoteItemInteracting) {
+    init(
+        mainRepository: MainRepository,
+        itemsInteractor: ItemsInteracting,
+        loginItemInteractor: LoginItemInteracting,
+        paymentCardItemInteractor: PaymentCardItemInteracting,
+        secureNoteItemInteractor: SecureNoteItemInteracting
+    ) {
         self.mainRepository = mainRepository
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor
+        self.paymentCardItemInteractor = paymentCardItemInteractor
         self.secureNoteItemInteractor = secureNoteItemInteractor
     }
 }
@@ -337,6 +347,12 @@ extension DebugInteractor: DebugInteracting {
             }
             .count
     }
+
+    var paymentCardsCount: Int {
+        mainRepository.listItems(options: .allNotTrashed)
+            .filter { $0.contentType == .paymentCard }
+            .count
+    }
     
     func deleteAllItems() {
         mainRepository.deleteAllItems()
@@ -466,6 +482,48 @@ extension DebugInteractor: DebugInteracting {
         completion()
     }
 
+    func generatePaymentCards(count: Int, completion: @escaping Callback) {
+        guard let words = mainRepository.importBIP0039Words() else {
+            completion()
+            return
+        }
+
+        for i in 0..<count {
+            let date = randomDate()
+            let protectionLevel = [ItemProtectionLevel.confirm,
+                                   ItemProtectionLevel.normal,
+                                   ItemProtectionLevel.topSecret].randomElement() ?? .normal
+            let tags = randomTagIds()
+            let cardData = randomPaymentCardData()
+            let name = "\(words.randomElement()?.capitalizedFirstLetter ?? "") Card"
+            let cardHolder = "John Doe \(i)"
+            let month = String(format: "%02d", Int.random(in: 1...12))
+            let year = String(format: "%02d", Int.random(in: 26...36))
+            let expirationDate = "\(month)/\(year)"
+
+            try? paymentCardItemInteractor.createPaymentCard(
+                id: .init(),
+                metadata: .init(
+                    creationDate: date,
+                    modificationDate: date,
+                    protectionLevel: protectionLevel,
+                    trashedStatus: .no,
+                    tagIds: tags
+                ),
+                name: name,
+                cardHolder: cardHolder,
+                cardNumber: cardData.number,
+                expirationDate: expirationDate,
+                securityCode: cardData.securityCode,
+                notes: nil
+            )
+        }
+
+        itemsInteractor.saveStorage()
+        mainRepository.webDAVSetHasLocalChanges()
+        completion()
+    }
+
     var tagsCount: Int {
         mainRepository.listTags(options: .all).count
     }
@@ -534,5 +592,70 @@ private extension DebugInteractor {
         }
         dateComponents.setValue(randomDay, for: .day)
         return calendar.date(from: dateComponents) ?? mainRepository.currentDate
+    }
+
+    func randomPaymentCardData() -> (number: String, securityCode: String) {
+        enum IssuerVariant {
+            case known(PaymentCardIssuer)
+            case unknown
+        }
+
+        struct CardFormat {
+            let prefix: String
+            let numberLength: Int
+            let securityCodeLength: Int
+        }
+
+        let variants: [IssuerVariant] = PaymentCardIssuer.allCases.map { .known($0) } + [.unknown]
+        let selectedVariant = variants.randomElement() ?? .known(.visa)
+        let format: CardFormat = {
+            switch selectedVariant {
+            case .known(.visa):
+                return .init(prefix: "4", numberLength: 16, securityCodeLength: 3)
+            case .known(.mastercard):
+                return .init(prefix: Bool.random() ? "55" : "2221", numberLength: 16, securityCodeLength: 3)
+            case .known(.americanExpress):
+                return .init(prefix: Bool.random() ? "34" : "37", numberLength: 15, securityCodeLength: 4)
+            case .known(.discover):
+                return .init(prefix: ["6011", "65", "644"].randomElement() ?? "6011", numberLength: 16, securityCodeLength: 3)
+            case .known(.dinersClub):
+                return .init(prefix: ["36", "38", "300"].randomElement() ?? "36", numberLength: 14, securityCodeLength: 3)
+            case .known(.jcb):
+                return .init(prefix: "3528", numberLength: 16, securityCodeLength: 3)
+            case .known(.unionPay):
+                return .init(prefix: "62", numberLength: 16, securityCodeLength: 3)
+            case .unknown:
+                // Deliberately avoid known BIN ranges so issuer detection can return nil.
+                return .init(prefix: "90", numberLength: 16, securityCodeLength: 3)
+            }
+        }()
+
+        let payloadLength = max(0, format.numberLength - format.prefix.count - 1)
+        let payload = (0..<payloadLength).map { _ in String(Int.random(in: 0...9)) }.joined()
+        let baseNumber = format.prefix + payload
+        let checkDigit = luhnCheckDigit(for: baseNumber)
+        let number = baseNumber + String(checkDigit)
+        let securityCode = (0..<format.securityCodeLength).map { _ in String(Int.random(in: 0...9)) }.joined()
+
+        return (number: number, securityCode: securityCode)
+    }
+
+    func luhnCheckDigit(for numberWithoutCheckDigit: String) -> Int {
+        let digits = numberWithoutCheckDigit.compactMap(\.wholeNumberValue)
+        guard digits.count == numberWithoutCheckDigit.count else { return 0 }
+
+        let sum = digits.reversed().enumerated().reduce(into: 0) { partialResult, element in
+            let index = element.offset
+            let digit = element.element
+
+            if index.isMultiple(of: 2) {
+                let doubled = digit * 2
+                partialResult += doubled > 9 ? doubled - 9 : doubled
+            } else {
+                partialResult += digit
+            }
+        }
+
+        return (10 - (sum % 10)) % 10
     }
 }
