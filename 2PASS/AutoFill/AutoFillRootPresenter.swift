@@ -55,10 +55,14 @@ final class AutoFillRootPresenter {
     }
     
     func provideWithoutUserInteraction(for credentialRequest: any ASCredentialRequest) {
-        if let credential = interactor.credentialWithoutLogin(for: credentialRequest) {
-            extensionContext.completeRequest(withSelectedCredential: credential)
-        } else {
-            extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code:ASExtensionError.userInteractionRequired.rawValue))
+        Task { @MainActor in
+            await refreshState()
+            
+            if let credential = interactor.credentialWithoutLogin(for: credentialRequest) {
+                extensionContext.completeRequest(withSelectedCredential: credential)
+            } else {
+                extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code:ASExtensionError.userInteractionRequired.rawValue))
+            }
         }
     }
 
