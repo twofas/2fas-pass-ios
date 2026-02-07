@@ -12,7 +12,11 @@ public typealias LoadStoreCallback = (Bool) -> Void
 public final class CoreDataStack {
     private let migrator: CoreDataMigratorProtocol?
     
-    public var logError: ((LogMessage) -> Void)?
+    public var logError: ((LogMessage) -> Void)? {
+        didSet {
+            persistentHistoryTracker?.logError = logError
+        }
+    }
     public var initilizingNewStore: (() -> Void)?
     public var presentErrorToUser: ((String) -> Void)?
     
@@ -22,6 +26,7 @@ public final class CoreDataStack {
     private let storeInGroup: Bool
     private let isPersistent: Bool
     private let persistentContainer: NSPersistentContainer
+    private let persistentHistoryTracker: PersistentHistoryTracker?
     
     private enum LoadState {
         case initial
@@ -47,6 +52,22 @@ public final class CoreDataStack {
         self.migrator = migrator
         migrator?.bundle = bundle
         self.isPersistent = isPersistent
+        
+        let transactionAuthor = Bundle.main.bundleIdentifier ?? ProcessInfo.processInfo.processName
+        if Self.shouldUsePersistentHistory(
+            storeInGroup: storeInGroup,
+            isPersistent: isPersistent,
+            readOnly: readOnly
+        ) {
+            self.persistentHistoryTracker = PersistentHistoryTracker(
+                storeName: name,
+                transactionAuthor: transactionAuthor,
+                storeInGroup: storeInGroup
+            )
+        } else {
+            self.persistentHistoryTracker = nil
+        }
+        self.persistentHistoryTracker?.logError = self.logError
         
         self.persistentContainer = NSPersistentContainer(name: name, bundle: bundle)
     }
@@ -98,7 +119,9 @@ public final class CoreDataStack {
                     self?.parseError(with: error.userInfo)
                     fatalError(err.description)
                 } else {
+                    self?.persistentHistoryTracker?.configureContext(container.viewContext)
                     container.viewContext.automaticallyMergesChangesFromParent = true
+                    self?.persistentHistoryTracker?.startObservingRemoteChangesIfNeeded(in: container)
                     DispatchQueue.main.async {
                         self?.loadState = .loaded
                         
@@ -121,6 +144,7 @@ public final class CoreDataStack {
             description.url = storeUrl
             description.type = NSSQLiteStoreType
             description.shouldAddStoreAsynchronously = true
+            persistentHistoryTracker?.configureStoreDescription(description)
         } else {
             description.url = URL(fileURLWithPath: "/dev/null")
             description.type = NSSQLiteStoreType
@@ -143,6 +167,7 @@ public final class CoreDataStack {
     
     public func performInBackground(_ closure: @escaping (NSManagedObjectContext) -> Void) {
         let context = persistentContainer.newBackgroundContext()
+        persistentHistoryTracker?.configureContext(context)
         context.automaticallyMergesChangesFromParent = true
         context.perform { [weak self] in
             closure(context)
@@ -152,6 +177,7 @@ public final class CoreDataStack {
     
     public func performAndWaitInBackground(_ closure: @escaping (NSManagedObjectContext) -> Void) {
         let context = persistentContainer.newBackgroundContext()
+        persistentHistoryTracker?.configureContext(context)
         context.automaticallyMergesChangesFromParent = true
         context.performAndWait { [weak self] in
             closure(context)
@@ -160,7 +186,9 @@ public final class CoreDataStack {
     }
     
     public func createBackgroundContext() -> NSManagedObjectContext {
-        persistentContainer.newBackgroundContext()
+        let context = persistentContainer.newBackgroundContext()
+        persistentHistoryTracker?.configureContext(context)
+        return context
     }
     
     private func save(onContext context: NSManagedObjectContext) {
@@ -215,6 +243,14 @@ public final class CoreDataStack {
         presentErrorToUser?("It appears that either you've run out of disk space now or the database was damaged by such event in the past")
         // swiftlint:enable line_length
     }
+    
+    private static func shouldUsePersistentHistory(
+        storeInGroup: Bool,
+        isPersistent: Bool,
+        readOnly: Bool
+    ) -> Bool {
+        isPersistent && storeInGroup && !readOnly
+    }
 }
 
 extension CoreDataStack {
@@ -238,6 +274,8 @@ extension CoreDataStack {
         if fileManager.fileExists(atPath: walURL.path) {
             try fileManager.removeItem(at: walURL)
         }
+        
+        PersistentHistoryTracker.clearState(forStoreName: name, storeInGroup: storeInGroup)
     }
     
     fileprivate static func storeUrl(forName name: String, storeInGroup: Bool) -> URL {
