@@ -50,6 +50,8 @@ protocol UserDefaultsDataSource: AnyObject {
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
     
+    func migrateLegacyValuesToSharedDefaults()
+    
     var webDAVSavedConfig: Data? { get }
     func saveWebDAVSavedConfig(_ config: Data)
     func clearWebDAVConfig()

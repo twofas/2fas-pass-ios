@@ -47,10 +47,41 @@ final class UserDefaultsDataSourceImpl {
     }
     
     private let userDefaults = UserDefaults()
-    private let sharedDefaults = UserDefaults(suiteName: Config.suiteName)!
+    private let sharedDefaults = UserDefaults(suiteName: Config.suiteName)!    
 }
 
 extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
+    
+    func migrateLegacyValuesToSharedDefaults() {
+        var hasMigratedValues = false
+
+        let migratedToSharedDefaultsKeys: [Keys] = [
+            .appLockAttempts,
+            .appLockBlockTime,
+            .lockAppUntil,
+            .incorrectLoginCountAttemp,
+            .incorrectBiometryCountAttemp,
+            .defaultProtectionLevel,
+            .passwordGeneratorConfig
+        ]
+        
+        for key in migratedToSharedDefaultsKeys {
+            guard sharedDefaults.object(forKey: key.rawValue) == nil,
+                  let value = userDefaults.object(forKey: key.rawValue) else {
+                continue
+            }
+
+            sharedDefaults.set(value, forKey: key.rawValue)
+            hasMigratedValues = true
+        }
+
+        guard hasMigratedValues else {
+            return
+        }
+
+        sharedDefaults.synchronize()
+    }
+
     var deviceID: UUID? {
         guard let uuidString = sharedDefaults.string(forKey: Keys.deviceID.rawValue) else {
             return nil
@@ -90,45 +121,45 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     func setAppLockAttempts(_ value: AppLockAttempts) {
-        userDefaults.set(value.rawValue, forKey: Keys.appLockAttempts.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.set(value.rawValue, forKey: Keys.appLockAttempts.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var appLockAttempts: AppLockAttempts? {
-        guard let value = userDefaults.string(forKey: Keys.appLockAttempts.rawValue) else { return nil }
+        guard let value = sharedDefaults.string(forKey: Keys.appLockAttempts.rawValue) else { return nil }
         return AppLockAttempts(rawValue: value)
     }
     
     func clearAppLockBlockTime() {
-        userDefaults.set(nil, forKey: Keys.appLockBlockTime.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.set(nil, forKey: Keys.appLockBlockTime.rawValue)
+        sharedDefaults.synchronize()
     }
     
     func setAppLockBlockTime(_ value: AppLockBlockTime) {
-        userDefaults.set(value.rawValue, forKey: Keys.appLockBlockTime.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.set(value.rawValue, forKey: Keys.appLockBlockTime.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var appLockBlockTime: AppLockBlockTime? {
-        guard let value = userDefaults.string(forKey: Keys.appLockBlockTime.rawValue) else { return nil }
+        guard let value = sharedDefaults.string(forKey: Keys.appLockBlockTime.rawValue) else { return nil }
         return AppLockBlockTime(rawValue: value)
     }
     
     func setLockAppUntil(date: Date) {
-        userDefaults.set(date.timeIntervalSince1970, forKey: Keys.lockAppUntil.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.set(date.timeIntervalSince1970, forKey: Keys.lockAppUntil.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var lockAppUntil: Date? {
-        guard userDefaults.object(forKey: Keys.lockAppUntil.rawValue) != nil else { return nil }
-        let value = userDefaults.double(forKey: Keys.lockAppUntil.rawValue)
+        guard sharedDefaults.object(forKey: Keys.lockAppUntil.rawValue) != nil else { return nil }
+        let value = sharedDefaults.double(forKey: Keys.lockAppUntil.rawValue)
         let date = Date(timeIntervalSince1970: value)
         return date
     }
     
     func clearLockAppUntil() {
-        userDefaults.set(nil, forKey: Keys.lockAppUntil.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.set(nil, forKey: Keys.lockAppUntil.rawValue)
+        sharedDefaults.synchronize()
     }
     
     func setSortType(_ sortType: SortType) {
@@ -151,35 +182,35 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     var incorrectLoginCountAttemp: Int {
-        userDefaults.integer(forKey: Keys.incorrectLoginCountAttemp.rawValue)
+        sharedDefaults.integer(forKey: Keys.incorrectLoginCountAttemp.rawValue)
     }
     
     func setIncorrectLoginCountAttempt(_ count: Int) {
-        userDefaults.setValue(count, forKey: Keys.incorrectLoginCountAttemp.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.setValue(count, forKey: Keys.incorrectLoginCountAttemp.rawValue)
+        sharedDefaults.synchronize()
     }
     
     func clearIncorrectLoginCountAttempt() {
-        userDefaults.setValue(nil, forKey: Keys.incorrectLoginCountAttemp.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.setValue(nil, forKey: Keys.incorrectLoginCountAttemp.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var incorrectBiometryCountAttemp: Int {
-        userDefaults.integer(forKey: Keys.incorrectBiometryCountAttemp.rawValue)
+        sharedDefaults.integer(forKey: Keys.incorrectBiometryCountAttemp.rawValue)
     }
     
     func setIncorrectBiometryCountAttempt(_ count: Int) {
-        userDefaults.setValue(count, forKey: Keys.incorrectBiometryCountAttemp.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.setValue(count, forKey: Keys.incorrectBiometryCountAttemp.rawValue)
+        sharedDefaults.synchronize()
     }
     
     func clearIncorrectBiometryCountAttempt() {
-        userDefaults.setValue(nil, forKey: Keys.incorrectBiometryCountAttemp.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.setValue(nil, forKey: Keys.incorrectBiometryCountAttemp.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var currentDefaultProtectionLevel: ItemProtectionLevel {
-        guard let string = userDefaults.string(forKey: Keys.defaultProtectionLevel.rawValue),
+        guard let string = sharedDefaults.string(forKey: Keys.defaultProtectionLevel.rawValue),
               let value = ItemProtectionLevel(rawValue: string)
         else {
             return ItemProtectionLevel.default
@@ -188,17 +219,17 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
-        userDefaults.setValue(value.rawValue, forKey: Keys.defaultProtectionLevel.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.setValue(value.rawValue, forKey: Keys.defaultProtectionLevel.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var passwordGeneratorConfig: Data? {
-        userDefaults.data(forKey: Keys.passwordGeneratorConfig.rawValue)
+        sharedDefaults.data(forKey: Keys.passwordGeneratorConfig.rawValue)
     }
     
     func setPasswordGeneratorConfig(_ data: Data) {
-        userDefaults.setValue(data, forKey: Keys.passwordGeneratorConfig.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.setValue(data, forKey: Keys.passwordGeneratorConfig.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var webDAVSavedConfig: Data? {

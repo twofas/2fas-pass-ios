@@ -109,6 +109,7 @@ protocol MainRepository: AnyObject {
     var currentBuildVersion: String { get }
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
+    func migrateLegacyValuesToSharedDefaults()
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
     
