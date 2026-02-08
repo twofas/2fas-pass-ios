@@ -59,6 +59,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
             .appLockAttempts,
             .appLockBlockTime,
             .lockAppUntil,
+            .sortType,
             .incorrectLoginCountAttemp,
             .incorrectBiometryCountAttemp,
             .defaultProtectionLevel,
@@ -163,12 +164,12 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     func setSortType(_ sortType: SortType) {
-        userDefaults.set(sortType.rawValue, forKey: Keys.sortType.rawValue)
-        userDefaults.synchronize()
+        sharedDefaults.set(sortType.rawValue, forKey: Keys.sortType.rawValue)
+        sharedDefaults.synchronize()
     }
     
     var sortType: SortType? {
-        guard let value = userDefaults.string(forKey: Keys.sortType.rawValue) else { return nil }
+        guard let value = sharedDefaults.string(forKey: Keys.sortType.rawValue) else { return nil }
         return SortType(rawValue: value)
     }
     
