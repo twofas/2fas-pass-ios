@@ -168,7 +168,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
 
             if let cardNumberFromRequest = changeRequest?.cardNumber {
                 self.decryptedCardNumber = cardNumberFromRequest
-                self.isCardNumberRevealed = true
+                self.isCardNumberRevealed = false
                 self.initialCardNumber = initialData.content.cardNumber.flatMap {
                     interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
                 }
@@ -184,7 +184,12 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
             }
         } else {
             self.cardHolder = changeRequest?.cardHolder ?? ""
-            self.decryptedCardNumber = changeRequest?.cardNumber ?? ""
+            if let cardNumberFromRequest = changeRequest?.cardNumber {
+                self.decryptedCardNumber = cardNumberFromRequest
+                self.isCardNumberRevealed = false
+            } else {
+                self.decryptedCardNumber = ""
+            }
             self.expirationDate = changeRequest?.expirationDate.map { $0.formatted(.expirationDate) } ?? ""
             self.decryptedSecurityCode = changeRequest?.securityCode ?? ""
             self.notes = changeRequest?.notes ?? ""
