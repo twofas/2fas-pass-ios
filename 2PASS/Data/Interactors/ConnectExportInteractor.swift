@@ -26,7 +26,7 @@ typealias ConnectItemExportOptionsProvider = (ItemData) -> ConnectItemExportOpti
 protocol ConnectExportInteracting: AnyObject {
     
     // Common
-    
+    @MainActor
     func prepareTagsForConnectExport() async throws(ExportError) -> [ConnectTag]
     
     // Scheme V1
@@ -76,17 +76,17 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     
     // MARK: - Common
     
-    func prepareTagsForConnectExport() async throws(ExportError) -> [ConnectTag] {
-        tagInteractor.listAllTags()
-            .map {
-                ConnectTag(
-                    id: $0.id.exportString(),
-                    name: $0.name,
-                    color: $0.color.rawValue,
-                    position: $0.position,
-                    updatedAt: $0.modificationDate.exportTimestamp
-                )
-            }
+    @MainActor
+    func prepareTagsForConnectExport() throws(ExportError) -> [ConnectTag] {
+        tagInteractor.listAllTags().map {
+            ConnectTag(
+                id: $0.id.exportString(),
+                name: $0.name,
+                color: $0.color.rawValue,
+                position: $0.position,
+                updatedAt: $0.modificationDate.exportTimestamp
+            )
+        }
     }
     
     // MARK: - Scheme v1
@@ -133,54 +133,85 @@ final class ConnectExportInteractor: ConnectExportInteracting {
     // MARK: - Scheme v2
     
     func prepareVaultsForConnectExport(secureFieldEncryptionKeyProvider: ConnectItemExportEncryptionKeyProvider) async -> [ConnectSchemaV2.ConnectVault] {
-        let vaults = mainRepository.listEncryptedVaults().map { vault in
-            let tags = tagInteractor.listTags(for: vault.id)
-                .map {
-                    ConnectTag(
-                        id: $0.id.exportString(),
-                        name: $0.name,
-                        color: $0.color.rawValue,
-                        position: $0.position,
-                        updatedAt: $0.modificationDate.exportTimestamp
-                    )
-                }
-        
-            let items = itemsInteractor.listItems(
-                searchPhrase: nil,
-                tagId: nil,
-                vaultId: vault.vaultID,
-                contentTypes: .allKnownTypes,
-                protectionLevel: nil,
-                sortBy: .az,
-                trashed: .no
+        struct VaultSnapshot {
+            let vault: VaultEncryptedData
+            let tags: [ItemTagData]
+            let items: [ItemData]
+        }
+
+        let snapshots = await MainActor.run { () -> [VaultSnapshot] in
+            let vaults = mainRepository.listEncryptedVaults()
+            let tagsByVault = Dictionary(grouping: tagInteractor.listAllTags(), by: \.vaultID)
+            let itemsByVault = Dictionary(
+                grouping: itemsInteractor.listItems(
+                    searchPhrase: nil,
+                    tagId: nil,
+                    vaultId: nil,
+                    contentTypes: .allKnownTypes,
+                    protectionLevel: nil,
+                    sortBy: .az,
+                    trashed: .no
+                )
+                .filter { $0.protectionLevel != .topSecret },
+                by: \.vaultId
             )
-            .filter { $0.protectionLevel != .topSecret }
-            .compactMap { item in
-                try? makeConnectItem(
-                    from: item,
-                    optionsProvider: { item in
-                        switch item.protectionLevel {
-                        case .normal:
-                            return .allFields
-                        case .confirm:
-                            return .includeUnencryptedFields
-                        case .topSecret:
-                            return []
-                        }
-                    },
-                    secureFieldEncryptionKeyProvider: secureFieldEncryptionKeyProvider
+
+            return vaults.map { vault in
+                return VaultSnapshot(
+                    vault: vault,
+                    tags: tagsByVault[vault.vaultID] ?? [],
+                    items: itemsByVault[vault.vaultID] ?? []
                 )
             }
-            
+        }
+
+        return snapshots.map { snapshot in
+            let connectTags = snapshot.tags.map {
+                ConnectTag(
+                    id: $0.id.exportString(),
+                    name: $0.name,
+                    color: $0.color.rawValue,
+                    position: $0.position,
+                    updatedAt: $0.modificationDate.exportTimestamp
+                )
+            }
+
+            var connectItems: [ConnectSchemaV2.ConnectItem] = []
+            connectItems.reserveCapacity(snapshot.items.count)
+
+            for item in snapshot.items {
+                do {
+                    let connectItem = try makeConnectItem(
+                        from: item,
+                        optionsProvider: { item in
+                            switch item.protectionLevel {
+                            case .normal:
+                                return .allFields
+                            case .confirm:
+                                return .includeUnencryptedFields
+                            case .topSecret:
+                                return []
+                            }
+                        },
+                        secureFieldEncryptionKeyProvider: secureFieldEncryptionKeyProvider
+                    )
+                    connectItems.append(connectItem)
+                } catch {
+                    Log(
+                        "Connect export: failed to prepare item \(item.id.exportString()) for vault \(snapshot.vault.vaultID.exportString())",
+                        module: .connect,
+                        severity: .error
+                    )
+                }
+            }
+
             return ConnectSchemaV2.ConnectVault(
-                id: vault.id.exportString(),
-                name: vault.name,
-                items: items,
-                tags: tags
+                id: snapshot.vault.id.exportString(),
+                name: snapshot.vault.name,
+                items: connectItems,
+                tags: connectTags
             )
         }
-        
-        return vaults
     }
     
     func prepareItemForConnectExport(
@@ -188,11 +219,11 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         options: ConnectItemExportOptionsProvider,
         secureFieldEncryptionKeyProvider: ConnectItemExportEncryptionKeyProvider
     ) async throws(ExportError) -> ConnectSchemaV2.ConnectItem? {
-        let itemDataTask = Task { @MainActor in
+        let item = await MainActor.run {
             mainRepository.getItemEntity(itemID: id, checkInTrash: false)
         }
         
-        guard let item = await itemDataTask.value else {
+        guard let item else {
             throw .noItemsToExport
         }
         
