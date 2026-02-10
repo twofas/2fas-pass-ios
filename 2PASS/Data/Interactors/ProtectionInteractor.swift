@@ -75,8 +75,10 @@ public protocol ProtectionInteracting: AnyObject {
     func clearAppKeyEncryptedStorage()
     
     func createExternalSymmetricKey(from masterKey: MasterKey, vaultID: VaultID) -> SymmetricKey?
-    
-    func verifyMasterKeyForVault(_ masterKey: MasterKey) -> Bool
+
+    func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool
+    func verifyMasterKey(_ masterKey: MasterKey) -> Bool
+    func validateEntropyMatchesCurrentVault(_ entropy: Entropy) -> Bool
 }
 
 extension ProtectionInteracting {
@@ -208,7 +210,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         return mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) != nil
     }
     
-    func verifyMasterKeyForVault(_ masterKey: MasterKey) -> Bool {
+    func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool {
         guard let vault = mainRepository.listEncryptedVaults().first else {
             return false
         }
@@ -414,7 +416,26 @@ extension ProtectionInteractor: ProtectionInteracting {
         Log("ProtectionInteractor: Verification: \(value, privacy: .private)", module: .interactor)
         return value
     }
-    
+
+    func verifyMasterKey(_ masterKey: MasterKey) -> Bool {
+        guard let deviceID = mainRepository.deviceID else {
+            Log(
+                "ProtectionInteractor: Error while getting DeviceID for Master Key verification",
+                module: .interactor,
+                severity: .error
+            )
+            return false
+        }
+        return mainRepository.verifyEncryptionReference(using: masterKey, with: deviceID)
+    }
+
+    func validateEntropyMatchesCurrentVault(_ entropy: Entropy) -> Bool {
+        guard let storedEntropy = mainRepository.masterKeyEntropy else {
+            return true
+        }
+        return storedEntropy == entropy
+    }
+
     func setMasterKey(_ masterKey: MasterKey) {
         Log(
             "ProtectionInteractor: Setting Master Key: \(masterKey.hexEncodedString())",

@@ -14,6 +14,9 @@ final class CameraOutputQRScanner: NSObject {
     private weak var layer: AVCaptureVideoPreviewLayer?
     
     var didFoundCode: ((String) -> Void)?
+    var didLoseCode: (() -> Void)?
+    
+    private var hasDetectedCode = false
     
     override init() {}
     
@@ -41,10 +44,10 @@ extension CameraOutputQRScanner: CameraOutputModule {
     
     func registered() {
         Log("CameraOutputQRScanner - registered", module: .camera)
-        metadataOutput?.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+        metadataOutput?.setMetadataObjectsDelegate(self, queue: .main)
         metadataOutput?.metadataObjectTypes = [.qr]
     }
-    
+
     func clear() {
         metadataOutput = nil
         layer = nil
@@ -60,8 +63,15 @@ extension CameraOutputQRScanner: AVCaptureMetadataOutputObjectsDelegate {
         guard
             let metadata = metadataObjects.first,
             let readable = metadata as? AVMetadataMachineReadableCodeObject,
-            let stringValue = readable.stringValue else { return }
+            let stringValue = readable.stringValue else {
+            if hasDetectedCode {
+                hasDetectedCode = false
+                didLoseCode?()
+            }
+            return
+        }
         Log("CameraOutputQRScanner - metadataOutput (found code!) \(stringValue)", module: .camera, save: false)
+        hasDetectedCode = true
         didFoundCode?(stringValue)
     }
 }

@@ -9,4 +9,5 @@ import Foundation
 public protocol CameraDelegate: AnyObject {
     func didStartScanning()
     func didFoundCode(_ code: String)
+    func didLoseCode()
 }

@@ -5,19 +5,12 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import CommonUI
+import Common
 
-struct VaultRecoveryCameraView: View {
-
+struct ForgotMasterPasswordDecryptionKitCameraView: View {
+    
     @State
-    var presenter: VaultRecoveryCameraPresenter
-
-    @Environment(\.dismiss)
-    private var dismiss
-
-    init(presenter: VaultRecoveryCameraPresenter) {
-        self.presenter = presenter
-    }
+    var presenter: ForgotMasterPasswordDecryptionKitCameraPresenter
 
     var body: some View {
         RecoveryKitCameraView(
@@ -30,13 +23,28 @@ struct VaultRecoveryCameraView: View {
                 presenter.onCodeLost()
             },
             onAppSettings: {
-                presenter.onToAppSettings()
+                presenter.onAppSettings()
             }
         )
         .sensoryFeedback(.selection, trigger: presenter.destination?.id)
         .onAppear {
             presenter.onAppear()
         }
-        .router(router: VaultRecoveryCameraRouter(), destination: $presenter.destination)
+        .router(
+            router: ForgotMasterPasswordDecryptionKitCameraRouter(),
+            destination: $presenter.destination
+        )
     }
+}
+
+#Preview {
+    ForgotMasterPasswordDecryptionKitCameraView(
+        presenter: .init(
+            interactor: ModuleInteractorFactory.shared.forgotMasterPasswordDecryptionKitCameraModuleInteractor(),
+            config: .init(allowBiometrics: false, loginType: .login),
+            onSuccess: {},
+            onTryAgain: {},
+            onClose: {}
+        )
+    )
 }

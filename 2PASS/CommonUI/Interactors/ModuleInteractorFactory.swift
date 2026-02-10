@@ -91,6 +91,13 @@ public final class ModuleInteractorFactory {
     func premiumPromptModuleInteractor() -> PremiumPromptModuleInteracting {
         PremiumPromptModuleInteractor(systemInteractor: InteractorFactory.shared.systemInteractor())
     }
+
+    func forgotMasterPasswordDecryptionKitCameraModuleInteractor() -> ForgotMasterPasswordDecryptionKitCameraModuleInteracting {
+        ForgotMasterPasswordDecryptionKitCameraModuleInteractor(
+            cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
+            recoveryKitScanner: InteractorFactory.shared.recoveryKitScanCameraInteractor()
+        )
+    }
     
     func selectTagsModuleInteractor() -> SelectTagsModuleInteracting {
         SelectTagsModuleInteractor(
@@ -101,6 +108,24 @@ public final class ModuleInteractorFactory {
     func bulkTagsModuleInteractor() -> BulkTagsModuleInteracting {
         BulkTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor()
+        )
+    }
+
+    func forgotMasterPasswordModuleInteractor(config: LoginModuleInteractorConfig) -> ForgotMasterPasswordModuleInteracting {
+        ForgotMasterPasswordModuleInteractor(
+            importInteractor: InteractorFactory.shared.importInteractor(),
+            recoveryKitScanInteractor: InteractorFactory.shared.recoveryKitScanInteractor(),
+            protectionInteractor: InteractorFactory.shared.protectionInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            loginConfig: config
+        )
+    }
+
+    func forgotMasterPasswordRecoveryModuleInteractor(config: LoginModuleInteractorConfig) -> ForgotMasterPasswordRecoveryModuleInteracting {
+        ForgotMasterPasswordRecoveryModuleInteractor(
+            loginConfig: config,
+            protectionInteractor: InteractorFactory.shared.protectionInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor()
         )
     }
 

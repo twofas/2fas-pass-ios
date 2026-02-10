@@ -5,7 +5,6 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import CommonUI
 
 private struct Constants {
     static let overlayColor = Color.black.opacity(0.7)
@@ -15,14 +14,30 @@ private struct Constants {
     static let activeSquareCornerOffset = 105.0
 }
 
-struct ScanQRCodeCameraView: View {
+public struct ScanQRCodeCameraView: View {
     
     let title: Text
     let description: Text
+    let error: Text?
     let codeFound: (String) -> Void
+    let codeLost: (() -> Void)?
+
+    public init(
+        title: Text,
+        description: Text,
+        error: Text? = nil,
+        codeFound: @escaping (String) -> Void,
+        codeLost: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.description = description
+        self.error = error
+        self.codeFound = codeFound
+        self.codeLost = codeLost
+    }
     
-    var body: some View {
-        CameraScanningView_UIKit(codeFound: codeFound)
+    public var body: some View {
+        CameraScanningView_UIKit(codeFound: codeFound, codeLost: codeLost)
             .ignoresSafeArea()
             .overlay {
                 activeSquareView
@@ -83,6 +98,22 @@ struct ScanQRCodeCameraView: View {
                 .frame(width: geometry.size.width - Spacing.xxl4 * 2)
                 .multilineTextAlignment(.center)
                 
+                if let error {
+                    HStack {
+                        Image(systemName: "exclamationmark.circle")
+                        error
+                    }
+                    .font(.body)
+                    .foregroundStyle(.danger500)
+                    .padding(.horizontal, Spacing.l)
+                    .padding(.vertical, Spacing.s)
+                    .background {
+                        Capsule()
+                            .fill(.danger500.opacity(0.15))
+                    }
+                    .padding(.top, Spacing.l)
+                }
+                
                 Spacer()
             }
             .frame(width: geometry.size.width)
@@ -94,6 +125,7 @@ struct ScanQRCodeCameraView: View {
 private struct CameraScanningView_UIKit: UIViewRepresentable {
     
     let codeFound: (String) -> Void
+    let codeLost: (() -> Void)?
     
     func makeUIView(context: Context) -> CameraScanningView {
         CameraScanningView()
@@ -101,5 +133,8 @@ private struct CameraScanningView_UIKit: UIViewRepresentable {
     
     func updateUIView(_ uiView: CameraScanningView, context: Context) {
         uiView.codeFound = codeFound
+        uiView.codeLost = {
+            codeLost?()
+        }
     }
 }

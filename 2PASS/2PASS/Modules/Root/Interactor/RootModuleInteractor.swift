@@ -13,10 +13,12 @@ import Foundation
 protocol RootModuleInteracting: AnyObject {
     var storageError: ((String) -> Void)? { get set }
     var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)? { get set }
-    
+
+    var didLogoutApp: NotificationCenter.Notifications { get }
+
     var appVersionPromptState: UpdateAppPromptState { get }
     func markAppVersionPromptAsShown()
-    
+
     var isUserSetUp: Bool { get }
     var isOnboardingCompleted: Bool { get }
         
@@ -89,7 +91,11 @@ final class RootModuleInteractor {
 }
 
 extension RootModuleInteractor: RootModuleInteracting {
-    
+
+    var didLogoutApp: NotificationCenter.Notifications {
+        securityInteractor.didLogoutApp
+    }
+
     var isOnboardingCompleted: Bool {
         onboardingInteractor.isOnboardingCompleted
     }

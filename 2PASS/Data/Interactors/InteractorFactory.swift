@@ -140,6 +140,14 @@ public final class InteractorFactory {
             uriInteractor: uriInteractor()
         )
     }
+
+    public func recoveryKitScanInteractor() -> RecoveryKitScanInteracting {
+        RecoveryKitScanInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
+    public func recoveryKitScanCameraInteractor() -> RecoveryKitScanCameraInteracting {
+        RecoveryKitScanCameraInteractor()
+    }
     
     public func exportInteractor() -> ExportInteracting {
         ExportInteractor(

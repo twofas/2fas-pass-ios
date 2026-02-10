@@ -19,6 +19,7 @@ public final class Camera {
         Log("Camera - init with previewView: \(previewView.description), scanningRegion: \(scanningRegion.debugDescription, privacy: .public)", module: .camera)
         camera.delegate = self
         scanner.didFoundCode = { [weak self] in self?.delegate?.didFoundCode($0) }
+        scanner.didLoseCode = { [weak self] in self?.delegate?.didLoseCode() }
         scanner.initialize(with: previewView)
         camera.initialize(with: [scanner])
         camera.setPreview(previewView)

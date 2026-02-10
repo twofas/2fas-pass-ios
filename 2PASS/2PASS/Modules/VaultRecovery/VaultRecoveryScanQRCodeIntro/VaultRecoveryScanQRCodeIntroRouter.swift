@@ -8,38 +8,22 @@ import SwiftUI
 import CommonUI
 
 struct VaultRecoveryScanQRCodeIntroRouter: Router {
-    
+
     static func buildView(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData) -> some View {
         VaultRecoveryScanQRCodeIntroView(presenter: .init(flowContext: flowContext, recoveryData: recoveryData))
     }
-    
+
     func routingType(for destination: VaultRecoveryScanQRCodeIntroDestination?) -> RoutingType? {
         switch destination {
-        case .camera:
-            .fullScreenCover
-        case .vaultRecovery, .enterMasterPassword, .importVault:
-            .push
-        case nil:
-            nil
+        case .camera: .push
+        case nil: nil
         }
     }
-    
+
     func view(for destination: VaultRecoveryScanQRCodeIntroDestination) -> some View {
         switch destination {
-        case .camera(let vaultRecoveryData, let onCompletion):
-            VaultRecoveryCameraRouter.buildView(recoveryData: vaultRecoveryData, onCompletion: onCompletion)
-        case .vaultRecovery(let entropy, let masterKey, let recoveryData):
-            VaultRecoveryRecoverRouter.buildView(
-                kind: .recoverEncrypted(entropy: entropy, masterKey: masterKey, recoveryData: recoveryData)
-            )
-        case .importVault(let input, let onClose):
-            BackupImportImportingRouter.buildView(input: input, onClose: onClose)
-        case .enterMasterPassword(let flowContext, let entropy, let recoveryData):
-            VaultRecoveryEnterPasswordRouter.buildView(
-                flowContext: flowContext,
-                entropy: entropy,
-                recoveryData: recoveryData
-            )
+        case .camera(let flowContext, let recoveryData, let onTryAgain):
+            VaultRecoveryCameraRouter.buildView(flowContext: flowContext, recoveryData: recoveryData, onTryAgain: onTryAgain)
         }
     }
 }

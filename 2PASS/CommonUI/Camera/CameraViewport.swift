@@ -12,6 +12,7 @@ struct CameraViewport: UIViewRepresentable {
         
     var didRegisterError: (String?) -> Void
     var didFoundCode: (String) -> Void
+    var didLoseCode: () -> Void
     @Binding var cameraFreeze: Bool
     
     final class Coordinator {
@@ -78,6 +79,7 @@ struct CameraViewport: UIViewRepresentable {
     func makeUIView(context: Context) -> CameraScanningView {
         let cam = CameraScanningView()
         cam.codeFound = { didFoundCode($0) }
+        cam.codeLost = { didLoseCode() }
         return cam
     }
     
@@ -109,6 +111,7 @@ struct CameraViewport: UIViewRepresentable {
 final class CameraScanningView: UIView {
     private var camera: Camera?
     var codeFound: ((String) -> Void)?
+    var codeLost: (() -> Void)?
     
     override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
     // swiftlint:disable force_cast
@@ -184,6 +187,9 @@ extension CameraScanningView: CameraDelegate {
     func didStartScanning() {}
     func didFoundCode(_ code: String) {
         codeFound?(code)
+    }
+    func didLoseCode() {
+        codeLost?()
     }
 }
 
