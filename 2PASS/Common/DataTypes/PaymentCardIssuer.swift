@@ -4,7 +4,7 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-public enum PaymentCardIssuer: String, Codable, Hashable, Sendable {
+public enum PaymentCardIssuer: String, Codable, Hashable, Sendable, CaseIterable {
     case visa = "Visa"
     case mastercard = "MC"
     case americanExpress = "AMEX"
