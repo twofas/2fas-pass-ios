@@ -91,7 +91,8 @@ extension MainRepositoryImpl {
                               code == LAError.userCancel
                                 || code == LAError.appCancel
                                 || code == LAError.systemCancel
-                                || code == LAError.userFallback {
+                                || code == LAError.userFallback
+                                || code == LAError.notInteractive {
                         Log("BioAuthCancelled", module: .mainRepository)
                         completion(.cancelled)
                     } else {
