@@ -16,7 +16,11 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionSifRequest.self, from: data)
 
         let itemId = actionRequestData.data.itemId
-        guard let item = itemsInteractor.getItem(for: itemId, checkInTrash: false) else {
+        let item = await MainActor.run {
+            itemsInteractor.getItem(for: itemId, checkInTrash: false)
+        }
+
+        guard let item else {
             throw ConnectError.missingItem
         }
 
@@ -205,7 +209,11 @@ extension ConnectInteractor {
 
         let contentType = ItemContentType(rawValue: actionRequestData.data.contentType)
 
-        guard let item = itemsInteractor.getItem(for: itemId, checkInTrash: false) else {
+        let item = await MainActor.run {
+            itemsInteractor.getItem(for: itemId, checkInTrash: false)
+        }
+
+        guard let item else {
             throw ConnectError.missingItem
         }
 
@@ -404,7 +412,11 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionDeleteDataRequest.self, from: data)
         let itemId = actionRequestData.data.itemId
 
-        guard let item = itemsInteractor.getItem(for: itemId, checkInTrash: false) else {
+        let item = await MainActor.run {
+            itemsInteractor.getItem(for: itemId, checkInTrash: false)
+        }
+
+        guard let item else {
             throw ConnectError.missingItem
         }
 
