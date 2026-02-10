@@ -58,6 +58,7 @@ enum SettingsIcon {
     case microsoftEdge
     case enpass
     case keeper
+    case nordPass
 }
 
 enum SettingIconStyle {
@@ -224,6 +225,8 @@ struct SettingsIconView: View {
             Image(.enpassIcon)
         case .keeper:
             Image(.keeperIcon)
+        case .nordPass:
+            Image(.nordpassIcon)
         }
     }
     
@@ -237,7 +240,7 @@ struct SettingsIconView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: size * 0.7, height: size * 0.7)
-        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePass, .keePassXC, .microsoftEdge, .enpass, .keeper:
+        case .bitwarden, .onePassword, .chrome, .proton, .dashlane, .lastPass, .applePasswords, .firefox, .keePass, .keePassXC, .microsoftEdge, .enpass, .keeper, .nordPass:
             image
                 .resizable()
                 .scaledToFit()

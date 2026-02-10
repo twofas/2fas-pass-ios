@@ -5,9 +5,9 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import SwiftUIIntrospect
+import UIKit
 
-public struct SecureInput: View {
+public struct SecureInput: UIViewRepresentable {
     let label: LocalizedStringResource
 
     @State
@@ -20,185 +20,86 @@ public struct SecureInput: View {
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
     private var onSubmit: (() -> Void)?
+    private var showsToggle = true
 
-    public init(label: LocalizedStringResource, value: Binding<String>, reveal: Binding<Bool>? = nil, onSubmit: (() -> Void)? = nil) {
+    public init(label: LocalizedStringResource, value: Binding<String>) {
         self.label = label
-        self.bindingReveal = reveal
         self._value = value
-        self.onSubmit = onSubmit
     }
 
-    public var body: some View {
-        HStack {
-            SecureContentInput(label: label, value: $value, isReveal: isReveal)
-                .colorized(isColorized)
-                .introspect(introspectTextField)
-                .onSubmit {
-                    onSubmit?()
-                }
-            
-            Spacer()
-
-            Toggle(isOn: $isReveal, label: {})
-                .toggleStyle(.reveal)
-                .frame(width: 22)
+    public func makeUIView(context: Context) -> SecureInputView {
+        let view = SecureInputView()
+        view.onTextChanged = { newText in
+            value = newText
         }
-        .onChange(of: isReveal) { oldValue, newValue in
-            if let bindingReveal, newValue != bindingReveal.wrappedValue {
-                bindingReveal.wrappedValue = newValue
-            }
-        }
-        .onChange(of: bindingReveal?.wrappedValue ?? false) { oldValue, newValue in
-            if newValue != isReveal {
-                isReveal = newValue
-            }
-        }
+        view.onSubmit = onSubmit
+        return view
     }
-    
+
+    public func updateUIView(_ uiView: SecureInputView, context: Context) {
+        uiView.isSecure = !revealBinding.wrappedValue
+        uiView.isColorized = isColorized
+        uiView.showsToggle = showsToggle
+        uiView.placeholder = String(localized: label)
+        uiView.onSubmit = onSubmit
+        uiView.onSecureModeChanged = { isSecure in
+            let reveal = !isSecure
+            if revealBinding.wrappedValue != reveal {
+                revealBinding.wrappedValue = reveal
+            }
+        }
+
+        if uiView.text != value {
+            uiView.applyExternalTextUpdate(value)
+        }
+
+        introspectTextField(uiView.activeTextField)
+    }
+
+    public static func dismantleUIView(_ uiView: SecureInputView, coordinator: ()) {
+        // Break potential retain chains from UIKit -> closures -> presenters.
+        uiView.onTextChanged = nil
+        uiView.onSubmit = nil
+        uiView.onSecureModeChanged = nil
+    }
+
     public func introspect(_ introspect: @escaping (UITextField) -> Void) -> Self {
         var instance = self
         instance.introspectTextField = introspect
         return instance
     }
-    
+
     public func colorized(_ isColorized: Bool = true) -> Self {
         var instance = self
         instance.isColorized = isColorized
         return instance
     }
-}
 
-public struct SecureContentInput: View {
-    
-    private enum Field {
-        case unsecure
-        case secure
-    }
-
-    let label: LocalizedStringResource
-    let isReveal: Bool
-
-    @Binding
-    var value: String
-
-    @FocusState
-    private var focusedField: Field?
-    
-    private var introspectTextField: (UITextField) -> Void = { _ in }
-    private var isColorized = false
-
-    public init(label: LocalizedStringResource, value: Binding<String>, isReveal: Bool = false) {
-        self.label = label
-        self._value = value
-        self.isReveal = isReveal
-    }
-
-    
-    public var body: some View {
-        ZStack {
-            SecureField(label, text: $value)
-                .focused($focusedField, equals: .secure)
-                .opacity(isReveal ? 0 : 1)
-                .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
-                    introspectTextField(textField)
-                }
-            
-            SecureContainerView(contentId: value) {
-                RevealedPasswordTextField(placeholder: label, text: $value, isColorized: isColorized)
-                    .focused($focusedField, equals: .unsecure)
-                    .fontDesign(value.isEmpty ? .default : .monospaced)
-                    .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
-                        introspectTextField(textField)
-                    }
-            }
-            .opacity(isReveal ? 1 : 0)
-        }
-        .animation(nil, value: isReveal)
-        .autocorrectionDisabled()
-        .textInputAutocapitalization(.never)
-        .frame(maxWidth: .infinity)
-        .onChange(of: isReveal) { oldValue, newValue in
-            if newValue, focusedField == .secure {
-                Task {
-                    focusedField = .unsecure
-                }
-            } else if focusedField == .unsecure {
-                focusedField = .secure
-            }
-        }
-    }
-    
-    func introspect(_ introspect: @escaping (UITextField) -> Void) -> Self {
+    public func showsToggle(_ showsToggle: Bool) -> Self {
         var instance = self
-        instance.introspectTextField = introspect
+        instance.showsToggle = showsToggle
         return instance
     }
-    
-    func colorized(_ isColorized: Bool) -> Self {
+
+    public func onSubmit(_ action: @escaping () -> Void) -> Self {
         var instance = self
-        instance.isColorized = isColorized
+        instance.onSubmit = action
         return instance
     }
-}
 
-private struct RevealedPasswordTextField: UIViewRepresentable {
-    let placeholder: LocalizedStringResource
-    @Binding var text: String
-    let isColorized: Bool
-
-    func makeUIView(context: Context) -> UITextField {
-        let textField = UITextField()
-        textField.autocapitalizationType = .none
-        textField.autocorrectionType = .no
-        textField.spellCheckingType = .no
-        textField.smartQuotesType = .no
-        textField.smartDashesType = .no
-        textField.smartInsertDeleteType = .no
-
-        textField.delegate = context.coordinator
-        textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
-        textField.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
-        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
-        return textField
+    public func reveal(_ reveal: Binding<Bool>) -> Self {
+        var instance = self
+        instance.bindingReveal = reveal
+        return instance
     }
 
-    func updateUIView(_ uiView: UITextField, context: Context) {
-        let selectedRange = uiView.selectedTextRange
-
-        if isColorized {
-            uiView.attributedText = PasswordRenderer(password: text).makeColorizedNSAttributedString()
-        } else {
-            uiView.text = text
-        }
-        
-        if let selectedRange {
-            uiView.selectedTextRange = selectedRange
-        }
-        
-        uiView.placeholder = String(localized: placeholder)
-        
-        let bodyFont = UIFont.preferredFont(forTextStyle: .body)
-        if text.isEmpty == false {
-            uiView.font = UIFont.monospacedSystemFont(ofSize: bodyFont.pointSize, weight: .regular)
-        } else {
-            uiView.font = bodyFont
-        }
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, UITextFieldDelegate {
-        var parent: RevealedPasswordTextField
-        
-        init(_ parent: RevealedPasswordTextField) {
-            self.parent = parent
-        }
-        
-        func textFieldDidChangeSelection(_ textField: UITextField) {
-            parent.text = textField.text ?? ""
-        }
+    private var revealBinding: Binding<Bool> {
+        Binding(
+            get: { bindingReveal?.wrappedValue ?? isReveal },
+            set: { newValue in
+                isReveal = newValue
+                bindingReveal?.wrappedValue = newValue
+            }
+        )
     }
 }

@@ -72,7 +72,7 @@ struct PaymentCardDetailFormView: View {
             if let expirationDate = presenter.expirationDate {
                 ItemDetailFormActionsRow(
                     key: .cardExpirationDateLabel,
-                    value: { Text(expirationDate) },
+                    value: { Text(expirationDate.formatted(.expirationDate)) },
                     actions: {[
                         UIAction(title: String(localized: .cardViewActionCopyExpirationDate)) { _ in
                             presenter.onCopyExpirationDate()

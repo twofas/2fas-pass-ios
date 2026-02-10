@@ -1706,6 +1706,18 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    private var stubbedGetTag: (ItemTagID) -> ItemTagData? = { _ in nil }
+    func getTag(for tagID: ItemTagID) -> ItemTagData? {
+        recordCall()
+        return stubbedGetTag(tagID)
+    }
+
+    @discardableResult
+    func withGetTag(_ handler: @escaping (ItemTagID) -> ItemTagData?) -> Self {
+        stubbedGetTag = handler
+        return self
+    }
+
     private var stubbedListTags: (TagListOptions) -> [ItemTagData] = { _ in [] }
     func listTags(options: TagListOptions) -> [ItemTagData] {
         recordCall()

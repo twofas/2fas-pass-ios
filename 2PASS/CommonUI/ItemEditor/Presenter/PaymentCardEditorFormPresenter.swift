@@ -156,10 +156,11 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         if let initialData {
             let decryptedExpirationDate = initialData.content.expirationDate.flatMap {
                 interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
-            } ?? ""
+            }.map { $0.formatted(.expirationDate) } ?? ""
+            let changeRequestExpirationDate = changeRequest?.expirationDate.map { $0.formatted(.expirationDate) }
 
             self.cardHolder = changeRequest?.cardHolder ?? initialData.content.cardHolder ?? ""
-            self.expirationDate = changeRequest?.expirationDate ?? decryptedExpirationDate
+            self.expirationDate = changeRequestExpirationDate ?? decryptedExpirationDate
             self.notes = changeRequest?.notes ?? initialData.content.notes ?? ""
 
             self.initialCardIssuer = initialData.content.cardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
@@ -184,7 +185,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         } else {
             self.cardHolder = changeRequest?.cardHolder ?? ""
             self.decryptedCardNumber = changeRequest?.cardNumber ?? ""
-            self.expirationDate = changeRequest?.expirationDate ?? ""
+            self.expirationDate = changeRequest?.expirationDate.map { $0.formatted(.expirationDate) } ?? ""
             self.decryptedSecurityCode = changeRequest?.securityCode ?? ""
             self.notes = changeRequest?.notes ?? ""
             
@@ -234,12 +235,12 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     func onSave() -> SaveItemResult {
         decryptCardNumberIfNeeded()
         decryptSecurityCodeIfNeeded()
-
+        
         return interactor.savePaymentCard(
             name: name,
             cardHolder: cardHolder.nonBlankTrimmedOrNil,
             cardNumber: decryptedCardNumber.nilIfEmpty,
-            expirationDate: expirationDate.nonBlankTrimmedOrNil,
+            expirationDate: normalizedExpirationDate(expirationDate).nonBlankTrimmedOrNil,
             securityCode: decryptedSecurityCode.nilIfEmpty,
             notes: notes.nonBlankTrimmedOrNil,
             protectionLevel: protectionLevel,
@@ -267,7 +268,8 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     private func validateExpirationDate(_ value: String) -> Bool {
-        value.isEmpty || interactor.validatePaymentCardExpirationDate(value)
+        let expirationDate = normalizedExpirationDate(value)
+        return expirationDate.isEmpty || interactor.validatePaymentCardExpirationDate(expirationDate)
     }
     
     private func validateSecurityCode(_ value: String?) -> Bool {
@@ -277,6 +279,10 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         return value.isEmpty || interactor.validatePaymentCardSecurityCode(value, for: paymentCardIssuer)
     }
     
+    private func normalizedExpirationDate(_ expirationDate: String) -> String {
+        expirationDate.filter { $0.isNumber || $0 == "/" }
+    }
+
     private func decryptCardNumberIfNeeded() {
         guard decryptedCardNumber == nil else { return }
         guard let item = initialPaymentCardItem, let encrypted = item.content.cardNumber else { return }

@@ -399,7 +399,10 @@ private extension PasswordsPresenter {
 
         listData.removeAll()
         hasSuggestedItems = false
-        tagColorsByID = Dictionary(uniqueKeysWithValues: listAllTags().map { ($0.tagID, $0.color) })
+        tagColorsByID = Dictionary(
+            listAllTags().map { ($0.tagID, $0.color) },
+            uniquingKeysWith: { _, new in new }
+        )
         
         let cellsCount: Int
         
