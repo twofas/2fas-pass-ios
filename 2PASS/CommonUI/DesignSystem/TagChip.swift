@@ -10,6 +10,9 @@ import Common
 public struct TagChip: View {
     let tag: ItemTagData
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+    
     public init(tag: ItemTagData) {
         self.tag = tag
     }
@@ -28,7 +31,7 @@ public struct TagChip: View {
         .padding(.vertical, Spacing.xs)
         .background(
             Capsule()
-                .fill(.neutral200)
+                .fill(colorScheme == .dark ? .neutral200 : .base0)
         )
     }
 }

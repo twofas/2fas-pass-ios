@@ -7,6 +7,10 @@
 import SwiftUI
 import Common
 
+private struct Constants {
+    static let cardMaxWidth = 320.0
+}
+
 struct ItemDetailView: View {
 
     @State
@@ -18,6 +22,17 @@ struct ItemDetailView: View {
     var body: some View {
         VStack {
             ItemDetailForm {
+                if case .paymentCard(let formPresenter) = presenter.form {
+                    CardView(
+                        issuer: formPresenter.paymentCardIssuer,
+                        name: formPresenter.name,
+                        cardNumberMask: formPresenter.cardNumberMask
+                    )
+                    .frame(maxWidth: Constants.cardMaxWidth)
+                    .padding(.horizontal, Spacing.xll3)
+                    .padding(.bottom, Spacing.s)
+                }
+                
                 ItemDetailSection {
                     switch presenter.form {
                     case .login(let formPresenter):
@@ -39,10 +54,18 @@ struct ItemDetailView: View {
             }
             .scrollReadableContentMargins()
         }
-        .contentMargins(.top, Spacing.xll)
+        .contentMargins(.top, topMargin)
         .scrollBounceBehavior(.basedOnSize)
         .onAppear {
             presenter.onAppear()
+        }
+    }
+    
+    private var topMargin: CGFloat {
+        if case .paymentCard = presenter.form {
+            return Spacing.s
+        } else {
+            return Spacing.xll
         }
     }
     
@@ -114,7 +137,7 @@ struct ItemDetailView: View {
     ItemDetailView(presenter: .init(
         itemID: ItemID(),
         flowController: ItemDetailFlowController(viewController: UIViewController()),
-        interactor: ItemDetailModulePreviewInteractor(contentType: .login))
+        interactor: ItemDetailModulePreviewInteractor(contentType: .paymentCard))
     )
 }
 
