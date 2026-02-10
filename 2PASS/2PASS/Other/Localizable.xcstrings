@@ -1084,7 +1084,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your 2FAS Pass Items have been successfully exported to file."
+            "value" : "Your 2FAS Pass Items have been successfully exported to a file."
           }
         },
         "pl" : {
@@ -4361,7 +4361,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "If I lose this file, I will lose access to all of my 2FAS Pass data."
+            "value" : "If I lose this file, I will lose access to all my 2FAS Pass data."
           }
         },
         "pl" : {
@@ -14328,13 +14328,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Backup file is stored in a hidden folder on your Google Drive. This folder is only accessible by the 2FAS Pass app. Backup file is encrypted with your Master Password."
+            "value" : "The backup file is stored in a hidden folder on your Google Drive, accessible only by the 2FAS Pass app. \nIt is encrypted with your Secret Words and Master Password."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Plik kopii zapasowej jest przechowywany w ukrytym folderze na dysku Google Drive. Dostęp do tego folderu ma wyłącznie aplikacja 2FAS Pass. Plik kopii zapasowej jest szyfrowany hasłem głównym."
+            "value" : "Plik kopii zapasowej jest przechowywany w ukrytym folderze na dysku Google Drive, do którego dostęp ma wyłącznie aplikacja 2FAS Pass.\nJest on zaszyfrowany tajnymi słowami i hasłem głównym."
           }
         }
       }
@@ -16555,7 +16555,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your 2FAS Pass Items have been successfully imported to Vault."
+            "value" : "Your 2FAS Pass Items have been successfully imported to the Vault."
           }
         },
         "pl" : {
