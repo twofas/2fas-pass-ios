@@ -144,28 +144,28 @@ public final class LoginPresenter {
     }
 
     private func observeLoginStatus() {
+        let didLoginLockNotifications = interactor.didLoginLock
+        let didLoginUnlockNotifications = interactor.didLoginUnlock
+        let didLogoutAppNotifications = interactor.didLogoutApp
+ 
         loginStatusTask = Task { [weak self] in
-            guard let self else { return }
             await withTaskGroup(of: Void.self) { group in
-                group.addTask { [weak self] in
-                    guard let self else { return }
-                    for await _ in self.interactor.didLoginLock {
+                group.addTask {
+                    for await _ in didLoginLockNotifications {
                         await MainActor.run { [weak self] in
                             self?.refreshStatus()
                         }
                     }
                 }
-                group.addTask { [weak self] in
-                    guard let self else { return }
-                    for await _ in self.interactor.didLoginUnlock {
+                group.addTask {
+                    for await _ in didLoginUnlockNotifications {
                         await MainActor.run { [weak self] in
                             self?.refreshStatus()
                         }
                     }
                 }
-                group.addTask { [weak self] in
-                    guard let self else { return }
-                    for await _ in self.interactor.didLogoutApp {
+                group.addTask {
+                    for await _ in didLogoutAppNotifications {
                         await MainActor.run { [weak self] in
                             self?.shouldDismiss = true
                         }
