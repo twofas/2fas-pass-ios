@@ -12,6 +12,12 @@
 				<true/>
 				<key>ProvidesTextToInsert</key>
 				<true/>
+				<key>SupportsSavePasswordCredentials</key>
+				<true/>
+				<key>SupportsGeneratePasswordCredentials</key>
+				<true/>
+				<key>SupportsGeneratePasswordCredentialsWithUI</key>
+				<true/>
 				<key>SupportsCredentialExchange</key>
 				<true/>
 				<key>SupportedCredentialExchangeVersions</key>

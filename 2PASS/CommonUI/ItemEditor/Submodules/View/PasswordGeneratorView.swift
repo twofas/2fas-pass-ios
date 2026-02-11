@@ -6,6 +6,7 @@
 
 import SwiftUI
 import Common
+import SwiftUIIntrospect
 
 private struct Constants {
     static let minHeightPassword: CGFloat = 60
@@ -17,10 +18,15 @@ struct PasswordGeneratorView: View {
 
     @State
     var presenter: PasswordGeneratorPresenter
+
+    @State
+    private var formContentHeight: CGFloat?
     
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
+            VStack {
+                Spacer()
+                
                 Form {
                     Section {
                         VStack {
@@ -58,7 +64,7 @@ struct PasswordGeneratorView: View {
                             Text(presenter.passwordLength, format: .number)
                                 .monospaced()
                                 .frame(width: 30, alignment: .trailing)
-                      
+                            
                             Slider(
                                 value: .convert($presenter.passwordLength),
                                 in: (Float(presenter.minPasswordLength)...Float(presenter.maxPasswordLength)),
@@ -71,22 +77,24 @@ struct PasswordGeneratorView: View {
                         Toggle(.passwordGeneratorUppercaseCharacters, isOn: $presenter.hasUppercase)
                         Toggle(.passwordGeneratorSpecialCharacters, isOn: $presenter.hasSpecial)
                     }
-
-                    Section {
-                        Button(.passwordGeneratorUseCta) {
-                            presenter.onUse()
-                        }
-                        .buttonStyle(.filled)
-                        .controlSize(.large)
-                    }
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: Spacing.l, leading: 0, bottom: 0, trailing: 0))
                 }
+                .frame(height: formContentHeight)
                 .listSectionSpacing(Spacing.l)
                 .contentMargins(.top, 0)
                 .scrollBounceBehavior(.basedOnSize)
-                .foregroundStyle(.mainText)
-                .tint(.brand500)
+                .introspect(.form, on: .iOS(.v17, .v18, .v26)) { collectionView in
+                    collectionView.layoutIfNeeded()
+                    updateFormHeight(collectionView.contentSize.height)
+                }
+                
+                Spacer()
+                
+                Button(.passwordGeneratorUseCta) {
+                    presenter.onUse()
+                }
+                .buttonStyle(.filled)
+                .controlSize(.large)
+                .padding(Spacing.l)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -95,6 +103,8 @@ struct PasswordGeneratorView: View {
                     }
                 }
             }
+            .foregroundStyle(.mainText)
+            .tint(.brand500)
             .toolbarTitleDisplayMode(.inline)
             .navigationTitle(.passwordGeneratorHeader)
         }
@@ -108,6 +118,17 @@ struct PasswordGeneratorView: View {
         }
         .onAppear {
             presenter.onAppear()
+        }
+    }
+
+    private func updateFormHeight(_ contentHeight: CGFloat) {
+        let measuredHeight = contentHeight
+        guard measuredHeight > 0 else { return }
+
+        Task { @MainActor in
+            if formContentHeight != measuredHeight {
+                formContentHeight = measuredHeight
+            }
         }
     }
 }
