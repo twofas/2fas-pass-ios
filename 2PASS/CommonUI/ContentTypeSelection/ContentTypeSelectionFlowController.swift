@@ -70,6 +70,8 @@ extension ContentTypeSelectionFlowController: ContentTypeSelectionFlowControllin
             changeRequest = SecureNoteDataChangeRequest(allowChangeContentType: true)
         case .paymentCard:
             changeRequest = PaymentCardDataChangeRequest(allowChangeContentType: true)
+        case .wifi:
+            changeRequest = WiFiDataChangeRequest(allowChangeContentType: true)
         case .unknown:
             changeRequest = nil
         }

@@ -23,6 +23,8 @@ extension ItemContentTypeFilter {
             "note.text"
         case .contentType(.paymentCard):
             "creditcard"
+        case .contentType(.wifi):
+            "wifi"
         case .contentType(.unknown):
             ""
         }

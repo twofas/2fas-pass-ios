@@ -134,6 +134,38 @@ extension MainRepositoryImpl {
         )
     }
 
+    func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    ) {
+        inMemoryStorage?.createWiFiItem(
+            itemID: itemID,
+            vaultID: vaultID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            ssid: ssid,
+            password: password,
+            notes: notes,
+            securityType: securityType,
+            hidden: hidden
+        )
+    }
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -267,6 +299,36 @@ extension MainRepositoryImpl {
             notes: notes,
             cardNumberMask: cardNumberMask,
             cardIssuer: cardIssuer
+        )
+    }
+
+    func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    ) {
+        inMemoryStorage?.updateWiFiItem(
+            itemID: itemID,
+            vaultID: vaultID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            ssid: ssid,
+            password: password,
+            notes: notes,
+            securityType: securityType,
+            hidden: hidden
         )
     }
 

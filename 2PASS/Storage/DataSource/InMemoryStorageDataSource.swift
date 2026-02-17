@@ -224,6 +224,48 @@ public protocol InMemoryStorageDataSource: AnyObject {
         options: ItemsListOptions
     ) -> [PaymentCardItemData]
 
+    // MARK: - WiFi Items
+
+    func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    )
+
+    func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    )
+
+    func getWiFiItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> WiFiItemData?
+
+    func listWiFiItems(
+        options: ItemsListOptions
+    ) -> [WiFiItemData]
+
     // MARK: - Other
     
     func listUsernames() -> [String]

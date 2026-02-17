@@ -524,6 +524,91 @@ extension InMemoryStorageDataSourceImpl {
 }
 
 extension InMemoryStorageDataSourceImpl {
+    
+    public func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    ) {
+        WiFiEntity.createWiFi(
+            on: context,
+            itemID: itemID,
+            vaultID: vaultID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            ssid: ssid,
+            password: password,
+            notes: notes,
+            securityType: securityType,
+            hidden: hidden
+        )
+    }
+
+    public func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    ) {
+        WiFiEntity.updateWiFi(
+            on: context,
+            for: itemID,
+            vaultID: vaultID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            ssid: ssid,
+            password: password,
+            notes: notes,
+            securityType: securityType,
+            hidden: hidden
+        )
+    }
+
+    public func getWiFiItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> WiFiItemData? {
+        WiFiEntity.getWiFiEntity(
+            on: context,
+            itemID: itemID,
+            checkInTrash: checkInTrash
+        )?.toData().asWiFi
+    }
+
+    public func listWiFiItems(
+        options: ItemsListOptions
+    ) -> [WiFiItemData] {
+        WiFiEntity.listWiFiEntities(on: context, options: options)
+            .compactMap { $0.toData().asWiFi }
+    }
+}
+
+extension InMemoryStorageDataSourceImpl {
     public func listUsernames() -> [String] {
         LoginEntity.listLoginEntities(on: context, options: .allNotTrashed)
             .compactMap { $0.username }

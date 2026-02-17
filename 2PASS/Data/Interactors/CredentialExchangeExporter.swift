@@ -69,6 +69,8 @@ private extension CredentialExchangeExporter {
             return convertSecureNoteItem(data, protectionLevel: item.protectionLevel, tags: tags)
         case .paymentCard(let data):
             return convertPaymentCardItem(data, protectionLevel: item.protectionLevel, tags: tags)
+        case .wifi(let data):
+            return nil // FIXME:
         case .raw:
             return nil
         }

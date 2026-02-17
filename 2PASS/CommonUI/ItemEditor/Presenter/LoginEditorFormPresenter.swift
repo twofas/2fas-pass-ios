@@ -70,7 +70,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
     var iconType: PasswordIconType = .domainIcon(nil)
     var selectedURIIconIndex: Int?
 
-    private let initialDecryptedPassword: String? = nil
+    private let initialDecryptedPassword: String?
     
     private var initialLoginItem: LoginItemData? {
         initialData as? LoginItemData
@@ -90,6 +90,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
             } else {
                 decryptedPassword = ""
             }
+            initialDecryptedPassword = decryptedPassword
             
             switch changeRequest?.password {
             case .generate:
@@ -112,6 +113,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
             }
             
         } else {
+            initialDecryptedPassword = nil
             username = changeRequest?.username?.value ?? interactor.mostUsedUsernames().first ?? ""
             uri = (changeRequest?.uris ?? []).map { URI(id: .init(), uri: $0.uri, match: $0.match) }
             

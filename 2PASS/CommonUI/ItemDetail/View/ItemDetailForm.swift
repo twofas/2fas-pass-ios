@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
 
 struct ItemDetailForm<Content: View>: View {
     let content: () -> Content
@@ -89,6 +90,19 @@ struct ItemDetailSection<Content: View, Footer: View>: View {
         } else {
             return 12
         }
+    }
+}
+
+struct ItemDetailRowHighlightButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .itemDetailFormRowBackground(configuration.isPressed ? Color.neutral100 : nil)
+    }
+}
+
+extension ButtonStyle where Self == ItemDetailRowHighlightButtonStyle {
+    static var itemDetailRowHighlight: Self {
+        .init()
     }
 }
 
