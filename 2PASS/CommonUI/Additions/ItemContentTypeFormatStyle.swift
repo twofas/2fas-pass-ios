@@ -29,8 +29,10 @@ public struct ItemContentTypeFormatStyle: FormatStyle {
             return String(localized: .contentTypeSecureNoteName)
         case .paymentCard:
             return String(localized: .contentTypeCardName)
+        case .wifi:
+            return String(localized: .contentTypeWifiName)
         case .unknown:
-            return "Unknown"
+            return String(localized: .contentTypeUnknownName)
         }
     }
 }

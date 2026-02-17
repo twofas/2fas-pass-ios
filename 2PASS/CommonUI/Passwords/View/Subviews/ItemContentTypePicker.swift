@@ -39,6 +39,22 @@ struct ItemContentTypePickerUIKitWrapper: View {
 struct ItemContentTypePicker: View {
     @Binding var selectedFilter: ItemContentTypeFilter
     let filters: [ItemContentTypeFilter]
+    
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    
+    private let horizontalPadding: CGFloat = 16
+    private let spacing: CGFloat = 8
+    private let unselectedButtonWidth: CGFloat = 60
+    private let swipeThreshold: CGFloat = 40
+    
+    private var contentAlignment: Alignment {
+        guard filters.count >= 2 else {
+            return .leading
+        }
+        
+        let trailingAlignedFilters = filters.suffix(2)
+        return trailingAlignedFilters.contains(selectedFilter) ? .trailing : .leading
+    }
         
     init(
         selectedFilter: Binding<ItemContentTypeFilter>,
@@ -50,14 +66,6 @@ struct ItemContentTypePicker: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let horizontalPadding: CGFloat = 16
-            let spacing: CGFloat = 8
-            let unselectedButtonWidth: CGFloat = 60 // Fixed width for unselected buttons
-            let unselectedCount = filters.count - 1
-            let totalSpacing = spacing * CGFloat(filters.count - 1) + (horizontalPadding * 2)
-            let totalUnselectedWidth = unselectedButtonWidth * CGFloat(unselectedCount)
-            let selectedButtonWidth = geometry.size.width - totalSpacing - totalUnselectedWidth
-            
             HStack(spacing: spacing) {
                 ForEach(filters, id: \.hashValue) { category in
                     let isSelected = selectedFilter.contentType == category.contentType
@@ -65,23 +73,81 @@ struct ItemContentTypePicker: View {
                     ItemContentTypeFilterButton(
                         filter: category,
                         isSelected: isSelected,
-                        width: isSelected ? selectedButtonWidth : unselectedButtonWidth
+                        width: buttonWidth(
+                            isSelected: isSelected,
+                            containerWidth: geometry.size.width
+                        )
                     ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            selectedFilter = category
-                        }
+                        selectFilter(category)
                     }
+                    .layoutPriority(isSelected ? 1 : 0)
                 }
             }
+            .frame(width: geometry.size.width - (horizontalPadding * 2), alignment: contentAlignment)
             .padding(.horizontal, horizontalPadding)
+            .contentShape(Rectangle())
+            .highPriorityGesture(
+                DragGesture(minimumDistance: swipeThreshold)
+                    .onEnded { value in
+                        if value.translation.width >= swipeThreshold {
+                            if let firstFilter = filters.first {
+                                selectFilter(firstFilter)
+                            }
+                        } else if value.translation.width <= -swipeThreshold {
+                            if let lastFilter = filters.last {
+                                selectFilter(lastFilter)
+                            }
+                        }
+                    }
+            )
         }
+    }
+    
+    private func selectFilter(_ filter: ItemContentTypeFilter) {
+        guard selectedFilter != filter else {
+            return
+        }
+        
+        let animation = SwiftUI.Animation.spring(response: 0.3, dampingFraction: 0.8)
+        if UIAccessibility.isReduceMotionEnabled {
+            selectedFilter = filter
+        } else {
+            withAnimation(animation) {
+                selectedFilter = filter
+            }
+        }
+    }
+    
+    private func buttonWidth(isSelected: Bool, containerWidth: CGFloat) -> CGFloat? {
+        if UIDevice.isiPad {
+            return equalButtonWidth(containerWidth: containerWidth)
+        }
+        
+        if horizontalSizeClass == .regular {
+            return nil
+        }
+        
+        return isSelected ? nil : unselectedButtonWidth
+    }
+    
+    private func equalButtonWidth(containerWidth: CGFloat) -> CGFloat? {
+        guard filters.isEmpty == false else {
+            return nil
+        }
+        
+        let spacingWidth = spacing * CGFloat(max(filters.count - 1, 0))
+        let availableWidth = containerWidth - (horizontalPadding * 2) - spacingWidth
+        guard availableWidth > 0 else {
+            return nil
+        }
+        return availableWidth / CGFloat(filters.count)
     }
 }
 
 private struct ItemContentTypeFilterButton: View {
     let filter: ItemContentTypeFilter
     let isSelected: Bool
-    let width: CGFloat
+    let width: CGFloat?
     let action: () -> Void
     
     @State private var pressing = false
@@ -102,12 +168,13 @@ private struct ItemContentTypeFilterButton: View {
                         .foregroundColor(isSelected ? .white : (colorScheme == .light ? .black.opacity(0.7) : .init(uiColor: UIColor(hexString: "#CBCBCB")!)))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
+                        .fixedSize(horizontal: horizontalSizeClass == .compact && isSelected, vertical: false)
                 }
             }
             .padding(.horizontal, isSelected ? 16 : 8)
             .padding(.vertical, 10)
-            .frame(maxWidth: horizontalSizeClass == .regular ? .infinity : nil)
-            .frame(width: horizontalSizeClass == .regular ? nil : width, height: 44)
+            .frame(maxWidth: horizontalSizeClass == .regular && width == nil ? .infinity : nil)
+            .frame(width: width, height: 44)
             .contentShape(Capsule())
             
             if #available(iOS 26.0, *) {

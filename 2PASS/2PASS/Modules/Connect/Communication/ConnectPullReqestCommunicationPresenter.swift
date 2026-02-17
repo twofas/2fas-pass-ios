@@ -55,6 +55,8 @@ final class ConnectPullReqestCommunicationPresenter {
                 iconContent = .contentType(.secureNote)
             case .action(.changeRequest(.addPaymentCard(let changeRequest))):
                 setPaymentCardIconContent(cardNumber: changeRequest.cardNumber)
+            case .action(.changeRequest(.addWiFi)):
+                iconContent = .contentType(.wifi)
             default:
                 switch state.itemData {
                 case .login(let loginItemData):
@@ -63,6 +65,8 @@ final class ConnectPullReqestCommunicationPresenter {
                     iconContent = .contentType(.secureNote)
                 case .paymentCard(let paymentCardItemData):
                     setPaymentCardIconContent(issuerIcon: paymentCardItemData.issuerIcon)
+                case .wifi:
+                    iconContent = .contentType(.wifi)
                 default:
                     break
                 }
@@ -145,6 +149,14 @@ final class ConnectPullReqestCommunicationPresenter {
                 })
             case .updatePaymentCard(let paymentCardItem, let paymentCardChangeRequest):
                 destination = .editItem(.paymentCard(paymentCardItem), changeRequest: paymentCardChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
+                })
+            case .addWiFi(let wifiChangeRequest):
+                destination = .addItem(changeRequest: wifiChangeRequest, onClose: { [weak self] result in
+                    self?.onSaveItem(result: result)
+                })
+            case .updateWiFi(let wifiItem, let wifiChangeRequest):
+                destination = .editItem(.wifi(wifiItem), changeRequest: wifiChangeRequest, onClose: { [weak self] result in
                     self?.onSaveItem(result: result)
                 })
             }
@@ -318,6 +330,10 @@ extension ConnectPullReqestCommunicationPresenter {
                 case .changeRequest(.updatePaymentCard(let currentPaymentCardData, _)):
                     return .paymentCard(currentPaymentCardData)
                 case .changeRequest(.addPaymentCard):
+                    return nil
+                case .changeRequest(.updateWiFi(let currentWiFiData, _)):
+                    return .wifi(currentWiFiData)
+                case .changeRequest(.addWiFi):
                     return nil
                 case .delete(let item):
                     return item

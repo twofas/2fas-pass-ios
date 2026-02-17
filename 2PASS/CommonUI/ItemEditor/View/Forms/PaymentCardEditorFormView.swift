@@ -131,21 +131,12 @@ struct PaymentCardEditorFormView: View {
 
         ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
         
-        Section {
-            TextField("", text: $presenter.notes, axis: .vertical)
-                .focused($focusField, equals: .notes)
-                .autocorrectionDisabled(false)
-                .textInputAutocapitalization(.sentences)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
-                .contentShape(Rectangle())
-                .formFieldChanged(presenter.notesChanged)
-                .onTapGesture {
-                    focusField = .notes
-                }
-        } header: {
-            Text(.cardNotesLabel)
-        }
-        .listSectionSpacing(Spacing.l)
+        ItemEditorNotesSection(
+            notes: $presenter.notes,
+            notesChanged: presenter.notesChanged,
+            focusField: $focusField,
+            focusedField: .notes,
+            header: .cardNotesLabel
+        )
     }
 }

@@ -148,6 +148,27 @@ extension ConnectInteractor {
                     notes: paymentCardContent.data.content.notes
                 )
             )
+        case .wifi:
+            guard let wifiContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddWiFiRequest.self, from: data) else {
+                throw ConnectError.badData
+            }
+
+            var newPassword: String?
+            if let passwordDataEnc = wifiContent.data.content.password,
+               let passwordData = mainRepository.decrypt(passwordDataEnc, key: encryptionNewItemKey) {
+                newPassword = String(data: passwordData, encoding: .utf8)
+            }
+
+            itemChangeRequest = .addWiFi(
+                WiFiDataChangeRequest(
+                    name: wifiContent.data.content.name,
+                    ssid: wifiContent.data.content.ssid,
+                    password: newPassword,
+                    notes: wifiContent.data.content.notes,
+                    securityType: wifiContent.data.content.securityType,
+                    hidden: wifiContent.data.content.hidden
+                )
+            )
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)
         }
@@ -375,6 +396,39 @@ extension ConnectInteractor {
                 notes: paymentCardRequest.data.content.notes,
                 protectionLevel: newProtectionLevel,
                 tags: paymentCardRequest.data.tags
+            ))
+        case .wifi:
+            guard let wifiRequest = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionUpdateWiFiRequest.self, from: data) else {
+                throw ConnectError.badData
+            }
+
+            guard let wifiItem = item.asWiFi else {
+                throw ConnectError.badData
+            }
+
+            let newPassword: String?
+            if let passwordDataEnc = wifiRequest.data.content.password {
+                if passwordDataEnc.isEmpty {
+                    newPassword = ""
+                } else if let encryptionKey = encryptionPasswordKey(wifiItem.protectionLevel),
+                          let passwordData = mainRepository.decrypt(passwordDataEnc, key: encryptionKey) {
+                    newPassword = String(data: passwordData, encoding: .utf8)
+                } else {
+                    newPassword = nil
+                }
+            } else {
+                newPassword = nil
+            }
+
+            itemChangeRequest = .updateWiFi(wifiItem, WiFiDataChangeRequest(
+                name: wifiRequest.data.content.name,
+                ssid: wifiRequest.data.content.ssid,
+                password: newPassword,
+                notes: wifiRequest.data.content.notes,
+                securityType: wifiRequest.data.content.securityType,
+                hidden: wifiRequest.data.content.hidden,
+                protectionLevel: newProtectionLevel,
+                tags: wifiRequest.data.tags
             ))
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)

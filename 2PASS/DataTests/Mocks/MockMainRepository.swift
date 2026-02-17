@@ -1526,6 +1526,24 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    ) {
+        recordCall()
+    }
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -1600,6 +1618,23 @@ final class MockMainRepository: MainRepository {
         notes: String?,
         cardNumberMask: String?,
         cardIssuer: String?
+    ) {
+        recordCall()
+    }
+
+    func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
     ) {
         recordCall()
     }
