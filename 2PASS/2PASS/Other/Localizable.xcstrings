@@ -18266,6 +18266,23 @@
         }
       }
     },
+    "wifi_security_type_none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak"
+          }
+        }
+      }
+    },
     "wifi_show_qr_code_action" : {
       "extractionState" : "manual",
       "localizations" : {
