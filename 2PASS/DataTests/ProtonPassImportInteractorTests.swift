@@ -58,16 +58,19 @@ struct ProtonPassImportInteractorTests {
         // - 2 login items
         // - 2 credit cards
         // - 1 secure note
-        // - 12 items converted to secure notes (1 identity + 9 custom + 1 sshKey + 1 wifi)
+        // - 1 wifi
+        // - 11 items converted to secure notes (1 identity + 9 custom + 1 sshKey)
         let logins = result.items.filter { if case .login = $0 { return true } else { return false } }
         let cards = result.items.filter { if case .paymentCard = $0 { return true } else { return false } }
         let notes = result.items.filter { if case .secureNote = $0 { return true } else { return false } }
+        let wifis = result.items.filter { if case .wifi = $0 { return true } else { return false } }
 
         #expect(logins.count == 2)
         #expect(cards.count == 2)
-        #expect(notes.count == 13) // 1 native + 12 converted
+        #expect(notes.count == 12) // 1 native + 11 converted
+        #expect(wifis.count == 1)
         #expect(result.tags.isEmpty)
-        #expect(result.itemsConvertedToSecureNotes == 12)
+        #expect(result.itemsConvertedToSecureNotes == 11)
     }
 
     // MARK: - Login Import Tests
@@ -338,10 +341,10 @@ struct ProtonPassImportInteractorTests {
         #expect(text == expectedText)
     }
 
-    // MARK: - WiFi Conversion Tests
+    // MARK: - WiFi Import Tests
 
     @Test
-    func importWiFiAsSecureNote() async throws {
+    func importWiFiItem() async throws {
         // GIVEN
         let data = try loadProtonPassTestData()
 
@@ -349,27 +352,23 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
-            if case .secureNote(let note) = item { return note }
+        let wifis = result.items.compactMap { item -> WiFiItemData? in
+            if case .wifi(let wifi) = item { return wifi }
             return nil
         }
 
-        let wifiNote = try #require(notes.first { $0.name == "Moje WiFi (Wifi)" })
+        let wifi = try #require(wifis.first { $0.name == "Moje WiFi" })
+        #expect(wifi.content.ssid == "defcon")
+        #expect(wifi.content.securityType == .wpa2)
+        #expect(wifi.content.hidden == false)
+        #expect(wifi.vaultId == testVaultID)
+        #expect(wifi.metadata.protectionLevel == .normal)
 
-        let text = try #require(decrypt(wifiNote.content.text))
-        // formatDictionary output (sorted alphabetically) + extraFields + metadata note
-        let expectedText = """
-            Password: haslo111
-            Security: 3
-            Ssid: defcon
+        let password = try #require(decrypt(wifi.content.password))
+        #expect(password == "haslo111")
 
-            Note: Notka
-
-            Ta normalna
-
-            Vault: Personal
-            """
-        #expect(text == expectedText)
+        let notes = try #require(wifi.content.notes)
+        #expect(notes == "Note: Notka\n\nTa normalna\n\nVault: Personal")
     }
 
     // MARK: - Comprehensive Import Test
@@ -393,16 +392,18 @@ struct ProtonPassImportInteractorTests {
         // THEN - Verify result summary
         #expect(result.items.count == 17)
         #expect(result.tags.isEmpty)
-        #expect(result.itemsConvertedToSecureNotes == 12)
+        #expect(result.itemsConvertedToSecureNotes == 11)
 
         // Extract items by type
         let logins = result.items.compactMap { if case .login(let l) = $0 { return l } else { return nil } }
         let cards = result.items.compactMap { if case .paymentCard(let c) = $0 { return c } else { return nil } }
         let notes = result.items.compactMap { if case .secureNote(let n) = $0 { return n } else { return nil } }
+        let wifis = result.items.compactMap { if case .wifi(let w) = $0 { return w } else { return nil } }
 
         #expect(logins.count == 2)
         #expect(cards.count == 2)
-        #expect(notes.count == 13)
+        #expect(notes.count == 12)
+        #expect(wifis.count == 1)
 
         // MARK: Login 1 - "wellcome-home.com"
         let welcomeLogin = try #require(logins.first { $0.name == "wellcome-home.com" })
@@ -487,21 +488,17 @@ struct ProtonPassImportInteractorTests {
             """
         #expect(identityText == expectedIdentityText)
 
-        // MARK: WiFi -> Secure Note - "Moje WiFi "
-        let wifi = try #require(notes.first { $0.name == "Moje WiFi (Wifi)" })
-        let wifiText = try #require(decrypt(wifi.content.text))
-        let expectedWifiText = """
-            Password: haslo111
-            Security: 3
-            Ssid: defcon
-
-            Note: Notka
-
-            Ta normalna
-
-            Vault: Personal
-            """
-        #expect(wifiText == expectedWifiText)
+        // MARK: WiFi - "Moje WiFi"
+        let wifi = try #require(wifis.first { $0.name == "Moje WiFi" })
+        #expect(wifi.content.ssid == "defcon")
+        #expect(wifi.content.securityType == .wpa2)
+        #expect(wifi.content.hidden == false)
+        #expect(wifi.vaultId == testVaultID)
+        let wifiPassword = try #require(decrypt(wifi.content.password))
+        #expect(wifiPassword == "haslo111")
+        let wifiNotes = try #require(wifi.content.notes)
+        #expect(wifiNotes == "Note: Notka\n\nTa normalna\n\nVault: Personal")
+        #expect(wifi.metadata.creationDate == Date(timeIntervalSince1970: 1766050974))
 
         // MARK: SSH Key -> Secure Note - "Klucz ssh"
         let sshKey = try #require(notes.first { $0.name == "Klucz ssh (SshKey)" })
@@ -594,16 +591,19 @@ struct ProtonPassImportInteractorTests {
         // - 2 login items
         // - 2 credit cards
         // - 1 secure note
-        // - 13 items converted to secure notes (1 identity + 10 custom + 1 sshKey + 1 wifi)
+        // - 1 wifi
+        // - 12 items converted to secure notes (1 identity + 10 custom + 1 sshKey)
         let logins = result.items.filter { if case .login = $0 { return true } else { return false } }
         let cards = result.items.filter { if case .paymentCard = $0 { return true } else { return false } }
         let notes = result.items.filter { if case .secureNote = $0 { return true } else { return false } }
+        let wifis = result.items.filter { if case .wifi = $0 { return true } else { return false } }
 
         #expect(logins.count == 2)
         #expect(cards.count == 2)
-        #expect(notes.count == 14) // 1 native + 13 converted
+        #expect(notes.count == 13) // 1 native + 12 converted
+        #expect(wifis.count == 1)
         #expect(result.tags.isEmpty)
-        #expect(result.itemsConvertedToSecureNotes == 13)
+        #expect(result.itemsConvertedToSecureNotes == 12)
     }
 
     @Test
@@ -790,14 +790,21 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
-            if case .secureNote(let note) = item { return note }
+        let wifis = result.items.compactMap { item -> WiFiItemData? in
+            if case .wifi(let wifi) = item { return wifi }
             return nil
         }
 
-        let wifiNote = try #require(notes.first { $0.name == "Moje WiFi (Wifi)" })
-        let text = try #require(decrypt(wifiNote.content.text))
-        #expect(text == "Password: haslo111\n\nTa normalna\n\nVault: Personal")
+        let wifi = try #require(wifis.first { $0.name == "Moje WiFi" })
+        #expect(wifi.content.ssid == nil) // CSV format doesn't include SSID
+        #expect(wifi.content.securityType == .wpa2) // CSV format doesn't include security type
+        #expect(wifi.content.hidden == false)
+
+        let password = try #require(decrypt(wifi.content.password))
+        #expect(password == "haslo111")
+
+        let notes = try #require(wifi.content.notes)
+        #expect(notes == "Ta normalna\n\nVault: Personal")
     }
 
     // MARK: - Comprehensive CSV Import Test
@@ -821,16 +828,18 @@ struct ProtonPassImportInteractorTests {
         // THEN - Verify result summary
         #expect(result.items.count == 18)
         #expect(result.tags.isEmpty)
-        #expect(result.itemsConvertedToSecureNotes == 13)
+        #expect(result.itemsConvertedToSecureNotes == 12)
 
         // Extract items by type
         let logins = result.items.compactMap { if case .login(let l) = $0 { return l } else { return nil } }
         let cards = result.items.compactMap { if case .paymentCard(let c) = $0 { return c } else { return nil } }
         let notes = result.items.compactMap { if case .secureNote(let n) = $0 { return n } else { return nil } }
+        let wifis = result.items.compactMap { if case .wifi(let w) = $0 { return w } else { return nil } }
 
         #expect(logins.count == 2)
         #expect(cards.count == 2)
-        #expect(notes.count == 14)
+        #expect(notes.count == 13)
+        #expect(wifis.count == 1)
 
         // MARK: Login 1 - "wellcome-home.com"
         let welcomeLogin = try #require(logins.first { $0.name == "wellcome-home.com" })
@@ -915,10 +924,15 @@ struct ProtonPassImportInteractorTests {
             """
         #expect(identityText == expectedIdentityText)
 
-        // MARK: WiFi -> Secure Note - "Moje WiFi"
-        let wifi = try #require(notes.first { $0.name == "Moje WiFi (Wifi)" })
-        let wifiText = try #require(decrypt(wifi.content.text))
-        #expect(wifiText == "Password: haslo111\n\nTa normalna\n\nVault: Personal")
+        // MARK: WiFi - "Moje WiFi"
+        let wifi = try #require(wifis.first { $0.name == "Moje WiFi" })
+        #expect(wifi.content.ssid == nil) // CSV format doesn't include SSID
+        #expect(wifi.content.securityType == .wpa2)
+        #expect(wifi.content.hidden == false)
+        let wifiPassword = try #require(decrypt(wifi.content.password))
+        #expect(wifiPassword == "haslo111")
+        let wifiNotes = try #require(wifi.content.notes)
+        #expect(wifiNotes == "Ta normalna\n\nVault: Personal")
 
         // MARK: SSH Key -> Secure Note - "Klucz ssh"
         let sshKey = try #require(notes.first { $0.name == "Klucz ssh (SshKey)" })
