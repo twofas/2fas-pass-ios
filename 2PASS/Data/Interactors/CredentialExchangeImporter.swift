@@ -131,6 +131,7 @@ private extension CredentialExchangeImporter {
         var basicAuth: ASImportableCredential.BasicAuthentication?
         var notes: [String] = []
         var creditCard: ASImportableCredential.CreditCard?
+        var wifi: ASImportableCredential.WiFi?
         var firstUnsupportedCredential: ASImportableCredential?
 
         for credential in credentials {
@@ -150,6 +151,8 @@ private extension CredentialExchangeImporter {
                 if let unusedFields = extractUnusedCreditCardFields(value) {
                     notes.append(unusedFields)
                 }
+            case .wifi(let value):
+                wifi = wifi ?? value
             case .customFields(let customFields):
                 // Extract and append custom fields to notes
                 if let formattedFields = formatCustomFields(customFields) {
@@ -180,6 +183,19 @@ private extension CredentialExchangeImporter {
                 id: itemID,
                 importableItem: importableItem,
                 credential: creditCard,
+                notes: combinedNotes,
+                vaultID: vaultID,
+                protectionLevel: protectionLevel,
+                tagIds: tagIds
+            )
+            return ConvertedItem(item: item, isSecureNoteFallback: false)
+        }
+
+        if let wifi {
+            let item = makeWiFiItem(
+                id: itemID,
+                importableItem: importableItem,
+                credential: wifi,
                 notes: combinedNotes,
                 vaultID: vaultID,
                 protectionLevel: protectionLevel,
@@ -378,6 +394,51 @@ private extension CredentialExchangeImporter {
                 expirationDate: expirationDate,
                 securityCode: securityCode,
                 notes: notes
+            )
+        ))
+    }
+
+    // MARK: - WiFi Item
+
+    func makeWiFiItem(
+        id: ItemID,
+        importableItem: ASImportableItem,
+        credential: ASImportableCredential.WiFi,
+        notes: String?,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData {
+        let name = importableItem.title.nonBlankTrimmedOrNil
+        let metadataDates = makeMetadataDates(from: importableItem)
+        let ssid = credential.ssid?.value.nonBlankTrimmedOrNil
+
+        let passphrase: Data? = {
+            guard let value = credential.passphrase?.value.nonBlankTrimmedOrNil else { return nil }
+            return context.encryptSecureField(value, for: protectionLevel)
+        }()
+
+        let securityType = WiFiContent.SecurityType(cxfValue: credential.networkSecurityType?.value)
+        let hidden = credential.hidden?.value.asCredentialExchangeBoolean ?? false
+
+        return .wifi(.init(
+            id: id,
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: metadataDates.creationDate,
+                modificationDate: metadataDates.modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                ssid: ssid,
+                password: passphrase,
+                notes: notes,
+                securityType: securityType,
+                hidden: hidden
             )
         ))
     }
@@ -642,5 +703,16 @@ private extension CredentialExchangeImporter {
         }
         let shortYear = year.suffix(2)
         return "\(month)/\(shortYear)"
+    }
+}
+
+private extension String {
+    var asCredentialExchangeBoolean: Bool {
+        switch trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "true", "1", "yes", "y":
+            true
+        default:
+            false
+        }
     }
 }

@@ -297,18 +297,3 @@ private extension CredentialExchangeExporter {
         return "\(fullYear)-\(month)"
     }
 }
-
-// MARK: - WiFi Security Type Mapping
-
-private extension WiFiContent.SecurityType {
-
-    var cxfValue: String {
-        switch self {
-        case .none: "unsecured"
-        case .wep: "wep"
-        case .wpa: "wpa-personal"
-        case .wpa2: "wpa2-personal"
-        case .wpa3: "wpa3-personal"
-        }
-    }
-}
