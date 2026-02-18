@@ -60,7 +60,7 @@ struct WiFiEditorFormView: View {
             LabeledInput(label: String(localized: .wifiSecurityTypeLabel), fieldWidth: $fieldWidth) {
                 Picker("", selection: $presenter.securityType) {
                     ForEach(WiFiContent.SecurityType.allCases, id: \.self) { securityType in
-                        Text(securityType.displayName)
+                        Text(securityType.formatted())
                             .tag(securityType)
                     }
                 }
@@ -100,11 +100,5 @@ struct WiFiEditorFormView: View {
             focusedField: .notes,
             header: .wifiNotesLabel
         )
-    }
-}
-
-private extension WiFiContent.SecurityType {
-    var displayName: String {
-        rawValue.uppercased()
     }
 }
