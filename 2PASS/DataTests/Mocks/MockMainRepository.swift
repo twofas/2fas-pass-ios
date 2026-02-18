@@ -154,6 +154,10 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func sendPushNotification(_ text: String) async {
+        recordCall()
+    }
+
     private var stubbedPushNotificationToken: String?
     var pushNotificationToken: String? { stubbedPushNotificationToken }
 
@@ -529,6 +533,15 @@ final class MockMainRepository: MainRepository {
     @discardableResult
     func withAppBundleIdentifier(_ value: String?) -> Self {
         stubbedAppBundleIdentifier = value
+        return self
+    }
+
+    private var stubbedAppDisplayName: String?
+    var appDisplayName: String? { stubbedAppDisplayName }
+
+    @discardableResult
+    func withAppDisplayName(_ value: String?) -> Self {
+        stubbedAppDisplayName = value
         return self
     }
 
