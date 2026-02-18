@@ -274,6 +274,16 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                             items.append(cardItem)
                         }
 
+                    case OnePassword1Pux.categoryWirelessRouter:
+                        if let wifiItem = parseWiFi(
+                            item: item,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            tagIds: itemTagIds
+                        ) {
+                            items.append(wifiItem)
+                        }
+
                     case OnePassword1Pux.categoryIdentity:
                         // Convert known non-login types to secure notes
                         if let noteItem = parseAsSecureNote(
@@ -621,6 +631,88 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         ))
     }
 
+    private func parseWiFi(
+        item: OnePassword1Pux.Item,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = item.overview?.title.formattedName
+
+        var ssid: String?
+        var passwordString: String?
+        var securityString: String?
+        var additionalFields: [String] = []
+
+        for section in item.details?.sections ?? [] {
+            for field in section.fields ?? [] {
+                let fieldId = field.id?.lowercased() ?? ""
+
+                switch fieldId {
+                case "network_name":
+                    ssid = field.value?.stringValue
+                case "wireless_password":
+                    passwordString = field.value?.concealed ?? field.value?.stringValue
+                case "wireless_security":
+                    securityString = field.value?.stringValue
+                default:
+                    if let value = (field.value?.concealed ?? field.value?.stringValue)?.nonBlankTrimmedOrNil,
+                       let title = field.title?.nonBlankTrimmedOrNil {
+                        additionalFields.append("\(title): \(value)")
+                    }
+                }
+            }
+        }
+
+        let password: Data? = {
+            if let value = passwordString?.nonBlankOrNil,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityType = WiFiContent.SecurityType(onePasswordValue: securityString)
+
+        let additionalInfo = additionalFields.isEmpty ? nil : additionalFields.joined(separator: "\n")
+        let notes = context.mergeNote(item.details?.notesPlain?.nonBlankTrimmedOrNil, with: additionalInfo)
+
+        let creationDate: Date = {
+            if let timestamp = item.createdAt {
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
+            return .importPasswordPlaceholder
+        }()
+
+        let modificationDate: Date = {
+            if let timestamp = item.updatedAt {
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
+            return .importPasswordPlaceholder
+        }()
+
+        return .wifi(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                ssid: ssid?.nonBlankTrimmedOrNil,
+                password: password,
+                notes: notes,
+                securityType: securityType,
+                hidden: false
+            )
+        ))
+    }
+
     private func parseAsSecureNote(
         item: OnePassword1Pux.Item,
         vaultID: VaultID,
@@ -697,6 +789,8 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         switch categoryUuid {
         case OnePassword1Pux.categoryCreditCard: return "Credit Card"
         case OnePassword1Pux.categoryIdentity: return "Identity"
+        case OnePassword1Pux.categoryDriverLicense: return "Driver License"
+        case OnePassword1Pux.categoryWirelessRouter: return "Wireless Router"
         default: return "Item"
         }
     }
@@ -773,6 +867,7 @@ private struct OnePassword1Pux: Decodable {
     struct SectionFieldValue: Decodable {
         let concealed: String?
         let string: String?
+        let menu: String?
         let totp: String?
         let date: Int?
         let monthYear: Int?
@@ -782,7 +877,7 @@ private struct OnePassword1Pux: Decodable {
         let url: String?
 
         private enum CodingKeys: String, CodingKey {
-            case concealed, string, totp, date, monthYear, creditCardType, creditCardNumber, phone, url
+            case concealed, string, menu, totp, date, monthYear, creditCardType, creditCardNumber, phone, url
         }
 
         init(from decoder: Decoder) throws {
@@ -791,6 +886,7 @@ private struct OnePassword1Pux: Decodable {
                let stringValue = try? container.decode(String.self) {
                 self.string = stringValue
                 self.concealed = nil
+                self.menu = nil
                 self.totp = nil
                 self.date = nil
                 self.monthYear = nil
@@ -807,6 +903,7 @@ private struct OnePassword1Pux: Decodable {
                 self.date = intValue
                 self.string = nil
                 self.concealed = nil
+                self.menu = nil
                 self.totp = nil
                 self.monthYear = nil
                 self.creditCardType = nil
@@ -820,6 +917,7 @@ private struct OnePassword1Pux: Decodable {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.concealed = try container.decodeIfPresent(String.self, forKey: .concealed)
             self.string = try container.decodeIfPresent(String.self, forKey: .string)
+            self.menu = try container.decodeIfPresent(String.self, forKey: .menu)
             self.totp = try container.decodeIfPresent(String.self, forKey: .totp)
             self.date = try container.decodeIfPresent(Int.self, forKey: .date)
             self.monthYear = try container.decodeIfPresent(Int.self, forKey: .monthYear)
@@ -830,7 +928,7 @@ private struct OnePassword1Pux: Decodable {
         }
 
         var stringValue: String? {
-            string ?? concealed ?? totp ?? phone ?? url ?? creditCardNumber ?? creditCardType
+            string ?? concealed ?? menu ?? totp ?? phone ?? url ?? creditCardNumber ?? creditCardType
         }
     }
 
@@ -857,4 +955,26 @@ private struct OnePassword1Pux: Decodable {
     static let categorySecureNote = "003"
     static let categoryIdentity = "004"
     static let categoryPassword = "005"
+    static let categoryDriverLicense = "103"
+    static let categoryWirelessRouter = "109"
+}
+
+private extension WiFiContent.SecurityType {
+
+    init(onePasswordValue: String?) {
+        switch onePasswordValue?.lowercased() {
+        case "wep":
+            self = .wep
+        case "wpa":
+            self = .wpa
+        case "wpa2", "wpa2p", "wpa2e":
+            self = .wpa2
+        case "wpa3", "wpa3p", "wpa3e":
+            self = .wpa3
+        case "none", .none:
+            self = .none
+        default:
+            self = .wpa2
+        }
+    }
 }
