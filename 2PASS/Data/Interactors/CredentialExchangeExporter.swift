@@ -70,7 +70,7 @@ private extension CredentialExchangeExporter {
         case .paymentCard(let data):
             return convertPaymentCardItem(data, protectionLevel: item.protectionLevel, tags: tags)
         case .wifi(let data):
-            return nil // FIXME:
+            return convertWifiItem(data, protectionLevel: item.protectionLevel, tags: tags)
         case .raw:
             return nil
         }
@@ -232,6 +232,55 @@ private extension CredentialExchangeExporter {
         )
     }
 
+    // MARK: - WiFi
+
+    func convertWifiItem(
+        _ data: WiFiItemData,
+        protectionLevel: ItemProtectionLevel,
+        tags: [String]
+    ) -> ASImportableItem? {
+        let content = data.content
+
+        let ssid = ASImportableEditableField(id: nil, fieldType: .string, value: content.ssid ?? "")
+
+        let networkSecurityType = ASImportableEditableField(
+            id: nil, fieldType: .wifiNetworkSecurityType, value: content.securityType.cxfValue
+        )
+
+        let passphrase: ASImportableEditableField? = content.password.flatMap {
+            itemsInteractor.decrypt($0, isSecureField: true, protectionLevel: protectionLevel)
+        }.map {
+            ASImportableEditableField(id: nil, fieldType: .concealedString, value: $0)
+        }
+
+        let hidden = ASImportableEditableField(
+            id: nil, fieldType: .boolean, value: content.hidden ? "true" : "false"
+        )
+
+        let wifiCredential = ASImportableCredential.wifi(.init(
+            ssid: ssid,
+            networkSecurityType: networkSecurityType,
+            passphrase: passphrase,
+            hidden: hidden
+        ))
+
+        var credentials: [ASImportableCredential] = [wifiCredential]
+
+        if let notes = content.notes?.nonBlankTrimmedOrNil {
+            let noteField = ASImportableEditableField(id: nil, fieldType: .string, value: notes)
+            credentials.append(.note(.init(content: noteField)))
+        }
+
+        return ASImportableItem(
+            id: Data(data.id.uuidString.utf8),
+            created: data.creationDate,
+            lastModified: data.modificationDate,
+            title: data.name ?? "",
+            credentials: credentials,
+            tags: tags
+        )
+    }
+
     // MARK: - Expiration Date Conversion
 
     /// Converts "MM / YY" format to ISO 8601 "YYYY-MM" format
@@ -246,5 +295,20 @@ private extension CredentialExchangeExporter {
 
         let fullYear = "20" + year
         return "\(fullYear)-\(month)"
+    }
+}
+
+// MARK: - WiFi Security Type Mapping
+
+private extension WiFiContent.SecurityType {
+
+    var cxfValue: String {
+        switch self {
+        case .none: "unsecured"
+        case .wep: "wep"
+        case .wpa: "wpa-personal"
+        case .wpa2: "wpa2-personal"
+        case .wpa3: "wpa3-personal"
+        }
     }
 }
