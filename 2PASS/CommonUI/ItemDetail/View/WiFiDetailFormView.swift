@@ -71,7 +71,7 @@ struct WiFiDetailFormView: View {
             }
             
             LabeledContent {
-                Text(presenter.securityType.rawValue.uppercased())
+                Text(presenter.securityType.formatted())
             } label: {
                 Text(.wifiSecurityTypeLabel)
             }
