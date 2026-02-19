@@ -11,12 +11,15 @@ extension PasswordsViewController: UICollectionViewDelegate {
     // MARK: - Scroll View Delegate
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard UIDevice.isiPad == false else { return }
         guard let contentTypePicker else { return }
 
-        let offset = scrollView.adjustedContentInset.top + scrollView.contentOffset.y
-        setContentTypePickerOffset(min(0, -offset))
-        contentTypePicker.alpha = presenter.showContentTypePicker ? (1 - (offset / contentTypePicker.frame.height)) : 0
+        if UIDevice.isiPad {
+            contentTypePicker.alpha = presenter.showContentTypePicker ? 1 : 0
+        } else {
+            let offset = scrollView.adjustedContentInset.top + scrollView.contentOffset.y
+            setContentTypePickerOffset(min(0, -offset))
+            contentTypePicker.alpha = presenter.showContentTypePicker ? (1 - (offset / contentTypePicker.frame.height)) : 0
+        }
     }
     
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
