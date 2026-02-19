@@ -70,6 +70,11 @@ public final class PasswordsFlowController: FlowController {
 extension PasswordsFlowController: PasswordsFlowControlling {
 
     func toContentTypeSelection(sourceItem: UIBarButtonItem?) {
+        if shouldCreateLoginDirectly {
+            presentLoginEditor()
+            return
+        }
+
         ContentTypeSelectionFlowController.present(
             on: viewController,
             parent: self,
@@ -167,6 +172,26 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     
     func toPremiumPlanPrompt(itemsLimit: Int) {
         parent?.toPremiumPlanPrompt(itemsLimit: itemsLimit)
+    }
+
+    private var shouldCreateLoginDirectly: Bool {
+        guard let autoFillEnvironment else { return false }
+        return autoFillEnvironment.isTextToInsert == false
+    }
+
+    private func presentLoginEditor() {
+        guard let autoFillEnvironment else { return }
+
+        let changeRequest = LoginDataChangeRequest(
+            uris: autoFillEnvironment.serviceIdentifiers.map { .init(uri: $0, match: .domain) }
+        )
+
+        ItemEditorNavigationFlowController.present(
+            on: viewController,
+            parent: self,
+            editItemID: nil,
+            changeRequest: changeRequest
+        )
     }
 }
 

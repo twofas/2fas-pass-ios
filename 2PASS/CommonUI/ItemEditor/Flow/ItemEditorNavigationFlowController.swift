@@ -123,7 +123,7 @@ extension ItemEditorNavigationFlowController: ItemEditorFlowControllerParent {
             rootView: WiFiNetworkQRCodeScannerRouter.buildView(onScanned: onScanned)
         )
 
-        if let sheet = scannerViewController.sheetPresentationController {
+        if let sheet = scannerViewController.sheetPresentationController, UIDevice.isiPad == false {
             sheet.detents = [
                 .custom(identifier: Constants.wifiNetworkQRCodeScannerDetentIdentifier) { context in
                     min(context.maximumDetentValue, Constants.wifiNetworkQRCodeScannerMaxDetentValue)
