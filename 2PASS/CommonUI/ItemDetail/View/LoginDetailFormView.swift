@@ -19,6 +19,14 @@ struct LoginDetailFormView: View {
 
     @State
     var selectedField: SelectedField?
+    
+    private var isTextToInsertMode: Bool {
+        if #available(iOS 18.0, *) {
+            presenter.autoFillEnvironment?.isTextToInsert == true
+        } else {
+            false
+        }
+    }
 
     var body: some View {
         ItemDetailSection {
@@ -34,6 +42,7 @@ struct LoginDetailFormView: View {
                         })
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .username)
                 .onChange(of: selectedField == .username) { oldValue, newValue in
                     if newValue {
@@ -61,6 +70,7 @@ struct LoginDetailFormView: View {
                         })
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .password)
                 .onChange(of: selectedField == .password) { oldValue, newValue in
                     if newValue {
