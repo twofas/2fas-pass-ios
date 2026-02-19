@@ -43,6 +43,23 @@ struct BackupView: View {
                 Text(.backupExportFooter)
                     .settingsFooter()
             }
+
+            if #available(iOS 26.0, *) {
+                Section {
+                    Button {
+                        presenter.onExportToAnotherApp()
+                    } label: {
+                        SettingsRowView(
+                            title: .settingsEntryExportToAnotherApp,
+                            actionIcon: .chevron
+                        )
+                    }
+                    .disabled(presenter.isExportDisabled)
+                } footer: {
+                    Text(.credentialExchangeExportIdleDescription)
+                        .settingsFooter()
+                }
+            }
         }
         .onAppear {
             presenter.onAppear()

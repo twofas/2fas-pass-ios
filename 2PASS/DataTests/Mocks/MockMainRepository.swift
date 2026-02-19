@@ -493,6 +493,12 @@ final class MockMainRepository: MainRepository {
         recordCall()
         capturedLastKnownAppVersion = version
     }
+    
+    private(set) var didMigrateLegacyValuesToSharedDefaults = false
+    func migrateLegacyValuesToSharedDefaults() {
+        recordCall()
+        didMigrateLegacyValuesToSharedDefaults = true
+    }
 
     private(set) var capturedCrashlyticsEnabled: Bool?
     func setCrashlyticsEnabled(_ enabled: Bool) {

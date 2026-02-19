@@ -484,6 +484,7 @@
 		54EABA602DD252760018189F /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
 		54FD31A22E45644E00DFAC70 /* Tags */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tags; sourceTree = "<group>"; };
 		C2B0FC1C2CE91C4D005CFADD /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C2B0FC232CE91C4D005CFADD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
+		C8DDE0B8ABFFDE9B897416CE /* CredentialExchange */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CredentialExchange; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -966,6 +967,7 @@
 				54A825872D82DA3700CBC463 /* Settings */,
 				54BB9E4E2DC8A90800BDD13F /* AppNotifications */,
 				545579222DD27ADB00712716 /* TransferItems */,
+				C8DDE0B8ABFFDE9B897416CE /* CredentialExchange */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -1213,6 +1215,7 @@
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				54EABA602DD252760018189F /* Backup */,
 				54FD31A22E45644E00DFAC70 /* Tags */,
+				C8DDE0B8ABFFDE9B897416CE /* CredentialExchange */,
 			);
 			name = 2PASS;
 			packageProductDependencies = (
@@ -1831,7 +1834,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2647,7 +2650,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2687,7 +2690,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

@@ -307,12 +307,39 @@ public final class InteractorFactory {
     public func pushNotificationsPermissionInteractor() -> PushNotificationsPermissionInteracting {
         PushNotificationsPermissionInteractor(mainRepository: MainRepositoryImpl.shared)
     }
+
+    public func pushNotificationsInteractor() -> PushNotificationsInteracting {
+        PushNotificationsInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            pushNotificationsPermissionInteractor: pushNotificationsPermissionInteractor()
+        )
+    }
     
     public func externalServiceImportInteractor() -> ExternalServiceImportInteracting {
         ExternalServiceImportInteractor(
             mainRepository: MainRepositoryImpl.shared,
             uriInteractor: uriInteractor(),
             paymentCardUtilityInteractor: paymentCardUtilityInteractor()
+        )
+    }
+
+    @available(iOS 26.0, *)
+    public func credentialExchangeExporter() -> CredentialExchangeExporting {
+        CredentialExchangeExporter(
+            itemsInteractor: itemsInteractor(),
+            tagInteractor: tagInteractor(),
+            uriInteractor: uriInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
+    public func credentialExchangeImporter() -> CredentialExchangeImporting {
+        CredentialExchangeImporter(
+            context: ExternalServiceImportInteractor.ImportContext(
+                mainRepository: MainRepositoryImpl.shared,
+                uriInteractor: uriInteractor(),
+                paymentCardUtilityInteractor: paymentCardUtilityInteractor()
+            )
         )
     }
 

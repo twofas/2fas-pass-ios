@@ -7,9 +7,9 @@
 import SwiftUI
 import Common
 
-struct PasswordGeneratorRouter {
+public struct PasswordGeneratorRouter {
     @ViewBuilder
-    static func buildView(close: @escaping Callback, closeUsePassword: @escaping (String) -> Void) -> some View {
+    public static func buildView(close: @escaping Callback, closeUsePassword: @escaping (String) -> Void) -> some View {
         PasswordGeneratorView(
             presenter: PasswordGeneratorPresenter(
                 close: close,

@@ -57,13 +57,18 @@ final class MigrationInteractor: MigrationInteracting {
 
     func migrateStorageIfNeeded() {
         let appVersion = mainRepository.currentAppVersion
+        let lastKnownAppVersion = mainRepository.lastKnownAppVersion
 
-        if mainRepository.lastKnownAppVersion?.compare("1.5.0", options: .numeric) == .orderedAscending {
+        if lastKnownAppVersion?.compare("1.5.0", options: .numeric) == .orderedAscending {
             tagInteractor.migrateTagColors()
         }
         
-        if mainRepository.lastKnownAppVersion?.compare("1.5.2", options: .numeric) == .orderedAscending {
+        if lastKnownAppVersion?.compare("1.5.2", options: .numeric) == .orderedAscending {
             tagInteractor.removeDuplicatedEncryptedTags()
+        }
+        
+        if lastKnownAppVersion?.compare("1.7.0", options: .numeric) == .orderedAscending || lastKnownAppVersion == nil {
+            mainRepository.migrateLegacyValuesToSharedDefaults()
         }
 
         mainRepository.saveEncryptedStorage()

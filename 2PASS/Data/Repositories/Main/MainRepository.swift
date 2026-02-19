@@ -37,6 +37,7 @@ protocol MainRepository: AnyObject {
     @discardableResult func refreshPushNotificationsStatus() async -> Bool
     var canRequestPushNotificationsPermissions: Bool { get }
     func requestPushNotificationsPermissions() async
+    func sendPushNotification(_ text: String) async
     
     var pushNotificationToken: String? { get }
     func savePushNotificationToken(_ token: String?)
@@ -109,6 +110,7 @@ protocol MainRepository: AnyObject {
     var currentBuildVersion: String { get }
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
+    func migrateLegacyValuesToSharedDefaults()
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
     
@@ -116,6 +118,7 @@ protocol MainRepository: AnyObject {
     func initialPermissionStateInitialize()
     
     var appBundleIdentifier: String? { get }
+    var appDisplayName: String? { get }
     var dateOfFirstRun: Date? { get }
     func saveDateOfFirstRun(_ date: Date)
     

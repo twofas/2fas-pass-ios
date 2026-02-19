@@ -21,7 +21,8 @@ extension ModuleInteractorFactory {
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
             paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
-            updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor()
+            updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor(),
+            credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter()
         )
     }
     
@@ -341,6 +342,28 @@ extension ModuleInteractorFactory {
         )
     }
     
+    @available(iOS 26.0, *)
+    func credentialExchangeExportModuleInteractor() -> CredentialExchangeExportModuleInteracting {
+        CredentialExchangeExportModuleInteractor(
+            exporter: InteractorFactory.shared.credentialExchangeExporter(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor()
+        )
+    }
+
+    @available(iOS 26.0, *)
+    func credentialExchangeImportModuleInteractor() -> CredentialExchangeImportModuleInteracting {
+        CredentialExchangeImportModuleInteractor(
+            credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter()
+        )
+    }
+
+    @available(iOS 26.0, *)
+    func credentialExchangePerformImportModuleInteractor() -> CredentialExchangePerformImportModuleInteracting {
+        CredentialExchangePerformImportModuleInteractor(
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
+        )
+    }
+
     func transferItemsServicesListInteractor() -> TransferItemsServicesListInteracting {
         TransferItemsServicesListInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),

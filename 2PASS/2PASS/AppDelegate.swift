@@ -65,7 +65,15 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         rootViewController?.presenter.applicationOpenURL(url) ?? false
     }
-    
+
+    func application(
+        _ application: UIApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void
+    ) -> Bool {
+        rootViewController?.presenter.applicationContinueUserActivity(userActivity) ?? false
+    }
+
     // MARK: - Push Notifications
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
