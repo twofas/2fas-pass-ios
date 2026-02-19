@@ -181,6 +181,10 @@ final class RootPresenter {
     func handleDidReceiveRegistrationToken(_ token: String?) {
         interactor.handleDidReceiveRegistrationToken(token)
     }
+
+    func sceneCaptureStateDidChange(_ state: UISceneCaptureState) {
+        flowController.setScreenCaptureBlocked(state == .active)
+    }
     
     // MARK: - RootCoordinatorDelegate methods
     

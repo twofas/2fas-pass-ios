@@ -16,6 +16,7 @@ extension UIWindow.Level {
     static let login = UIWindow.Level.normal + 2
     static let appNotifications = UIWindow.Level.normal + 1
     static let toasts = UIWindow.Level.alert
+    static let screenCaptureBlock = UIWindow.Level.alert + 10
 }
 
 protocol RootFlowControllerParent: AnyObject {}
@@ -35,6 +36,7 @@ protocol RootFlowControlling: AnyObject {
     func toOpenExternalFileError()
     func toUpdateAppForNewSyncScheme(schemaVersion: Int)
     func toUpdateAppForUnsupportedVersion(minimalVersion: String)
+    func setScreenCaptureBlocked(_ blocked: Bool)
     @available(iOS 26.0, *)
     @MainActor func toCredentialExchange(data: ASExportedCredentialData)
 }
@@ -60,9 +62,22 @@ final class RootFlowController: FlowController {
         window.backgroundColor = .clear
         return window
     }()
+
+    private let screenCaptureBlockWindow: UIWindow = {
+        let window = UIWindow()
+        window.windowLevel = .screenCaptureBlock
+        window.backgroundColor = .clear
+        let viewController = UIViewController()
+        viewController.view.backgroundColor = UIColor(resource: .mainBackground)
+        window.rootViewController = viewController
+        window.alpha = 0
+        window.isHidden = true
+        return window
+    }()
         
     private var mainViewController: MainViewController?
     private var activeViewController: UIViewController?
+    private var isScreenCaptureBlocked = false
     
     static func setAsRoot(
         in window: UIWindow?,
@@ -230,6 +245,15 @@ extension RootFlowController: RootFlowControlling {
         viewController.topViewController.present(alert, animated: true, completion: nil)
     }
 
+    func setScreenCaptureBlocked(_ blocked: Bool) {
+        guard blocked != isScreenCaptureBlocked else {
+            return
+        }
+
+        isScreenCaptureBlocked = blocked
+        blocked ? showScreenCaptureBlock() : hideScreenCaptureBlock()
+    }
+
     @available(iOS 26.0, *)
     @MainActor func toCredentialExchange(data: ASExportedCredentialData) {
         let view = CredentialExchangeImportRouter.buildView(data: data, onClose: { [weak self] in
@@ -238,6 +262,29 @@ extension RootFlowController: RootFlowControlling {
         let hostingController = UIHostingController(rootView: view)
         hostingController.modalPresentationStyle = .fullScreen
         viewController.topViewController.present(hostingController, animated: true)
+    }
+}
+
+private extension RootFlowController {
+
+    func showScreenCaptureBlock() {
+        guard let window else {
+            return
+        }
+
+        screenCaptureBlockWindow.frame = window.bounds
+        screenCaptureBlockWindow.windowScene = window.windowScene
+        screenCaptureBlockWindow.alpha = 1
+        screenCaptureBlockWindow.isHidden = false
+    }
+
+    func hideScreenCaptureBlock() {
+        guard !screenCaptureBlockWindow.isHidden else {
+            return
+        }
+        
+        screenCaptureBlockWindow.alpha = 0
+        screenCaptureBlockWindow.isHidden = true
     }
 }
 
