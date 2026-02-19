@@ -37,6 +37,7 @@ protocol MainRepository: AnyObject {
     @discardableResult func refreshPushNotificationsStatus() async -> Bool
     var canRequestPushNotificationsPermissions: Bool { get }
     func requestPushNotificationsPermissions() async
+    func sendPushNotification(_ text: String) async
     
     var pushNotificationToken: String? { get }
     func savePushNotificationToken(_ token: String?)

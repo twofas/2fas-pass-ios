@@ -296,6 +296,13 @@ public final class InteractorFactory {
     public func pushNotificationsPermissionInteractor() -> PushNotificationsPermissionInteracting {
         PushNotificationsPermissionInteractor(mainRepository: MainRepositoryImpl.shared)
     }
+
+    public func pushNotificationsInteractor() -> PushNotificationsInteracting {
+        PushNotificationsInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            pushNotificationsPermissionInteractor: pushNotificationsPermissionInteractor()
+        )
+    }
     
     public func externalServiceImportInteractor() -> ExternalServiceImportInteracting {
         ExternalServiceImportInteractor(
