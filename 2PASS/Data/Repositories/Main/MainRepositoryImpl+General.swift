@@ -31,6 +31,10 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.setLastKnownAppVersion(version)
     }
     
+    func migrateLegacyValuesToSharedDefaults() {
+        userDefaultsDataSource.migrateLegacyValuesToSharedDefaults()
+    }
+    
     func setCrashlyticsEnabled(_ enabled: Bool) {
         Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
         userDefaultsDataSource.setCrashlyticsDisabled(enabled == false)
