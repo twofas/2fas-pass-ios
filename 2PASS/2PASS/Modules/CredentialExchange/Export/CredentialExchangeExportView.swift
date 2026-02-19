@@ -17,18 +17,18 @@ struct CredentialExchangeExportView: View {
             Spacer()
 
             VStack(spacing: Spacing.s) {
-                Text(.credentialExchangeExportIdleTitle)
+                Text(.credentialExchangeExportTitle)
                     .font(.title1Emphasized)
                     .foregroundStyle(.neutral950)
 
-                Text(.credentialExchangeExportIdleDescription)
+                Text(.credentialExchangeExportDescription)
                     .font(.subheadline)
                     .foregroundStyle(.neutral600)
             }
 
             Spacer()
 
-            Button(.credentialExchangeExportButton) {
+            Button(.credentialExchangeExportCta) {
                 presenter.startExport()
             }
             .buttonStyle(.filled)
