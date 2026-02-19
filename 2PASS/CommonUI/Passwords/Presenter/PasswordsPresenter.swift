@@ -62,7 +62,7 @@ final class PasswordsPresenter {
     
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
-    private(set) var hasItems = false {
+    private(set) var hasItems = true {
         didSet {
             guard oldValue != hasItems else {
                 return
