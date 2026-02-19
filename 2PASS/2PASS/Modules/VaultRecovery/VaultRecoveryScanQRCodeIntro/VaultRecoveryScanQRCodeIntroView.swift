@@ -12,6 +12,9 @@ struct VaultRecoveryScanQRCodeIntroView: View {
     @State
     var presenter: VaultRecoveryScanQRCodeIntroPresenter
     
+    @Environment(\.colorScheme)
+    private var colorScheme
+    
     var body: some View {
         VStack {
             HeaderContentView(
@@ -28,6 +31,11 @@ struct VaultRecoveryScanQRCodeIntroView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: 300)
+                .background {
+                    RoundedRectangle(cornerRadius: 16.0)
+                        .fill(.neutral50)
+                        .stroke(colorScheme == .dark ? .neutral200 : .neutral100, lineWidth: 0.5)
+                }
             
             Spacer()
             

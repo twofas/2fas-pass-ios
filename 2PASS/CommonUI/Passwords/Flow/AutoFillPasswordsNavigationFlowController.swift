@@ -15,7 +15,10 @@ public struct AutoFillEnvironment {
 
 public protocol AutofillPasswordsNavigationFlowControllerParent: AnyObject {
     func selectPassword(itemID: ItemID)
+    
+    @available(iOS 18.0, *)
     func textToInsert(_ text: String)
+    
     func cancel()
 }
 
@@ -101,6 +104,7 @@ extension AutofillPasswordsNavigationFlowController: ItemDetailFlowControllerPar
         navigationController.popToRootViewController(animated: true)
     }
 
+    @available(iOS 18.0, *)
     func itemDetailAutoFillTextToInsert(_ text: String) {
         parent?.textToInsert(text)
     }

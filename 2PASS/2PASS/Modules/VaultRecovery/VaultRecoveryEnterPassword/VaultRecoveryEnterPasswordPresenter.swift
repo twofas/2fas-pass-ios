@@ -19,7 +19,8 @@ enum VaultRecoveryEnterPasswordDestination: Identifiable {
     case recover(
         entropy: Entropy,
         masterKey: MasterKey,
-        recoveryData: VaultRecoveryData
+        recoveryData: VaultRecoveryData,
+        onTryAgain: Callback
     )
     
     case importVault(
@@ -36,7 +37,8 @@ enum VaultRecoveryEnterPasswordDestination: Identifiable {
 final class VaultRecoveryEnterPasswordPresenter {
     private let flowContext: VaultRecoveryFlowContext
     private let interactor: VaultRecoveryEnterPasswordModuleInteracting
-    
+    private let onTryAgain: Callback
+
     var password: String = "" {
         didSet {
             refreshStatus()
@@ -44,13 +46,15 @@ final class VaultRecoveryEnterPasswordPresenter {
     }
     var isPasswordAvailable = false
     var destination: VaultRecoveryEnterPasswordDestination?
-        
+
     init(
         flowContext: VaultRecoveryFlowContext,
-        interactor: VaultRecoveryEnterPasswordModuleInteracting
+        interactor: VaultRecoveryEnterPasswordModuleInteracting,
+        onTryAgain: @escaping Callback
     ) {
         self.flowContext = flowContext
         self.interactor = interactor
+        self.onTryAgain = onTryAgain
     }
 }
 
@@ -74,7 +78,8 @@ extension VaultRecoveryEnterPasswordPresenter {
                 destination = .recover(
                     entropy: interactor.entropy,
                     masterKey: masterKey,
-                    recoveryData: interactor.recoveryData
+                    recoveryData: interactor.recoveryData,
+                    onTryAgain: onTryAgain
                 )
             case .importVault:
                 switch interactor.recoveryData {

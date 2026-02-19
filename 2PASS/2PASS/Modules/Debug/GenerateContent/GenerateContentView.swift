@@ -65,6 +65,16 @@ struct GenerateContentView: View {
                 .listRowBackground(Color.clear)
 
                 Section {
+                    Text("Payment Cards count: \(presenter.paymentCardsCount)" as String)
+                }
+                Section("Generate Payment Cards" as String) {
+                    PrimaryButton(title: "1") {
+                        presenter.onGeneratePaymentCards(count: 1)
+                    }
+                }
+                .listRowBackground(Color.clear)
+
+                Section {
                     Text("Unknown count: \(presenter.unknownCount)" as String)
                 }
                 Section("Generate Unknown" as String) {

@@ -87,7 +87,7 @@ extension AppSecurityPresenter {
         enableBiometryToggle = true
         defaultSecurityTier = interactor.defaultSecurityTier
         
-        interactor.clearMasterPassword()
+        interactor.clearEncryptionData()
     }
     
     func onLimitOfFailedAttempts() {
@@ -127,7 +127,7 @@ extension AppSecurityPresenter {
             Task { @MainActor in
                 try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
                 self?.destination = .changePassword(onResult: { _ in
-                    self?.interactor.clearMasterPassword()
+                    self?.interactor.clearEncryptionData()
                     self?.destination = nil
                 })
             }
@@ -138,21 +138,28 @@ extension AppSecurityPresenter {
         guard !lockInteraction else { return }
         lockInteraction = true
         
-        destination = .currentPassword(config: .init(allowBiometrics: false, loginType: .verify(savePassword: true)), onSuccess: { [weak self] in
-            self?.destination = nil
-            
-            if self?.interactor.userLoggedIn() == true {
-                Task { @MainActor in
-                    try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
-                    self?.destination = .vaultDecryptionKit(onFinish: {
-                        self?.interactor.clearMasterPassword()
-                        self?.destination = nil
-                    })
+        Task { @MainActor in
+            if await interactor.verifyUsingBiometryIfAvailable() {
+                if interactor.userLoggedIn() == true {
+                    showVaultDecryptionKit()
+                } else {
+                    interactor.clearEncryptionData()
                 }
             } else {
-                self?.interactor.clearMasterPassword()
+                destination = .currentPassword(config: .init(allowBiometrics: true, loginType: .verify(savePassword: true)), onSuccess: { [weak self] in
+                    self?.destination = nil
+                    
+                    if self?.interactor.userLoggedIn() == true {
+                        Task { @MainActor in
+                            try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
+                            self?.showVaultDecryptionKit()
+                        }
+                    } else {
+                        self?.interactor.clearEncryptionData()
+                    }
+                })
             }
-        })
+        }
     }
 }
 
@@ -171,7 +178,7 @@ private extension AppSecurityPresenter {
                     self?.performUpdateBiometryState()
                 }
             } else {
-                self?.interactor.clearMasterPassword()
+                self?.interactor.clearEncryptionData()
             }
         })
     }
@@ -183,14 +190,14 @@ private extension AppSecurityPresenter {
     
     func performUpdateBiometryState() {
         guard isBiometryAvailable && enableBiometryToggle else {
-            interactor.clearMasterPassword()
+            interactor.clearEncryptionData()
             return
         }
         enableBiometryToggle = false
         interactor.setBiometryEnabled(true) { [weak self] result in
             self?.isBiometryEnabled = result
             self?.enableBiometryToggle = true
-            self?.interactor.clearMasterPassword()
+            self?.interactor.clearEncryptionData()
         }
     }
     
@@ -213,5 +220,12 @@ private extension AppSecurityPresenter {
                 }
             }
         ))
+    }
+    
+    func showVaultDecryptionKit() {
+        destination = .vaultDecryptionKit(onFinish: { [weak self] in
+            self?.interactor.clearEncryptionData()
+            self?.destination = nil
+        })
     }
 }

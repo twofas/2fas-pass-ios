@@ -23,7 +23,7 @@ final class AutoFillRootPresenter {
         self.extensionContext = extensionContext
         self.interactor = interactor
         
-        let loginInteractor = ModuleInteractorFactory.shared.loginModuleInteractor(config: .init(allowBiometrics: true, loginType: .login))
+        let loginInteractor = ModuleInteractorFactory.shared.loginModuleInteractor(config: .init(allowBiometrics: true, loginType: .login, showForgotPassword: false))
         loginPresenter = LoginPresenter(loginSuccessful: { [weak self] in
             self?.onLoginSuccessful()
         }, interactor: loginInteractor)
@@ -55,10 +55,14 @@ final class AutoFillRootPresenter {
     }
     
     func provideWithoutUserInteraction(for credentialRequest: any ASCredentialRequest) {
-        if let credential = interactor.credentialWithoutLogin(for: credentialRequest) {
-            extensionContext.completeRequest(withSelectedCredential: credential)
-        } else {
-            extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code:ASExtensionError.userInteractionRequired.rawValue))
+        Task { @MainActor in
+            await refreshState()
+            
+            if let credential = interactor.credentialWithoutLogin(for: credentialRequest) {
+                extensionContext.completeRequest(withSelectedCredential: credential)
+            } else {
+                extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code:ASExtensionError.userInteractionRequired.rawValue))
+            }
         }
     }
 

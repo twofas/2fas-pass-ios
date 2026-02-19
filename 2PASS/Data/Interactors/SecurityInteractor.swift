@@ -9,14 +9,13 @@ import Common
 import CoreLocation
 
 public protocol SecurityInteracting: AnyObject {
-    var lockLogin: (() -> Void)? { get set }
-    var unlockLogin: (() -> Void)? { get set }
-    
-    var logoutApp: (() -> Void)? { get set }
-        
+    var didLoginLock: NotificationCenter.Notifications { get }
+    var didLoginUnlock: NotificationCenter.Notifications { get }
+    var didLogoutApp: NotificationCenter.Notifications { get }
+
     var isAppLocked: Bool { get }
     var appLockRemainingSeconds: Int? { get }
-    
+
     var isUserLoggedIn: Bool { get }
     func logout()
     
@@ -29,14 +28,13 @@ public protocol SecurityInteracting: AnyObject {
 }
 
 final class SecurityInteractor {
+    private static let loginLockedNotification = Notification.Name("LoginLocked")
+    private static let loginUnlockedNotification = Notification.Name("LoginUnlocked")
+    private static let logoutAppNotification = Notification.Name("LogoutApp")
+
     private let minute = 60
     private var timer: Timer?
-    
-    var lockLogin: (() -> Void)?
-    var unlockLogin: (() -> Void)?
-    
-    var logoutApp: (() -> Void)?
-    
+
     private let mainRepository: MainRepository
     private let storageInteractor: StorageInteracting
     private let protectionInteractor: ProtectionInteracting
@@ -57,8 +55,22 @@ final class SecurityInteractor {
 }
 
 extension SecurityInteractor: SecurityInteracting {
+    // MARK: - Login Notifications
+
+    var didLoginLock: NotificationCenter.Notifications {
+        NotificationCenter.default.notifications(named: Self.loginLockedNotification)
+    }
+
+    var didLoginUnlock: NotificationCenter.Notifications {
+        NotificationCenter.default.notifications(named: Self.loginUnlockedNotification)
+    }
+
+    var didLogoutApp: NotificationCenter.Notifications {
+        NotificationCenter.default.notifications(named: Self.logoutAppNotification)
+    }
+
     // MARK: - Login
-    
+
     var isUserLoggedIn: Bool {
         mainRepository.isUserLoggedIn
     }
@@ -91,7 +103,7 @@ extension SecurityInteractor: SecurityInteracting {
             mainRepository.reloadAuthContext()
             mainRepository.clearAllEmphemeral()
             storageInteractor.clear()
-            logoutApp?()
+            NotificationCenter.default.post(name: Self.logoutAppNotification, object: nil)
         }
     }
     
@@ -99,9 +111,9 @@ extension SecurityInteractor: SecurityInteracting {
         mainRepository.setIsAppInBackground(false)
 
         if isAppLocked == true {
-            lockLogin?()
+            NotificationCenter.default.post(name: Self.loginLockedNotification, object: nil)
         } else {
-            unlockLogin?()
+            NotificationCenter.default.post(name: Self.loginUnlockedNotification, object: nil)
         }
     }
 
@@ -133,7 +145,8 @@ extension SecurityInteractor: SecurityInteracting {
         }
         if isAppLocked {
             startTimer()
-            lockLogin?()
+            NotificationCenter.default.post(name: Self.loginLockedNotification, object: nil)
+            logout()
         }
     }
 }
@@ -171,7 +184,7 @@ private extension SecurityInteractor {
     func unlockApplication() {
         Log("SecurityInteractor: Unlock app", module: .interactor)
         protectionInteractor.selectVault()
-        unlockLogin?()
+        NotificationCenter.default.post(name: Self.loginUnlockedNotification, object: nil)
     }
     
     func markWrongBiometry() {

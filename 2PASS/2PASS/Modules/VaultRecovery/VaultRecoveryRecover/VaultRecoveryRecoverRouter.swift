@@ -19,12 +19,12 @@ enum VaultRecoveryRecoverKind {
 }
 
 struct VaultRecoveryRecoverRouter {
-    
+
     @ViewBuilder
-    static func buildView(kind: VaultRecoveryRecoverKind)
-    -> some View {
+    static func buildView(kind: VaultRecoveryRecoverKind, onTryAgain: @escaping Callback) -> some View {
         let presenter = VaultRecoveryRecoverPresenter(
-            interactor: ModuleInteractorFactory.shared.vaultRecoveryRecoverModuleInteractor(kind: kind)
+            interactor: ModuleInteractorFactory.shared.vaultRecoveryRecoverModuleInteractor(kind: kind),
+            onTryAgain: onTryAgain
         )
         VaultRecoveryRecoverView(presenter: presenter)
     }

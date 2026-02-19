@@ -12,10 +12,12 @@ protocol GenerateContentModuleInteracting: AnyObject {
     var itemsCount: Int { get }
     var secureNotesCount: Int { get }
     var unknownCount: Int { get }
+    var paymentCardsCount: Int { get }
     var tagsCount: Int { get }
     func generateItems(count: Int, completion: @escaping Callback)
     func generateSecureNotes(count: Int, completion: @escaping Callback)
     func generateUnknown(count: Int, completion: @escaping Callback)
+    func generatePaymentCards(count: Int, completion: @escaping Callback)
     func removeAllItems()
     func removeAllTags()
 }
@@ -48,6 +50,10 @@ extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
         debugInteractor.tagsCount
     }
 
+    var paymentCardsCount: Int {
+        debugInteractor.paymentCardsCount
+    }
+
     func generateItems(count: Int, completion: @escaping Callback) {
         debugInteractor.generateItems(count: count, completion: completion)
         syncChangeTriggerInteractor.trigger()
@@ -60,6 +66,11 @@ extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
 
     func generateUnknown(count: Int, completion: @escaping Callback) {
         debugInteractor.generateUnknown(count: count, completion: completion)
+        syncChangeTriggerInteractor.trigger()
+    }
+
+    func generatePaymentCards(count: Int, completion: @escaping Callback) {
+        debugInteractor.generatePaymentCards(count: count, completion: completion)
         syncChangeTriggerInteractor.trigger()
     }
 

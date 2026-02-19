@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import UIKit
+import Common
 
 @Observable
 final class VaultRecoveryRecoverPresenter {
@@ -13,12 +14,19 @@ final class VaultRecoveryRecoverPresenter {
         case success
         case error
     }
+
     private let interactor: VaultRecoveryRecoverModuleInteracting
-        
+    private let onTryAgain: Callback
+
     var state: State = .loading
-    
-    init(interactor: VaultRecoveryRecoverModuleInteracting) {
+
+    init(interactor: VaultRecoveryRecoverModuleInteracting, onTryAgain: @escaping Callback) {
         self.interactor = interactor
+        self.onTryAgain = onTryAgain
+    }
+
+    func handleTryAgain() {
+        onTryAgain()
     }
 }
 

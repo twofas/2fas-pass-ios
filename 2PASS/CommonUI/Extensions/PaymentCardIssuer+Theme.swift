@@ -13,6 +13,10 @@ extension PaymentCardIssuer {
         UIImage(resource: iconResource)
     }
     
+    public var cover: UIImage {
+        UIImage(resource: coverResource)
+    }
+    
     private var iconResource: ImageResource {
         switch self {
         case .visa:
@@ -31,6 +35,26 @@ extension PaymentCardIssuer {
             return .unionpayIcon
         }
     }
+    
+    private var coverResource: ImageResource {
+        switch self {
+        case .mastercard:
+            return .mastercardCover
+        case .visa:
+            return .visaCover
+        case .americanExpress:
+            return .amexCover
+        case .discover:
+            return .discoverCover
+        case .dinersClub:
+            return .dinersclubCover
+        case .jcb:
+            return .jcbCover
+        case .unionPay:
+            return .unionpayCover
+        }
+        
+    }
 }
 
 public extension PaymentCardItemData {
@@ -41,5 +65,13 @@ public extension PaymentCardItemData {
             return nil
         }
         return issuer.icon
+    }
+    
+    var coverImage: UIImage {
+        guard let issuerString = content.cardIssuer,
+              let issuer = PaymentCardIssuer(rawValue: issuerString) else {
+            return UIImage(resource: .unknownIssuerCover)
+        }
+        return issuer.cover
     }
 }

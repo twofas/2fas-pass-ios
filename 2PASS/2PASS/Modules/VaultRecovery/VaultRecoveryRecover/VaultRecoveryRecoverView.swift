@@ -11,10 +11,7 @@ struct VaultRecoveryRecoverView: View {
     
     @State
     var presenter: VaultRecoveryRecoverPresenter
-    
-    @Environment(\.dismiss)
-    private var dismiss
-    
+
     @Environment(\.dismissFlow)
     private var dismissFlow
     
@@ -46,7 +43,7 @@ struct VaultRecoveryRecoverView: View {
                     description: Text(.restoreFailureDescription),
                     action: {
                         Button(.commonTryAgain) {
-                            dismiss()
+                            presenter.handleTryAgain()
                         }
                     }
                 )

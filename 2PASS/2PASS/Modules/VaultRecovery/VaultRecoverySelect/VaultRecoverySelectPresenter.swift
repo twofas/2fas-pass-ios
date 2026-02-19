@@ -58,7 +58,8 @@ enum VaultRecoverySelectDestination: Identifiable {
     case vaultRecovery(
         entropy: Entropy,
         masterKey: MasterKey,
-        recoveryData: VaultRecoveryData
+        recoveryData: VaultRecoveryData,
+        onTryAgain: Callback
     )
     
     case importVault(BackupImportInput, onClose: Callback)
@@ -67,6 +68,7 @@ enum VaultRecoverySelectDestination: Identifiable {
         flowContext: VaultRecoveryFlowContext,
         entropy: Entropy,
         recoveryData: VaultRecoveryData,
+        onTryAgain: Callback
     )
     
     case importFailed(onSelectVault: Callback, onSelectDecryptionKit: Callback)
@@ -110,7 +112,14 @@ extension VaultRecoverySelectPresenter {
                 try await Task.sleep(for: .milliseconds(700))
                 
                 guard let self else { return }
-                self.destination = .enterMasterPassword(flowContext: self.flowContext, entropy: entropy, recoveryData: self.recoveryData)
+                self.destination = .enterMasterPassword(
+                    flowContext: self.flowContext,
+                    entropy: entropy,
+                    recoveryData: self.recoveryData,
+                    onTryAgain: { [weak self] in
+                        self?.destination = nil
+                    }
+                )
             }
         })
     }
@@ -188,7 +197,7 @@ private extension VaultRecoverySelectPresenter {
                     showError()
                     return
                 }
-  
+
                 guard interactor.validateEntropy(parseResult.entropy, for: self.recoveryData) else {
                     Task { @MainActor [weak self] in
                         self?.destination = .importFailed(onSelectVault: { [weak self] in
@@ -199,7 +208,7 @@ private extension VaultRecoverySelectPresenter {
                     }
                     return
                 }
-                
+
                 DispatchQueue.main.async {
                     if let masterKey = parseResult.masterKey {
                         switch self.flowContext.kind {
@@ -207,7 +216,10 @@ private extension VaultRecoverySelectPresenter {
                             self.destination = .vaultRecovery(
                                 entropy: parseResult.entropy,
                                 masterKey: masterKey,
-                                recoveryData: self.recoveryData
+                                recoveryData: self.recoveryData,
+                                onTryAgain: { [weak self] in
+                                    self?.destination = nil
+                                }
                             )
                         case .importVault:
                             switch self.recoveryData {
@@ -226,7 +238,10 @@ private extension VaultRecoverySelectPresenter {
                         self.destination = .enterMasterPassword(
                             flowContext: self.flowContext,
                             entropy: parseResult.entropy,
-                            recoveryData: self.recoveryData
+                            recoveryData: self.recoveryData,
+                            onTryAgain: { [weak self] in
+                                self?.destination = nil
+                            }
                         )
                     }
                 }

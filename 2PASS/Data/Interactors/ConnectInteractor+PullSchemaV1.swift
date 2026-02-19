@@ -90,7 +90,11 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectSchemaV1.ConnectActionRequest<ConnectSchemaV1.ConnectActionPasswordRequestData>.self, from: data)
         let itemID = actionRequestData.data.loginId
 
-        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem else {
+        let loginItem = await MainActor.run {
+            itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem
+        }
+
+        guard let loginItem else {
             throw ConnectError.missingItem
         }
 
@@ -132,7 +136,11 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectSchemaV1.ConnectActionRequest<ConnectSchemaV1.ConnectActionUpdateRequestData>.self, from: data)
         let itemID = actionRequestData.data.id
 
-        guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem else {
+        let loginItem = await MainActor.run {
+            itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem
+        }
+
+        guard let loginItem else {
             throw ConnectError.missingItem
         }
 
@@ -212,7 +220,11 @@ extension ConnectInteractor {
         let actionRequestData = try mainRepository.jsonDecoder.decode(ConnectSchemaV1.ConnectActionRequest<ConnectSchemaV1.ConnectActionPasswordRequestData>.self, from: data)
         let itemID = actionRequestData.data.loginId
 
-        guard let item = itemsInteractor.getItem(for: itemID, checkInTrash: false) else {
+        let item = await MainActor.run {
+            itemsInteractor.getItem(for: itemID, checkInTrash: false)
+        }
+
+        guard let item else {
             throw ConnectError.missingItem
         }
 

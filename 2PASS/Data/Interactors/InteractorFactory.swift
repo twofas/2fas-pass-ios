@@ -127,6 +127,7 @@ public final class InteractorFactory {
             mainRepository: MainRepositoryImpl.shared,
             itemsInteractor: itemsInteractor(),
             loginItemInteractor: loginItemInteractor(),
+            paymentCardItemInteractor: paymentCardItemInteractor(),
             secureNoteItemInteractor: secureNoteInteractor()
         )
     }
@@ -138,6 +139,14 @@ public final class InteractorFactory {
             protectionInteractor: protectionInteractor(),
             uriInteractor: uriInteractor()
         )
+    }
+
+    public func recoveryKitScanInteractor() -> RecoveryKitScanInteracting {
+        RecoveryKitScanInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
+    public func recoveryKitScanCameraInteractor() -> RecoveryKitScanCameraInteracting {
+        RecoveryKitScanCameraInteractor()
     }
     
     public func exportInteractor() -> ExportInteracting {

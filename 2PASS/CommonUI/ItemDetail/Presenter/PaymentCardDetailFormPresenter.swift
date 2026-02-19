@@ -24,15 +24,8 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         paymentCardItem.content.cardNumberMask
     }
 
-    var paymentCardIssuer: String? {
-        paymentCardItem.content.cardIssuer
-    }
-
-    var paymentCardIcon: IconContent {
-        if let icon = paymentCardItem.issuerIcon {
-            return .icon(icon, ignoreCornerRadius: true)
-        }
-        return .contentType(.paymentCard)
+    var paymentCardIssuer: PaymentCardIssuer? {
+        paymentCardItem.content.cardIssuer.flatMap(PaymentCardIssuer.init)
     }
 
     var cardNumber: String?
@@ -57,22 +50,23 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         guard let decrypted = decryptCardNumber() else { return }
 
         if autoFillEnvironment?.isTextToInsert == true {
-            flowController.autoFillTextToInsert(decrypted)
+            if #available(iOS 18.0, *) {
+                flowController.autoFillTextToInsert(decrypted)
+            }
         } else {
-            let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
-            cardNumber = decrypted.formatted(.paymentCardNumber(issuer: issuer))
+            cardNumber = decrypted.formatted(.paymentCardNumber(issuer: paymentCardIssuer))
         }
     }
     
     func onSelectCardHolder() {
-        guard let cardHolder, autoFillEnvironment?.isTextToInsert == true else {
+        guard #available(iOS 18.0, *), let cardHolder, autoFillEnvironment?.isTextToInsert == true else {
             return
         }
         flowController.autoFillTextToInsert(cardHolder)
     }
     
     func onSelectExpirationDate() {
-        guard let expirationDate, autoFillEnvironment?.isTextToInsert == true else {
+        guard #available(iOS 18.0, *), let expirationDate, autoFillEnvironment?.isTextToInsert == true else {
             return
         }
         flowController.autoFillTextToInsert(expirationDate)
@@ -82,7 +76,9 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         guard let decrypted = decryptSecurityCode() else { return }
 
         if autoFillEnvironment?.isTextToInsert == true {
-            flowController.autoFillTextToInsert(decrypted)
+            if #available(iOS 18.0, *) {
+                flowController.autoFillTextToInsert(decrypted)
+            }
         } else {
             securityCode = decrypted
         }
@@ -130,8 +126,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         }
 
         if paymentCardItem.content.securityCode != nil {
-            let issuer = paymentCardIssuer.flatMap { PaymentCardIssuer(rawValue: $0) }
-            let length = interactor.paymentCardSecurityCodeLength(for: issuer)
+            let length = interactor.paymentCardSecurityCodeLength(for: paymentCardIssuer)
             securityCode = String(repeating: "•", count: length)
         } else {
             securityCode = nil

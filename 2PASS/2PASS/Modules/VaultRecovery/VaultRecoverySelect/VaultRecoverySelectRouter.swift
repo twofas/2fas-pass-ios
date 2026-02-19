@@ -30,14 +30,15 @@ struct VaultRecoverySelectRouter: Router {
             VaultRecoveryEnterWordsRouter.buildView(recoveryData: recoveryData, onEntropy: onEntropy)
         case .errorOpeningFile(_, let onClose):
             Button(.commonOk, action: onClose)
-        case .vaultRecovery(let entropy, let masterKey, let recoveryData):
+        case .vaultRecovery(let entropy, let masterKey, let recoveryData, let onTryAgain):
             VaultRecoveryRecoverRouter.buildView(
-                kind: .recoverEncrypted(entropy: entropy, masterKey: masterKey, recoveryData: recoveryData)
+                kind: .recoverEncrypted(entropy: entropy, masterKey: masterKey, recoveryData: recoveryData),
+                onTryAgain: onTryAgain
             )
         case .importVault(let input, let onClose):
             BackupImportImportingRouter.buildView(input: input, onClose: onClose)
-        case .enterMasterPassword(let flowContext, let entropy, let recoveryData):
-            VaultRecoveryEnterPasswordRouter.buildView(flowContext: flowContext, entropy: entropy, recoveryData: recoveryData)
+        case .enterMasterPassword(let flowContext, let entropy, let recoveryData, let onTryAgain):
+            VaultRecoveryEnterPasswordRouter.buildView(flowContext: flowContext, entropy: entropy, recoveryData: recoveryData, onTryAgain: onTryAgain)
         case .importFailed(let onSelectVault, let onSelectDecryptionKit):
             VaultRecoveryWrongDecryptionKitRouter.buildView(onSelectVault: onSelectVault, onSelectDecryptionKit: onSelectDecryptionKit)
         }

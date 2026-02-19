@@ -36,6 +36,7 @@ private struct _ExpirationDateTextField: UIViewRepresentable {
         textField.keyboardType = .numberPad
         textField.delegate = context.coordinator
         textField.text = text
+        textField.font = UIFont.preferredFont(forTextStyle: .body)
         textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
         return textField
     }

@@ -12,14 +12,15 @@ import CommonUI
 struct VaultRecoveryEnterPasswordRouter: Router {
     
     @ViewBuilder
-    static func buildView(flowContext: VaultRecoveryFlowContext, entropy: Entropy, recoveryData: VaultRecoveryData)
+    static func buildView(flowContext: VaultRecoveryFlowContext, entropy: Entropy, recoveryData: VaultRecoveryData, onTryAgain: @escaping Callback)
     -> some View {
         let presenter = VaultRecoveryEnterPasswordPresenter(
             flowContext: flowContext,
             interactor: ModuleInteractorFactory.shared.vaultRecoveryEnterPasswordModuleInteractor(
                 entropy: entropy,
                 recoveryData: recoveryData,
-            )
+            ),
+            onTryAgain: onTryAgain
         )
         VaultRecoveryEnterPasswordView(presenter: presenter)
     }
@@ -27,13 +28,14 @@ struct VaultRecoveryEnterPasswordRouter: Router {
     @ViewBuilder
     func view(for destination: VaultRecoveryEnterPasswordDestination) -> some View {
         switch destination {
-        case let .recover(entropy, masterKey, recoveryData):
+        case let .recover(entropy, masterKey, recoveryData, onTryAgain):
             VaultRecoveryRecoverRouter.buildView(
                 kind: .recoverEncrypted(
                     entropy: entropy,
                     masterKey: masterKey,
                     recoveryData: recoveryData
-                )
+                ),
+                onTryAgain: onTryAgain
             )
         case .importVault(let entropy, let masterKey, let vault, let onClose):
             BackupImportImportingRouter.buildView(input: .encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: onClose)

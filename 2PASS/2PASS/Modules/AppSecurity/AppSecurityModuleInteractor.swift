@@ -19,7 +19,7 @@ protocol AppSecurityModuleInteracting: AnyObject {
     func verifyUsingBiometryIfAvailable() async -> Bool
     func setBiometryEnabled(_ enabled: Bool, result: @escaping (Bool) -> Void)
     func userLoggedIn() -> Bool
-    func clearMasterPassword()
+    func clearEncryptionData()
 }
 
 final class AppSecurityModuleInteractor {
@@ -66,7 +66,11 @@ extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
     }
     
     func userLoggedIn() -> Bool {
-        protectionInteractor.recreateSeedSaltWordsMasterKey()
+        if protectionInteractor.entropy != nil, protectionInteractor.words != nil, protectionInteractor.masterKey != nil {
+            return true
+        } else {
+            return protectionInteractor.recreateSeedSaltWordsMasterKey()
+        }
     }
     
     func verifyUsingBiometryIfAvailable() async -> Bool {
@@ -111,7 +115,7 @@ extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
         }
     }
     
-    func clearMasterPassword() {
+    func clearEncryptionData() {
         protectionInteractor.clearAfterInit()
     }
     
