@@ -4,10 +4,11 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import Foundation
+import AuthenticationServices
 import Common
-import Data
 import CommonUI
+import Data
+import Foundation
 import UIKit
 
 private struct Constants {
@@ -36,6 +37,13 @@ final class RootPresenter {
     private let toastPresenter: ToastPresenter
     private var appNotificationsQueue: [AppNotification] = []
     private var logoutObservationTask: Task<Void, Never>?
+    private var _pendingCredentialData: Any?
+
+    @available(iOS 26.0, *)
+    private var pendingCredentialData: ASExportedCredentialData? {
+        get { _pendingCredentialData as? ASExportedCredentialData }
+        set { _pendingCredentialData = newValue }
+    }
 
     init(flowController: RootFlowControlling, interactor: RootModuleInteracting) {
         self.flowController = flowController
@@ -124,7 +132,12 @@ final class RootPresenter {
         }
         return false
     }
-    
+
+    func applicationContinueUserActivity(_ userActivity: NSUserActivity) -> Bool {
+        guard #available(iOS 26.0, *) else { return false }
+        return handleCredentialExchangeActivity(userActivity)
+    }
+
     // MARK: - Handle external events
     
     func handleAppReset() {
@@ -223,6 +236,13 @@ final class RootPresenter {
         guard currentState != .main else { return }
         changeState(.main)
         flowController.toMain()
+
+        if #available(iOS 26.0, *), let data = pendingCredentialData {
+            Task { @MainActor in
+                pendingCredentialData = nil
+                flowController.toCredentialExchange(data: data)
+            }
+        }
     }
     
     private func presentLogin(coldRun: Bool) {
@@ -242,6 +262,28 @@ final class RootPresenter {
         }
     }
     
+    @available(iOS 26.0, *)
+    private func handleCredentialExchangeActivity(_ userActivity: NSUserActivity) -> Bool {
+        guard let token = interactor.extractCredentialExchangeToken(from: userActivity) else {
+            return false
+        }
+
+        Task { @MainActor in
+            do {
+                let data = try await interactor.fetchCredentialExchangeData(token: token)
+                if currentState == .main {
+                    flowController.toCredentialExchange(data: data)
+                } else {
+                    pendingCredentialData = data
+                }
+            } catch {
+                Log("Failed to fetch credential exchange data: \(error)", module: .moduleInteractor)
+            }
+        }
+
+        return true
+    }
+
     private func showAppNotificationIfNeeded() {
         if let newestNotification = appNotificationsQueue.last {
             if currentState == .main {

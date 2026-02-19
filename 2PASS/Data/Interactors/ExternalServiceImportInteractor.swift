@@ -169,26 +169,13 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
     }
 
     private func assignTagColors(_ result: ExternalServiceImportResult) -> ExternalServiceImportResult {
-        let updatedTags = assignTagColors(result.tags)
+        let updatedTags = context.assignTagColors(result.tags)
         guard updatedTags != result.tags else { return result }
         return ExternalServiceImportResult(
             items: result.items,
             tags: updatedTags,
             itemsConvertedToSecureNotes: result.itemsConvertedToSecureNotes
         )
-    }
-
-    private func assignTagColors(_ tags: [ItemTagData]) -> [ItemTagData] {
-        let allColors = ItemTagColor.allKnownCases
-        var colorIndex = 0
-        
-        return tags.map { tag in
-            let newColor = allColors[colorIndex]
-            colorIndex = (colorIndex + 1) % allColors.count
-            var updatedTag = tag
-            updatedTag.color = newColor
-            return updatedTag
-        }
     }
 }
 
@@ -319,6 +306,19 @@ extension ExternalServiceImportInteractor {
 
             let shortYear = year.suffix(2)
             return "\(month)/\(shortYear)"
+        }
+
+        func assignTagColors(_ tags: [ItemTagData]) -> [ItemTagData] {
+            let allColors = ItemTagColor.allKnownCases
+            var colorIndex = 0
+
+            return tags.map { tag in
+                let newColor = allColors[colorIndex]
+                colorIndex = (colorIndex + 1) % allColors.count
+                var updatedTag = tag
+                updatedTag.color = newColor
+                return updatedTag
+            }
         }
     }
 }

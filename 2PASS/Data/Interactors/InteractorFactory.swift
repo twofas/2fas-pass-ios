@@ -305,6 +305,26 @@ public final class InteractorFactory {
         )
     }
 
+    @available(iOS 26.0, *)
+    public func credentialExchangeExporter() -> CredentialExchangeExporting {
+        CredentialExchangeExporter(
+            itemsInteractor: itemsInteractor(),
+            tagInteractor: tagInteractor(),
+            uriInteractor: uriInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
+    public func credentialExchangeImporter() -> CredentialExchangeImporting {
+        CredentialExchangeImporter(
+            context: ExternalServiceImportInteractor.ImportContext(
+                mainRepository: MainRepositoryImpl.shared,
+                uriInteractor: uriInteractor(),
+                paymentCardUtilityInteractor: paymentCardUtilityInteractor()
+            )
+        )
+    }
+
     public func currentDateInteractor() -> CurrentDateInteracting {
         CurrentDateInteractor(mainRepository: MainRepositoryImpl.shared)
     }

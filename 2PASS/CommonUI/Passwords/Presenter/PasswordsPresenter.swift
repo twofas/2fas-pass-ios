@@ -576,6 +576,8 @@ private extension PasswordsPresenter {
     
     @objc
     func didImportItems() {
-        reload()
+        Task { @MainActor in
+            reload()
+        }
     }
 }
