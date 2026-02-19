@@ -1112,6 +1112,40 @@
         }
       }
     },
+    "backup_export_to_another_app" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export to Another App"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj do innej aplikacji"
+          }
+        }
+      }
+    },
+    "backup_export_to_another_app_footer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export your credentials to another password manager."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyeksportuj swoje dane logowania do innego menedżera haseł."
+          }
+        }
+      }
+    },
     "backup_import_cta" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3930,24 +3964,7 @@
         }
       }
     },
-    "credential_exchange_error_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import Failed"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import nie powiódł się"
-          }
-        }
-      }
-    },
-    "credential_exchange_export_button" : {
+    "credential_exchange_export_cta" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -3964,24 +3981,7 @@
         }
       }
     },
-    "credential_exchange_export_error_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export Failed"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eksport nie powiódł się"
-          }
-        }
-      }
-    },
-    "credential_exchange_export_idle_description" : {
+    "credential_exchange_export_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -3998,7 +3998,24 @@
         }
       }
     },
-    "credential_exchange_export_idle_title" : {
+    "credential_exchange_export_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Failed"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksport nieudany"
+          }
+        }
+      }
+    },
+    "credential_exchange_export_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4015,58 +4032,24 @@
         }
       }
     },
-    "credential_exchange_export_success_description" : {
+    "credential_exchange_import_cta" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your credentials have been exported successfully."
+            "value" : "Import"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Twoje dane logowania zostały pomyślnie wyeksportowane."
+            "value" : "Importuj"
           }
         }
       }
     },
-    "credential_exchange_export_success_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export Complete"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eksport zakończony"
-          }
-        }
-      }
-    },
-    "credential_exchange_exporting_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exporting your credentials…"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eksportowanie danych logowania…"
-          }
-        }
-      }
-    },
-    "credential_exchange_idle_description" : {
+    "credential_exchange_import_desciption" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4083,7 +4066,58 @@
         }
       }
     },
-    "credential_exchange_idle_title" : {
+    "credential_exchange_import_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Failed"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import nie powiódł się"
+          }
+        }
+      }
+    },
+    "credential_exchange_import_success_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your credentials have been imported successfully."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoje dane logowania zostały pomyślnie zaimportowane."
+          }
+        }
+      }
+    },
+    "credential_exchange_import_success_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Complete"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import zakończony"
+          }
+        }
+      }
+    },
+    "credential_exchange_import_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4096,23 +4130,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importuj dane logowania"
-          }
-        }
-      }
-    },
-    "credential_exchange_import_button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importuj"
           }
         }
       }
@@ -4130,57 +4147,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importowanie danych logowania…"
-          }
-        }
-      }
-    },
-    "credential_exchange_importing_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importing Credentials"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importowanie danych logowania"
-          }
-        }
-      }
-    },
-    "credential_exchange_success_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your credentials have been imported successfully."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twoje dane logowania zostały pomyślnie zaimportowane."
-          }
-        }
-      }
-    },
-    "credential_exchange_success_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import Complete"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import zakończony"
           }
         }
       }
@@ -14798,23 +14764,6 @@
         }
       }
     },
-    "settings_entry_export_to_another_app" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export to Another App"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eksportuj do innej aplikacji"
-          }
-        }
-      }
-    },
     "settings_entry_google_drive" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -17048,7 +16997,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WiFis detected"
+            "value" : "Wi-Fis detected"
           }
         },
         "pl" : {
@@ -18482,7 +18431,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zeskanuj kod QR aby dołączyć do \"%@\""
+            "value" : "Zeskanuj kod QR, aby dołączyć do \"%@\""
           }
         }
       }
@@ -18516,7 +18465,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zeskanuj kod QR Wi-Fi"
+            "value" : "Zeskanuj kod QR sieci"
           }
         }
       }
@@ -18533,7 +18482,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zabezpieczenia"
+            "value" : "Typ szyfrowania"
           }
         }
       }

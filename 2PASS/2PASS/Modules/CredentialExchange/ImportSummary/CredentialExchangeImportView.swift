@@ -41,7 +41,7 @@ struct CredentialExchangeImportView: View {
 
     private var summaryContent: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(.credentialExchangeIdleTitle) {
+            SettingsDetailsForm(.credentialExchangeImportTitle) {
                 ForEach(presenter.contentTypes, id: \.self) { contentType in
                     summarySection(
                         count: presenter.summary[contentType] ?? 0,
@@ -80,7 +80,7 @@ struct CredentialExchangeImportView: View {
                         }
                     },
                     description: {
-                        Text(.credentialExchangeIdleDescription)
+                        Text(.credentialExchangeImportDesciption)
                             .foregroundStyle(.neutral600)
                     }
                 )
@@ -88,7 +88,7 @@ struct CredentialExchangeImportView: View {
             }
             .listSectionSpacing(Spacing.m)
 
-            Button(.credentialExchangeImportButton) {
+            Button(.credentialExchangeImportCta) {
                 presenter.startImport()
             }
             .buttonStyle(.filled)
@@ -157,8 +157,7 @@ struct CredentialExchangeImportView: View {
     private var errorContent: some View {
         ResultView(
             kind: .failure,
-            title: Text(.credentialExchangeErrorTitle),
-            description: Text(.credentialExchangeIdleDescription)
+            title: Text(.credentialExchangeImportErrorTitle)
         ) {
             Button(.commonClose) {
                 presenter.onClose()
