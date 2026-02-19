@@ -62,14 +62,7 @@ final class PasswordsPresenter {
     
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
-    private(set) var hasItems = false {
-        didSet {
-            guard oldValue != hasItems else {
-                return
-            }
-            view?.showContentTypeFilterPicker(showContentTypePicker)
-        }
-    }
+    private(set) var hasItems = false
 
     private let autoFillEnvironment: AutoFillEnvironment?
     private let iconsDataSource: RemoteImageCollectionDataSource<ItemCellData>
@@ -460,6 +453,8 @@ private extension PasswordsPresenter {
             hasItems = interactor.hasItems
             view?.reloadData(newSnapshot: snapshot)
         }
+
+        view?.showContentTypeFilterPicker(showContentTypePicker)
 
         if cellsCount == 0 {
             if interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || (contentTypeFilter.contentType != nil && hasItems) {
