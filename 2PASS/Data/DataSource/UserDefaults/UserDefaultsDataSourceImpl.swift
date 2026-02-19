@@ -406,8 +406,8 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan) {
-        userDefaults.set(plan.planType.rawValue, forKey: Keys.debugSubscriptionPlan.rawValue)
-        userDefaults.set(plan.expirationDate?.timeIntervalSinceReferenceDate, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
+        sharedDefaults.set(plan.planType.rawValue, forKey: Keys.debugSubscriptionPlan.rawValue)
+        sharedDefaults.set(plan.expirationDate?.timeIntervalSinceReferenceDate, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
     }
     
     func clearDebugSubscriptionPlan() {
