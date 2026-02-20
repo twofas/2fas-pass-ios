@@ -35,6 +35,7 @@ final class ItemDetailPresenter {
         case login(LoginDetailFormPresenter)
         case secureNote(SecureNoteFormPresenter)
         case paymentCard(PaymentCardDetailFormPresenter)
+        case wifi(WiFiDetailFormPresenter)
     }
 
     private(set) var form: Form?
@@ -46,6 +47,8 @@ final class ItemDetailPresenter {
         case .secureNote(let presenter):
             return presenter
         case .paymentCard(let presenter):
+            return presenter
+        case .wifi(let presenter):
             return presenter
         case nil:
             return nil
@@ -101,6 +104,10 @@ extension ItemDetailPresenter {
         case .paymentCard(let item):
             form = .paymentCard(
                 PaymentCardDetailFormPresenter(item: item, configuration: configuration)
+            )
+        case .wifi(let item):
+            form = .wifi(
+                WiFiDetailFormPresenter(item: item, configuration: configuration)
             )
         case .raw:
             fatalError("Unsupported content type")

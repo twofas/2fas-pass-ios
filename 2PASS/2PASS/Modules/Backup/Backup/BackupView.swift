@@ -50,13 +50,13 @@ struct BackupView: View {
                         presenter.onExportToAnotherApp()
                     } label: {
                         SettingsRowView(
-                            title: .settingsEntryExportToAnotherApp,
+                            title: .backupExportToAnotherApp,
                             actionIcon: .chevron
                         )
                     }
                     .disabled(presenter.isExportDisabled)
                 } footer: {
-                    Text(.credentialExchangeExportIdleDescription)
+                    Text(.backupExportToAnotherAppFooter)
                         .settingsFooter()
                 }
             }

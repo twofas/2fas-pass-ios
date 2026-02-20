@@ -36,6 +36,11 @@ struct ItemEditorFormView: View {
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )
+            case .wifi(let presenter):
+                WiFiEditorFormView(
+                    presenter: presenter,
+                    resignFirstResponder: resignFirstResponder
+                )
             }
             
             if presenter.showRemoveItemButton {

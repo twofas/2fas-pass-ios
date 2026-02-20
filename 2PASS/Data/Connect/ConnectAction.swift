@@ -106,10 +106,13 @@ extension ConnectSchemaV2 {
     typealias ConnectActionUpdateSecureNoteRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateSecureNote>>
     typealias ConnectActionAddCardRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.Card>>
     typealias ConnectActionUpdateCardRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.Card>>
+    typealias ConnectActionAddWiFiRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.WiFi>>
+    typealias ConnectActionUpdateWiFiRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.WiFi>>
 
     enum SupportedFeatures: String {
         case secureNote = "items.secureNote"
         case card = "items.paymentCard"
+        case wifi = "items.wifi"
     }
     
     struct ConnectActioRequestType: Decodable {
@@ -233,6 +236,24 @@ extension ConnectSchemaV2 {
             let expirationDate: Data?
             let securityCode: Data?
             let notes: String?
+        }
+
+        struct WiFi: Decodable {
+            private enum CodingKeys: String, CodingKey {
+                case name
+                case ssid
+                case password = "s_wifi_password"
+                case notes
+                case securityType
+                case hidden
+            }
+
+            let name: String?
+            let ssid: String?
+            let password: Data?
+            let notes: String?
+            let securityType: WiFiContent.SecurityType?
+            let hidden: Bool?
         }
     }
     

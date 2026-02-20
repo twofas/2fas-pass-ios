@@ -331,6 +331,7 @@ extension NordPassImportInteractorTests {
                 case .login(let l): return l.name
                 case .paymentCard(let p): return p.name
                 case .secureNote(let s): return s.name
+                case .wifi(let w): return w.name
                 case .raw(let r): return r.name
                 }
             }

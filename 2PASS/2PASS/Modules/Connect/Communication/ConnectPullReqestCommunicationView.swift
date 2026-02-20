@@ -50,6 +50,10 @@ struct ConnectPullReqestCommunicationView: View {
                         addPaymentCardView(changeRequest: paymentCardDataChangeRequest)
                     case .updatePaymentCard(let paymentCardItem, _):
                         updatePaymentCardView(item: paymentCardItem)
+                    case .addWiFi(let wifiChangeRequest):
+                        addWiFiView(changeRequest: wifiChangeRequest)
+                    case .updateWiFi(let wifiItem, _):
+                        updateWiFiView(item: wifiItem)
                     }
                     
                 case .action(.delete(let item)):
@@ -60,6 +64,8 @@ struct ConnectPullReqestCommunicationView: View {
                         deleteSecureNoteView(item: secureNoteItem)
                     case .paymentCard(let paymentCardItem):
                         deletePaymentCardView(item: paymentCardItem)
+                    case .wifi(let wifiItem):
+                        deleteWiFiView(item: wifiItem)
                     default:
                         fatalError("Unsupported item content type")
                     }
@@ -72,6 +78,8 @@ struct ConnectPullReqestCommunicationView: View {
                         noteRequestView(item: secureNoteItem)
                     case .paymentCard(let paymentCardItem):
                         paymentCardRequestView(item: paymentCardItem)
+                    case .wifi(let wifiItem):
+                        wifiRequestView(item: wifiItem)
                     default:
                         fatalError("Unsupported item content type")
                     }
@@ -135,6 +143,10 @@ struct ConnectPullReqestCommunicationView: View {
             Text(.requestModalToastSuccessUpdateLogin)
         case .changeRequest(.addPaymentCard):
             Text(.requestModalToastSuccessAddLogin)
+        case .changeRequest(.updateWiFi):
+            Text(.requestModalToastSuccessUpdateLogin)
+        case .changeRequest(.addWiFi):
+            Text(.requestModalToastSuccessAddLogin)
         case .delete:
             Text(.requestModalToastSuccessDeleteLogin)
         case .sifRequest(let item):
@@ -145,6 +157,8 @@ struct ConnectPullReqestCommunicationView: View {
                 Text(.requestModalToastSuccessSecureNoteRequest)
             case .paymentCard:
                 Text(.requestModalToastSuccessCardRequest)
+            case .wifi:
+                Text(.requestModalToastSuccessPasswordRequest)
             case .raw:
                 Text("")
             }
@@ -196,6 +210,15 @@ struct ConnectPullReqestCommunicationView: View {
             subtitle: Text(.requestModalCardRequestSubtitle),
             name: item.name ?? "",
             description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
+        )
+    }
+
+    private func wifiRequestView(item: WiFiItemData) -> some View {
+        itemRequestView(
+            title: Text(.requestModalWifiRequestTitle),
+            subtitle: Text(.requestModalWifiRequestSubtitle),
+            name: item.name ?? "",
+            description: item.content.ssid
         )
     }
 
@@ -252,6 +275,14 @@ struct ConnectPullReqestCommunicationView: View {
         )
     }
 
+    private func addWiFiView(changeRequest: WiFiDataChangeRequest) -> some View {
+        addItemView(
+            title: Text(.requestModalNewWifiTitle),
+            name: changeRequest.name ?? "",
+            description: changeRequest.ssid
+        )
+    }
+
     private func addItemView(
         title: Text,
         name: String,
@@ -304,6 +335,14 @@ struct ConnectPullReqestCommunicationView: View {
         )
     }
 
+    private func updateWiFiView(item: WiFiItemData) -> some View {
+        updateItemView(
+            title: Text(.requestModalUpdateWifiTitle),
+            name: item.name ?? "",
+            description: item.content.ssid
+        )
+    }
+
     private func updateItemView(
         title: Text,
         name: String,
@@ -353,6 +392,14 @@ struct ConnectPullReqestCommunicationView: View {
             title: Text(.requestModalRemoveCardTitle),
             name: item.name ?? "",
             description: item.content.cardNumberMask?.formatted(.paymentCardNumberMask)
+        )
+    }
+
+    private func deleteWiFiView(item: WiFiItemData) -> some View {
+        deleteItemView(
+            title: Text(.requestModalRemoveWifiTitle),
+            name: item.name ?? "",
+            description: item.content.ssid
         )
     }
 

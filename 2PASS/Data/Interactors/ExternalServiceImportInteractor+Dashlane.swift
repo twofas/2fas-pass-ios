@@ -63,7 +63,6 @@ extension ExternalServiceImportInteractor {
                     case .wifi:
                         let wifiItems = try importWiFiFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
                         items.append(contentsOf: wifiItems)
-                        itemsConvertedToSecureNotes += wifiItems.count
                     case .unknown:
                         // Skip unknown CSV types
                         continue
@@ -139,6 +138,13 @@ extension ExternalServiceImportInteractor {
                 let personalItems = try importPersonalInfoFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
                 items.append(contentsOf: personalItems)
                 itemsConvertedToSecureNotes += personalItems.count
+            }
+
+            // Import WiFi networks
+            if let entry = archive.first(where: { $0.path.hasSuffix("wifi.csv") }) {
+                let data = try extractData(from: archive, entry: entry)
+                let wifiItems = try importWiFiFromData(data, vaultID: vaultID, protectionLevel: protectionLevel)
+                items.append(contentsOf: wifiItems)
             }
 
             return ExternalServiceImportResult(
@@ -634,30 +640,29 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
 
                 let ssid = dict["ssid"]?.nonBlankTrimmedOrNil
                 let wifiName = dict["name"]?.nonBlankTrimmedOrNil
-                let name: String = {
-                    var output = ""
-                    if let displayName = wifiName ?? ssid {
-                        output.append("\(displayName) ")
-                    }
-                    return output + "(WiFi)"
-                }()
+                let name = wifiName ?? ssid
 
-                let additionalInfo = context.formatDictionary(
-                    dict,
-                    excludingKeys: ["name", "note"]
-                )
-                let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
-
-                let text: Data? = {
-                    if let note = noteText,
-                       let encrypted = context.encryptSecureField(note, for: protectionLevel) {
+                let password: Data? = {
+                    if let passphrase = dict["passphrase"]?.nonBlankTrimmedOrNil,
+                       let encrypted = context.encryptSecureField(passphrase, for: protectionLevel) {
                         return encrypted
                     }
                     return nil
                 }()
 
+                let securityType = WiFiContent.SecurityType(
+                    dashlaneValue: dict["encription_type"]?.nonBlankTrimmedOrNil
+                )
+                let hidden = dict["hidden"]?.lowercased() == "true"
+
+                let additionalInfo = context.formatDictionary(
+                    dict,
+                    excludingKeys: ["ssid", "passphrase", "name", "note", "hidden", "encription_type"]
+                )
+                let notes = context.mergeNote(dict["note"]?.nonBlankTrimmedOrNil, with: additionalInfo)
+
                 items.append(
-                    .secureNote(.init(
+                    .wifi(.init(
                         id: .init(),
                         vaultId: vaultID,
                         metadata: .init(
@@ -670,8 +675,11 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                         name: name,
                         content: .init(
                             name: name,
-                            text: text,
-                            additionalInfo: nil
+                            ssid: ssid,
+                            password: password,
+                            notes: notes,
+                            securityType: securityType,
+                            hidden: hidden
                         )
                     ))
                 )
@@ -735,6 +743,26 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 options: .regularExpression
             )
             .capitalizedFirstLetter
+    }
+}
+
+private extension WiFiContent.SecurityType {
+
+    init(dashlaneValue: String?) {
+        switch dashlaneValue?.lowercased() {
+        case "wep":
+            self = .wep
+        case "wpa":
+            self = .wpa
+        case "wpa2":
+            self = .wpa2
+        case "wpa3":
+            self = .wpa3
+        case "unsecured", "none", .none:
+            self = .none
+        default:
+            self = .wpa2
+        }
     }
 }
 
