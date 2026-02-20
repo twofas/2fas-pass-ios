@@ -52,7 +52,7 @@ final class PasswordsPresenter {
     
     var showContentTypePicker: Bool {
         if let autoFillEnvironment {
-            return autoFillEnvironment.serviceIdentifiers.isEmpty && hasItems
+            return autoFillEnvironment.isTextToInsert && hasItems
         } else {
             return hasItems
         }
