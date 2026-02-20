@@ -381,7 +381,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     var debugSubscriptionPlan: SubscriptionPlan? {
-        guard let value = userDefaults.string(forKey: Keys.debugSubscriptionPlan.rawValue) else {
+        guard let value = sharedDefaults.string(forKey: Keys.debugSubscriptionPlan.rawValue) else {
             return nil
         }
         
@@ -411,8 +411,8 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
     
     func clearDebugSubscriptionPlan() {
-        userDefaults.set(nil, forKey: Keys.debugSubscriptionPlan.rawValue)
-        userDefaults.set(nil, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
+        sharedDefaults.set(nil, forKey: Keys.debugSubscriptionPlan.rawValue)
+        sharedDefaults.set(nil, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
     }
     
     var lastKnownAppVersion: String? {
