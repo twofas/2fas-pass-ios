@@ -67,9 +67,7 @@ final class RootFlowController: FlowController {
         let window = UIWindow()
         window.windowLevel = .screenCaptureBlock
         window.backgroundColor = .clear
-        let viewController = UIViewController()
-        viewController.view.backgroundColor = UIColor(resource: .mainBackground)
-        window.rootViewController = viewController
+        window.rootViewController = UIHostingController(rootView: ScreenCaptureBlockView())
         window.alpha = 0
         window.isHidden = true
         return window

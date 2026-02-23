@@ -6,12 +6,13 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 struct AppSecurityView: View {
 
     @State
     var presenter: AppSecurityPresenter
-    
+
     var body: some View {
         content
             .onAppear {
@@ -88,6 +89,15 @@ struct AppSecurityView: View {
             }
             
             Section {
+                Toggle(.settingsEntryScreenRecording, isOn: $presenter.isScreenCaptureEnabled)
+                    .disabled(presenter.lockInteraction)
+                    .tint(.accentColor)
+            } footer: {
+                Text(.settingsEntryScreenRecordingDescription(screenRecordingMinutes))
+                    .settingsFooter()
+            }
+
+            Section {
                 Button {
                     presenter.onVaultDecryptionKit()
                 } label: {
@@ -103,6 +113,21 @@ struct AppSecurityView: View {
                     .settingsFooter()
             }
         }
+        .alert(
+            Text(.settingsEntryScreenRecordingConfirmTitle),
+            isPresented: $presenter.showScreenCaptureConfirmation
+        ) {
+            Button(String(localized: .commonNo), role: .cancel) { }
+            Button(String(localized: .commonYes)) {
+                presenter.confirmScreenCapture()
+            }
+        } message: {
+            Text(.settingsEntryScreenRecordingConfirmDescription(screenRecordingMinutes))
+        }
+    }
+    
+    private var screenRecordingMinutes: Int32 {
+        Int32(Config.screenRecordingAllowanceDuration.components.seconds / 60)
     }
 }
 

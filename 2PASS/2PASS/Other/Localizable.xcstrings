@@ -15274,6 +15274,108 @@
         }
       }
     },
+    "settings_entry_screen_recording" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Recording"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu"
+          }
+        }
+      }
+    },
+    "settings_entry_screen_recording_confirm_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This option allows recording of app content. It will also enable any external attempts to capture the screen. To ensure safety, this option will automatically turn off after %d minutes."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta opcja pozwala na nagrywanie zawartości aplikacji. Jednocześnie umożliwia zewnętrznym aplikacjom przechwytywanie ekranu. Aby zapewnić bezpieczeństwo, opcja ta wyłączy się automatycznie po %d minutach."
+          }
+        }
+      }
+    },
+    "settings_entry_screen_recording_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Screen Recording?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozwolić na nagrywanie ekranu?"
+          }
+        }
+      }
+    },
+    "settings_entry_screen_recording_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow screen recording of the app for %d minutes."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozwól na nagrywanie ekranu aplikacji przez %d minut."
+          }
+        }
+      }
+    },
+    "block_screen_recording_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Recording Blocked"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu zablokowane"
+          }
+        }
+      }
+    },
+    "block_screen_recording_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen recording is not allowed while using the app. You can temporarily enable it in Settings → Security."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu jest zablokowane podczas korzystania z aplikacji. Możesz tymczasowo je włączyć w Ustawienia → Bezpieczeństwo."
+          }
+        }
+      }
+    },
     "settings_entry_screenshots_confirm_description" : {
       "extractionState" : "manual",
       "localizations" : {

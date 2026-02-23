@@ -41,6 +41,10 @@ protocol RootModuleInteracting: AnyObject {
     func isConnectNotification(userInfo: [AnyHashable: Any]) -> Bool
     func fetchAppNotifications() async throws -> [AppNotification]
 
+    var isScreenCaptureAllowed: Bool { get }
+    var screenCaptureAllowedUntil: Date? { get }
+    func clearScreenCaptureAllowed()
+
     @available(iOS 26.0, *)
     func extractCredentialExchangeToken(from userActivity: NSUserActivity) -> UUID?
 
@@ -62,6 +66,7 @@ final class RootModuleInteractor {
     private let onboardingInteractor: OnboardingInteracting
     private let updateAppPromptInteractor: UpdateAppPromptInteracting
     private let credentialExchangeImporter: CredentialExchangeImporting
+    private let configInteractor: ConfigInteracting
     private let notificationCenter = NotificationCenter.default
 
     init(
@@ -74,7 +79,8 @@ final class RootModuleInteractor {
         paymentHandlingInteractor: PaymentHandlingInteracting,
         onboardingInteractor: OnboardingInteracting,
         updateAppPromptInteractor: UpdateAppPromptInteracting,
-        credentialExchangeImporter: CredentialExchangeImporting
+        credentialExchangeImporter: CredentialExchangeImporting,
+        configInteractor: ConfigInteracting
     ) {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
@@ -86,6 +92,7 @@ final class RootModuleInteractor {
         self.onboardingInteractor = onboardingInteractor
         self.updateAppPromptInteractor = updateAppPromptInteractor
         self.credentialExchangeImporter = credentialExchangeImporter
+        self.configInteractor = configInteractor
 
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
@@ -180,6 +187,18 @@ extension RootModuleInteractor: RootModuleInteracting {
         }
     }
     
+    var isScreenCaptureAllowed: Bool {
+        configInteractor.isScreenCaptureAllowed
+    }
+
+    var screenCaptureAllowedUntil: Date? {
+        configInteractor.screenCaptureAllowedUntil
+    }
+
+    func clearScreenCaptureAllowed() {
+        configInteractor.clearScreenCaptureAllowed()
+    }
+
     func isBackupFileURL(_ url: URL) -> Bool {
         url.pathExtension == "2faspass"
     }

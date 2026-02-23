@@ -784,6 +784,11 @@ protocol MainRepository: AnyObject {
     // MARK: - Scan
     func scan(image: UIImage, completion: @escaping (Result<[String], ScanImageError>) -> Void)
     
+    // MARK: - Screen Capture
+    var screenCaptureAllowedUntil: Date? { get }
+    func setScreenCaptureAllowedUntil(_ date: Date)
+    func clearScreenCaptureAllowedUntil()
+
     // MARK: - Time offset
     var timeOffset: TimeInterval { get }
     func setTimeOffset(_ offset: TimeInterval)

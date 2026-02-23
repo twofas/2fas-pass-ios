@@ -22,7 +22,8 @@ extension ModuleInteractorFactory {
             paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
             updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor(),
-            credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter()
+            credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter(),
+            configInteractor: InteractorFactory.shared.configInteractor()
         )
     }
     

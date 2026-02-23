@@ -42,7 +42,7 @@ final class AppSecurityPresenter {
             }
         }
     }
-    
+
     var isBiometryEnabled: Bool {
         get {
             interactor.isBiometryEnabled
@@ -51,7 +51,7 @@ final class AppSecurityPresenter {
             guard interactor.isBiometryEnabled != newValue else {
                 return
             }
-            
+
             if newValue {
                 turnOnBiometry()
             } else {
@@ -59,7 +59,22 @@ final class AppSecurityPresenter {
             }
         }
     }
-    
+
+    var isScreenCaptureEnabled: Bool {
+        get { _isScreenCaptureEnabled }
+        set {
+            guard _isScreenCaptureEnabled != newValue else { return }
+            if newValue {
+                showScreenCaptureConfirmation = true
+            } else {
+                performDisableScreenCapture()
+            }
+        }
+    }
+    var showScreenCaptureConfirmation = false
+    private var _isScreenCaptureEnabled = false
+    private var screenCaptureAllowanceObserver: NSObjectProtocol?
+
     private(set) var isBiometryAvailable = false
     private(set) var enableBiometryToggle = false
 
@@ -69,14 +84,21 @@ final class AppSecurityPresenter {
         }
     }
     private(set) var defaultSecurityTier: ItemProtectionLevel
-    
+
     private let interactor: AppSecurityModuleInteracting
-    
+
     init(interactor: AppSecurityModuleInteracting) {
         self.interactor = interactor
-        
+
         limitOfFailedAttempts = interactor.limitOfFailedAttempts
         defaultSecurityTier = interactor.defaultSecurityTier
+        observeScreenCaptureAllowanceChanged()
+    }
+
+    deinit {
+        if let screenCaptureAllowanceObserver {
+            NotificationCenter.default.removeObserver(screenCaptureAllowanceObserver)
+        }
     }
 }
 
@@ -86,7 +108,8 @@ extension AppSecurityPresenter {
         isBiometryAvailable = interactor.isBiometryAvailable
         enableBiometryToggle = true
         defaultSecurityTier = interactor.defaultSecurityTier
-        
+        _isScreenCaptureEnabled = interactor.isScreenCaptureEnabled
+
         interactor.clearEncryptionData()
     }
     
@@ -134,6 +157,29 @@ extension AppSecurityPresenter {
         })
     }
     
+    func confirmScreenCapture() {
+        guard !lockInteraction else { return }
+        lockInteraction = true
+
+        Task { @MainActor in
+            if await interactor.verifyUsingBiometryIfAvailable() {
+                performEnableScreenCapture()
+            } else {
+                destination = .currentPassword(
+                    config: .init(allowBiometrics: true, loginType: .verify(savePassword: false)),
+                    onSuccess: { [weak self] in
+                        self?.destination = nil
+
+                        Task { @MainActor in
+                            try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
+                            self?.performEnableScreenCapture()
+                        }
+                    }
+                )
+            }
+        }
+    }
+
     func onVaultDecryptionKit() {
         guard !lockInteraction else { return }
         lockInteraction = true
@@ -227,5 +273,28 @@ private extension AppSecurityPresenter {
             self?.interactor.clearEncryptionData()
             self?.destination = nil
         })
+    }
+
+    func performEnableScreenCapture() {
+        interactor.enableScreenCapture()
+        _isScreenCaptureEnabled = true
+        lockInteraction = false
+    }
+
+    func performDisableScreenCapture() {
+        interactor.disableScreenCapture()
+        _isScreenCaptureEnabled = false
+    }
+
+    func observeScreenCaptureAllowanceChanged() {
+        guard screenCaptureAllowanceObserver == nil else { return }
+        screenCaptureAllowanceObserver = NotificationCenter.default.addObserver(
+            forName: .screenCaptureAllowanceDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self._isScreenCaptureEnabled = self.interactor.isScreenCaptureEnabled
+        }
     }
 }
