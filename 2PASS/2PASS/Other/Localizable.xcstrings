@@ -1118,7 +1118,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export to Another App"
+            "value" : "Export to another app"
           }
         },
         "pl" : {
@@ -1397,6 +1397,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zweryfikuj hasło główne"
+          }
+        }
+      }
+    },
+    "block_screen_recording_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen recording is not allowed while using the app. You can temporarily enable it in Settings → Security."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu jest zablokowane podczas korzystania z aplikacji. Możesz tymczasowo je włączyć w Ustawienia → Bezpieczeństwo."
+          }
+        }
+      }
+    },
+    "block_screen_recording_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Recording Blocked"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu zablokowane"
           }
         }
       }
@@ -4004,7 +4038,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export Failed"
+            "value" : "Export failed"
           }
         },
         "pl" : {
@@ -4021,7 +4055,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export to Another App"
+            "value" : "Export to another app"
           }
         },
         "pl" : {
@@ -4072,13 +4106,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import Failed"
+            "value" : "Import failed"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import nie powiódł się"
+            "value" : "Eksport nieudany"
           }
         }
       }
@@ -4106,7 +4140,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import Complete"
+            "value" : "Import complete"
           }
         },
         "pl" : {
@@ -4123,7 +4157,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import Credentials"
+            "value" : "Import credentials"
           }
         },
         "pl" : {
@@ -8299,7 +8333,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Roczna subskrypcja"
+            "value" : "Roczna subskrypcja: "
           }
         }
       }
@@ -15342,40 +15376,6 @@
         }
       }
     },
-    "block_screen_recording_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Screen Recording Blocked"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nagrywanie ekranu zablokowane"
-          }
-        }
-      }
-    },
-    "block_screen_recording_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Screen recording is not allowed while using the app. You can temporarily enable it in Settings → Security."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nagrywanie ekranu jest zablokowane podczas korzystania z aplikacji. Możesz tymczasowo je włączyć w Ustawienia → Bezpieczeństwo."
-          }
-        }
-      }
-    },
     "settings_entry_screenshots_confirm_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -18414,7 +18414,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edycja WiFi"
+            "value" : "Edycja W-iFi"
           }
         }
       }
