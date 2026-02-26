@@ -21,6 +21,7 @@ struct SettingsTextFieldView: View {
         self.onSave = onSave
     }
 
+    @Environment(\.dismiss) private var dismiss
     @FocusState private var isFocused: Bool
 
     var body: some View {
@@ -30,6 +31,8 @@ struct SettingsTextFieldView: View {
                     title
                 }
                 .focused($isFocused)
+                .submitLabel(.done)
+                .onSubmit { dismiss() }
                 .autocorrectionDisabled()
                 .introspect(.textField, on: .iOS(.v17, .v18, .v26)) { textField in
                     textField.clearButtonMode = .always
