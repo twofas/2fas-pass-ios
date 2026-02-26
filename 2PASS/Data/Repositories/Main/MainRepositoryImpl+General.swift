@@ -91,7 +91,7 @@ extension MainRepositoryImpl {
         if case Device.unknown = device {
             generated = name
         } else {
-            generated = "\(device) (\(name))"
+            generated = "\(device)"
         }
         userDefaultsDataSource.setDeviceName(generated)
         return generated
