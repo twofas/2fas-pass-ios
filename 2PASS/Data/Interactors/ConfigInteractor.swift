@@ -15,6 +15,7 @@ public protocol ConfigInteracting: AnyObject {
     func savePasswordGeneratorConfig(_ config: PasswordGenerateConfig)
     
     var deviceName: String { get }
+    func setDeviceName(_ name: String)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
     
@@ -43,7 +44,11 @@ extension ConfigInteractor: ConfigInteracting {
     var deviceName: String {
         mainRepository.deviceName
     }
-    
+
+    func setDeviceName(_ name: String) {
+        mainRepository.setDeviceName(name)
+    }
+
     var defaultPassswordListAction: PasswordListAction {
         mainRepository.defaultPassswordListAction
     }

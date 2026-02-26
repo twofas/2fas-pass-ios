@@ -611,6 +611,11 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
+    func setDeviceName(_ name: String) {
+        recordCall()
+        stubbedDeviceName = name
+    }
+
     private var stubbedDeviceModelName: String = "Mock Model"
     var deviceModelName: String { stubbedDeviceModelName }
 

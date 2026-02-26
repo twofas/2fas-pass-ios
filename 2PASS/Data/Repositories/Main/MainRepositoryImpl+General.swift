@@ -82,14 +82,23 @@ extension MainRepositoryImpl {
     }
     
     var deviceName: String {
-        let name = UIDevice.current.name
-        
-        let device = Device.current
-        if case Device.unknown = device {
-            return name
-        } else {
-            return "\(device) (\(name))"
+        if let stored = userDefaultsDataSource.deviceName {
+            return stored
         }
+        let name = UIDevice.current.name
+        let device = Device.current
+        let generated: String
+        if case Device.unknown = device {
+            generated = name
+        } else {
+            generated = "\(device) (\(name))"
+        }
+        userDefaultsDataSource.setDeviceName(generated)
+        return generated
+    }
+
+    func setDeviceName(_ name: String) {
+        userDefaultsDataSource.setDeviceName(name)
     }
     
     var deviceType: DeviceType {

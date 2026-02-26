@@ -9,6 +9,7 @@ import Data
 
 protocol CustomizationModuleInteracting: AnyObject {
     var deviceName: String { get }
+    func setDeviceName(_ name: String)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
 }
@@ -24,7 +25,11 @@ final class CustomizationModuleInteractor: CustomizationModuleInteracting {
     var deviceName: String {
         configInteractor.deviceName
     }
-    
+
+    func setDeviceName(_ name: String) {
+        configInteractor.setDeviceName(name)
+    }
+
     var defaultPassswordListAction: PasswordListAction {
         configInteractor.defaultPassswordListAction
     }
