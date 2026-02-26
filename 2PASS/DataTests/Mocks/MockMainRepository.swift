@@ -154,6 +154,10 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func sendPushNotification(_ text: String) async {
+        recordCall()
+    }
+
     private var stubbedPushNotificationToken: String?
     var pushNotificationToken: String? { stubbedPushNotificationToken }
 
@@ -529,6 +533,15 @@ final class MockMainRepository: MainRepository {
     @discardableResult
     func withAppBundleIdentifier(_ value: String?) -> Self {
         stubbedAppBundleIdentifier = value
+        return self
+    }
+
+    private var stubbedAppDisplayName: String?
+    var appDisplayName: String? { stubbedAppDisplayName }
+
+    @discardableResult
+    func withAppDisplayName(_ value: String?) -> Self {
+        stubbedAppDisplayName = value
         return self
     }
 
@@ -1532,6 +1545,24 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    ) {
+        recordCall()
+    }
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -1606,6 +1637,23 @@ final class MockMainRepository: MainRepository {
         notes: String?,
         cardNumberMask: String?,
         cardIssuer: String?
+    ) {
+        recordCall()
+    }
+
+    func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
     ) {
         recordCall()
     }

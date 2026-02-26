@@ -69,6 +69,8 @@ private extension CredentialExchangeExporter {
             return convertSecureNoteItem(data, protectionLevel: item.protectionLevel, tags: tags)
         case .paymentCard(let data):
             return convertPaymentCardItem(data, protectionLevel: item.protectionLevel, tags: tags)
+        case .wifi(let data):
+            return convertWifiItem(data, protectionLevel: item.protectionLevel, tags: tags)
         case .raw:
             return nil
         }
@@ -216,6 +218,55 @@ private extension CredentialExchangeExporter {
         var credentials: [ASImportableCredential] = [cardCredential]
 
         if let notes = data.content.notes?.nonBlankTrimmedOrNil {
+            let noteField = ASImportableEditableField(id: nil, fieldType: .string, value: notes)
+            credentials.append(.note(.init(content: noteField)))
+        }
+
+        return ASImportableItem(
+            id: Data(data.id.uuidString.utf8),
+            created: data.creationDate,
+            lastModified: data.modificationDate,
+            title: data.name ?? "",
+            credentials: credentials,
+            tags: tags
+        )
+    }
+
+    // MARK: - WiFi
+
+    func convertWifiItem(
+        _ data: WiFiItemData,
+        protectionLevel: ItemProtectionLevel,
+        tags: [String]
+    ) -> ASImportableItem? {
+        let content = data.content
+
+        let ssid = ASImportableEditableField(id: nil, fieldType: .string, value: content.ssid ?? "")
+
+        let networkSecurityType = ASImportableEditableField(
+            id: nil, fieldType: .wifiNetworkSecurityType, value: content.securityType.cxfValue
+        )
+
+        let passphrase: ASImportableEditableField? = content.password.flatMap {
+            itemsInteractor.decrypt($0, isSecureField: true, protectionLevel: protectionLevel)
+        }.map {
+            ASImportableEditableField(id: nil, fieldType: .concealedString, value: $0)
+        }
+
+        let hidden = ASImportableEditableField(
+            id: nil, fieldType: .boolean, value: content.hidden ? "true" : "false"
+        )
+
+        let wifiCredential = ASImportableCredential.wifi(.init(
+            ssid: ssid,
+            networkSecurityType: networkSecurityType,
+            passphrase: passphrase,
+            hidden: hidden
+        ))
+
+        var credentials: [ASImportableCredential] = [wifiCredential]
+
+        if let notes = content.notes?.nonBlankTrimmedOrNil {
             let noteField = ASImportableEditableField(id: nil, fieldType: .string, value: notes)
             credentials.append(.note(.init(content: noteField)))
         }

@@ -291,6 +291,8 @@ private extension ItemCellView {
                  .copy(.secureNoteText),
                  .copy(.paymentCardNumber),
                  .copy(.paymentCardSecurityCode),
+                 .copy(.wifiSSID),
+                 .copy(.wifiPassword),
                  .moveToTrash:
                 list.append(
                     UIAction(

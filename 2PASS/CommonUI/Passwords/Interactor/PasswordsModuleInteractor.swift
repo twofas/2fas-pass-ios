@@ -32,6 +32,8 @@ protocol PasswordsModuleInteracting: AnyObject {
     func copySecureNote(_ itemID: ItemID) -> Bool
     func copyPaymentCardNumber(_ itemID: ItemID) -> Bool
     func copyPaymentCardSecurityCode(_ itemID: ItemID) -> Bool
+    func copyWiFiSSID(_ itemID: ItemID) -> Bool
+    func copyWiFiPassword(_ itemID: ItemID) -> Bool
 
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
@@ -283,6 +285,25 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             return false
         }
         systemInteractor.copyToClipboard(decryptedCode)
+        return true
+    }
+
+    func copyWiFiSSID(_ itemID: ItemID) -> Bool {
+        guard let wifiItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asWiFi,
+              let ssid = wifiItem.content.ssid else {
+            return false
+        }
+        systemInteractor.copyToClipboard(ssid)
+        return true
+    }
+
+    func copyWiFiPassword(_ itemID: ItemID) -> Bool {
+        guard let wifiItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asWiFi,
+              let password = wifiItem.content.password,
+              let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: wifiItem.protectionLevel) else {
+            return false
+        }
+        systemInteractor.copyToClipboard(decryptedPassword)
         return true
     }
 

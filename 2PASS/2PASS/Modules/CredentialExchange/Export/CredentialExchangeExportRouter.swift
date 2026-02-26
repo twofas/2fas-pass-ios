@@ -32,8 +32,7 @@ struct CredentialExchangeExportRouter: Router {
         case .error(let onClose):
             ResultView(
                 kind: .failure,
-                title: Text(.credentialExchangeExportErrorTitle),
-                description: Text(.credentialExchangeExportIdleDescription)
+                title: Text(.credentialExchangeExportErrorTitle)
             ) {
                 Button(.commonClose) {
                     onClose()

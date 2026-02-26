@@ -32,7 +32,7 @@ public struct ExternalServiceImportResult {
 
 public protocol ExternalServiceImportInteracting: AnyObject {
 
-    func open(from url: URL) async throws(ExternalServiceImportError) -> ImportContent
+    func open(from url: URL, service: ExternalService) async throws(ExternalServiceImportError) -> ImportContent
 
     func importService(
         _ service: ExternalService,
@@ -60,7 +60,8 @@ final class ExternalServiceImportInteractor {
 
 extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
 
-    func open(from url: URL) async throws(ExternalServiceImportError) -> ImportContent {
+    func open(from url: URL, service: ExternalService) async throws(ExternalServiceImportError) -> ImportContent {
+        let maxFileSize = maximumImportFileSize(for: service)
         let hasSecurityScope = url.startAccessingSecurityScopedResource()
         defer {
             if hasSecurityScope {
@@ -76,7 +77,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             guard let files = mainRepository.readFilesFromFolder(
                 at: url,
                 withExtension: "csv",
-                maxFileSize: Config.maximumExternalImportFileSize
+                maxFileSize: maxFileSize
             ) else {
                 throw .cantReadFile
             }
@@ -90,7 +91,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
                 throw .wrongFileSize
             }
 
-            guard fileSize < Config.maximumExternalImportFileSize else {
+            guard fileSize < maxFileSize else {
                 throw .wrongFileSize
             }
 
@@ -114,6 +115,13 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
             result = try await importServiceFromFolder(service, files: files)
         }
         return assignTagColors(result)
+    }
+
+    private func maximumImportFileSize(for service: ExternalService) -> Int {
+        switch service {
+        case .onePassword: 1024 * 1024 * 100
+        default: Config.maximumExternalImportFileSize
+        }
     }
 
     private func importServiceFromFile(

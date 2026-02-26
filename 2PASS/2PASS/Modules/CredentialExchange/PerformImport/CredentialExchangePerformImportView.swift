@@ -27,8 +27,8 @@ struct CredentialExchangePerformImportView: View {
             case .success:
                 ResultView(
                     kind: .success,
-                    title: Text(.credentialExchangeSuccessTitle),
-                    description: Text(.credentialExchangeSuccessDescription)
+                    title: Text(.credentialExchangeImportSuccessTitle),
+                    description: Text(.credentialExchangeImportSuccessDescription)
                 ) {
                     Button(.commonContinue) {
                         presenter.onClose()

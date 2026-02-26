@@ -107,6 +107,18 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                             items.append(noteItem)
                         }
 
+                    case "wifi":
+                        if let wifiItem = importWiFiItem(
+                            item: item,
+                            vaultID: vaultID,
+                            protectionLevel: protectionLevel,
+                            creationDate: creationDate,
+                            modificationDate: modificationDate,
+                            sourceVaultName: sourceVaultName
+                        ) {
+                            items.append(wifiItem)
+                        }
+
                     default:
                         if let noteItem = importAsSecureNote(
                             item: item,
@@ -210,8 +222,20 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                         items.append(item)
                     }
 
+                case "wifi":
+                    if let item = importWiFiFromCSV(
+                        dict: dict,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        creationDate: creationDate,
+                        modificationDate: modificationDate,
+                        sourceVaultName: sourceVaultName
+                    ) {
+                        items.append(item)
+                    }
+
                 default:
-                    // identity, custom, sshKey, wifi -> convert to secure note
+                    // identity, custom, sshKey -> convert to secure note
                     if let item = importAsSecureNoteFromCSV(
                         dict: dict,
                         itemType: itemType,
@@ -451,6 +475,61 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         ))
     }
     
+    func importWiFiFromCSV(
+        dict: [String: String],
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        creationDate: Date,
+        modificationDate: Date,
+        sourceVaultName: String?
+    ) -> ItemData? {
+        let name = dict["name"]?.nonBlankTrimmedOrNil
+
+        let password: Data? = {
+            if let passwordString = dict["password"]?.nonBlankOrNil,
+               let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        var noteComponents: [String] = []
+        if let unknownFields = context.formatDictionary(
+            dict,
+            excludingKeys: ["type", "name", "password", "createTime", "modifyTime", "note", "vault"]
+        ) {
+            noteComponents.append(unknownFields)
+        }
+        if let note = dict["note"]?.nonBlankTrimmedOrNil {
+            noteComponents.append(note)
+        }
+        if let sourceVaultName {
+            noteComponents.append("Vault: \(sourceVaultName)")
+        }
+        let notes = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
+
+        return .wifi(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: nil
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                ssid: nil,
+                password: password,
+                notes: notes,
+                securityType: .wpa2,
+                hidden: false
+            )
+        ))
+    }
+
     func importAsSecureNoteFromCSV(
         dict: [String: String],
         itemType: String,
@@ -763,6 +842,66 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         ))
     }
     
+    func importWiFiItem(
+        item: ProtonPassItem,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        creationDate: Date,
+        modificationDate: Date,
+        sourceVaultName: String?
+    ) -> ItemData? {
+        let name = item.data.metadata.name.nonBlankTrimmedOrNil
+        let content = ProtonPassWiFiContent(item.data.content)
+
+        let ssid = content.ssid?.nonBlankTrimmedOrNil
+
+        let password: Data? = {
+            if let passwordString = content.password?.nonBlankOrNil,
+               let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityType = WiFiContent.SecurityType(protonPassValue: content.security)
+
+        var noteComponents: [String] = []
+        if let unknownData = context.formatDictionary(content.unknownData) {
+            noteComponents.append(unknownData)
+        }
+        if let extraFieldsNote = formatExtraFields(item.data.extraFields) {
+            noteComponents.append(extraFieldsNote)
+        }
+        if let note = item.data.metadata.note.nonBlankTrimmedOrNil {
+            noteComponents.append(note)
+        }
+        if let sourceVaultName {
+            noteComponents.append("Vault: \(sourceVaultName)")
+        }
+        let notes = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
+
+        return .wifi(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate,
+                modificationDate: modificationDate,
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: nil
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                ssid: ssid,
+                password: password,
+                notes: notes,
+                securityType: securityType,
+                hidden: false
+            )
+        ))
+    }
+
     func importAsSecureNote(
         item: ProtonPassItem,
         vaultID: VaultID,
@@ -979,6 +1118,44 @@ private struct ProtonPassCreditCardContent {
     }
 }
 
+
+private struct ProtonPassWiFiContent {
+    static let usedKeys: Set<String> = ["ssid", "password", "security", "sections"]
+
+    let rawData: [String: Any]
+    let unknownData: [String: Any]
+
+    init(_ rawData: [String: AnyCodable]?) {
+        self.rawData = rawData?.mapValues { $0.value } ?? [:]
+        self.unknownData = self.rawData.filter { !Self.usedKeys.contains($0.key) }
+    }
+
+    var ssid: String? {
+        rawData["ssid"] as? String
+    }
+
+    var password: String? {
+        rawData["password"] as? String
+    }
+
+    var security: Int? {
+        rawData["security"] as? Int
+    }
+}
+
+private extension WiFiContent.SecurityType {
+
+    init(protonPassValue: Int?) {
+        switch protonPassValue {
+        case 0: self = .none
+        case 1: self = .wep
+        case 2: self = .wpa
+        case 3: self = .wpa2
+        case 4: self = .wpa3
+        default: self = .wpa2
+        }
+    }
+}
 
 // MARK: - ProtonPass CSV Models
 

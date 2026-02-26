@@ -179,6 +179,22 @@ extension ItemsInteractor: ItemsInteracting {
                 cardNumberMask: paymentCardItem.content.cardNumberMask,
                 cardIssuer: paymentCardItem.content.cardIssuer
             )
+        case .wifi(let wifiItem):
+            mainRepository.createWiFiItem(
+                itemID: wifiItem.id,
+                vaultID: selectedVault.id,
+                creationDate: wifiItem.creationDate,
+                modificationDate: wifiItem.modificationDate,
+                trashedStatus: wifiItem.trashedStatus,
+                protectionLevel: wifiItem.protectionLevel,
+                tagIds: wifiItem.tagIds,
+                name: wifiItem.name,
+                ssid: wifiItem.content.ssid,
+                password: wifiItem.content.password,
+                notes: wifiItem.content.notes,
+                securityType: wifiItem.content.securityType,
+                hidden: wifiItem.content.hidden
+            )
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
@@ -269,6 +285,21 @@ extension ItemsInteractor: ItemsInteracting {
                 notes: paymentCardItem.content.notes,
                 cardNumberMask: paymentCardItem.content.cardNumberMask,
                 cardIssuer: paymentCardItem.content.cardIssuer
+            )
+        case .wifi(let wifiItem):
+            mainRepository.updateWiFiItem(
+                itemID: wifiItem.id,
+                vaultID: selectedVault.id,
+                modificationDate: wifiItem.modificationDate,
+                trashedStatus: wifiItem.trashedStatus,
+                protectionLevel: wifiItem.protectionLevel,
+                tagIds: wifiItem.tagIds,
+                name: wifiItem.name,
+                ssid: wifiItem.content.ssid,
+                password: wifiItem.content.password,
+                notes: wifiItem.content.notes,
+                securityType: wifiItem.content.securityType,
+                hidden: wifiItem.content.hidden
             )
         case .raw:
             mainRepository.updateItem(

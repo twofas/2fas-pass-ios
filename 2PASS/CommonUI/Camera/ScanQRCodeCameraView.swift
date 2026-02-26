@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import UIKit
 
 private struct Constants {
     static let overlayColor = Color.black.opacity(0.7)
@@ -17,14 +18,14 @@ private struct Constants {
 public struct ScanQRCodeCameraView: View {
     
     let title: Text
-    let description: Text
+    let description: Text?
     let error: Text?
     let codeFound: (String) -> Void
     let codeLost: (() -> Void)?
 
     public init(
         title: Text,
-        description: Text,
+        description: Text? = nil,
         error: Text? = nil,
         codeFound: @escaping (String) -> Void,
         codeLost: (() -> Void)? = nil
@@ -54,15 +55,40 @@ public struct ScanQRCodeCameraView: View {
     }
     
     private var activeSquareView: some View {
-        ZStack {
-            Constants.overlayColor
-                .ignoresSafeArea()
+        GeometryReader { outterGeometry in
+            let verticalOffset = -outterGeometry.safeAreaInsets.bottom / 2
             
-            RoundedRectangle(cornerRadius: Constants.activeSquareCornerRadius)
-                .frame(width: Constants.activeSquareSize, height: Constants.activeSquareSize)
-                .blendMode(.destinationOut)
+            GeometryReader { geometry in
+                let cutoutRect = CGRect(
+                    x: (geometry.size.width - Constants.activeSquareSize) / 2,
+                    y: (geometry.size.height - Constants.activeSquareSize) / 2 + verticalOffset,
+                    width: Constants.activeSquareSize,
+                    height: Constants.activeSquareSize
+                )
+                
+                ZStack {
+                    Path { path in
+                        path.addRect(CGRect(origin: .zero, size: geometry.size))
+                        path.addRoundedRect(
+                            in: cutoutRect,
+                            cornerSize: CGSize(
+                                width: Constants.activeSquareCornerRadius,
+                                height: Constants.activeSquareCornerRadius
+                            )
+                        )
+                    }
+                    .fill(Constants.overlayColor, style: FillStyle(eoFill: true))
+                    
+                    cornersOverlay
+                        .offset(y: verticalOffset)
+                }
+            }
+            .ignoresSafeArea()
         }
-        .overlay {
+    }
+
+    private var cornersOverlay: some View {
+        ZStack {
             Image(.qrcodeCorner)
                 .offset(x: -Constants.activeSquareCornerOffset, y: -Constants.activeSquareCornerOffset)
             
@@ -78,8 +104,6 @@ public struct ScanQRCodeCameraView: View {
                 .rotationEffect(.degrees(270))
                 .offset(x: -Constants.activeSquareCornerOffset, y: Constants.activeSquareCornerOffset)
         }
-        .ignoresSafeArea(edges: .top)
-        .compositingGroup()
     }
     
     private var descriptionView: some View {
@@ -95,7 +119,7 @@ public struct ScanQRCodeCameraView: View {
                         .font(.subheadline)
                 }
                 .foregroundStyle(.baseStatic0)
-                .frame(width: geometry.size.width - Spacing.xxl4 * 2)
+                .frame(width: max(0, geometry.size.width - Spacing.xxl4 * 2))
                 .multilineTextAlignment(.center)
                 
                 if let error {
@@ -120,6 +144,7 @@ public struct ScanQRCodeCameraView: View {
         }
         .ignoresSafeArea(edges: .top)
     }
+
 }
 
 private struct CameraScanningView_UIKit: UIViewRepresentable {

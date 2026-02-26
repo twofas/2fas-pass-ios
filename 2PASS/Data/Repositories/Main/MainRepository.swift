@@ -347,6 +347,22 @@ protocol MainRepository: AnyObject {
         cardIssuer: String?
     )
 
+    func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    )
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -413,6 +429,21 @@ protocol MainRepository: AnyObject {
         notes: String?,
         cardNumberMask: String?,
         cardIssuer: String?
+    )
+
+    func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
     )
 
     func updateItems(_ items: [RawItemData])

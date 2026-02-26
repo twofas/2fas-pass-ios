@@ -983,7 +983,169 @@
             "trashed": 0,
             "updated_at": 1765907279,
             "uuid": "75372f29-131f-49bb-9b03-d89bbf828641"
+        },
+        {
+            "archived": 0,
+            "auto_submit": 1,
+            "category": "computer",
+            "category_name": "Computer",
+            "createdAt": 1771342894,
+            "favorite": 0,
+            "field_updated_at": 1771342894,
+            "fields": [
+                {
+                    "deleted": 0,
+                    "label": "Station name",
+                    "order": 1,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 0,
+                    "updated_at": 1771342894,
+                    "value": "Wifi Enpass",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Station password",
+                    "order": 2,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 9,
+                    "updated_at": 1771342894,
+                    "value": "b2e{Qtx@kj0mjw>+=GcFf>qG2>aL&tZE",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Network name",
+                    "order": 3,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 2,
+                    "updated_at": 1771342894,
+                    "value": "Sieć",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Network password",
+                    "order": 4,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 5,
+                    "updated_at": 1771342894,
+                    "value": "JZ@5ZR7J/0D:kOCtGf#$m%lo&<X4-eg{",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Security",
+                    "order": 5,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 3,
+                    "updated_at": 1771342894,
+                    "value": "WPA 2",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "MAC/Airport #",
+                    "order": 6,
+                    "sensitive": 0,
+                    "type": "numeric",
+                    "uid": 1,
+                    "updated_at": 1771342894,
+                    "value": "Coś",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Server/IP address",
+                    "order": 7,
+                    "sensitive": 0,
+                    "type": "url",
+                    "uid": 12,
+                    "updated_at": 1771342894,
+                    "value": "Adres IP wifi",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Username",
+                    "order": 8,
+                    "sensitive": 0,
+                    "type": "username",
+                    "uid": 13,
+                    "updated_at": 1771342894,
+                    "value": "Rafael",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Password",
+                    "order": 9,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 4,
+                    "updated_at": 1771342894,
+                    "value": "ozDFD_O..Zm:urgqA{-NY8Vz2,fxzW(X",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Storage password",
+                    "order": 10,
+                    "sensitive": 1,
+                    "type": "password",
+                    "uid": 6,
+                    "updated_at": 1771342894,
+                    "value": "[.qbk~u_5KlFjIcmq1sug.U=qC)L<nG&",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Support website",
+                    "order": 11,
+                    "sensitive": 0,
+                    "type": "url",
+                    "uid": 7,
+                    "updated_at": 1771342894,
+                    "value": "wsparcie",
+                    "value_updated_at": 1771342894
+                },
+                {
+                    "deleted": 0,
+                    "label": "Billing info",
+                    "order": 12,
+                    "sensitive": 0,
+                    "type": "text",
+                    "uid": 8,
+                    "updated_at": 1771342894,
+                    "value": "",
+                    "value_updated_at": 1771342894
+                }
+            ],
+            "folders": [
+                "b3c3d461-6b01-4704-94ce-ecd4df66693d"
+            ],
+            "icon": {
+                "fav": "",
+                "image": {
+                    "file": "misc/wireless_router"
+                },
+                "type": 1,
+                "uuid": ""
+            },
+            "note": "Notka do wifi",
+            "subtitle": "Wifi Enpass",
+            "template_type": "computer.wifi",
+            "title": "Wireless router",
+            "trashed": 0,
+            "updated_at": 1771342894,
+            "uuid": "eaec8d78-a13e-4253-b5bc-b465836ba6ee"
         }
+        
     ]
 }
 

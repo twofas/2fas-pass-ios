@@ -7,10 +7,6 @@
 import SwiftUI
 import Common
 
-private struct Constants {
-    static let cardMaxWidth = 320.0
-}
-
 struct ItemDetailView: View {
 
     @State
@@ -22,35 +18,27 @@ struct ItemDetailView: View {
     var body: some View {
         VStack {
             ItemDetailForm {
-                if case .paymentCard(let formPresenter) = presenter.form {
-                    CardView(
-                        issuer: formPresenter.paymentCardIssuer,
-                        name: formPresenter.name,
-                        cardNumberMask: formPresenter.cardNumberMask
-                    )
-                    .frame(maxWidth: Constants.cardMaxWidth)
-                    .padding(.horizontal, Spacing.xll3)
-                    .padding(.bottom, Spacing.s)
+                switch presenter.form {
+                case .login(let formPresenter):
+                    LoginDetailFormView(presenter: formPresenter)
+                case .secureNote(let formPresenter):
+                    SecureNoteDetailFormView(presenter: formPresenter)
+                case .paymentCard(let formPresenter):
+                    PaymentCardDetailFormView(presenter: formPresenter)
+                case .wifi(let formPresenter):
+                    WiFiDetailFormView(presenter: formPresenter)
+                default:
+                    EmptyView()
                 }
                 
-                ItemDetailSection {
-                    switch presenter.form {
-                    case .login(let formPresenter):
-                        LoginDetailFormView(presenter: formPresenter)
-                    case .secureNote(let formPresenter):
-                        SecureNoteDetailFormView(presenter: formPresenter)
-                    case .paymentCard(let formPresenter):
-                        PaymentCardDetailFormView(presenter: formPresenter)
-                    default:
-                        EmptyView()
-                    }
-                } footer: {
-                    VStack(alignment: .leading, spacing: Spacing.l) {
-                        tagsView
-                        modificationDatesView
-                    }
-                    .padding(.vertical, Spacing.xs)
+                VStack(alignment: .leading, spacing: Spacing.l) {
+                    tagsView
+                    modificationDatesView
                 }
+                .font(.footnote)
+                .foregroundColor(Color(.secondaryLabel))
+                .padding(.horizontal, Spacing.xll3)
+                .fixedSize(horizontal: false, vertical: true)
             }
             .scrollReadableContentMargins()
         }
@@ -68,7 +56,7 @@ struct ItemDetailView: View {
             return Spacing.xll
         }
     }
-    
+
     @ViewBuilder
     private var tagsView: some View {
         if !presenter.tags.isEmpty {
@@ -213,6 +201,26 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         notes: "Notes"
                     )
                 ))
+        case .wifi:
+                .wifi(WiFiItemData(
+                    id: itemID,
+                    vaultId: UUID(),
+                    metadata: .init(
+                        creationDate: Date(),
+                        modificationDate: Date(),
+                        protectionLevel: .topSecret,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: "Home Wi-Fi",
+                    content: .init(
+                        name: "Home Wi-Fi",
+                        ssid: "HomeNetwork",
+                        password: "SecretPassword".data(using: .utf8),
+                        securityType: .wpa2,
+                        hidden: false
+                    )
+                ))
         case .unknown:
             fatalError()
         }
@@ -220,6 +228,10 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
     
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
         String(data: data, encoding: .utf8)
+    }
+
+    func makeWiFiQRCodePayload(from data: WiFiQRCodeData) -> String {
+        "WIFI:T:WEP;S:SSIDValue;P:PasswordValue;H:true;"
     }
     
     func copy(_ str: String) {}
@@ -244,5 +256,3 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
         issuer == .americanExpress ? 4 : 3
     }
 }
-
-

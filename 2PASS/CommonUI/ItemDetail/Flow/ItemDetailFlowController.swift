@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import UIKit
+import SwiftUI
 import Common
 
 protocol ItemDetailFlowControllerParent: AnyObject {
@@ -17,6 +18,7 @@ protocol ItemDetailFlowControllerParent: AnyObject {
 protocol ItemDetailFlowControlling: AnyObject {
     func toEdit(_ itemID: ItemID)
     func toOpenURI(_ url: URL)
+    func toWiFiNetworkQRCode(ssid: String, payload: String)
     func close()
     
     @available(iOS 18.0, *)
@@ -66,6 +68,20 @@ extension ItemDetailFlowController: ItemDetailFlowControlling {
     
     func toOpenURI(_ url: URL) {
         UIApplication.shared.openInBrowser(url)
+    }
+
+    func toWiFiNetworkQRCode(ssid: String, payload: String) {
+        let qrCodeViewController = UIHostingController(
+            rootView: WiFiNetworkQRCodeRouter.buildView(ssid: ssid, payload: payload)
+        )
+
+        qrCodeViewController.isModalInPresentation = false
+        if let sheet = qrCodeViewController.sheetPresentationController, UIDevice.isiPad == false {
+            sheet.detents = [.medium()]
+            sheet.selectedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+        }
+        viewController.present(qrCodeViewController, animated: true)
     }
     
     func close() {

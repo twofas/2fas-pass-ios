@@ -42,17 +42,19 @@ public struct ItemMetadata: Hashable {
 
 public enum ItemContentType: Hashable {
     case login
-    case secureNote
     case paymentCard
+    case secureNote
+    case wifi
     case unknown(String)
 
-    public static let allKnownTypes: [ItemContentType] = [.login, .secureNote, .paymentCard]
+    public static let allKnownTypes: [ItemContentType] = [.login, .paymentCard, .secureNote, .wifi]
 
     public var rawValue: String {
         switch self {
         case .login: "login"
         case .secureNote: "secureNote"
         case .paymentCard: "paymentCard"
+        case .wifi: "wifi"
         case .unknown(let contentType): contentType
         }
     }
@@ -62,6 +64,7 @@ public enum ItemContentType: Hashable {
         case ItemContentType.login.rawValue: self = .login
         case ItemContentType.secureNote.rawValue: self = .secureNote
         case ItemContentType.paymentCard.rawValue: self = .paymentCard
+        case ItemContentType.wifi.rawValue: self = .wifi
         default: self = .unknown(rawValue)
         }
     }
@@ -97,6 +100,7 @@ public enum ItemData: ItemDataType {
     case login(LoginItemData)
     case secureNote(SecureNoteItemData)
     case paymentCard(PaymentCardItemData)
+    case wifi(WiFiItemData)
     case raw(RawItemData)
 
     public var id: ItemID { base.id }
@@ -115,6 +119,7 @@ public enum ItemData: ItemDataType {
         case .login(let data): return data
         case .secureNote(let data): return data
         case .paymentCard(let data): return data
+        case .wifi(let data): return data
         case .raw(let data): return data
         }
     }
@@ -151,6 +156,16 @@ public enum ItemData: ItemDataType {
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
                     content: try decoder.decode(PaymentCardItemData.Content.self, from: rawData.content)
+                ))
+            case .wifi:
+                self = .wifi(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(WiFiItemData.Content.self, from: rawData.content)
                 ))
             case .unknown:
                 self = .raw(rawData)
@@ -273,6 +288,8 @@ extension ItemData {
             return .secureNote(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .paymentCard(let data):
             return .paymentCard(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        case .wifi(let data):
+            return .wifi(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .raw(let data):
             return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
         }
@@ -286,9 +303,10 @@ extension ItemData {
             return .secureNote(data.update(modificationDate: modificationDate, tagIds: tagIds))
         case .paymentCard(let data):
             return .paymentCard(data.update(modificationDate: modificationDate, tagIds: tagIds))
+        case .wifi(let data):
+            return .wifi(data.update(modificationDate: modificationDate, tagIds: tagIds))
         case .raw(let data):
             return .raw(data.update(modificationDate: modificationDate, tagIds: tagIds))
         }
     }
 }
-

@@ -191,6 +191,14 @@ private extension TrashPresenter {
                             deletedDate: trashingDate,
                             icon: .paymentCard(issuer: paymentCardItem.content.cardIssuer)
                         )
+                    case .wifi(let wifiItem):
+                        return TrashItemData(
+                            itemID: wifiItem.id,
+                            name: wifiItem.name,
+                            description: wifiItem.content.ssid,
+                            deletedDate: trashingDate,
+                            icon: .contentType(.wifi)
+                        )
                     case .raw:
                         return nil
                     }

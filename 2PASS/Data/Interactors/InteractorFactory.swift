@@ -69,6 +69,17 @@ public final class InteractorFactory {
         )
     }
 
+    public func wifiItemInteractor() -> WiFiItemInteracting {
+        WiFiItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
+    public func wifiQRCodeInteractor() -> WiFiQRCodeInteracting {
+        WiFiQRCodeInteractor()
+    }
+
     public func paymentCardUtilityInteractor() -> PaymentCardUtilityInteracting {
         PaymentCardUtilityInteractor()
     }

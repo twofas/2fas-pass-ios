@@ -21,7 +21,7 @@ struct LoginDetailFormView: View {
     var selectedField: SelectedField?
 
     var body: some View {
-        Group {
+        ItemDetailSection {
             ItemDetailFormTitle(name: presenter.name, icon: presenter.iconContent)
 
             if let username = presenter.username {

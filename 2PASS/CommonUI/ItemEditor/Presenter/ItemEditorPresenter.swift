@@ -16,6 +16,7 @@ final class ItemEditorPresenter {
         case login(LoginEditorFormPresenter)
         case secureNote(SecureNoteEditorFormPresenter)
         case paymentCard(PaymentCardEditorFormPresenter)
+        case wifi(WiFiEditorFormPresenter)
     }
 
     var contentType: ItemContentType {
@@ -26,6 +27,8 @@ final class ItemEditorPresenter {
             return .secureNote
         case .paymentCard:
             return .paymentCard
+        case .wifi:
+            return .wifi
         }
     }
 
@@ -43,6 +46,10 @@ final class ItemEditorPresenter {
             String(localized: .cardAddTitle)
         case (.paymentCard, true):
             String(localized: .cardEditTitle)
+        case (.wifi, false):
+            String(localized: .wifiAddTitle)
+        case (.wifi, true):
+            String(localized: .wifiEditTitle)
         case (.unknown, _):
             ""
         }
@@ -55,6 +62,7 @@ final class ItemEditorPresenter {
     var loginFormPresenter: LoginEditorFormPresenter?
     var secureNotePresenter: SecureNoteEditorFormPresenter?
     var paymentCardPresenter: PaymentCardEditorFormPresenter?
+    var wifiPresenter: WiFiEditorFormPresenter?
     
     let allowChangeContentType: Bool
     
@@ -82,6 +90,8 @@ final class ItemEditorPresenter {
         case .secureNote(let presenter):
             return presenter
         case .paymentCard(let presenter):
+            return presenter
+        case .wifi(let presenter):
             return presenter
         }
     }
@@ -133,6 +143,16 @@ final class ItemEditorPresenter {
             )
             self.paymentCardPresenter = formPresenter
             self.form = .paymentCard(formPresenter)
+
+        case .wifi:
+            let formPresenter = WiFiEditorFormPresenter(
+                interactor: interactor,
+                flowController: flowController,
+                initialData: initalData?.asWiFi,
+                changeRequest: interactor.changeRequest as? WiFiDataChangeRequest
+            )
+            self.wifiPresenter = formPresenter
+            self.form = .wifi(formPresenter)
 
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")
@@ -242,6 +262,18 @@ private extension ItemEditorPresenter {
                 }
             }()
             return .paymentCard(presenter)
+
+        case .wifi:
+            let presenter = {
+                if let wifiPresenter {
+                    return wifiPresenter
+                } else {
+                    let presenter = WiFiEditorFormPresenter(interactor: interactor, flowController: flowController)
+                    wifiPresenter = presenter
+                    return presenter
+                }
+            }()
+            return .wifi(presenter)
 
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")

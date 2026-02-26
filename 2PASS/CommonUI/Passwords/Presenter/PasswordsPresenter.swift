@@ -207,6 +207,10 @@ extension PasswordsPresenter {
 
         case .copy(.paymentCardSecurityCode):
             copyPaymentCardSecurityCode(id: itemID)
+        case .copy(.wifiSSID):
+            copyWiFiSSID(id: itemID)
+        case .copy(.wifiPassword):
+            copyWiFiPassword(id: itemID)
 
         case .goToURI: if let selectedURI {
             flowController.toURI(selectedURI)
@@ -237,6 +241,8 @@ extension PasswordsPresenter {
                 copySecureNote(id: itemData.id)
             case .paymentCard:
                 copyPaymentCardNumber(id: itemData.id)
+            case .wifi:
+                copyWiFiPassword(id: itemData.id)
             case .raw:
                 break
             }
@@ -388,6 +394,28 @@ private extension PasswordsPresenter {
         }
     }
 
+    func copyWiFiSSID(id: ItemID) {
+        if interactor.copyWiFiSSID(id) {
+            toastPresenter.presentCopied()
+        } else {
+            toastPresenter.present(
+                .commonGeneralErrorTryAgain,
+                style: .failure
+            )
+        }
+    }
+
+    func copyWiFiPassword(id: ItemID) {
+        if interactor.copyWiFiPassword(id) {
+            toastPresenter.presentPasswordCopied()
+        } else {
+            toastPresenter.present(
+                .passwordErrorCopyPassword,
+                style: .failure
+            )
+        }
+    }
+
     func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
@@ -523,6 +551,22 @@ private extension PasswordsPresenter {
                     .edit,
                     paymentCardItem.content.cardNumber != nil ? .copy(.paymentCardNumber) : nil,
                     paymentCardItem.content.securityCode != nil ? .copy(.paymentCardSecurityCode) : nil,
+                    isAutoFillExtension ? nil : .moveToTrash
+                ]
+                .compactMap { $0 }
+            )
+        case .wifi(let wifiItem):
+            return ItemCellData(
+                itemID: wifiItem.id,
+                name: wifiItem.name,
+                description: wifiItem.content.ssid,
+                iconType: .contentType(.wifi),
+                tagColors: tagColors(for: itemData),
+                actions: [
+                    .view,
+                    .edit,
+                    wifiItem.content.ssid?.isEmpty == false ? .copy(.wifiSSID) : nil,
+                    wifiItem.content.password != nil ? .copy(.wifiPassword) : nil,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

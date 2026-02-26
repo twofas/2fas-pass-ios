@@ -6,6 +6,12 @@
 
 import SwiftUI
 
+extension LabelStyle where Self == ButtonLabelStyle {
+    static var button: ButtonLabelStyle {
+        .init()
+    }
+}
+
 extension Button where Label == SwiftUI.Label<Text, SymbolButtonLabel> {
     
     public init(_ text: Text, symbol: Image, action: @MainActor @escaping () -> Void) {

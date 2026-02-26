@@ -11,7 +11,6 @@ import SwiftUIIntrospect
 private struct Constants {
     static let iconSize: CGFloat = 60
     static let iconPlaceholderCornerRadius: CGFloat = 16
-    static let minHeightNotes: CGFloat = 80
     static let inputAccessoryHeight: CGFloat = 44
     static let inputAccessoryHeightLiquidGlass: CGFloat = 64
     static let matchingRuleSheetHeight: CGFloat = 420
@@ -227,25 +226,14 @@ struct LoginEditorFormView: View {
         }
     }
 
-    @ViewBuilder
     private var notesSection: some View {
-        Section {
-            TextField("", text: $presenter.notes, axis: .vertical)
-                .focused($focusField, equals: .notes)
-                .autocorrectionDisabled(false)
-                .textInputAutocapitalization(.sentences)
-                .multilineTextAlignment(.leading)
-                .limitText($presenter.notes, to: Config.maxNotesLength)
-                .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
-                .contentShape(Rectangle())
-                .formFieldChanged(presenter.notesChanged)
-        } header: {
-            Text(.loginNotesLabel)
-        }
-        .onTapGesture {
-            focusField = .notes
-        }
-        .listSectionSpacing(Spacing.l)
+        ItemEditorNotesSection(
+            notes: $presenter.notes,
+            notesChanged: presenter.notesChanged,
+            focusField: $focusField,
+            focusedField: .notes,
+            header: .loginNotesLabel
+        )
     }
 
     private func setupPasswordTextField(_ textField: UITextField) {

@@ -5,6 +5,11 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
+
+private struct Constants {
+    static let cardMaxWidth = 320.0
+}
 
 struct PaymentCardDetailFormView: View {
 
@@ -21,7 +26,16 @@ struct PaymentCardDetailFormView: View {
     private var selectedField: SelectedField?
 
     var body: some View {
-        Group {
+        CardView(
+            issuer: presenter.paymentCardIssuer,
+            name: presenter.name,
+            cardNumberMask: presenter.cardNumberMask
+        )
+        .frame(maxWidth: Constants.cardMaxWidth)
+        .padding(.horizontal, Spacing.xll3)
+        .padding(.bottom, Spacing.s)
+        
+        ItemDetailSection {
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(
                     key: .cardHolderLabel,
@@ -39,7 +53,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             if let cardNumber = presenter.cardNumber {
                 ItemDetailFormActionsRow(
                     key: .cardNumberLabel,
@@ -66,7 +80,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             if let expirationDate = presenter.expirationDate {
                 ItemDetailFormActionsRow(
                     key: .cardExpirationDateLabel,
@@ -84,7 +98,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             if let securityCode = presenter.securityCode {
                 ItemDetailFormActionsRow(
                     key: .cardSecurityCodeLabel,
@@ -109,7 +123,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
             ItemDetailFormNotes(presenter.notes)
         }
