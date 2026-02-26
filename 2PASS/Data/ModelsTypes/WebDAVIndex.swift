@@ -28,7 +28,7 @@ public struct WebDAVIndexEntry: Codable, Identifiable, Equatable, Hashable {
     public let vaultId: String
     public let vaultCreatedAt: Int
     public var vaultUpdatedAt: Int
-    public let deviceName: String
+    public var deviceName: String
     public let deviceId: UUID
     public let schemaVersion: Int
     
