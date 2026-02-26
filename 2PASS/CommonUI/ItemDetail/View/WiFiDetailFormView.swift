@@ -18,6 +18,14 @@ struct WiFiDetailFormView: View {
 
     @State
     private var selectedField: SelectedField?
+    
+    private var isTextToInsertMode: Bool {
+        if #available(iOS 18.0, *) {
+            presenter.autoFillEnvironment?.isTextToInsert == true
+        } else {
+            false
+        }
+    }
 
     var body: some View {
         ItemDetailSection {
@@ -37,6 +45,7 @@ struct WiFiDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .ssid)
                 .onChange(of: selectedField == .ssid) { _, newValue in
                     if newValue {
@@ -62,6 +71,7 @@ struct WiFiDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .password)
                 .onChange(of: selectedField == .password) { _, newValue in
                     if newValue {

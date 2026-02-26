@@ -24,6 +24,14 @@ struct PaymentCardDetailFormView: View {
 
     @State
     private var selectedField: SelectedField?
+    
+    private var isTextToInsertMode: Bool {
+        if #available(iOS 18.0, *) {
+            presenter.autoFillEnvironment?.isTextToInsert == true
+        } else {
+            false
+        }
+    }
 
     var body: some View {
         CardView(
@@ -46,6 +54,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .cardHolder)
                 .onChange(of: selectedField == .cardHolder) { _, newValue in
                     if newValue {
@@ -73,6 +82,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .cardNumber)
                 .onChange(of: selectedField == .cardNumber) { _, newValue in
                     if newValue {
@@ -91,6 +101,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .expirationDate)
                 .onChange(of: selectedField == .expirationDate) { _, newValue in
                     if newValue {
@@ -116,6 +127,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .securityCode)
                 .onChange(of: selectedField == .securityCode) { _, newValue in
                     if newValue {

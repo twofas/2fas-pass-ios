@@ -14,6 +14,7 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
     let actions: [UIAction]
 
     private var lineLimit: Int?
+    private var showsValueAsButton = false
     private var onSelect: (() -> Void)?
     
     @State
@@ -51,10 +52,21 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
         instance.lineLimit = limit
         return instance
     }
+
+    func showValueAsButton(_ showAsButton: Bool = true) -> Self {
+        var instance = self
+        instance.showsValueAsButton = showAsButton
+        return instance
+    }
     
     private var content: some View {
         LabeledContent {
-            value
+            if showsValueAsButton {
+                value
+                    .foregroundStyle(.accent)
+            } else {
+                value
+            }
         } label: {
             Text(key)
         }
