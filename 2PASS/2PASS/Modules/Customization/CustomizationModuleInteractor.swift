@@ -15,11 +15,13 @@ protocol CustomizationModuleInteracting: AnyObject {
 }
 
 final class CustomizationModuleInteractor: CustomizationModuleInteracting {
-    
+
     private let configInteractor: ConfigInteracting
-    
-    init(configInteractor: ConfigInteracting) {
+    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+
+    init(configInteractor: ConfigInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting) {
         self.configInteractor = configInteractor
+        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
     
     var deviceName: String {
@@ -28,6 +30,7 @@ final class CustomizationModuleInteractor: CustomizationModuleInteracting {
 
     func setDeviceName(_ name: String) {
         configInteractor.setDeviceName(name)
+        syncChangeTriggerInteractor.trigger()
     }
 
     var defaultPassswordListAction: PasswordListAction {
