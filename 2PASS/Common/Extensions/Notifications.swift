@@ -19,6 +19,7 @@ public extension Notification.Name {
     static let presentSyncPremiumNeededScreen = Notification.Name("presentSyncPremiumNeededScreen")
     static let didImportItems = Notification.Name("didImportItems")
     static let showUpdateAppPrompt = Notification.Name("showUpdateAppPrompt")
+    static let screenCaptureAllowanceDidChange = Notification.Name("screenCaptureAllowanceDidChange")
 }
 
 public extension Notification {

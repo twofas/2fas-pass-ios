@@ -13,6 +13,8 @@ final class RootViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor(resource: .mainBackground)
         applyAppearance()
+        observeSceneCaptureState()
+        updateCaptureState()
     }
     
     override var shouldAutorotate: Bool { UIDevice.isiPad }
@@ -26,5 +28,15 @@ final class RootViewController: UIViewController {
         
         UIPageControl.appearance().currentPageIndicatorTintColor = .neutral950
         UIPageControl.appearance().pageIndicatorTintColor = .neutral200
+    }
+
+    private func observeSceneCaptureState() {
+        registerForTraitChanges([UITraitSceneCaptureState.self]) { (rootViewController: Self, _) in
+            rootViewController.updateCaptureState()
+        }
+    }
+
+    private func updateCaptureState() {
+        presenter.sceneCaptureStateDidChange(traitCollection.sceneCaptureState)
     }
 }

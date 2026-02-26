@@ -9,6 +9,8 @@ import Data
 import Common
 
 protocol AutoFillModuleInteracting: AnyObject {
+    var isScreenCaptureAllowed: Bool { get }
+    var screenCaptureAllowedUntil: Date? { get }
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
     func credential(for itemID: ItemID) -> ASPasswordCredential?
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
@@ -54,6 +56,14 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
+    }
+
+    var isScreenCaptureAllowed: Bool {
+        configInteractor.isScreenCaptureAllowed
+    }
+
+    var screenCaptureAllowedUntil: Date? {
+        configInteractor.screenCaptureAllowedUntil
     }
 
     func initialize() {

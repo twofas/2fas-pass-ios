@@ -14,7 +14,11 @@ protocol AppSecurityModuleInteracting: AnyObject {
     var isBiometryAvailable: Bool { get }
     var limitOfFailedAttempts: AppLockAttempts { get set }
     var defaultSecurityTier: ItemProtectionLevel { get }
-    
+
+    var isScreenCaptureEnabled: Bool { get }
+    func enableScreenCapture()
+    func disableScreenCapture()
+
     func loginUsingBiometryIfAvailable() async -> Bool
     func verifyUsingBiometryIfAvailable() async -> Bool
     func setBiometryEnabled(_ enabled: Bool, result: @escaping (Bool) -> Void)
@@ -51,6 +55,16 @@ final class AppSecurityModuleInteractor {
 extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
     var isBiometryEnabled: Bool { biometryInteractor.isBiometryEnabled }
     var isBiometryAvailable: Bool { biometryInteractor.isBiometryAvailable }
+
+    var isScreenCaptureEnabled: Bool { configInteractor.isScreenCaptureAllowed }
+
+    func enableScreenCapture() {
+        configInteractor.enableScreenCaptureAllowance()
+    }
+
+    func disableScreenCapture() {
+        configInteractor.clearScreenCaptureAllowed()
+    }
     
     var defaultSecurityTier: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel

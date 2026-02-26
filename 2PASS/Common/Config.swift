@@ -64,6 +64,9 @@ public enum Config {
     // AutoFill
     public static let autoFillExcludeProtectionLevels: Set<ItemProtectionLevel> = [.topSecret]
     public static let allowsMatchRulesForSuggestions: Set<PasswordURI.Match> = [.domain]
+
+    // Screen Recording
+    public static let screenRecordingAllowanceDuration: Duration = .seconds(5 * 60)
     
     public static func iconURL(forDomain domain: String) -> URL? {
         URL(string: "https://icon.2fas.com/\(domain)/favicon.png")

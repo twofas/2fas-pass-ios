@@ -44,6 +44,7 @@ final class UserDefaultsDataSourceImpl {
         case lastKnownAppVersion
         case shouldShowQuickSetup
         case lastAppUpdatePromptDate
+        case screenCaptureAllowedUntil
     }
     
     private let userDefaults = UserDefaults()
@@ -465,5 +466,21 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearLastAppUpdatePromptDate() {
         userDefaults.set(nil, forKey: Keys.lastAppUpdatePromptDate.rawValue)
         userDefaults.synchronize()
+    }
+
+    var screenCaptureAllowedUntil: Date? {
+        guard sharedDefaults.object(forKey: Keys.screenCaptureAllowedUntil.rawValue) != nil else { return nil }
+        let value = sharedDefaults.double(forKey: Keys.screenCaptureAllowedUntil.rawValue)
+        return Date(timeIntervalSinceReferenceDate: value)
+    }
+
+    func setScreenCaptureAllowedUntil(_ date: Date) {
+        sharedDefaults.set(date.timeIntervalSinceReferenceDate, forKey: Keys.screenCaptureAllowedUntil.rawValue)
+        sharedDefaults.synchronize()
+    }
+
+    func clearScreenCaptureAllowedUntil() {
+        sharedDefaults.set(nil, forKey: Keys.screenCaptureAllowedUntil.rawValue)
+        sharedDefaults.synchronize()
     }
 }
