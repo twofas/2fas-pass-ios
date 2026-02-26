@@ -2280,7 +2280,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Przypisz"
+            "value" : "Potwierdź"
           }
         }
       }
@@ -18398,6 +18398,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dodaj Wi-Fi"
+          }
+        }
+      }
+    },
+    "wifi_connect_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect with the network"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Połącz z siecią"
           }
         }
       }
