@@ -245,7 +245,7 @@ extension MergeHandler {
                 return
             }
             
-            if ConstStorage.passwordWasChanged || cloudVault.deviceID != deviceID {
+            if ConstStorage.passwordWasChanged || cloudVault.deviceID != deviceID || deviceNameChanged(in: cloudVault) {
                 if cloudVault.deviceID != deviceID {
                     if isMultiDeviceSyncEnabled {
                         cloudVault.update(deviceID: deviceID, updatedAt: date)
@@ -683,6 +683,15 @@ private extension MergeHandler {
     
     private func updateExistingCloudVault(_ cloudVault: VaultCloudData) -> VaultCloudData? {
         encryptionHandler.updateCloudVault(cloudVault)
+    }
+
+    private func deviceNameChanged(in cloudVault: VaultCloudData) -> Bool {
+        guard let cloudNames = try? jsonDecoder.decode([DeviceName].self, from: cloudVault.deviceNames),
+              let cloudEntry = cloudNames.first(where: { $0.deviceID == deviceID })
+        else {
+            return true
+        }
+        return cloudEntry.deviceName != encryptionHandler.currentDeviceName
     }
 }
 

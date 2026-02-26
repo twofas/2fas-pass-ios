@@ -15,6 +15,7 @@ public enum EncryptionVerificationResult {
 
 public protocol EncryptionHandler: AnyObject {
     var currentCloudSchemaVersion: Int { get }
+    var currentDeviceName: String { get }
     func verifyEncryption(_ cloudData: VaultCloudData) -> EncryptionVerificationResult
     func localEncryptedItemToCloudEncryptedData(_ localEncryptedItem: ItemEncryptedData) -> ItemEncryptedData?
     func cloudEncryptedItemToLocalEncryptedItem(_ cloudEncryptedItem: ItemEncryptedData) -> ItemEncryptedData?
