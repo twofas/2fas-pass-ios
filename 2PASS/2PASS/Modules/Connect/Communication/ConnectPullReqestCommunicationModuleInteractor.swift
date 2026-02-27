@@ -39,6 +39,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     let appNotificationsInteractor: AppNotificationsInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
     let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+    let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
 
     init(
         appNotification: AppNotification,
@@ -49,7 +50,8 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         itemsInteractor: ItemsInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         paymentStatusInteractor: PaymentStatusInteracting,
-        paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
+        syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     ) {
         self.appNotification = appNotification
         self.connectInteractor = connectInteractor
@@ -60,6 +62,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         self.appNotificationsInteractor = appNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
+        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
     
     var canAddItem: Bool {
@@ -108,6 +111,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     func deleteItem(for itemID: ItemID) {
         itemsInteractor.markAsTrashed(for: itemID)
         itemsInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
     }
     
     func deleteAppNotification() async throws {

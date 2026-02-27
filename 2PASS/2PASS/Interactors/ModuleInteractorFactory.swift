@@ -323,7 +323,8 @@ extension ModuleInteractorFactory {
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
-            paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor()
+            paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
+            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }
     
