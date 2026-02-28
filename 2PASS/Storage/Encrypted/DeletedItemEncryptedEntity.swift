@@ -90,6 +90,22 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
         return list
     }
     
+    @nonobjc static func listItems(
+        on context: NSManagedObjectContext,
+        itemIDs: Set<DeletedItemID>
+    ) -> [DeletedItemEncryptedEntity] {
+        guard !itemIDs.isEmpty else { return [] }
+        let fetchRequest = DeletedItemEncryptedEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "itemID IN %@", itemIDs as CVarArg)
+
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            Log("DeletedItemEncryptedEntity listItems by IDs error: \(error.localizedDescription)", module: .storage)
+            return []
+        }
+    }
+
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
         itemID: DeletedItemID

@@ -77,9 +77,7 @@ extension SyncInteractor: SyncInteracting {
             tagInteractor.externalDeleteTag(tagID: $0.tagID)
         })
         
-        addedDeleted.forEach({
-            deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
-        })
+        deletedItemsInteractor.createDeletedItems(addedDeleted)
         
         modifiedDeleted.forEach({
             deletedItemsInteractor.updateDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)

@@ -249,6 +249,11 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         DeletedItemEncryptedEntity.getEntity(on: context, itemID: id)?.toData
     }
 
+    public func listDeletedItems(ids: Set<DeletedItemID>) -> [DeletedItemData] {
+        DeletedItemEncryptedEntity.listItems(on: context, itemIDs: ids)
+            .map(\.toData)
+    }
+
     public func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData] {
         DeletedItemEncryptedEntity.listItems(on: context, vaultID: vaultID, limit: limit)
             .map({ $0.toData })

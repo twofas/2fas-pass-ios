@@ -233,13 +233,7 @@ extension TagInteractor: TagInteracting {
         mainRepository.deleteTag(tagID: tagID)
         mainRepository.deleteEncryptedTag(tagID: tagID)
 
-        if let existingDeletedItem = deletedItemsInteractor.deletedItem(id: tagID) {
-            if currentDate > existingDeletedItem.deletedAt {
-                deletedItemsInteractor.updateDeletedItem(id: tagID, kind: .tag, deletedAt: currentDate)
-            }
-        } else {
-            deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: currentDate)
-        }
+        deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: currentDate)
     }
     
     func externalDeleteTag(tagID: ItemTagID) {
