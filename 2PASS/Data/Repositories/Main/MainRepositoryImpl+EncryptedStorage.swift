@@ -248,6 +248,10 @@ extension MainRepositoryImpl {
         encryptedStorage.deletedItem(id: id)
     }
 
+    func listDeletedItems(ids: Set<DeletedItemID>) -> [DeletedItemData] {
+        encryptedStorage.listDeletedItems(ids: ids)
+    }
+
     func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData] {
         encryptedStorage.listDeletedItems(in: vaultID, limit: limit)
     }

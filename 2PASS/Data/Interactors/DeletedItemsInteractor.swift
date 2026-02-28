@@ -9,8 +9,8 @@ import Common
 
 public protocol DeletedItemsInteracting: AnyObject {
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
+    func createDeletedItems(_ items: [DeletedItemData])
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
-    func deletedItem(id: DeletedItemID) -> DeletedItemData?
     func listDeletedItems() -> [DeletedItemData]
     func deleteDeletedItem(id: DeletedItemID)
 }
@@ -29,11 +29,38 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
             Log("DeletedItemsInteractor: Error while getting vaultID for Deleted Password creation", module: .interactor, severity: .error)
             return
         }
-        mainRepository.createDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
+        if let existing = mainRepository.deletedItem(id: id) {
+            if deletedAt > existing.deletedAt {
+                mainRepository.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
+            }
+        } else {
+            mainRepository.createDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
+        }
     }
-    
-    func deletedItem(id: DeletedItemID) -> DeletedItemData? {
-        mainRepository.deletedItem(id: id)
+
+    func createDeletedItems(_ items: [DeletedItemData]) {
+        guard !items.isEmpty else { return }
+        guard let vaultID = mainRepository.selectedVault?.vaultID else {
+            Log("DeletedItemsInteractor: Error while getting vaultID for batch Deleted Password creation", module: .interactor, severity: .error)
+            return
+        }
+        let ids = Set(items.map(\.itemID))
+        let existingByID = mainRepository.listDeletedItems(ids: ids)
+            .reduce(into: [DeletedItemID: DeletedItemData]()) { $0[$1.itemID] = $1 }
+
+        for item in items {
+            if let existing = existingByID[item.itemID] {
+                if item.deletedAt > existing.deletedAt {
+                    mainRepository.updateDeletedItem(
+                        id: item.itemID, kind: item.kind, deletedAt: item.deletedAt, in: vaultID
+                    )
+                }
+            } else {
+                mainRepository.createDeletedItem(
+                    id: item.itemID, kind: item.kind, deletedAt: item.deletedAt, in: vaultID
+                )
+            }
+        }
     }
 
     func listDeletedItems() -> [DeletedItemData] {
