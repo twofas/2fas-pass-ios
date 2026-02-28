@@ -46,6 +46,9 @@ struct ManageTagsView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .task {
+            await presenter.observeSync()
+        }
         .router(router: ManageTagsRouter(), destination: $presenter.destination)
     }
 }
