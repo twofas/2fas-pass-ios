@@ -244,6 +244,11 @@ extension MainRepositoryImpl {
         encryptedStorage.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
     }
 
+    func updateDeletedItems(_ items: [DeletedItemData]) {
+        Log("Bulk updating \(items.count) Deleted Items", module: .mainRepository)
+        encryptedStorage.updateDeletedItems(items)
+    }
+
     func deletedItem(id: DeletedItemID) -> DeletedItemData? {
         encryptedStorage.deletedItem(id: id)
     }

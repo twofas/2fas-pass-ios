@@ -106,6 +106,26 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
         }
     }
 
+    @nonobjc static func bulkUpdate(
+        on context: NSManagedObjectContext,
+        items: [DeletedItemData]
+    ) {
+        guard !items.isEmpty else { return }
+        let ids = Set(items.map(\.itemID))
+        let entities = listItems(on: context, itemIDs: ids)
+        let entitiesByID = Dictionary(entities.map { ($0.itemID, $0) }, uniquingKeysWith: { first, _ in first })
+
+        for item in items {
+            guard let entity = entitiesByID[item.itemID] else {
+                Log("Can't find Deleted Password entity for itemID: \(item.itemID)", module: .storage, severity: .error)
+                continue
+            }
+            entity.kind = item.kind.rawValue
+            entity.deletedAt = item.deletedAt
+            entity.vaultID = item.vaultID
+        }
+    }
+
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
         itemID: DeletedItemID
