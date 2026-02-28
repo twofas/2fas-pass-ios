@@ -79,9 +79,7 @@ extension SyncInteractor: SyncInteracting {
         
         deletedItemsInteractor.createDeletedItems(addedDeleted)
         
-        modifiedDeleted.forEach({
-            deletedItemsInteractor.updateDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
-        })
+        deletedItemsInteractor.updateDeletedItems(modifiedDeleted)
         
         removedDeleted.forEach { deleted in
             deletedItemsInteractor.deleteDeletedItem(id: deleted.itemID)
