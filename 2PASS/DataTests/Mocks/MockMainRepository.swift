@@ -1991,6 +1991,10 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func updateDeletedItems(_ items: [DeletedItemData]) {
+        recordCall()
+    }
+
     private var stubbedDeletedItem: (DeletedItemID) -> DeletedItemData? = { _ in nil }
     func deletedItem(id: DeletedItemID) -> DeletedItemData? {
         recordCall()

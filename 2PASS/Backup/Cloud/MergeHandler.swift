@@ -105,8 +105,8 @@ extension MergeHandler {
     
     func applyChanges() -> Bool {
         // local
-        deletedItemAdd.forEach(localStorage.createDeletedItem)
-        deletedItemUpdate.forEach(localStorage.updateDeletedItem)
+        localStorage.createDeletedItems(deletedItemAdd)
+        localStorage.updateDeletedItems(deletedItemUpdate)
         
         var moveFromTrash: [ItemID] = []
         let trashedItems = localStorage.listTrashedItemsIDs()

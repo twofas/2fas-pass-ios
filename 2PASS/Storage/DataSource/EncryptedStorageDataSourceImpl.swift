@@ -245,6 +245,10 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         )
     }
 
+    public func updateDeletedItems(_ items: [DeletedItemData]) {
+        DeletedItemEncryptedEntity.bulkUpdate(on: context, items: items)
+    }
+
     public func deletedItem(id: DeletedItemID) -> DeletedItemData? {
         DeletedItemEncryptedEntity.getEntity(on: context, itemID: id)?.toData
     }

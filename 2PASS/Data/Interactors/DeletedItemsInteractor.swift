@@ -11,6 +11,7 @@ public protocol DeletedItemsInteracting: AnyObject {
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
     func createDeletedItems(_ items: [DeletedItemData])
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
+    func updateDeletedItems(_ items: [DeletedItemData])
     func listDeletedItems() -> [DeletedItemData]
     func deleteDeletedItem(id: DeletedItemID)
 }
@@ -81,5 +82,10 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
             return
         }
         mainRepository.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
+    }
+
+    func updateDeletedItems(_ items: [DeletedItemData]) {
+        guard !items.isEmpty else { return }
+        mainRepository.updateDeletedItems(items)
     }
 }
