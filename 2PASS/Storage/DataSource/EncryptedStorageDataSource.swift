@@ -79,9 +79,11 @@ public protocol EncryptedStorageDataSource: AnyObject {
     // MARK: Deleted Items
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
+    func deletedItem(id: DeletedItemID) -> DeletedItemData?
     func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData]
     func deleteDeletedItem(id: DeletedItemID)
-    
+    func removeDuplicatedDeletedItems()
+
     // MARK: Web Browsers
     func createEncryptedWebBrowser(_ data: WebBrowserEncryptedData)
     func updateEncryptedWebBrowser(_ data: WebBrowserEncryptedData)

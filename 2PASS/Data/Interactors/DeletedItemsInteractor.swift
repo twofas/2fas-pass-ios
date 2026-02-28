@@ -10,6 +10,7 @@ import Common
 public protocol DeletedItemsInteracting: AnyObject {
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date)
+    func deletedItem(id: DeletedItemID) -> DeletedItemData?
     func listDeletedItems() -> [DeletedItemData]
     func deleteDeletedItem(id: DeletedItemID)
 }
@@ -31,6 +32,10 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
         mainRepository.createDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
     }
     
+    func deletedItem(id: DeletedItemID) -> DeletedItemData? {
+        mainRepository.deletedItem(id: id)
+    }
+
     func listDeletedItems() -> [DeletedItemData] {
         guard let vaultID = mainRepository.selectedVault?.vaultID else {
             Log("DeletedItemsInteractor: Error while getting vaultID for listing Deleted Password", module: .interactor, severity: .error)

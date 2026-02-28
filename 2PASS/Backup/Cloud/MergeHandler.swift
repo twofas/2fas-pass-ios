@@ -332,7 +332,13 @@ private extension MergeHandler {
         vaultID: VaultID
     ) {
         deleted = localDeletedItems.reduce(into: [DeletedItemID: Deleted]()) { result, deletedItem in
-            result[deletedItem.itemID] = Deleted.local(deletedItem)
+            if let existing = result[deletedItem.itemID] {
+                if deletedItem.deletedAt > existing.deletedAt {
+                    result[deletedItem.itemID] = Deleted.local(deletedItem)
+                }
+            } else {
+                result[deletedItem.itemID] = Deleted.local(deletedItem)
+            }
         }
         
         cloudDeletedItems.filter({ $0.deletedItem.vaultID == vaultID }).forEach { cloud in

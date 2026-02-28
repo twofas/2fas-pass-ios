@@ -1991,6 +1991,18 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    private var stubbedDeletedItem: (DeletedItemID) -> DeletedItemData? = { _ in nil }
+    func deletedItem(id: DeletedItemID) -> DeletedItemData? {
+        recordCall()
+        return stubbedDeletedItem(id)
+    }
+
+    @discardableResult
+    func withDeletedItem(_ handler: @escaping (DeletedItemID) -> DeletedItemData?) -> Self {
+        stubbedDeletedItem = handler
+        return self
+    }
+
     private var stubbedListDeletedItems: (VaultID, Int?) -> [DeletedItemData] = { _, _ in [] }
     func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData] {
         recordCall()
@@ -2004,6 +2016,10 @@ final class MockMainRepository: MainRepository {
     }
 
     func deleteDeletedItem(id: DeletedItemID) {
+        recordCall()
+    }
+
+    func removeDuplicatedDeletedItems() {
         recordCall()
     }
 
