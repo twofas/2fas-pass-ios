@@ -126,6 +126,34 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
         Log("Deleting entity of type: \(entity)", module: .storage)
         context.delete(entity)
     }
+
+    @nonobjc static func removeDuplicates(on context: NSManagedObjectContext) {
+        let fetchRequest = DeletedItemEncryptedEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [
+            NSSortDescriptor(
+                key: #keyPath(DeletedItemEncryptedEntity.deletedAt),
+                ascending: false,
+                selector: #selector(NSDate.compare)
+            )
+        ]
+
+        let allItems: [DeletedItemEncryptedEntity]
+        do {
+            allItems = try context.fetch(fetchRequest)
+        } catch {
+            Log("DeletedItemEncryptedEntity removeDuplicates fetch error: \(error.localizedDescription)", module: .storage)
+            return
+        }
+
+        var seenIDs: Set<DeletedItemID> = []
+        for item in allItems {
+            if seenIDs.contains(item.itemID) {
+                delete(on: context, entity: item)
+            } else {
+                seenIDs.insert(item.itemID)
+            }
+        }
+    }
 }
 
 extension DeletedItemEncryptedEntity {
