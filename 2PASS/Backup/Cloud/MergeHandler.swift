@@ -173,10 +173,13 @@ extension MergeHandler {
     func clear() {
         deleted = [:]
         items = [:]
+        tags = [:]
         deletedForRemoval = []
         itemsForRemoval = []
+        tagForRemoval = []
         recordsToCreateUpdate = []
         recordIDsForRemoval = []
+        recordItemIDsForDeletition = []
         deletedItemAdd = []
         deletedItemUpdate = []
         itemsAdd = []
