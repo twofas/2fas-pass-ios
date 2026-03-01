@@ -103,7 +103,7 @@ extension MergeHandler {
         (createUpdate: recordsToCreateUpdate, delete: recordIDsForRemoval)
     }
     
-    func applyChanges() -> Bool {
+    func applyChanges(savedMetadata: [String: Data] = [:]) -> Bool {
         // local
         localStorage.createDeletedItems(deletedItemAdd)
         localStorage.updateDeletedItems(deletedItemUpdate)
@@ -143,20 +143,40 @@ extension MergeHandler {
         
         cloudStorageDeletedItemAdd
             .forEach {
+                let recordName = DeletedItemRecord.createRecordName(for: $0.deletedItem.itemID)
+                let metadata = savedMetadata[recordName] ?? $0.metadata
                 cloudCacheStorage
-                    .createDeletedItem(.init(deletedItem: $0.deletedItem, metadata: $0.metadata))
+                    .createDeletedItem(.init(deletedItem: $0.deletedItem, metadata: metadata))
             }
         cloudStorageDeletedItemUpdate
             .forEach {
+                let recordName = DeletedItemRecord.createRecordName(for: $0.deletedItem.itemID)
+                let metadata = savedMetadata[recordName] ?? $0.metadata
                 cloudCacheStorage
-                    .updateDeletedItem(.init(deletedItem: $0.deletedItem, metadata: $0.metadata))
+                    .updateDeletedItem(.init(deletedItem: $0.deletedItem, metadata: metadata))
             }
         
-        cloudStorageItemAdd.forEach { cloudCacheStorage.createItem(item: $0.item, metadata: $0.metadata) }
-        cloudStorageItemUpdate.forEach { cloudCacheStorage.updateItem(item: $0.item, metadata: $0.metadata) }
+        cloudStorageItemAdd.forEach {
+            let recordName = ItemRecord.createRecordName(for: $0.item.itemID)
+            let metadata = savedMetadata[recordName] ?? $0.metadata
+            cloudCacheStorage.createItem(item: $0.item, metadata: metadata)
+        }
+        cloudStorageItemUpdate.forEach {
+            let recordName = ItemRecord.createRecordName(for: $0.item.itemID)
+            let metadata = savedMetadata[recordName] ?? $0.metadata
+            cloudCacheStorage.updateItem(item: $0.item, metadata: metadata)
+        }
         
-        cloudStorageTagAdd.forEach { cloudCacheStorage.createTagItem(.init(tagItem: $0.tag, metadata: $0.metadata)) }
-        cloudStorageTagUpdate.forEach { cloudCacheStorage.updateTagItem(.init(tagItem: $0.tag, metadata: $0.metadata)) }
+        cloudStorageTagAdd.forEach {
+            let recordName = TagRecord.createRecordName(for: $0.tag.tagID)
+            let metadata = savedMetadata[recordName] ?? $0.metadata
+            cloudCacheStorage.createTagItem(.init(tagItem: $0.tag, metadata: metadata))
+        }
+        cloudStorageTagUpdate.forEach {
+            let recordName = TagRecord.createRecordName(for: $0.tag.tagID)
+            let metadata = savedMetadata[recordName] ?? $0.metadata
+            cloudCacheStorage.updateTagItem(.init(tagItem: $0.tag, metadata: metadata))
+        }
         
         cloudStorageDeletedIDsForDeletition.forEach(cloudCacheStorage.deleteDeletedItem)
         cloudStorageItemIDsForDeletition.forEach(cloudCacheStorage.deleteItem)

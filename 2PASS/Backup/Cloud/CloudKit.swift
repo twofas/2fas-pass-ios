@@ -44,6 +44,7 @@ final class CloudKit {
     private var deletedRecords: [DeletedItem] = []
     
     private var collectedActions: [CloudKitAction] = []
+    private var savedRecordsMetadata: [String: Data] = [:]
     
     private let syncTokenHandler = SyncTokenHandler()
     
@@ -56,6 +57,7 @@ final class CloudKit {
         Log("CloudKit - cloudSync()", module: .cloudSync)
         self.zoneID = zoneID
         collectedActions = []
+        savedRecordsMetadata = [:]
 
         DispatchQueue.global(qos: .utility).async {
             self.syncTokenHandler.prepare()
@@ -305,6 +307,7 @@ final class CloudKit {
                     module: .cloudSync,
                     save: false
                 )
+                self?.savedRecordsMetadata[recordID.recordName] = record.encodeSystemFields()
             case .failure(let error):
                 self?.savePartialOperationError(error)
                 Log(
@@ -335,10 +338,17 @@ final class CloudKit {
         syncTokenHandler.prepare()
         clearRecordChanges()
         collectedActions = []
+        savedRecordsMetadata = [:]
         operation?.cancel()
         operation = nil
     }
     
+    func consumeSavedRecordsMetadata() -> [String: Data] {
+        let metadata = savedRecordsMetadata
+        savedRecordsMetadata = [:]
+        return metadata
+    }
+
     // MARK: - ZONE
     
     private func zoneChanged(with zoneID: CKRecordZone.ID) {
