@@ -262,7 +262,7 @@ extension PasswordsPresenter {
 
         Task { @MainActor in
             if await flowController.toConfirmMultiselectDelete(selectedCount: itemIDs.count, source: source) {
-                itemIDs.forEach { interactor.moveToTrash($0) }
+                interactor.moveToTrash(itemIDs)
                 view?.exitEditingMode()
                 reload()
             }
