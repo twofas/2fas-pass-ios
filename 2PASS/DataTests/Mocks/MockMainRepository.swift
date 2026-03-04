@@ -1658,10 +1658,6 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    func updateItems(_ items: [RawItemData]) {
-        recordCall()
-    }
-
     func itemsBatchUpdate(_ items: [RawItemData]) {
         recordCall()
     }

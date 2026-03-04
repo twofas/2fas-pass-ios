@@ -14,7 +14,8 @@ public protocol AutoFillCredentialsInteracting: AnyObject {
     func replaceSuggestions(from passwordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
     func replaceSuggestions(for items: [LoginItemData]) async throws
     func removeSuggestions(for passwordData: LoginItemData) async throws
-    
+    func removeSuggestions(for loginData: [LoginItemData]) async throws
+
     func syncSuggestions() async throws
 }
 
@@ -101,6 +102,27 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         }
     }
     
+    func removeSuggestions(for loginData: [LoginItemData]) async throws {
+        let identities: [ASPasswordCredentialIdentity] = loginData.flatMap { item in
+            item.uris?.compactMap { uri -> ASPasswordCredentialIdentity? in
+                guard let uriNormalized = uriInteractor.normalize(uri.uri) else { return nil }
+                return ASPasswordCredentialIdentity(
+                    serviceIdentifier: .init(identifier: uriNormalized, type: .URL),
+                    user: item.username ?? "",
+                    recordIdentifier: item.id.uuidString
+                )
+            } ?? []
+        }
+        guard !identities.isEmpty else { return }
+        Log("Autofill - Start batch remove suggestions for \(loginData.count) items", module: .autofill)
+        do {
+            try await store.removeCredentialIdentities(identities as [any ASCredentialIdentity])
+            Log("Autofill - Batch remove suggestions completed", module: .autofill)
+        } catch {
+            Log("Autofill - Batch remove suggestions failure: \(error)", module: .autofill)
+        }
+    }
+
     func syncSuggestions() async throws { // TODO: Naive implementation. Should migrate to incremental updates.
         let isEnabled = await mainRepository.refreshAutoFillStatus()
         guard isEnabled else {

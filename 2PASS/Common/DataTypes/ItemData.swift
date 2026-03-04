@@ -276,6 +276,24 @@ extension _ItemData {
             content: content
         )
     }
+
+    public func update(trashedStatus: ItemTrashedStatus) -> Self {
+        _ItemData(
+            id: id,
+            vaultId: vaultId,
+            metadata: ItemMetadata(
+                creationDate: metadata.creationDate,
+                modificationDate: metadata.modificationDate,
+                protectionLevel: metadata.protectionLevel,
+                trashedStatus: trashedStatus,
+                tagIds: metadata.tagIds
+            ),
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
+        )
+    }
 }
 
 extension ItemData {
@@ -307,6 +325,21 @@ extension ItemData {
             return .wifi(data.update(modificationDate: modificationDate, tagIds: tagIds))
         case .raw(let data):
             return .raw(data.update(modificationDate: modificationDate, tagIds: tagIds))
+        }
+    }
+
+    public func update(trashedStatus: ItemTrashedStatus) -> Self {
+        switch self {
+        case .login(let data):
+            return .login(data.update(trashedStatus: trashedStatus))
+        case .secureNote(let data):
+            return .secureNote(data.update(trashedStatus: trashedStatus))
+        case .paymentCard(let data):
+            return .paymentCard(data.update(trashedStatus: trashedStatus))
+        case .wifi(let data):
+            return .wifi(data.update(trashedStatus: trashedStatus))
+        case .raw(let data):
+            return .raw(data.update(trashedStatus: trashedStatus))
         }
     }
 }

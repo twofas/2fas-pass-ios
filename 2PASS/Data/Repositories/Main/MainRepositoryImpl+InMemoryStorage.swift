@@ -332,23 +332,6 @@ extension MainRepositoryImpl {
         )
     }
 
-    func updateItems(_ items: [RawItemData]) {
-        items.forEach { item in
-            inMemoryStorage?.updateItem(
-                itemID: item.id,
-                vaultID: item.vaultId,
-                modificationDate: item.modificationDate,
-                trashedStatus: item.trashedStatus,
-                protectionLevel: item.protectionLevel,
-                tagIds: item.tagIds,
-                name: item.name,
-                contentType: item.contentType,
-                contentVersion: item.contentVersion,
-                content: item.content
-            )
-        }
-    }
-    
     func itemsBatchUpdate(_ items: [RawItemData]) {
         inMemoryStorage?.batchUpdateRencryptedItems(items, date: currentDate)
     }
