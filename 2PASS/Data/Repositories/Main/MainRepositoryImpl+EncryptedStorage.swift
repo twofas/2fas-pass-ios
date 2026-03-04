@@ -243,7 +243,20 @@ extension MainRepositoryImpl {
         Log("Updating Deleted Item for ItemID: \(id)", module: .mainRepository)
         encryptedStorage.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
     }
-    
+
+    func updateDeletedItems(_ items: [DeletedItemData]) {
+        Log("Bulk updating \(items.count) Deleted Items", module: .mainRepository)
+        encryptedStorage.updateDeletedItems(items)
+    }
+
+    func deletedItem(id: DeletedItemID) -> DeletedItemData? {
+        encryptedStorage.deletedItem(id: id)
+    }
+
+    func listDeletedItems(ids: Set<DeletedItemID>) -> [DeletedItemData] {
+        encryptedStorage.listDeletedItems(ids: ids)
+    }
+
     func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData] {
         encryptedStorage.listDeletedItems(in: vaultID, limit: limit)
     }
@@ -252,7 +265,12 @@ extension MainRepositoryImpl {
         Log("Deleting Deleted Item for ItemID: \(id)", module: .mainRepository)
         encryptedStorage.deleteDeletedItem(id: id)
     }
-    
+
+    func removeDuplicatedDeletedItems() {
+        Log("Removing duplicated deleted items", module: .mainRepository)
+        encryptedStorage.removeDuplicatedDeletedItems()
+    }
+
     // MARK: Tags
     
     func createEncryptedTag(_ tag: ItemTagEncryptedData) {

@@ -57,8 +57,8 @@ extension CacheHandler {
                 case .item:
                     let itemRecord = ItemRecord(record: record)
                     let id = itemRecord.itemID
-                        if let item = items.first(where: { $0.0 == id }) {
-                            if item.1 != itemRecord.modificationDate, let item = itemRecord.toRecordData(jsonDecoder: jsonDecoder) {
+                        if items.contains(where: { $0.0 == id }) {
+                            if let item = itemRecord.toRecordData(jsonDecoder: jsonDecoder) {
                                 cloudCacheStorage.updateItem(item: item.item, metadata: item.metadata)
                             }
                         } else {
@@ -69,22 +69,20 @@ extension CacheHandler {
                 case .deletedItem:
                     let deletedItemRecord = DeletedItemRecord(record: record)
                     let id = deletedItemRecord.itemID
-                    if let deleted = deletedItems.first(where: { $0.0 == id }) {
-                        if deleted.1 != deletedItemRecord.deletedAt {
-                            let deletedItem = deletedItemRecord.toRecordData()
-                            cloudCacheStorage
-                                .updateDeletedItem(
-                                    .init(
-                                        deletedItem: DeletedItemData(
-                                            itemID: deletedItem.deletedItem.itemID,
-                                            vaultID: deletedItem.deletedItem.vaultID,
-                                            kind: deletedItem.deletedItem.kind,
-                                            deletedAt: deletedItem.deletedItem.deletedAt
-                                        ),
-                                        metadata: deletedItem.metadata
-                                    )
+                    if deletedItems.contains(where: { $0.0 == id }) {
+                        let deletedItem = deletedItemRecord.toRecordData()
+                        cloudCacheStorage
+                            .updateDeletedItem(
+                                .init(
+                                    deletedItem: DeletedItemData(
+                                        itemID: deletedItem.deletedItem.itemID,
+                                        vaultID: deletedItem.deletedItem.vaultID,
+                                        kind: deletedItem.deletedItem.kind,
+                                        deletedAt: deletedItem.deletedItem.deletedAt
+                                    ),
+                                    metadata: deletedItem.metadata
                                 )
-                        }
+                            )
                     } else {
                         let deletedItem = deletedItemRecord.toRecordData()
                         cloudCacheStorage.createDeletedItem(
@@ -102,24 +100,22 @@ extension CacheHandler {
                 case .tag:
                     let tagRecord = TagRecord(record: record)
                     let tagID = tagRecord.tagID
-                    if let tag = tags.first(where: { $0.0 == tagID }) {
-                        if tag.1 != tagRecord.modificationDate {
-                            let tagItem = tagRecord.toRecordData()
-                            cloudCacheStorage
-                                .updateTagItem(
-                                    .init(
-                                        tagItem: .init(
-                                            tagID: tagItem.tagItem.tagID,
-                                            vaultID: tagItem.tagItem.vaultID,
-                                            name: tagItem.tagItem.name,
-                                            color: tagItem.tagItem.color,
-                                            position: tagItem.tagItem.position,
-                                            modificationDate: tagItem.tagItem.modificationDate
-                                        ),
-                                        metadata: tagItem.metadata
-                                    )
+                    if tags.contains(where: { $0.0 == tagID }) {
+                        let tagItem = tagRecord.toRecordData()
+                        cloudCacheStorage
+                            .updateTagItem(
+                                .init(
+                                    tagItem: .init(
+                                        tagID: tagItem.tagItem.tagID,
+                                        vaultID: tagItem.tagItem.vaultID,
+                                        name: tagItem.tagItem.name,
+                                        color: tagItem.tagItem.color,
+                                        position: tagItem.tagItem.position,
+                                        modificationDate: tagItem.tagItem.modificationDate
+                                    ),
+                                    metadata: tagItem.metadata
                                 )
-                        }
+                            )
                     } else {
                         let tagItem = tagRecord.toRecordData()
                         cloudCacheStorage.createTagItem(

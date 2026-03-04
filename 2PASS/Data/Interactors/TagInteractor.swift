@@ -232,7 +232,7 @@ extension TagInteractor: TagInteracting {
         
         mainRepository.deleteTag(tagID: tagID)
         mainRepository.deleteEncryptedTag(tagID: tagID)
-        
+
         deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: currentDate)
     }
     

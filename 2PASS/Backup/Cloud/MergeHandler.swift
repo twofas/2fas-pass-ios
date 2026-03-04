@@ -105,8 +105,8 @@ extension MergeHandler {
     
     func applyChanges() -> Bool {
         // local
-        deletedItemAdd.forEach(localStorage.createDeletedItem)
-        deletedItemUpdate.forEach(localStorage.updateDeletedItem)
+        localStorage.createDeletedItems(deletedItemAdd)
+        localStorage.updateDeletedItems(deletedItemUpdate)
         
         var moveFromTrash: [ItemID] = []
         let trashedItems = localStorage.listTrashedItemsIDs()
@@ -173,10 +173,13 @@ extension MergeHandler {
     func clear() {
         deleted = [:]
         items = [:]
+        tags = [:]
         deletedForRemoval = []
         itemsForRemoval = []
+        tagForRemoval = []
         recordsToCreateUpdate = []
         recordIDsForRemoval = []
+        recordItemIDsForDeletition = []
         deletedItemAdd = []
         deletedItemUpdate = []
         itemsAdd = []
@@ -332,7 +335,13 @@ private extension MergeHandler {
         vaultID: VaultID
     ) {
         deleted = localDeletedItems.reduce(into: [DeletedItemID: Deleted]()) { result, deletedItem in
-            result[deletedItem.itemID] = Deleted.local(deletedItem)
+            if let existing = result[deletedItem.itemID] {
+                if deletedItem.deletedAt > existing.deletedAt {
+                    result[deletedItem.itemID] = Deleted.local(deletedItem)
+                }
+            } else {
+                result[deletedItem.itemID] = Deleted.local(deletedItem)
+            }
         }
         
         cloudDeletedItems.filter({ $0.deletedItem.vaultID == vaultID }).forEach { cloud in

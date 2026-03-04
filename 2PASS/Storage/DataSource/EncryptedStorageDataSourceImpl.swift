@@ -244,7 +244,20 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             vaultID: vaultID
         )
     }
-    
+
+    public func updateDeletedItems(_ items: [DeletedItemData]) {
+        DeletedItemEncryptedEntity.bulkUpdate(on: context, items: items)
+    }
+
+    public func deletedItem(id: DeletedItemID) -> DeletedItemData? {
+        DeletedItemEncryptedEntity.getEntity(on: context, itemID: id)?.toData
+    }
+
+    public func listDeletedItems(ids: Set<DeletedItemID>) -> [DeletedItemData] {
+        DeletedItemEncryptedEntity.listItems(on: context, itemIDs: ids)
+            .map(\.toData)
+    }
+
     public func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData] {
         DeletedItemEncryptedEntity.listItems(on: context, vaultID: vaultID, limit: limit)
             .map({ $0.toData })
@@ -255,6 +268,10 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             return
         }
         DeletedItemEncryptedEntity.delete(on: context, entity: entity)
+    }
+
+    public func removeDuplicatedDeletedItems() {
+        DeletedItemEncryptedEntity.removeDuplicates(on: context)
     }
     
     public func createEncryptedWebBrowser(_ data: WebBrowserEncryptedData) {
