@@ -76,6 +76,17 @@ protocol ItemEditorModuleInteracting: AnyObject {
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
+    func saveWiFi(
+        name: String?,
+        ssid: String?,
+        password: String?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult
+
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
     func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
@@ -101,6 +112,7 @@ final class ItemEditorModuleInteractor {
     private let loginItemInteractor: LoginItemInteracting
     private let secureNoteItemInteractor: SecureNoteItemInteracting
     private let paymentCardItemInteractor: PaymentCardItemInteracting
+    private let wifiItemInteractor: WiFiItemInteracting
     private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
@@ -120,6 +132,7 @@ final class ItemEditorModuleInteractor {
         loginItemInteractor: LoginItemInteracting,
         secureNoteItemInteractor: SecureNoteItemInteracting,
         paymentCardItemInteractor: PaymentCardItemInteracting,
+        wifiItemInteractor: WiFiItemInteracting,
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
@@ -137,6 +150,7 @@ final class ItemEditorModuleInteractor {
         self.loginItemInteractor = loginItemInteractor
         self.secureNoteItemInteractor = secureNoteItemInteractor
         self.paymentCardItemInteractor = paymentCardItemInteractor
+        self.wifiItemInteractor = wifiItemInteractor
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
@@ -419,6 +433,75 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
 
                 return .success(.saved(itemID))
 
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        }
+    }
+
+    func saveWiFi(
+        name: String?,
+        ssid: String?,
+        password: String?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult {
+        let date = currentDateInteractor.currentDate
+        let nameValue = name ?? ""
+
+        if let current = getEditItem()?.asWiFi {
+            do {
+                try wifiItemInteractor.updateWiFi(
+                    id: current.id,
+                    metadata: .init(
+                        creationDate: current.creationDate,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds ?? current.tagIds
+                    ),
+                    name: nameValue,
+                    ssid: ssid,
+                    password: password,
+                    notes: notes,
+                    securityType: securityType,
+                    hidden: hidden
+                )
+
+                Log("ItemEditorModuleInteractor - success while updating WiFi item. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(current.id))
+            } catch {
+                return .failure(.interactorError(error))
+            }
+        } else {
+            let itemID = UUID()
+            do {
+                try wifiItemInteractor.createWiFi(
+                    id: itemID,
+                    metadata: .init(
+                        creationDate: date,
+                        modificationDate: date,
+                        protectionLevel: protectionLevel,
+                        trashedStatus: .no,
+                        tagIds: tagIds
+                    ),
+                    name: nameValue,
+                    ssid: ssid,
+                    password: password,
+                    notes: notes,
+                    securityType: securityType,
+                    hidden: hidden
+                )
+
+                Log("ItemEditorModuleInteractor - success while adding WiFi item. Saving storage")
+                didSaveItem()
+
+                return .success(.saved(itemID))
             } catch {
                 return .failure(.interactorError(error))
             }

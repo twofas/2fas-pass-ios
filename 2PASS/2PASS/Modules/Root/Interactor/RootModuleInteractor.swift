@@ -4,11 +4,12 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import UIKit
+import AuthenticationServices
 import Common
 import Data
-import UserNotifications
 import Foundation
+import UIKit
+import UserNotifications
 
 protocol RootModuleInteracting: AnyObject {
     var storageError: ((String) -> Void)? { get set }
@@ -21,30 +22,40 @@ protocol RootModuleInteracting: AnyObject {
 
     var isUserSetUp: Bool { get }
     var isOnboardingCompleted: Bool { get }
-        
+
     func isBackupFileURL(_ url: URL) -> Bool
-    
+
     func initializeApp()
     func applicationWillResignActive()
     func applicationWillEnterForeground()
     func applicationDidBecomeActive(didCopyToken: @escaping Callback)
     func applicationWillTerminate()
-        
+
     func logoutFromApp()
-    
+
     func start() async -> StartupInteractorStartResult
-    
+
     func handleRemoteNotification()
     func handleDidReceiveRegistrationToken(_ token: String?)
-    
+
     func isConnectNotification(userInfo: [AnyHashable: Any]) -> Bool
     func fetchAppNotifications() async throws -> [AppNotification]
+
+    var isScreenCaptureAllowed: Bool { get }
+    var screenCaptureAllowedUntil: Date? { get }
+    func clearScreenCaptureAllowed()
+
+    @available(iOS 26.0, *)
+    func extractCredentialExchangeToken(from userActivity: NSUserActivity) -> UUID?
+
+    @available(iOS 26.0, *)
+    func fetchCredentialExchangeData(token: UUID) async throws -> ASExportedCredentialData
 }
 
 final class RootModuleInteractor {
     var storageError: ((String) -> Void)?
     var presentAppUpdateNeededForNewSyncSchema: ((Int) -> Void)?
-    
+
     private let rootInteractor: RootInteracting
     private let startupInteractor: StartupInteracting
     private let securityInteractor: SecurityInteracting
@@ -54,8 +65,10 @@ final class RootModuleInteractor {
     private let paymentHandlingInteractor: PaymentHandlingInteracting
     private let onboardingInteractor: OnboardingInteracting
     private let updateAppPromptInteractor: UpdateAppPromptInteracting
+    private let credentialExchangeImporter: CredentialExchangeImporting
+    private let configInteractor: ConfigInteracting
     private let notificationCenter = NotificationCenter.default
-    
+
     init(
         rootInteractor: RootInteracting,
         startupInteractor: StartupInteracting,
@@ -65,7 +78,9 @@ final class RootModuleInteractor {
         timeVerificationInteractor: TimeVerificationInteracting,
         paymentHandlingInteractor: PaymentHandlingInteracting,
         onboardingInteractor: OnboardingInteracting,
-        updateAppPromptInteractor: UpdateAppPromptInteracting
+        updateAppPromptInteractor: UpdateAppPromptInteracting,
+        credentialExchangeImporter: CredentialExchangeImporting,
+        configInteractor: ConfigInteracting
     ) {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
@@ -76,11 +91,13 @@ final class RootModuleInteractor {
         self.paymentHandlingInteractor = paymentHandlingInteractor
         self.onboardingInteractor = onboardingInteractor
         self.updateAppPromptInteractor = updateAppPromptInteractor
-        
+        self.credentialExchangeImporter = credentialExchangeImporter
+        self.configInteractor = configInteractor
+
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
         }
-        
+
         notificationCenter.addObserver(
             self,
             selector: #selector(handleShowUpdatePromptNotification(_:)),
@@ -170,8 +187,30 @@ extension RootModuleInteractor: RootModuleInteracting {
         }
     }
     
+    var isScreenCaptureAllowed: Bool {
+        configInteractor.isScreenCaptureAllowed
+    }
+
+    var screenCaptureAllowedUntil: Date? {
+        configInteractor.screenCaptureAllowedUntil
+    }
+
+    func clearScreenCaptureAllowed() {
+        configInteractor.clearScreenCaptureAllowed()
+    }
+
     func isBackupFileURL(_ url: URL) -> Bool {
         url.pathExtension == "2faspass"
+    }
+
+    @available(iOS 26.0, *)
+    func extractCredentialExchangeToken(from userActivity: NSUserActivity) -> UUID? {
+        credentialExchangeImporter.extractToken(from: userActivity)
+    }
+
+    @available(iOS 26.0, *)
+    func fetchCredentialExchangeData(token: UUID) async throws -> ASExportedCredentialData {
+        try await credentialExchangeImporter.fetchCredentials(token: token)
     }
 }
 

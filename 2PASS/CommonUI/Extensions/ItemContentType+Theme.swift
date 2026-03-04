@@ -17,6 +17,8 @@ extension ItemContentType {
             return "note.text"
         case .paymentCard:
             return "creditcard"
+        case .wifi:
+            return "wifi"
         case .unknown:
             return nil
         }
@@ -36,11 +38,13 @@ extension ItemContentType {
     public var primaryColor: UIColor {
         switch self {
         case .login:
-            UIColor(hexString: "#0088FF")!
+            UIColor(light: UIColor(hexString: "#0087FF")!, dark: UIColor(hexString: "#00AFEF")!)
         case .secureNote:
-            UIColor(hexString: "#FF8D28")!
+            UIColor(light: UIColor(hexString: "#EDAC00")!, dark: UIColor(hexString: "#EDAC00")!)
         case .paymentCard:
-            UIColor(hexString: "#34C759")!
+            UIColor(light: UIColor(hexString: "#00C545")!, dark: UIColor(hexString: "#00C945")!)
+        case .wifi:
+            UIColor(light: UIColor(hexString: "#FF8500")!, dark: UIColor(hexString: "#FF8B00")!)
         case .unknown:
             .black
         }
@@ -62,6 +66,11 @@ extension ItemContentType {
             UIColor(
                 light: UIColor(hexString: "#D6FFE0")!,
                 dark: UIColor(hexString: "#043B12")!
+            )
+        case .wifi:
+            UIColor(
+                light: UIColor(hexString: "#FFEDD9")!,
+                dark: UIColor(hexString: "#261500")!
             )
         case .unknown:
             .black.withAlphaComponent(0.5)

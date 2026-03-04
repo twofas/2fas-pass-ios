@@ -1,4 +1,5 @@
 import Common
+import Data
 import SwiftUI
 import CommonUI
 
@@ -32,13 +33,30 @@ final class ManageTagsPresenter {
 
     private(set) var tags: [TagViewItem] = []
     var destination: ManageTagsDestination?
-    
+
     init(interactor: ManageTagsModuleInteracting) {
         self.interactor = interactor
     }
-    
+
     func onAppear() {
         reload()
+    }
+
+    func observeSync() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { [weak self] in
+                for await _ in NotificationCenter.default.notifications(named: .cloudDidSync) {
+                    await self?.reload()
+                }
+            }
+            group.addTask { [weak self] in
+                for await notification in NotificationCenter.default.notifications(named: .webDAVStateChange) {
+                    guard let state = notification.userInfo?[Notification.webDAVState] as? WebDAVState,
+                          state == .synced else { continue }
+                    await self?.reload()
+                }
+            }
+        }
     }
     
     func addTag() {

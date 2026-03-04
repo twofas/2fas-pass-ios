@@ -63,7 +63,8 @@ struct EnpassImportInteractorTests {
         // - 1 credit card
         // - 1 secure note
         // - 1 finance item (converted to secure note)
-        #expect(result.items.count == 6)
+        // - 1 wifi (computer.wifi template)
+        #expect(result.items.count == 7)
         #expect(result.tags.count == 4)
         #expect(result.itemsConvertedToSecureNotes == 1)
 
@@ -71,10 +72,12 @@ struct EnpassImportInteractorTests {
         let logins = result.items.filter { if case .login = $0 { return true } else { return false } }
         let cards = result.items.filter { if case .paymentCard = $0 { return true } else { return false } }
         let notes = result.items.filter { if case .secureNote = $0 { return true } else { return false } }
+        let wifis = result.items.filter { if case .wifi = $0 { return true } else { return false } }
 
         #expect(logins.count == 3)
         #expect(cards.count == 1)
         #expect(notes.count == 2)
+        #expect(wifis.count == 1)
     }
 
     // MARK: - Login Import Tests
@@ -280,7 +283,7 @@ struct EnpassImportInteractorTests {
         let result = try await realInteractor.importService(.enpass, content: .file(data))
 
         // THEN - Verify result summary
-        #expect(result.items.count == 6)
+        #expect(result.items.count == 7)
         #expect(result.tags.count == 4)
         #expect(result.itemsConvertedToSecureNotes == 1)
 
@@ -288,10 +291,12 @@ struct EnpassImportInteractorTests {
         let logins = result.items.compactMap { if case .login(let l) = $0 { return l } else { return nil } }
         let cards = result.items.compactMap { if case .paymentCard(let c) = $0 { return c } else { return nil } }
         let notes = result.items.compactMap { if case .secureNote(let n) = $0 { return n } else { return nil } }
+        let wifis = result.items.compactMap { if case .wifi(let w) = $0 { return w } else { return nil } }
 
         #expect(logins.count == 3)
         #expect(cards.count == 1)
         #expect(notes.count == 2)
+        #expect(wifis.count == 1)
 
         // MARK: Tags (folders)
         let tagNames = Set(result.tags.map { $0.name })
@@ -459,6 +464,44 @@ struct EnpassImportInteractorTests {
 
         #expect(bankAccount.metadata.creationDate == Date(timeIntervalSince1970: 1765907066))
         #expect(bankAccount.metadata.modificationDate == Date(timeIntervalSince1970: 1765978578))
+
+        // MARK: WiFi - "Wireless router"
+        let wifiItem = try #require(wifis.first)
+        #expect(wifiItem.name == "Wireless router")
+        #expect(wifiItem.vaultId == testVaultID)
+        #expect(wifiItem.content.ssid == "Sieć")
+        #expect(wifiItem.content.securityType == .wpa2)
+        #expect(wifiItem.content.hidden == false)
+
+        let wifiPassword = try #require(decrypt(wifiItem.content.password))
+        #expect(wifiPassword == "JZ@5ZR7J/0D:kOCtGf#$m%lo&<X4-eg{")
+
+        // Notes should contain: original note + additional fields
+        let expectedWifiNotes = """
+            Notka do wifi
+
+            Station name: Wifi Enpass
+            Station password: b2e{Qtx@kj0mjw>+=GcFf>qG2>aL&tZE
+            MAC/Airport #: Coś
+            Server/IP address: Adres IP wifi
+            Username: Rafael
+            Password: ozDFD_O..Zm:urgqA{-NY8Vz2,fxzW(X
+            Storage password: [.qbk~u_5KlFjIcmq1sug.U=qC)L<nG&
+            Support website: wsparcie
+            """
+        #expect(wifiItem.content.notes == expectedWifiNotes)
+
+        #expect(wifiItem.metadata.protectionLevel == .normal)
+        #expect(wifiItem.metadata.trashedStatus == .no)
+
+        #expect(wifiItem.metadata.tagIds?.count == 1)
+        let wifiTagNames = Set(wifiItem.metadata.tagIds?.compactMap { tagId in
+            result.tags.first { $0.tagID == tagId }?.name
+        } ?? [])
+        #expect(wifiTagNames == Set(["Erunestian"]))
+
+        #expect(wifiItem.metadata.creationDate == Date(timeIntervalSince1970: 1771342894))
+        #expect(wifiItem.metadata.modificationDate == Date(timeIntervalSince1970: 1771342894))
     }
 
     // MARK: - Error Handling Tests

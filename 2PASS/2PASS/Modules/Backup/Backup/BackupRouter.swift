@@ -23,7 +23,7 @@ struct BackupRouter: Router {
             .fileImporter(contentTypes: .vaultFiles, onClose: onClose)
         case .currentPassword, .upgradePlanPrompt:
             .sheet
-        case .export, .recoveryEnterPassword, .importing, .importingFailure, .schemaNotSupported, .recovery:
+        case .export, .recoveryEnterPassword, .importing, .importingFailure, .schemaNotSupported, .recovery, .exportToAnotherApp:
             .push
         case nil:
             nil
@@ -56,6 +56,12 @@ struct BackupRouter: Router {
                 schemaVersion: schemaVersion,
                 onClose: onClose
             )
+        case .exportToAnotherApp(let onClose):
+            if #available(iOS 26.0, *) {
+                CredentialExchangeExportRouter.buildView(onClose: onClose)
+            } else {
+                EmptyView()
+            }
         }
     }
 }

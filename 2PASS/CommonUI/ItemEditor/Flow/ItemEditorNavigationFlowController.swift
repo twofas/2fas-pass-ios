@@ -8,6 +8,11 @@ import UIKit
 import SwiftUI
 import Common
 
+private struct Constants {
+    static let wifiNetworkQRCodeScannerDetentIdentifier = UISheetPresentationController.Detent.Identifier("wifiNetworkQRCodeScanner")
+    static let wifiNetworkQRCodeScannerMaxDetentValue: CGFloat = 500
+}
+
 protocol ItemEditorNavigationFlowControllerParent: AnyObject {
     func closeItemEditor(with result: SaveItemResult)
 }
@@ -111,6 +116,24 @@ extension ItemEditorNavigationFlowController: ItemEditorFlowControllerParent {
         let hostingController = UIHostingController(rootView: selectTagsView)
         hostingController.title = String(localized: .selectTagsTitle)
         navigationController.pushViewController(hostingController, animated: true)
+    }
+
+    func itemEditorToWiFiNetworkQRCodeScanner(onScanned: @escaping (WiFiQRCodeData) -> Void) {
+        let scannerViewController = UIHostingController(
+            rootView: WiFiNetworkQRCodeScannerRouter.buildView(onScanned: onScanned)
+        )
+
+        if let sheet = scannerViewController.sheetPresentationController, UIDevice.isiPad == false {
+            sheet.detents = [
+                .custom(identifier: Constants.wifiNetworkQRCodeScannerDetentIdentifier) { context in
+                    min(context.maximumDetentValue, Constants.wifiNetworkQRCodeScannerMaxDetentValue)
+                },
+            ]
+            sheet.selectedDetentIdentifier = Constants.wifiNetworkQRCodeScannerDetentIdentifier
+            sheet.prefersGrabberVisible = true
+        }
+
+        navigationController.present(scannerViewController, animated: true)
     }
 }
 

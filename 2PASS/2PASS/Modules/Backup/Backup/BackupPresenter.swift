@@ -44,7 +44,8 @@ enum BackupDestination: RouterDestination {
     case importingFailure(onClose: Callback)
     case schemaNotSupported(schemaVersion: Int, onClose: Callback)
     case upgradePlanPrompt(itemsLimit: Int)
-    
+    case exportToAnotherApp(onClose: Callback)
+
     var id: String {
         switch self {
         case .importFile: "import"
@@ -56,6 +57,7 @@ enum BackupDestination: RouterDestination {
         case .importingFailure: "importingFailure"
         case .schemaNotSupported: "schemaNotSupported"
         case .upgradePlanPrompt: "upgradePlanPrompt"
+        case .exportToAnotherApp: "exportToAnotherApp"
         }
     }
 }
@@ -193,6 +195,26 @@ extension BackupPresenter {
         }
     }
     
+    func onExportToAnotherApp() {
+        let onClose: Callback = { [weak self] in
+            self?.destination = nil
+        }
+        Task { @MainActor in
+            if await interactor.loginUsingBiometryIfAvailable() {
+                destination = .exportToAnotherApp(onClose: onClose)
+            } else {
+                destination = .currentPassword(config: .init(allowBiometrics: true, loginType: .verify(savePassword: false)), onSuccess: { [weak self] in
+                    self?.destination = nil
+
+                    Task { @MainActor in
+                        try await Task.sleep(for: .milliseconds(700))
+                        self?.destination = .exportToAnotherApp(onClose: onClose)
+                    }
+                })
+            }
+        }
+    }
+
     private func close() {
         switch flowContext.kind {
         case .quickSetup:

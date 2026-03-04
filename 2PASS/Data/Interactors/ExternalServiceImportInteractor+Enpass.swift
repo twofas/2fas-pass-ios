@@ -98,6 +98,15 @@ extension ExternalServiceImportInteractor {
                     ) {
                         items.append(noteItem)
                     }
+                case "computer" where item.templateType == "computer.wifi":
+                    if let wifiItem = parseWiFi(
+                        item: item,
+                        vaultID: vaultID,
+                        protectionLevel: protectionLevel,
+                        tagIds: tagIds
+                    ) {
+                        items.append(wifiItem)
+                    }
                 default:
                     // finance, identity, and other categories -> secure note
                     if let noteItem = parseAsSecureNote(
@@ -394,6 +403,71 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         ))
     }
 
+    func parseWiFi(
+        item: Enpass.Item,
+        vaultID: VaultID,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> ItemData? {
+        let name = item.title.formattedName
+
+        var ssid: String?
+        var passwordString: String?
+        var securityString: String?
+        var additionalFields: [(label: String, value: String)] = []
+
+        item.fields?.forEach { field in
+            guard field.deleted != 1 else { return }
+            guard let value = field.value?.nonBlankTrimmedOrNil else { return }
+
+            switch field.label {
+            case "Network name":
+                ssid = value
+            case "Network password":
+                passwordString = value
+            case "Security":
+                securityString = value
+            default:
+                let label = field.label ?? formatFieldType(field.type)
+                additionalFields.append((label, value))
+            }
+        }
+
+        let password: Data? = {
+            if let value = passwordString,
+               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
+                return encrypted
+            }
+            return nil
+        }()
+
+        let securityType = WiFiContent.SecurityType(enpassValue: securityString)
+
+        let additionalInfo = formatAdditionalFields(additionalFields)
+        let notes = context.mergeNote(item.note?.nonBlankTrimmedOrNil, with: additionalInfo)
+
+        return .wifi(.init(
+            id: .init(),
+            vaultId: vaultID,
+            metadata: .init(
+                creationDate: creationDate(from: item),
+                modificationDate: modificationDate(from: item),
+                protectionLevel: protectionLevel,
+                trashedStatus: .no,
+                tagIds: tagIds
+            ),
+            name: name,
+            content: .init(
+                name: name,
+                ssid: ssid,
+                password: password,
+                notes: notes,
+                securityType: securityType,
+                hidden: false
+            )
+        ))
+    }
+
     func parseAsSecureNote(
         item: Enpass.Item,
         vaultID: VaultID,
@@ -509,6 +583,7 @@ private struct Enpass: Decodable {
         let note: String?
         let category: String?
         let categoryName: String?
+        let templateType: String?
         let fields: [Field]?
         let folders: [String]?
         let trashed: Int?
@@ -520,6 +595,7 @@ private struct Enpass: Decodable {
             case note
             case category
             case categoryName = "category_name"
+            case templateType = "template_type"
             case fields
             case folders
             case trashed
@@ -530,4 +606,26 @@ private struct Enpass: Decodable {
 
     let folders: [Folder]?
     let items: [Item]?
+}
+
+// MARK: - WiFi Security Type Mapping
+
+private extension WiFiContent.SecurityType {
+
+    init(enpassValue: String?) {
+        switch enpassValue?.lowercased().replacingOccurrences(of: " ", with: "") {
+        case "wep":
+            self = .wep
+        case "wpa":
+            self = .wpa
+        case "wpa2":
+            self = .wpa2
+        case "wpa3":
+            self = .wpa3
+        case "none", .none:
+            self = .none
+        default:
+            self = .wpa2
+        }
+    }
 }

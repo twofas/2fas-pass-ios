@@ -112,6 +112,8 @@ struct TransferItemsFileSummaryView: View {
             .transferFileSummarySecureNotesCounterDescription
         case .paymentCard:
             .transferFileSummaryPaymentCardsCounterDescription
+        case .wifi:
+            .transferFileSummaryWifiCounterDescription
         case .unknown:
             .transferFileSummaryOthersCounterDescription
         }

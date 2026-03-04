@@ -12,6 +12,7 @@ protocol ItemDetailModuleInteracting: AnyObject {
     func fetchItem(for itemID: ItemID) -> ItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
+    func makeWiFiQRCodePayload(from data: WiFiQRCodeData) -> String
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
@@ -25,6 +26,7 @@ final class ItemDetailModuleInteractor {
     private let uriInteractor: URIInteracting
     private let tagInteractor: TagInteracting
     private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+    private let wifiQRCodeInteractor: WiFiQRCodeInteracting
 
     init(
         itemsInteractor: ItemsInteracting,
@@ -32,7 +34,8 @@ final class ItemDetailModuleInteractor {
         fileIconInteractor: FileIconInteracting,
         uriInteractor: URIInteracting,
         tagInteractor: TagInteracting,
-        paymentCardUtilityInteractor: PaymentCardUtilityInteracting
+        paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
+        wifiQRCodeInteractor: WiFiQRCodeInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.systemInteractor = systemInteractor
@@ -40,6 +43,7 @@ final class ItemDetailModuleInteractor {
         self.uriInteractor = uriInteractor
         self.tagInteractor = tagInteractor
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
+        self.wifiQRCodeInteractor = wifiQRCodeInteractor
     }
 }
 
@@ -50,6 +54,10 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
     
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
         itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
+    }
+
+    func makeWiFiQRCodePayload(from data: WiFiQRCodeData) -> String {
+        wifiQRCodeInteractor.makeWiFiQRCodePayload(from: data)
     }
     
     func copy(_ str: String) {

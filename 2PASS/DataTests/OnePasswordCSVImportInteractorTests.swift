@@ -463,10 +463,10 @@ extension OnePasswordCSVImportInteractorTests {
             let result = try await interactor.importService(.onePassword, content: .file(data))
 
             // THEN - Verify result summary
-            // 2 logins + 2 secure notes + 2 credit cards + 2 converted to secure notes = 8 items
+            // 2 logins + 2 secure notes + 2 credit cards + 1 wifi + 1 converted to secure note = 8 items
             #expect(result.items.count == 8)
             #expect(result.tags.count == 3)
-            #expect(result.itemsConvertedToSecureNotes == 2)
+            #expect(result.itemsConvertedToSecureNotes == 1)
 
             // Verify tags
             let tagNames = Set(result.tags.map(\.name))
@@ -481,10 +481,12 @@ extension OnePasswordCSVImportInteractorTests {
             let logins = result.items.compactMap { if case .login(let l) = $0 { return l } else { return nil } }
             let secureNotes = result.items.compactMap { if case .secureNote(let n) = $0 { return n } else { return nil } }
             let creditCards = result.items.compactMap { if case .paymentCard(let c) = $0 { return c } else { return nil } }
+            let wifis = result.items.compactMap { if case .wifi(let w) = $0 { return w } else { return nil } }
 
             #expect(logins.count == 2)
-            #expect(secureNotes.count == 4) // 2 original + 2 converted
+            #expect(secureNotes.count == 3) // 2 original + 1 converted
             #expect(creditCards.count == 2)
+            #expect(wifis.count == 1)
 
             // MARK: Login - "Password"
             let passwordItem = try #require(logins.first { $0.name == "Password" })
@@ -549,12 +551,25 @@ extension OnePasswordCSVImportInteractorTests {
             let cardWithoutTag = try #require(creditCards.first { $0.metadata.tagIds == nil })
             #expect(cardWithoutTag.content.cardHolder == "Thomas Brown")
 
-            // MARK: Converted items - Identity and Driver License
-            let identityNote = secureNotes.first { $0.name?.contains("Identity") == true }
-            #expect(identityNote != nil)
+            // MARK: WiFi - "Wireless Router"
+            let wifi = try #require(wifis.first { $0.name == "Wireless Router" })
+            #expect(wifi.content.ssid == "nazwa sieci")
+            #expect(wifi.content.securityType == .wpa2)
+            #expect(wifi.content.hidden == false)
 
-            let driverLicenseNote = secureNotes.first { $0.name?.contains("Driver License") == true }
-            #expect(driverLicenseNote != nil)
+            let wifiPassword = try #require(decrypt(wifi.content.password))
+            #expect(wifiPassword == "hp2Euh8YwwddZqsCehCQ")
+
+            // Notes should contain the plain note and additional router fields
+            let wifiNotes = try #require(wifi.content.notes)
+            #expect(wifiNotes.contains("Notka do WiFi"))
+            #expect(wifiNotes.contains("Wifi 1password")) // base station name
+
+            // MARK: Converted items - Driver License
+            let driverLicenseNote = try #require(secureNotes.first { $0.name?.contains("Driver License") == true })
+            let driverLicenseText = try #require(decrypt(driverLicenseNote.content.text))
+            #expect(driverLicenseText.contains("Arthur Morgan"))
+            #expect(driverLicenseNote.metadata.tagIds?.contains(tagNameToId["Rafael"]!) == true)
         }
         
         private func loadOnePasswordTestData() throws -> Data {

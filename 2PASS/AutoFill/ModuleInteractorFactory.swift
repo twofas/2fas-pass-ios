@@ -13,7 +13,13 @@ extension ModuleInteractorFactory {
         AutoFillModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
-            securityInteractor: InteractorFactory.shared.securityInteractor()
+            securityInteractor: InteractorFactory.shared.securityInteractor(),
+            configInteractor: InteractorFactory.shared.configInteractor(),
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
+            loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),
+            autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
+            passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
+            pushNotificationsInteractor: InteractorFactory.shared.pushNotificationsInteractor()
         )
     }
 }

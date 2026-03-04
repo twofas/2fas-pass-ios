@@ -23,6 +23,11 @@ public protocol ConfigInteracting: AnyObject {
     
     var isCrashReportsEnabled: Bool { get }
     func setCrashReportsEnabled(_ enabled: Bool)
+
+    var isScreenCaptureAllowed: Bool { get }
+    var screenCaptureAllowedUntil: Date? { get }
+    func enableScreenCaptureAllowance()
+    func clearScreenCaptureAllowed()
 }
 
 final class ConfigInteractor {
@@ -89,5 +94,25 @@ extension ConfigInteractor: ConfigInteracting {
     
     func setCrashReportsEnabled(_ enabled: Bool) {
         mainRepository.setCrashlyticsEnabled(enabled)
+    }
+
+    var isScreenCaptureAllowed: Bool {
+        guard let expiration = mainRepository.screenCaptureAllowedUntil else { return false }
+        return expiration > mainRepository.currentDate
+    }
+
+    var screenCaptureAllowedUntil: Date? {
+        mainRepository.screenCaptureAllowedUntil
+    }
+
+    func enableScreenCaptureAllowance() {
+        let seconds = TimeInterval(Config.screenRecordingAllowanceDuration.components.seconds)
+        mainRepository.setScreenCaptureAllowedUntil(mainRepository.currentDate.addingTimeInterval(seconds))
+        NotificationCenter.default.post(name: .screenCaptureAllowanceDidChange, object: nil)
+    }
+
+    func clearScreenCaptureAllowed() {
+        mainRepository.clearScreenCaptureAllowedUntil()
+        NotificationCenter.default.post(name: .screenCaptureAllowanceDidChange, object: nil)
     }
 }

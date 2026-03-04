@@ -36,7 +36,7 @@ public protocol StartupInteracting: AnyObject {
     func getAllWords() -> [String]
     
     func initialize()
-    func start() async -> StartupInteractorStartResult
+    @MainActor func start() async -> StartupInteractorStartResult
     func setupEncryptionElements()
     func setMasterPassword(masterPassword: String?, enableBiometryLogin: Bool, completion: @escaping () -> Void)
     func clearAfterInit()

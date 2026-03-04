@@ -22,6 +22,7 @@ protocol ItemEditorFlowControllerParent: AnyObject {
         selectedTags: [ItemTagData],
         onChange: @escaping ([ItemTagData]) -> Void
     )
+    func itemEditorToWiFiNetworkQRCodeScanner(onScanned: @escaping (WiFiQRCodeData) -> Void)
 }
 
 protocol ItemEditorFlowControlling: AnyObject {
@@ -29,6 +30,7 @@ protocol ItemEditorFlowControlling: AnyObject {
     func toChangeProtectionLevel(current: ItemProtectionLevel)
     func toCustomizeIcon(data: CustomizeIconData)
     func toSelectTags(selectedTags: [ItemTagData], onChange: @escaping ([ItemTagData]) -> Void)
+    func toWiFiNetworkQRCodeScanner(onScanned: @escaping (WiFiQRCodeData) -> Void)
 }
 
 final class ItemEditorFlowController: FlowController {
@@ -80,6 +82,10 @@ extension ItemEditorFlowController: ItemEditorFlowControlling {
 
     func toSelectTags(selectedTags: [ItemTagData], onChange: @escaping ([ItemTagData]) -> Void) {
         parent?.itemEditorToSelectTags(selectedTags: selectedTags, onChange: onChange)
+    }
+
+    func toWiFiNetworkQRCodeScanner(onScanned: @escaping (WiFiQRCodeData) -> Void) {
+        parent?.itemEditorToWiFiNetworkQRCodeScanner(onScanned: onScanned)
     }
 }
 

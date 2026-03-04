@@ -37,6 +37,7 @@ protocol MainRepository: AnyObject {
     @discardableResult func refreshPushNotificationsStatus() async -> Bool
     var canRequestPushNotificationsPermissions: Bool { get }
     func requestPushNotificationsPermissions() async
+    func sendPushNotification(_ text: String) async
     
     var pushNotificationToken: String? { get }
     func savePushNotificationToken(_ token: String?)
@@ -109,6 +110,7 @@ protocol MainRepository: AnyObject {
     var currentBuildVersion: String { get }
     var lastKnownAppVersion: String? { get }
     func setLastKnownAppVersion(_ version: String)
+    func migrateLegacyValuesToSharedDefaults()
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
     
@@ -116,6 +118,7 @@ protocol MainRepository: AnyObject {
     func initialPermissionStateInitialize()
     
     var appBundleIdentifier: String? { get }
+    var appDisplayName: String? { get }
     var dateOfFirstRun: Date? { get }
     func saveDateOfFirstRun(_ date: Date)
     
@@ -344,6 +347,22 @@ protocol MainRepository: AnyObject {
         cardIssuer: String?
     )
 
+    func createWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
+    )
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -410,6 +429,21 @@ protocol MainRepository: AnyObject {
         notes: String?,
         cardNumberMask: String?,
         cardIssuer: String?
+    )
+
+    func updateWiFiItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        ssid: String?,
+        password: Data?,
+        notes: String?,
+        securityType: WiFiContent.SecurityType,
+        hidden: Bool
     )
 
     func updateItems(_ items: [RawItemData])
@@ -750,6 +784,11 @@ protocol MainRepository: AnyObject {
     // MARK: - Scan
     func scan(image: UIImage, completion: @escaping (Result<[String], ScanImageError>) -> Void)
     
+    // MARK: - Screen Capture
+    var screenCaptureAllowedUntil: Date? { get }
+    func setScreenCaptureAllowedUntil(_ date: Date)
+    func clearScreenCaptureAllowedUntil()
+
     // MARK: - Time offset
     var timeOffset: TimeInterval { get }
     func setTimeOffset(_ offset: TimeInterval)

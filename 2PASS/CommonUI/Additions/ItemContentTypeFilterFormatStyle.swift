@@ -24,8 +24,10 @@ struct ItemContentTypeFilterFormatStyle: FormatStyle {
             return String(localized: .contentTypeFilterSecureNoteName)
         case .contentType(.paymentCard):
             return String(localized: .contentTypeFilterCardName)
+        case .contentType(.wifi):
+            return String(localized: .contentTypeWifiName)
         case .contentType(.unknown):
-            return "Unknows"
+            return String(localized: .contentTypeUnknownName)
         }
     }
 }

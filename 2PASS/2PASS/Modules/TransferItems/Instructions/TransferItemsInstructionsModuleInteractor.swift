@@ -23,7 +23,7 @@ final class TransferItemsInstructionsModuleInteractor: TransferItemsInstructions
     }
 
     func transfer(from url: URL) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-        let content = try await externalServiceImportInteractor.open(from: url)
+        let content = try await externalServiceImportInteractor.open(from: url, service: service)
         return try await externalServiceImportInteractor.importService(service, content: content)
     }
 }

@@ -62,4 +62,16 @@ extension MainRepositoryImpl {
     func clearIncorrectBiometryCountAttempt() {
         userDefaultsDataSource.clearIncorrectBiometryCountAttempt()
     }
+
+    var screenCaptureAllowedUntil: Date? {
+        userDefaultsDataSource.screenCaptureAllowedUntil
+    }
+
+    func setScreenCaptureAllowedUntil(_ date: Date) {
+        userDefaultsDataSource.setScreenCaptureAllowedUntil(date)
+    }
+
+    func clearScreenCaptureAllowedUntil() {
+        userDefaultsDataSource.clearScreenCaptureAllowedUntil()
+    }
 }

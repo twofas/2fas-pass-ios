@@ -4,7 +4,7 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import UserNotifications
+import Foundation
 
 public protocol PushNotificationsPermissionInteracting: AnyObject {
     var isEnabled: Bool { get }
@@ -29,7 +29,7 @@ final class PushNotificationsPermissionInteractor: PushNotificationsPermissionIn
     var canRequestForPermissions: Bool {
         mainRepository.canRequestPushNotificationsPermissions
     }
-    
+
     func requestForPermissions() async {
         await mainRepository.requestPushNotificationsPermissions()
     }

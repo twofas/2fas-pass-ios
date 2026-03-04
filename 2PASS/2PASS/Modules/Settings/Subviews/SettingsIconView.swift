@@ -70,9 +70,15 @@ struct SettingsIconView: View {
     
     let icon: SettingsIcon
     
+    init(icon: SettingsIcon) {
+        self.icon = icon
+    }
+    
     @Environment(\.controlSize) private var controlSize
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.settingsIconStyle) private var settingsIconStyle
+    
+    private var iconColor: Color?
     
     var body: some View {
         content
@@ -90,7 +96,13 @@ struct SettingsIconView: View {
                         .fill(.primary)
                 }
             }
-            .foregroundStyle(.accent, colorScheme == .dark ? .neutral950 : .neutral50)
+            .foregroundStyle(.accent, iconColor ?? (colorScheme == .dark ? .neutral950 : .neutral50))
+    }
+    
+    func iconColor(_ color: Color?) -> Self {
+        var instance = self
+        instance.iconColor = color
+        return instance
     }
     
     private var fontSize: CGFloat {

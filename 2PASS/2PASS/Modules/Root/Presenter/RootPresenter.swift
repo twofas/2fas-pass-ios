@@ -4,10 +4,11 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import Foundation
+import AuthenticationServices
 import Common
-import Data
 import CommonUI
+import Data
+import Foundation
 import UIKit
 
 private struct Constants {
@@ -36,6 +37,16 @@ final class RootPresenter {
     private let toastPresenter: ToastPresenter
     private var appNotificationsQueue: [AppNotification] = []
     private var logoutObservationTask: Task<Void, Never>?
+    private var _pendingCredentialData: Any?
+    private var currentSceneCaptureState: UISceneCaptureState = .inactive
+    private var screenCaptureExpirationTimer: Timer?
+    private var screenCaptureAllowanceObserver: NSObjectProtocol?
+
+    @available(iOS 26.0, *)
+    private var pendingCredentialData: ASExportedCredentialData? {
+        get { _pendingCredentialData as? ASExportedCredentialData }
+        set { _pendingCredentialData = newValue }
+    }
 
     init(flowController: RootFlowControlling, interactor: RootModuleInteracting) {
         self.flowController = flowController
@@ -45,6 +56,10 @@ final class RootPresenter {
 
     deinit {
         logoutObservationTask?.cancel()
+        screenCaptureExpirationTimer?.invalidate()
+        if let screenCaptureAllowanceObserver {
+            NotificationCenter.default.removeObserver(screenCaptureAllowanceObserver)
+        }
     }
     
     func initialize() {
@@ -65,6 +80,8 @@ final class RootPresenter {
         }
 
         observeLogout()
+        observeScreenCaptureAllowanceChanged()
+        scheduleScreenCaptureExpirationTimer()
         fetchAppNotifications()
     }
 
@@ -86,6 +103,8 @@ final class RootPresenter {
         interactor.applicationWillEnterForeground()
         handleViewFlow()
         fetchAppNotifications()
+        scheduleScreenCaptureExpirationTimer()
+        evaluateScreenCaptureBlocking()
     }
     
     func applicationDidBecomeActive() {
@@ -124,7 +143,12 @@ final class RootPresenter {
         }
         return false
     }
-    
+
+    func applicationContinueUserActivity(_ userActivity: NSUserActivity) -> Bool {
+        guard #available(iOS 26.0, *) else { return false }
+        return handleCredentialExchangeActivity(userActivity)
+    }
+
     // MARK: - Handle external events
     
     func handleAppReset() {
@@ -167,6 +191,11 @@ final class RootPresenter {
     
     func handleDidReceiveRegistrationToken(_ token: String?) {
         interactor.handleDidReceiveRegistrationToken(token)
+    }
+
+    func sceneCaptureStateDidChange(_ state: UISceneCaptureState) {
+        currentSceneCaptureState = state
+        evaluateScreenCaptureBlocking()
     }
     
     // MARK: - RootCoordinatorDelegate methods
@@ -223,6 +252,13 @@ final class RootPresenter {
         guard currentState != .main else { return }
         changeState(.main)
         flowController.toMain()
+
+        if #available(iOS 26.0, *), let data = pendingCredentialData {
+            Task { @MainActor in
+                pendingCredentialData = nil
+                flowController.toCredentialExchange(data: data)
+            }
+        }
     }
     
     private func presentLogin(coldRun: Bool) {
@@ -242,6 +278,66 @@ final class RootPresenter {
         }
     }
     
+    @available(iOS 26.0, *)
+    private func handleCredentialExchangeActivity(_ userActivity: NSUserActivity) -> Bool {
+        guard let token = interactor.extractCredentialExchangeToken(from: userActivity) else {
+            return false
+        }
+
+        Task { @MainActor in
+            do {
+                let data = try await interactor.fetchCredentialExchangeData(token: token)
+                if currentState == .main {
+                    flowController.toCredentialExchange(data: data)
+                } else {
+                    pendingCredentialData = data
+                }
+            } catch {
+                Log("Failed to fetch credential exchange data: \(error)", module: .moduleInteractor)
+            }
+        }
+
+        return true
+    }
+
+    private func evaluateScreenCaptureBlocking() {
+        let shouldBlock = currentSceneCaptureState == .active && !interactor.isScreenCaptureAllowed
+        flowController.setScreenCaptureBlocked(shouldBlock)
+    }
+
+    private func observeScreenCaptureAllowanceChanged() {
+        guard screenCaptureAllowanceObserver == nil else { return }
+
+        screenCaptureAllowanceObserver = NotificationCenter.default.addObserver(
+            forName: .screenCaptureAllowanceDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.evaluateScreenCaptureBlocking()
+            self?.scheduleScreenCaptureExpirationTimer()
+        }
+    }
+
+    private func scheduleScreenCaptureExpirationTimer() {
+        screenCaptureExpirationTimer?.invalidate()
+        screenCaptureExpirationTimer = nil
+
+        guard let expiration = interactor.screenCaptureAllowedUntil else { return }
+        let remaining = expiration.timeIntervalSinceNow
+        guard remaining > 0 else {
+            interactor.clearScreenCaptureAllowed()
+            evaluateScreenCaptureBlocking()
+            return
+        }
+
+        screenCaptureExpirationTimer = Timer.scheduledTimer(
+            withTimeInterval: remaining, repeats: false
+        ) { [weak self] _ in
+            self?.interactor.clearScreenCaptureAllowed()
+            self?.evaluateScreenCaptureBlocking()
+        }
+    }
+
     private func showAppNotificationIfNeeded() {
         if let newestNotification = appNotificationsQueue.last {
             if currentState == .main {

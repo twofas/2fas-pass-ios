@@ -5,6 +5,11 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Common
+
+private struct Constants {
+    static let cardMaxWidth = 320.0
+}
 
 struct PaymentCardDetailFormView: View {
 
@@ -19,9 +24,26 @@ struct PaymentCardDetailFormView: View {
 
     @State
     private var selectedField: SelectedField?
+    
+    private var isTextToInsertMode: Bool {
+        if #available(iOS 18.0, *) {
+            presenter.autoFillEnvironment?.isTextToInsert == true
+        } else {
+            false
+        }
+    }
 
     var body: some View {
-        Group {
+        CardView(
+            issuer: presenter.paymentCardIssuer,
+            name: presenter.name,
+            cardNumberMask: presenter.cardNumberMask
+        )
+        .frame(maxWidth: Constants.cardMaxWidth)
+        .padding(.horizontal, Spacing.xll3)
+        .padding(.bottom, Spacing.s)
+        
+        ItemDetailSection {
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(
                     key: .cardHolderLabel,
@@ -32,6 +54,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .cardHolder)
                 .onChange(of: selectedField == .cardHolder) { _, newValue in
                     if newValue {
@@ -39,7 +62,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             if let cardNumber = presenter.cardNumber {
                 ItemDetailFormActionsRow(
                     key: .cardNumberLabel,
@@ -59,6 +82,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .cardNumber)
                 .onChange(of: selectedField == .cardNumber) { _, newValue in
                     if newValue {
@@ -66,7 +90,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             if let expirationDate = presenter.expirationDate {
                 ItemDetailFormActionsRow(
                     key: .cardExpirationDateLabel,
@@ -77,6 +101,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .expirationDate)
                 .onChange(of: selectedField == .expirationDate) { _, newValue in
                     if newValue {
@@ -84,7 +109,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             if let securityCode = presenter.securityCode {
                 ItemDetailFormActionsRow(
                     key: .cardSecurityCodeLabel,
@@ -102,6 +127,7 @@ struct PaymentCardDetailFormView: View {
                         }
                     ]}
                 )
+                .showValueAsButton(isTextToInsertMode)
                 .selected($selectedField, equals: .securityCode)
                 .onChange(of: selectedField == .securityCode) { _, newValue in
                     if newValue {
@@ -109,7 +135,7 @@ struct PaymentCardDetailFormView: View {
                     }
                 }
             }
-
+            
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
             ItemDetailFormNotes(presenter.notes)
         }

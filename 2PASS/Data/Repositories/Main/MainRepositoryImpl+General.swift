@@ -31,6 +31,10 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.setLastKnownAppVersion(version)
     }
     
+    func migrateLegacyValuesToSharedDefaults() {
+        userDefaultsDataSource.migrateLegacyValuesToSharedDefaults()
+    }
+    
     func setCrashlyticsEnabled(_ enabled: Bool) {
         Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(enabled)
         userDefaultsDataSource.setCrashlyticsDisabled(enabled == false)
@@ -50,6 +54,11 @@ extension MainRepositoryImpl {
     
     var appBundleIdentifier: String? {
         Bundle.main.bundleIdentifier
+    }
+
+    var appDisplayName: String? {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
     }
     
     func saveDateOfFirstRun(_ date: Date) {

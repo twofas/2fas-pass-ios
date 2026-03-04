@@ -14,6 +14,8 @@ enum PasswordCellMenu: Hashable {
         case secureNoteText
         case paymentCardNumber
         case paymentCardSecurityCode
+        case wifiSSID
+        case wifiPassword
     }
     
     case view
@@ -31,6 +33,8 @@ enum PasswordCellMenu: Hashable {
         case .copy(.secureNoteText): String(localized: .secureNoteViewActionCopy)
         case .copy(.paymentCardNumber): String(localized: .cardViewActionCopyCardNumber)
         case .copy(.paymentCardSecurityCode): String(localized: .cardViewActionCopySecurityCode)
+        case .copy(.wifiSSID): String(localized: .wifiViewActionCopySsid)
+        case .copy(.wifiPassword): String(localized: .wifiViewActionCopyPassword)
         case .goToURI: String(localized: .loginViewActionOpenUri)
         case .moveToTrash: String(localized: .loginViewActionDelete)
         }
@@ -45,6 +49,8 @@ enum PasswordCellMenu: Hashable {
         case .copy(.secureNoteText): UIImage(systemName: "document.on.document")
         case .copy(.paymentCardNumber): UIImage(systemName: "creditcard")
         case .copy(.paymentCardSecurityCode): UIImage(systemName: "creditcard.and.123")
+        case .copy(.wifiSSID): UIImage(systemName: "wifi")
+        case .copy(.wifiPassword): UIImage(systemName: "ellipsis.rectangle")
         case .goToURI: UIImage(systemName: "arrow.up.right")
         case .moveToTrash: UIImage(systemName: "trash")
         }

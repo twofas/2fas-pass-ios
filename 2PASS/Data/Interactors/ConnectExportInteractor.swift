@@ -53,6 +53,11 @@ protocol ConnectExportInteracting: AnyObject {
         options: ConnectItemExportOptionsProvider,
         secureFieldEncryptionKeyProvider: ConnectItemExportEncryptionKeyProvider
     ) async throws(ExportError) -> ConnectSchemaV2.ConnectItem?
+
+    func prepareSecureFieldsForConnectExport(
+        item: ItemData,
+        secureFieldEncryptionKey: SymmetricKey
+    ) throws(ExportError) -> [String: Any]
 }
 
 final class ConnectExportInteractor: ConnectExportInteracting {
@@ -234,6 +239,33 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         return try makeConnectItem(from: item,
                                    optionsProvider: options,
                                    secureFieldEncryptionKeyProvider: secureFieldEncryptionKeyProvider)
+    }
+
+    func prepareSecureFieldsForConnectExport(
+        item: ItemData,
+        secureFieldEncryptionKey: SymmetricKey
+    ) throws(ExportError) -> [String: Any] {
+        let contentData = try encodeContent(from: item)
+
+        guard let contentDict = try decodeContent(contentData) else {
+            throw ExportError.jsonDecode(error: nil)
+        }
+
+        return contentDict.reduce(into: [String: Any]()) { result, keyValue in
+            guard item.contentType.isSecureField(key: keyValue.key),
+                  let stringValue = keyValue.value as? String,
+                  let data = Data(base64Encoded: stringValue),
+                  let decryptedData = itemsInteractor.decryptData(
+                      data, isSecureField: true, protectionLevel: item.protectionLevel),
+                  let nonce = mainRepository.generateRandom(
+                      byteCount: Config.Connect.secureFieldNonceByteCount),
+                  let encrypted = mainRepository.encrypt(
+                      decryptedData, key: secureFieldEncryptionKey, nonce: nonce)
+            else { return }
+
+            let key = connectExportKey(for: keyValue.key, in: item.contentType)
+            result[key] = encrypted.base64EncodedString()
+        }
     }
 }
 
@@ -467,7 +499,8 @@ private extension ConnectExportInteractor {
                        let encryptKey = secureFieldEncryptionKeyProvider(item.protectionLevel),
                        let encyptedData = mainRepository.encrypt(decryptedData, key: encryptKey, nonce: nonce)
                     {
-                        result[keyValue.key] = encyptedData.base64EncodedString()
+                        let exportKey = connectExportKey(for: keyValue.key, in: item.contentType)
+                        result[exportKey] = encyptedData.base64EncodedString()
                     }
                 } else if options.contains(.includeUnencryptedFields) {
                     result[keyValue.key] = keyValue.value
@@ -508,6 +541,15 @@ private extension ConnectExportInteractor {
             return try mainRepository.jsonDecoder.decode(AnyCodable.self, from: contentData).value as? [String: Any]
         } catch {
             throw .jsonDecode(error: error)
+        }
+    }
+
+    func connectExportKey(for storageKey: String, in contentType: ItemContentType) -> String {
+        switch contentType {
+        case .wifi where storageKey == "s_password":
+            return "s_wifi_password"
+        default:
+            return storageKey.hasPrefix("s_") ? storageKey : "s_\(storageKey)"
         }
     }
 }

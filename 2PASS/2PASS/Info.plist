@@ -34,6 +34,10 @@
 	<array>
 		<string>twofasauth</string>
 	</array>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>ASCredentialExchangeActivity</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

@@ -50,6 +50,8 @@ protocol UserDefaultsDataSource: AnyObject {
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
     
+    func migrateLegacyValuesToSharedDefaults()
+    
     var webDAVSavedConfig: Data? { get }
     func saveWebDAVSavedConfig(_ config: Data)
     func clearWebDAVConfig()
@@ -113,4 +115,8 @@ protocol UserDefaultsDataSource: AnyObject {
     var lastAppUpdatePromptDate: Date? { get }
     func setLastAppUpdatePromptDate(_ date: Date)
     func clearLastAppUpdatePromptDate()
+
+    var screenCaptureAllowedUntil: Date? { get }
+    func setScreenCaptureAllowedUntil(_ date: Date)
+    func clearScreenCaptureAllowedUntil()
 }
