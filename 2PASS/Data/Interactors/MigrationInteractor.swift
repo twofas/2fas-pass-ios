@@ -69,6 +69,7 @@ final class MigrationInteractor: MigrationInteracting {
         
         if lastKnownAppVersion?.compare("1.7.0", options: .numeric) == .orderedAscending || lastKnownAppVersion == nil {
             mainRepository.migrateLegacyValuesToSharedDefaults()
+            mainRepository.removeDuplicatedDeletedItems()
         }
 
         mainRepository.saveEncryptedStorage()
