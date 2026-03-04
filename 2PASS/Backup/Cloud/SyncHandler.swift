@@ -198,8 +198,7 @@ final class SyncHandler {
         isSyncing = false
         
         Log("SyncHandler - Sending current cloud state to local database", module: .cloudSync)
-        let savedMetadata = cloudKit.consumeSavedRecordsMetadata()
-        let shouldRefreshLocalData = mergeHandler.applyChanges(savedMetadata: savedMetadata)
+        let shouldRefreshLocalData = mergeHandler.applyChanges()
         
         finishedSync?()
         if shouldRefreshLocalData {
