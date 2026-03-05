@@ -97,11 +97,11 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func removeTag(_ tagID: ItemTagID) {
-        tagInteractor.deleteTag(tagID: tagID)
+        tagInteractor.externalDeleteTag(tagID: tagID)
     }
     
     func removeItem(_ itemID: ItemID) {
-        itemsInteractor.markAsTrashed(for: itemID)
+        itemsInteractor.externalMarkAsTrashed(for: itemID)
     }
     
     func currentVault() -> VaultEncryptedData? {
