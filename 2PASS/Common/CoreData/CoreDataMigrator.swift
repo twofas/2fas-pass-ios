@@ -49,7 +49,7 @@ public final class CoreDataMigrator: CoreDataMigratorProtocol {
         let needsToMigrate = (storedVersion != versions.current)
         if needsToMigrate {
             // swiftlint:disable line_length
-            Log("Need to migrate Core Data to current version: \(versions.current.rawValue) from \(String(describing: storedVersion?.rawValue))", module: .storage)
+            Log("Need to migrate Core Data to current version: \(versions.current.rawValue, privacy: .public) from \(String(describing: storedVersion?.rawValue), privacy: .public)", module: .storage)
             // swiftlint:enable line_length
         }
         
