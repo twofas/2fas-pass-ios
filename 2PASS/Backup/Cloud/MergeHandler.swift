@@ -30,6 +30,7 @@ final class MergeHandler {
     private let jsonEncoder: JSONEncoder
     
     private var isMultiDeviceSyncEnabled: Bool = false
+    private var isTakingOverVault: Bool = false
     
     private var deleted: [DeletedItemID: Deleted] = [:]
     private var items: [ItemID: Item] = [:]
@@ -87,8 +88,9 @@ final class MergeHandler {
 }
 
 extension MergeHandler {
-    func setMultiDeviceSyncEnabled(_ enabled: Bool) {
+    func setMultiDeviceSyncEnabled(_ enabled: Bool, takingOver: Bool = false) {
         isMultiDeviceSyncEnabled = enabled
+        isTakingOverVault = takingOver
     }
     
     func setItemIDsForDeletition(_ itemIDsForDeletition: [CKRecord.ID]) {
@@ -250,10 +252,10 @@ extension MergeHandler {
             
             if ConstStorage.passwordWasChanged || cloudVault.deviceID != deviceID {
                 if cloudVault.deviceID != deviceID {
-                    if isMultiDeviceSyncEnabled {
+                    if isMultiDeviceSyncEnabled || isTakingOverVault {
                         cloudVault.update(deviceID: deviceID, updatedAt: date)
                         vaultAddIfDataModifed = cloudVault
-                        skipIfDataUnmodified = ConstStorage.passwordWasChanged == false
+                        skipIfDataUnmodified = !isTakingOverVault && ConstStorage.passwordWasChanged == false
                     } else {
                         syncNotAllowed?()
                         completion(.failure(.syncNotAllowed))

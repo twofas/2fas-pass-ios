@@ -87,7 +87,7 @@ extension CloudSyncInteractor: CloudSyncInteracting {
             return
         }
         mainRepository.cloudSync.setVaultID(currentVaultID)
-        mainRepository.cloudSync.setMultiDeviceSyncEnabled(paymentStatusInteractor.entitlements.multiDeviceSync || takeoverVault)
+        mainRepository.cloudSync.setMultiDeviceSyncEnabled(paymentStatusInteractor.entitlements.multiDeviceSync, takingOver: takeoverVault)
         mainRepository.cloudSync.checkState()
         
         if !takeoverVault {

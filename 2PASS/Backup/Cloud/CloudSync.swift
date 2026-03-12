@@ -63,8 +63,8 @@ public final class CloudSync {
         checkForMigration(cloudCacheStorage: cloudCacheStorage)
     }
     
-    public func setMultiDeviceSyncEnabled(_ enabled: Bool) {
-        mergeHandler?.setMultiDeviceSyncEnabled(enabled)
+    public func setMultiDeviceSyncEnabled(_ enabled: Bool, takingOver: Bool = false) {
+        mergeHandler?.setMultiDeviceSyncEnabled(enabled, takingOver: takingOver)
     }
     
     public func setVaultID(_ vaultID: VaultID) {
