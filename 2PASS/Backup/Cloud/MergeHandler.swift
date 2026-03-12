@@ -279,9 +279,9 @@ extension MergeHandler {
         mergeDeletedItems(local: localDeletedItems, cloud: cloudDeletedItems, vaultID: localVault.vaultID)
         mergeTags(local: localTags, cloud: cloudTags, vaultID: localVault.vaultID)
         mergeItems(local: localItems, cloud: cloudItems, vaultID: localVault.vaultID)
-        
-        handleItemsWhichAreDeleted()
-        handleTagsWhichAreDeleted()
+
+        handleItemsWhichAreDeleted(allLocalDeletedItems: localDeletedItems, allLocalItems: localItems)
+        handleTagsWhichAreDeleted(allLocalDeletedItems: localDeletedItems, allLocalTags: localTags)
         
         guard prepareChangesInDeletedItems(
             local: localDeletedItems,
@@ -400,30 +400,80 @@ private extension MergeHandler {
         }
     }
     
-    func handleItemsWhichAreDeleted() {
+    func handleItemsWhichAreDeleted(allLocalDeletedItems: [DeletedItemData], allLocalItems: [ItemEncryptedData]) {
+        var handledItemIDs: Set<ItemID> = []
+
         for deletedItems in deleted where deletedItems.value.isDeletedItem {
             let itemID = deletedItems.key
             if let item = items[itemID] {
-                // item was removed to trash
-                if deletedItems.value.deletedAt.isAfter(item.modificationDate) {
+                handledItemIDs.insert(itemID)
+                // item was removed to trash (equal dates = deletion wins)
+                if !deletedItems.value.deletedAt.isBefore(item.modificationDate) {
                     itemsForRemoval.append(item)
                     items[itemID] = nil
-                } else { // item was restored from trash
+                } else { // item was restored from trash (modified after deletion)
                     deletedForRemoval.append(deletedItems.value)
                     deleted[itemID] = nil
                 }
             }
         }
+
+        // Handle cloud deleted records where the item exists locally but wasn't in the
+        // items diff dict (because local and cloud items matched in mergeItems and were
+        // removed). Without this, the receiving device never moves items to trash.
+        for (itemID, deletedEntry) in deleted where deletedEntry.isDeletedItem {
+            guard !handledItemIDs.contains(itemID) else { continue }
+            if case .cloud = deletedEntry,
+               let localItem = allLocalItems.first(where: { $0.itemID == itemID }),
+               !deletedEntry.deletedAt.isBefore(localItem.modificationDate) {
+                itemIDsForDeletition.append(itemID)
+            }
+        }
+
+        // Handle cloud items that have matching local deleted records which were already
+        // resolved in mergeDeletedItems (local == cloud). Without this check, items
+        // re-uploaded by another device during a batch deletion race condition would
+        // bypass the deletion check and get restored from trash.
+        for localDeleted in allLocalDeletedItems where localDeleted.kind == .login {
+            let itemID = localDeleted.itemID
+            guard deleted[itemID] == nil else { continue }
+            if let item = items[itemID], !localDeleted.deletedAt.isBefore(item.modificationDate) {
+                items[itemID] = nil
+            }
+        }
     }
     
-    func handleTagsWhichAreDeleted() {
+    func handleTagsWhichAreDeleted(allLocalDeletedItems: [DeletedItemData], allLocalTags: [ItemTagEncryptedData]) {
+        var handledTagIDs: Set<ItemTagID> = []
+
         for deletedItems in deleted where deletedItems.value.isDeletedTag {
             let itemID = deletedItems.key
             if let tag = tags[itemID] {
-                if deletedItems.value.deletedAt.isAfter(tag.modificationDate) {
+                handledTagIDs.insert(itemID)
+                if !deletedItems.value.deletedAt.isBefore(tag.modificationDate) {
                     tagForRemoval.append(tag)
                     tags[itemID] = nil
                 }
+            }
+        }
+
+        // Handle cloud deleted records where the tag exists locally but wasn't in the
+        // tags diff dict (because local and cloud tags matched in mergeTags)
+        for (tagID, deletedEntry) in deleted where deletedEntry.isDeletedTag {
+            guard !handledTagIDs.contains(tagID) else { continue }
+            if case .cloud = deletedEntry,
+               let localTag = allLocalTags.first(where: { $0.tagID == tagID }),
+               !deletedEntry.deletedAt.isBefore(localTag.modificationDate) {
+                tagIDsForDeletition.append(tagID)
+            }
+        }
+
+        // Same race condition protection for tags
+        for localDeleted in allLocalDeletedItems where localDeleted.kind == .tag {
+            let itemID = localDeleted.itemID
+            guard deleted[itemID] == nil else { continue }
+            if let tag = tags[itemID], !localDeleted.deletedAt.isBefore(tag.modificationDate) {
+                tags[itemID] = nil
             }
         }
     }
@@ -599,6 +649,12 @@ private extension MergeHandler {
             switch del {
             case .local(let deletedItem):
                 deletedIDsForDeletition.append(deletedItem.itemID)
+                cloudStorageDeletedIDsForDeletition.append(deletedItem.itemID)
+                recordIDsForRemoval
+                    .append(
+                        CKRecord
+                            .ID(recordName: DeletedItemRecord.createRecordName(for: deletedItem.itemID), zoneID: zoneID)
+                    )
             case .cloud(let deletedItem, _):
                 cloudStorageDeletedIDsForDeletition.append(deletedItem.itemID)
                 recordIDsForRemoval
@@ -615,6 +671,8 @@ private extension MergeHandler {
             switch item {
             case .local(let itemData):
                 itemIDsForDeletition.append(itemData.itemID)
+                cloudStorageItemIDsForDeletition.append(itemData.itemID)
+                recordIDsForRemoval.append(CKRecord.ID(recordName: ItemRecord.createRecordName(for: itemData.itemID), zoneID: zoneID))
             case .cloud(let item, _):
                 cloudStorageItemIDsForDeletition.append(item.itemID)
                 recordIDsForRemoval.append(CKRecord.ID(recordName: ItemRecord.createRecordName(for: item.itemID), zoneID: zoneID))
@@ -627,6 +685,8 @@ private extension MergeHandler {
             switch tag {
             case .local(let tagData):
                 tagIDsForDeletition.append(tagData.tagID)
+                cloudStorageTagIDsForDeletition.append(tagData.tagID)
+                recordIDsForRemoval.append(CKRecord.ID(recordName: TagRecord.createRecordName(for: tagData.tagID), zoneID: zoneID))
             case .cloud(let tag, _):
                 cloudStorageTagIDsForDeletition.append(tag.tagID)
                 recordIDsForRemoval.append(CKRecord.ID(recordName: TagRecord.createRecordName(for: tag.tagID), zoneID: zoneID))
