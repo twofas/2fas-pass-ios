@@ -71,8 +71,8 @@ public final class CloudSync {
         cloudHandler?.setVaultID(vaultID: vaultID)
     }
     
-    public func synchronize() {
-        cloudHandler?.synchronize()
+    public func synchronize(fromPush: Bool = false) {
+        cloudHandler?.synchronize(fromPush: fromPush)
     }
 
     public func checkState() {

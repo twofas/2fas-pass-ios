@@ -25,6 +25,7 @@ final class CloudKit {
     var userLoggedOut: Callback?
     var resetStack: Callback?
     
+    var fetchZoneChangesStarted: Callback?
     var fetchFinishedSuccessfuly: Callback?
     var changesSavedSuccessfuly: Callback?
     
@@ -44,7 +45,8 @@ final class CloudKit {
     private var deletedRecords: [DeletedItem] = []
     
     private var collectedActions: [CloudKitAction] = []
-    
+    private var retryWorkItem: DispatchWorkItem?
+
     private let syncTokenHandler = SyncTokenHandler()
     
     init() {
@@ -202,6 +204,8 @@ final class CloudKit {
     }
     
     private func fetchZoneChanges() {
+        fetchZoneChangesStarted?()
+
         guard zoneUpdated else {
             Log("CloudKit - NO zone changes - exiting", module: .cloudSync)
             DispatchQueue.main.async {
@@ -210,7 +214,7 @@ final class CloudKit {
             }
             return
         }
-        
+
         Log("CloudKit - clearing record changes", module: .cloudSync)
         clearRecordChanges()
         
@@ -335,6 +339,7 @@ final class CloudKit {
         syncTokenHandler.prepare()
         clearRecordChanges()
         collectedActions = []
+        cancelPendingRetry()
         operation?.cancel()
         operation = nil
     }
@@ -495,12 +500,23 @@ final class CloudKit {
         }
     }
     
+    var isWaitingForRetry: Bool { retryWorkItem != nil }
+
+    func cancelPendingRetry() {
+        retryWorkItem?.cancel()
+        retryWorkItem = nil
+    }
+
     private func retryAction(_ retryIn: TimeInterval = 2.0) {
         Log("CloudKit - Preparing to retry sync in \(retryIn)", module: .cloudSync)
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + retryIn) {
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.retryWorkItem = nil
             Log("CloudKit - Scheduled sync -> syncing", module: .cloudSync)
             self.cloudSync(zoneID: self.zoneID)
         }
+        retryWorkItem = workItem
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + retryIn, execute: workItem)
     }
 }
 

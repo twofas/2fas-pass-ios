@@ -30,8 +30,8 @@ extension MainRepositoryImpl {
         cloudSync.clearBackup()
     }
     
-    func synchronizeBackup() {
-        cloudSync.synchronize()
+    func synchronizeBackup(fromPush: Bool = false) {
+        cloudSync.synchronize(fromPush: fromPush)
     }
     
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {

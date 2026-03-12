@@ -12,10 +12,14 @@ public protocol CloudSyncInteracting: AnyObject {
     var currentState: CloudState { get }
     var lastSuccessSyncDate: Date? { get }
     func setup(takeoverVault: Bool)
-    func synchronize()
+    func synchronize(fromPush: Bool)
     func enable()
     func disable()
     func clearBackup()
+}
+
+public extension CloudSyncInteracting {
+    func synchronize() { synchronize(fromPush: false) }
 }
 
 final class CloudSyncInteractor {
@@ -91,8 +95,8 @@ extension CloudSyncInteractor: CloudSyncInteracting {
         }
     }
     
-    func synchronize() {
-        mainRepository.synchronizeBackup()
+    func synchronize(fromPush: Bool = false) {
+        mainRepository.synchronizeBackup(fromPush: fromPush)
     }
     
     func enable() {
