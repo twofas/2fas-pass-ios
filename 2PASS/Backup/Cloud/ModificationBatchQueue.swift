@@ -10,48 +10,57 @@ import Common
 
 final class ModificationBatchQueue {
     private let batchElementLimit = 400
-    
-    private var batchModify: [[CKRecord]] = []
-    private var batchDelete: [[CKRecord.ID]] = []
-    
-    private var batchCount: Int = 0
-    
+
+    private var batches: [(modify: [CKRecord], delete: [CKRecord.ID])] = []
+
     var finished: Bool {
-        batchCount < 0
+        batches.isEmpty
     }
-    
+
     func setRecordsToModifyOnServer(_ modify: [CKRecord]?, deleteIDs: [CKRecord.ID]?) {
-        if let modify {
-            batchModify = modify.grouped(by: batchElementLimit)
+        let allModify = modify ?? []
+        let allDelete = deleteIDs ?? []
+
+        batches = []
+
+        var modifyIndex = allModify.startIndex
+        var deleteIndex = allDelete.startIndex
+
+        while modifyIndex < allModify.endIndex || deleteIndex < allDelete.endIndex {
+            let remaining = batchElementLimit
+
+            let modifyEnd = min(modifyIndex + remaining, allModify.endIndex)
+            let modifyBatch = Array(allModify[modifyIndex..<modifyEnd])
+            modifyIndex = modifyEnd
+
+            let deleteRemaining = remaining - modifyBatch.count
+            let deleteEnd = min(deleteIndex + deleteRemaining, allDelete.endIndex)
+            let deleteBatch = Array(allDelete[deleteIndex..<deleteEnd])
+            deleteIndex = deleteEnd
+
+            batches.append((modify: modifyBatch, delete: deleteBatch))
         }
-        
-        if let deleteIDs {
-            batchDelete = deleteIDs.grouped(by: batchElementLimit)
-        }
-        
-        let maxBatchCount = batchModify.count + batchDelete.count
-        batchCount = maxBatchCount - 1
-        
-        Log("ModificationBatchQueue - spliting into \(maxBatchCount) batches", module: .cloudSync)
+
+        Log("ModificationBatchQueue - spliting into \(batches.count) batches", module: .cloudSync)
     }
-    
+
     func currentBatch() -> (modify: [CKRecord]?, delete: [CKRecord.ID]?) {
-        if let delete = batchDelete.popLast() {
-            return (modify: nil, delete: delete)
+        guard let batch = batches.first else {
+            return (modify: nil, delete: nil)
         }
-        if let modify = batchModify.popLast() {
-            return (modify: modify, delete: nil)
-        }
-        return (modify: nil, delete: nil)
+        return (
+            modify: batch.modify.isEmpty ? nil : batch.modify,
+            delete: batch.delete.isEmpty ? nil : batch.delete
+        )
     }
-    
+
     func prevBatchProcessed() {
-        batchCount -= 1
+        if !batches.isEmpty {
+            batches.removeFirst()
+        }
     }
-    
+
     func clear() {
-        batchCount = 0
-        batchModify = []
-        batchDelete = []
+        batches = []
     }
 }
