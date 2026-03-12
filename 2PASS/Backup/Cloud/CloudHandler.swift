@@ -14,7 +14,7 @@ protocol CloudHandlerType: AnyObject {
     
     func setVaultID(vaultID: VaultID)
     func checkState()
-    func synchronize()
+    func synchronize(fromPush: Bool)
     func enable()
     func disable(notify: Bool)
     func clearBackup()
@@ -108,9 +108,9 @@ final class CloudHandler: CloudHandlerType {
         cloudAvailability.checkAvailability()
     }
     
-    func synchronize() {
+    func synchronize(fromPush: Bool = false) {
         guard !isClearing else { return }
-        
+
         Log("Cloud Handler -  Got Synchronize action", module: .cloudSync)
         if shouldResetState {
             Log("Cloud Handler - Reseting state", module: .cloudSync)
@@ -123,10 +123,10 @@ final class CloudHandler: CloudHandlerType {
             checkState()
         case .enabledNotAvailable:
             Log("Cloud Handler - enabled but not available state on synchronize", module: .cloudSync)
-            sync()
+            sync(fromPush: fromPush)
         case .enabled:
             Log("Cloud Handler -  is enabled - syncing", module: .cloudSync)
-            sync()
+            sync(fromPush: fromPush)
         case .disabled:
             Log("Cloud Handler -  Can't synchronize if cloud is disabled", module: .cloudSync)
         }
@@ -234,13 +234,13 @@ final class CloudHandler: CloudHandlerType {
         }
     }
     
-    private func sync() {
+    private func sync(fromPush: Bool = false) {
         Log("Cloud Handler - Sync", module: .cloudSync)
         guard let vaultID else {
             Log("Cloud Handler - VaultID not set!", module: .cloudSync, severity: .error)
             return
         }
-        syncHandler.synchronize(zoneID: .from(vaultID: vaultID))
+        syncHandler.synchronize(zoneID: .from(vaultID: vaultID), fromPush: fromPush)
     }
     
     private func clearCache() {

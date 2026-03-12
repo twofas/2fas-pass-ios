@@ -18,7 +18,10 @@ final class SyncHandler {
     
     private var isSyncing = false
     private var applyingChanges = false
+    private var fetchStarted = false
+    private var needsResync = false
     private var currentDate = Date()
+    private var lastZoneID: CKRecordZone.ID?
         
     typealias OtherError = (NSError) -> Void
     
@@ -45,6 +48,7 @@ final class SyncHandler {
                 
         cloudKit.deletedEntries = { [weak self] entries in self?.deleteEntries(entries) }
         cloudKit.updatedEntries = { [weak self] entries in self?.updateEntries(entries) }
+        cloudKit.fetchZoneChangesStarted = { [weak self] in self?.fetchStarted = true }
         cloudKit.fetchFinishedSuccessfuly = { [weak self] in self?.fetchFinishedSuccessfuly() }
         cloudKit.changesSavedSuccessfuly = { [weak self] in self?.changesSavedSuccessfuly() }
         
@@ -83,15 +87,27 @@ final class SyncHandler {
         ConstStorage.clearZone()
     }
     
-    func synchronize(zoneID: CKRecordZone.ID) {
-        guard !isSyncing else {
-            Log("SyncHandler - Can't start sync. Already in progress. Exiting", module: .cloudSync)
-            return
+    func synchronize(zoneID: CKRecordZone.ID, fromPush: Bool = false) {
+        if isSyncing {
+            if cloudKit.isWaitingForRetry {
+                Log("SyncHandler - Cancelling pending retry, starting fresh sync", module: .cloudSync)
+                cloudKit.cancelPendingRetry()
+            } else if fromPush, fetchStarted {
+                Log("SyncHandler - Sync in progress. Marking needsResync (push received)", module: .cloudSync)
+                needsResync = true
+                return
+            } else {
+                Log("SyncHandler - Sync in progress. Skipping", module: .cloudSync)
+                return
+            }
         }
         Log("SyncHandler - Sync Handler: synchronizing", module: .cloudSync)
         isSyncing = true
+        fetchStarted = false
+        needsResync = false
+        lastZoneID = zoneID
         startedSync?()
-        
+
         mergeHandler.clear()
         modifyQueue.clear()
         cloudKit.cloudSync(zoneID: zoneID)
@@ -100,6 +116,7 @@ final class SyncHandler {
     func clearCacheAndDisable() {
         Log("SyncHandler - Sync Handler: clearCacheAndDisable", module: .cloudSync)
         isSyncing = false
+        needsResync = false
         resetStack()
         cloudKit.clear()
     }
@@ -196,19 +213,27 @@ final class SyncHandler {
         guard isSyncing else { return }
         Log("SyncHandler - Sync completed, clearing changes for sending", module: .cloudSync)
         isSyncing = false
-        
+
         Log("SyncHandler - Sending current cloud state to local database", module: .cloudSync)
         let shouldRefreshLocalData = mergeHandler.applyChanges()
-        
+
         finishedSync?()
         if shouldRefreshLocalData {
             refreshLocalData?()
+        }
+
+        if needsResync, let zoneID = lastZoneID {
+            Log("SyncHandler - Re-syncing due to push received during previous sync", module: .cloudSync)
+            needsResync = false
+            synchronize(zoneID: zoneID)
         }
     }
     
     private func resetStack() {
         Log("SyncHandler - Sync Handler: resetStack", module: .cloudSync)
         applyingChanges = false
+        fetchStarted = false
+        needsResync = false
         modifyQueue.clear()
         mergeHandler.clear()
         cacheHandler.purge()

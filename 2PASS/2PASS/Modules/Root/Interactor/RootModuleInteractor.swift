@@ -168,7 +168,7 @@ extension RootModuleInteractor: RootModuleInteracting {
         guard securityInteractor.isUserLoggedIn && isUserSetUp else {
             return
         }
-        syncInteractor.synchronize()
+        syncInteractor.synchronize(fromPush: true)
     }
     
     func fetchAppNotifications() async throws -> [AppNotification] {

@@ -2197,7 +2197,7 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    func synchronizeBackup() {
+    func synchronizeBackup(fromPush: Bool) {
         recordCall()
     }
 
