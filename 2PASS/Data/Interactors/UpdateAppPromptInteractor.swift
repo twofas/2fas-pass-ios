@@ -137,7 +137,7 @@ private extension UpdateAppPromptInteractor {
         
         if shouldShowPrompt() {
             switch cloudState {
-            case .enabled(.outOfSync(.schemaNotSupported(let schemaVersion))):
+            case .enabledNotAvailable(reason: .schemaNotSupported(let schemaVersion)):
                 Log("UpdateAppPromptInteractor - iCloud schema not supported detected (v\(schemaVersion)), showing update prompt", module: .interactor)
                 
                 Task { @MainActor in
