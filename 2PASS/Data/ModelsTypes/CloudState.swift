@@ -26,7 +26,6 @@ public enum CloudState: Equatable {
     public enum Sync: Equatable {
         case syncing
         case synced
-        case outOfSync(OutOfSyncReason)
     }
     
     case unknown
@@ -36,7 +35,7 @@ public enum CloudState: Equatable {
     
     public var hasError: Bool {
         switch self {
-        case .enabled(sync: .outOfSync), .enabledNotAvailable: true
+        case .enabledNotAvailable: true
         default: false
         }
     }
@@ -57,8 +56,7 @@ public enum CloudState: Equatable {
     
     public var isSchemeNotSupported: Bool {
         switch self {
-        case .enabled(sync: .outOfSync(.schemaNotSupported)),
-             .enabledNotAvailable(reason: .schemaNotSupported):
+        case .enabledNotAvailable(reason: .schemaNotSupported):
             return true
         default:
             return false

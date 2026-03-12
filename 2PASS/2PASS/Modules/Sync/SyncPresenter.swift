@@ -191,7 +191,6 @@ private extension CloudState.Sync {
         switch self {
         case .syncing: String(localized: .syncSyncing)
         case .synced: String(localized: .syncSynced)
-        case .outOfSync(.schemaNotSupported(let schemaVersion)): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
         }
     }
 }
