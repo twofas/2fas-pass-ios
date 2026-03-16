@@ -73,7 +73,7 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
     
     var isSyncEnabled: Bool {
         switch cloudSyncInteractor.currentState {
-        case .enabled:
+        case .enabled, .enabledNotAvailable:
             return true
         default:
             break
