@@ -80,6 +80,8 @@ private extension MainRepositoryImpl {
                 return .enabledNotAvailable(reason: .noAccount)
             case .restricted:
                 return .enabledNotAvailable(reason: .restricted)
+            case .syncNotAllowed:
+                return .enabledNotAvailable(reason: .syncNotAllowed)
             }
         case .disabled:
             return .disabled

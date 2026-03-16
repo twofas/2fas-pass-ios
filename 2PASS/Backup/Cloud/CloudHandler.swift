@@ -344,10 +344,8 @@ final class CloudHandler: CloudHandlerType {
     
     private func syncNotAllowed() {
         Log("Cloud Handler - sync not allowed", module: .cloudSync)
-        setDisabled()
         clearCache()
-        currentState = .disabled
-        NotificationCenter.default.post(name: .presentSyncPremiumNeededScreen, object: nil)
+        currentState = .enabledNotAvailable(reason: .syncNotAllowed)
     }
     
     // MARK: -
