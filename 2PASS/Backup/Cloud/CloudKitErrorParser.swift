@@ -36,18 +36,21 @@ extension Collection where Element == CloudKitAction {
 
 // swiftlint:disable legacy_objc_type
 final class CloudKitErrorParser {
-    private let minSecondsToRetry: TimeInterval = 2
-    private let maxSecondsToRetry: TimeInterval = 1800
-    private let midSecondsToRetry: TimeInterval = 600
-    
-    func handle(error: NSError) -> CloudKitAction? {
+    private let retryIntervals: [TimeInterval] = [2, 5, 10, 30, 60]
+    private let offlineRetryInterval: TimeInterval = 600
+
+    private func retryInterval(for retryCount: Int) -> TimeInterval {
+        retryIntervals[min(retryCount, retryIntervals.count - 1)]
+    }
+
+    func handle(error: NSError, retryCount: Int) -> CloudKitAction? {
         let userInfo = error.userInfo
         
         Log("Handling error \(error)", module: .cloudSync)
         
         if error.isOffline {
-            Log("iCloud is offline, retrying in \(midSecondsToRetry)s", module: .cloudSync)
-            return .retry(after: midSecondsToRetry)
+            Log("iCloud is offline, retrying in \(offlineRetryInterval)s", module: .cloudSync)
+            return .retry(after: offlineRetryInterval)
         }
         
         if let retry = userInfo[CKErrorRetryAfterKey] as? NSNumber {
@@ -57,36 +60,36 @@ final class CloudKitErrorParser {
         }
         
         guard let errorCode = CKError.Code(rawValue: error.code) else {
-            Log("Can't get error code from \(error). Purging and retrying", module: .cloudSync)
-            return .resetAndRetry(after: minSecondsToRetry)
+            let interval = retryInterval(for: retryCount)
+            Log("Can't get error code from \(error). Purging and retrying in \(interval)s", module: .cloudSync)
+            return .resetAndRetry(after: interval)
         }
         
         Log("Error code: \(errorCode)", module: .cloudSync)
         
         switch errorCode {
         case .internalError, .zoneNotFound, .serverResponseLost:
-            return .resetAndRetry(after: minSecondsToRetry)
-            
+            return .resetAndRetry(after: retryInterval(for: retryCount))
+
         case .networkUnavailable,
             .networkFailure,
             .serviceUnavailable,
             .requestRateLimited,
             .limitExceeded,
             .zoneBusy:
-            let seconds = TimeInterval.random(in: minSecondsToRetry...maxSecondsToRetry)
-            return .resetAndRetry(after: seconds)
-            
+            return .resetAndRetry(after: retryInterval(for: retryCount))
+
         case .operationCancelled:
             Log("Operation cancelled!", module: .cloudSync)
             return nil
-            
+
         case .changeTokenExpired,
                 .serverRecordChanged,
                 .unknownItem,
                 .constraintViolation,
                 .invalidArguments,
                 .batchRequestFailed:
-            return .resetAndRetry(after: minSecondsToRetry)
+            return .resetAndRetry(after: retryInterval(for: retryCount))
             
         case .missingEntitlement,
             .serverRejectedRequest,
