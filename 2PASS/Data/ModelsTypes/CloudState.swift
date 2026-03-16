@@ -17,6 +17,7 @@ public enum CloudState: Equatable {
         case restricted
         case schemaNotSupported(Int)
         case incorrectEncryption
+        case syncNotAllowed
     }
 
     public enum Sync: Equatable {
@@ -50,6 +51,15 @@ public enum CloudState: Equatable {
         }
     }
     
+    public var isSyncNotAllowed: Bool {
+        switch self {
+        case .enabledNotAvailable(reason: .syncNotAllowed):
+            return true
+        default:
+            return false
+        }
+    }
+
     public var isSchemeNotSupported: Bool {
         switch self {
         case .enabledNotAvailable(reason: .schemaNotSupported):
