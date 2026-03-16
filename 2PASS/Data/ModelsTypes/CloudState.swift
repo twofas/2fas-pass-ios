@@ -18,11 +18,7 @@ public enum CloudState: Equatable {
         case schemaNotSupported(Int)
         case incorrectEncryption
     }
-    
-    public enum OutOfSyncReason: Equatable {
-        case schemaNotSupported(Int)
-    }
-    
+
     public enum Sync: Equatable {
         case syncing
         case synced
