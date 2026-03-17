@@ -81,6 +81,8 @@ public enum Config {
     #else
     public static let twoFASBaseURL = URL(string: "https://dev-pass.2fas.com/")!
     #endif
+    
+    public static let twoFASShareBaseURL = URL(string: "https://share.2fas.com/")!
         
     public enum Connect {
         #if PROD

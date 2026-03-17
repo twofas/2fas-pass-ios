@@ -780,6 +780,10 @@ protocol MainRepository: AnyObject {
     // MARK: 2FAS Web Service
     func appNotifications() async throws -> AppNotifications
     func deleteAppNotification(id: String) async throws
+
+    // MARK: Share Service
+    func createSharedSecret(data: String, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse
+    func fetchSharedSecret(id: String) async throws -> SharedSecret
     
     // MARK: - Scan
     func scan(image: UIImage, completion: @escaping (Result<[String], ScanImageError>) -> Void)

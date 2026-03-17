@@ -356,6 +356,17 @@ public final class InteractorFactory {
         )
     }
     
+    public func shareInteractor() -> ShareInteracting {
+        ShareInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            itemsInteractor: itemsInteractor()
+        )
+    }
+
+    public func shareServiceInteractor() -> ShareServiceInteracting {
+        ShareServiceInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
     public func appNotificationsInteractor() -> AppNotificationsInteracting {
         AppNotificationsInteractor(
             mainRepository: MainRepositoryImpl.shared,

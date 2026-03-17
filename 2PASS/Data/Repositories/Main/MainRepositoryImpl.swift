@@ -68,6 +68,7 @@ final class MainRepositoryImpl: MainRepository {
     let autoFillStatusDataSource: AutoFillStatusDataSourcing
     let pushNotificationsPermissionsDataSource: PushNotificationsPermissionsDataSourcing
     let twoFASWebServiceSession: TwoFASWebServiceSession
+    let twoFASShareServiceSession: TwoFASShareServiceSession
     let revenueCatDelegate: RevenueCatDelegate
     
     var inMemoryStorage: InMemoryStorageDataSource?
@@ -99,6 +100,7 @@ final class MainRepositoryImpl: MainRepository {
         autoFillStatusDataSource: AutoFillStatusDataSourcing = AutoFillStatusDataSource(),
         pushNotificationsPermissionsDataSource: PushNotificationsPermissionsDataSourcing = PushNotificationsPermissionsDataSource(),
         twoFASWebServiceSession: TwoFASWebServiceSession = .init(baseURL: Config.twoFASBaseURL),
+        twoFASShareServiceSession: TwoFASShareServiceSession = .init(baseURL: Config.twoFASShareBaseURL),
         revenueCatDelegate: RevenueCatDelegate = .init()
     ) {
         self.cameraPermissions = cameraPermissions
@@ -116,6 +118,7 @@ final class MainRepositoryImpl: MainRepository {
         self.autoFillStatusDataSource = autoFillStatusDataSource
         self.pushNotificationsPermissionsDataSource = pushNotificationsPermissionsDataSource
         self.twoFASWebServiceSession = twoFASWebServiceSession
+        self.twoFASShareServiceSession = twoFASShareServiceSession
         self.revenueCatDelegate = revenueCatDelegate
         
         feedbackGenerator = UINotificationFeedbackGenerator()
