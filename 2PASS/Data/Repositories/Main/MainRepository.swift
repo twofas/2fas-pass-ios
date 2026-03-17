@@ -188,6 +188,8 @@ protocol MainRepository: AnyObject {
     ) -> Data?
     
     func encrypt(_ data: Data, key: SymmetricKey, nonce: Data) -> Data?
+    func encryptWithoutNonce(_ data: Data, key: SymmetricKey, nonce: Data) -> Data?
+    func decrypt(_ data: Data, key: SymmetricKey, nonce: Data) -> Data?
     func generateRandom(byteCount: Int) -> Data?
     
     func importBIP0039Words() -> [String]?

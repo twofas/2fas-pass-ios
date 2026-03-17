@@ -324,6 +324,31 @@ extension MainRepositoryImpl {
             return nil
         }
     }
+
+    func encryptWithoutNonce(_ data: Data, key: SymmetricKey, nonce: Data) -> Data? {
+        guard let gcmNonce = try? AES.GCM.Nonce(data: nonce) else {
+            Log("Invalid nonce", module: .mainRepository, severity: .error)
+            return nil
+        }
+
+        do {
+            let sealedBox = try AES.GCM.seal(data, using: key, nonce: gcmNonce)
+            return sealedBox.ciphertext + sealedBox.tag
+        } catch {
+            Log("Error while encrypting: \(error)", module: .mainRepository, severity: .error)
+            return nil
+        }
+    }
+
+    func decrypt(_ data: Data, key: SymmetricKey, nonce: Data) -> Data? {
+        do {
+            let sealedBox = try AES.GCM.SealedBox(combined: nonce + data)
+            return try AES.GCM.open(sealedBox, using: key)
+        } catch {
+            Log("Error while decrypting: \(error)", module: .mainRepository, severity: .error)
+            return nil
+        }
+    }
     
     func generateRandom(byteCount: Int) -> Data? {
         var randomBytes = [UInt8](repeating: 0, count: byteCount)

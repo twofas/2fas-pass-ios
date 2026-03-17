@@ -89,7 +89,7 @@ final class ShareInteractor: ShareInteracting {
 
         let shareKey = mainRepository.createSymmetricKey(from: keyData)
 
-        guard let encrypted = mainRepository.encrypt(plaintext, key: shareKey, nonce: nonce) else {
+        guard let encrypted = mainRepository.encryptWithoutNonce(plaintext, key: shareKey, nonce: nonce) else {
             throw ShareInteractorError.encryptionFailed
         }
 
@@ -114,7 +114,7 @@ final class ShareInteractor: ShareInteracting {
         let keyData = try deriveKey(from: password, salt: salt)
         let shareKey = mainRepository.createSymmetricKey(from: keyData)
 
-        guard let encrypted = mainRepository.encrypt(plaintext, key: shareKey, nonce: nonce) else {
+        guard let encrypted = mainRepository.encryptWithoutNonce(plaintext, key: shareKey, nonce: nonce) else {
             throw ShareInteractorError.encryptionFailed
         }
 
@@ -133,7 +133,7 @@ final class ShareInteractor: ShareInteracting {
     }
 
     func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> ItemChangeRequest {
-        guard let ciphertext = Data(base64Encoded: encryptedData) else {
+        guard let ciphertextAndTag = Data(base64Encoded: encryptedData) else {
             throw ShareInteractorError.decodingFailed
         }
 
@@ -150,7 +150,7 @@ final class ShareInteractor: ShareInteracting {
             key = mainRepository.createSymmetricKey(from: keyData)
         }
 
-        guard let plaintext = mainRepository.decrypt(ciphertext, key: key) else {
+        guard let plaintext = mainRepository.decrypt(ciphertextAndTag, key: key, nonce: components.nonce) else {
             throw ShareInteractorError.decryptionFailed
         }
 
@@ -163,14 +163,14 @@ final class ShareInteractor: ShareInteracting {
         let lastSegment: String
         switch exportResult.encryption {
         case .key(let shareKey):
-            lastSegment = shareKey.base64EncodedString()
+            lastSegment = shareKey.base64URLEncodedString()
         case .password(let salt):
-            lastSegment = salt.base64EncodedString()
+            lastSegment = salt.base64URLEncodedString()
         }
 
         let scheme = exportResult.encryption.scheme.rawValue
-        let nonceBase64 = exportResult.nonce.base64EncodedString()
-        return URL(string: "\(Config.twoFASShareBaseURL)#/\(id)/\(scheme)/\(nonceBase64)/\(lastSegment)")
+        let nonceBase64URL = exportResult.nonce.base64URLEncodedString()
+        return URL(string: "\(Config.twoFASShareBaseURL)#/\(id)/\(scheme)/\(nonceBase64URL)/\(lastSegment)")
     }
 
     func parseShareURL(_ url: URL) -> ShareLinkComponents? {
@@ -184,8 +184,8 @@ final class ShareInteractor: ShareInteracting {
         guard parts.count == 4 else { return nil }
 
         guard let scheme = ShareSchemeVersion(rawValue: parts[1]),
-              let nonce = Data(base64Encoded: parts[2]),
-              let lastData = Data(base64Encoded: parts[3])
+              let nonce = Data(base64URLEncoded: parts[2]),
+              let lastData = Data(base64URLEncoded: parts[3])
         else { return nil }
 
         let encryption: ShareEncryptionMethod

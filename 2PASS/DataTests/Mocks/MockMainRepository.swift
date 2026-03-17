@@ -972,6 +972,30 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
+    private var stubbedEncryptWithoutNonce: (Data, SymmetricKey, Data) -> Data? = { data, _, _ in data }
+    func encryptWithoutNonce(_ data: Data, key: SymmetricKey, nonce: Data) -> Data? {
+        recordCall()
+        return stubbedEncryptWithoutNonce(data, key, nonce)
+    }
+
+    @discardableResult
+    func withEncryptWithoutNonce(_ handler: @escaping (Data, SymmetricKey, Data) -> Data?) -> Self {
+        stubbedEncryptWithoutNonce = handler
+        return self
+    }
+
+    private var stubbedDecryptWithNonce: (Data, SymmetricKey, Data) -> Data? = { data, _, _ in data }
+    func decrypt(_ data: Data, key: SymmetricKey, nonce: Data) -> Data? {
+        recordCall()
+        return stubbedDecryptWithNonce(data, key, nonce)
+    }
+
+    @discardableResult
+    func withDecryptWithNonce(_ handler: @escaping (Data, SymmetricKey, Data) -> Data?) -> Self {
+        stubbedDecryptWithNonce = handler
+        return self
+    }
+
     private var stubbedGenerateRandom: (Int) -> Data? = { Data(repeating: 0, count: $0) }
     func generateRandom(byteCount: Int) -> Data? {
         recordCall()
