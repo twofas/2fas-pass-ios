@@ -67,4 +67,24 @@ public extension Data {
             return String(repeating: "0", count: 8 - binary.count) + binary
         }.joined()
     }
+
+    // MARK: - Base64URL (RFC 4648 §5)
+
+    func base64URLEncodedString() -> String {
+        base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    init?(base64URLEncoded string: String) {
+        var base64 = string
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let remainder = base64.count % 4
+        if remainder > 0 {
+            base64.append(contentsOf: repeatElement("=", count: 4 - remainder))
+        }
+        self.init(base64Encoded: base64)
+    }
 }
