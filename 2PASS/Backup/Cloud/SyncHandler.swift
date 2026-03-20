@@ -161,7 +161,10 @@ final class SyncHandler {
                 case .schemaNotSupported: break
                 case .missingEncryption: self?.isSyncing = false
                 case .incorrectEncryption: self?.otherError?(error as NSError)
-                case .noLocalVault, .mergeError, .syncNotAllowed: self?.resetStack()
+                case .noLocalVault, .mergeError:
+                    self?.isSyncing = false
+                    self?.resetStack()
+                case .syncNotAllowed: self?.resetStack()
                 }
             }
         }
