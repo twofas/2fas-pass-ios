@@ -90,6 +90,42 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
         return list
     }
     
+    @nonobjc static func listItems(
+        on context: NSManagedObjectContext,
+        itemIDs: Set<DeletedItemID>
+    ) -> [DeletedItemEncryptedEntity] {
+        guard !itemIDs.isEmpty else { return [] }
+        let fetchRequest = DeletedItemEncryptedEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "itemID IN %@", itemIDs as CVarArg)
+
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            Log("DeletedItemEncryptedEntity listItems by IDs error: \(error.localizedDescription)", module: .storage)
+            return []
+        }
+    }
+
+    @nonobjc static func bulkUpdate(
+        on context: NSManagedObjectContext,
+        items: [DeletedItemData]
+    ) {
+        guard !items.isEmpty else { return }
+        let ids = Set(items.map(\.itemID))
+        let entities = listItems(on: context, itemIDs: ids)
+        let entitiesByID = Dictionary(entities.map { ($0.itemID, $0) }, uniquingKeysWith: { first, _ in first })
+
+        for item in items {
+            guard let entity = entitiesByID[item.itemID] else {
+                Log("Can't find Deleted Password entity for itemID: \(item.itemID)", module: .storage, severity: .error)
+                continue
+            }
+            entity.kind = item.kind.rawValue
+            entity.deletedAt = item.deletedAt
+            entity.vaultID = item.vaultID
+        }
+    }
+
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
         itemID: DeletedItemID
@@ -125,6 +161,34 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
     @nonobjc static func delete(on context: NSManagedObjectContext, entity: DeletedItemEncryptedEntity) {
         Log("Deleting entity of type: \(entity)", module: .storage)
         context.delete(entity)
+    }
+
+    @nonobjc static func removeDuplicates(on context: NSManagedObjectContext) {
+        let fetchRequest = DeletedItemEncryptedEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [
+            NSSortDescriptor(
+                key: #keyPath(DeletedItemEncryptedEntity.deletedAt),
+                ascending: false,
+                selector: #selector(NSDate.compare)
+            )
+        ]
+
+        let allItems: [DeletedItemEncryptedEntity]
+        do {
+            allItems = try context.fetch(fetchRequest)
+        } catch {
+            Log("DeletedItemEncryptedEntity removeDuplicates fetch error: \(error.localizedDescription)", module: .storage)
+            return
+        }
+
+        var seenIDs: Set<DeletedItemID> = []
+        for item in allItems {
+            if seenIDs.contains(item.itemID) {
+                delete(on: context, entity: item)
+            } else {
+                seenIDs.insert(item.itemID)
+            }
+        }
     }
 }
 

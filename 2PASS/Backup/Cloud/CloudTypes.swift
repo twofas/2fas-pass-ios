@@ -19,6 +19,7 @@ public enum CloudCurrentState: Equatable {
         case restricted
         case schemaNotSupported(Int)
         case incorrectEncryption
+        case syncNotAllowed
     }
         
     public enum Sync: Equatable {

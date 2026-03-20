@@ -137,7 +137,7 @@ private extension MainModuleInteractor {
             return
         }
 
-        let cloudHasError = cloudSyncInteractor.currentState.hasError && cloudSyncInteractor.lastSuccessSyncDate != nil
+        let cloudHasError = cloudSyncInteractor.currentState.hasError
         let webdavHasError = webDAVStateInteractor.state.hasError && webDAVStateInteractor.isConnected
         
         let showErrorBadge = cloudHasError || webdavHasError
