@@ -58,9 +58,10 @@ public protocol ShareInteracting: AnyObject {
     func exportItem(id: ItemID) async throws -> ShareExportResult
     func exportItem(id: ItemID, password: String) async throws -> ShareExportResult
     func fetchSharedSecret(id: String) async throws -> String
-    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> ItemChangeRequest
+    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> any ItemDataChangeRequest
     func makeShareURL(id: String, exportResult: ShareExportResult) -> URL?
     func parseShareURL(_ url: URL) -> ShareLinkComponents?
+    func parseShareDeepLink(_ url: URL) -> ShareLinkComponents?
 }
 
 // MARK: - Implementation
@@ -132,7 +133,7 @@ final class ShareInteractor: ShareInteracting {
         return secret.data
     }
 
-    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> ItemChangeRequest {
+    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> any ItemDataChangeRequest {
         guard let ciphertextAndTag = Data(base64Encoded: encryptedData) else {
             throw ShareInteractorError.decodingFailed
         }
@@ -180,7 +181,21 @@ final class ShareInteractor: ShareInteracting {
             .split(separator: "/", omittingEmptySubsequences: true)
             .map(String.init)
 
-        // Expected: [<uuid>, <scheme>, <nonce>, <key|salt>]
+        return parseShareComponents(from: parts)
+    }
+
+    func parseShareDeepLink(_ url: URL) -> ShareLinkComponents? {
+        // twofaspass://share/{id}/{scheme}/{nonce}/{key|salt}
+        guard url.scheme == "twofaspass", url.host() == "share" else { return nil }
+
+        let parts = url.pathComponents
+            .filter { $0 != "/" }
+
+        return parseShareComponents(from: parts)
+    }
+
+    private func parseShareComponents(from parts: [String]) -> ShareLinkComponents? {
+        // Expected: [<id>, <scheme>, <nonce>, <key|salt>]
         guard parts.count == 4 else { return nil }
 
         guard let scheme = ShareSchemeVersion(rawValue: parts[1]),
@@ -299,7 +314,7 @@ private extension ShareInteractor {
 
     // MARK: - Import decoding
 
-    func decodeShareContent(from plaintext: Data) throws -> ItemChangeRequest {
+    func decodeShareContent(from plaintext: Data) throws -> any ItemDataChangeRequest {
         let header = try mainRepository.jsonDecoder.decode(
             ShareSecretHeader.self,
             from: plaintext
@@ -344,50 +359,50 @@ private extension ShareInteractor {
 
     // MARK: - Change request builders
 
-    func changeRequest(from content: ShareLoginContent) -> ItemChangeRequest {
-        .addLogin(LoginDataChangeRequest(
+    func changeRequest(from content: ShareLoginContent) -> LoginDataChangeRequest {
+        LoginDataChangeRequest(
             name: content.name,
             username: content.username.map { .value($0) },
             password: content.password.map { .value($0) },
             notes: content.notes,
             uris: content.uris
-        ))
+        )
     }
 
-    func changeRequest(from content: ShareSecureNoteContent) -> ItemChangeRequest {
-        .addSecureNote(SecureNoteDataChangeRequest(
+    func changeRequest(from content: ShareSecureNoteContent) -> SecureNoteDataChangeRequest {
+        SecureNoteDataChangeRequest(
             name: content.name,
             text: content.text
-        ))
+        )
     }
 
-    func changeRequest(from content: ShareCustomContent) -> ItemChangeRequest {
-        .addSecureNote(SecureNoteDataChangeRequest(
+    func changeRequest(from content: ShareCustomContent) -> SecureNoteDataChangeRequest {
+        SecureNoteDataChangeRequest(
             name: nil,
             text: content.text
-        ))
+        )
     }
 
-    func changeRequest(from content: SharePaymentCardContent) -> ItemChangeRequest {
-        .addPaymentCard(PaymentCardDataChangeRequest(
+    func changeRequest(from content: SharePaymentCardContent) -> PaymentCardDataChangeRequest {
+        PaymentCardDataChangeRequest(
             name: content.name,
             cardHolder: content.cardHolder,
             cardNumber: content.cardNumber,
             expirationDate: content.expirationDate,
             securityCode: content.securityCode,
             notes: content.notes
-        ))
+        )
     }
 
-    func changeRequest(from content: ShareWiFiContent) -> ItemChangeRequest {
-        .addWiFi(WiFiDataChangeRequest(
+    func changeRequest(from content: ShareWiFiContent) -> WiFiDataChangeRequest {
+        WiFiDataChangeRequest(
             name: content.name,
             ssid: content.ssid,
             password: content.password,
             notes: content.notes,
             securityType: content.securityType,
             hidden: content.hidden
-        ))
+        )
     }
 
     func deriveKey(from password: String, salt: Data) throws -> Data {

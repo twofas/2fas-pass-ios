@@ -17,6 +17,7 @@ protocol ItemDetailFlowControllerParent: AnyObject {
 
 protocol ItemDetailFlowControlling: AnyObject {
     func toEdit(_ itemID: ItemID)
+    func toShareLink(_ itemID: ItemID)
     func toOpenURI(_ url: URL)
     func toWiFiNetworkQRCode(ssid: String, payload: String)
     func close()
@@ -64,6 +65,14 @@ extension ItemDetailFlowController: ItemDetailFlowControlling {
             parent: self,
             editItemID: itemID
         )
+    }
+
+    func toShareLink(_ itemID: ItemID) {
+        guard #available(iOS 26.0, *) else { return }
+        let shareLinkViewController = UIHostingController(
+            rootView: ShareLinkItemRouter.buildView(itemID: itemID)
+        )
+        viewController.present(shareLinkViewController, animated: true)
     }
     
     func toOpenURI(_ url: URL) {

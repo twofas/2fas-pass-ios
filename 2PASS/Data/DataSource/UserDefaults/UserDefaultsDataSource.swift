@@ -49,6 +49,9 @@ protocol UserDefaultsDataSource: AnyObject {
     
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
+
+    var shareLinkConfig: Data? { get }
+    func setShareLinkConfig(_ data: Data)
     
     func migrateLegacyValuesToSharedDefaults()
     

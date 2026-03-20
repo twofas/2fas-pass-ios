@@ -37,6 +37,7 @@ protocol RootFlowControlling: AnyObject {
     func toUpdateAppForNewSyncScheme(schemaVersion: Int)
     func toUpdateAppForUnsupportedVersion(minimalVersion: String)
     func setScreenCaptureBlocked(_ blocked: Bool)
+    func toImportSharedItem(components: ShareLinkComponents)
     @available(iOS 26.0, *)
     @MainActor func toCredentialExchange(data: ASExportedCredentialData)
 }
@@ -252,6 +253,19 @@ extension RootFlowController: RootFlowControlling {
         blocked ? showScreenCaptureBlock() : hideScreenCaptureBlock()
     }
 
+    func toImportSharedItem(components: ShareLinkComponents) {
+        let topViewController = viewController.topViewController
+        let view = ShareLinkImportRouter.buildView(
+            components: components,
+            onDismiss: {
+                topViewController.dismiss(animated: true)
+            }
+        )
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.modalPresentationStyle = .fullScreen
+        topViewController.present(hostingController, animated: true)
+    }
+
     @available(iOS 26.0, *)
     @MainActor func toCredentialExchange(data: ASExportedCredentialData) {
         let view = CredentialExchangeImportRouter.buildView(data: data, onClose: { [weak self] in
@@ -266,14 +280,14 @@ extension RootFlowController: RootFlowControlling {
 private extension RootFlowController {
 
     func showScreenCaptureBlock() {
-        guard let window else {
-            return
-        }
-
-        screenCaptureBlockWindow.frame = window.bounds
-        screenCaptureBlockWindow.windowScene = window.windowScene
-        screenCaptureBlockWindow.alpha = 1
-        screenCaptureBlockWindow.isHidden = false
+//        guard let window else {
+//            return
+//        }
+//
+//        screenCaptureBlockWindow.frame = window.bounds
+//        screenCaptureBlockWindow.windowScene = window.windowScene
+//        screenCaptureBlockWindow.alpha = 1
+//        screenCaptureBlockWindow.isHidden = false
     }
 
     func hideScreenCaptureBlock() {
@@ -341,6 +355,5 @@ extension RootFlowController: LoginFlowControllerParent {
         loginWindow.endEditing(true)
         loginWindow.isHidden = true
         loginWindow.rootViewController = nil
-        window?.makeKeyAndVisible()
     }
 }

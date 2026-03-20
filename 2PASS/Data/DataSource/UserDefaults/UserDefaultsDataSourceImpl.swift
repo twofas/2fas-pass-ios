@@ -45,6 +45,7 @@ final class UserDefaultsDataSourceImpl {
         case shouldShowQuickSetup
         case lastAppUpdatePromptDate
         case screenCaptureAllowedUntil
+        case shareLinkConfig
     }
     
     private let userDefaults = UserDefaults()
@@ -231,6 +232,15 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     
     func setPasswordGeneratorConfig(_ data: Data) {
         sharedDefaults.setValue(data, forKey: Keys.passwordGeneratorConfig.rawValue)
+        sharedDefaults.synchronize()
+    }
+
+    var shareLinkConfig: Data? {
+        sharedDefaults.data(forKey: Keys.shareLinkConfig.rawValue)
+    }
+
+    func setShareLinkConfig(_ data: Data) {
+        sharedDefaults.setValue(data, forKey: Keys.shareLinkConfig.rawValue)
         sharedDefaults.synchronize()
     }
     

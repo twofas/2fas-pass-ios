@@ -18,8 +18,8 @@ final class TwoFASWebServiceSession {
     
     func fetchNotifications(forDeviceId deviceId: UUID) async throws -> AppNotifications {
         let url = baseURL.appending(path: "device/\(deviceId)/notifications")
-        let (data, _) = try await session.data(from: url)
-        
+        let data = try await session.validatedData(from: url)
+
         let decoder = JSONDecoder()
         
         let formatter = DateFormatter()
@@ -36,6 +36,6 @@ final class TwoFASWebServiceSession {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        _ = try await session.data(for: request)
+        _ = try await session.validatedData(for: request)
     }
 }

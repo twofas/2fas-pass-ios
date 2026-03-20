@@ -21,15 +21,14 @@ struct ItemDetailForm<Content: View>: View {
             }
             .padding(.vertical, Spacing.l)
         }
-        .background(Color(.systemGroupedBackground))
     }
 }
 
-struct ItemDetailSection<Content: View, Footer: View>: View {
+public struct ItemDetailSection<Content: View, Footer: View>: View {
     let content: () -> Content
     let footer: (() -> Footer)?
 
-    init(
+    public init(
         @ViewBuilder content: @escaping () -> Content
     ) where Footer == EmptyView {
         self.content = content
@@ -44,7 +43,7 @@ struct ItemDetailSection<Content: View, Footer: View>: View {
         self.footer = footer
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Group {
                 if #available(iOS 18.0, *) {

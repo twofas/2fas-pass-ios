@@ -719,6 +719,8 @@ protocol MainRepository: AnyObject {
     func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
     var passwordGeneratorConfig: Data? { get }
     func setPasswordGeneratorConfig(_ data: Data)
+    var shareLinkConfig: Data? { get }
+    func setShareLinkConfig(_ data: Data)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
     

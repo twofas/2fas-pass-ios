@@ -27,13 +27,11 @@ struct ShareSecretRequest: Encodable {
 
 public struct ShareSecretResponse: Decodable {
     public let id: String
-    public let data: String
     public let validUntil: String
     public let singleUse: Bool
 
-    public init(id: String, data: String, validUntil: String, singleUse: Bool) {
+    public init(id: String, validUntil: String, singleUse: Bool) {
         self.id = id
-        self.data = data
         self.validUntil = validUntil
         self.singleUse = singleUse
     }

@@ -21,6 +21,7 @@ protocol PasswordsFlowControlling: AnyObject {
     func toEditItem(itemID: ItemID)
     func toItemDetail(itemID: ItemID)
     func toURI(_ selectedURI: URL)
+    func toShareLink(itemID: ItemID)
     func toBulkProtectionLevelSelection(selectedItems: [ItemData])
     func toBulkTagsSelection(selectedItems: [ItemData])
 
@@ -96,6 +97,14 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     
     func toURI(_ selectedURI: URL) {
         UIApplication.shared.openInBrowser(selectedURI)
+    }
+
+    func toShareLink(itemID: ItemID) {
+        guard #available(iOS 26.0, *) else { return }
+        let shareLinkViewController = UIHostingController(
+            rootView: ShareLinkItemRouter.buildView(itemID: itemID)
+        )
+        viewController.present(shareLinkViewController, animated: true)
     }
     
     func toBulkProtectionLevelSelection(selectedItems: [ItemData]) {
@@ -201,7 +210,7 @@ extension PasswordsFlowController {
 
 extension PasswordsFlowController: ItemEditorNavigationFlowControllerParent {
 
-    func closeItemEditor(with result: SaveItemResult) {
+    public func closeItemEditor(with result: SaveItemResult) {
         if result.isSuccess {
             viewController.presenter.handleRefresh()
         }

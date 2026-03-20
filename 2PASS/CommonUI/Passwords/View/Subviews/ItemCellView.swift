@@ -293,6 +293,7 @@ private extension ItemCellView {
                  .copy(.paymentCardSecurityCode),
                  .copy(.wifiSSID),
                  .copy(.wifiPassword),
+                 .shareLink,
                  .moveToTrash:
                 list.append(
                     UIAction(

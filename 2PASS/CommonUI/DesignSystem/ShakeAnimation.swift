@@ -14,9 +14,9 @@ private struct Constants {
 
 extension View {
     
-    public func shakeAnimation(trigger: Bool) -> some View {
+    public func shakeAnimation<V: Equatable>(trigger: V) -> some View {
         phaseAnimator(Constants.shakeAnimationSteps, trigger: trigger, content: { view, value in
-            view.offset(x: trigger ? value * Constants.shakeAnimationMultiplier : 0)
+            view.offset(x: value * Constants.shakeAnimationMultiplier)
         }, animation: { value in
             .spring(duration: Constants.shakeStepAnimationDuration)
         })

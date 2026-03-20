@@ -22,6 +22,7 @@ enum PasswordCellMenu: Hashable {
     case edit
     case copy(Field)
     case goToURI(uris: [String])
+    case shareLink
     case moveToTrash
     
     var label: String {
@@ -36,6 +37,7 @@ enum PasswordCellMenu: Hashable {
         case .copy(.wifiSSID): String(localized: .wifiViewActionCopySsid)
         case .copy(.wifiPassword): String(localized: .wifiViewActionCopyPassword)
         case .goToURI: String(localized: .loginViewActionOpenUri)
+        case .shareLink: String(localized: .itemActionShareLink)
         case .moveToTrash: String(localized: .loginViewActionDelete)
         }
     }
@@ -52,6 +54,7 @@ enum PasswordCellMenu: Hashable {
         case .copy(.wifiSSID): UIImage(systemName: "wifi")
         case .copy(.wifiPassword): UIImage(systemName: "ellipsis.rectangle")
         case .goToURI: UIImage(systemName: "arrow.up.right")
+        case .shareLink: UIImage(systemName: "square.and.arrow.up")
         case .moveToTrash: UIImage(systemName: "trash")
         }
     }

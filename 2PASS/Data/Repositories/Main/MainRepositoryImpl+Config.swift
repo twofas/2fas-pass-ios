@@ -22,6 +22,13 @@ extension MainRepositoryImpl {
     func setPasswordGeneratorConfig(_ data: Data) {
         userDefaultsDataSource.setPasswordGeneratorConfig(data)
     }
+
+    var shareLinkConfig: Data? {
+        userDefaultsDataSource.shareLinkConfig
+    }
+    func setShareLinkConfig(_ data: Data) {
+        userDefaultsDataSource.setShareLinkConfig(data)
+    }
     
     var defaultPassswordListAction: PasswordListAction {
         let action = userDefaultsDataSource.defaultPassswordListAction

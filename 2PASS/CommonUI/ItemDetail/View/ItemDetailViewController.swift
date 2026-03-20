@@ -14,12 +14,20 @@ final class ItemDetailViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.largeTitleDisplayMode = .never
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: String(localized: .loginEdit),
-            style: .plain,
-            target: self,
-            action: #selector(editAction)
-        )
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(
+                title: String(localized: .loginEdit),
+                style: .plain,
+                target: self,
+                action: #selector(editAction)
+            ),
+            UIBarButtonItem(
+                image: UIImage(systemName: "square.and.arrow.up"),
+                style: .plain,
+                target: self,
+                action: #selector(shareAction)
+            )
+        ]
         navigationItem.backButtonDisplayMode = .minimal
         
         let vc = UIHostingController(
@@ -31,5 +39,10 @@ final class ItemDetailViewController: UIViewController {
     @objc
     private func editAction() {
         presenter.onEdit()
+    }
+
+    @objc
+    private func shareAction() {
+        presenter.onShareLink()
     }
 }

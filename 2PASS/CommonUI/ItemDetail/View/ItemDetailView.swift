@@ -40,6 +40,7 @@ struct ItemDetailView: View {
                 .padding(.horizontal, Spacing.xll3)
                 .fixedSize(horizontal: false, vertical: true)
             }
+            .background(Color(.systemGroupedBackground))
             .scrollReadableContentMargins()
         }
         .contentMargins(.top, topMargin)

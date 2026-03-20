@@ -20,6 +20,7 @@ public struct SecureInput: UIViewRepresentable {
     private var introspectTextField: (UITextField) -> Void = { _ in }
     private var isColorized = false
     private var onSubmit: (() -> Void)?
+    private var shouldReturn: (() -> Bool)?
     private var showsToggle = true
 
     public init(label: LocalizedStringResource, value: Binding<String>) {
@@ -33,6 +34,7 @@ public struct SecureInput: UIViewRepresentable {
             value = newText
         }
         view.onSubmit = onSubmit
+        view.shouldReturn = shouldReturn
         return view
     }
 
@@ -42,6 +44,7 @@ public struct SecureInput: UIViewRepresentable {
         uiView.showsToggle = showsToggle
         uiView.placeholder = String(localized: label)
         uiView.onSubmit = onSubmit
+        uiView.shouldReturn = shouldReturn
         uiView.onSecureModeChanged = { isSecure in
             let reveal = !isSecure
             if revealBinding.wrappedValue != reveal {
@@ -60,6 +63,7 @@ public struct SecureInput: UIViewRepresentable {
         // Break potential retain chains from UIKit -> closures -> presenters.
         uiView.onTextChanged = nil
         uiView.onSubmit = nil
+        uiView.shouldReturn = nil
         uiView.onSecureModeChanged = nil
     }
 
@@ -84,6 +88,12 @@ public struct SecureInput: UIViewRepresentable {
     public func onSubmit(_ action: @escaping () -> Void) -> Self {
         var instance = self
         instance.onSubmit = action
+        return instance
+    }
+
+    public func shouldReturn(_ action: @escaping () -> Bool) -> Self {
+        var instance = self
+        instance.shouldReturn = action
         return instance
     }
 

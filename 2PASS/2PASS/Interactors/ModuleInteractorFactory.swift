@@ -23,10 +23,17 @@ extension ModuleInteractorFactory {
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
             updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor(),
             credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter(),
-            configInteractor: InteractorFactory.shared.configInteractor()
+            configInteractor: InteractorFactory.shared.configInteractor(),
+            shareInteractor: InteractorFactory.shared.shareInteractor()
         )
     }
     
+    func shareLinkImportModuleInteractor() -> ShareLinkImportModuleInteracting {
+        ShareLinkImportModuleInteractor(
+            shareInteractor: InteractorFactory.shared.shareInteractor()
+        )
+    }
+
     func masterPasswordInteractor(setupEncryption: Bool) -> MasterPasswordModuleInteracting {
         MasterPasswordModuleInteractor(
             startupInteractor: InteractorFactory.shared.startupInteractor(),

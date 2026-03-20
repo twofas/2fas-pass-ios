@@ -34,6 +34,7 @@ public final class SecureInputView: UIView {
 
     public var onTextChanged: ((String) -> Void)?
     public var onSubmit: (() -> Void)?
+    public var shouldReturn: (() -> Bool)?
     public var onSecureModeChanged: ((Bool) -> Void)?
     public var showsToggle: Bool = true {
         didSet {
@@ -136,6 +137,7 @@ public final class SecureInputView: UIView {
         textField.textAlignment = .natural
         textField.font = UIFont.preferredFont(forTextStyle: .body)
         textField.adjustsFontForContentSizeCategory = true
+        textField.delegate = self
 
         textField.addTarget(self, action: #selector(textFieldEditingChanged(_:)), for: .editingChanged)
         textField.addTarget(self, action: #selector(textFieldEditingDidEndOnExit(_:)), for: .editingDidEndOnExit)
@@ -296,6 +298,14 @@ public final class SecureInputView: UIView {
         config.image = UIImage(systemName: imageName)?.withConfiguration(symbolConfig)
         button.configuration = config
         button.accessibilityLabel = accessibilityLabel
+    }
+}
+
+// MARK: - UITextFieldDelegate
+
+extension SecureInputView: UITextFieldDelegate {
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        shouldReturn?() ?? true
     }
 }
 

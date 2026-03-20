@@ -7,15 +7,22 @@
 import SwiftUI
 import Common
 
-struct ShareSheetView: UIViewControllerRepresentable {
-    typealias UIViewControllerType = UIActivityViewController
-    
-    let title: String
-    let url: URL
-    let activityComplete: Callback
-    let activityError: Callback
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
+public struct ShareSheetView: UIViewControllerRepresentable {
+    public typealias UIViewControllerType = UIActivityViewController
+
+    public let title: String
+    public let url: URL
+    public let activityComplete: Callback
+    public let activityError: Callback
+
+    public init(title: String, url: URL, activityComplete: @escaping Callback, activityError: @escaping Callback) {
+        self.title = title
+        self.url = url
+        self.activityComplete = activityComplete
+        self.activityError = activityError
+    }
+
+    public func makeUIViewController(context: Context) -> UIActivityViewController {
         let activity = UIActivityViewController(activityItems: [url], applicationActivities: [])
         activity.excludedActivityTypes = [
             .addToHomeScreen,
@@ -39,7 +46,7 @@ struct ShareSheetView: UIViewControllerRepresentable {
             if completed {
                 activityComplete()
             }
-            
+
             if let error = error {
                 Log("There was an error while saving file: \(error)")
                 activityError()
@@ -47,6 +54,6 @@ struct ShareSheetView: UIViewControllerRepresentable {
         }
         return activity
     }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+
+    public func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

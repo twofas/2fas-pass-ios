@@ -39,6 +39,7 @@ final class RootPresenter {
     private var logoutObservationTask: Task<Void, Never>?
     private var _pendingCredentialData: Any?
     private var currentSceneCaptureState: UISceneCaptureState = .inactive
+    private var pendingShareLinkComponents: ShareLinkComponents?
     private var screenCaptureExpirationTimer: Timer?
     private var screenCaptureAllowanceObserver: NSObjectProtocol?
 
@@ -136,9 +137,30 @@ final class RootPresenter {
     }
     
     func applicationOpenURL(_ url: URL) -> Bool {
-        Log("App: applicationOpenURL")
+        Log("App: applicationOpenURL: \(url)")
         if interactor.isUserSetUp, interactor.isBackupFileURL(url) {
             flowController.toOpenExternalFileError()
+            return true
+        }
+        
+        let components: ShareLinkComponents?
+        if interactor.isShareDeepLink(url) {
+            components = interactor.parseShareDeepLink(url)
+        } else {
+            components = nil
+        }
+
+        if let components {
+            Log("App: Share URL detected, id: \(components.id)")
+            
+            handleViewFlow { [weak self] in
+                if self?.currentState == .main {
+                    self?.flowController.toImportSharedItem(components: components)
+                } else {
+                    self?.pendingShareLinkComponents = components
+                }
+            }
+            
             return true
         }
         return false
@@ -257,6 +279,14 @@ final class RootPresenter {
             Task { @MainActor in
                 pendingCredentialData = nil
                 flowController.toCredentialExchange(data: data)
+            }
+        }
+
+        if let components = pendingShareLinkComponents {
+            pendingShareLinkComponents = nil
+            Task { @MainActor in
+                try await Task.sleep(for: .milliseconds(700))
+                flowController.toImportSharedItem(components: components)
             }
         }
     }

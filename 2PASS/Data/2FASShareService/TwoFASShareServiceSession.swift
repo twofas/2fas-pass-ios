@@ -23,13 +23,13 @@ final class TwoFASShareServiceSession {
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONEncoder().encode(request)
 
-        let (data, _) = try await session.data(for: urlRequest)
+        let data = try await session.validatedData(for: urlRequest)
         return try JSONDecoder().decode(ShareSecretResponse.self, from: data)
     }
 
     func fetchSecret(id: String) async throws -> SharedSecret {
         let url = baseURL.appending(path: "secret/\(id)")
-        let (data, _) = try await session.data(from: url)
+        let data = try await session.validatedData(from: url)
         return try JSONDecoder().decode(SharedSecret.self, from: data)
     }
 }

@@ -2542,6 +2542,15 @@ final class MockMainRepository: MainRepository {
         capturedPasswordGeneratorConfig = data
     }
 
+    var stubbedShareLinkConfig: Data?
+    var shareLinkConfig: Data? { stubbedShareLinkConfig }
+
+    var capturedShareLinkConfig: Data?
+    func setShareLinkConfig(_ data: Data) {
+        recordCall()
+        capturedShareLinkConfig = data
+    }
+
     var stubbedDefaultPassswordListAction: PasswordListAction = .copy
     var defaultPassswordListAction: PasswordListAction { stubbedDefaultPassswordListAction }
 

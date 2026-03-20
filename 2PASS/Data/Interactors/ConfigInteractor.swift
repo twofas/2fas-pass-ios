@@ -13,6 +13,9 @@ public protocol ConfigInteracting: AnyObject {
     
     var passwordGeneratorConfig: PasswordGenerateConfig? { get }
     func savePasswordGeneratorConfig(_ config: PasswordGenerateConfig)
+
+    var shareLinkConfig: ShareLinkConfig? { get }
+    func saveShareLinkConfig(_ config: ShareLinkConfig)
     
     var deviceName: String { get }
     var defaultPassswordListAction: PasswordListAction { get }
@@ -78,6 +81,25 @@ extension ConfigInteractor: ConfigInteracting {
             return
         }
         mainRepository.setPasswordGeneratorConfig(encodedData)
+    }
+
+    var shareLinkConfig: ShareLinkConfig? {
+        guard let configData = mainRepository.shareLinkConfig else {
+            return nil
+        }
+        guard let config = try? mainRepository.jsonDecoder.decode(ShareLinkConfig.self, from: configData) else {
+            Log("ConfigInteractor: Can't decode Share Link Config", module: .interactor)
+            return nil
+        }
+        return config
+    }
+
+    func saveShareLinkConfig(_ config: ShareLinkConfig) {
+        guard let encodedData = try? mainRepository.jsonEncoder.encode(config) else {
+            Log("ConfigInteractor: Can't encode Share Link Config for saving", module: .interactor)
+            return
+        }
+        mainRepository.setShareLinkConfig(encodedData)
     }
     
     var appLockAttempts: AppLockAttempts {

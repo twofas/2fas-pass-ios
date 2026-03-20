@@ -117,6 +117,10 @@ extension ItemDetailPresenter {
     func onEdit() {
         flowController.toEdit(itemID)
     }
+
+    func onShareLink() {
+        flowController.toShareLink(itemID)
+    }
 }
 
 private extension ItemDetailPresenter {

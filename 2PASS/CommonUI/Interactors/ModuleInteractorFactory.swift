@@ -131,6 +131,17 @@ public final class ModuleInteractorFactory {
         )
     }
 
+    func shareLinkItemModuleInteractor() -> ShareLinkItemModuleInteracting {
+        ShareLinkItemModuleInteractor(
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
+            fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
+            shareServiceInteractor: InteractorFactory.shared.shareServiceInteractor(),
+            shareInteractor: InteractorFactory.shared.shareInteractor(),
+            passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
+            configInteractor: InteractorFactory.shared.configInteractor()
+        )
+    }
+
     func editTagModuleInteractor() -> EditTagModuleInteracting {
         EditTagModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
