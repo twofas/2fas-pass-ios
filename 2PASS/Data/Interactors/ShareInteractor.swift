@@ -257,6 +257,7 @@ private extension ShareInteractor {
     func shareContent(from login: LoginItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<ShareLoginContent> {
         ShareSecretContent(
             contentType: ItemContentType.login.rawValue,
+            contentVersion: LoginItemContent.contentVersion,
             content: ShareLoginContent(
                 name: login.content.name,
                 username: login.content.username,
@@ -270,6 +271,7 @@ private extension ShareInteractor {
     func shareContent(from note: SecureNoteItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<ShareSecureNoteContent> {
         ShareSecretContent(
             contentType: ItemContentType.secureNote.rawValue,
+            contentVersion: SecureNoteContent.contentVersion,
             content: ShareSecureNoteContent(
                 name: note.content.name,
                 text: decryptSecure(note.content.text, protectionLevel: protectionLevel)
@@ -280,6 +282,7 @@ private extension ShareInteractor {
     func shareContent(from card: PaymentCardItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<SharePaymentCardContent> {
         ShareSecretContent(
             contentType: ItemContentType.paymentCard.rawValue,
+            contentVersion: PaymentCardContent.contentVersion,
             content: SharePaymentCardContent(
                 name: card.content.name,
                 cardHolder: card.content.cardHolder,
@@ -294,6 +297,7 @@ private extension ShareInteractor {
     func shareContent(from wifi: WiFiItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<ShareWiFiContent> {
         ShareSecretContent(
             contentType: ItemContentType.wifi.rawValue,
+            contentVersion: WiFiContent.contentVersion,
             content: ShareWiFiContent(
                 name: wifi.content.name,
                 ssid: wifi.content.ssid,
