@@ -18,9 +18,7 @@ struct ShareLinkItemPasswordView: View {
     private static let inputAccessoryHeight: CGFloat = 44
     private static let inputAccessoryHeightLiquidGlass: CGFloat = 64
 
-    @State private var didFocus = false
     @State private var showMinLengthError = false
-    @State private var errorShakeTrigger = 0
 
     private var isValid: Bool {
         presenter.password.isEmpty || presenter.password.count >= Self.minimumLength
@@ -111,70 +109,41 @@ struct ShareLinkItemPasswordView: View {
 
     @ViewBuilder
     private var passwordInput: some View {
-        VStack {
-            SecureInput(label: .masterPasswordLabel, value: $presenter.password)
-                .introspect { textField in
-                    textField.returnKeyType = .done
-                    setupInputAccessoryView(textField)
-
-                    guard !didFocus else { return }
-                    didFocus = true
-                    textField.becomeFirstResponder()
-                    DispatchQueue.main.async {
-                        if let end = textField.position(from: textField.endOfDocument, offset: 0) {
-                            textField.selectedTextRange = textField.textRange(from: end, to: end)
-                        }
-                    }
-                }
-                .shouldReturn {
-                    if isValid {
-                        return true
-                    } else {
-                        showMinLengthError = true
-                        errorShakeTrigger += 1
-                        return false
-                    }
-                }
-                .onSubmit {
-                    onSave(presenter.password)
-                }
-                .onChange(of: presenter.password) {
-                    if showMinLengthError, isValid {
-                        showMinLengthError = false
-                    }
-                }
-                .padding(.leading, Spacing.l)
-                .padding(.trailing, 4)
-                .frame(height: 44.0)
-                .background(Color(.secondarySystemGroupedBackground))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 10.0)
-                        .stroke(.danger500, lineWidth: showMinLengthError ? 1 : 0)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 10.0))
-                .sensoryFeedback(.error, trigger: errorShakeTrigger)
-                .shakeAnimation(trigger: errorShakeTrigger)
-
-            if showMinLengthError {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.danger500)
-                    Text("Password must be at least \(Self.minimumLength) characters")
-                        .font(.caption1Emphasized)
-                        .foregroundStyle(.danger500)
-                    Spacer()
-                }
-                .padding(.horizontal, Spacing.m)
+        SharePasswordInput(text: $presenter.password)
+            .errorMessage(
+                showMinLengthError
+                ? "Password must be at least \(Self.minimumLength) characters"
+                : nil
+            )
+            .autoFocus()
+            .introspect { textField in
+                textField.returnKeyType = .done
+                setupInputAccessoryView(textField)
             }
-        }
-        .sheet(isPresented: $presenter.showGeneratePassword) {
-            PasswordGeneratorRouter.buildView(close: {
-                presenter.showGeneratePassword = false
-            }) { generatedPassword in
-                presenter.password = generatedPassword
-                presenter.showGeneratePassword = false
+            .shouldReturn {
+                if isValid {
+                    return true
+                } else {
+                    showMinLengthError = true
+                    return false
+                }
             }
-        }
+            .onSubmit {
+                onSave(presenter.password)
+            }
+            .onChange(of: presenter.password) {
+                if showMinLengthError, isValid {
+                    showMinLengthError = false
+                }
+            }
+            .sheet(isPresented: $presenter.showGeneratePassword) {
+                PasswordGeneratorRouter.buildView(close: {
+                    presenter.showGeneratePassword = false
+                }) { generatedPassword in
+                    presenter.password = generatedPassword
+                    presenter.showGeneratePassword = false
+                }
+            }
     }
 
     // MARK: - Input Accessory View

@@ -189,8 +189,8 @@ struct ShareLinkItemView: View {
                         Image(systemName: "checkmark.circle")
                             .foregroundStyle(.success500)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, Spacing.l)
+                    .padding(.vertical, Spacing.s)
                     .frame(width: 280)
                     .glassEffect(.regular, in: .rect(cornerRadius: 40))
                 }
@@ -236,7 +236,7 @@ struct ShareLinkItemView: View {
                     .tint(.base1000)
                 }
                 .padding(.leading, Spacing.l)
-                .padding(.trailing, 4)
+                .padding(.trailing, Spacing.xs)
             }
 
             ShareLinkSection {
@@ -304,9 +304,9 @@ struct ShareLinkItemView: View {
         VStack(alignment: .leading) {
             Text("Share settings")
                 .font(.title2Emphasized)
-                .padding(.horizontal)
-                .padding(.horizontal)
-                .padding(.bottom, 20)
+                .padding(.horizontal, Spacing.l)
+                .padding(.horizontal, Spacing.l)
+                .padding(.bottom, Spacing.xl)
 
             VStack(spacing: 24) {
                 HStack(spacing: 16) {
@@ -316,8 +316,8 @@ struct ShareLinkItemView: View {
                     Spacer()
                     Text(presenter.selectedExpiration.title)
                 }
-                .padding(.horizontal)
-                .padding(.horizontal)
+                .padding(.horizontal, Spacing.l)
+                .padding(.horizontal, Spacing.l)
 
                 if presenter.isOneTimeAccess {
                     HStack(spacing: 16) {
@@ -327,8 +327,8 @@ struct ShareLinkItemView: View {
                         Spacer()
                         Image(systemName: "checkmark")
                     }
-                    .padding(.horizontal)
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.l)
+                    .padding(.horizontal, Spacing.l)
                 }
 
                 if !presenter.password.isEmpty {
@@ -341,11 +341,11 @@ struct ShareLinkItemView: View {
                             presenter.onCopyPassword()
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.l)
+                    .padding(.horizontal, Spacing.l)
                 }
             }
-            .padding(.bottom, 40)
+            .padding(.bottom, Spacing.xll)
             
             Button("Share") {
                 presenter.onShare()
