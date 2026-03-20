@@ -71,7 +71,7 @@ final class MigrationInteractor: MigrationInteracting {
             mainRepository.migrateLegacyValuesToSharedDefaults()
         }
 
-        if lastKnownAppVersion?.compare("1.7.1", options: .numeric) == .orderedAscending {
+        if lastKnownAppVersion?.compare("1.8.0", options: .numeric) == .orderedAscending {
             mainRepository.removeDuplicatedDeletedItems()
         }
         
