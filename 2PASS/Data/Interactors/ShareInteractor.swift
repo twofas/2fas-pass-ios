@@ -54,19 +54,21 @@ public struct ShareLinkComponents {
 
 // MARK: - Protocol
 
-public protocol ShareInteracting: AnyObject {
+public protocol ShareLinkInteracting: AnyObject {
     func exportItem(id: ItemID) async throws -> ShareExportResult
     func exportItem(id: ItemID, password: String) async throws -> ShareExportResult
     func fetchSharedSecret(id: String) async throws -> String
     func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> any ItemDataChangeRequest
     func makeShareURL(id: String, exportResult: ShareExportResult) -> URL?
+    func isShareURL(_ url: URL) -> Bool
+    func isShareDeepLink(_ url: URL) -> Bool
     func parseShareURL(_ url: URL) -> ShareLinkComponents?
     func parseShareDeepLink(_ url: URL) -> ShareLinkComponents?
 }
 
 // MARK: - Implementation
 
-final class ShareInteractor: ShareInteracting {
+final class ShareInteractor: ShareLinkInteracting {
     private static let pbkdf2Iterations: UInt32 = 600_000
 
     private let mainRepository: MainRepository
@@ -172,6 +174,14 @@ final class ShareInteractor: ShareInteracting {
         let scheme = exportResult.encryption.scheme.rawValue
         let nonceBase64URL = exportResult.nonce.base64URLEncodedString()
         return URL(string: "\(Config.twoFASShareBaseURL)#/\(id)/\(scheme)/\(nonceBase64URL)/\(lastSegment)")
+    }
+
+    func isShareURL(_ url: URL) -> Bool {
+        url.host() == Config.twoFASShareBaseURL.host()
+    }
+
+    func isShareDeepLink(_ url: URL) -> Bool {
+        url.scheme == "twofaspass" && url.host() == "share"
     }
 
     func parseShareURL(_ url: URL) -> ShareLinkComponents? {

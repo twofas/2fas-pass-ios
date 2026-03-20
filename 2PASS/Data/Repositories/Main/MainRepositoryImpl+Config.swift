@@ -19,6 +19,7 @@ extension MainRepositoryImpl {
     var passwordGeneratorConfig: Data? {
         userDefaultsDataSource.passwordGeneratorConfig
     }
+    
     func setPasswordGeneratorConfig(_ data: Data) {
         userDefaultsDataSource.setPasswordGeneratorConfig(data)
     }
@@ -26,6 +27,7 @@ extension MainRepositoryImpl {
     var shareLinkConfig: Data? {
         userDefaultsDataSource.shareLinkConfig
     }
+    
     func setShareLinkConfig(_ data: Data) {
         userDefaultsDataSource.setShareLinkConfig(data)
     }

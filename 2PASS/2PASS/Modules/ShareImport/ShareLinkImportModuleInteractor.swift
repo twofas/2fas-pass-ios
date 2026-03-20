@@ -18,9 +18,9 @@ protocol ShareLinkImportModuleInteracting: AnyObject {
 
 final class ShareLinkImportModuleInteractor: ShareLinkImportModuleInteracting {
 
-    private let shareInteractor: ShareInteracting
+    private let shareInteractor: ShareLinkInteracting
 
-    init(shareInteractor: ShareInteracting) {
+    init(shareInteractor: ShareLinkInteracting) {
         self.shareInteractor = shareInteractor
     }
 
