@@ -54,19 +54,21 @@ public struct ShareLinkComponents {
 
 // MARK: - Protocol
 
-public protocol ShareInteracting: AnyObject {
+public protocol ShareLinkInteracting: AnyObject {
     func exportItem(id: ItemID) async throws -> ShareExportResult
     func exportItem(id: ItemID, password: String) async throws -> ShareExportResult
     func fetchSharedSecret(id: String) async throws -> String
     func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> any ItemDataChangeRequest
     func makeShareURL(id: String, exportResult: ShareExportResult) -> URL?
+    func isShareURL(_ url: URL) -> Bool
+    func isShareDeepLink(_ url: URL) -> Bool
     func parseShareURL(_ url: URL) -> ShareLinkComponents?
     func parseShareDeepLink(_ url: URL) -> ShareLinkComponents?
 }
 
 // MARK: - Implementation
 
-final class ShareInteractor: ShareInteracting {
+final class ShareInteractor: ShareLinkInteracting {
     private static let pbkdf2Iterations: UInt32 = 600_000
 
     private let mainRepository: MainRepository
@@ -174,6 +176,14 @@ final class ShareInteractor: ShareInteracting {
         return URL(string: "\(Config.twoFASShareBaseURL)#/\(id)/\(scheme)/\(nonceBase64URL)/\(lastSegment)")
     }
 
+    func isShareURL(_ url: URL) -> Bool {
+        url.host() == Config.twoFASShareBaseURL.host()
+    }
+
+    func isShareDeepLink(_ url: URL) -> Bool {
+        url.scheme == "twofaspass" && url.host() == "share"
+    }
+
     func parseShareURL(_ url: URL) -> ShareLinkComponents? {
         guard let fragment = url.fragment(percentEncoded: false) else { return nil }
 
@@ -257,6 +267,7 @@ private extension ShareInteractor {
     func shareContent(from login: LoginItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<ShareLoginContent> {
         ShareSecretContent(
             contentType: ItemContentType.login.rawValue,
+            contentVersion: LoginItemContent.contentVersion,
             content: ShareLoginContent(
                 name: login.content.name,
                 username: login.content.username,
@@ -270,6 +281,7 @@ private extension ShareInteractor {
     func shareContent(from note: SecureNoteItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<ShareSecureNoteContent> {
         ShareSecretContent(
             contentType: ItemContentType.secureNote.rawValue,
+            contentVersion: SecureNoteContent.contentVersion,
             content: ShareSecureNoteContent(
                 name: note.content.name,
                 text: decryptSecure(note.content.text, protectionLevel: protectionLevel)
@@ -280,6 +292,7 @@ private extension ShareInteractor {
     func shareContent(from card: PaymentCardItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<SharePaymentCardContent> {
         ShareSecretContent(
             contentType: ItemContentType.paymentCard.rawValue,
+            contentVersion: PaymentCardContent.contentVersion,
             content: SharePaymentCardContent(
                 name: card.content.name,
                 cardHolder: card.content.cardHolder,
@@ -294,6 +307,7 @@ private extension ShareInteractor {
     func shareContent(from wifi: WiFiItemData, protectionLevel: ItemProtectionLevel) -> ShareSecretContent<ShareWiFiContent> {
         ShareSecretContent(
             contentType: ItemContentType.wifi.rawValue,
+            contentVersion: WiFiContent.contentVersion,
             content: ShareWiFiContent(
                 name: wifi.content.name,
                 ssid: wifi.content.ssid,

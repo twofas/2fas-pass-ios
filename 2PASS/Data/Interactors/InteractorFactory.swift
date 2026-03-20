@@ -356,7 +356,7 @@ public final class InteractorFactory {
         )
     }
     
-    public func shareInteractor() -> ShareInteracting {
+    public func shareInteractor() -> ShareLinkInteracting {
         ShareInteractor(
             mainRepository: MainRepositoryImpl.shared,
             itemsInteractor: itemsInteractor()

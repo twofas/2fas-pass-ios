@@ -26,7 +26,7 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let shareServiceInteractor: ShareServiceInteracting
-    private let shareInteractor: ShareInteracting
+    private let shareInteractor: ShareLinkInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let configInteractor: ConfigInteracting
 
@@ -34,7 +34,7 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
         shareServiceInteractor: ShareServiceInteracting,
-        shareInteractor: ShareInteracting,
+        shareInteractor: ShareLinkInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         configInteractor: ConfigInteracting
     ) {

@@ -71,7 +71,7 @@ final class RootModuleInteractor {
     private let updateAppPromptInteractor: UpdateAppPromptInteracting
     private let credentialExchangeImporter: CredentialExchangeImporting
     private let configInteractor: ConfigInteracting
-    private let shareInteractor: ShareInteracting
+    private let shareInteractor: ShareLinkInteracting
     private let notificationCenter = NotificationCenter.default
 
     init(
@@ -86,7 +86,7 @@ final class RootModuleInteractor {
         updateAppPromptInteractor: UpdateAppPromptInteracting,
         credentialExchangeImporter: CredentialExchangeImporting,
         configInteractor: ConfigInteracting,
-        shareInteractor: ShareInteracting
+        shareInteractor: ShareLinkInteracting
     ) {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
@@ -211,11 +211,11 @@ extension RootModuleInteractor: RootModuleInteracting {
     }
 
     func isShareURL(_ url: URL) -> Bool {
-        url.host() == Config.twoFASShareBaseURL.host()
+        shareInteractor.isShareURL(url)
     }
-    
+
     func isShareDeepLink(_ url: URL) -> Bool {
-        url.scheme == "twofaspass" && url.host() == "share"
+        shareInteractor.isShareDeepLink(url)
     }
 
     func parseShareDeepLink(_ url: URL) -> ShareLinkComponents? {

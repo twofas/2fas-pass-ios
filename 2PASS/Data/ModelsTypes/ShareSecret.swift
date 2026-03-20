@@ -7,14 +7,17 @@
 /// Decodes only the `contentType` field, ignoring `content`.
 struct ShareSecretHeader: Decodable {
     let contentType: String
+    let contentVersion: Int
 }
 
 public struct ShareSecretContent<T>: Codable where T: ShareContent {
     public let contentType: String
+    public let contentVersion: Int
     public let content: T
 
-    public init(contentType: String, content: T) {
+    public init(contentType: String, contentVersion: Int, content: T) {
         self.contentType = contentType
+        self.contentVersion = contentVersion
         self.content = content
     }
 }

@@ -152,13 +152,10 @@ final class RootPresenter {
 
         if let components {
             Log("App: Share URL detected, id: \(components.id)")
-            
-            handleViewFlow { [weak self] in
-                if self?.currentState == .main {
-                    self?.flowController.toImportSharedItem(components: components)
-                } else {
-                    self?.pendingShareLinkComponents = components
-                }
+            if currentState == .main {
+                flowController.toImportSharedItem(components: components)
+            } else {
+                pendingShareLinkComponents = components
             }
             
             return true
@@ -248,6 +245,11 @@ final class RootPresenter {
     
     private func presentLoginIfNeeded() {
         guard currentState == .login || currentState == .main else { return }
+        
+        if currentState != .login {
+            changeState(.login)
+        }
+        
         flowController.toDismissKeyboard()
         flowController.toLogin(coldRun: false)
     }
