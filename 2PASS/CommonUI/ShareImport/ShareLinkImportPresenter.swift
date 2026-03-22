@@ -5,7 +5,6 @@
 // See LICENSE file for full terms
 
 import Common
-import CommonUI
 import Data
 
 @Observable
@@ -16,6 +15,7 @@ final class ShareLinkImportPresenter {
         case password
         case editor(any ItemDataChangeRequest)
         case error
+        case networkError
     }
 
     private(set) var state: State = .loading
@@ -26,20 +26,9 @@ final class ShareLinkImportPresenter {
         case .password: 1
         case .editor: 2
         case .error: 3
+        case .networkError: 4
         }
     }
-    
-    var inputError: Bool {
-        errorDescription.isEmpty == false
-    }
-    
-    private(set) var errorDescription = ""
-    var password = "" {
-        didSet {
-            if inputError { errorDescription = "" }
-        }
-    }
-    private(set) var isDecrypting = false
 
     private let components: ShareLinkComponents
     private let interactor: ShareLinkImportModuleInteracting
@@ -47,7 +36,7 @@ final class ShareLinkImportPresenter {
     private var fetchTask: Task<Void, Never>?
     private var encryptedData: String?
 
-    var isPasswordEncrypted: Bool {
+    private var isPasswordEncrypted: Bool {
         switch components.encryption {
         case .password: true
         case .key: false
@@ -65,46 +54,29 @@ final class ShareLinkImportPresenter {
     }
 
     func onAppear() {
-        guard fetchTask == nil else { return }
-        fetchTask = Task { @MainActor in
-            do {
-                let data = try await interactor.fetchSharedSecret(id: components.id)
-                encryptedData = data
-
-                if isPasswordEncrypted {
-                    state = .password
-                } else {
-                    let result = try interactor.decryptSharedSecret(
-                        encryptedData: data,
-                        components: components,
-                        password: nil
-                    )
-                    state = .editor(result)
-                }
-            } catch {
-                Log("ShareLinkImportPresenter: Failed to fetch/decrypt: \(error)")
-                state = .error
-            }
-        }
+        fetchSharedData()
     }
 
-    func onSubmitPassword() {
-        guard let encryptedData, !password.isEmpty else { return }
-        isDecrypting = true
-        errorDescription = ""
+    func decryptWithPassword(_ password: String) throws {
+        guard let encryptedData else { return }
 
-        do {
-            let result = try interactor.decryptSharedSecret(
-                encryptedData: encryptedData,
-                components: components,
-                password: password
-            )
-            state = .editor(result)
-        } catch {
-            errorDescription = error.localizedDescription
-        }
+        let request = try interactor.decryptImportRequest(
+            encryptedData: encryptedData,
+            components: components,
+            password: password
+        )
+        state = .editor(request)
+    }
 
-        isDecrypting = false
+    func onRetry() {
+        fetchTask?.cancel()
+        fetchTask = nil
+        state = .loading
+        fetchSharedData()
+    }
+
+    func onClose() {
+        onDismiss()
     }
 
     func onEditorClosed(_ result: SaveItemResult) {
@@ -114,5 +86,32 @@ final class ShareLinkImportPresenter {
     func onDisappear() {
         fetchTask?.cancel()
         fetchTask = nil
+    }
+
+    private func fetchSharedData() {
+        guard fetchTask == nil else { return }
+        fetchTask = Task { @MainActor in
+            do {
+                let data = try await interactor.fetchSharedSecret(id: components.id)
+                encryptedData = data
+
+                if isPasswordEncrypted {
+                    state = .password
+                } else {
+                    let request = try interactor.decryptImportRequest(
+                        encryptedData: data,
+                        components: components,
+                        password: nil
+                    )
+                    state = .editor(request)
+                }
+            } catch let httpError as HTTPError {
+                Log("ShareLinkImportPresenter: HTTP error: \(httpError)")
+                state = .error
+            } catch {
+                Log("ShareLinkImportPresenter: Network error: \(error)")
+                state = .networkError
+            }
+        }
     }
 }

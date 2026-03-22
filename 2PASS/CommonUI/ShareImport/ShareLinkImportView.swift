@@ -6,7 +6,6 @@
 
 import SwiftUI
 import Common
-import CommonUI
 
 struct ShareLinkImportView: View {
 
@@ -16,16 +15,20 @@ struct ShareLinkImportView: View {
         Group {
             switch presenter.state {
             case .editor(let changeRequest):
-                ShareLinkImportEditorRepresentable(
+                ShareLinkImportEditorView(
                     changeRequest: changeRequest,
                     onClose: presenter.onEditorClosed
                 )
                 .ignoresSafeArea()
-                .transition(.opacity)
 
             case .password:
-                ShareLinkImportPasswordView(presenter: presenter)
-                    .transition(.asymmetric(insertion: .opacity, removal: .move(edge: .bottom)))
+                ShareLinkImportPasswordRouter.buildView(
+                    onSubmit: { password in
+                        try presenter.decryptWithPassword(password)
+                    },
+                    onClose: presenter.onClose
+                )
+                .transition(.asymmetric(insertion: .opacity, removal: .move(edge: .bottom)))
 
             case .loading:
                 NavigationStack {
@@ -34,7 +37,7 @@ struct ShareLinkImportView: View {
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
                                 ToolbarCancelButton {
-                                    presenter.onEditorClosed(.failure(.userCancelled))
+                                    presenter.onClose()
                                 }
                             }
                         }
@@ -44,10 +47,20 @@ struct ShareLinkImportView: View {
             case .error:
                 ResultView(kind: .failure, title: Text(.shareLinkImportErrorTitle)) {
                     Button(.commonClose) {
-                        presenter.onEditorClosed(.failure(.userCancelled))
+                        presenter.onClose()
                     }
                 }
-                .transition(.opacity)
+
+            case .networkError:
+                ResultView(
+                    kind: .failure,
+                    title: Text(.shareLinkImportErrorTitle),
+                    description: Text(.shareLinkImportNetworkErrorDescription)
+                ) {
+                    Button(.commonTryAgain) {
+                        presenter.onRetry()
+                    }
+                }
             }
         }
         .animation(.easeInOut, value: presenter.stateID)
@@ -60,7 +73,7 @@ struct ShareLinkImportView: View {
     }
 }
 
-struct ShareLinkImportEditorRepresentable: UIViewControllerRepresentable {
+private struct ShareLinkImportEditorView: UIViewControllerRepresentable {
 
     let changeRequest: any ItemDataChangeRequest
     let onClose: (SaveItemResult) -> Void

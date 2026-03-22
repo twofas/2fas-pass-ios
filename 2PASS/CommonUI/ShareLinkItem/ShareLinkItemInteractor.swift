@@ -26,7 +26,7 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let shareServiceInteractor: ShareServiceInteracting
-    private let shareInteractor: ShareLinkInteracting
+    private let shareLinkInteractor: ShareLinkInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let configInteractor: ConfigInteracting
 
@@ -34,14 +34,14 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
         shareServiceInteractor: ShareServiceInteracting,
-        shareInteractor: ShareLinkInteracting,
+        shareLinkInteractor: ShareLinkInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         configInteractor: ConfigInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.shareServiceInteractor = shareServiceInteractor
-        self.shareInteractor = shareInteractor
+        self.shareLinkInteractor = shareLinkInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.configInteractor = configInteractor
     }
@@ -62,9 +62,9 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     ) async throws -> URL {
         let exportResult: ShareExportResult
         if let password {
-            exportResult = try await shareInteractor.exportItem(id: id, password: password)
+            exportResult = try await shareLinkInteractor.exportItem(id: id, password: password)
         } else {
-            exportResult = try await shareInteractor.exportItem(id: id)
+            exportResult = try await shareLinkInteractor.exportItem(id: id)
         }
 
         let response = try await shareServiceInteractor.createSecret(
@@ -73,7 +73,7 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
             singleUse: singleUse
         )
 
-        guard let url = shareInteractor.makeShareURL(
+        guard let url = shareLinkInteractor.makeShareURL(
             id: response.id,
             exportResult: exportResult
         ) else {

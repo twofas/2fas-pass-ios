@@ -131,12 +131,18 @@ public final class ModuleInteractorFactory {
         )
     }
 
+    func shareLinkImportModuleInteractor() -> ShareLinkImportModuleInteracting {
+        ShareLinkImportModuleInteractor(
+            shareLinkInteractor: InteractorFactory.shared.shareInteractor()
+        )
+    }
+
     func shareLinkItemModuleInteractor() -> ShareLinkItemModuleInteracting {
         ShareLinkItemModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             shareServiceInteractor: InteractorFactory.shared.shareServiceInteractor(),
-            shareInteractor: InteractorFactory.shared.shareInteractor(),
+            shareLinkInteractor: InteractorFactory.shared.shareInteractor(),
             passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor()
         )

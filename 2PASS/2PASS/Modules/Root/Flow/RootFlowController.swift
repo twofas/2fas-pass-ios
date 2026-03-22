@@ -280,14 +280,14 @@ extension RootFlowController: RootFlowControlling {
 private extension RootFlowController {
 
     func showScreenCaptureBlock() {
-//        guard let window else {
-//            return
-//        }
-//
-//        screenCaptureBlockWindow.frame = window.bounds
-//        screenCaptureBlockWindow.windowScene = window.windowScene
-//        screenCaptureBlockWindow.alpha = 1
-//        screenCaptureBlockWindow.isHidden = false
+        guard let window else {
+            return
+        }
+
+        screenCaptureBlockWindow.frame = window.bounds
+        screenCaptureBlockWindow.windowScene = window.windowScene
+        screenCaptureBlockWindow.alpha = 1
+        screenCaptureBlockWindow.isHidden = false
     }
 
     func hideScreenCaptureBlock() {

@@ -6,37 +6,35 @@
 
 import SwiftUI
 import Common
-import CommonUI
-import Data
 
 struct ShareLinkImportPasswordView: View {
 
-    @Bindable var presenter: ShareLinkImportPresenter
+    @State var presenter: ShareLinkImportPasswordPresenter
 
     var body: some View {
         NavigationStack {
             VStack {
-                VStack(spacing: 24) {
+                VStack(spacing: Spacing.xll) {
                     Image(.shareStar)
-                        .padding(.top, 32)
+                        .padding(.top, Spacing.xll3)
 
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.s) {
                         Text(.shareLinkImportPasswordTitle)
                             .font(.title1Emphasized)
                             .foregroundStyle(.base1000)
 
-                        Text("Secure your 2FAS Share link")
+                        Text(.shareLinkImportPasswordSubtitle)
                             .font(.subheadline)
                             .foregroundStyle(.neutral950)
                     }
 
                     SharePasswordInput(text: $presenter.password)
-                        .errorMessage(presenter.inputError ? presenter.errorDescription : nil)
+                        .errorMessage(presenter.errorDescription)
                         .autoFocus()
                         .onSubmit {
                             presenter.onSubmitPassword()
                         }
-                        .padding(.top, 8)
+                        .padding(.top, Spacing.s)
                         .padding(.horizontal, Spacing.xl)
                 }
 
@@ -47,7 +45,7 @@ struct ShareLinkImportPasswordView: View {
                 }
                 .buttonStyle(.filled)
                 .controlSize(.large)
-                .disabled(presenter.password.isEmpty || presenter.isDecrypting)
+                .disabled(presenter.password.isEmpty)
                 .padding(.horizontal, Spacing.xl)
                 .padding(.bottom, Spacing.xl)
             }
@@ -55,7 +53,7 @@ struct ShareLinkImportPasswordView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     ToolbarCancelButton {
-                        presenter.onEditorClosed(.failure(.userCancelled))
+                        presenter.onCancel()
                     }
                 }
             }
@@ -66,14 +64,9 @@ struct ShareLinkImportPasswordView: View {
 
 #Preview {
     ShareLinkImportPasswordView(
-        presenter: ShareLinkImportPresenter(
-            components: ShareLinkComponents(
-                id: "preview",
-                nonce: Data(),
-                encryption: .password(salt: Data())
-            ),
-            interactor: ModuleInteractorFactory.shared.shareLinkImportModuleInteractor(),
-            onDismiss: {}
+        presenter: ShareLinkImportPasswordPresenter(
+            onSubmit: { _ in },
+            onClose: {}
         )
     )
 }

@@ -71,7 +71,7 @@ final class RootModuleInteractor {
     private let updateAppPromptInteractor: UpdateAppPromptInteracting
     private let credentialExchangeImporter: CredentialExchangeImporting
     private let configInteractor: ConfigInteracting
-    private let shareInteractor: ShareLinkInteracting
+    private let shareLinkInteractor: ShareLinkInteracting
     private let notificationCenter = NotificationCenter.default
 
     init(
@@ -86,7 +86,7 @@ final class RootModuleInteractor {
         updateAppPromptInteractor: UpdateAppPromptInteracting,
         credentialExchangeImporter: CredentialExchangeImporting,
         configInteractor: ConfigInteracting,
-        shareInteractor: ShareLinkInteracting
+        shareLinkInteractor: ShareLinkInteracting
     ) {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
@@ -99,7 +99,7 @@ final class RootModuleInteractor {
         self.updateAppPromptInteractor = updateAppPromptInteractor
         self.credentialExchangeImporter = credentialExchangeImporter
         self.configInteractor = configInteractor
-        self.shareInteractor = shareInteractor
+        self.shareLinkInteractor = shareLinkInteractor
 
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
@@ -211,19 +211,19 @@ extension RootModuleInteractor: RootModuleInteracting {
     }
 
     func isShareURL(_ url: URL) -> Bool {
-        shareInteractor.isShareURL(url)
+        shareLinkInteractor.isShareURL(url)
     }
 
     func isShareDeepLink(_ url: URL) -> Bool {
-        shareInteractor.isShareDeepLink(url)
+        shareLinkInteractor.isShareDeepLink(url)
     }
 
     func parseShareDeepLink(_ url: URL) -> ShareLinkComponents? {
-        shareInteractor.parseShareDeepLink(url)
+        shareLinkInteractor.parseShareDeepLink(url)
     }
 
     func parseShareURL(_ url: URL) -> ShareLinkComponents? {
-        shareInteractor.parseShareURL(url)
+        shareLinkInteractor.parseShareURL(url)
     }
 
     @available(iOS 26.0, *)

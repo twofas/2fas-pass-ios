@@ -13,6 +13,7 @@ import UIKit
 
 private struct Constants {
     static let showUpdateAppPromptDelay: Duration = .milliseconds(500)
+    static let showShareLinkImportDelay: Duration = .milliseconds(700)
 }
 
 final class RootPresenter {
@@ -143,24 +144,16 @@ final class RootPresenter {
             return true
         }
         
-        let components: ShareLinkComponents?
-        if interactor.isShareDeepLink(url) {
-            components = interactor.parseShareDeepLink(url)
+        guard let components = interactor.parseShareDeepLink(url) else { return false }
+
+        Log("App: Share URL detected, id: \(components.id)")
+        if currentState == .main {
+            flowController.toImportSharedItem(components: components)
         } else {
-            components = nil
+            pendingShareLinkComponents = components
         }
 
-        if let components {
-            Log("App: Share URL detected, id: \(components.id)")
-            if currentState == .main {
-                flowController.toImportSharedItem(components: components)
-            } else {
-                pendingShareLinkComponents = components
-            }
-            
-            return true
-        }
-        return false
+        return true
     }
 
     func applicationContinueUserActivity(_ userActivity: NSUserActivity) -> Bool {
@@ -287,7 +280,7 @@ final class RootPresenter {
         if let components = pendingShareLinkComponents {
             pendingShareLinkComponents = nil
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(700))
+                try await Task.sleep(for: Constants.showShareLinkImportDelay)
                 flowController.toImportSharedItem(components: components)
             }
         }

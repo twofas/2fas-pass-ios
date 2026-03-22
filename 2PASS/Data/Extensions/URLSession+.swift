@@ -6,7 +6,7 @@
 
 import Foundation
 
-enum HTTPError: Error {
+public enum HTTPError: Error {
     case invalidResponse
     case statusCode(Int)
 }
