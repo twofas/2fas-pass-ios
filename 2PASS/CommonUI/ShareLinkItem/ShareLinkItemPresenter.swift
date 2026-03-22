@@ -103,8 +103,15 @@ final class ShareLinkItemPresenter {
     }
 
     func onCopyPassword() {
-        // TODO: Copy actual generated password
-        UIPasteboard.general.string = ""
+        guard !password.isEmpty else {
+            ToastPresenter.shared.present(
+                .passwordErrorCopyPassword,
+                style: .failure
+            )
+            return
+        }
+
+        UIPasteboard.general.string = password
         ToastPresenter.shared.presentPasswordCopied()
     }
 
