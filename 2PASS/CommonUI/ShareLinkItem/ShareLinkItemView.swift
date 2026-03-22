@@ -133,7 +133,7 @@ struct ShareLinkItemView: View {
         }
         .sheet(isPresented: $presenter.isShareSheetPresented) {
             if let url = presenter.shareURL {
-                ShareSheetView(
+                ShareLinkSheetView(
                     title: presenter.name,
                     url: url,
                     activityComplete: { presenter.isShareSheetPresented = false },
