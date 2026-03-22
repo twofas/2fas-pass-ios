@@ -141,7 +141,6 @@ public final class ModuleInteractorFactory {
         ShareLinkItemModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
-            shareServiceInteractor: InteractorFactory.shared.shareServiceInteractor(),
             shareLinkInteractor: InteractorFactory.shared.shareInteractor(),
             passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor()

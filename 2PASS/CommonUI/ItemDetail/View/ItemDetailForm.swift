@@ -24,7 +24,7 @@ struct ItemDetailForm<Content: View>: View {
     }
 }
 
-public struct ItemDetailSection<Content: View, Footer: View>: View {
+struct ItemDetailSection<Content: View, Footer: View>: View {
     let content: () -> Content
     let footer: (() -> Footer)?
 
@@ -43,7 +43,7 @@ public struct ItemDetailSection<Content: View, Footer: View>: View {
         self.footer = footer
     }
 
-    public var body: some View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Group {
                 if #available(iOS 18.0, *) {

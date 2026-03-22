@@ -25,7 +25,6 @@ protocol ShareLinkItemModuleInteracting: AnyObject {
 final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
-    private let shareServiceInteractor: ShareServiceInteracting
     private let shareLinkInteractor: ShareLinkInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let configInteractor: ConfigInteracting
@@ -33,14 +32,12 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     init(
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
-        shareServiceInteractor: ShareServiceInteracting,
         shareLinkInteractor: ShareLinkInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         configInteractor: ConfigInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
-        self.shareServiceInteractor = shareServiceInteractor
         self.shareLinkInteractor = shareLinkInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.configInteractor = configInteractor
@@ -67,8 +64,8 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
             exportResult = try await shareLinkInteractor.exportItem(id: id)
         }
 
-        let response = try await shareServiceInteractor.createSecret(
-            data: exportResult.encryptedData.base64EncodedString(),
+        let response = try await shareLinkInteractor.createSecret(
+            data: exportResult.encryptedData,
             validForSeconds: validForSeconds,
             singleUse: singleUse
         )
