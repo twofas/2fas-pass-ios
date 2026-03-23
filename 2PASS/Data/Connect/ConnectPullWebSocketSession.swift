@@ -24,7 +24,8 @@ struct ConnectPullWebSocketSession {
                 supportedFeatures: schemeVersion < .v2 ? nil : [
                     ConnectSchemaV2.SupportedFeatures.secureNote.rawValue,
                     ConnectSchemaV2.SupportedFeatures.card.rawValue,
-                    ConnectSchemaV2.SupportedFeatures.wifi.rawValue
+                    ConnectSchemaV2.SupportedFeatures.wifi.rawValue,
+                    ConnectSchemaV2.SupportedFeatures.shareLink.rawValue
                 ]
             )
         )

@@ -100,8 +100,8 @@ extension ConnectSchemaV2 {
     typealias ConnectActionUpdateDataRequest = ConnectActionRequest<ActionRequestsData.ItemMetadata>
     typealias ConnectActionDeleteDataRequest = ConnectActionRequest<ActionRequestsData.ItemMetadata>
     
-    typealias ConnectActionAddLoginRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.AddLogin>>
-    typealias ConnectActionUpdateLoginRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateLogin>>
+    typealias ConnectActionAddLoginRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.Login>>
+    typealias ConnectActionUpdateLoginRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.Login>>
     typealias ConnectActionAddSecureNoteRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.AddSecureNote>>
     typealias ConnectActionUpdateSecureNoteRequest = ConnectActionRequest<ActionRequestsData.ItemData<ActionRequestsContentData.UpdateSecureNote>>
     typealias ConnectActionAddCardRequest = ConnectActionRequest<ActionRequestsData.AddItemData<ActionRequestsContentData.Card>>
@@ -113,6 +113,7 @@ extension ConnectSchemaV2 {
         case secureNote = "items.secureNote"
         case card = "items.paymentCard"
         case wifi = "items.wifi"
+        case shareLink = "shareLink"
     }
     
     struct ConnectActioRequestType: Decodable {
@@ -170,20 +171,9 @@ extension ConnectSchemaV2 {
             let action: Action
         }
         
-        struct AddLogin: Decodable {
+        struct Login: Decodable {
             private enum CodingKeys: String, CodingKey {
                 case url
-                case username
-                case password = "s_password"
-            }
-
-            let url: String
-            let username: Field
-            let password: SecureField
-        }
-        
-        struct UpdateLogin: Decodable {
-            private enum CodingKeys: String, CodingKey {
                 case name
                 case username
                 case password = "s_password"
@@ -191,6 +181,7 @@ extension ConnectSchemaV2 {
                 case uris
             }
 
+            let url: String?
             let name: String?
             let username: Field?
             let password: SecureField?
