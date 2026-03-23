@@ -4,6 +4,7 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
+import Foundation
 import UIKit
 import SwiftUI
 import Common
@@ -35,15 +36,25 @@ enum LinkExpiration: String, CaseIterable, Identifiable {
     static let longDurations: [LinkExpiration] = [.oneDay, .sevenDays, .thirtyDays]
 
     var title: String {
+        Self.durationFormatter.string(from: dateComponents) ?? ""
+    }
+
+    private var dateComponents: DateComponents {
         switch self {
-        case .fiveMinutes: "5 min"
-        case .thirtyMinutes: "30 min"
-        case .oneHour: "1 hour"
-        case .oneDay: "1 day"
-        case .sevenDays: "7 days"
-        case .thirtyDays: "30 days"
+        case .fiveMinutes: DateComponents(minute: 5)
+        case .thirtyMinutes: DateComponents(minute: 30)
+        case .oneHour: DateComponents(hour: 1)
+        case .oneDay: DateComponents(day: 1)
+        case .sevenDays: DateComponents(day: 7)
+        case .thirtyDays: DateComponents(day: 30)
         }
     }
+
+    private static let durationFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .short
+        return formatter
+    }()
 
     var seconds: Int {
         switch self {

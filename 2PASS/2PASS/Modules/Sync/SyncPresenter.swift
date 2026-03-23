@@ -177,7 +177,7 @@ struct WebDAVStatusFormatStyle: FormatStyle {
             case .unauthorized: String(localized: .syncStatusErrorUnauthorized)
             case .urlError(let urlError): urlError
             case .passwordChanged: String(localized: .syncStatusErrorPasswordChanged)
-            case .schemaNotSupported(let schemaVersion): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
+            case .schemaNotSupported: String(localized: .cloudSyncInvalidSchemaErrorMsg)
             }
         case .retry(let reason):
             reason.map { "\(String(localized: .syncStatusRetry)) \($0)" } ?? String(localized: .syncStatusRetry)
@@ -191,7 +191,7 @@ private extension CloudState.Sync {
         switch self {
         case .syncing: String(localized: .syncSyncing)
         case .synced: String(localized: .syncSynced)
-        case .outOfSync(.schemaNotSupported(let schemaVersion)): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
+        case .outOfSync(.schemaNotSupported): String(localized: .cloudSyncInvalidSchemaErrorMsg)
         }
     }
 }
@@ -224,7 +224,7 @@ private extension CloudState.NotAvailableReason {
             }
         case .useriCloudProblem: String(localized: .syncErrorIcloudErrorUserLoggedIn)
         case .other: String(localized: .syncErrorIcloudErrorReboot)
-        case .schemaNotSupported(let schemaVersion): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
+        case .schemaNotSupported: String(localized: .cloudSyncInvalidSchemaErrorMsg)
         case .incorrectEncryption: String(localized: .syncErrorIcloudErrorDiffrentEncryption)
         case .noAccount: String(localized: .syncErrorIcloudErrorNoAccount)
         case .restricted: String(localized: .syncErrorIcloudErrorAccessRestricted)

@@ -30,7 +30,7 @@ struct ShareLinkItemView: View {
                 Spacer(minLength: 0)
                     .frame(maxHeight: 16)
                 
-                Text("2FAS Share")
+                Text(.shareLinkItemTitle)
                     .font(.title1Emphasized)
                     .zIndex(1)
                 
@@ -141,7 +141,7 @@ struct ShareLinkItemView: View {
             
             if presenter.isExpanded {
                 HStack {
-                    Text("Link generated")
+                    Text(.shareLinkItemLinkGenerated)
                         .font(.headline)
                     Spacer()
                     Image(systemName: "checkmark.circle")
@@ -175,9 +175,9 @@ struct ShareLinkItemView: View {
                     Image(systemName: "timer")
                         .frame(width: 24)
                         .foregroundStyle(.primary)
-                    Text("Link expiration time")
+                    Text(.shareLinkItemExpirationTime)
                     Spacer()
-                    Picker("Link expiration time", selection: $presenter.selectedExpiration) {
+                    Picker(String(localized: .shareLinkItemExpirationTime), selection: $presenter.selectedExpiration) {
                         Section {
                             ForEach(LinkExpiration.shortDurations) { expiration in
                                 Text(expiration.title).tag(expiration)
@@ -206,9 +206,9 @@ struct ShareLinkItemView: View {
                         .frame(width: 24)
                         .foregroundStyle(.primary)
                     VStack(alignment: .leading) {
-                        Text("One time access")
+                        Text(.shareLinkItemOneTimeAccess)
                             .font(.bodyEmphasized)
-                        Text("Link will expire after one use")
+                        Text(.shareLinkItemOneTimeAccessDescription)
                             .font(.subheadline)
                     }
                     .layoutPriority(1)
@@ -226,15 +226,15 @@ struct ShareLinkItemView: View {
                             .frame(width: 24)
 
                         VStack(alignment: .leading) {
-                            Text("Access password")
+                            Text(.shareLinkItemAccessPassword)
                                 .font(.bodyEmphasized)
-                            Text("Add extra security layer.")
+                            Text(.shareLinkItemAccessPasswordDescription)
                                 .font(.subheadline)
                         }
                         Spacer()
 
                         HStack(spacing: Spacing.s) {
-                            Text(presenter.password.isEmpty ? "Off" : "On")
+                            Text(presenter.password.isEmpty ? .commonOff : .commonOn)
 
                             Image(systemName: "chevron.right")
                         }
@@ -244,7 +244,7 @@ struct ShareLinkItemView: View {
                 .buttonStyle(.groupedRowHighlight)
             }
 
-            Button("Continue") {
+            Button(.commonContinue) {
                 presenter.onContinue()
             }
             .buttonStyle(.filled)
@@ -261,7 +261,7 @@ struct ShareLinkItemView: View {
     @ViewBuilder
     private var successSummary: some View {
         VStack(alignment: .leading) {
-            Text("Share settings")
+            Text(.shareLinkItemShareSettings)
                 .font(.title2Emphasized)
                 .padding(.horizontal, Spacing.xll3)
                 .padding(.bottom, Spacing.s)
@@ -270,7 +270,7 @@ struct ShareLinkItemView: View {
                 HStack(spacing: 16) {
                     Image(systemName: "timer")
                         .frame(width: 24)
-                    Text("Link expiration time")
+                    Text(.shareLinkItemExpirationTime)
                     Spacer()
                     Text(presenter.selectedExpiration.title)
                 }
@@ -279,7 +279,7 @@ struct ShareLinkItemView: View {
                     HStack(spacing: 16) {
                         Image(systemName: "arrow.trianglehead.2.clockwise")
                             .frame(width: 24)
-                        Text("One time access")
+                        Text(.shareLinkItemOneTimeAccess)
                         Spacer()
                         Image(systemName: "checkmark")
                     }
@@ -289,9 +289,9 @@ struct ShareLinkItemView: View {
                     HStack(spacing: 16) {
                         Image(systemName: "lock.fill")
                             .frame(width: 24)
-                        Text("Password")
+                        Text(.commonPassword)
                         Spacer()
-                        Button("Copy") {
+                        Button(.commonCopy) {
                             presenter.onCopyPassword()
                         }
                     }
@@ -299,7 +299,7 @@ struct ShareLinkItemView: View {
             }
             .padding(.bottom, Spacing.xll)
             
-            Button("Share") {
+            Button(.commonShare) {
                 presenter.onShare()
             }
             .buttonStyle(.filled)

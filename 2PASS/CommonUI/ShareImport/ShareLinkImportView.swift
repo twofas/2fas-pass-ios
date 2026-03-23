@@ -54,7 +54,7 @@ struct ShareLinkImportView: View {
             case .networkError:
                 ResultView(
                     kind: .failure,
-                    title: Text(.shareLinkImportErrorTitle),
+                    title: Text(.commonError),
                     description: Text(.shareLinkImportNetworkErrorDescription)
                 ) {
                     Button(.commonTryAgain) {

@@ -199,7 +199,7 @@ extension RootFlowController: RootFlowControlling {
     func toUpdateAppForNewSyncScheme(schemaVersion: Int) {
         let alert = UIAlertController(
             title: String(localized: .appUpdateModalTitle),
-            message: String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion))),
+            message: String(localized: .cloudSyncInvalidSchemaErrorMsg),
             preferredStyle: .alert
         )
         

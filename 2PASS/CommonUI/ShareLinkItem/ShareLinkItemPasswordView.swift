@@ -15,7 +15,7 @@ struct ShareLinkItemPasswordView: View {
     var onSave: (String) -> Void
     var onCancel: () -> Void
 
-    private static let minimumLength = 8
+    private static let minimumLength: Int32 = 8
     private static let inputAccessoryHeight: CGFloat = 44
     private static let inputAccessoryHeightLiquidGlass: CGFloat = 64
 
@@ -49,11 +49,11 @@ struct ShareLinkItemPasswordView: View {
                                 .frame(maxHeight: 24)
                             
                             VStack(spacing: 8) {
-                                Text("Set link password")
+                                Text(.shareLinkItemSetPasswordTitle)
                                     .font(.title1Emphasized)
                                     .foregroundStyle(.base1000)
 
-                                Text("Secure your 2FAS Share link")
+                                Text(.shareLinkItemSetPasswordSubtitle)
                                     .font(.subheadline)
                                     .foregroundStyle(.neutral950)
                             }
@@ -120,7 +120,7 @@ struct ShareLinkItemPasswordView: View {
         SharePasswordInput(text: $presenter.password)
             .errorMessage(
                 showMinLengthError
-                ? "Password must be at least \(Self.minimumLength) characters"
+                ? String(localized: .shareLinkItemPasswordMinLength(Self.minimumLength))
                 : nil
             )
             .autoFocus()
