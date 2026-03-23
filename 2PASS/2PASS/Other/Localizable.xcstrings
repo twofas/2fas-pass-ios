@@ -16011,7 +16011,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to load shared item"
+            "value" : "Failed to load shared Item"
           }
         },
         "pl" : {
@@ -16255,7 +16255,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "stawienia udostępniania"
+            "value" : "Ustawienia udostępniania"
           }
         }
       }
