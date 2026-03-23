@@ -4,6 +4,7 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
+import CryptoKit
 import Foundation
 import Common
 
@@ -107,33 +108,68 @@ extension BiometryInteractor: BiometryInteracting {
             }
             
             Log("BiometryInteractor: Creating Symmetric Key from Secure Enclave", module: .interactor)
-            
-            guard let symm = self?.mainRepository.createSymmetricKeyFromSecureEnclave(from: bioKey) else {
-                Log(
-                    "BiometryInteractor: Can't create Symmetric Key from Biometry Key",
-                    module: .interactor,
-                    severity: .error
-                )
-                completion(false)
+
+            if let symm = self?.mainRepository.createSymmetricKeyFromSecureEnclave(from: bioKey) {
+                self?.encryptAndSaveMasterKey(masterKey, symmetricKey: symm, completion: completion)
                 return
             }
-            
-            Log("BiometryInteractor: Encrypting")
-            
-            guard let encrypted = self?.mainRepository.encrypt(masterKey, key: symm) else {
-                Log("BiometryInteractor: Can't encrypt Biometry Key", module: .interactor, severity: .error)
-                completion(false)
-                return
+
+            Log(
+                "BiometryInteractor: Can't create Symmetric Key from Biometry Key - removing and retrying",
+                module: .interactor,
+                severity: .error
+            )
+
+            self?.mainRepository.clearBiometryKey()
+
+            self?.getBiometryKey { [weak self] newBioKey in
+                guard let newBioKey else {
+                    Log(
+                        "BiometryInteractor: No Biometry Key available after retry",
+                        module: .interactor,
+                        severity: .error
+                    )
+                    completion(false)
+                    return
+                }
+
+                guard let symm = self?.mainRepository.createSymmetricKeyFromSecureEnclave(
+                    from: newBioKey
+                ) else {
+                    Log(
+                        "BiometryInteractor: Can't create Symmetric Key after retry",
+                        module: .interactor,
+                        severity: .error
+                    )
+                    completion(false)
+                    return
+                }
+
+                self?.encryptAndSaveMasterKey(masterKey, symmetricKey: symm, completion: completion)
             }
-            
-            Log("BiometryInteractor: Saving encrypted Master Key", module: .interactor)
-            
-            self?.mainRepository.saveMasterKey(encrypted)
-            self?.mainRepository.reloadAuthContext()
-            completion(true)
         }
     }
-    
+
+    private func encryptAndSaveMasterKey(
+        _ masterKey: MasterKey,
+        symmetricKey: SymmetricKey,
+        completion: @escaping (Bool) -> Void
+    ) {
+        Log("BiometryInteractor: Encrypting", module: .interactor)
+
+        guard let encrypted = mainRepository.encrypt(masterKey, key: symmetricKey) else {
+            Log("BiometryInteractor: Can't encrypt Biometry Key", module: .interactor, severity: .error)
+            completion(false)
+            return
+        }
+
+        Log("BiometryInteractor: Saving encrypted Master Key", module: .interactor)
+
+        mainRepository.saveMasterKey(encrypted)
+        mainRepository.reloadAuthContext()
+        completion(true)
+    }
+
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void) {
         Log("BiometryInteractor: Login using Biometry", module: .interactor)
         mainRepository.reloadAuthContext()
