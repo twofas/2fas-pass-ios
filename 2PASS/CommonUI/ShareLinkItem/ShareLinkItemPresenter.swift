@@ -8,7 +8,6 @@ import Foundation
 import UIKit
 import SwiftUI
 import Common
-import CommonUI
 
 enum ShareLinkItemDestination: RouterDestination {
     case password(initialPassword: String, onSave: (String) -> Void, onCancel: () -> Void)
@@ -22,55 +21,22 @@ enum ShareLinkItemDestination: RouterDestination {
     }
 }
 
-enum LinkExpiration: String, CaseIterable, Identifiable {
-    case fiveMinutes
-    case thirtyMinutes
-    case oneHour
-    case oneDay
-    case sevenDays
-    case thirtyDays
-
-    var id: Self { self }
-
-    static let shortDurations: [LinkExpiration] = [.fiveMinutes, .thirtyMinutes, .oneHour]
-    static let longDurations: [LinkExpiration] = [.oneDay, .sevenDays, .thirtyDays]
-
-    var title: String {
-        Self.durationFormatter.string(from: dateComponents) ?? ""
-    }
-
-    private var dateComponents: DateComponents {
-        switch self {
-        case .fiveMinutes: DateComponents(minute: 5)
-        case .thirtyMinutes: DateComponents(minute: 30)
-        case .oneHour: DateComponents(hour: 1)
-        case .oneDay: DateComponents(day: 1)
-        case .sevenDays: DateComponents(day: 7)
-        case .thirtyDays: DateComponents(day: 30)
-        }
-    }
-
-    private static let durationFormatter: DateComponentsFormatter = {
-        let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .short
-        return formatter
-    }()
-
-    var seconds: Int {
-        switch self {
-        case .fiveMinutes: 5 * 60
-        case .thirtyMinutes: 30 * 60
-        case .oneHour: 60 * 60
-        case .oneDay: 24 * 60 * 60
-        case .sevenDays: 7 * 24 * 60 * 60
-        case .thirtyDays: 30 * 24 * 60 * 60
-        }
-    }
-}
-
 @Observable
 final class ShareLinkItemPresenter {
     let itemID: ItemID
+
+    let shortDurations: [DateComponents] = [
+        DateComponents(minute: 5),
+        DateComponents(minute: 30),
+        DateComponents(hour: 1),
+    ]
+    let longDurations: [DateComponents] = [
+        DateComponents(day: 1),
+        DateComponents(day: 7),
+        DateComponents(day: 30),
+    ]
+    let expirationFormat: Duration.UnitsFormatStyle = .units(allowed: [.days, .hours, .minutes], width: .abbreviated)
+    private var allDurations: [DateComponents] { shortDurations + longDurations }
 
     var name: String = ""
     var iconContent: IconContent?
@@ -81,7 +47,7 @@ final class ShareLinkItemPresenter {
     var isExpanded: Bool = false
     var isSuccess: Bool = false
 
-    var selectedExpiration: LinkExpiration = .fiveMinutes
+    var selectedExpiration: DateComponents = DateComponents(minute: 5)
     var isOneTimeAccess: Bool = false
     var password: String = ""
     var destination: ShareLinkItemDestination?
@@ -112,8 +78,8 @@ final class ShareLinkItemPresenter {
         }
 
         if let config = interactor.shareLinkConfig {
-            if let expiration = LinkExpiration.allCases.first(where: {
-                TimeInterval($0.seconds) == config.expirationSeconds
+            if let expiration = allDurations.first(where: {
+                $0.totalSeconds == Int(config.expirationSeconds)
             }) {
                 selectedExpiration = expiration
             }
@@ -155,13 +121,13 @@ final class ShareLinkItemPresenter {
                 let url = try await interactor.shareItem(
                     id: itemID,
                     password: password.isEmpty ? nil : password,
-                    validForSeconds: selectedExpiration.seconds,
+                    validForSeconds: selectedExpiration.totalSeconds,
                     singleUse: isOneTimeAccess
                 )
                 guard !Task.isCancelled else { return }
                 shareURL = url
                 interactor.saveShareLinkConfig(
-                    expirationSeconds: TimeInterval(selectedExpiration.seconds),
+                    expirationSeconds: TimeInterval(selectedExpiration.totalSeconds),
                     isOneTimeAccess: isOneTimeAccess
                 )
                 withAnimation(.smooth(duration: 0.4)) {
@@ -220,5 +186,16 @@ final class ShareLinkItemPresenter {
                 iconContent = .icon(image)
             }
         }
+    }
+}
+
+extension DateComponents {
+    
+    var duration: Duration {
+        .seconds(totalSeconds)
+    }
+    
+    fileprivate var totalSeconds: Int {
+        (day ?? 0) * 86_400 + (hour ?? 0) * 3600 + (minute ?? 0) * 60
     }
 }

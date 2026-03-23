@@ -179,13 +179,15 @@ struct ShareLinkItemView: View {
                     Spacer()
                     Picker(String(localized: .shareLinkItemExpirationTime), selection: $presenter.selectedExpiration) {
                         Section {
-                            ForEach(LinkExpiration.shortDurations) { expiration in
-                                Text(expiration.title).tag(expiration)
+                            ForEach(presenter.shortDurations, id: \.self) { expiration in
+                                Text(expiration.duration, format: presenter.expirationFormat)
+                                    .tag(expiration)
                             }
                         }
                         Section {
-                            ForEach(LinkExpiration.longDurations) { expiration in
-                                Text(expiration.title).tag(expiration)
+                            ForEach(presenter.longDurations, id: \.self) { expiration in
+                                Text(expiration.duration, format: presenter.expirationFormat)
+                                    .tag(expiration)
                             }
                         }
                     }
@@ -272,7 +274,7 @@ struct ShareLinkItemView: View {
                         .frame(width: 24)
                     Text(.shareLinkItemExpirationTime)
                     Spacer()
-                    Text(presenter.selectedExpiration.title)
+                    Text(presenter.selectedExpiration.duration, format: presenter.expirationFormat)
                 }
 
                 if presenter.isOneTimeAccess {
