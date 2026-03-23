@@ -11,9 +11,22 @@ import Common
 /// while uploading, then fills to completion on success.
 struct ShareLinkProgressBorder: View {
 
+    enum Phase: Equatable {
+        case idle
+        case loading
+        case success
+
+        init(_ state: ShareLinkUploadState) {
+            if state.isUploading { self = .loading }
+            else if state.isSuccess { self = .success }
+            else { self = .idle }
+        }
+    }
+
     let cornerRadius: CGFloat
-    let isUploading: Bool
-    let isSuccess: Bool
+    let uploadState: ShareLinkUploadState
+
+    private var phase: Phase { Phase(uploadState) }
 
     @State private var successStartFraction: CGFloat = 0
     @State private var borderProgress: CGFloat = 0
@@ -28,17 +41,15 @@ struct ShareLinkProgressBorder: View {
 
     var body: some View {
         borderFrame
-            .onChange(of: isUploading) { _, uploading in
-                if uploading {
-                    spinnerStartDate = Date()
-                } else {
+            .onChange(of: phase) { _, phase in
+                switch phase {
+                case .idle:
                     spinnerStartDate = nil
                     successStartFraction = 0
                     borderProgress = 0
-                }
-            }
-            .onChange(of: isSuccess) { _, success in
-                if success {
+                case .loading:
+                    spinnerStartDate = Date()
+                case .success:
                     if let start = spinnerStartDate {
                         let elapsed = Date().timeIntervalSince(start)
                         successStartFraction = CGFloat((elapsed / 1.3).truncatingRemainder(dividingBy: 1))

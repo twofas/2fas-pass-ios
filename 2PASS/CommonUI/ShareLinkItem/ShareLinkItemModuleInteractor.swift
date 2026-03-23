@@ -19,6 +19,7 @@ protocol ShareLinkItemModuleInteracting: AnyObject {
     ) async throws -> URL
     var shareLinkConfig: ShareLinkConfig? { get }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool)
+    func copyToClipboard(_ str: String)
 }
 
 final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
@@ -26,17 +27,20 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     private let fileIconInteractor: FileIconInteracting
     private let shareLinkInteractor: ShareLinkInteracting
     private let configInteractor: ConfigInteracting
+    private let systemInteractor: SystemInteracting
 
     init(
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
         shareLinkInteractor: ShareLinkInteracting,
-        configInteractor: ConfigInteracting
+        configInteractor: ConfigInteracting,
+        systemInteractor: SystemInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.shareLinkInteractor = shareLinkInteractor
         self.configInteractor = configInteractor
+        self.systemInteractor = systemInteractor
     }
 
     func fetchItem(for itemID: ItemID) -> ItemData? {
@@ -84,5 +88,9 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         configInteractor.saveShareLinkConfig(
             ShareLinkConfig(expirationSeconds: expirationSeconds, isOneTimeAccess: isOneTimeAccess)
         )
+    }
+
+    func copyToClipboard(_ str: String) {
+        systemInteractor.copyToClipboard(str)
     }
 }

@@ -25,6 +25,8 @@ struct ShareLinkItemRouter: Router {
         switch destination {
         case .password, .share:
             return .sheet
+        case .error(let message, _):
+            return .alert(title: String(localized: .commonError), message: message)
         case nil:
             return nil
         }
@@ -47,6 +49,8 @@ struct ShareLinkItemRouter: Router {
                 activityComplete: onComplete,
                 activityError: onComplete
             )
+        case .error(_, let onDismiss):
+            Button(.commonOk, action: onDismiss)
         }
     }
 }

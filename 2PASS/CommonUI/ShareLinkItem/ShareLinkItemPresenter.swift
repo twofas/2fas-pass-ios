@@ -8,15 +8,40 @@ import Foundation
 import UIKit
 import SwiftUI
 import Common
+import Data
+
+enum ShareLinkUploadState {
+    case idle
+    case uploading
+    case finished(Result<Void, Error>)
+    
+    var isUploading: Bool {
+        if case .uploading = self { true } else { false }
+    }
+
+    var isSuccess: Bool {
+        if case .finished(.success) = self { true } else { false }
+    }
+
+    var isFailure: Bool {
+        if case .finished(.failure) = self { true } else { false }
+    }
+
+    var error: Error? {
+        if case .finished(.failure(let error)) = self { error } else { nil }
+    }
+}
 
 enum ShareLinkItemDestination: RouterDestination {
     case password(initialPassword: String, onSave: (String) -> Void, onCancel: () -> Void)
     case share(title: String, url: URL, onComplete: () -> Void)
+    case error(message: String, onDismiss: () -> Void)
 
     var id: String {
         switch self {
         case .password: "password"
         case .share: "share"
+        case .error: "error"
         }
     }
 }
@@ -30,11 +55,13 @@ final class ShareLinkItemPresenter {
         DateComponents(minute: 30),
         DateComponents(hour: 1),
     ]
+    
     let longDurations: [DateComponents] = [
         DateComponents(day: 1),
         DateComponents(day: 7),
         DateComponents(day: 30),
     ]
+    
     let expirationFormat: Duration.UnitsFormatStyle = .units(allowed: [.days, .hours, .minutes], width: .abbreviated)
     private var allDurations: [DateComponents] { shortDurations + longDurations }
 
@@ -43,11 +70,9 @@ final class ShareLinkItemPresenter {
     private(set) var cardIssuer: PaymentCardIssuer?
     private(set) var cardNumberMask: String?
     var isPaymentCard: Bool { cardIssuer != nil || cardNumberMask != nil }
-    var isUploading: Bool = false
-    var isExpanded: Bool = false
-    var isSuccess: Bool = false
+    var uploadState: ShareLinkUploadState = .idle
 
-    var selectedExpiration: DateComponents = DateComponents(minute: 5)
+    var selectedExpiration: DateComponents = DateComponents(minute: 30)
     var isOneTimeAccess: Bool = false
     var password: String = ""
     var destination: ShareLinkItemDestination?
@@ -96,7 +121,7 @@ final class ShareLinkItemPresenter {
             return
         }
 
-        UIPasteboard.general.string = password
+        interactor.copyToClipboard(password)
         ToastPresenter.shared.presentPasswordCopied()
     }
 
@@ -114,10 +139,10 @@ final class ShareLinkItemPresenter {
     }
 
     func onContinue() {
-        isUploading = true
+        uploadState = .uploading
 
         continueTask = Task { @MainActor in
-            do {
+            do {                
                 let url = try await interactor.shareItem(
                     id: itemID,
                     password: password.isEmpty ? nil : password,
@@ -131,12 +156,18 @@ final class ShareLinkItemPresenter {
                     isOneTimeAccess: isOneTimeAccess
                 )
                 withAnimation(.smooth(duration: 0.4)) {
-                    isSuccess = true
-                    isExpanded = true
+                    uploadState = .finished(.success(()))
                 }
             } catch {
                 guard !Task.isCancelled else { return }
-                isUploading = false
+                uploadState = .finished(.failure(error))
+                destination = .error(
+                    message: error.localizedDescription,
+                    onDismiss: { [weak self] in
+                        self?.uploadState = .idle
+                        self?.destination = nil
+                    }
+                )
             }
         }
     }

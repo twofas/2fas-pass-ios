@@ -149,7 +149,8 @@ public final class ModuleInteractorFactory {
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             shareLinkInteractor: InteractorFactory.shared.shareInteractor(),
-            configInteractor: InteractorFactory.shared.configInteractor()
+            configInteractor: InteractorFactory.shared.configInteractor(),
+            systemInteractor: InteractorFactory.shared.systemInteractor()
         )
     }
 

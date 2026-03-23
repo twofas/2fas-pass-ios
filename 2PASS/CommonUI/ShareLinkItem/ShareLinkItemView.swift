@@ -22,71 +22,77 @@ struct ShareLinkItemView: View {
         colorScheme == .dark ? Self.accentViolet : nil
     }
 
+    private var uploadState: ShareLinkUploadState {
+        presenter.uploadState
+    }
+
     // MARK: - Body
 
     var body: some View {
+        content
+            .background(alignment: .top) {
+                Image(.shareLinkTop)
+                    .resizable()
+                    .frame(height: 159)
+                    .scaleEffect(2, anchor: .top)
+                    .ignoresSafeArea()
+                    .opacity(colorScheme == .dark ? 1.0 : 0.6)
+            }
+            .background(Color(UIColor(light: .systemGroupedBackground, dark: .black)))
+            .tint(.accent)
+            .onAppear {
+                presenter.onAppear()
+            }
+            .onDisappear {
+                presenter.onDisappear()
+            }
+            .router(router: ShareLinkItemRouter(), destination: $presenter.destination)
+            .sensoryFeedback(.success, trigger: uploadState.isSuccess)
+            .sensoryFeedback(.error, trigger: uploadState.isFailure)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+//                ToolbarItem(placement: .primaryAction) {
+//                    Button {
+//                        presenter.uploadState = .idle
+//                    } label: {
+//                        Image(systemName: "arrow.counterclockwise")
+//                    }
+//                }
+            }
+            .introspect(.viewController, on: .iOS(.v17, .v18, .v26)) { viewControler in
+                viewControler.traitOverrides.userInterfaceLevel = .base
+            }
+    }
+
+    private var content: some View {
         GeometryReader { _ in
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                     .frame(maxHeight: 16)
-                
+
                 Text(.shareLinkItemTitle)
                     .font(.title1Emphasized)
                     .zIndex(1)
-                
+
                 Spacer(minLength: 0)
-                
+
                 iconCard
                     .padding(.horizontal)
-                
+
                 Spacer(minLength: 0)
-                
+
                 ZStack(alignment: .bottom) {
                     configurationControls
                     successSummary
                 }
                 .fixedSize(horizontal: false, vertical: true)
             }
-        }
-        .background(alignment: .top) {
-            Image(.shareLinkTop)
-                .resizable()
-                .frame(height: 159)
-                .scaleEffect(2, anchor: .top)
-                .ignoresSafeArea()
-                .opacity(colorScheme == .dark ? 1.0 : 0.6)
-
-        }
-        .background(Color(UIColor(light: .systemGroupedBackground, dark: .black)))
-        .tint(.accent)
-        .onAppear {
-            presenter.onAppear()
-        }
-        .onDisappear {
-            presenter.onDisappear()
-        }
-        .router(router: ShareLinkItemRouter(), destination: $presenter.destination)
-        .sensoryFeedback(.success, trigger: presenter.isSuccess)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    presenter.isSuccess = false
-                    presenter.isExpanded = false
-                    presenter.isUploading = false
-                } label: {
-                    Image(systemName: "arrow.counterclockwise")
-                }
-            }
-        }
-        .introspect(.viewController, on: .iOS(.v17, .v18, .v26)) { viewControler in
-            viewControler.traitOverrides.userInterfaceLevel = .base
         }
     }
     
@@ -104,17 +110,16 @@ struct ShareLinkItemView: View {
                 .scaleEffect(0.65)
                 .offset(y: 2)
                 .frame(width: 260, height: 180)
-                .glassEffect(.regular.tint(glassAccentColor?.opacity(presenter.isSuccess ? 0.08 : 0.00)), in: .rect(cornerRadius: 20))
+                .glassEffect(.regular.tint(glassAccentColor?.opacity(uploadState.isSuccess ? 0.08 : 0.00)), in: .rect(cornerRadius: 20))
                 .overlay {
                     ShareLinkProgressBorder(
                         cornerRadius: 20,
-                        isUploading: presenter.isUploading,
-                        isSuccess: presenter.isSuccess
+                        uploadState: uploadState
                     )
                 }
-                .scaleEffect(presenter.isUploading && presenter.isSuccess == false ? 0.93 : 1)
-                .animation(.smooth(duration: 0.4), value: presenter.isUploading)
-                
+                .scaleEffect(uploadState.isUploading ? 0.93 : 1)
+                .animation(.smooth(duration: 0.4), value: uploadState.isUploading)
+
             } else {
                 VStack(spacing: 16) {
                     IconRendererView(content: presenter.iconContent)
@@ -127,19 +132,18 @@ struct ShareLinkItemView: View {
                 .offset(y: 2)
                 .frame(minWidth: 200)
                 .frame(height: 180)
-                .glassEffect(.regular.tint(glassAccentColor?.opacity(presenter.isSuccess ? 0.05 : 0.00)), in: .rect(cornerRadius: 40))
+                .glassEffect(.regular.tint(glassAccentColor?.opacity(uploadState.isSuccess ? 0.05 : 0.00)), in: .rect(cornerRadius: 40))
                 .overlay {
                     ShareLinkProgressBorder(
                         cornerRadius: 40,
-                        isUploading: presenter.isUploading,
-                        isSuccess: presenter.isSuccess
+                        uploadState: uploadState
                     )
                 }
-                .scaleEffect(presenter.isUploading && presenter.isSuccess == false ? 0.93 : 1)
-                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: presenter.isUploading)
+                .scaleEffect(uploadState.isUploading ? 0.93 : 1)
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: uploadState.isUploading)
             }
             
-            if presenter.isExpanded {
+            if uploadState.isSuccess {
                 HStack {
                     Text(.shareLinkItemLinkGenerated)
                         .font(.headline)
@@ -160,7 +164,7 @@ struct ShareLinkItemView: View {
                 )
             }
         }
-        .offset(y: presenter.isSuccess ? 30 : 0)
+        .offset(y: uploadState.isSuccess ? 30 : 0)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 240)
     }
@@ -254,8 +258,8 @@ struct ShareLinkItemView: View {
             .padding(.vertical)
             .padding(.horizontal)
         }
-        .opacity(presenter.isUploading ? 0 : 1)
-        .animation(.easeInOut(duration: 0.3), value: presenter.isUploading)
+        .opacity(uploadState.isUploading || uploadState.isSuccess ? 0 : 1)
+        .animation(.easeInOut(duration: 0.3), value: uploadState.isUploading)
     }
 
     // MARK: - Success Summary
@@ -308,9 +312,9 @@ struct ShareLinkItemView: View {
             .controlSize(.large)
             .padding()
         }
-        .opacity(presenter.isSuccess ? 1 : 0)
-        .blur(radius: presenter.isSuccess ? 0 : 8)
-        .animation(.easeInOut(duration: 0.3).delay(0.1), value: presenter.isSuccess)
+        .opacity(uploadState.isSuccess ? 1 : 0)
+        .blur(radius: uploadState.isSuccess ? 0 : 8)
+        .animation(.easeInOut(duration: 0.3).delay(0.1), value: uploadState.isSuccess)
     }
 }
 
@@ -364,6 +368,7 @@ class ShareLinkItemPreviewInteractor: ShareLinkItemModuleInteracting {
 
     var shareLinkConfig: ShareLinkConfig? { nil }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool) {}
+    func copyToClipboard(_ str: String) {}
 }
 
 @available(iOS 26.0, *)
