@@ -199,7 +199,7 @@ extension RootFlowController: RootFlowControlling {
     func toUpdateAppForNewSyncScheme(schemaVersion: Int) {
         let alert = UIAlertController(
             title: String(localized: .appUpdateModalTitle),
-            message: String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion))),
+            message: String(localized: .cloudSyncInvalidSchemaErrorMsg),
             preferredStyle: .alert
         )
         
@@ -280,14 +280,14 @@ extension RootFlowController: RootFlowControlling {
 private extension RootFlowController {
 
     func showScreenCaptureBlock() {
-//        guard let window else {
-//            return
-//        }
-//
-//        screenCaptureBlockWindow.frame = window.bounds
-//        screenCaptureBlockWindow.windowScene = window.windowScene
-//        screenCaptureBlockWindow.alpha = 1
-//        screenCaptureBlockWindow.isHidden = false
+        guard let window else {
+            return
+        }
+
+        screenCaptureBlockWindow.frame = window.bounds
+        screenCaptureBlockWindow.windowScene = window.windowScene
+        screenCaptureBlockWindow.alpha = 1
+        screenCaptureBlockWindow.isHidden = false
     }
 
     func hideScreenCaptureBlock() {

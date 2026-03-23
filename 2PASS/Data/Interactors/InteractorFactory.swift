@@ -357,14 +357,10 @@ public final class InteractorFactory {
     }
     
     public func shareInteractor() -> ShareLinkInteracting {
-        ShareInteractor(
+        ShareLinkInteractor(
             mainRepository: MainRepositoryImpl.shared,
             itemsInteractor: itemsInteractor()
         )
-    }
-
-    public func shareServiceInteractor() -> ShareServiceInteracting {
-        ShareServiceInteractor(mainRepository: MainRepositoryImpl.shared)
     }
 
     public func appNotificationsInteractor() -> AppNotificationsInteracting {

@@ -17,33 +17,30 @@ protocol ShareLinkItemModuleInteracting: AnyObject {
         validForSeconds: Int,
         singleUse: Bool
     ) async throws -> URL
-    func generatePassword() -> String
     var shareLinkConfig: ShareLinkConfig? { get }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool)
+    func copyToClipboard(_ str: String)
 }
 
 final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
-    private let shareServiceInteractor: ShareServiceInteracting
-    private let shareInteractor: ShareLinkInteracting
-    private let passwordGeneratorInteractor: PasswordGeneratorInteracting
+    private let shareLinkInteractor: ShareLinkInteracting
     private let configInteractor: ConfigInteracting
+    private let systemInteractor: SystemInteracting
 
     init(
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
-        shareServiceInteractor: ShareServiceInteracting,
-        shareInteractor: ShareLinkInteracting,
-        passwordGeneratorInteractor: PasswordGeneratorInteracting,
-        configInteractor: ConfigInteracting
+        shareLinkInteractor: ShareLinkInteracting,
+        configInteractor: ConfigInteracting,
+        systemInteractor: SystemInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
-        self.shareServiceInteractor = shareServiceInteractor
-        self.shareInteractor = shareInteractor
-        self.passwordGeneratorInteractor = passwordGeneratorInteractor
+        self.shareLinkInteractor = shareLinkInteractor
         self.configInteractor = configInteractor
+        self.systemInteractor = systemInteractor
     }
 
     func fetchItem(for itemID: ItemID) -> ItemData? {
@@ -62,18 +59,18 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     ) async throws -> URL {
         let exportResult: ShareExportResult
         if let password {
-            exportResult = try await shareInteractor.exportItem(id: id, password: password)
+            exportResult = try await shareLinkInteractor.exportItem(id: id, password: password)
         } else {
-            exportResult = try await shareInteractor.exportItem(id: id)
+            exportResult = try await shareLinkInteractor.exportItem(id: id)
         }
 
-        let response = try await shareServiceInteractor.createSecret(
-            data: exportResult.encryptedData.base64EncodedString(),
+        let response = try await shareLinkInteractor.createSecret(
+            data: exportResult.encryptedData,
             validForSeconds: validForSeconds,
             singleUse: singleUse
         )
 
-        guard let url = shareInteractor.makeShareURL(
+        guard let url = shareLinkInteractor.makeShareURL(
             id: response.id,
             exportResult: exportResult
         ) else {
@@ -81,16 +78,6 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         }
 
         return url
-    }
-
-    func generatePassword() -> String {
-        let config = configInteractor.passwordGeneratorConfig ?? .init(
-            length: passwordGeneratorInteractor.prefersPasswordLength,
-            hasDigits: true,
-            hasUppercase: true,
-            hasSpecial: true
-        )
-        return passwordGeneratorInteractor.generatePassword(using: config)
     }
 
     var shareLinkConfig: ShareLinkConfig? {
@@ -101,5 +88,9 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         configInteractor.saveShareLinkConfig(
             ShareLinkConfig(expirationSeconds: expirationSeconds, isOneTimeAccess: isOneTimeAccess)
         )
+    }
+
+    func copyToClipboard(_ str: String) {
+        systemInteractor.copyToClipboard(str)
     }
 }

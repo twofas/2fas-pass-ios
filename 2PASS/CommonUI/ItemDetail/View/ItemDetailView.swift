@@ -17,7 +17,7 @@ struct ItemDetailView: View {
     
     var body: some View {
         VStack {
-            ItemDetailForm {
+            GroupedForm {
                 switch presenter.form {
                 case .login(let formPresenter):
                     LoginDetailFormView(presenter: formPresenter)
@@ -40,7 +40,6 @@ struct ItemDetailView: View {
                 .padding(.horizontal, Spacing.xll3)
                 .fixedSize(horizontal: false, vertical: true)
             }
-            .background(Color(.systemGroupedBackground))
             .scrollReadableContentMargins()
         }
         .contentMargins(.top, topMargin)

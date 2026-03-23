@@ -28,7 +28,7 @@ struct WiFiDetailFormView: View {
     }
 
     var body: some View {
-        ItemDetailSection {
+        GroupedSection {
             ItemDetailFormTitle(
                 name: presenter.name,
                 description: presenter.isHiddenNetwork ? String(localized: .wifiFieldHiddenValue) : nil,
@@ -95,7 +95,7 @@ struct WiFiDetailFormView: View {
         }
         
         if presenter.canShowNetworkQRCode {
-            ItemDetailSection {
+            GroupedSection {
                 Button {
                     presenter.onShowNetworkQRCode()
                 } label: {
@@ -106,7 +106,7 @@ struct WiFiDetailFormView: View {
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.itemDetailRowHighlight)
+                .buttonStyle(.groupedRowHighlight)
             }
         }
     }

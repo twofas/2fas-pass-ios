@@ -57,8 +57,10 @@ public struct ShareLinkComponents {
 public protocol ShareLinkInteracting: AnyObject {
     func exportItem(id: ItemID) async throws -> ShareExportResult
     func exportItem(id: ItemID, password: String) async throws -> ShareExportResult
+    func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse
     func fetchSharedSecret(id: String) async throws -> String
-    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> any ItemDataChangeRequest
+    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> Data
+    func makeImportRequest(from plaintext: Data) throws -> any ItemDataChangeRequest
     func makeShareURL(id: String, exportResult: ShareExportResult) -> URL?
     func isShareURL(_ url: URL) -> Bool
     func isShareDeepLink(_ url: URL) -> Bool
@@ -68,7 +70,7 @@ public protocol ShareLinkInteracting: AnyObject {
 
 // MARK: - Implementation
 
-final class ShareInteractor: ShareLinkInteracting {
+final class ShareLinkInteractor: ShareLinkInteracting {
     private static let pbkdf2Iterations: UInt32 = 600_000
 
     private let mainRepository: MainRepository
@@ -128,14 +130,22 @@ final class ShareInteractor: ShareLinkInteracting {
         )
     }
 
-    // MARK: - Import
+    // MARK: - API
+
+    func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse {
+        try await mainRepository.createSharedSecret(
+            data: data.base64EncodedString(),
+            validForSeconds: validForSeconds,
+            singleUse: singleUse
+        )
+    }
 
     func fetchSharedSecret(id: String) async throws -> String {
         let secret = try await mainRepository.fetchSharedSecret(id: id)
         return secret.data
     }
 
-    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> any ItemDataChangeRequest {
+    func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> Data {
         guard let ciphertextAndTag = Data(base64Encoded: encryptedData) else {
             throw ShareInteractorError.decodingFailed
         }
@@ -157,7 +167,11 @@ final class ShareInteractor: ShareLinkInteracting {
             throw ShareInteractorError.decryptionFailed
         }
 
-        return try decodeShareContent(from: plaintext)
+        return plaintext
+    }
+
+    func makeImportRequest(from plaintext: Data) throws -> any ItemDataChangeRequest {
+        try decodeShareContent(from: plaintext)
     }
 
     // MARK: - URL
@@ -181,7 +195,7 @@ final class ShareInteractor: ShareLinkInteracting {
     }
 
     func isShareDeepLink(_ url: URL) -> Bool {
-        url.scheme == "twofaspass" && url.host() == "share"
+        url.scheme == Config.deepLinkScheme && url.host() == "share"
     }
 
     func parseShareURL(_ url: URL) -> ShareLinkComponents? {
@@ -196,7 +210,7 @@ final class ShareInteractor: ShareLinkInteracting {
 
     func parseShareDeepLink(_ url: URL) -> ShareLinkComponents? {
         // twofaspass://share/{id}/{scheme}/{nonce}/{key|salt}
-        guard url.scheme == "twofaspass", url.host() == "share" else { return nil }
+        guard url.scheme == Config.deepLinkScheme, url.host() == "share" else { return nil }
 
         let parts = url.pathComponents
             .filter { $0 != "/" }
@@ -231,7 +245,7 @@ final class ShareInteractor: ShareLinkInteracting {
 
 // MARK: - Private
 
-private extension ShareInteractor {
+private extension ShareLinkInteractor {
 
     func preparePlaintext(for id: ItemID) async throws -> Data {
         let item = await MainActor.run {

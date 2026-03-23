@@ -72,25 +72,66 @@ extension ConnectInteractor {
 
         switch contentType {
         case .login:
-            guard let loginContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddLoginRequest.self, from: data) else {
+            guard let loginContent = try? mainRepository.jsonDecoder.decode(
+                ConnectSchemaV2.ConnectActionAddLoginRequest.self, from: data
+            ) else {
                 throw ConnectError.badData
             }
 
+            let content = loginContent.data.content
+
             var newPassword: String?
-            if let newPasswordDataEnc = loginContent.data.content.password.value, let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewItemKey) {
-                newPassword = String(data: newPasswordData, encoding: .utf8)
-            }
 
-            let name = uriInteractor.extractDomain(from: loginContent.data.content.url) ?? loginContent.data.content.url
+            if let url = content.url {
+                guard let username = content.username, let password = content.password else {
+                    throw ConnectError.badData
+                }
 
-            itemChangeRequest = .addLogin(
-                LoginDataChangeRequest(
-                    name: name,
-                    username: loginContent.data.content.username.action == .generate ? .generate : loginContent.data.content.username.value.map { .value($0) },
-                    password: loginContent.data.content.password.action == .generate ? .generate : newPassword.map { .value($0) },
-                    uris: [PasswordURI(uri: loginContent.data.content.url, match: .domain)]
+                if let newPasswordDataEnc = password.value,
+                   let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewItemKey) {
+                    newPassword = String(data: newPasswordData, encoding: .utf8)
+                }
+
+                let name = content.name
+                    ?? uriInteractor.extractDomain(from: url)
+                    ?? url
+
+                itemChangeRequest = .addLogin(
+                    LoginDataChangeRequest(
+                        name: name,
+                        username: username.action == .generate
+                            ? .generate
+                            : username.value.map { .value($0) },
+                        password: password.action == .generate
+                            ? .generate
+                            : newPassword.map { .value($0) },
+                        uris: [PasswordURI(uri: url, match: .domain)]
+                    )
                 )
-            )
+            } else {
+                if let newPasswordDataEnc = content.password?.value,
+                   let newPasswordData = mainRepository.decrypt(newPasswordDataEnc, key: encryptionNewItemKey) {
+                    newPassword = String(data: newPasswordData, encoding: .utf8)
+                }
+
+                itemChangeRequest = .addLogin(
+                    LoginDataChangeRequest(
+                        name: content.name,
+                        username: content.username?.action == .generate
+                            ? .generate
+                            : content.username?.value.map { .value($0) },
+                        password: content.password?.action == .generate
+                            ? .generate
+                            : newPassword.map { .value($0) },
+                        notes: content.notes,
+                        uris: content.uris?.compactMap {
+                            guard let match = PasswordURI.Match(intValue: $0.matcher) else { return nil }
+                            return PasswordURI(uri: $0.text, match: match)
+                        },
+                        tags: loginContent.data.tags
+                    )
+                )
+            }
         case .secureNote:
             guard let secureNoteContent = try? mainRepository.jsonDecoder.decode(ConnectSchemaV2.ConnectActionAddSecureNoteRequest.self, from: data) else {
                 throw ConnectError.badData

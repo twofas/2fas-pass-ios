@@ -10,6 +10,12 @@ import Common
 
 public struct SharePasswordInput: View {
 
+    private enum Constants {
+        static let inputHeight: CGFloat = 44
+        static let cornerRadius: CGFloat = 10
+        static let errorBorderWidth: CGFloat = 1
+    }
+
     @Binding private var text: String
     private var errorMessage: String? = nil
     private var autoFocus = false
@@ -104,13 +110,13 @@ public struct SharePasswordInput: View {
             .conditionalOnSubmit(onSubmitHandler)
             .padding(.leading, Spacing.l)
             .padding(.trailing, Spacing.xs)
-            .frame(height: 44)
+            .frame(height: Constants.inputHeight)
             .background(Color(.secondarySystemGroupedBackground))
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(.danger500, lineWidth: hasError ? 1 : 0)
+                RoundedRectangle(cornerRadius: Constants.cornerRadius)
+                    .stroke(.danger500, lineWidth: hasError ? Constants.errorBorderWidth : 0)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
             .sensoryFeedback(.error, trigger: errorShakeTrigger)
             .shakeAnimation(trigger: errorShakeTrigger)
     }

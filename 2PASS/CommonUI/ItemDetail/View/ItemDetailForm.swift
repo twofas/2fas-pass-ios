@@ -7,7 +7,7 @@
 import SwiftUI
 import Common
 
-struct ItemDetailForm<Content: View>: View {
+struct GroupedForm<Content: View>: View {
     let content: () -> Content
 
     init(@ViewBuilder content: @escaping () -> Content) {
@@ -21,68 +21,45 @@ struct ItemDetailForm<Content: View>: View {
             }
             .padding(.vertical, Spacing.l)
         }
+        .background(Color(.systemGroupedBackground))
     }
 }
 
-public struct ItemDetailSection<Content: View, Footer: View>: View {
-    let content: () -> Content
-    let footer: (() -> Footer)?
+struct GroupedSection<Content: View>: View {
+    private let content: () -> Content
 
-    public init(
-        @ViewBuilder content: @escaping () -> Content
-    ) where Footer == EmptyView {
+    init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
-        self.footer = nil
     }
 
-    init(
-        @ViewBuilder content: @escaping () -> Content,
-        @ViewBuilder footer: @escaping () -> Footer
-    ) {
-        self.content = content
-        self.footer = footer
-    }
+    var body: some View {
+        Group {
+            if #available(iOS 18.0, *) {
+                Group(subviews: content()) { subviews in
+                    VStack(spacing: 0) {
+                        ForEach(Array(subviews.enumerated()), id: \.offset) { index, child in
+                            GroupedRow {
+                                child
+                            }
 
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Group {
-                if #available(iOS 18.0, *) {
-                    Group(subviews: content()) { subviews in
-                        VStack(spacing: 0) {
-                            ForEach(Array(subviews.enumerated()), id: \.offset) { index, child in
-                                ItemDetailFormRow {
-                                    child
-                                }
-                                
-                                if index < subviews.count - 1 {
-                                    Divider()
-                                        .padding(.horizontal, Spacing.l)
-                                }
+                            if index < subviews.count - 1 {
+                                Divider()
+                                    .padding(.horizontal, Spacing.l)
                             }
                         }
                     }
-                } else {
-                    _VariadicView.Tree(ItemDetailFormRowLayout()) {
-                        content()
-                    }
+                }
+            } else {
+                _VariadicView.Tree(GroupedRowLayout()) {
+                    content()
                 }
             }
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .padding(.horizontal)
-
-            if let footer = footer {
-                footer()
-                    .font(.footnote)
-                    .foregroundColor(Color(.secondaryLabel))
-                    .padding(.horizontal, Spacing.xll3)
-                    .padding(.top, Spacing.m)
-                    .padding(.bottom, Spacing.xs)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
         }
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .padding(.horizontal, Spacing.l)
     }
-    
+
     private var cornerRadius: CGFloat {
         if #available(iOS 26, *) {
             return 24
@@ -92,27 +69,32 @@ public struct ItemDetailSection<Content: View, Footer: View>: View {
     }
 }
 
-struct ItemDetailRowHighlightButtonStyle: ButtonStyle {
+struct GroupedRowHighlightButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .itemDetailFormRowBackground(configuration.isPressed ? Color.neutral100 : nil)
+            .groupedRowBackground(configuration.isPressed ? Color.neutral100 : nil)
     }
 }
 
-extension ButtonStyle where Self == ItemDetailRowHighlightButtonStyle {
-    static var itemDetailRowHighlight: Self {
+extension ButtonStyle where Self == GroupedRowHighlightButtonStyle {
+    static var groupedRowHighlight: Self {
         .init()
     }
 }
 
 extension View {
-    
-    func itemDetailFormRowBackground<V>(_ view: V?) -> some View where V : View {
-        preference(key: ItemDetailFormRowBackgroundKey.self, value: view.map { AnyView($0) })
+
+    func groupedRowBackground<V>(_ view: V?) -> some View where V: View {
+        preference(key: GroupedRowBackgroundKey.self, value: view.map { AnyView($0) })
+    }
+
+    func groupedRowInsets(_ insets: EdgeInsets) -> some View {
+        preference(key: GroupedRowInsetsKey.self, value: insets)
     }
 }
 
-private struct ItemDetailFormRow<Content: View>: View {
+private struct GroupedRow<Content: View>: View {
+    @State private var customInsets: EdgeInsets?
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -120,16 +102,26 @@ private struct ItemDetailFormRow<Content: View>: View {
     }
 
     var body: some View {
+        let insets = customInsets ?? defaultInsets
         content
-            .padding(.vertical, Spacing.l)
-            .padding(.horizontal, Spacing.l)
-            .backgroundPreferenceValue(ItemDetailFormRowBackgroundKey.self) { view in
+            .padding(.top, insets.top)
+            .padding(.leading, insets.leading)
+            .padding(.bottom, insets.bottom)
+            .padding(.trailing, insets.trailing)
+            .backgroundPreferenceValue(GroupedRowBackgroundKey.self) { view in
                 view
             }
+            .onPreferenceChange(GroupedRowInsetsKey.self) { value in
+                customInsets = value
+            }
+    }
+
+    private var defaultInsets: EdgeInsets {
+        EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l)
     }
 }
 
-private struct ItemDetailFormRowBackgroundKey: PreferenceKey {
+private struct GroupedRowBackgroundKey: PreferenceKey {
     static var defaultValue: AnyView? = nil
 
     static func reduce(value: inout AnyView?, nextValue: () -> AnyView?) {
@@ -137,14 +129,21 @@ private struct ItemDetailFormRowBackgroundKey: PreferenceKey {
     }
 }
 
-private struct ItemDetailFormRowLayout: _VariadicView_UnaryViewRoot {
+private struct GroupedRowInsetsKey: PreferenceKey {
+    static let defaultValue: EdgeInsets? = nil
+    static func reduce(value: inout EdgeInsets?, nextValue: () -> EdgeInsets?) {
+        value = nextValue() ?? value
+    }
+}
+
+private struct GroupedRowLayout: _VariadicView_UnaryViewRoot {
     func body(children: _VariadicView.Children) -> some View {
         VStack(spacing: 0) {
             ForEach(Array(children.enumerated()), id: \.offset) { index, child in
-                ItemDetailFormRow {
+                GroupedRow {
                     child
                 }
-                
+
                 if index < children.count - 1 {
                     Divider()
                         .padding(.horizontal, Spacing.l)

@@ -9,7 +9,7 @@ import Data
 
 protocol ShareLinkImportModuleInteracting: AnyObject {
     func fetchSharedSecret(id: String) async throws -> String
-    func decryptSharedSecret(
+    func decryptImportRequest(
         encryptedData: String,
         components: ShareLinkComponents,
         password: String?
@@ -18,25 +18,26 @@ protocol ShareLinkImportModuleInteracting: AnyObject {
 
 final class ShareLinkImportModuleInteractor: ShareLinkImportModuleInteracting {
 
-    private let shareInteractor: ShareLinkInteracting
+    private let shareLinkInteractor: ShareLinkInteracting
 
-    init(shareInteractor: ShareLinkInteracting) {
-        self.shareInteractor = shareInteractor
+    init(shareLinkInteractor: ShareLinkInteracting) {
+        self.shareLinkInteractor = shareLinkInteractor
     }
 
     func fetchSharedSecret(id: String) async throws -> String {
-        try await shareInteractor.fetchSharedSecret(id: id)
+        try await shareLinkInteractor.fetchSharedSecret(id: id)
     }
 
-    func decryptSharedSecret(
+    func decryptImportRequest(
         encryptedData: String,
         components: ShareLinkComponents,
         password: String?
     ) throws -> any ItemDataChangeRequest {
-        try shareInteractor.decryptSharedSecret(
+        let plaintext = try shareLinkInteractor.decryptSharedSecret(
             encryptedData: encryptedData,
             components: components,
             password: password
         )
+        return try shareLinkInteractor.makeImportRequest(from: plaintext)
     }
 }

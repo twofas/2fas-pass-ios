@@ -24,13 +24,7 @@ extension ModuleInteractorFactory {
             updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor(),
             credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter(),
             configInteractor: InteractorFactory.shared.configInteractor(),
-            shareInteractor: InteractorFactory.shared.shareInteractor()
-        )
-    }
-    
-    func shareLinkImportModuleInteractor() -> ShareLinkImportModuleInteracting {
-        ShareLinkImportModuleInteractor(
-            shareInteractor: InteractorFactory.shared.shareInteractor()
+            shareLinkInteractor: InteractorFactory.shared.shareInteractor()
         )
     }
 

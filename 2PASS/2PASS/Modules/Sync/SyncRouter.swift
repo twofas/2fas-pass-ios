@@ -20,8 +20,8 @@ struct SyncRouter: Router {
             .push
         case .iCloudNotAvailable(let reason):
             .alert(title: String(localized: .generalNotAvailable), message: reason)
-        case .iCloudSchemeNotSupported(let schemeVersion, _):
-            .alert(title: String(localized: .appUpdateModalTitle), message: String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemeVersion))))
+        case .iCloudSchemeNotSupported:
+            .alert(title: String(localized: .appUpdateModalTitle), message: String(localized: .cloudSyncInvalidSchemaErrorMsg))
         case .disableWebDAVConfirmation:
             .alert(title: String(localized: .webdavDisableIcloudConfirmTitle), message: String(localized: .webdavDisableWebdavConfirmBody))
         case .syncNotAllowed:

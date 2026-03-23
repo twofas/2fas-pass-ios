@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import SwiftUIIntrospect
 import UIKit
 import Common
 
@@ -14,7 +15,7 @@ struct ShareLinkItemPasswordView: View {
     var onSave: (String) -> Void
     var onCancel: () -> Void
 
-    private static let minimumLength = 8
+    private static let minimumLength: Int32 = 8
     private static let inputAccessoryHeight: CGFloat = 44
     private static let inputAccessoryHeightLiquidGlass: CGFloat = 64
 
@@ -43,17 +44,16 @@ struct ShareLinkItemPasswordView: View {
                                 .frame(maxHeight: 32)
                             
                             Image(.shareStar)
-//                                .padding(.top, 32)
 
                             Spacer(minLength: 0)
                                 .frame(maxHeight: 24)
                             
                             VStack(spacing: 8) {
-                                Text("Set link password")
+                                Text(.shareLinkItemSetPasswordTitle)
                                     .font(.title1Emphasized)
                                     .foregroundStyle(.base1000)
 
-                                Text("Secure your 2FAS Share link")
+                                Text(.shareLinkItemSetPasswordSubtitle)
                                     .font(.subheadline)
                                     .foregroundStyle(.neutral950)
                             }
@@ -101,8 +101,16 @@ struct ShareLinkItemPasswordView: View {
                     .disabled(!canSave)
                 }
             }
+            .router(
+                router: ShareLinkItemPasswordRouter(),
+                destination: $presenter.destination
+            )
+            
         }
-        .background(Color(.systemGroupedBackground), ignoresSafeAreaEdges: .all)
+        .background(Color(UIColor(light: .systemGroupedBackground, dark: .black)), ignoresSafeAreaEdges: .all)
+        .introspect(.navigationStack, on: .iOS(.v17, .v18, .v26)) { viewControler in
+            viewControler.traitOverrides.userInterfaceLevel = .base
+        }
     }
 
     // MARK: - Password Input
@@ -112,7 +120,7 @@ struct ShareLinkItemPasswordView: View {
         SharePasswordInput(text: $presenter.password)
             .errorMessage(
                 showMinLengthError
-                ? "Password must be at least \(Self.minimumLength) characters"
+                ? String(localized: .shareLinkItemPasswordMinLength(Self.minimumLength))
                 : nil
             )
             .autoFocus()
@@ -134,14 +142,6 @@ struct ShareLinkItemPasswordView: View {
             .onChange(of: presenter.password) {
                 if showMinLengthError, isValid {
                     showMinLengthError = false
-                }
-            }
-            .sheet(isPresented: $presenter.showGeneratePassword) {
-                PasswordGeneratorRouter.buildView(close: {
-                    presenter.showGeneratePassword = false
-                }) { generatedPassword in
-                    presenter.password = generatedPassword
-                    presenter.showGeneratePassword = false
                 }
             }
     }
@@ -189,7 +189,7 @@ struct ShareLinkItemPasswordView: View {
                 title: String(localized: .loginPasswordGeneratorCta),
                 image: UIImage(systemName: generateIconName),
                 handler: { _ in
-                    presenter.showGeneratePassword = true
+                    presenter.onGeneratePasswordTapped()
                 }
             )),
             UIButton(configuration: config, primaryAction: UIAction(
@@ -224,13 +224,17 @@ struct ShareLinkItemPasswordView: View {
     }
 }
 
+private class ShareLinkItemPasswordPreviewInteractor: ShareLinkItemPasswordModuleInteracting {
+    func generatePassword() -> String { "Pr3v!ewP@ss" }
+}
+
 #Preview {
     Color.backgroundPrimary
         .sheet(isPresented: .constant(true)) {
             ShareLinkItemPasswordView(
                 presenter: .init(
                     initialPassword: "",
-                    interactor: ShareLinkItemPreviewInteractor()
+                    interactor: ShareLinkItemPasswordPreviewInteractor()
                 ),
                 onSave: { _ in },
                 onCancel: {}

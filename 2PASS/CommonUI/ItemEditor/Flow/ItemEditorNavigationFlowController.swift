@@ -13,14 +13,14 @@ private struct Constants {
     static let wifiNetworkQRCodeScannerMaxDetentValue: CGFloat = 500
 }
 
-public protocol ItemEditorNavigationFlowControllerParent: AnyObject {
+protocol ItemEditorNavigationFlowControllerParent: AnyObject {
     func closeItemEditor(with result: SaveItemResult)
 }
 
-public final class ItemEditorNavigationFlowController: NavigationFlowController {
+final class ItemEditorNavigationFlowController: NavigationFlowController {
     private weak var parent: ItemEditorNavigationFlowControllerParent?
 
-    public static func present(
+    static func present(
         on viewController: UIViewController,
         parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
@@ -52,7 +52,7 @@ public final class ItemEditorNavigationFlowController: NavigationFlowController 
         viewController.present(navi, animated: true)
     }
 
-    public static func buildView(
+    static func buildView(
         parent: ItemEditorNavigationFlowControllerParent,
         editItemID: ItemID?,
         changeRequest: (any ItemDataChangeRequest)?

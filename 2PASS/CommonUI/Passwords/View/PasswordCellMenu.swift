@@ -37,7 +37,7 @@ enum PasswordCellMenu: Hashable {
         case .copy(.wifiSSID): String(localized: .wifiViewActionCopySsid)
         case .copy(.wifiPassword): String(localized: .wifiViewActionCopyPassword)
         case .goToURI: String(localized: .loginViewActionOpenUri)
-        case .shareLink: String(localized: .itemActionShareLink)
+        case .shareLink: String(localized: .itemViewActionShareLink)
         case .moveToTrash: String(localized: .loginViewActionDelete)
         }
     }

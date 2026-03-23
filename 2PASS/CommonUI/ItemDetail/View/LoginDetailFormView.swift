@@ -29,7 +29,7 @@ struct LoginDetailFormView: View {
     }
 
     var body: some View {
-        ItemDetailSection {
+        GroupedSection {
             ItemDetailFormTitle(name: presenter.name, icon: presenter.iconContent)
 
             if let username = presenter.username {

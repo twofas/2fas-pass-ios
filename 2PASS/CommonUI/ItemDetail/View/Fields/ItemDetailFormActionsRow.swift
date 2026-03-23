@@ -34,7 +34,7 @@ struct ItemDetailFormActionsRow<Value>: View where Value: View {
             content
         }
         .buttonStyle(.twofasPlain)
-        .itemDetailFormRowBackground(isSelected ? Color.neutral100 : nil)
+        .groupedRowBackground(isSelected ? Color.neutral100 : nil)
         .editMenu($isSelected, actions: actions)
     }
     

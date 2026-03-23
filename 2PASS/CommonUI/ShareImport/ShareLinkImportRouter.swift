@@ -6,12 +6,11 @@
 
 import SwiftUI
 import Common
-import CommonUI
 import Data
 
-struct ShareLinkImportRouter {
+public struct ShareLinkImportRouter {
 
-    static func buildView(
+    public static func buildView(
         components: ShareLinkComponents,
         onDismiss: @escaping () -> Void
     ) -> some View {

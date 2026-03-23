@@ -35,11 +35,6 @@ final class PasswordsPresenter {
     var isAutoFillExtension: Bool {
         autoFillEnvironment != nil
     }
-
-    private var isShareLinkAvailable: Bool {
-        guard #available(iOS 26.0, *) else { return false }
-        return !isAutoFillExtension
-    }
     
     var selectedFilterTag: ItemTagData? {
         didSet {
@@ -522,7 +517,7 @@ private extension PasswordsPresenter {
                     loginItem.username != nil ? .copy(.loginUsername) : nil,
                     loginItem.password != nil ? .copy(.loginPassword) : nil,
                     isAutoFillExtension ? nil : .goToURI(uris: loginItem.content.uris?.map { $0.uri } ?? []),
-                    isShareLinkAvailable ? .shareLink : nil,
+                    .shareLink,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }
@@ -538,7 +533,7 @@ private extension PasswordsPresenter {
                     .view,
                     .edit,
                     secureNoteItem.content.text != nil ? .copy(.secureNoteText) : nil,
-                    isShareLinkAvailable ? .shareLink : nil,
+                    .shareLink,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }
@@ -560,7 +555,7 @@ private extension PasswordsPresenter {
                     .edit,
                     paymentCardItem.content.cardNumber != nil ? .copy(.paymentCardNumber) : nil,
                     paymentCardItem.content.securityCode != nil ? .copy(.paymentCardSecurityCode) : nil,
-                    isShareLinkAvailable ? .shareLink : nil,
+                    .shareLink,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }
@@ -577,7 +572,7 @@ private extension PasswordsPresenter {
                     .edit,
                     wifiItem.content.ssid?.isEmpty == false ? .copy(.wifiSSID) : nil,
                     wifiItem.content.password != nil ? .copy(.wifiPassword) : nil,
-                    isShareLinkAvailable ? .shareLink : nil,
+                    .shareLink,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

@@ -4,42 +4,44 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
+import Foundation
 import UIKit
 import SwiftUI
 import Common
+import Data
 
-enum LinkExpiration: String, CaseIterable, Identifiable {
-    case fiveMinutes
-    case thirtyMinutes
-    case oneHour
-    case oneDay
-    case sevenDays
-    case thirtyDays
-
-    var id: Self { self }
-
-    static let shortDurations: [LinkExpiration] = [.fiveMinutes, .thirtyMinutes, .oneHour]
-    static let longDurations: [LinkExpiration] = [.oneDay, .sevenDays, .thirtyDays]
-
-    var title: String {
-        switch self {
-        case .fiveMinutes: "5 min"
-        case .thirtyMinutes: "30 min"
-        case .oneHour: "1 hour"
-        case .oneDay: "1 day"
-        case .sevenDays: "7 days"
-        case .thirtyDays: "30 days"
-        }
+enum ShareLinkUploadState {
+    case idle
+    case uploading
+    case finished(Result<Void, Error>)
+    
+    var isUploading: Bool {
+        if case .uploading = self { true } else { false }
     }
 
-    var seconds: Int {
+    var isSuccess: Bool {
+        if case .finished(.success) = self { true } else { false }
+    }
+
+    var isFailure: Bool {
+        if case .finished(.failure) = self { true } else { false }
+    }
+
+    var error: Error? {
+        if case .finished(.failure(let error)) = self { error } else { nil }
+    }
+}
+
+enum ShareLinkItemDestination: RouterDestination {
+    case password(initialPassword: String, onSave: (String) -> Void, onCancel: () -> Void)
+    case share(title: String, url: URL, onComplete: () -> Void)
+    case error(message: String, onDismiss: () -> Void)
+
+    var id: String {
         switch self {
-        case .fiveMinutes: 5 * 60
-        case .thirtyMinutes: 30 * 60
-        case .oneHour: 60 * 60
-        case .oneDay: 24 * 60 * 60
-        case .sevenDays: 7 * 24 * 60 * 60
-        case .thirtyDays: 30 * 24 * 60 * 60
+        case .password: "password"
+        case .share: "share"
+        case .error: "error"
         }
     }
 }
@@ -48,27 +50,35 @@ enum LinkExpiration: String, CaseIterable, Identifiable {
 final class ShareLinkItemPresenter {
     let itemID: ItemID
 
+    let shortDurations: [DateComponents] = [
+        DateComponents(minute: 5),
+        DateComponents(minute: 30),
+        DateComponents(hour: 1),
+    ]
+    
+    let longDurations: [DateComponents] = [
+        DateComponents(day: 1),
+        DateComponents(day: 7),
+        DateComponents(day: 30),
+    ]
+    
+    let expirationFormat: Duration.UnitsFormatStyle = .units(allowed: [.days, .hours, .minutes], width: .abbreviated)
+    private var allDurations: [DateComponents] { shortDurations + longDurations }
+
     var name: String = ""
     var iconContent: IconContent?
     private(set) var cardIssuer: PaymentCardIssuer?
     private(set) var cardNumberMask: String?
     var isPaymentCard: Bool { cardIssuer != nil || cardNumberMask != nil }
-    var isUploading: Bool = false
-    var isExpanded: Bool = false
-    var isSuccess: Bool = false
-    
-//    var isUploading: Bool = true
-//    var isExpanded: Bool = true
-//    var isSuccess: Bool = true
-    
-    var selectedExpiration: LinkExpiration = .fiveMinutes
+    var uploadState: ShareLinkUploadState = .idle
+
+    var selectedExpiration: DateComponents = DateComponents(minute: 30)
     var isOneTimeAccess: Bool = false
     var password: String = ""
-    var isPasswordSheetPresented: Bool = false
+    var destination: ShareLinkItemDestination?
     var shareURL: URL?
-    var isShareSheetPresented: Bool = false
 
-    let interactor: ShareLinkItemModuleInteracting
+    private let interactor: ShareLinkItemModuleInteracting
     private var fetchingIconTask: Task<Void, Error>?
     private var continueTask: Task<Void, Never>?
 
@@ -93,8 +103,8 @@ final class ShareLinkItemPresenter {
         }
 
         if let config = interactor.shareLinkConfig {
-            if let expiration = LinkExpiration.allCases.first(where: {
-                TimeInterval($0.seconds) == config.expirationSeconds
+            if let expiration = allDurations.first(where: {
+                $0.totalSeconds == Int(config.expirationSeconds)
             }) {
                 selectedExpiration = expiration
             }
@@ -111,54 +121,66 @@ final class ShareLinkItemPresenter {
             return
         }
 
-        UIPasteboard.general.string = password
+        interactor.copyToClipboard(password)
         ToastPresenter.shared.presentPasswordCopied()
     }
 
     func onAccessPasswordTapped() {
-        isPasswordSheetPresented = true
-    }
-
-    func onPasswordSaved(_ password: String) {
-        self.password = password
-        isPasswordSheetPresented = false
-    }
-
-    func onPasswordCancelled() {
-        isPasswordSheetPresented = false
+        destination = .password(
+            initialPassword: password,
+            onSave: { [weak self] password in
+                self?.password = password
+                self?.destination = nil
+            },
+            onCancel: { [weak self] in
+                self?.destination = nil
+            }
+        )
     }
 
     func onContinue() {
-        isUploading = true
+        uploadState = .uploading
 
         continueTask = Task { @MainActor in
-            do {
+            do {                
                 let url = try await interactor.shareItem(
                     id: itemID,
                     password: password.isEmpty ? nil : password,
-                    validForSeconds: selectedExpiration.seconds,
+                    validForSeconds: selectedExpiration.totalSeconds,
                     singleUse: isOneTimeAccess
                 )
                 guard !Task.isCancelled else { return }
                 shareURL = url
                 interactor.saveShareLinkConfig(
-                    expirationSeconds: TimeInterval(selectedExpiration.seconds),
+                    expirationSeconds: TimeInterval(selectedExpiration.totalSeconds),
                     isOneTimeAccess: isOneTimeAccess
                 )
                 withAnimation(.smooth(duration: 0.4)) {
-                    isSuccess = true
-                    isExpanded = true
+                    uploadState = .finished(.success(()))
                 }
             } catch {
                 guard !Task.isCancelled else { return }
-                isUploading = false
+                uploadState = .finished(.failure(error))
+                destination = .error(
+                    message: error.localizedDescription,
+                    onDismiss: { [weak self] in
+                        self?.uploadState = .idle
+                        self?.destination = nil
+                    }
+                )
             }
         }
     }
 
     func onShare() {
-        guard shareURL != nil else { return }
-        isShareSheetPresented = true
+        guard let shareURL else { return }
+        destination = .share(
+            title: name,
+            url: shareURL,
+            onComplete: { [weak self] in
+                self?.destination = nil
+            }
+        )
     }
 
     func onDisappear() {
@@ -195,5 +217,16 @@ final class ShareLinkItemPresenter {
                 iconContent = .icon(image)
             }
         }
+    }
+}
+
+extension DateComponents {
+    
+    var duration: Duration {
+        .seconds(totalSeconds)
+    }
+    
+    fileprivate var totalSeconds: Int {
+        (day ?? 0) * 86_400 + (hour ?? 0) * 3600 + (minute ?? 0) * 60
     }
 }
