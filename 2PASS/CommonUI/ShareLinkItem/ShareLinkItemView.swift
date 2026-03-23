@@ -341,8 +341,12 @@ struct ShareLinkItemView: View {
                     .pickerStyle(.menu)
                     .tint(.base1000)
                 }
-                .padding(.leading, Spacing.l)
-                .padding(.trailing, Spacing.xs)
+                .shareLinkRowInsets(EdgeInsets(
+                    top: Spacing.l,
+                    leading: Spacing.l,
+                    bottom: Spacing.l,
+                    trailing: Spacing.xs
+                ))
             }
 
             ShareLinkSection {
@@ -360,7 +364,6 @@ struct ShareLinkItemView: View {
 
                     Toggle(isOn: $presenter.isOneTimeAccess, label: {})
                 }
-                .padding(.horizontal, Spacing.l)
             }
 
             ShareLinkSection {
@@ -381,11 +384,10 @@ struct ShareLinkItemView: View {
 
                         HStack(spacing: Spacing.s) {
                             Text(presenter.password.isEmpty ? "Off" : "On")
-                            
+
                             Image(systemName: "chevron.right")
                         }
                     }
-                    .padding(.horizontal, Spacing.l)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.itemDetailRowHighlight)
@@ -410,11 +412,10 @@ struct ShareLinkItemView: View {
         VStack(alignment: .leading) {
             Text("Share settings")
                 .font(.title2Emphasized)
-                .padding(.horizontal, Spacing.l)
-                .padding(.horizontal, Spacing.l)
+                .padding(.horizontal, Spacing.xll3)
                 .padding(.bottom, Spacing.s)
 
-            ShareLinkDetailSection {
+            ShareLinkSection {
                 HStack(spacing: 16) {
                     Image(systemName: "timer")
                         .frame(width: 24)
@@ -445,6 +446,7 @@ struct ShareLinkItemView: View {
                     }
                 }
             }
+            .padding(.horizontal)
             .padding(.bottom, Spacing.xll)
             
             Button("Share") {
@@ -508,19 +510,8 @@ class ShareLinkItemPreviewInteractor: ShareLinkItemModuleInteracting {
         return URL(string: "https://share.2fas.com/#/preview-id/v1k/preview-nonce/preview-key")!
     }
 
-    func generatePassword() -> String {
-        "Pr3v!ewP@ss"
-    }
-
     var shareLinkConfig: ShareLinkConfig? { nil }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool) {}
-}
-
-@available(iOS 26.0, *)
-private struct GlassEffectModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-    }
 }
 
 /// A rounded rectangle path that starts at an arbitrary position along the perimeter.
