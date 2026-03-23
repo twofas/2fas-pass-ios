@@ -23,6 +23,7 @@ final class EncryptionHandlerImpl {
 
 extension EncryptionHandlerImpl: EncryptionHandler {
     var currentCloudSchemaVersion: Int { Config.cloudSchemaVersion }
+    var currentDeviceName: String { mainRepository.deviceName }
     
     func verifyEncryption(_ cloudData: VaultCloudData) -> EncryptionVerificationResult {
         guard let key = mainRepository.cachedExternalKey else {

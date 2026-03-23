@@ -46,6 +46,7 @@ final class UserDefaultsDataSourceImpl {
         case lastAppUpdatePromptDate
         case screenCaptureAllowedUntil
         case shareLinkConfig
+        case deviceName
     }
     
     private let userDefaults = UserDefaults()
@@ -492,5 +493,14 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearScreenCaptureAllowedUntil() {
         sharedDefaults.set(nil, forKey: Keys.screenCaptureAllowedUntil.rawValue)
         sharedDefaults.synchronize()
+    }
+
+    var deviceName: String? {
+        userDefaults.string(forKey: Keys.deviceName.rawValue)
+    }
+
+    func setDeviceName(_ name: String) {
+        userDefaults.set(name, forKey: Keys.deviceName.rawValue)
+        userDefaults.synchronize()
     }
 }

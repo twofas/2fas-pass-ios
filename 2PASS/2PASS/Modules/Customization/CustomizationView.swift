@@ -16,6 +16,18 @@ struct CustomizationView: View {
         SettingsDetailsForm(.settingsEntryCustomization) {
             Section {
                 Button {
+                    presenter.onEditDeviceName()
+                } label: {
+                    LabeledContent(String(localized: .settingsEntryDeviceNickname), value: presenter.deviceName)
+                        .labeledContentStyle(.navigationSettings)
+                }
+            } footer: {
+                Text(.settingsEntryDeviceNicknameDescription)
+                    .settingsFooter()
+            }
+
+            Section {
+                Button {
                     presenter.onChangeDefaultAction()
                 } label: {
                     LabeledContent(String(localized: .settingsEntryLoginClickAction), value: presenter.selectedDefaultActionDesctiption)
