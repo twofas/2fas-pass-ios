@@ -97,8 +97,12 @@ extension ConfigInteractor: ConfigInteracting {
     }
 
     var isScreenCaptureAllowed: Bool {
+        #if PROD
         guard let expiration = mainRepository.screenCaptureAllowedUntil else { return false }
         return expiration > mainRepository.currentDate
+        #else
+        return true
+        #endif
     }
 
     var screenCaptureAllowedUntil: Date? {
