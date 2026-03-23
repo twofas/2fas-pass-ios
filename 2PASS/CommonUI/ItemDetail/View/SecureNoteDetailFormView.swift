@@ -33,7 +33,7 @@ struct SecureNoteDetailFormView: View {
     }
 
     var body: some View {
-        ItemDetailSection {
+        GroupedSection {
             ItemDetailFormTitle(name: presenter.name, icon: .contentType(.secureNote))
             noteView
             ItemDetailFormProtectionLevel(presenter.protectionLevel)

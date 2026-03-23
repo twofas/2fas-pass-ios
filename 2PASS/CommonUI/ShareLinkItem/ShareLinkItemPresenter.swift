@@ -7,6 +7,19 @@
 import UIKit
 import SwiftUI
 import Common
+import CommonUI
+
+enum ShareLinkItemDestination: RouterDestination {
+    case password(initialPassword: String, onSave: (String) -> Void, onCancel: () -> Void)
+    case share(title: String, url: URL, onComplete: () -> Void)
+
+    var id: String {
+        switch self {
+        case .password: "password"
+        case .share: "share"
+        }
+    }
+}
 
 enum LinkExpiration: String, CaseIterable, Identifiable {
     case fiveMinutes
@@ -60,9 +73,8 @@ final class ShareLinkItemPresenter {
     var selectedExpiration: LinkExpiration = .fiveMinutes
     var isOneTimeAccess: Bool = false
     var password: String = ""
-    var isPasswordSheetPresented: Bool = false
+    var destination: ShareLinkItemDestination?
     var shareURL: URL?
-    var isShareSheetPresented: Bool = false
 
     private let interactor: ShareLinkItemModuleInteracting
     private var fetchingIconTask: Task<Void, Error>?
@@ -112,16 +124,16 @@ final class ShareLinkItemPresenter {
     }
 
     func onAccessPasswordTapped() {
-        isPasswordSheetPresented = true
-    }
-
-    func onPasswordSaved(_ password: String) {
-        self.password = password
-        isPasswordSheetPresented = false
-    }
-
-    func onPasswordCancelled() {
-        isPasswordSheetPresented = false
+        destination = .password(
+            initialPassword: password,
+            onSave: { [weak self] password in
+                self?.password = password
+                self?.destination = nil
+            },
+            onCancel: { [weak self] in
+                self?.destination = nil
+            }
+        )
     }
 
     func onContinue() {
@@ -153,8 +165,14 @@ final class ShareLinkItemPresenter {
     }
 
     func onShare() {
-        guard shareURL != nil else { return }
-        isShareSheetPresented = true
+        guard let shareURL else { return }
+        destination = .share(
+            title: name,
+            url: shareURL,
+            onComplete: { [weak self] in
+                self?.destination = nil
+            }
+        )
     }
 
     func onDisappear() {

@@ -43,7 +43,7 @@ struct PaymentCardDetailFormView: View {
         .padding(.horizontal, Spacing.xll3)
         .padding(.bottom, Spacing.s)
         
-        ItemDetailSection {
+        GroupedSection {
             if let cardHolder = presenter.cardHolder {
                 ItemDetailFormActionsRow(
                     key: .cardHolderLabel,

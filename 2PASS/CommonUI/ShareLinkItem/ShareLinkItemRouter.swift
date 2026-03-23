@@ -8,7 +8,8 @@ import SwiftUI
 import Common
 
 @available(iOS 26.0, *)
-struct ShareLinkItemRouter {
+struct ShareLinkItemRouter: Router {
+
     static func buildView(itemID: ItemID) -> some View {
         NavigationStack {
             ShareLinkItemView(
@@ -16,6 +17,35 @@ struct ShareLinkItemRouter {
                     itemID: itemID,
                     interactor: ModuleInteractorFactory.shared.shareLinkItemModuleInteractor()
                 )
+            )
+        }
+    }
+
+    func routingType(for destination: ShareLinkItemDestination?) -> RoutingType? {
+        switch destination {
+        case .password, .share:
+            return .sheet
+        case nil:
+            return nil
+        }
+    }
+
+    @ViewBuilder
+    func view(for destination: ShareLinkItemDestination) -> some View {
+        switch destination {
+        case .password(let initialPassword, let onSave, let onCancel):
+            ShareLinkItemPasswordRouter.buildView(
+                initialPassword: initialPassword,
+                onSave: onSave,
+                onCancel: onCancel
+            )
+        case .share(let title, let url, let onComplete):
+            ShareSheetView(
+                title: title,
+                url: url,
+                excludedActivityTypes: nil,
+                activityComplete: onComplete,
+                activityError: onComplete
             )
         }
     }

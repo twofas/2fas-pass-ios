@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import SwiftUIIntrospect
 import UIKit
 import Common
 
@@ -104,8 +105,12 @@ struct ShareLinkItemPasswordView: View {
                 router: ShareLinkItemPasswordRouter(),
                 destination: $presenter.destination
             )
+            
         }
-        .background(Color(.systemGroupedBackground), ignoresSafeAreaEdges: .all)
+        .background(Color(UIColor(light: .systemGroupedBackground, dark: .black)), ignoresSafeAreaEdges: .all)
+        .introspect(.navigationStack, on: .iOS(.v17, .v18, .v26)) { viewControler in
+            viewControler.traitOverrides.userInterfaceLevel = .base
+        }
     }
 
     // MARK: - Password Input
