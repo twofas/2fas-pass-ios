@@ -17,7 +17,6 @@ protocol ShareLinkItemModuleInteracting: AnyObject {
         validForSeconds: Int,
         singleUse: Bool
     ) async throws -> URL
-    func generatePassword() -> String
     var shareLinkConfig: ShareLinkConfig? { get }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool)
 }
@@ -26,20 +25,17 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let shareLinkInteractor: ShareLinkInteracting
-    private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let configInteractor: ConfigInteracting
 
     init(
         itemsInteractor: ItemsInteracting,
         fileIconInteractor: FileIconInteracting,
         shareLinkInteractor: ShareLinkInteracting,
-        passwordGeneratorInteractor: PasswordGeneratorInteracting,
         configInteractor: ConfigInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.shareLinkInteractor = shareLinkInteractor
-        self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.configInteractor = configInteractor
     }
 
@@ -78,16 +74,6 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         }
 
         return url
-    }
-
-    func generatePassword() -> String {
-        let config = configInteractor.passwordGeneratorConfig ?? .init(
-            length: passwordGeneratorInteractor.prefersPasswordLength,
-            hasDigits: true,
-            hasUppercase: true,
-            hasSpecial: true
-        )
-        return passwordGeneratorInteractor.generatePassword(using: config)
     }
 
     var shareLinkConfig: ShareLinkConfig? {

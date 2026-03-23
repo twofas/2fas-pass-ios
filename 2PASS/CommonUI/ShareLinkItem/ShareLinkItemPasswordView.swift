@@ -43,7 +43,6 @@ struct ShareLinkItemPasswordView: View {
                                 .frame(maxHeight: 32)
                             
                             Image(.shareStar)
-//                                .padding(.top, 32)
 
                             Spacer(minLength: 0)
                                 .frame(maxHeight: 24)
@@ -101,6 +100,10 @@ struct ShareLinkItemPasswordView: View {
                     .disabled(!canSave)
                 }
             }
+            .router(
+                router: ShareLinkItemPasswordRouter(),
+                destination: $presenter.destination
+            )
         }
         .background(Color(.systemGroupedBackground), ignoresSafeAreaEdges: .all)
     }
@@ -134,14 +137,6 @@ struct ShareLinkItemPasswordView: View {
             .onChange(of: presenter.password) {
                 if showMinLengthError, isValid {
                     showMinLengthError = false
-                }
-            }
-            .sheet(isPresented: $presenter.showGeneratePassword) {
-                PasswordGeneratorRouter.buildView(close: {
-                    presenter.showGeneratePassword = false
-                }) { generatedPassword in
-                    presenter.password = generatedPassword
-                    presenter.showGeneratePassword = false
                 }
             }
     }
@@ -189,7 +184,7 @@ struct ShareLinkItemPasswordView: View {
                 title: String(localized: .loginPasswordGeneratorCta),
                 image: UIImage(systemName: generateIconName),
                 handler: { _ in
-                    presenter.showGeneratePassword = true
+                    presenter.onGeneratePasswordTapped()
                 }
             )),
             UIButton(configuration: config, primaryAction: UIAction(
@@ -224,13 +219,17 @@ struct ShareLinkItemPasswordView: View {
     }
 }
 
+private class ShareLinkItemPasswordPreviewInteractor: ShareLinkItemPasswordModuleInteracting {
+    func generatePassword() -> String { "Pr3v!ewP@ss" }
+}
+
 #Preview {
     Color.backgroundPrimary
         .sheet(isPresented: .constant(true)) {
             ShareLinkItemPasswordView(
                 presenter: .init(
                     initialPassword: "",
-                    interactor: ShareLinkItemPreviewInteractor()
+                    interactor: ShareLinkItemPasswordPreviewInteractor()
                 ),
                 onSave: { _ in },
                 onCancel: {}

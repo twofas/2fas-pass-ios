@@ -56,11 +56,7 @@ final class ShareLinkItemPresenter {
     var isUploading: Bool = false
     var isExpanded: Bool = false
     var isSuccess: Bool = false
-    
-//    var isUploading: Bool = true
-//    var isExpanded: Bool = true
-//    var isSuccess: Bool = true
-    
+
     var selectedExpiration: LinkExpiration = .fiveMinutes
     var isOneTimeAccess: Bool = false
     var password: String = ""
@@ -68,7 +64,7 @@ final class ShareLinkItemPresenter {
     var shareURL: URL?
     var isShareSheetPresented: Bool = false
 
-    let interactor: ShareLinkItemModuleInteracting
+    private let interactor: ShareLinkItemModuleInteracting
     private var fetchingIconTask: Task<Void, Error>?
     private var continueTask: Task<Void, Never>?
 

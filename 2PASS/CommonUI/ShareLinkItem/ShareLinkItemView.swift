@@ -122,11 +122,8 @@ struct ShareLinkItemView: View {
             presenter.onDisappear()
         }
         .sheet(isPresented: $presenter.isPasswordSheetPresented) {
-            ShareLinkItemPasswordView(
-                presenter: .init(
-                    initialPassword: presenter.password,
-                    interactor: presenter.interactor
-                ),
+            ShareLinkItemPasswordRouter.buildView(
+                initialPassword: presenter.password,
                 onSave: { presenter.onPasswordSaved($0) },
                 onCancel: { presenter.onPasswordCancelled() }
             )
