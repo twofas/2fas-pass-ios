@@ -786,7 +786,7 @@ protocol MainRepository: AnyObject {
     func deleteAppNotification(id: String) async throws
 
     // MARK: Share Service
-    func createSharedSecret(data: String, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse
+    func createSharedSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse
     func fetchSharedSecret(id: String) async throws -> SharedSecret
     
     // MARK: - Scan

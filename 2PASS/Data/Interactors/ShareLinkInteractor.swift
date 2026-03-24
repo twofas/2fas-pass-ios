@@ -71,7 +71,6 @@ public protocol ShareLinkInteracting: AnyObject {
 // MARK: - Implementation
 
 final class ShareLinkInteractor: ShareLinkInteracting {
-    private static let pbkdf2Iterations: UInt32 = 600_000
 
     private let mainRepository: MainRepository
     private let itemsInteractor: ItemsInteracting
@@ -96,6 +95,10 @@ final class ShareLinkInteractor: ShareLinkInteracting {
 
         guard let encrypted = mainRepository.encryptWithoutNonce(plaintext, key: shareKey, nonce: nonce) else {
             throw ShareInteractorError.encryptionFailed
+        }
+
+        guard encrypted.count <= Config.ShareLink.maxEncryptedSize else {
+            throw ShareInteractorError.dataTooLarge
         }
 
         return ShareExportResult(
@@ -123,6 +126,10 @@ final class ShareLinkInteractor: ShareLinkInteracting {
             throw ShareInteractorError.encryptionFailed
         }
 
+        guard encrypted.count <= Config.ShareLink.maxEncryptedSize else {
+            throw ShareInteractorError.dataTooLarge
+        }
+
         return ShareExportResult(
             encryptedData: encrypted,
             nonce: nonce,
@@ -134,7 +141,7 @@ final class ShareLinkInteractor: ShareLinkInteracting {
 
     func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse {
         try await mainRepository.createSharedSecret(
-            data: data.base64EncodedString(),
+            data: data,
             validForSeconds: validForSeconds,
             singleUse: singleUse
         )
@@ -258,22 +265,25 @@ private extension ShareLinkInteractor {
 
         let protectionLevel = item.metadata.protectionLevel
 
+        let plaintext: Data
         switch item {
         case .login(let login):
-            return try mainRepository.jsonEncoder.encode(shareContent(from: login, protectionLevel: protectionLevel))
+            plaintext = try mainRepository.jsonEncoder.encode(shareContent(from: login, protectionLevel: protectionLevel))
 
         case .secureNote(let note):
-            return try mainRepository.jsonEncoder.encode(shareContent(from: note, protectionLevel: protectionLevel))
+            plaintext = try mainRepository.jsonEncoder.encode(shareContent(from: note, protectionLevel: protectionLevel))
 
         case .paymentCard(let card):
-            return try mainRepository.jsonEncoder.encode(shareContent(from: card, protectionLevel: protectionLevel))
+            plaintext = try mainRepository.jsonEncoder.encode(shareContent(from: card, protectionLevel: protectionLevel))
 
         case .wifi(let wifi):
-            return try mainRepository.jsonEncoder.encode(shareContent(from: wifi, protectionLevel: protectionLevel))
+            plaintext = try mainRepository.jsonEncoder.encode(shareContent(from: wifi, protectionLevel: protectionLevel))
 
         case .raw:
             throw ShareInteractorError.decodingFailed
         }
+
+        return plaintext
     }
 
     // MARK: - Export: item → share content
@@ -449,7 +459,7 @@ private extension ShareLinkInteractor {
                         saltBytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
                         salt.count,
                         CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
-                        Self.pbkdf2Iterations,
+                        Config.ShareLink.pbkdf2Iterations,
                         derivedKeyBytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
                         32
                     )
@@ -465,11 +475,12 @@ private extension ShareLinkInteractor {
     }
 }
 
-enum ShareInteractorError: Error {
+public enum ShareInteractorError: Error {
     case itemNotFound
     case decryptionFailed
     case decodingFailed
     case encryptionFailed
     case passwordRequired
     case unsupportedContentType
+    case dataTooLarge
 }
