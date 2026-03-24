@@ -96,7 +96,7 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
     ) -> [DeletedItemEncryptedEntity] {
         guard !itemIDs.isEmpty else { return [] }
         let fetchRequest = DeletedItemEncryptedEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "itemID IN %@", itemIDs as CVarArg)
+        fetchRequest.predicate = NSPredicate(format: "itemID IN %@", Array(itemIDs) as CVarArg)
 
         do {
             return try context.fetch(fetchRequest)
