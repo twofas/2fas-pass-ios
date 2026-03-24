@@ -7,7 +7,6 @@
 import SwiftUI
 import Common
 
-@available(iOS 26.0, *)
 struct ShareLinkItemRouter: Router {
 
     static func buildView(itemID: ItemID) -> some View {

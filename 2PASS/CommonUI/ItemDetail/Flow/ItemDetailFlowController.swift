@@ -68,7 +68,6 @@ extension ItemDetailFlowController: ItemDetailFlowControlling {
     }
 
     func toShareLink(_ itemID: ItemID) {
-        guard #available(iOS 26.0, *) else { return }
         let shareLinkViewController = UIHostingController(
             rootView: ShareLinkItemRouter.buildView(itemID: itemID)
         )

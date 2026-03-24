@@ -8,7 +8,6 @@ import SwiftUI
 import Common
 import Data
 
-@available(iOS 26.0, *)
 struct ShareLinkItemView: View {
     
     @State var presenter: ShareLinkItemPresenter
@@ -110,7 +109,7 @@ struct ShareLinkItemView: View {
                 .scaleEffect(0.65)
                 .offset(y: 2)
                 .frame(width: 260, height: 180)
-                .glassEffect(.regular.tint(glassAccentColor?.opacity(uploadState.isSuccess ? 0.08 : 0.00)), in: .rect(cornerRadius: 20))
+                .cardGlassEffect(cornerRadius: 20, tint: glassAccentColor?.opacity(uploadState.isSuccess ? 0.08 : 0.00))
                 .overlay {
                     ShareLinkProgressBorder(
                         cornerRadius: 20,
@@ -132,7 +131,7 @@ struct ShareLinkItemView: View {
                 .offset(y: 2)
                 .frame(minWidth: 200)
                 .frame(height: 180)
-                .glassEffect(.regular.tint(glassAccentColor?.opacity(uploadState.isSuccess ? 0.05 : 0.00)), in: .rect(cornerRadius: 40))
+                .cardGlassEffect(cornerRadius: 40, tint: glassAccentColor?.opacity(uploadState.isSuccess ? 0.05 : 0.00))
                 .overlay {
                     ShareLinkProgressBorder(
                         cornerRadius: 40,
@@ -155,7 +154,7 @@ struct ShareLinkItemView: View {
                 .padding(.horizontal, Spacing.l)
                 .padding(.vertical, Spacing.m)
                 .frame(width: 260)
-                .glassEffect(.regular, in: .rect(cornerRadius: 40))
+                .cardGlassEffect(cornerRadius: 40)
                 .transition(
                     .modifier(
                         active: BlurModifier(radius: 8, opacity: 0, scale: 0.8, offsetY: -50),
@@ -318,6 +317,17 @@ struct ShareLinkItemView: View {
     }
 }
 
+private extension View {
+    @ViewBuilder
+    func cardGlassEffect(cornerRadius: CGFloat, tint: Color? = nil) -> some View {
+        if #available(iOS 26.0, *) {
+            self.glassEffect(.regular.tint(tint), in: .rect(cornerRadius: cornerRadius))
+        } else {
+            self.background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: cornerRadius))
+        }
+    }
+}
+
 private struct BlurModifier: ViewModifier {
     let radius: CGFloat
     let opacity: CGFloat
@@ -371,7 +381,6 @@ class ShareLinkItemPreviewInteractor: ShareLinkItemModuleInteracting {
     func copyToClipboard(_ str: String) {}
 }
 
-@available(iOS 26.0, *)
 #Preview {
     NavigationStack {
         ShareLinkItemView(
