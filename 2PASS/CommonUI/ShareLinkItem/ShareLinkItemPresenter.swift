@@ -6,7 +6,7 @@
 
 import Foundation
 import UIKit
-import SwiftUI
+import Observation
 import Common
 import Data
 
@@ -65,18 +65,18 @@ final class ShareLinkItemPresenter {
     let expirationFormat: Duration.UnitsFormatStyle = .units(allowed: [.days, .hours, .minutes], width: .abbreviated)
     private var allDurations: [DateComponents] { shortDurations + longDurations }
 
-    var name: String = ""
-    var iconContent: IconContent?
+    private(set) var name: String = ""
+    private(set) var iconContent: IconContent?
     private(set) var cardIssuer: PaymentCardIssuer?
     private(set) var cardNumberMask: String?
     var isPaymentCard: Bool { cardIssuer != nil || cardNumberMask != nil }
-    var uploadState: ShareLinkUploadState = .idle
+    private(set) var uploadState: ShareLinkUploadState = .idle
 
     var selectedExpiration: DateComponents = DateComponents(minute: 30)
     var isOneTimeAccess: Bool = false
     var password: String = ""
     var destination: ShareLinkItemDestination?
-    var shareURL: URL?
+    private(set) var shareURL: URL?
 
     private let interactor: ShareLinkItemModuleInteracting
     private var fetchingIconTask: Task<Void, Error>?
@@ -155,14 +155,17 @@ final class ShareLinkItemPresenter {
                     expirationSeconds: TimeInterval(selectedExpiration.totalSeconds),
                     isOneTimeAccess: isOneTimeAccess
                 )
-                withAnimation(.smooth(duration: 0.4)) {
-                    uploadState = .finished(.success(()))
-                }
+                uploadState = .finished(.success(()))
             } catch {
-                guard !Task.isCancelled else { return }
                 uploadState = .finished(.failure(error))
+
+                let message = if case ShareInteractorError.dataTooLarge = error {
+                    String(localized: .shareLinkErrorDataTooLarge)
+                } else {
+                    error.localizedDescription
+                }
                 destination = .error(
-                    message: error.localizedDescription,
+                    message: message,
                     onDismiss: { [weak self] in
                         self?.uploadState = .idle
                         self?.destination = nil
