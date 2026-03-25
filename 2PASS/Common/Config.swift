@@ -83,7 +83,12 @@ public enum Config {
     #endif
     
     public static let twoFASShareBaseURL = URL(string: "https://share.2fas.com/")!
-        
+
+    public enum ShareLink {
+        public static let pbkdf2Iterations: UInt32 = 600_000
+        public static let maxEncryptedSize = 16_384
+    }
+
     public enum Connect {
         #if PROD
         public static let baseURL = URL(string: "wss://pass.2fas.com/proxy/mobile/")!

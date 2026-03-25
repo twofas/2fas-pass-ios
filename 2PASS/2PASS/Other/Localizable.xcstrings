@@ -16005,13 +16005,30 @@
         }
       }
     },
+    "share_link_error_data_too_large" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item is too large to share via link. Try reducing its content."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten element jest zbyt duży, aby udostępnić go przez link. Spróbuj zmniejszyć jego zawartość."
+          }
+        }
+      }
+    },
     "share_link_import_error_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to load shared item"
+            "value" : "Failed to load shared Item"
           }
         },
         "pl" : {
@@ -16255,7 +16272,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "stawienia udostępniania"
+            "value" : "Ustawienia udostępniania"
           }
         }
       }

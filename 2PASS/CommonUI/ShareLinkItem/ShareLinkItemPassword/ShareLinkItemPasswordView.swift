@@ -91,14 +91,21 @@ struct ShareLinkItemPasswordView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        onSave(presenter.password)
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.white)
+                    if #available(iOS 26.0, *) {
+                        Button {
+                            onSave(presenter.password)
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.white)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!canSave)
+                    } else {
+                        Button(String(localized: .commonSave)) {
+                            onSave(presenter.password)
+                        }
+                        .disabled(!canSave)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!canSave)
                 }
             }
             .router(

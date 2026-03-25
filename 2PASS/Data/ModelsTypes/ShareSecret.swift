@@ -23,7 +23,7 @@ public struct ShareSecretContent<T>: Codable where T: ShareContent {
 }
 
 struct ShareSecretRequest: Encodable {
-    let data: String
+    let data: Data
     let validForSeconds: Int
     let singleUse: Bool
 }

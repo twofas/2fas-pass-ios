@@ -15,18 +15,23 @@ struct ShareLinkProgressBorder: View {
         case idle
         case loading
         case success
+    }
 
-        init(_ state: ShareLinkUploadState) {
-            if state.isUploading { self = .loading }
-            else if state.isSuccess { self = .success }
-            else { self = .idle }
-        }
+    private enum Constants {
+        static let spinnerCycleDuration: TimeInterval = 1.3
+        static let spinnerArcFraction: CGFloat = 0.1
+        static let glowTrailStart: CGFloat = 0.08
+        static let successGlowTrailLength: CGFloat = 0.02
+        static let borderLineWidth: CGFloat = 1
+        static let glowLineWidth: CGFloat = 8
+        static let glowBlurRadius: CGFloat = 4
+        static let glowOpacity: CGFloat = 0.5
+        static let idleBorderOpacity: CGFloat = 0.2
+        static let fillAnimationDuration: TimeInterval = 0.35
     }
 
     let cornerRadius: CGFloat
-    let uploadState: ShareLinkUploadState
-
-    private var phase: Phase { Phase(uploadState) }
+    let phase: Phase
 
     @State private var successStartFraction: CGFloat = 0
     @State private var borderProgress: CGFloat = 0
@@ -52,16 +57,22 @@ struct ShareLinkProgressBorder: View {
                 case .success:
                     if let start = spinnerStartDate {
                         let elapsed = Date().timeIntervalSince(start)
-                        successStartFraction = CGFloat((elapsed / 1.3).truncatingRemainder(dividingBy: 1))
+                        successStartFraction = CGFloat(
+                            (elapsed / Constants.spinnerCycleDuration).truncatingRemainder(dividingBy: 1)
+                        )
                     }
                     spinnerStartDate = nil
                     showGlow = true
-                    borderProgress = 0.1
-                    let spinnerSpeed = 1.0 / 1.3
-                    withAnimation(.interpolatingSpring(duration: 0.35, bounce: 0, initialVelocity: spinnerSpeed)) {
+                    borderProgress = Constants.spinnerArcFraction
+                    let spinnerSpeed = 1.0 / Constants.spinnerCycleDuration
+                    withAnimation(.interpolatingSpring(
+                        duration: Constants.fillAnimationDuration,
+                        bounce: 0,
+                        initialVelocity: spinnerSpeed
+                    )) {
                         borderProgress = 1
                     }
-                    withAnimation(.easeOut(duration: 0.35)) {
+                    withAnimation(.easeOut(duration: Constants.fillAnimationDuration)) {
                         showGlow = false
                     }
                 }
@@ -70,39 +81,44 @@ struct ShareLinkProgressBorder: View {
 
     private var borderFrame: some View {
         let borderColor = Self.accentViolet
-        let glowOpacity: CGFloat = showGlow ? 0.5 : 0
+        let glowOpacity: CGFloat = showGlow ? Constants.glowOpacity : 0
         let shape = OffsetRoundedRect(cornerRadius: cornerRadius, startFraction: successStartFraction)
 
         return ZStack {
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Self.accentViolet, lineWidth: 1)
-                .opacity(0.2)
+                .stroke(Self.accentViolet, lineWidth: Constants.borderLineWidth)
+                .opacity(Constants.idleBorderOpacity)
 
             if let spinnerStartDate {
                 TimelineView(.animation) { timeline in
                     let elapsed = timeline.date.timeIntervalSince(spinnerStartDate)
-                    let phase = CGFloat((elapsed / 1.3).truncatingRemainder(dividingBy: 1))
+                    let spinnerShape = OffsetRoundedRect(
+                        cornerRadius: cornerRadius,
+                        startFraction: CGFloat(
+                            (elapsed / Constants.spinnerCycleDuration).truncatingRemainder(dividingBy: 1)
+                        )
+                    )
 
-                    OffsetRoundedRect(cornerRadius: cornerRadius, startFraction: phase)
-                        .trim(from: 0, to: 0.1)
-                        .stroke(borderColor, style: StrokeStyle(lineWidth: 1, lineCap: .round))
+                    spinnerShape
+                        .trim(from: 0, to: Constants.spinnerArcFraction)
+                        .stroke(borderColor, style: StrokeStyle(lineWidth: Constants.borderLineWidth, lineCap: .round))
 
-                    OffsetRoundedRect(cornerRadius: cornerRadius, startFraction: phase)
-                        .trim(from: 0.08, to: 0.1)
-                        .stroke(Self.glowViolet, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                        .blur(radius: 4)
-                        .opacity(0.5)
+                    spinnerShape
+                        .trim(from: Constants.glowTrailStart, to: Constants.spinnerArcFraction)
+                        .stroke(Self.glowViolet, style: StrokeStyle(lineWidth: Constants.glowLineWidth, lineCap: .round))
+                        .blur(radius: Constants.glowBlurRadius)
+                        .opacity(Constants.glowOpacity)
                 }
             }
 
             shape
                 .trim(from: 0, to: borderProgress)
-                .stroke(borderColor, style: StrokeStyle(lineWidth: 1, lineCap: .round))
+                .stroke(borderColor, style: StrokeStyle(lineWidth: Constants.borderLineWidth, lineCap: .round))
 
             shape
-                .trim(from: max(borderProgress - 0.02, 0), to: borderProgress)
-                .stroke(Self.glowViolet, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                .blur(radius: 4)
+                .trim(from: max(borderProgress - Constants.successGlowTrailLength, 0), to: borderProgress)
+                .stroke(Self.glowViolet, style: StrokeStyle(lineWidth: Constants.glowLineWidth, lineCap: .round))
+                .blur(radius: Constants.glowBlurRadius)
                 .opacity(glowOpacity)
         }
     }
@@ -124,21 +140,21 @@ private struct OffsetRoundedRect: Shape {
         let hEdge = rect.width - 2 * r
         let vEdge = rect.height - 2 * r
         let arcLen = CGFloat.pi / 2 * r
-
-        let segLens = [hEdge, arcLen, vEdge, arcLen, hEdge, arcLen, vEdge, arcLen]
-        let total = segLens.reduce(0, +)
+        let total = 2 * hEdge + 2 * vEdge + 4 * arcLen
         let target = startFraction * total
 
+        let segLens = (hEdge, arcLen, vEdge, arcLen, hEdge, arcLen, vEdge, arcLen)
         var acc: CGFloat = 0
         var si = 0
         var sf: CGFloat = 0
         for i in 0..<8 {
-            if acc + segLens[i] > target {
+            let len = segLen(segLens, at: i)
+            if acc + len > target {
                 si = i
-                sf = segLens[i] > 0 ? (target - acc) / segLens[i] : 0
+                sf = len > 0 ? (target - acc) / len : 0
                 break
             }
-            acc += segLens[i]
+            acc += len
         }
 
         let arcs: [(c: CGPoint, s: CGFloat, e: CGFloat)] = [
@@ -149,7 +165,7 @@ private struct OffsetRoundedRect: Shape {
         ]
 
         var path = Path()
-        path.move(to: pointOn(seg: si, frac: sf, rect: rect, r: r))
+        path.move(to: pointOn(seg: si, frac: sf, rect: rect, r: r, hEdge: hEdge, vEdge: vEdge))
 
         for i in 0...8 {
             let idx = (si + i) % 8
@@ -158,14 +174,8 @@ private struct OffsetRoundedRect: Shape {
             guard from < to else { continue }
 
             switch idx {
-            case 0:
-                path.addLine(to: pointOn(seg: 0, frac: to, rect: rect, r: r))
-            case 2:
-                path.addLine(to: pointOn(seg: 2, frac: to, rect: rect, r: r))
-            case 4:
-                path.addLine(to: pointOn(seg: 4, frac: to, rect: rect, r: r))
-            case 6:
-                path.addLine(to: pointOn(seg: 6, frac: to, rect: rect, r: r))
+            case 0, 2, 4, 6:
+                path.addLine(to: pointOn(seg: idx, frac: to, rect: rect, r: r, hEdge: hEdge, vEdge: vEdge))
             case 1, 3, 5, 7:
                 let arc = arcs[idx / 2]
                 let a0 = arc.s + from * (arc.e - arc.s)
@@ -179,9 +189,24 @@ private struct OffsetRoundedRect: Shape {
         return path
     }
 
-    private func pointOn(seg: Int, frac: CGFloat, rect: CGRect, r: CGFloat) -> CGPoint {
-        let hEdge = rect.width - 2 * r
-        let vEdge = rect.height - 2 * r
+    private func segLen(
+        _ segs: (CGFloat, CGFloat, CGFloat, CGFloat, CGFloat, CGFloat, CGFloat, CGFloat),
+        at index: Int
+    ) -> CGFloat {
+        switch index {
+        case 0: segs.0
+        case 1: segs.1
+        case 2: segs.2
+        case 3: segs.3
+        case 4: segs.4
+        case 5: segs.5
+        case 6: segs.6
+        case 7: segs.7
+        default: 0
+        }
+    }
+
+    private func pointOn(seg: Int, frac: CGFloat, rect: CGRect, r: CGFloat, hEdge: CGFloat, vEdge: CGFloat) -> CGPoint {
         switch seg % 8 {
         case 0: return CGPoint(x: rect.minX + r + frac * hEdge, y: rect.minY)
         case 1:
