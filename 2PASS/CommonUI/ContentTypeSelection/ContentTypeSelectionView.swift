@@ -14,7 +14,7 @@ struct ContentTypeSelectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(ItemContentType.allKnownTypes, id: \.rawValue) { option in
+            ForEach(ItemContentType.creatableTypes, id: \.rawValue) { option in
                 ContentTypeRow(option: option) {
                     onSelect(option)
                 }

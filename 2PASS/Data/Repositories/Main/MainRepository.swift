@@ -366,6 +366,22 @@ protocol MainRepository: AnyObject {
         hidden: Bool
     )
 
+    func createPasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    )
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -449,6 +465,22 @@ protocol MainRepository: AnyObject {
         hidden: Bool
     )
 
+    func updatePasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    )
+
+    func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func metadataItemsBatchUpdate(_ items: [any ItemDataType])
     func getItemEntity(

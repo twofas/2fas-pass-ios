@@ -10,22 +10,23 @@ import Common
 import AuthenticationServices
 
 struct AutoFillPasswordsListView: UIViewControllerRepresentable {
-    
+
     let context: ASCredentialProviderExtensionContext
     let serviceIdentifiers: [ASCredentialServiceIdentifier]
     let isTextToInsert: Bool
-    
+    let credentialRequest: (any ASCredentialRequest)?
+
     func makeUIViewController(context: Context) -> UINavigationController {
         AutofillPasswordsNavigationFlowController.setAsRoot(parent: context.coordinator, serviceIdentifiers: serviceIdentifiers.map { $0.identifier }, isTextToInsert: isTextToInsert)
     }
-    
+
     func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self, interactor: ModuleInteractorFactory.shared.autoFillInteractor())
     }
-    
+
     class Coordinator: AutofillPasswordsNavigationFlowControllerParent {
         let parent: AutoFillPasswordsListView
         let interactor: AutoFillModuleInteracting
@@ -34,8 +35,14 @@ struct AutoFillPasswordsListView: UIViewControllerRepresentable {
             self.parent = parent
             self.interactor = interactor
         }
-        
+
         func selectPassword(itemID: ItemID) {
+            if let passkeyRequest = parent.credentialRequest as? ASPasskeyCredentialRequest,
+               let assertion = interactor.passkeyAssertion(for: itemID, clientDataHash: passkeyRequest.clientDataHash) {
+                parent.context.completeAssertionRequest(using: assertion)
+                return
+            }
+
             guard let credential = interactor.credential(for: itemID) else {
                 return
             }

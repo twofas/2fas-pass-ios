@@ -92,4 +92,8 @@ final class ModifyStatePresenter {
         interactor.randomizeAppKey()
         interactor.reboot()
     }
+
+    func randomizeBiometryKey() {
+        interactor.randomizeBiometryKey()
+    }
 }

@@ -16,9 +16,14 @@ final class AutoFillRootPresenter {
     private(set) var serviceIdentifiers: [ASCredentialServiceIdentifier] = []
     private(set) var credentialRequest: (any ASCredentialRequest)?
     private(set) var isTextToInsert: Bool = false
+
     private(set) var isGeneratePasswordFlow: Bool = false
     private(set) var isSavePasswordFlow: Bool = false
     private var savePasswordRequestStorage: Any? /// Stored as `Any` because `ASSavePasswordRequest` requires iOS 26.2+
+
+    var isPasskeyRegistration: Bool { passkeyRegistrationRequest != nil }
+    private(set) var passkeyRegistrationRequest: ASPasskeyCredentialRequest?
+    
     private(set) var loginPresenter: LoginPresenter!
     private(set) var startupState: StartupInteractorStartResult?
     private let interactor: AutoFillModuleInteracting
@@ -28,11 +33,16 @@ final class AutoFillRootPresenter {
         guard let request = savePasswordRequestStorage as? ASSavePasswordRequest else { return nil }
         return makeLoginChangeRequest(from: request)
     }
+    
+    var passkeyRegistrationRpID: String? {
+        (passkeyRegistrationRequest?.credentialIdentity as? ASPasskeyCredentialIdentity)?.relyingPartyIdentifier
+    }
 
-    init(
-        extensionContext: ASCredentialProviderExtensionContext,
-        interactor: AutoFillModuleInteracting
-    ) {
+    var passkeyRegistrationUserName: String? {
+        (passkeyRegistrationRequest?.credentialIdentity as? ASPasskeyCredentialIdentity)?.userName
+    }
+
+    init(extensionContext: ASCredentialProviderExtensionContext, interactor: AutoFillModuleInteracting) {
         self.extensionContext = extensionContext
         self.interactor = interactor
 
@@ -64,11 +74,29 @@ final class AutoFillRootPresenter {
         isTextToInsert = true
     }
 
+    func prepareForPasskeyRegistration(for registrationRequest: any ASCredentialRequest) {
+        if let passkeyRequest = registrationRequest as? ASPasskeyCredentialRequest {
+            passkeyRegistrationRequest = passkeyRequest
+        }
+    }
+
     func prepare(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
         self.serviceIdentifiers = serviceIdentifiers
     }
 
     func provideWithoutUserInteraction(for credentialRequest: any ASCredentialRequest) {
+        if let passkeyRequest = credentialRequest as? ASPasskeyCredentialRequest {
+            Log("AutoFill - provideWithoutUserInteraction: passkey request", module: .autofill)
+            if let assertion = interactor.passkeyAssertionWithoutLogin(for: passkeyRequest) {
+                Log("AutoFill - provideWithoutUserInteraction: completing assertion", module: .autofill)
+                extensionContext.completeAssertionRequest(using: assertion)
+            } else {
+                Log("AutoFill - provideWithoutUserInteraction: passkey assertion failed, requesting user interaction", module: .autofill)
+                extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code: ASExtensionError.userInteractionRequired.rawValue))
+            }
+            return
+        }
+
         Task { @MainActor in
             await refreshState()
             
@@ -86,6 +114,56 @@ final class AutoFillRootPresenter {
 
     func onCancel() {
         extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code: ASExtensionError.userCanceled.rawValue))
+    }
+
+    func completePasskeyRegistration(name: String? = nil) {
+        guard let request = passkeyRegistrationRequest else {
+            Log("AutoFill - Passkey registration: no request stored", module: .autofill)
+            return
+        }
+
+        Task { @MainActor in
+            do {
+                let credential = try await interactor.registerPasskey(for: request, name: name)
+                Log("AutoFill - Passkey registration: completing with credential", module: .autofill)
+                extensionContext.completeRegistrationRequest(using: credential) { expired in
+                    Log("AutoFill - Passkey registration completion handler: expired=\(expired)", module: .autofill)
+                }
+            } catch {
+                Log("AutoFill - Passkey registration failed: \(error)", module: .autofill, severity: .error)
+                extensionContext.cancelRequest(withError: NSError(domain: ASExtensionErrorDomain, code: ASExtensionError.failed.rawValue))
+            }
+        }
+    }
+
+    @available(iOS 18.0, *)
+    func performPasskeyRegistrationWithoutUserInteractionIfPossible(_ request: ASPasskeyCredentialRequest) {
+        Task { @MainActor in
+            await refreshState()
+
+            guard interactor.canSaveWithoutLogin() else {
+                Log("AutoFill - Passkey registration without UI: conditions not met", module: .autofill)
+                extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.userInteractionRequired.rawValue
+                ))
+                return
+            }
+
+            do {
+                let credential = try await interactor.registerPasskey(for: request, name: nil)
+                Log("AutoFill - Passkey registration without UI: completing", module: .autofill)
+                extensionContext.completeRegistrationRequest(using: credential) { expired in
+                    Log("AutoFill - Passkey registration without UI completion handler: expired=\(expired)", module: .autofill)
+                }
+            } catch {
+                Log("AutoFill - Passkey registration without UI failed: \(error)", module: .autofill, severity: .error)
+                extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.failed.rawValue
+                ))
+            }
+        }
     }
 
     // MARK: - Generate Password
@@ -117,6 +195,7 @@ final class AutoFillRootPresenter {
         }
 
         Log("AutoFill - Generate password: completing", module: .autofill)
+
         extensionContext.completeGeneratePasswordRequest(
             results: [ASGeneratedPassword(kind: .strong, value: password)]
         ) { _ in }
@@ -166,7 +245,7 @@ final class AutoFillRootPresenter {
 
     func onSavePasswordEditorClosed(_ result: SaveItemResult) {
         guard #available(iOS 26.2, *) else { return }
-
+        
         switch result {
         case .success:
             Log("AutoFill - Save password editor: completing", module: .autofill)
@@ -191,8 +270,37 @@ final class AutoFillRootPresenter {
             }
         }
     }
+    
+    func completeSavePassword() {
+        guard #available(iOS 26.2, *) else { return }
+        guard let request = savePasswordRequestStorage as? ASSavePasswordRequest else {
+            Log("AutoFill - Save password: no request stored", module: .autofill)
+            return
+        }
+
+        Task { @MainActor in
+            do {
+                try await interactor.savePassword(changeRequest: makeLoginChangeRequest(from: request))
+                Log("AutoFill - Save password: completing", module: .autofill)
+                extensionContext.completeSavePasswordRequest(completionHandler: { _ in })
+            } catch {
+                Log("AutoFill - Save password: failed \(error)", module: .autofill, severity: .error)
+                extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.failed.rawValue
+                ))
+            }
+        }
+    }
 
     private func onLoginSuccessful() {
+        if isSavePasswordFlow || isPasskeyRegistration {
+            Task { @MainActor in
+                await refreshState()
+            }
+            return
+        }
+
         if let credentialRequest {
             if completeCredentialRequest(credentialRequest) == false {
                 prepare(for: [credentialRequest.credentialIdentity.serviceIdentifier])
@@ -205,11 +313,27 @@ final class AutoFillRootPresenter {
     }
 
     private func completeCredentialRequest(_ credentialRequest: any ASCredentialRequest) -> Bool {
+        if let passkeyRequest = credentialRequest as? ASPasskeyCredentialRequest {
+            return completeAssertionRequest(using: passkeyRequest)
+        }
+
         guard let credential = interactor.credential(for: credentialRequest) else {
             return false
         }
 
         extensionContext.completeRequest(withSelectedCredential: credential)
+        return true
+    }
+
+    private func completeAssertionRequest(using request: ASPasskeyCredentialRequest) -> Bool {
+        Log("AutoFill - completeAssertionRequest: attempting passkey assertion after login", module: .autofill)
+        guard let assertion = interactor.passkeyAssertion(for: request) else {
+            Log("AutoFill - completeAssertionRequest: assertion failed", module: .autofill)
+            return false
+        }
+
+        Log("AutoFill - completeAssertionRequest: completing assertion", module: .autofill)
+        extensionContext.completeAssertionRequest(using: assertion)
         return true
     }
 

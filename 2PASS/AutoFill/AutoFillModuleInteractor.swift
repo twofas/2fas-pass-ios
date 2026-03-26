@@ -8,15 +8,27 @@ import AuthenticationServices
 import Data
 import Common
 
+enum PasskeyRegistrationError: Error {
+    case encryptionError
+    case saveError
+}
+
 protocol AutoFillModuleInteracting: AnyObject {
     var isScreenCaptureAllowed: Bool { get }
     var screenCaptureAllowedUntil: Date? { get }
     func credential(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
     func credential(for itemID: ItemID) -> ASPasswordCredential?
     func credentialWithoutLogin(for credentialRequest: any ASCredentialRequest) -> ASPasswordCredential?
+
     @MainActor
     func savePassword(changeRequest: LoginDataChangeRequest) async throws
     func sendSaveSuccessNotification() async
+
+    func passkeyAssertion(for request: ASPasskeyCredentialRequest) -> ASPasskeyAssertionCredential?
+    func passkeyAssertion(for itemID: ItemID, clientDataHash: Data) -> ASPasskeyAssertionCredential?
+    func passkeyAssertionWithoutLogin(for request: ASPasskeyCredentialRequest) -> ASPasskeyAssertionCredential?
+    func registerPasskey(for request: ASPasskeyCredentialRequest, name: String?) async throws -> ASPasskeyRegistrationCredential
+
     func canSaveWithoutLogin() -> Bool
     func generatePassword() -> String
     func initialize()
@@ -32,6 +44,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let loginItemInteractor: LoginItemInteracting
+    private let passkeyItemInteractor: PasskeyItemInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let pushNotificationsInteractor: PushNotificationsInteracting
@@ -43,6 +56,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         loginItemInteractor: LoginItemInteracting,
+        passkeyItemInteractor: PasskeyItemInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         pushNotificationsInteractor: PushNotificationsInteracting
@@ -53,6 +67,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.loginItemInteractor = loginItemInteractor
+        self.passkeyItemInteractor = passkeyItemInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
@@ -140,9 +155,158 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             Log("AutoFill - Save password without UI: default protection level is \(defaultProtectionLevel.rawValue), user interaction required", module: .autofill)
             return false
         }
-
+        
         return itemsInteractor.loadTrustedKey()
     }
+    
+    // MARK: - Passkey Assertion
+
+    func passkeyAssertionWithoutLogin(for request: ASPasskeyCredentialRequest) -> ASPasskeyAssertionCredential? {
+        guard let identity = request.credentialIdentity as? ASPasskeyCredentialIdentity else {
+            Log("AutoFill - Passkey assertion (no login): not a passkey identity", module: .autofill)
+            return nil
+        }
+
+        let recordID = identity.recordIdentifier ?? "(nil)"
+        Log("AutoFill - Passkey assertion (no login): recordIdentifier=\(recordID), rpID=\(identity.relyingPartyIdentifier)", module: .autofill)
+
+        guard let itemID = UUID(uuidString: recordID),
+              let encrypted = itemsInteractor.getEncryptedItemEntity(itemID: itemID) else {
+            Log("AutoFill - Passkey assertion (no login): item not found for \(recordID)", module: .autofill)
+            return nil
+        }
+
+        guard encrypted.protectionLevel == .normal else {
+            Log("AutoFill - Passkey assertion (no login): requires elevated protection", module: .autofill)
+            return nil
+        }
+
+        guard itemsInteractor.loadTrustedKey() else {
+            Log("AutoFill - Passkey assertion (no login): trusted key not available", module: .autofill)
+            return nil
+        }
+
+        switch encrypted.contentType {
+        case .passkey:
+            guard let content = itemsInteractor.decryptContent(PasskeyItemContent.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel) else {
+                Log("AutoFill - Passkey assertion (no login): passkey content decryption failed", module: .autofill)
+                return nil
+            }
+            return makePasskeyAssertionFromPasskeyItem(content: content, clientDataHash: request.clientDataHash, protectionLevel: encrypted.protectionLevel)
+
+        default:
+            return nil
+        }
+    }
+
+    func passkeyAssertion(for request: ASPasskeyCredentialRequest) -> ASPasskeyAssertionCredential? {
+        guard let identity = request.credentialIdentity as? ASPasskeyCredentialIdentity else {
+            Log("AutoFill - Passkey assertion: not a passkey identity", module: .autofill)
+            return nil
+        }
+
+        let recordID = identity.recordIdentifier ?? "(nil)"
+        Log("AutoFill - Passkey assertion: recordIdentifier=\(recordID), rpID=\(identity.relyingPartyIdentifier)", module: .autofill)
+
+        guard let itemID = UUID(uuidString: recordID) else {
+            Log("AutoFill - Passkey assertion: invalid UUID in recordIdentifier", module: .autofill)
+            return nil
+        }
+
+        guard let item = itemsInteractor.getItem(for: itemID, checkInTrash: false) else {
+            Log("AutoFill - Passkey assertion: item not found for \(itemID)", module: .autofill)
+            return nil
+        }
+
+        if let passkeyItem = item.asPasskeyItem {
+            Log("AutoFill - Passkey assertion: found passkey item", module: .autofill)
+            return makePasskeyAssertionFromPasskeyItem(content: passkeyItem.content, clientDataHash: request.clientDataHash, protectionLevel: passkeyItem.protectionLevel)
+        } else {
+            Log("AutoFill - Passkey assertion: item is not a passkey", module: .autofill)
+            return nil
+        }
+    }
+
+    func passkeyAssertion(for itemID: ItemID, clientDataHash: Data) -> ASPasskeyAssertionCredential? {
+        guard let item = itemsInteractor.getItem(for: itemID, checkInTrash: false) else {
+            Log("AutoFill - Passkey assertion (by itemID): item not found", module: .autofill)
+            return nil
+        }
+
+        if let passkeyItem = item.asPasskeyItem {
+            Log("AutoFill - Passkey assertion (by itemID): found passkey item", module: .autofill)
+            return makePasskeyAssertionFromPasskeyItem(content: passkeyItem.content, clientDataHash: clientDataHash, protectionLevel: passkeyItem.protectionLevel)
+        } else {
+            return nil
+        }
+    }
+
+    // MARK: - Passkey Registration
+
+    func registerPasskey(for request: ASPasskeyCredentialRequest, name: String?) async throws -> ASPasskeyRegistrationCredential {
+        guard let identity = request.credentialIdentity as? ASPasskeyCredentialIdentity else {
+            Log("AutoFill - Passkey registration: not a passkey identity", module: .autofill, severity: .error)
+            throw PasskeyRegistrationError.saveError
+        }
+
+        let rpID = identity.relyingPartyIdentifier
+        let userHandle = identity.userHandle
+        let userName = identity.userName
+        Log("AutoFill - Passkey registration: rpID=\(rpID), user=\(userName)", module: .autofill)
+
+        let keyPair = PasskeyCryptoService.generateKeyPair()
+
+        let authData = PasskeyCryptoService.buildRegistrationAuthenticatorData(
+            rpID: rpID,
+            credentialID: keyPair.credentialID,
+            publicKeyCOSE: keyPair.publicKeyCOSE
+        )
+        let attestationObject = PasskeyCryptoService.buildAttestationObject(authenticatorData: authData)
+
+        let itemID = ItemID()
+        let now = Date()
+        do {
+            try passkeyItemInteractor.createPasskey(
+                id: itemID,
+                metadata: ItemMetadata(
+                    creationDate: now,
+                    modificationDate: now,
+                    protectionLevel: .normal,
+                    trashedStatus: .no,
+                    tagIds: nil
+                ),
+                name: name ?? rpID,
+                credentialID: keyPair.credentialID,
+                rpID: rpID,
+                username: userName,
+                userHandle: userHandle,
+                privateKey: keyPair.privateKeyDER
+            )
+        } catch {
+            Log("AutoFill - Passkey registration: save failed: \(error)", module: .autofill, severity: .error)
+            throw PasskeyRegistrationError.saveError
+        }
+
+        itemsInteractor.saveStorage()
+
+        try? await autoFillCredentialsInteractor.addPasskeySuggestion(
+            itemID: itemID,
+            rpID: rpID,
+            username: userName,
+            credentialID: keyPair.credentialID,
+            userHandle: userHandle
+        )
+
+        Log("AutoFill - Passkey registration completed for \(rpID)", module: .autofill)
+        return ASPasskeyRegistrationCredential(
+            relyingParty: rpID,
+            clientDataHash: request.clientDataHash,
+            credentialID: keyPair.credentialID,
+            attestationObject: attestationObject
+        )
+    }
+
+    // MARK: - Save Password
 
     func generatePassword() -> String {
         let config = PasswordGenerateConfig(
@@ -165,6 +329,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         let defaultProtectionLevel = configInteractor.currentDefaultProtectionLevel
         let serviceIdentifier = changeRequest.uris?.first?.uri
         let iconDomain = serviceIdentifier.flatMap { uriInteractor.extractDomain(from: $0) }
+
         try loginItemInteractor.createLogin(
             id: itemID,
             metadata: ItemMetadata(
@@ -199,5 +364,42 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
 
     func logoutFromApp() {
         securityInteractor.logout()
+    }
+}
+
+// MARK: - Private
+
+private extension AutoFillModuleInteractor {
+
+    func makePasskeyAssertionFromPasskeyItem(
+        content: PasskeyItemContent,
+        clientDataHash: Data,
+        protectionLevel: ItemProtectionLevel
+    ) -> ASPasskeyAssertionCredential? {
+        guard let privateKeyDER = itemsInteractor.decryptData(content.privateKey, isSecureField: true, protectionLevel: protectionLevel) else {
+            Log("AutoFill - Passkey assertion: private key decryption failed", module: .autofill)
+            return nil
+        }
+
+        let authenticatorData = PasskeyCryptoService.buildAssertionAuthenticatorData(rpID: content.rpId)
+
+        guard let signature = try? PasskeyCryptoService.sign(
+            authenticatorData: authenticatorData,
+            clientDataHash: clientDataHash,
+            privateKeyDER: privateKeyDER
+        ) else {
+            Log("AutoFill - Passkey assertion: signing failed", module: .autofill)
+            return nil
+        }
+
+        Log("AutoFill - Passkey assertion completed for \(content.rpId)", module: .autofill)
+        return ASPasskeyAssertionCredential(
+            userHandle: content.userHandle,
+            relyingParty: content.rpId,
+            signature: signature,
+            clientDataHash: clientDataHash,
+            authenticatorData: authenticatorData,
+            credentialID: content.credentialId
+        )
     }
 }

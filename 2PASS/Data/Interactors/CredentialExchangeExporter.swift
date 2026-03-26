@@ -71,7 +71,7 @@ private extension CredentialExchangeExporter {
             return convertPaymentCardItem(data, protectionLevel: item.protectionLevel, tags: tags)
         case .wifi(let data):
             return convertWifiItem(data, protectionLevel: item.protectionLevel, tags: tags)
-        case .raw:
+        case .passkey, .raw:
             return nil
         }
     }

@@ -31,6 +31,8 @@ public struct ItemContentTypeFormatStyle: FormatStyle {
             return String(localized: .contentTypeCardName)
         case .wifi:
             return String(localized: .contentTypeWifiName)
+        case .passkey:
+            return String(localized: .contentTypePasskeyName)
         case .unknown:
             return String(localized: .contentTypeUnknownName)
         }

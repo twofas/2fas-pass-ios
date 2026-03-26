@@ -841,7 +841,17 @@ private extension ImportInteractor {
 
                 case .currentEncryption:
                     // Fields are already encrypted with current vault key
-                    return exchangeLogin.content
+                    // Normalize passkey private key from base64-wrapped to DER
+                    guard contentType == .passkey else { return exchangeLogin.content }
+                    let pkKey = PasskeyItemContent.privateKeyCodingKey
+                    guard let base64String = exchangeLogin.content[pkKey] as? String,
+                          let encryptedData = Data(base64Encoded: base64String),
+                          let decryptedData = mainRepository.decrypt(encryptedData, key: key),
+                          let reencrypted = mainRepository.encrypt(Self.unwrapBase64(decryptedData), key: key)
+                    else { return exchangeLogin.content }
+                    var content = exchangeLogin.content
+                    content[pkKey] = reencrypted.base64EncodedString()
+                    return content
 
                 case .otherEncryption(let importTrustedKey, let importSecureKey):
                     // Secure fields are encrypted with a different master key
@@ -878,8 +888,17 @@ private extension ImportInteractor {
     func encryptSecureFields(in content: [String: Any], contentType: ItemContentType, using key: SymmetricKey) -> [String: Any] {
         content.reduce(into: [String: Any]()) { result, keyValue in
             if contentType.isSecureField(key: keyValue.key) {
-                if let stringValue = keyValue.value as? String, let data = stringValue.data(using: .utf8) {
-                    result[keyValue.key] = mainRepository.encrypt(data, key: key)?.base64EncodedString()
+                if let stringValue = keyValue.value as? String {
+                    let data: Data?
+                    if keyValue.key == PasskeyItemContent.privateKeyCodingKey,
+                       let pkData = Data(base64Encoded: stringValue) {
+                        data = Self.unwrapBase64(pkData)
+                    } else {
+                        data = stringValue.data(using: .utf8)
+                    }
+                    if let data {
+                        result[keyValue.key] = mainRepository.encrypt(data, key: key)?.base64EncodedString()
+                    }
                 }
             } else {
                 result[keyValue.key] = keyValue.value
@@ -892,14 +911,26 @@ private extension ImportInteractor {
             if contentType.isSecureField(key: keyValue.key) {
                 if let base64String = keyValue.value as? String,
                    let encryptedData = Data(base64Encoded: base64String),
-                   let decryptedData = mainRepository.decrypt(encryptedData, key: decryptionKey),
-                   let reencryptedData = mainRepository.encrypt(decryptedData, key: encryptionKey) {
-                    result[keyValue.key] = reencryptedData.base64EncodedString()
+                   var decryptedData = mainRepository.decrypt(encryptedData, key: decryptionKey) {
+                    if keyValue.key == PasskeyItemContent.privateKeyCodingKey {
+                        decryptedData = Self.unwrapBase64(decryptedData)
+                    }
+                    if let reencryptedData = mainRepository.encrypt(decryptedData, key: encryptionKey) {
+                        result[keyValue.key] = reencryptedData.base64EncodedString()
+                    }
                 }
             } else {
                 result[keyValue.key] = keyValue.value
             }
         }
+    }
+
+    static func unwrapBase64(_ data: Data) -> Data {
+        if let string = String(data: data, encoding: .utf8),
+           let decoded = Data(base64Encoded: string) {
+            return decoded
+        }
+        return data
     }
     
     func exchangeTagToItemTagData(_ exchangeTag: ExchangeVault.ExchangeVaultItem.ExchangeTag, vaultID: VaultID) -> ItemTagData? {

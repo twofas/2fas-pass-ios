@@ -41,6 +41,11 @@ struct ItemEditorFormView: View {
                     presenter: presenter,
                     resignFirstResponder: resignFirstResponder
                 )
+            case .passkey(let presenter):
+                PasskeyEditorFormView(
+                    presenter: presenter,
+                    resignFirstResponder: resignFirstResponder
+                )
             }
             
             if presenter.showRemoveItemButton {

@@ -27,6 +27,8 @@ struct ItemDetailView: View {
                     PaymentCardDetailFormView(presenter: formPresenter)
                 case .wifi(let formPresenter):
                     WiFiDetailFormView(presenter: formPresenter)
+                case .passkey(let formPresenter):
+                    PasskeyDetailFormView(presenter: formPresenter)
                 default:
                     EmptyView()
                 }
@@ -221,11 +223,32 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
                         hidden: false
                     )
                 ))
+        case .passkey:
+                .passkey(PasskeyItemData(
+                    id: itemID,
+                    vaultId: UUID(),
+                    metadata: .init(
+                        creationDate: Date(),
+                        modificationDate: Date(),
+                        protectionLevel: .topSecret,
+                        trashedStatus: .no,
+                        tagIds: nil
+                    ),
+                    name: "example.com Passkey",
+                    content: .init(
+                        name: "example.com Passkey",
+                        credentialId: Data(),
+                        rpId: "example.com",
+                        username: "john@example.com",
+                        userHandle: Data(),
+                        privateKey: Data()
+                    )
+                ))
         case .unknown:
             fatalError()
         }
     }
-    
+
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
         String(data: data, encoding: .utf8)
     }

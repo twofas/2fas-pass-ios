@@ -60,6 +60,7 @@ extension ExportInteractor: ExportInteracting {
             
             DispatchQueue.main.async {
                 let items = self.mainRepository.listEncryptedItems(in: vault.id)
+                    .filter { $0.trashedStatus == .no }
                 let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []
                 
@@ -380,7 +381,7 @@ private extension ExportInteractor {
                     }
                     return nil
                 }()
-                
+
                 let content = ExchangeVault.ExchangeVaultItem.ExchangeItem.ExchangeLoginContent(
                     name: passwordContent.name,
                     username: passwordContent.username,
@@ -434,7 +435,11 @@ private extension ExportInteractor {
         content.reduce(into: [String: Any]()) { result, keyValue in
             if contentType.isSecureField(key: keyValue.key) {
                 if let stringValue = keyValue.value as? String, let data = Data(base64Encoded: stringValue), let decryptedData = mainRepository.decrypt(data, key: key) {
-                    result[keyValue.key] = String(data: decryptedData, encoding: .utf8)
+                    if keyValue.key == PasskeyItemContent.privateKeyCodingKey {
+                        result[keyValue.key] = decryptedData.base64EncodedString()
+                    } else {
+                        result[keyValue.key] = String(data: decryptedData, encoding: .utf8)
+                    }
                 }
             } else {
                 result[keyValue.key] = keyValue.value

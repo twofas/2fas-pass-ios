@@ -45,7 +45,7 @@ final class ContentTypeSelectionViewController: UIViewController {
 
     private func configurePopoverSize() {
         let rowHeight: CGFloat = 40 + (Spacing.s * 2)
-        let numberOfRows = ItemContentType.allKnownTypes.count
+        let numberOfRows = ItemContentType.creatableTypes.count
         let horizontalPadding = Spacing.l * 2
 
         let width: CGFloat = 250

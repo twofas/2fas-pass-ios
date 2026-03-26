@@ -45,9 +45,11 @@ public enum ItemContentType: Hashable {
     case paymentCard
     case secureNote
     case wifi
+    case passkey
     case unknown(String)
 
-    public static let allKnownTypes: [ItemContentType] = [.login, .paymentCard, .secureNote, .wifi]
+    public static let allKnownTypes: [ItemContentType] = [.login, .paymentCard, .secureNote, .wifi, .passkey]
+    public static let creatableTypes: [ItemContentType] = [.login, .paymentCard, .secureNote, .wifi]
 
     public var rawValue: String {
         switch self {
@@ -55,6 +57,7 @@ public enum ItemContentType: Hashable {
         case .secureNote: "secureNote"
         case .paymentCard: "paymentCard"
         case .wifi: "wifi"
+        case .passkey: "passkey"
         case .unknown(let contentType): contentType
         }
     }
@@ -65,6 +68,7 @@ public enum ItemContentType: Hashable {
         case ItemContentType.secureNote.rawValue: self = .secureNote
         case ItemContentType.paymentCard.rawValue: self = .paymentCard
         case ItemContentType.wifi.rawValue: self = .wifi
+        case ItemContentType.passkey.rawValue: self = .passkey
         default: self = .unknown(rawValue)
         }
     }
@@ -101,6 +105,7 @@ public enum ItemData: ItemDataType {
     case secureNote(SecureNoteItemData)
     case paymentCard(PaymentCardItemData)
     case wifi(WiFiItemData)
+    case passkey(PasskeyItemData)
     case raw(RawItemData)
 
     public var id: ItemID { base.id }
@@ -120,6 +125,7 @@ public enum ItemData: ItemDataType {
         case .secureNote(let data): return data
         case .paymentCard(let data): return data
         case .wifi(let data): return data
+        case .passkey(let data): return data
         case .raw(let data): return data
         }
     }
@@ -166,6 +172,16 @@ public enum ItemData: ItemDataType {
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
                     content: try decoder.decode(WiFiItemData.Content.self, from: rawData.content)
+                ))
+            case .passkey:
+                self = .passkey(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(PasskeyItemData.Content.self, from: rawData.content)
                 ))
             case .unknown:
                 self = .raw(rawData)
@@ -308,6 +324,8 @@ extension ItemData {
             return .paymentCard(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .wifi(let data):
             return .wifi(data.update(creationDate: creationDate, modificationDate: modificationDate))
+        case .passkey(let data):
+            return .passkey(data.update(creationDate: creationDate, modificationDate: modificationDate))
         case .raw(let data):
             return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
         }
@@ -323,6 +341,8 @@ extension ItemData {
             return .paymentCard(data.update(modificationDate: modificationDate, tagIds: tagIds))
         case .wifi(let data):
             return .wifi(data.update(modificationDate: modificationDate, tagIds: tagIds))
+        case .passkey(let data):
+            return .passkey(data.update(modificationDate: modificationDate, tagIds: tagIds))
         case .raw(let data):
             return .raw(data.update(modificationDate: modificationDate, tagIds: tagIds))
         }

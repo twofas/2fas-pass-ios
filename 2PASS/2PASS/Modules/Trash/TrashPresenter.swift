@@ -199,6 +199,14 @@ private extension TrashPresenter {
                             deletedDate: trashingDate,
                             icon: .contentType(.wifi)
                         )
+                    case .passkey(let passkeyItem):
+                        return TrashItemData(
+                            itemID: passkeyItem.id,
+                            name: passkeyItem.name ?? passkeyItem.content.rpId,
+                            description: passkeyItem.content.username,
+                            deletedDate: trashingDate,
+                            icon: .contentType(.passkey)
+                        )
                     case .raw:
                         return nil
                     }
