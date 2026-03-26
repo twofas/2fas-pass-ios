@@ -480,7 +480,6 @@ protocol MainRepository: AnyObject {
         privateKey: Data
     )
 
-    func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func metadataItemsBatchUpdate(_ items: [any ItemDataType])
     func getItemEntity(

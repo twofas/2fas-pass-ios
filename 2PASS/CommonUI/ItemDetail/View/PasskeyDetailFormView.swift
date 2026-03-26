@@ -27,7 +27,7 @@ struct PasskeyDetailFormView: View {
     }
 
     var body: some View {
-        ItemDetailSection {
+        GroupedSection {
             ItemDetailFormTitle(
                 name: presenter.name,
                 icon: .contentType(.passkey)

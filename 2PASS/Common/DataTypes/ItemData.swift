@@ -358,6 +358,8 @@ extension ItemData {
             return .paymentCard(data.update(trashedStatus: trashedStatus))
         case .wifi(let data):
             return .wifi(data.update(trashedStatus: trashedStatus))
+        case .passkey(let data):
+            return .passkey(data.update(trashedStatus: trashedStatus))
         case .raw(let data):
             return .raw(data.update(trashedStatus: trashedStatus))
         }

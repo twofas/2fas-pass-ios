@@ -279,7 +279,7 @@ private extension ShareLinkInteractor {
         case .wifi(let wifi):
             plaintext = try mainRepository.jsonEncoder.encode(shareContent(from: wifi, protectionLevel: protectionLevel))
 
-        case .raw:
+        case .passkey, .raw:
             throw ShareInteractorError.decodingFailed
         }
 
@@ -390,7 +390,7 @@ private extension ShareLinkInteractor {
             )
             return changeRequest(from: decoded.content)
 
-        case .unknown:
+        case .passkey, .unknown:
             throw ShareInteractorError.unsupportedContentType
         }
     }
