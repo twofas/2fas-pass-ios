@@ -25,6 +25,8 @@ extension ItemContentTypeFilter {
             "creditcard"
         case .contentType(.wifi):
             "wifi"
+        case .contentType(.passkey):
+            "person.badge.key.fill"
         case .contentType(.unknown):
             ""
         }

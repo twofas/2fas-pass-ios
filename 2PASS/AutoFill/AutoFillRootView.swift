@@ -64,15 +64,19 @@ struct AutoFillRootView: View {
                         AutoFillPasswordsListView(
                             context: presenter.extensionContext,
                             serviceIdentifiers: presenter.serviceIdentifiers,
-                            isTextToInsert: presenter.isTextToInsert
+                            isTextToInsert: presenter.isTextToInsert,
+                            credentialRequest: presenter.credentialRequest
                         )
                         .ignoresSafeArea()
                     }
+                } else if presenter.isPasskeyRegistration {
+                    PasskeyRegistrationView(presenter: presenter)
                 } else {
                     AutoFillPasswordsListView(
                         context: presenter.extensionContext,
                         serviceIdentifiers: presenter.serviceIdentifiers,
-                        isTextToInsert: presenter.isTextToInsert
+                        isTextToInsert: presenter.isTextToInsert,
+                        credentialRequest: presenter.credentialRequest
                     )
                     .ignoresSafeArea()
                 }

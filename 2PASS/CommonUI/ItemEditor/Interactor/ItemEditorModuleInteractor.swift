@@ -87,6 +87,12 @@ protocol ItemEditorModuleInteracting: AnyObject {
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
+    func savePasskey(
+        name: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult
+
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
     func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
@@ -113,6 +119,7 @@ final class ItemEditorModuleInteractor {
     private let secureNoteItemInteractor: SecureNoteItemInteracting
     private let paymentCardItemInteractor: PaymentCardItemInteracting
     private let wifiItemInteractor: WiFiItemInteracting
+    private let passkeyItemInteractor: PasskeyItemInteracting
     private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
@@ -133,6 +140,7 @@ final class ItemEditorModuleInteractor {
         secureNoteItemInteractor: SecureNoteItemInteracting,
         paymentCardItemInteractor: PaymentCardItemInteracting,
         wifiItemInteractor: WiFiItemInteracting,
+        passkeyItemInteractor: PasskeyItemInteracting,
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
@@ -151,6 +159,7 @@ final class ItemEditorModuleInteractor {
         self.secureNoteItemInteractor = secureNoteItemInteractor
         self.paymentCardItemInteractor = paymentCardItemInteractor
         self.wifiItemInteractor = wifiItemInteractor
+        self.passkeyItemInteractor = passkeyItemInteractor
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
@@ -505,6 +514,51 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             } catch {
                 return .failure(.interactorError(error))
             }
+        }
+    }
+
+    func savePasskey(
+        name: String?,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?
+    ) -> SaveItemResult {
+        guard let current = getEditItem()?.asPasskeyItem else {
+            return .failure(.interactorError(.noVault))
+        }
+
+        let date = currentDateInteractor.currentDate
+        let nameValue = name ?? ""
+
+        do {
+            try passkeyItemInteractor.updatePasskey(
+                id: current.id,
+                metadata: .init(
+                    creationDate: current.creationDate,
+                    modificationDate: date,
+                    protectionLevel: protectionLevel,
+                    trashedStatus: .no,
+                    tagIds: tagIds ?? current.tagIds
+                ),
+                name: nameValue,
+                credentialID: current.content.credentialId,
+                rpID: current.content.rpId,
+                username: current.content.username,
+                userHandle: current.content.userHandle,
+                privateKey: current.content.privateKey
+            )
+
+            Log("ItemEditorModuleInteractor - success while updating Passkey item. Saving storage")
+            didSaveItem()
+
+            Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
+                try await autoFillCredentialsInteractor.replacePasskeySuggestions(
+                    for: [current]
+                )
+            }
+
+            return .success(.saved(current.id))
+        } catch {
+            return .failure(.interactorError(error))
         }
     }
 

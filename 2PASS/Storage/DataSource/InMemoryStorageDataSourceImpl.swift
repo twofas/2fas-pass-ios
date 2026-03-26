@@ -308,7 +308,7 @@ extension InMemoryStorageDataSourceImpl {
             uris: uris
         )
     }
-    
+
     public func updateLoginItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -524,7 +524,7 @@ extension InMemoryStorageDataSourceImpl {
 }
 
 extension InMemoryStorageDataSourceImpl {
-    
+
     public func createWiFiItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -555,6 +555,39 @@ extension InMemoryStorageDataSourceImpl {
             notes: notes,
             securityType: securityType,
             hidden: hidden
+        )
+    }
+
+    public func createPasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    ) {
+        PasskeyEntity.createPasskey(
+            on: context,
+            itemID: itemID,
+            vaultID: vaultID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            credentialID: credentialID,
+            rpID: rpID,
+            username: username,
+            userHandle: userHandle,
+            privateKey: privateKey
         )
     }
 
@@ -589,6 +622,37 @@ extension InMemoryStorageDataSourceImpl {
         )
     }
 
+    public func updatePasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    ) {
+        PasskeyEntity.updatePasskey(
+            on: context,
+            for: itemID,
+            vaultID: vaultID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            credentialID: credentialID,
+            rpID: rpID,
+            username: username,
+            userHandle: userHandle,
+            privateKey: privateKey
+        )
+    }
+
     public func getWiFiItem(
         itemID: ItemID,
         checkInTrash: Bool
@@ -605,6 +669,24 @@ extension InMemoryStorageDataSourceImpl {
     ) -> [WiFiItemData] {
         WiFiEntity.listWiFiEntities(on: context, options: options)
             .compactMap { $0.toData().asWiFi }
+    }
+
+    public func getPasskeyItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> PasskeyItemData? {
+        PasskeyEntity.getPasskeyEntity(
+            on: context,
+            itemID: itemID,
+            checkInTrash: checkInTrash
+        )?.toData().asPasskeyItem
+    }
+
+    public func listPasskeyItems(
+        options: ItemsListOptions
+    ) -> [PasskeyItemData] {
+        PasskeyEntity.listPasskeyEntities(on: context, options: options)
+            .compactMap { $0.toData().asPasskeyItem }
     }
 }
 

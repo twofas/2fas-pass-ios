@@ -89,6 +89,13 @@ final class PasswordsModuleInteractor {
     }
 }
 
+private extension PasswordsModuleInteractor {
+    /// Passkeys are displayed alongside logins in the UI, so filtering by `.login` includes both.
+    func expandedContentTypes(for contentType: ItemContentType) -> [ItemContentType] {
+        contentType == .login ? [.login, .passkey] : [contentType]
+    }
+}
+
 extension PasswordsModuleInteractor: PasswordsModuleInteracting {
 
     var isUserLoggedIn: Bool {
@@ -100,7 +107,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
 
     func hasItems(for contentType: ItemContentType) -> Bool {
-        !itemsInteractor.listItems(searchPhrase: nil, tagId: nil, vaultId: nil, contentTypes: [contentType], protectionLevel: nil, sortBy: .az, trashed: .no).isEmpty
+        !itemsInteractor.listItems(searchPhrase: nil, tagId: nil, vaultId: nil, contentTypes: expandedContentTypes(for: contentType), protectionLevel: nil, sortBy: .az, trashed: .no).isEmpty
     }
     
     var canAddPassword: Bool {
@@ -119,13 +126,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
     
     func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> [ItemData] {
-        let contentTypes: [ItemContentType]? = {
-            if let contentType {
-                return [contentType]
-            } else {
-                return nil
-            }
-        }()
+        let contentTypes: [ItemContentType]? = contentType.map { expandedContentTypes(for: $0) }
 
         return itemsInteractor.listItems(
             searchPhrase: searchPhrase,
@@ -139,13 +140,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     }
     
     func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> (suggested: [ItemData], rest: [ItemData]) {
-        let contentTypes: [ItemContentType]? = {
-            if let contentType {
-                return [contentType]
-            } else {
-                return nil
-            }
-        }()
+        let contentTypes: [ItemContentType]? = contentType.map { expandedContentTypes(for: $0) }
 
         let allPasswords = itemsInteractor.listItems(searchPhrase: searchPhrase, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, protectionLevel: protectionLevel, sortBy: currentSortType, trashed: .no)
 
@@ -160,9 +155,10 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         for element in allPasswords where Config.autoFillExcludeProtectionLevels.contains(element.protectionLevel) == false {
             guard processedItemIDs.contains(element.id) == false else { continue }
 
-            if case let .login(loginItem) = element {
-                var isSuggested = false
+            var isSuggested = false
 
+            switch element {
+            case let .login(loginItem):
                 if let uris = loginItem.content.uris {
                     for autofillService in serviceIdentifiers {
                         let isMatch = uris.contains(where: { uri in
@@ -174,14 +170,18 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
                         }
                     }
                 }
-
-                if isSuggested {
-                    suggested.append(element)
-                } else {
-                    rest.append(element)
-                }
-                processedItemIDs.insert(element.id)
+            case let .passkey(passkeyItem):
+                isSuggested = serviceIdentifiers.contains(where: { $0.contains(passkeyItem.content.rpId) })
+            default:
+                break
             }
+
+            if isSuggested {
+                suggested.append(element)
+            } else {
+                rest.append(element)
+            }
+            processedItemIDs.insert(element.id)
         }
 
         return (suggested, rest)
@@ -215,6 +215,10 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         if let loginItem = deletedPassword?.asLoginItem {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                 try await autoFillCredentialsInteractor.removeSuggestions(for: loginItem)
+            }
+        } else if let passkeyItem = deletedPassword?.asPasskeyItem {
+            Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
+                try await autoFillCredentialsInteractor.removePasskeySuggestion(for: passkeyItem)
             }
         }
     }
@@ -358,6 +362,14 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                 try await autoFillCredentialsInteractor.replaceSuggestions(
                     for: loginItems
+                )
+            }
+        }
+        let passkeyItems = updatedItems.compactMap(\.asPasskeyItem)
+        if passkeyItems.isEmpty == false {
+            Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
+                try await autoFillCredentialsInteractor.replacePasskeySuggestions(
+                    for: passkeyItems
                 )
             }
         }

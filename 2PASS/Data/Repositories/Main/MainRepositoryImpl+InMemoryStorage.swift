@@ -166,6 +166,68 @@ extension MainRepositoryImpl {
         )
     }
 
+    func createPasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    ) {
+        inMemoryStorage?.createPasskeyItem(
+            itemID: itemID,
+            vaultID: vaultID,
+            creationDate: creationDate,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            credentialID: credentialID,
+            rpID: rpID,
+            username: username,
+            userHandle: userHandle,
+            privateKey: privateKey
+        )
+    }
+
+    func updatePasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    ) {
+        inMemoryStorage?.updatePasskeyItem(
+            itemID: itemID,
+            vaultID: vaultID,
+            modificationDate: modificationDate,
+            trashedStatus: trashedStatus,
+            protectionLevel: protectionLevel,
+            tagIds: tagIds,
+            name: name,
+            credentialID: credentialID,
+            rpID: rpID,
+            username: username,
+            userHandle: userHandle,
+            privateKey: privateKey
+        )
+    }
+
     func updateMetadataItem(
         itemID: ItemID,
         modificationDate: Date,

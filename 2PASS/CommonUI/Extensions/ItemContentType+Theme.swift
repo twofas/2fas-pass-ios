@@ -19,6 +19,8 @@ extension ItemContentType {
             return "creditcard"
         case .wifi:
             return "wifi"
+        case .passkey:
+            return "person.badge.key.fill"
         case .unknown:
             return nil
         }
@@ -45,11 +47,13 @@ extension ItemContentType {
             UIColor(light: UIColor(hexString: "#00C545")!, dark: UIColor(hexString: "#00C945")!)
         case .wifi:
             UIColor(light: UIColor(hexString: "#FF8500")!, dark: UIColor(hexString: "#FF8B00")!)
+        case .passkey:
+            UIColor(hexString: "#AF52DE")!
         case .unknown:
             .black
         }
     }
-    
+
     public var secondaryColor: UIColor {
         switch self {
         case .login:
@@ -71,6 +75,11 @@ extension ItemContentType {
             UIColor(
                 light: UIColor(hexString: "#FFEDD9")!,
                 dark: UIColor(hexString: "#261500")!
+            )
+        case .passkey:
+            UIColor(
+                light: UIColor(hexString: "#F3E5F9")!,
+                dark: UIColor(hexString: "#3B1352")!
             )
         case .unknown:
             .black.withAlphaComponent(0.5)

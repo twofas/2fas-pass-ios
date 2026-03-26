@@ -61,6 +61,15 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
     override func provideCredentialWithoutUserInteraction(for credentialRequest: any ASCredentialRequest) {
         presenter.provideWithoutUserInteraction(for: credentialRequest)
     }
+    
+    override func prepareInterface(forPasskeyRegistration registrationRequest: any ASCredentialRequest) {
+        presenter.prepareForPasskeyRegistration(for: registrationRequest)
+    }
+
+    @available(iOS 18.0, *)
+    override func performWithoutUserInteractionIfPossible(passkeyRegistration registrationRequest: ASPasskeyCredentialRequest) {
+        presenter.performPasskeyRegistrationWithoutUserInteractionIfPossible(registrationRequest)
+    }
 
     override func prepareInterfaceForUserChoosingTextToInsert() {
         presenter.prepareForTextToInsert()

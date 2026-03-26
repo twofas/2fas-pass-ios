@@ -117,7 +117,7 @@ public protocol InMemoryStorageDataSource: AnyObject {
         iconType: PasswordIconType,
         uris: [PasswordURI]?
     )
-    
+
     func updateLoginItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -266,8 +266,50 @@ public protocol InMemoryStorageDataSource: AnyObject {
         options: ItemsListOptions
     ) -> [WiFiItemData]
 
+    // MARK: - Passkey Items
+
+    func createPasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        creationDate: Date,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    )
+
+    func updatePasskeyItem(
+        itemID: ItemID,
+        vaultID: VaultID,
+        modificationDate: Date,
+        trashedStatus: ItemTrashedStatus,
+        protectionLevel: ItemProtectionLevel,
+        tagIds: [ItemTagID]?,
+        name: String?,
+        credentialID: Data,
+        rpID: String,
+        username: String,
+        userHandle: Data,
+        privateKey: Data
+    )
+
+    func getPasskeyItem(
+        itemID: ItemID,
+        checkInTrash: Bool
+    ) -> PasskeyItemData?
+
+    func listPasskeyItems(
+        options: ItemsListOptions
+    ) -> [PasskeyItemData]
+
     // MARK: - Other
-    
+
     func listUsernames() -> [String]
     func warmUp()
     func save()

@@ -32,6 +32,7 @@ public final class ModuleInteractorFactory {
             secureNoteItemInteractor: InteractorFactory.shared.secureNoteInteractor(),
             paymentCardItemInteractor: InteractorFactory.shared.paymentCardItemInteractor(),
             wifiItemInteractor: InteractorFactory.shared.wifiItemInteractor(),
+            passkeyItemInteractor: InteractorFactory.shared.passkeyItemInteractor(),
             paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),

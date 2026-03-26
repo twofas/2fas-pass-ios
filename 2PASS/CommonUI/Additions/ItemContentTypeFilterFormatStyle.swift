@@ -26,6 +26,8 @@ struct ItemContentTypeFilterFormatStyle: FormatStyle {
             return String(localized: .contentTypeFilterCardName)
         case .contentType(.wifi):
             return String(localized: .contentTypeWifiName)
+        case .contentType(.passkey):
+            return String(localized: .contentTypeFilterPasskeyName)
         case .contentType(.unknown):
             return String(localized: .contentTypeUnknownName)
         }

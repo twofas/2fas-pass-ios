@@ -159,7 +159,7 @@ struct ConnectPullReqestCommunicationView: View {
                 Text(.requestModalToastSuccessCardRequest)
             case .wifi:
                 Text(.requestModalToastSuccessPasswordRequest)
-            case .raw:
+            case .passkey, .raw:
                 Text("")
             }
         case .sync:

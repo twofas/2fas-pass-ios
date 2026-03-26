@@ -61,6 +61,13 @@ public final class InteractorFactory {
         )
     }
 
+    public func passkeyItemInteractor() -> PasskeyItemInteracting {
+        PasskeyItemInteractor(
+            itemsInteractor: itemsInteractor(),
+            mainRepository: MainRepositoryImpl.shared
+        )
+    }
+
     public func paymentCardItemInteractor() -> PaymentCardItemInteracting {
         PaymentCardItemInteractor(
             itemsInteractor: itemsInteractor(),

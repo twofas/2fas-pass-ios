@@ -20,9 +20,9 @@ enum ItemContentTypeFilter: Equatable, Hashable {
     }
     
     static let allKnown: [ItemContentTypeFilter] = {
-        var allContentTypes = ItemContentType.allKnownTypes.map {
-            ItemContentTypeFilter.contentType($0)
-        }
+        let allContentTypes = ItemContentType.allKnownTypes
+            .filter { $0 != .passkey }
+            .map { ItemContentTypeFilter.contentType($0) }
         return [.all] + allContentTypes
     }()
 }

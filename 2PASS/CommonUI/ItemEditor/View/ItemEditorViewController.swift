@@ -65,7 +65,7 @@ final class ItemEditorViewController: UIViewController {
             navigationItem.title = presenter.title
             navigationItem.titleMenuProvider = { [weak self] _ in
                 guard let self else { return nil }
-                let actions = ItemContentType.allKnownTypes.map { contentType in
+                let actions = ItemContentType.creatableTypes.map { contentType in
                     let name = contentType.formatted()
                     return UIAction(title: name, image: contentType.icon, state: self.presenter.contentType == contentType ? .on : .off) { [weak self] _ in
                         guard let self else { return }

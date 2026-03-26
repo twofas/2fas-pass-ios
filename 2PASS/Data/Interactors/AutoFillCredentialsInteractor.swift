@@ -9,12 +9,15 @@ import AuthenticationServices
 
 public protocol AutoFillCredentialsInteracting: AnyObject {
     func canAddSuggestionForPassword(with level: ItemProtectionLevel) -> Bool
-    
+
     func addSuggestions(itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
+    func addPasskeySuggestion(itemID: ItemID, rpID: String, username: String, credentialID: Data, userHandle: Data) async throws
     func replaceSuggestions(from passwordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws
     func replaceSuggestions(for items: [LoginItemData]) async throws
     func removeSuggestions(for passwordData: LoginItemData) async throws
-    
+    func removePasskeySuggestion(for passkeyData: PasskeyItemData) async throws
+    func replacePasskeySuggestions(for items: [PasskeyItemData]) async throws
+
     func syncSuggestions() async throws
 }
 
@@ -61,6 +64,26 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         }
     }
     
+    func addPasskeySuggestion(itemID: ItemID, rpID: String, username: String, credentialID: Data, userHandle: Data) async throws {
+        let isEnabled = await mainRepository.refreshAutoFillStatus()
+        guard isEnabled else { return }
+
+        Log("Autofill - Start add passkey suggestion", module: .autofill)
+        do {
+            let identity = ASPasskeyCredentialIdentity(
+                relyingPartyIdentifier: rpID,
+                userName: username,
+                credentialID: credentialID,
+                userHandle: userHandle,
+                recordIdentifier: itemID.uuidString
+            )
+            try await store.saveCredentialIdentities([identity])
+            Log("Autofill - Add passkey suggestion completed", module: .autofill)
+        } catch {
+            Log("Autofill - Add passkey suggestion failure: \(error)", module: .autofill)
+        }
+    }
+
     func replaceSuggestions(from oldPasswordData: LoginItemData, itemID: ItemID, username: String?, uris: [PasswordURI]?, protectionLevel: ItemProtectionLevel) async throws {
         try await removeSuggestions(for: oldPasswordData)
         try await addSuggestions(itemID: itemID, username: username, uris: uris, protectionLevel: protectionLevel)
@@ -101,48 +124,82 @@ final class AutoFillCredentialsInteractor: AutoFillCredentialsInteracting {
         }
     }
     
+    func removePasskeySuggestion(for passkeyData: PasskeyItemData) async throws {
+        Log("Autofill - Start remove passkey suggestion", module: .autofill)
+        do {
+            let identities = makePasskeyCredentialIdentities(for: [passkeyData])
+            try await store.removeCredentialIdentities(identities)
+            Log("Autofill - Remove passkey suggestion completed", module: .autofill)
+        } catch {
+            Log("Autofill - Remove passkey suggestion failure: \(error)", module: .autofill)
+        }
+    }
+
+    func replacePasskeySuggestions(for items: [PasskeyItemData]) async throws {
+        let identities = makePasskeyCredentialIdentities(for: items)
+        try await store.removeCredentialIdentities(identities)
+        try await store.saveCredentialIdentities(identities)
+    }
+
     func syncSuggestions() async throws { // TODO: Naive implementation. Should migrate to incremental updates.
         let isEnabled = await mainRepository.refreshAutoFillStatus()
         guard isEnabled else {
             return
         }
-        
+
         let startDate = Date()
         Log("Autofill - Start sync suggestions", module: .autofill)
-        
-        let items = Task { @MainActor in
+
+        let allItems = Task { @MainActor in
             mainRepository.listItems(options: .allNotTrashed).filter {
                 canAddSuggestionForPassword(with: $0.protectionLevel)
             }
-            .compactMap {
-                $0.asLoginItem
-            }
         }
-        
-        let credentials = makeCredentialIdentities(for: await items.value)
+
+        let items = await allItems.value
+        let loginItems = items.compactMap { $0.asLoginItem }
+        let passkeyItems = items.compactMap { $0.asPasskeyItem }
+
+        var credentials = makeCredentialIdentities(for: loginItems)
+        credentials.append(contentsOf: makePasskeyCredentialIdentities(for: passkeyItems))
+
         do {
             try await store.replaceCredentialIdentities(credentials)
             Log("Autofill - Sync suggestions completed", module: .autofill)
         } catch {
             Log("Autofill - Sync suggestions failure: \(error)", module: .autofill)
         }
-        
+
         let time = Date().timeIntervalSince(startDate)
         Log("Autofill - Sync time: \(time)", module: .autofill)
     }
-    
-    private func makeCredentialIdentities(for items: [LoginItemData]) -> [ASPasswordCredentialIdentity] {
-        items.flatMap { loginItem in
-            loginItem.uris?.compactMap { uri -> ASPasswordCredentialIdentity? in
+
+    private func makeCredentialIdentities(for items: [LoginItemData]) -> [any ASCredentialIdentity] {
+        items.flatMap { loginItem -> [any ASCredentialIdentity] in
+            let identities: [any ASCredentialIdentity] = loginItem.uris?.compactMap { uri -> ASPasswordCredentialIdentity? in
                 guard Config.allowsMatchRulesForSuggestions.contains(uri.match) else { return nil }
                 guard let uriNormalized = uriInteractor.normalize(uri.uri) else { return nil }
-                
+
                 return ASPasswordCredentialIdentity(
                     serviceIdentifier: .init(identifier: uriNormalized, type: .URL),
                     user: loginItem.username ?? "",
                     recordIdentifier: loginItem.id.uuidString
                 )
             } ?? []
+
+            return identities
+        }
+    }
+
+    private func makePasskeyCredentialIdentities(for items: [PasskeyItemData]) -> [any ASCredentialIdentity] {
+        items.map { passkeyItem in
+            ASPasskeyCredentialIdentity(
+                relyingPartyIdentifier: passkeyItem.content.rpId,
+                userName: passkeyItem.content.username,
+                credentialID: passkeyItem.content.credentialId,
+                userHandle: passkeyItem.content.userHandle,
+                recordIdentifier: passkeyItem.id.uuidString
+            )
         }
     }
 }

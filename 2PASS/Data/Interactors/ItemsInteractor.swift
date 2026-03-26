@@ -195,6 +195,22 @@ extension ItemsInteractor: ItemsInteracting {
                 securityType: wifiItem.content.securityType,
                 hidden: wifiItem.content.hidden
             )
+        case .passkey(let passkeyItem):
+            mainRepository.createPasskeyItem(
+                itemID: passkeyItem.id,
+                vaultID: selectedVault.id,
+                creationDate: passkeyItem.creationDate,
+                modificationDate: passkeyItem.modificationDate,
+                trashedStatus: passkeyItem.trashedStatus,
+                protectionLevel: passkeyItem.protectionLevel,
+                tagIds: passkeyItem.tagIds,
+                name: passkeyItem.name,
+                credentialID: passkeyItem.content.credentialId,
+                rpID: passkeyItem.content.rpId,
+                username: passkeyItem.content.username,
+                userHandle: passkeyItem.content.userHandle,
+                privateKey: passkeyItem.content.privateKey
+            )
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
@@ -301,6 +317,21 @@ extension ItemsInteractor: ItemsInteracting {
                 securityType: wifiItem.content.securityType,
                 hidden: wifiItem.content.hidden
             )
+        case .passkey(let passkeyItem):
+            mainRepository.updatePasskeyItem(
+                itemID: passkeyItem.id,
+                vaultID: selectedVault.id,
+                modificationDate: passkeyItem.modificationDate,
+                trashedStatus: passkeyItem.trashedStatus,
+                protectionLevel: passkeyItem.protectionLevel,
+                tagIds: passkeyItem.tagIds,
+                name: passkeyItem.name,
+                credentialID: passkeyItem.content.credentialId,
+                rpID: passkeyItem.content.rpId,
+                username: passkeyItem.content.username,
+                userHandle: passkeyItem.content.userHandle,
+                privateKey: passkeyItem.content.privateKey
+            )
         case .raw:
             mainRepository.updateItem(
                 itemID: item.id,
@@ -387,6 +418,15 @@ extension ItemsInteractor: ItemsInteracting {
 
                 if let loginItem = item.asLoginItem, loginItem.username?.localizedCaseInsensitiveContains(searchPhrase) == true {
                     return true
+                }
+
+                if let passkeyItem = item.asPasskeyItem {
+                    if passkeyItem.content.username.localizedCaseInsensitiveContains(searchPhrase) {
+                        return true
+                    }
+                    if passkeyItem.content.rpId.localizedCaseInsensitiveContains(searchPhrase) {
+                        return true
+                    }
                 }
 
                 return false

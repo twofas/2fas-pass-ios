@@ -243,7 +243,7 @@ extension PasswordsPresenter {
                 copyPaymentCardNumber(id: itemData.id)
             case .wifi:
                 copyWiFiPassword(id: itemData.id)
-            case .raw:
+            case .passkey, .raw:
                 break
             }
             
@@ -567,6 +567,19 @@ private extension PasswordsPresenter {
                     .edit,
                     wifiItem.content.ssid?.isEmpty == false ? .copy(.wifiSSID) : nil,
                     wifiItem.content.password != nil ? .copy(.wifiPassword) : nil,
+                    isAutoFillExtension ? nil : .moveToTrash
+                ]
+                .compactMap { $0 }
+            )
+        case .passkey(let passkeyItem):
+            return ItemCellData(
+                itemID: passkeyItem.id,
+                name: passkeyItem.name ?? passkeyItem.content.rpId,
+                description: passkeyItem.content.username,
+                iconType: .contentType(itemData.contentType),
+                tagColors: tagColors(for: itemData),
+                actions: [
+                    .view,
                     isAutoFillExtension ? nil : .moveToTrash
                 ]
                 .compactMap { $0 }

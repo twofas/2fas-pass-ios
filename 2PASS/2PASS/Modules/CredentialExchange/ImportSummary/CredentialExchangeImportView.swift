@@ -138,6 +138,8 @@ struct CredentialExchangeImportView: View {
             .transferFileSummaryPaymentCardsCounterDescription
         case .wifi:
             .transferFileSummaryWifiCounterDescription
+        case .passkey:
+            .transferFileSummaryOthersCounterDescription
         case .unknown:
             .transferFileSummaryOthersCounterDescription
         }

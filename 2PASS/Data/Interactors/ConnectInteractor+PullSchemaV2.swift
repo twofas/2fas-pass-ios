@@ -161,6 +161,8 @@ extension ConnectInteractor {
                     hidden: wifiContent.data.content.hidden
                 )
             )
+        case .passkey:
+            throw ConnectError.unsuppotedContentType("passkey")
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)
         }
@@ -422,6 +424,8 @@ extension ConnectInteractor {
                 protectionLevel: newProtectionLevel,
                 tags: wifiRequest.data.tags
             ))
+        case .passkey:
+            throw ConnectError.unsuppotedContentType("passkey")
         case .unknown(let contentType):
             throw ConnectError.unsuppotedContentType(contentType)
         }

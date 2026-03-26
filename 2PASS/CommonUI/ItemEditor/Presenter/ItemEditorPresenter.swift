@@ -17,6 +17,7 @@ final class ItemEditorPresenter {
         case secureNote(SecureNoteEditorFormPresenter)
         case paymentCard(PaymentCardEditorFormPresenter)
         case wifi(WiFiEditorFormPresenter)
+        case passkey(PasskeyEditorFormPresenter)
     }
 
     var contentType: ItemContentType {
@@ -29,6 +30,8 @@ final class ItemEditorPresenter {
             return .paymentCard
         case .wifi:
             return .wifi
+        case .passkey:
+            return .passkey
         }
     }
 
@@ -50,7 +53,9 @@ final class ItemEditorPresenter {
             String(localized: .wifiAddTitle)
         case (.wifi, true):
             String(localized: .wifiEditTitle)
-        case (.unknown, _):
+        case (.passkey, true):
+            String(localized: .passkeyEditTitle)
+        case (.passkey, false), (.unknown, _):
             ""
         }
     }
@@ -63,6 +68,7 @@ final class ItemEditorPresenter {
     var secureNotePresenter: SecureNoteEditorFormPresenter?
     var paymentCardPresenter: PaymentCardEditorFormPresenter?
     var wifiPresenter: WiFiEditorFormPresenter?
+    var passkeyPresenter: PasskeyEditorFormPresenter?
     
     let allowChangeContentType: Bool
     
@@ -92,6 +98,8 @@ final class ItemEditorPresenter {
         case .paymentCard(let presenter):
             return presenter
         case .wifi(let presenter):
+            return presenter
+        case .passkey(let presenter):
             return presenter
         }
     }
@@ -154,10 +162,19 @@ final class ItemEditorPresenter {
             self.wifiPresenter = formPresenter
             self.form = .wifi(formPresenter)
 
+        case .passkey:
+            let formPresenter = PasskeyEditorFormPresenter(
+                interactor: interactor,
+                flowController: flowController,
+                initialData: initalData?.asPasskeyItem
+            )
+            self.passkeyPresenter = formPresenter
+            self.form = .passkey(formPresenter)
+
         case .unknown:
-            fatalError("Unsupported unknown item type in Item Editor")
+            fatalError("Unsupported item type in Item Editor")
         }
-        
+
         if initalData != nil {
             notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
             notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
@@ -275,8 +292,8 @@ private extension ItemEditorPresenter {
             }()
             return .wifi(presenter)
 
-        case .unknown:
-            fatalError("Unsupported unknown item type in Item Editor")
+        case .passkey, .unknown:
+            fatalError("Unsupported item type in Item Editor")
         }
     }
     

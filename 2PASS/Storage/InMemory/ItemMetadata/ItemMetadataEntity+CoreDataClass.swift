@@ -18,6 +18,7 @@ class ItemMetadataEntity: NSManagedObject {
         case .secureNote: SecureNoteEntity.self
         case .paymentCard: PaymentCardEntity.self
         case .wifi: WiFiEntity.self
+        case .passkey: PasskeyEntity.self
         case .unknown: RawEntity.self
         }
     }
