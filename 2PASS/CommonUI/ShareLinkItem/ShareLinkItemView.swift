@@ -59,10 +59,8 @@ struct ShareLinkItemView: View {
             .sensoryFeedback(.error, trigger: uploadState.isFailure)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button {
+                    ToolbarCancelButton {
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
                     }
                 }
             }
