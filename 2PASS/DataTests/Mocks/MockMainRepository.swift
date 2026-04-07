@@ -1658,10 +1658,6 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    func updateItems(_ items: [RawItemData]) {
-        recordCall()
-    }
-
     func itemsBatchUpdate(_ items: [RawItemData]) {
         recordCall()
     }
@@ -1991,6 +1987,34 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func updateDeletedItems(_ items: [DeletedItemData]) {
+        recordCall()
+    }
+
+    private var stubbedDeletedItem: (DeletedItemID) -> DeletedItemData? = { _ in nil }
+    func deletedItem(id: DeletedItemID) -> DeletedItemData? {
+        recordCall()
+        return stubbedDeletedItem(id)
+    }
+
+    @discardableResult
+    func withDeletedItem(_ handler: @escaping (DeletedItemID) -> DeletedItemData?) -> Self {
+        stubbedDeletedItem = handler
+        return self
+    }
+
+    private var stubbedListDeletedItemsByIDs: (Set<DeletedItemID>) -> [DeletedItemData] = { _ in [] }
+    func listDeletedItems(ids: Set<DeletedItemID>) -> [DeletedItemData] {
+        recordCall()
+        return stubbedListDeletedItemsByIDs(ids)
+    }
+
+    @discardableResult
+    func withListDeletedItemsByIDs(_ handler: @escaping (Set<DeletedItemID>) -> [DeletedItemData]) -> Self {
+        stubbedListDeletedItemsByIDs = handler
+        return self
+    }
+
     private var stubbedListDeletedItems: (VaultID, Int?) -> [DeletedItemData] = { _, _ in [] }
     func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData] {
         recordCall()
@@ -2004,6 +2028,10 @@ final class MockMainRepository: MainRepository {
     }
 
     func deleteDeletedItem(id: DeletedItemID) {
+        recordCall()
+    }
+
+    func removeDuplicatedDeletedItems() {
         recordCall()
     }
 
@@ -2169,7 +2197,7 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    func synchronizeBackup() {
+    func synchronizeBackup(fromPush: Bool) {
         recordCall()
     }
 

@@ -446,7 +446,6 @@ protocol MainRepository: AnyObject {
         hidden: Bool
     )
 
-    func updateItems(_ items: [RawItemData])
     func itemsBatchUpdate(_ items: [RawItemData])
     func metadataItemsBatchUpdate(_ items: [any ItemDataType])
     func getItemEntity(
@@ -551,9 +550,13 @@ protocol MainRepository: AnyObject {
     // MARK: Deleted Items
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
+    func updateDeletedItems(_ items: [DeletedItemData])
+    func deletedItem(id: DeletedItemID) -> DeletedItemData?
+    func listDeletedItems(ids: Set<DeletedItemID>) -> [DeletedItemData]
     func listDeletedItems(in vaultID: VaultID, limit: Int?) -> [DeletedItemData]
     func deleteDeletedItem(id: DeletedItemID)
-   
+    func removeDuplicatedDeletedItems()
+
     // MARK: - Web Browser
     func createEncryptedWebBrowser(_ data: WebBrowserEncryptedData)
     func updateEncryptedWebBrowser(_ data: WebBrowserEncryptedData)
@@ -586,7 +589,7 @@ protocol MainRepository: AnyObject {
     func enableCloudBackup()
     func disableCloudBackup()
     func clearBackup()
-    func synchronizeBackup()
+    func synchronizeBackup(fromPush: Bool)
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
     func cloudDeleteVault(id: VaultID) async throws
     var lastSuccessCloudSyncDate: Date? { get }

@@ -125,6 +125,10 @@ final class SyncPresenter {
             status = interactor.cloudState.description
             lastSyncDate = interactor.cloudLastSuccessSyncDate
             showUpdateAppButton = interactor.cloudState.isSchemeNotSupported
+            showUpgradePlanButton = interactor.cloudState.isSyncNotAllowed
+            if interactor.cloudState.isSyncNotAllowed {
+                destination = .syncNotAllowed
+            }
         } else if interactor.isWebDAVEnabled {
             status = WebDAVStatusFormatStyle().format(interactor.webDAVState)
             lastSyncDate = interactor.webDAVLastSyncDate
@@ -191,7 +195,6 @@ private extension CloudState.Sync {
         switch self {
         case .syncing: String(localized: .syncSyncing)
         case .synced: String(localized: .syncSynced)
-        case .outOfSync(.schemaNotSupported(let schemaVersion)): String(localized: .cloudSyncInvalidSchemaErrorMsg(Int32(schemaVersion)))
         }
     }
 }
@@ -228,6 +231,7 @@ private extension CloudState.NotAvailableReason {
         case .incorrectEncryption: String(localized: .syncErrorIcloudErrorDiffrentEncryption)
         case .noAccount: String(localized: .syncErrorIcloudErrorNoAccount)
         case .restricted: String(localized: .syncErrorIcloudErrorAccessRestricted)
+        case .syncNotAllowed: String(localized: .syncErrorIcloudSyncNotAllowedDescription)
         }
     }
 }
