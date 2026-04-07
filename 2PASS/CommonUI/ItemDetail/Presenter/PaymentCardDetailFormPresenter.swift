@@ -120,7 +120,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         }
 
         if let encrypted = paymentCardItem.content.expirationDate {
-            expirationDate = interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel)
+            expirationDate = interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel, vaultID: paymentCardItem.vaultId)
         } else {
             expirationDate = nil
         }
@@ -135,11 +135,11 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
 
     private func decryptCardNumber() -> String? {
         guard let encrypted = paymentCardItem.content.cardNumber else { return nil }
-        return interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel)
+        return interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel, vaultID: paymentCardItem.vaultId)
     }
 
     private func decryptSecurityCode() -> String? {
         guard let encrypted = paymentCardItem.content.securityCode else { return nil }
-        return interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel)
+        return interactor.decryptSecureField(encrypted, protectionLevel: paymentCardItem.protectionLevel, vaultID: paymentCardItem.vaultId)
     }
 }

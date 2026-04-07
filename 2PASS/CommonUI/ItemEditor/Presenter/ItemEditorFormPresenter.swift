@@ -17,6 +17,8 @@ class _ItemEditorFormPresenter {
     
     var name: String
     var protectionLevel: ItemProtectionLevel
+    var selectedVaultID: VaultID
+    let availableVaults: [VaultData]
     var selectedTags: [ItemTagData] = []
     
     let initialData: (any ItemDataType)?
@@ -45,6 +47,13 @@ class _ItemEditorFormPresenter {
         return protectionLevel != initialData.protectionLevel
     }
     
+    var vaultChanged: Bool {
+        guard let initialData else {
+            return false
+        }
+        return selectedVaultID != initialData.vaultId
+    }
+
     var tagsChanged: Bool {
         guard let initialData else {
             return false
@@ -59,7 +68,9 @@ class _ItemEditorFormPresenter {
         
         self.name = changeRequest?.name ?? initialData?.name ?? ""
         self.protectionLevel = changeRequest?.protectionLevel ?? initialData?.protectionLevel ?? interactor.currentDefaultProtectionLevel
-        
+        self.selectedVaultID = initialData?.vaultId ?? interactor.defaultVaultID
+        self.availableVaults = interactor.listVaults()
+
         let tagIds = changeRequest?.tags ?? initialData?.tagIds
         if let tagIds, !tagIds.isEmpty {
             let tags = interactor.getTags(for: tagIds)

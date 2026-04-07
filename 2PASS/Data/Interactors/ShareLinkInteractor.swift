@@ -295,7 +295,7 @@ private extension ShareLinkInteractor {
             content: ShareLoginContent(
                 name: login.content.name,
                 username: login.content.username,
-                password: decryptSecure(login.content.password, protectionLevel: protectionLevel),
+                password: decryptSecure(login.content.password, protectionLevel: protectionLevel, vaultID: login.vaultId),
                 notes: login.content.notes,
                 uris: login.content.uris
             )
@@ -308,7 +308,7 @@ private extension ShareLinkInteractor {
             contentVersion: SecureNoteContent.contentVersion,
             content: ShareSecureNoteContent(
                 name: note.content.name,
-                text: decryptSecure(note.content.text, protectionLevel: protectionLevel)
+                text: decryptSecure(note.content.text, protectionLevel: protectionLevel, vaultID: note.vaultId)
             )
         )
     }
@@ -320,9 +320,9 @@ private extension ShareLinkInteractor {
             content: SharePaymentCardContent(
                 name: card.content.name,
                 cardHolder: card.content.cardHolder,
-                cardNumber: decryptSecure(card.content.cardNumber, protectionLevel: protectionLevel),
-                expirationDate: decryptSecure(card.content.expirationDate, protectionLevel: protectionLevel),
-                securityCode: decryptSecure(card.content.securityCode, protectionLevel: protectionLevel),
+                cardNumber: decryptSecure(card.content.cardNumber, protectionLevel: protectionLevel, vaultID: card.vaultId),
+                expirationDate: decryptSecure(card.content.expirationDate, protectionLevel: protectionLevel, vaultID: card.vaultId),
+                securityCode: decryptSecure(card.content.securityCode, protectionLevel: protectionLevel, vaultID: card.vaultId),
                 notes: card.content.notes
             )
         )
@@ -335,7 +335,7 @@ private extension ShareLinkInteractor {
             content: ShareWiFiContent(
                 name: wifi.content.name,
                 ssid: wifi.content.ssid,
-                password: decryptSecure(wifi.content.password, protectionLevel: protectionLevel),
+                password: decryptSecure(wifi.content.password, protectionLevel: protectionLevel, vaultID: wifi.vaultId),
                 notes: wifi.content.notes,
                 securityType: wifi.content.securityType,
                 hidden: wifi.content.hidden
@@ -345,9 +345,9 @@ private extension ShareLinkInteractor {
 
     // MARK: - Helpers
 
-    func decryptSecure(_ data: Data?, protectionLevel: ItemProtectionLevel) -> String? {
+    func decryptSecure(_ data: Data?, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String? {
         guard let data else { return nil }
-        return itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
+        return itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultID)
     }
 
     // MARK: - Import decoding

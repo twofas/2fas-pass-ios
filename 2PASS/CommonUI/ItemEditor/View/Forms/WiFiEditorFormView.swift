@@ -26,6 +26,8 @@ struct WiFiEditorFormView: View {
     private var focusField: Field?
 
     var body: some View {
+        ItemEditorVaultSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+        
         HStack {
             Spacer()
             ItemEditorIconView(content: .contentType(.wifi))

@@ -10,6 +10,7 @@ import Common
 public protocol WiFiItemInteracting: AnyObject {
     func createWiFi(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         ssid: String?,
@@ -21,6 +22,7 @@ public protocol WiFiItemInteracting: AnyObject {
 
     func updateWiFi(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         ssid: String?,
@@ -44,6 +46,7 @@ final class WiFiItemInteractor {
 extension WiFiItemInteractor: WiFiItemInteracting {
     func createWiFi(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         ssid: String?,
@@ -52,10 +55,9 @@ extension WiFiItemInteractor: WiFiItemInteracting {
         securityType: WiFiContent.SecurityType,
         hidden: Bool
     ) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
         let wifiItem = try makeWiFi(
             id: id,
-            vaultId: vaultId,
+            vaultId: vaultID,
             metadata: metadata,
             name: name,
             ssid: ssid,
@@ -69,6 +71,7 @@ extension WiFiItemInteractor: WiFiItemInteracting {
 
     func updateWiFi(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         ssid: String?,
@@ -77,10 +80,9 @@ extension WiFiItemInteractor: WiFiItemInteracting {
         securityType: WiFiContent.SecurityType,
         hidden: Bool
     ) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
         let wifiItem = try makeWiFi(
             id: id,
-            vaultId: vaultId,
+            vaultId: vaultID,
             metadata: metadata,
             name: name,
             ssid: ssid,
@@ -94,14 +96,6 @@ extension WiFiItemInteractor: WiFiItemInteracting {
 }
 
 private extension WiFiItemInteractor {
-    var selectedVaultId: VaultID {
-        get throws(ItemsInteractorSaveError) {
-            guard let vaultId = mainRepository.selectedVault?.vaultID else {
-                throw .noVault
-            }
-            return vaultId
-        }
-    }
 
     func makeWiFi(
         id: ItemID,
@@ -120,7 +114,8 @@ private extension WiFiItemInteractor {
             guard let encrypted = itemsInteractor.encrypt(
                 passwordTrimmed,
                 isSecureField: true,
-                protectionLevel: metadata.protectionLevel
+                protectionLevel: metadata.protectionLevel,
+                vaultID: vaultId
             ) else {
                 Log("WiFiItemInteractor: Can't encrypt password", module: .interactor, severity: .error)
                 throw .encryptionError

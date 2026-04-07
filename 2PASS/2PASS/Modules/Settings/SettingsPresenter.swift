@@ -6,6 +6,8 @@
 
 import Foundation
 import CommonUI
+import Data
+import Common
 
 enum SettingsDestination: RouterDestination {
     case security
@@ -21,6 +23,29 @@ enum SettingsDestination: RouterDestination {
     case about
     case helpCenter
     case discord
+    case manageVaults
+    case authenticate(config: LoginModuleInteractorConfig, onSuccess: Callback)
+
+    var id: String {
+        switch self {
+        case .security: "security"
+        case .customization: "customization"
+        case .autoFill: "autoFill"
+        case .deletedData: "deletedData"
+        case .knownWebBrowsers: "knownWebBrowsers"
+        case .pushNotifications: "pushNotifications"
+        case .sync: "sync"
+        case .importExport: "importExport"
+        case .transferItems: "transferItems"
+        case .manageSubscription: "manageSubscription"
+        case .about: "about"
+        case .helpCenter: "helpCenter"
+        case .discord: "discord"
+        case .manageVaults: "manageVaults"
+        case .authenticate: "authenticate"
+        case .debug: "debug"
+        }
+    }
     case debug
 }
 
@@ -99,6 +124,27 @@ extension SettingsPresenter {
     
     func onDeletedData() {
         destination = .deletedData
+    }
+
+    func onManageVaults() {
+        Task { @MainActor in
+            if await interactor.verifyUsingBiometryIfAvailable() {
+                interactor.recreateSeedSaltWordsMasterKey()
+                destination = .manageVaults
+            } else {
+                destination = .authenticate(
+                    config: .init(allowBiometrics: true, loginType: .verify(savePassword: true)),
+                    onSuccess: { [weak self] in
+                        self?.interactor.recreateSeedSaltWordsMasterKey()
+                        self?.destination = nil
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .milliseconds(600))
+                            self?.destination = .manageVaults
+                        }
+                    }
+                )
+            }
+        }
     }
     
     func onSubscription() {

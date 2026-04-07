@@ -14,10 +14,12 @@ extension VaultEncryptedEntity {
     }
 
     @NSManaged var vaultID: VaultID
-    @NSManaged var name: String
+    @NSManaged var name: Data
     @NSManaged var trustedKey: Data
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
+    @NSManaged var color: String?
+    @NSManaged var icon: String?
     @NSManaged var items: Set<ItemEncryptedEntity>?
 }
 
@@ -46,7 +48,9 @@ extension VaultEncryptedEntity {
             trustedKey: trustedKey,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            isEmpty: items?.isEmpty ?? true
+            isEmpty: items?.isEmpty ?? true,
+            color: color,
+            icon: icon
         )
     }
 }

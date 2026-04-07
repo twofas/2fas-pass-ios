@@ -35,6 +35,8 @@ struct PaymentCardEditorFormView: View {
     }
 
     var body: some View {
+        ItemEditorVaultSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+
         HStack {
             Spacer()
             ItemEditorIconView(content: paymentCardIcon)
@@ -128,7 +130,6 @@ struct PaymentCardEditorFormView: View {
         .listSectionSpacing(Spacing.m)
 
         ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
-
         ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
         
         ItemEditorNotesSection(

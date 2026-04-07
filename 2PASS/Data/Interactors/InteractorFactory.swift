@@ -25,6 +25,7 @@ public final class InteractorFactory {
     public func protectionInteractor() -> ProtectionInteracting {
         ProtectionInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             storageInteractor: storageInteractor()
         )
     }
@@ -40,6 +41,7 @@ public final class InteractorFactory {
     public func itemsInteractor() -> ItemsInteracting {
         ItemsInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             protectionInteractor: protectionInteractor(),
             uriInteractor: uriInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
@@ -99,10 +101,15 @@ public final class InteractorFactory {
     public func uriInteractor() -> URIInteracting {
         URIInteractor(mainRepository: MainRepositoryImpl.shared)
     }
+
+    public func vaultsInteractor() -> VaultsInteracting {
+        VaultsInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
     
     func storageInteractor() -> StorageInteracting {
         StorageInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             autoFillInteractor: autoFillCredentialsInteractor(),
             migrationInteractor: migrationInteractor()
         )
@@ -122,6 +129,7 @@ public final class InteractorFactory {
     public func loginInteractor() -> LoginInteracting {
         LoginInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             protectionInteractor: protectionInteractor(),
             securityInteractor: securityInteractor(),
             storageInteractor: storageInteractor(),
@@ -136,6 +144,7 @@ public final class InteractorFactory {
     public func debugInteractor() -> DebugInteracting {
         DebugInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             itemsInteractor: itemsInteractor(),
             loginItemInteractor: loginItemInteractor(),
             paymentCardItemInteractor: paymentCardItemInteractor(),
@@ -146,6 +155,7 @@ public final class InteractorFactory {
     public func importInteractor() -> ImportInteracting {
         ImportInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             itemsInteractor: itemsInteractor(),
             protectionInteractor: protectionInteractor(),
             uriInteractor: uriInteractor()
@@ -163,6 +173,7 @@ public final class InteractorFactory {
     public func exportInteractor() -> ExportInteracting {
         ExportInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             itemsInteractor: itemsInteractor(),
             tagInteractor: tagInteractor(),
             uriInteractor: uriInteractor()
@@ -184,6 +195,7 @@ public final class InteractorFactory {
         ChangePasswordInteractor(
             biometryInteractor: biometryInteractor(),
             itemsInteractor: itemsInteractor(),
+            vaultsInteractor: vaultsInteractor(),
             protectionInteractor: protectionInteractor(),
             syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false)
         )
@@ -208,6 +220,7 @@ public final class InteractorFactory {
         WebDAVBackupInteractor(
             ignoreDeviceId: ignoreDeviceId,
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             backupImportInteractor: backupImportInteractor(),
             exportInteractor: exportInteractor(),
             webDAVStateInteractor: webDAVStateInteractor(),
@@ -218,7 +231,7 @@ public final class InteractorFactory {
     }
     
     public func webDAVStateInteractor() -> WebDAVStateInteracting {
-        WebDAVStateInteractor(mainRepository: MainRepositoryImpl.shared)
+        WebDAVStateInteractor(mainRepository: MainRepositoryImpl.shared, vaultsInteractor: vaultsInteractor())
     }
     
     public func syncChangeTriggerInteractor(callsChange: Bool) -> SyncChangeTriggerInteracting {
@@ -252,9 +265,13 @@ public final class InteractorFactory {
     
     public func cloudSyncInteractor() -> CloudSyncInteracting {
         CloudSyncInteractor(
-            cloudCacheStorage: CloudCacheStorageImpl(mainRepository: MainRepositoryImpl.shared),
+            cloudCacheStorage: CloudCacheStorageImpl(
+                mainRepository: MainRepositoryImpl.shared,
+                vaultsInteractor: vaultsInteractor()
+            ),
             encryptionHandler: EncryptionHandlerImpl(
                 mainRepository: MainRepositoryImpl.shared,
+                vaultsInteractor: vaultsInteractor(),
                 itemsInteractor: itemsInteractor(),
                 tagInteractor: tagInteractor()
             ),
@@ -262,9 +279,11 @@ public final class InteractorFactory {
                 itemsInteractor: itemsInteractor(),
                 deletedItemsInteractor: deletedItemsInteractor(),
                 tagInteractor: tagInteractor(),
-                mainRepository: MainRepositoryImpl.shared
+                mainRepository: MainRepositoryImpl.shared,
+                vaultsInteractor: vaultsInteractor()
             ),
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             paymentStatusInteractor: paymentStatusInteractor()
         )
     }
@@ -318,6 +337,7 @@ public final class InteractorFactory {
     public func externalServiceImportInteractor() -> ExternalServiceImportInteracting {
         ExternalServiceImportInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             uriInteractor: uriInteractor(),
             paymentCardUtilityInteractor: paymentCardUtilityInteractor()
         )
@@ -337,6 +357,7 @@ public final class InteractorFactory {
         CredentialExchangeImporter(
             context: ExternalServiceImportInteractor.ImportContext(
                 mainRepository: MainRepositoryImpl.shared,
+                vaultsInteractor: vaultsInteractor(),
                 uriInteractor: uriInteractor(),
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor()
             )
@@ -350,6 +371,7 @@ public final class InteractorFactory {
     func connectExportInteractor() -> ConnectExportInteracting {
         ConnectExportInteractor(
             mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor(),
             itemsInteractor: itemsInteractor(),
             tagInteractor: tagInteractor(),
             uriInteractor: uriInteractor()
@@ -383,7 +405,7 @@ public final class InteractorFactory {
     }
     
     public func deletedItemsInteractor() -> DeletedItemsInteracting {
-        DeletedItemsInteractor(mainRepository: MainRepositoryImpl.shared)
+        DeletedItemsInteractor(mainRepository: MainRepositoryImpl.shared, vaultsInteractor: vaultsInteractor())
     }
     
     public func passwordListInteractor() -> PasswordListInteracting {
@@ -393,7 +415,8 @@ public final class InteractorFactory {
     public func tagInteractor() -> TagInteracting {
         TagInteractor(
             deletedItemsInteractor: deletedItemsInteractor(),
-            mainRepository: MainRepositoryImpl.shared
+            mainRepository: MainRepositoryImpl.shared,
+            vaultsInteractor: vaultsInteractor()
         )
     }
     

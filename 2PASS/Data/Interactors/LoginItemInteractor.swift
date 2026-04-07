@@ -10,6 +10,7 @@ import Common
 public protocol LoginItemInteracting: AnyObject {
     func createLogin(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String?,
         username: String?,
@@ -21,6 +22,7 @@ public protocol LoginItemInteracting: AnyObject {
 
     func updateLogin(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String?,
         username: String?,
@@ -43,34 +45,23 @@ final class LoginItemInteractor {
 
 extension LoginItemInteractor: LoginItemInteracting {
 
-    func createLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
-        let loginItem = try makeLogin(id: id, vaultId: vaultId, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
+    func createLogin(id: ItemID, vaultID: VaultID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
+        let loginItem = try makeLogin(id: id, vaultId: vaultID, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
         try itemsInteractor.createItem(.login(loginItem))
     }
 
-    func updateLogin(id: ItemID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
-        let loginItem = try makeLogin(id: id, vaultId: vaultId, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
+    func updateLogin(id: ItemID, vaultID: VaultID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) {
+        let loginItem = try makeLogin(id: id, vaultId: vaultID, metadata: metadata, name: name, username: username, password: password, notes: notes, iconType: iconType, uris: uris)
         try itemsInteractor.updateItem(.login(loginItem))
     }
 }
 
 private extension LoginItemInteractor {
 
-    var selectedVaultId: VaultID {
-        get throws(ItemsInteractorSaveError) {
-            guard let vaultId = mainRepository.selectedVault?.vaultID else {
-                throw .noVault
-            }
-            return vaultId
-        }
-    }
-
     func makeLogin(id: ItemID, vaultId: VaultID, metadata: ItemMetadata, name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) throws(ItemsInteractorSaveError) -> LoginItemData {
         var encryptedPassword: Data?
         if let password = password?.trim(), !password.isEmpty {
-            guard let encrypted = itemsInteractor.encrypt(password, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
+            guard let encrypted = itemsInteractor.encrypt(password, isSecureField: true, protectionLevel: metadata.protectionLevel, vaultID: vaultId) else {
                 Log(
                     "LoginItemInteractor: Create login. Can't encrypt password",
                     module: .interactor,

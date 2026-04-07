@@ -24,6 +24,7 @@ struct NordPassImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
+            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -108,6 +109,7 @@ extension NordPassImportInteractorTests {
         func importNordPassCSV() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
+                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
                 uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )

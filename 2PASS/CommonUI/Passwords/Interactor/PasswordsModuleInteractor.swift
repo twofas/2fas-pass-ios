@@ -20,8 +20,10 @@ protocol PasswordsModuleInteracting: AnyObject {
     var currentSortType: SortType { get }
     func setSortType(_ sortType: SortType)
 
-    func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> [ItemData]
-    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> (suggested: [ItemData], rest: [ItemData])
+    func listVaults() -> [VaultData]
+    func vault(for vaultID: VaultID) -> VaultData?
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?, vaultId: VaultID?) -> [ItemData]
+    func loadList(forServiceIdentifiers serviceURIs: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?, vaultId: VaultID?) -> (suggested: [ItemData], rest: [ItemData])
 
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
@@ -51,6 +53,7 @@ protocol PasswordsModuleInteracting: AnyObject {
 final class PasswordsModuleInteractor {
     private let securityInteractor: SecurityInteracting
     private let itemsInteractor: ItemsInteracting
+    private let vaultsInteractor: VaultsInteracting
     private let fileIconInteractor: FileIconInteracting
     private let systemInteractor: SystemInteracting
     private let uriInteractor: URIInteracting
@@ -66,6 +69,7 @@ final class PasswordsModuleInteractor {
     init(
         securityInteractor: SecurityInteracting,
         itemsInteractor: ItemsInteracting,
+        vaultsInteractor: VaultsInteracting,
         fileIconInteractor: FileIconInteracting,
         systemInteractor: SystemInteracting,
         uriInteractor: URIInteracting,
@@ -78,6 +82,7 @@ final class PasswordsModuleInteractor {
     ) {
         self.securityInteractor = securityInteractor
         self.itemsInteractor = itemsInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.fileIconInteractor = fileIconInteractor
         self.systemInteractor = systemInteractor
         self.uriInteractor = uriInteractor
@@ -119,7 +124,15 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         configInteractor.defaultPassswordListAction
     }
     
-    func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> [ItemData] {
+    func listVaults() -> [VaultData] {
+        vaultsInteractor.listVaults()
+    }
+
+    func vault(for vaultID: VaultID) -> VaultData? {
+        vaultsInteractor.vault(for: vaultID)
+    }
+
+    func loadList(contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?, vaultId: VaultID?) -> [ItemData] {
         let contentTypes: [ItemContentType]? = {
             if let contentType {
                 return [contentType]
@@ -131,15 +144,15 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         return itemsInteractor.listItems(
             searchPhrase: searchPhrase,
             tagId: tag?.id,
-            vaultId: nil,
+            vaultId: vaultId,
             contentTypes: contentTypes ?? .allKnownTypes,
             protectionLevel: protectionLevel,
             sortBy: currentSortType,
             trashed: .no
         )
     }
-    
-    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?) -> (suggested: [ItemData], rest: [ItemData]) {
+
+    func loadList(forServiceIdentifiers serviceIdentifiers: [String], contentType: ItemContentType?, tag: ItemTagData?, protectionLevel: ItemProtectionLevel?, vaultId: VaultID?) -> (suggested: [ItemData], rest: [ItemData]) {
         let contentTypes: [ItemContentType]? = {
             if let contentType {
                 return [contentType]
@@ -148,7 +161,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             }
         }()
 
-        let allPasswords = itemsInteractor.listItems(searchPhrase: searchPhrase, tagId: tag?.tagID, vaultId: nil, contentTypes: contentTypes, protectionLevel: protectionLevel, sortBy: currentSortType, trashed: .no)
+        let allPasswords = itemsInteractor.listItems(searchPhrase: searchPhrase, tagId: tag?.tagID, vaultId: vaultId, contentTypes: contentTypes, protectionLevel: protectionLevel, sortBy: currentSortType, trashed: .no)
 
         guard serviceIdentifiers.isEmpty == false else {
             return ([], allPasswords)
@@ -272,7 +285,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             return true
         }
         
-        guard let decryptedText = itemsInteractor.decrypt(noteText, isSecureField: true, protectionLevel: secureNoteItem.protectionLevel) else {
+        guard let decryptedText = itemsInteractor.decrypt(noteText, isSecureField: true, protectionLevel: secureNoteItem.protectionLevel, vaultID: secureNoteItem.vaultId) else {
             return false
         }
         
@@ -283,7 +296,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     func copyPaymentCardNumber(_ itemID: ItemID) -> Bool {
         guard let paymentCardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asPaymentCard,
               let cardNumber = paymentCardItem.content.cardNumber,
-              let decryptedNumber = itemsInteractor.decrypt(cardNumber, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel)
+              let decryptedNumber = itemsInteractor.decrypt(cardNumber, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel, vaultID: paymentCardItem.vaultId)
         else {
             return false
         }
@@ -294,7 +307,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     func copyPaymentCardSecurityCode(_ itemID: ItemID) -> Bool {
         guard let paymentCardItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asPaymentCard,
               let securityCode = paymentCardItem.content.securityCode,
-              let decryptedCode = itemsInteractor.decrypt(securityCode, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel)
+              let decryptedCode = itemsInteractor.decrypt(securityCode, isSecureField: true, protectionLevel: paymentCardItem.protectionLevel, vaultID: paymentCardItem.vaultId)
         else {
             return false
         }
@@ -314,7 +327,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
     func copyWiFiPassword(_ itemID: ItemID) -> Bool {
         guard let wifiItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asWiFi,
               let password = wifiItem.content.password,
-              let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: wifiItem.protectionLevel) else {
+              let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: wifiItem.protectionLevel, vaultID: wifiItem.vaultId) else {
             return false
         }
         systemInteractor.copyToClipboard(decryptedPassword)

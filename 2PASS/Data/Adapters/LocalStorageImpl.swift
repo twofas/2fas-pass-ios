@@ -13,17 +13,20 @@ final class LocalStorageImpl {
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
-    
+    private let vaultsInteractor: VaultsInteracting
+
     init(
         itemsInteractor: ItemsInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         tagInteractor: TagInteracting,
-        mainRepository: MainRepository
+        mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
         self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
     }
 }
 
@@ -33,7 +36,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listItems() -> [ItemEncryptedData] {
-        itemsInteractor.listEncryptedItems()
+        itemsInteractor.listEncryptedItems(vaultID: vaultsInteractor.defaultVaultID)
     }
     
     func listAllDeletedItems() -> [DeletedItemData] {
@@ -105,6 +108,6 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func currentVault() -> VaultEncryptedData? {
-        mainRepository.selectedVault
+        mainRepository.getEncryptedVault(for: vaultsInteractor.defaultVaultID)
     }
 }

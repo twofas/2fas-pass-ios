@@ -95,19 +95,26 @@ public protocol ImportInteracting: AnyObject {
 
 final class ImportInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let itemsInteractor: ItemsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let uriInteractor: URIInteracting
     private let queue: DispatchQueue
     private let writeQueue: DispatchQueue
 
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
     init(
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         itemsInteractor: ItemsInteracting,
         protectionInteractor: ProtectionInteracting,
         uriInteractor: URIInteracting
     ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.itemsInteractor = itemsInteractor
         self.protectionInteractor = protectionInteractor
         self.uriInteractor = uriInteractor
@@ -191,10 +198,10 @@ extension ImportInteractor: ImportInteracting {
         if file.hasUnencryptedServices {
             return .noEncryption
         }
-        guard let key = mainRepository.cachedExternalKey else {
+        guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
             return .noExternalKeyError
         }
-        guard let selectedVault = mainRepository.selectedVault else {
+        guard !vaultsInteractor.listVaults().isEmpty else {
             return .noSelectedVaultError
         }
         guard let encryption = file.encryption, let data = Data(base64Encoded: encryption.reference) else {
@@ -202,9 +209,9 @@ extension ImportInteractor: ImportInteracting {
         }
         guard let reference = mainRepository.decrypt(data, key: key),
               let string = String(data: reference, encoding: .utf8),
-              UUID(uuidString: string) == selectedVault.vaultID
+              UUID(uuidString: string) == vaultID
         else {
-            if encryption.seedHash == mainRepository.createSeedHashHexForExport() {
+            if encryption.seedHash == mainRepository.createSeedHashHexForExport(forVault: vaultID) {
                 return .passwordChanged
             } else {
                 return .needsPasswordWords
@@ -239,9 +246,6 @@ extension ImportInteractor: ImportInteracting {
     }
 
     func extractUnencryptedTags(from file: ExchangeVaultVersioned) -> [ItemTagData] {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            return []
-        }
         return file.tags.compactMap({ self.exchangeTagToItemTagData($0, vaultID: vaultID) })
     }
     
@@ -256,7 +260,7 @@ extension ImportInteractor: ImportInteracting {
         from vault: ExchangeVaultVersioned,
         completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
     ) {
-        guard let key = mainRepository.cachedExternalKey else {
+        guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
             completion(.failure(.noExternalKey))
             return
         }
@@ -414,7 +418,7 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func isVaultReadyForImport() -> Bool {
-        mainRepository.trustedKey != nil
+        mainRepository.trustedKey(forVault: vaultID) != nil
     }
     
     func scan(image: UIImage, completion: @escaping VisionScanCompletion) {
@@ -720,7 +724,7 @@ private extension ImportInteractor {
         
         let contentType = ItemContentType(rawValue: exchangeLogin.contentType)
         
-        guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel) else {
+        guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel, forVault: vaultID) else {
             return nil
         }
         
@@ -947,7 +951,7 @@ private extension ImportInteractor {
             tagIds: exchangeLogin.tags?.compactMap { UUID(uuidString: $0) }
         )
 
-        guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel) else {
+        guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel, forVault: vaultID) else {
             return nil
         }
 

@@ -27,16 +27,19 @@ struct KeePassXCImportInteractorTests {
         mockMainRepository
             .withSelectedVault(VaultEncryptedData(
                 vaultID: testVaultID,
-                name: "Test Vault",
+                name: "Test Vault".data(using: .utf8)!,
                 trustedKey: Data(),
                 createdAt: Date(),
                 updatedAt: Date(),
-                isEmpty: false
+                isEmpty: false,
+                color: nil,
+                icon: nil
             ))
             .withGetKey { _, _ in SymmetricKey(data: keyData) }
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
+            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -167,6 +170,7 @@ extension KeePassXCImportInteractorTests {
         func importCSVFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
+                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
                 uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
@@ -263,6 +267,7 @@ extension KeePassXCImportInteractorTests {
         func importXMLFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
+                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
                 uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )

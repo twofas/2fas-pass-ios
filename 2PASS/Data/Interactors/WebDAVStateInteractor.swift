@@ -46,18 +46,24 @@ public protocol WebDAVStateInteracting: AnyObject {
 }
 
 final class WebDAVStateInteractor {
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let notificationCenter: NotificationCenter
-    
+
     private let maxRetryConnected = 2
     private let maxRetryDisconnected = 1
     private var retryLimit = 0
-    
+
     private(set) var currentSyncTimestamp: Int?
     private var wasIndexWritten = false
-    
-    init(mainRepository: MainRepository) {
+
+    init(mainRepository: MainRepository, vaultsInteractor: VaultsInteracting) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.notificationCenter = NotificationCenter.default
         
         notificationCenter.post(
@@ -116,10 +122,7 @@ extension WebDAVStateInteractor {
     
     func setConfig(baseURL: String, normalizedBaseURL: URL, allowTLSOff: Bool, login: String?, password: String?) {
         Log("WebDAVStateInteractor - setting config", module: .interactor)
-        guard let vid = mainRepository.selectedVault?.vaultID else {
-            Log("WebDAVStateInteractor - error while getting current VaultID", module: .interactor, severity: .error)
-            return
-        }
+        let vid = vaultID
 
         let current = getConfig()
         guard current?.baseURL != baseURL

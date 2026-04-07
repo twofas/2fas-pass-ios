@@ -11,7 +11,7 @@ import Common
 protocol ItemDetailModuleInteracting: AnyObject {
     func fetchItem(for itemID: ItemID) -> ItemData?
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
-    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String?
     func makeWiFiQRCodePayload(from data: WiFiQRCodeData) -> String
     func copy(_ str: String)
     func fetchIconImage(from url: URL) async throws -> Data
@@ -52,8 +52,8 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
         itemsInteractor.getItem(for: itemID, checkInTrash: false)
     }
     
-    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
-        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String? {
+        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultID)
     }
 
     func makeWiFiQRCodePayload(from data: WiFiQRCodeData) -> String {

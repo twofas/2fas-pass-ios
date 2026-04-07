@@ -14,7 +14,10 @@ struct SettingsRouter: Router {
     }
     
     func routingType(for destination: SettingsDestination?) -> RoutingType? {
-        .push
+        switch destination {
+        case .authenticate: .sheet
+        default: .push
+        }
     }
     
     @ViewBuilder
@@ -36,6 +39,8 @@ struct SettingsRouter: Router {
             AboutRouter.buildView()
         case .sync:
             SyncRouter.buildView()
+        case .manageVaults:
+            ManageVaultsRouter.buildView()
         case .debug:
             SettingsDebugRouter.buildView()
         case .importExport:
@@ -44,6 +49,8 @@ struct SettingsRouter: Router {
             TransferItemsServicesListRouter.buildView(flowContext: .settings)
         case .manageSubscription:
             ManageSubscriptionRouter.buildView()
+        case .authenticate(let config, let onSuccess):
+            LoginRouter.buildView(config: config, onSuccess: onSuccess)
         default:
             EmptyView()
         }

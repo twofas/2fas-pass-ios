@@ -45,6 +45,8 @@ struct LoginEditorFormView: View {
 
     var body: some View {
         Group {
+            ItemEditorVaultSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+
             HStack {
                 Spacer()
                 

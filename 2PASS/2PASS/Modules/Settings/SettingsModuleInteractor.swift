@@ -19,6 +19,8 @@ protocol SettingsModuleInteracting: AnyObject {
     var didAutoFillStatusChanged: NotificationCenter.Notifications { get }
     var didPushNotificationsStatusChanged: NotificationCenter.Notifications { get }
     var is2FASAuthInstalled: Bool { get }
+    func verifyUsingBiometryIfAvailable() async -> Bool
+    @discardableResult func recreateSeedSaltWordsMasterKey() -> Bool
 }
 
 final class SettingsModuleInteractor {
@@ -31,16 +33,22 @@ final class SettingsModuleInteractor {
     private let autoFillStatusInteractor: AutoFillStatusInteracting
     private let pushNotificationsInteractor: PushNotificationsPermissionInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
-    
+    private let loginInteractor: LoginInteracting
+    private let biometryInteractor: BiometryInteracting
+    private let protectionInteractor: ProtectionInteracting
+
     private let notificationCenter = NotificationCenter.default
-    
+
     init(systemInteractor: SystemInteracting,
          configInteractor: ConfigInteracting,
          cloudSyncInteractor: CloudSyncInteracting,
          webDAVStateInteractor: WebDAVStateInteracting,
          autoFillStatusInteractor: AutoFillStatusInteracting,
          pushNotificationsInteractor: PushNotificationsPermissionInteracting,
-         paymentStatusInteractor: PaymentStatusInteracting) {
+         paymentStatusInteractor: PaymentStatusInteracting,
+         loginInteractor: LoginInteracting,
+         biometryInteractor: BiometryInteracting,
+         protectionInteractor: ProtectionInteracting) {
         self.systemInteractor = systemInteractor
         self.configInteractor = configInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
@@ -48,6 +56,9 @@ final class SettingsModuleInteractor {
         self.autoFillStatusInteractor = autoFillStatusInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
+        self.loginInteractor = loginInteractor
+        self.biometryInteractor = biometryInteractor
+        self.protectionInteractor = protectionInteractor
         
         notificationCenter.addObserver(
                 self,
@@ -109,7 +120,28 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
     var is2FASAuthInstalled: Bool {
         systemInteractor.is2FASAuthInstalled
     }
-    
+
+    func verifyUsingBiometryIfAvailable() async -> Bool {
+        guard biometryInteractor.canUseBiometryForLogin else {
+            return false
+        }
+        return await withCheckedContinuation { continuation in
+            loginInteractor.verifyUsingBiometry(reason: String(localized: .biometryReason)) { result in
+                switch result {
+                case .success:
+                    continuation.resume(returning: true)
+                default:
+                    continuation.resume(returning: false)
+                }
+            }
+        }
+    }
+
+    @discardableResult
+    func recreateSeedSaltWordsMasterKey() -> Bool {
+        protectionInteractor.recreateSeedSaltWordsMasterKey()
+    }
+
     @objc
     private func updatePaymentStatusAction() {
         updatePaymentStatus?()

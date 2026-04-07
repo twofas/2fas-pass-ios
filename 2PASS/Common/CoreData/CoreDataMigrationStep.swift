@@ -13,38 +13,38 @@ struct CoreDataMigrationStep {
     let mappingModel: NSMappingModel
     
     // MARK: Init
-    
-    init(
-        sourceVersion: CoreDataMigrationVersion,
-        destinationVersion: CoreDataMigrationVersion,
+
+    init<V: CoreDataModelVersionProtocol>(
+        sourceVersion: V,
+        destinationVersion: V,
         momdSubdirectory: String,
         bundle: Bundle
     ) {
         let sourceModel = NSManagedObjectModel.managedObjectModel(
-            forResource: sourceVersion.rawValue,
+            forResource: sourceVersion.versionName,
             momdSubdirectory: momdSubdirectory,
             bundle: bundle
         )
         let destinationModel = NSManagedObjectModel.managedObjectModel(
-            forResource: destinationVersion.rawValue,
+            forResource: destinationVersion.versionName,
             momdSubdirectory: momdSubdirectory,
             bundle: bundle
         )
-        
+
         guard let mappingModel = CoreDataMigrationStep.mappingModel(
             fromSourceModel: sourceModel,
             toDestinationModel: destinationModel
         ) else {
             fatalError("Expected modal mapping not present")
         }
-        
+
         self.sourceModel = sourceModel
         self.destinationModel = destinationModel
         self.mappingModel = mappingModel
     }
-    
+
     // MARK: - Mapping
-    
+
     private static func mappingModel(
         fromSourceModel sourceModel: NSManagedObjectModel,
         toDestinationModel destinationModel: NSManagedObjectModel
@@ -55,18 +55,18 @@ struct CoreDataMigrationStep {
         ) else {
             return inferredMappingModel(fromSourceModel: sourceModel, toDestinationModel: destinationModel)
         }
-        
+
         return customMapping
     }
-    
+
     private static func inferredMappingModel(
         fromSourceModel sourceModel: NSManagedObjectModel,
         toDestinationModel destinationModel: NSManagedObjectModel
     ) -> NSMappingModel? {
-         
+
         try? NSMappingModel.inferredMappingModel(forSourceModel: sourceModel, destinationModel: destinationModel)
     }
-    
+
     private static func customMappingModel(
         fromSourceModel sourceModel: NSManagedObjectModel,
         toDestinationModel destinationModel: NSManagedObjectModel

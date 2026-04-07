@@ -49,7 +49,18 @@ final class PasswordsPresenter {
             reload()
         }
     }
-    
+
+    var selectedVault: VaultData? {
+        didSet {
+            view?.vaultSelectionDidChange()
+            reload()
+        }
+    }
+
+    var hasMultipleVaults: Bool {
+        interactor.listVaults().count > 1
+    }
+
     var showContentTypePicker: Bool {
         if let autoFillEnvironment {
             return autoFillEnvironment.isTextToInsert && hasItems
@@ -111,8 +122,18 @@ extension PasswordsPresenter {
     
     func viewWillAppear() {
         isViewReady = true
+        refreshSelectedVault()
         refreshSelectedFilterTag()
         reload()
+    }
+
+    private func refreshSelectedVault() {
+        guard let selectedVault else { return }
+        if let updated = interactor.vault(for: selectedVault.vaultID) {
+            self.selectedVault = updated
+        } else {
+            self.selectedVault = nil
+        }
     }
 
     private func refreshSelectedFilterTag() {
@@ -181,6 +202,14 @@ extension PasswordsPresenter {
 
     func onClearFilterProtectionLevel() {
         selectedFilterProtectionLevel = nil
+    }
+
+    func onSelectVault(_ vault: VaultData?) {
+        selectedVault = vault
+    }
+
+    func listAllVaults() -> [VaultData] {
+        interactor.listVaults()
     }
     
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
@@ -437,7 +466,7 @@ private extension PasswordsPresenter {
         let cellsCount: Int
         
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, autoFillEnvironment?.isTextToInsert == false {
-            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
+            let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel, vaultId: selectedVault?.vaultID)
             
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
             
@@ -476,7 +505,7 @@ private extension PasswordsPresenter {
             view?.reloadData(newSnapshot: snapshot)
             
         } else {
-            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
+            let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel, vaultId: selectedVault?.vaultID)
             listData[0] = list
             let cells = list.compactMap(makeCellData(for:))
             let section = ItemSectionData()
@@ -492,7 +521,7 @@ private extension PasswordsPresenter {
         }
 
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || (contentTypeFilter.contentType != nil && hasItems) {
+            if interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || selectedVault?.vaultID != nil || (contentTypeFilter.contentType != nil && hasItems) {
                 view?.showSearchEmptyScreen()
             } else {
                 view?.showEmptyScreen()

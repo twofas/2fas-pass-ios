@@ -117,7 +117,7 @@ private extension WiFiDetailFormPresenter {
             return
         }
 
-        guard let decrypted = interactor.decryptSecureField(encryptedPassword, protectionLevel: wifiItem.protectionLevel) else {
+        guard let decrypted = interactor.decryptSecureField(encryptedPassword, protectionLevel: wifiItem.protectionLevel, vaultID: wifiItem.vaultId) else {
             isPasswordAvailable = false
             decryptedPassword = nil
             password = nil

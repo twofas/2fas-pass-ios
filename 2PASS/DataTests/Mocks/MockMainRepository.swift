@@ -25,11 +25,13 @@ final class MockMainRepository: MainRepository {
         mock
             .withSelectedVault(VaultEncryptedData(
                 vaultID: vaultID,
-                name: "Test Vault",
+                name: "Test Vault".data(using: .utf8)!,
                 trustedKey: Data(),
                 createdAt: Date(),
                 updatedAt: Date(),
-                isEmpty: false
+                isEmpty: false,
+                color: nil,
+                icon: nil
             ))
             .withGetKey { _, _ in SymmetricKey(data: keyData) }
         return mock
@@ -930,7 +932,7 @@ final class MockMainRepository: MainRepository {
     }
 
     private var stubbedGetKey: (Bool, ItemProtectionLevel) -> SymmetricKey? = { _, _ in nil }
-    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey? {
+    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel, forVault vaultID: VaultID) -> SymmetricKey? {
         recordCall()
         return stubbedGetKey(isPassword, protectionLevel)
     }
@@ -1026,7 +1028,7 @@ final class MockMainRepository: MainRepository {
     }
 
     private var stubbedCreateSeedHashHexForExport: () -> String? = { nil }
-    func createSeedHashHexForExport() -> String? {
+    func createSeedHashHexForExport(forVault vaultID: VaultID) -> String? {
         recordCall()
         return stubbedCreateSeedHashHexForExport()
     }
@@ -1038,7 +1040,7 @@ final class MockMainRepository: MainRepository {
     }
 
     private var stubbedCreateReferenceForExport: () -> String? = { nil }
-    func createReferenceForExport() -> String? {
+    func createReferenceForExport(forVault vaultID: VaultID) -> String? {
         recordCall()
         return stubbedCreateReferenceForExport()
     }
@@ -1100,7 +1102,7 @@ final class MockMainRepository: MainRepository {
     }
 
     private var stubbedTrustedKeyFromVault: TrustedKey?
-    var trustedKeyFromVault: TrustedKey? { stubbedTrustedKeyFromVault }
+    func trustedKeyFromVault(_ vaultID: VaultID) -> TrustedKey? { stubbedTrustedKeyFromVault }
 
     @discardableResult
     func withTrustedKeyFromVault(_ value: TrustedKey?) -> Self {
@@ -1109,7 +1111,7 @@ final class MockMainRepository: MainRepository {
     }
 
     private var stubbedTrustedKey: TrustedKey?
-    var trustedKey: TrustedKey? { stubbedTrustedKey }
+    func trustedKey(forVault vaultID: VaultID) -> TrustedKey? { stubbedTrustedKey }
 
     @discardableResult
     func withTrustedKey(_ value: TrustedKey?) -> Self {
@@ -1118,17 +1120,13 @@ final class MockMainRepository: MainRepository {
     }
 
     private(set) var capturedTrustedKey: TrustedKey?
-    func setTrustedKey(_ data: TrustedKey) {
+    func setTrustedKey(_ data: TrustedKey, forVault vaultID: VaultID) {
         recordCall()
         capturedTrustedKey = data
     }
 
-    func clearTrustedKey() {
-        recordCall()
-    }
-
     private var stubbedSecureKey: SecureKey?
-    var secureKey: SecureKey? { stubbedSecureKey }
+    func secureKey(forVault vaultID: VaultID) -> SecureKey? { stubbedSecureKey }
 
     @discardableResult
     func withSecureKey(_ value: SecureKey?) -> Self {
@@ -1137,17 +1135,13 @@ final class MockMainRepository: MainRepository {
     }
 
     private(set) var capturedSecureKey: SecureKey?
-    func setSecureKey(_ data: SecureKey) {
+    func setSecureKey(_ data: SecureKey, forVault vaultID: VaultID) {
         recordCall()
         capturedSecureKey = data
     }
 
-    func clearSecureKey() {
-        recordCall()
-    }
-
     private var stubbedExternalKey: ExternalKey?
-    var externalKey: ExternalKey? { stubbedExternalKey }
+    func externalKey(forVault vaultID: VaultID) -> ExternalKey? { stubbedExternalKey }
 
     @discardableResult
     func withExternalKey(_ value: ExternalKey?) -> Self {
@@ -1156,17 +1150,13 @@ final class MockMainRepository: MainRepository {
     }
 
     private(set) var capturedExternalKey: ExternalKey?
-    func setExternalKey(_ data: ExternalKey) {
+    func setExternalKey(_ data: ExternalKey, forVault vaultID: VaultID) {
         recordCall()
         capturedExternalKey = data
     }
 
-    func clearExternalKey() {
-        recordCall()
-    }
-
     private var stubbedCachedExternalKey: SymmetricKey?
-    var cachedExternalKey: SymmetricKey? { stubbedCachedExternalKey }
+    func cachedExternalKey(forVault vaultID: VaultID) -> SymmetricKey? { stubbedCachedExternalKey }
 
     @discardableResult
     func withCachedExternalKey(_ value: SymmetricKey?) -> Self {
@@ -1312,7 +1302,7 @@ final class MockMainRepository: MainRepository {
     }
 
     private var stubbedHasCachedKeys: () -> Bool = { false }
-    func hasCachedKeys() -> Bool {
+    func hasCachedKeys(for vaultID: VaultID) -> Bool {
         recordCall()
         return stubbedHasCachedKeys()
     }
@@ -1323,7 +1313,11 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    func preparedCachedKeys() {
+    func clearCachedKeys(for vaultID: VaultID) {
+        recordCall()
+    }
+
+    func preparedCachedKeys(for vaultID: VaultID) {
         recordCall()
     }
 
@@ -1864,6 +1858,18 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
+    private var stubbedListAllEncryptedItems: () -> [ItemEncryptedData] = { [] }
+    func listAllEncryptedItems() -> [ItemEncryptedData] {
+        recordCall()
+        return stubbedListAllEncryptedItems()
+    }
+
+    @discardableResult
+    func withListAllEncryptedItems(_ handler: @escaping () -> [ItemEncryptedData]) -> Self {
+        stubbedListAllEncryptedItems = handler
+        return self
+    }
+
     private var stubbedListEncryptedItems: (VaultID) -> [ItemEncryptedData] = { _ in [] }
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData] {
         recordCall()
@@ -1891,6 +1897,23 @@ final class MockMainRepository: MainRepository {
         _ handler: @escaping (VaultID, [ItemID]?, Set<ItemProtectionLevel>?) -> [ItemEncryptedData]
     ) -> Self {
         stubbedListEncryptedItemsFiltered = handler
+        return self
+    }
+
+    private var stubbedListEncryptedItemsByIDs: ([ItemID], Set<ItemProtectionLevel>?) -> [ItemEncryptedData] = { _, _ in [] }
+    func listEncryptedItems(
+        itemIDs: [ItemID],
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData] {
+        recordCall()
+        return stubbedListEncryptedItemsByIDs(itemIDs, excludeProtectionLevels)
+    }
+
+    @discardableResult
+    func withListEncryptedItemsByIDs(
+        _ handler: @escaping ([ItemID], Set<ItemProtectionLevel>?) -> [ItemEncryptedData]
+    ) -> Self {
+        stubbedListEncryptedItemsByIDs = handler
         return self
     }
 
@@ -1963,20 +1986,24 @@ final class MockMainRepository: MainRepository {
 
     func createEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     ) {
         recordCall()
     }
 
     func updateEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     ) {
         recordCall()
     }
@@ -1985,25 +2012,26 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    func selectVault(_ vaultID: VaultID) {
-        recordCall()
-    }
-
-    func clearVault() {
-        recordCall()
-    }
-
     func deleteAllVaults() {
         recordCall()
     }
 
-    private var stubbedSelectedVault: VaultEncryptedData?
-    var selectedVault: VaultEncryptedData? { stubbedSelectedVault }
-
+    /// Convenience: configures listEncryptedVaults and getEncryptedVault to return this vault
     @discardableResult
     func withSelectedVault(_ value: VaultEncryptedData?) -> Self {
-        stubbedSelectedVault = value
+        if let value {
+            stubbedListEncryptedVaults = { [value] }
+            stubbedGetEncryptedVault = { vaultID in vaultID == value.vaultID ? value : nil }
+        } else {
+            stubbedListEncryptedVaults = { [] }
+            stubbedGetEncryptedVault = { _ in nil }
+        }
         return self
+    }
+
+    /// Convenience: returns the first vault from the stubbed list (matches old selectedVault behavior)
+    var selectedVault: VaultEncryptedData? {
+        stubbedListEncryptedVaults().first
     }
 
     // MARK: Deleted Items
@@ -2739,10 +2767,7 @@ final class MockMainRepository: MainRepository {
     }
 
     var stubbedWebDAVSeedHash: String?
-    var webDAVSeedHash: String? { stubbedWebDAVSeedHash }
-
-    var stubbedWebDAVCurrentVaultID: VaultID?
-    var webDAVCurrentVaultID: VaultID? { stubbedWebDAVCurrentVaultID }
+    func webDAVSeedHash(forVault vaultID: VaultID) -> String? { stubbedWebDAVSeedHash }
 
     var stubbedWebDAVIsConnected: Bool = false
     var webDAVIsConnected: Bool { stubbedWebDAVIsConnected }

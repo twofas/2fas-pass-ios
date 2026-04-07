@@ -14,57 +14,68 @@ final class VaultEncryptedEntity: NSManagedObject {
     @nonobjc static func create(
         on context: NSManagedObjectContext,
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     ) {
         let entity = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as! VaultEncryptedEntity
-        
+
         entity.vaultID = vaultID
         entity.name = name
         entity.trustedKey = trustedKey
-        
+
         entity.createdAt = createdAt
         entity.updatedAt = updatedAt
+        entity.color = color
+        entity.icon = icon
     }
 
     @nonobjc static func update(
         on context: NSManagedObjectContext,
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     ) {
     guard let entity = getEntity(on: context, vaultID: vaultID) else {
         Log("VaultEncryptedEntity: Can't find entity for vaultID: \(vaultID)", module: .storage)
             return
         }
-        
+
         entity.name = name
         entity.trustedKey = trustedKey
-        
+
         entity.createdAt = createdAt
         entity.updatedAt = updatedAt
+        entity.color = color
+        entity.icon = icon
     }
     
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,
         vaultID: UUID
     ) -> VaultEncryptedEntity? {
-        let list = listItems(on: context)
+        let fetchRequest = VaultEncryptedEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "vaultID == %@", vaultID as CVarArg)
+        fetchRequest.fetchLimit = 1
 
-        // If something went wrong (wrong migration, some bugs) -> remove duplicated entries instead of:
-        if list.count > 1 {
-            Log("VaultEncryptedEntity: Error while fetching entity with VaultID: \(vaultID). There's more than one. Correcting!", severity: .error)
-            let itemsForDeletition = list[1...]
-            for item in itemsForDeletition {
-                delete(on: context, entity: item)
-            }
+        do {
+            return try context.fetch(fetchRequest).first
+        } catch {
+            let err = error as NSError
+            Log(
+                "VaultEncryptedEntity: Error fetching entity with vaultID \(vaultID): \(err.localizedDescription)",
+                module: .storage,
+                severity: .error
+            )
+            return nil
         }
-
-        return list.first
     }
 
     @nonobjc static func listItems(
@@ -73,9 +84,8 @@ final class VaultEncryptedEntity: NSManagedObject {
         let fetchRequest = VaultEncryptedEntity.fetchRequest()
         fetchRequest.sortDescriptors = [
             NSSortDescriptor(
-                key: #keyPath(VaultEncryptedEntity.name),
-                ascending: true,
-                selector: #selector(NSString.localizedStandardCompare)
+                key: #keyPath(VaultEncryptedEntity.createdAt),
+                ascending: true
             )
         ]
 

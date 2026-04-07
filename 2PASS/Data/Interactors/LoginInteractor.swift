@@ -90,20 +90,23 @@ public protocol LoginInteracting: AnyObject {
 
 final class LoginInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let securityInteractor: SecurityInteracting
     private let storageInteractor: StorageInteracting
     private let biometryInteractor: BiometryInteracting
     private let notificationCenter: NotificationCenter
-    
+
     init(
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         protectionInteractor: ProtectionInteracting,
         securityInteractor: SecurityInteracting,
         storageInteractor: StorageInteracting,
         biometryInteractor: BiometryInteracting
     ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.protectionInteractor = protectionInteractor
         self.securityInteractor = securityInteractor
         self.storageInteractor = storageInteractor
@@ -198,7 +201,7 @@ extension LoginInteractor: LoginInteracting {
             completion(.invalidPassword)
             return
         }
-        guard let vault = mainRepository.listEncryptedVaults().first else {
+        guard let vault = vaultsInteractor.defaultVault else {
             Log("LoginInteractor: Can't get Vault", module: .interactor, severity: .error)
             completion(.invalidPassword)
             return

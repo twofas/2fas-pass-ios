@@ -215,9 +215,10 @@ final class LoginEntity: ItemMetadataEntity {
         iconType: PasswordIconType,
         uris: [PasswordURI]?
     ) {
+        entity.vaultID = vaultID
         entity.modificationDate = modificationDate
         entity.name = name
-        
+
         switch trashedStatus {
         case .no:
             entity.isTrashed = false
@@ -225,15 +226,15 @@ final class LoginEntity: ItemMetadataEntity {
             entity.isTrashed = true
             entity.trashingDate = trashingDate
         }
-        
+
         entity.level = protectionLevel.rawValue
-        
+
         if let tagIds, tagIds.isEmpty == false {
             entity.tagIds = tagIds
         } else {
             entity.tagIds = nil
         }
-        
+
         entity.username = username
         entity.password = password
         entity.notes = notes

@@ -6,6 +6,7 @@
 
 enum MigrationError: Error {
     case decryptionFailed
+    case encryptionFailed
     case missingDestinationInstance
     case missingMigrationController
     case missingSourceValue(key: String)

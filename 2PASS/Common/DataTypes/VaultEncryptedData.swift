@@ -13,11 +13,13 @@ public struct VaultEncryptedData: Hashable, Identifiable {
     
     public init(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
         updatedAt: Date,
-        isEmpty: Bool
+        isEmpty: Bool,
+        color: String?,
+        icon: String?
     ) {
         self.vaultID = vaultID
         self.name = name
@@ -25,12 +27,16 @@ public struct VaultEncryptedData: Hashable, Identifiable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.isEmpty = isEmpty
+        self.color = color
+        self.icon = icon
     }
-    
+
     public let vaultID: VaultID
-    public let name: String
+    public let name: Data
     public let trustedKey: Data
     public let createdAt: Date
     public let updatedAt: Date
     public let isEmpty: Bool
+    public let color: String?
+    public let icon: String?
 }

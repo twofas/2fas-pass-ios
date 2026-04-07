@@ -56,6 +56,15 @@ struct SettingsView: View {
                             title: .settingsEntryTrash
                         )
                     }
+
+                    Button {
+                        presenter.onManageVaults()
+                    } label: {
+                        SettingsRowView(
+                            icon: .vaults,
+                            title: .settingsEntryManageVaults
+                        )
+                    }
                 } header: {
                     Text(.settingsHeaderMobileApp)
                         .padding(.top, Spacing.xll)

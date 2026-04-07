@@ -18,17 +18,20 @@ public protocol ChangePasswordInteracting: AnyObject {
 final class ChangePasswordInteractor {
     private let biometryInteractor: BiometryInteracting
     private let itemsInteractor: ItemsInteracting
+    private let vaultsInteractor: VaultsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
-    
+
     init(
         biometryInteractor: BiometryInteracting,
         itemsInteractor: ItemsInteracting,
+        vaultsInteractor: VaultsInteracting,
         protectionInteractor: ProtectionInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     ) {
         self.biometryInteractor = biometryInteractor
         self.itemsInteractor = itemsInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.protectionInteractor = protectionInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
@@ -52,13 +55,13 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         protectionInteractor.setMasterKey(for: masterPassword)
         biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
             self?.protectionInteractor.saveEncryptionReference()
-            self?.protectionInteractor.updateExistingVault()
+            self?.protectionInteractor.updateVaultsKeys()
             self?.protectionInteractor.setupKeys()
-            self?.itemsInteractor.reencryptDecryptedList(current, tags: tags, completion: { [weak self] _ in
+            self?.itemsInteractor.reencryptDecryptedList(current, tags: tags) { [weak self] _ in
                 self?.syncChangeTriggerInteractor.setPasswordWasChanged()
                 completion()
                 self?.syncChangeTriggerInteractor.trigger()
-            })
+            }
         }
     }
 }

@@ -24,6 +24,7 @@ struct DashlaneImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
+            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -203,6 +204,7 @@ extension DashlaneImportInteractorTests {
         func importDashlaneWiFiFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
+                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
                 uriInteractor: mockURIInteractor,
                 paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
             )

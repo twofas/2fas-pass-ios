@@ -183,7 +183,6 @@ private extension SecurityInteractor {
     
     func unlockApplication() {
         Log("SecurityInteractor: Unlock app", module: .interactor)
-        protectionInteractor.selectVault()
         NotificationCenter.default.post(name: Self.loginUnlockedNotification, object: nil)
     }
     

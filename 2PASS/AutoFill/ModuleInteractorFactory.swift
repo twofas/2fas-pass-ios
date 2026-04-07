@@ -17,6 +17,7 @@ extension ModuleInteractorFactory {
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
             autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
             passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
             pushNotificationsInteractor: InteractorFactory.shared.pushNotificationsInteractor()

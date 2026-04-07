@@ -42,16 +42,24 @@ public protocol ExternalServiceImportInteracting: AnyObject {
 
 final class ExternalServiceImportInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let context: ImportContext
+
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
 
     init(
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         uriInteractor: URIInteracting,
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.context = ImportContext(
             mainRepository: mainRepository,
+            vaultsInteractor: vaultsInteractor,
             uriInteractor: uriInteractor,
             paymentCardUtilityInteractor: paymentCardUtilityInteractor
         )
@@ -193,11 +201,12 @@ extension ExternalServiceImportInteractor {
 
     struct ImportContext {
         let mainRepository: MainRepository
+        let vaultsInteractor: VaultsInteracting
         let uriInteractor: URIInteracting
         let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
 
         var selectedVaultId: VaultID? {
-            mainRepository.selectedVault?.vaultID
+            vaultsInteractor.defaultVaultID
         }
 
         var currentProtectionLevel: ItemProtectionLevel {
@@ -209,7 +218,8 @@ extension ExternalServiceImportInteractor {
         }
 
         func encryptSecureField(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
-            guard let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel),
+            guard let vaultID = selectedVaultId,
+                  let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel, forVault: vaultID),
                   let data = string.data(using: .utf8),
                   let encrypted = mainRepository.encrypt(data, key: key) else {
                 return nil

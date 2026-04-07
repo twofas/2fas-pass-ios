@@ -15,7 +15,12 @@ public protocol WebDAVBackupInteracting: AnyObject {
 }
 
 final class WebDAVBackupInteractor {
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let backupImportInteractor: BackupImportInteracting
     private let exportInteractor: ExportInteracting
     private let webDAVStateInteractor: WebDAVStateInteracting
@@ -25,17 +30,18 @@ final class WebDAVBackupInteractor {
 
     private let noInternetRetry: Int = 10
     private let ignoreDeviceId: Bool
-    
+
     private var syncAgain = false
-    
+
     // Internal state during sync
     private var shouldStop = false
     private var overwriteVault = false
     private var fetchedIndex: WebDAVIndex?
-    
+
     init(
         ignoreDeviceId: Bool = false,
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         backupImportInteractor: BackupImportInteracting,
         exportInteractor: ExportInteracting,
         webDAVStateInteractor: WebDAVStateInteracting,
@@ -45,6 +51,7 @@ final class WebDAVBackupInteractor {
     ) {
         self.ignoreDeviceId = ignoreDeviceId
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.backupImportInteractor = backupImportInteractor
         self.exportInteractor = exportInteractor
         self.webDAVStateInteractor = webDAVStateInteractor
@@ -178,8 +185,8 @@ private extension WebDAVBackupInteractor {
             Log("WebDAVBackupInteractor - stopping parsing index", module: .interactor)
             return
         }
-        guard let vid = mainRepository.selectedVault?.vaultID,
-              let seedHash = mainRepository.webDAVSeedHash else {
+        let vid = vaultID
+        guard let seedHash = mainRepository.webDAVSeedHash(forVault: vid) else {
             webDAVStateInteractor.syncError(.syncError(nil))
             Log("WebDAVBackupInteractor - error. No vaultID or seed hash", module: .interactor, severity: .error)
             return
@@ -627,8 +634,8 @@ private extension WebDAVBackupInteractor {
             return nil
         }
         
-        guard let vault = mainRepository.selectedVault,
-              let seedHash = mainRepository.webDAVSeedHash else {
+        guard let vault = mainRepository.getEncryptedVault(for: vaultID),
+              let seedHash = mainRepository.webDAVSeedHash(forVault: vaultID) else {
             webDAVStateInteractor.syncError(.syncError(nil))
             Log("WebDAVBackupInteractor - error. No vault or seed hash", module: .interactor, severity: .error)
             return nil

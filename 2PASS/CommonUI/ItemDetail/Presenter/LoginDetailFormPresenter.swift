@@ -124,7 +124,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     }
     
     private func refreshValues() {
-        if let encryptedPassword = loginItem.password, let password = interactor.decryptSecureField(encryptedPassword, protectionLevel: loginItem.protectionLevel) {
+        if let encryptedPassword = loginItem.password, let password = interactor.decryptSecureField(encryptedPassword, protectionLevel: loginItem.protectionLevel, vaultID: loginItem.vaultId) {
             isPasswordAvailable = true
             passwordDecrypted = password
             self.password = AttributedString(passwordPlaceholder)

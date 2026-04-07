@@ -162,8 +162,6 @@ extension StartupInteractor: StartupInteracting {
             if protectionInteractor.vaultHasTrustedItems {
                 Log("StartupInteractor: Enter Password", module: .interactor)
                 
-                protectionInteractor.selectVault()
-                
                 return .enterPassword
             } else {
                 storageInteractor.clear()
@@ -171,9 +169,7 @@ extension StartupInteractor: StartupInteracting {
                 return .selectVault
             }
         }
-        
-        protectionInteractor.selectVault()
-        
+                
         if securityInteractor.isUserLoggedIn {
             return .main
         }
@@ -199,7 +195,6 @@ extension StartupInteractor: StartupInteracting {
         biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
             self?.protectionInteractor.saveEncryptionReference()
             self?.protectionInteractor.createNewVault(with: .init())
-            self?.protectionInteractor.selectVault()
             self?.protectionInteractor.setupKeys()
             self?.protectionInteractor.saveEntropy()
             self?.storageInteractor.initialize {
@@ -241,8 +236,7 @@ extension StartupInteractor: StartupInteracting {
     
     func createVault(for vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> Bool {
         protectionInteractor.saveEncryptionReference()
-        protectionInteractor.createNewVault(with: vaultID, creationDate: creationDate, modificationDate: modificationDate)
-        protectionInteractor.selectVault()
+        protectionInteractor.createNewVault(with: vaultID, name: Config.mainVaultName, color: nil, icon: nil, creationDate: creationDate, modificationDate: modificationDate)
         protectionInteractor.setupKeys()
         protectionInteractor.saveEntropy()
         storageInteractor.initialize(completion: {})
@@ -289,9 +283,8 @@ extension StartupInteractor: StartupInteracting {
         
         protectionInteractor.setupDeviceID()
         protectionInteractor.saveEncryptionReference()
-        protectionInteractor.selectVault()
         protectionInteractor.setupKeys()
-        protectionInteractor.updateExistingVault()
+        protectionInteractor.updateVaultsKeys()
         protectionInteractor.saveEntropy()
         
         await withCheckedContinuation { continuation in

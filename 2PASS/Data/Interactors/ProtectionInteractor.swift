@@ -54,12 +54,11 @@ public protocol ProtectionInteracting: AnyObject {
     func masterKey(from masterPassword: MasterPassword, entropy: Entropy) -> MasterKey?
     func masterKey(from masterPassword: MasterPassword, entropy: Entropy, kdfSpec: KDFSpec) -> MasterKey?
     func setupKeys()
-    func selectVault()
     func clearAfterInit()
-    func updateExistingVault()
+    func updateVaultsKeys()
     
     var hasEncryptionReference: Bool { get }
-    func createNewVault(with vaultID: VaultID, creationDate: Date?, modificationDate: Date?)
+    func createNewVault(with vaultID: VaultID, name: String, color: String?, icon: String?, creationDate: Date?, modificationDate: Date?)
     func saveEncryptionReference()
     
     func getAllWords() -> [String]
@@ -83,17 +82,19 @@ public protocol ProtectionInteracting: AnyObject {
 
 extension ProtectionInteracting {
     
-    func createNewVault(with vaultID: VaultID) {
-        createNewVault(with: vaultID, creationDate: nil, modificationDate: nil)
+    func createNewVault(with vaultID: VaultID, name: String = Config.mainVaultName) {
+        createNewVault(with: vaultID, name: name, color: nil, icon: nil, creationDate: nil, modificationDate: nil)
     }
 }
 
 final class ProtectionInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let storageInteractor: StorageInteracting
-    
-    init(mainRepository: MainRepository, storageInteractor: StorageInteracting) {
+
+    init(mainRepository: MainRepository, vaultsInteractor: VaultsInteracting, storageInteractor: StorageInteracting) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.storageInteractor = storageInteractor
     }
 }
@@ -120,11 +121,11 @@ extension ProtectionInteractor: ProtectionInteracting {
     }
     
     var hasVault: Bool {
-        !mainRepository.listEncryptedVaults().isEmpty
+        vaultsInteractor.hasVault
     }
-    
+
     var vaultHasTrustedItems: Bool {
-        guard let vault = mainRepository.listEncryptedVaults().first else {
+        guard let vault = vaultsInteractor.defaultVault else {
             return false
         }
         guard !vault.isEmpty else {
@@ -211,7 +212,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     }
     
     func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool {
-        guard let vault = mainRepository.listEncryptedVaults().first else {
+        guard let vault = vaultsInteractor.defaultVault else {
             return false
         }
         
@@ -492,61 +493,18 @@ extension ProtectionInteractor: ProtectionInteracting {
             return
         }
         Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
-        Log("ProtectionInteractor: Getting selected Vault", module: .interactor)
-        
-        guard let vault = mainRepository.selectedVault else {
-            Log("Error while getting selected Vault - it's missing", severity: .error)
+
+        let vaults = vaultsInteractor.listEncryptedVaults()
+        guard !vaults.isEmpty else {
+            Log("Error while getting Vaults - none found", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Vault: \(vault.vaultID). Creating Keys", module: .interactor)
-        
-        Log("ProtectionInteractor: Getting Trusted Key", module: .interactor)
-        guard let trustedKey = mainRepository.generateTrustedKeyForVaultID(
-            vault.vaultID,
-            using: masterKey.hexEncodedString()
-        ), let trustedKeyData = Data(hexString: trustedKey)
-        else {
-            Log("Error while generating Trusted Key", severity: .error)
-            return
+
+        let masterKeyHex = masterKey.hexEncodedString()
+
+        for vault in vaults {
+            deriveAndCacheKeys(for: vault.vaultID, using: masterKeyHex)
         }
-        Log("ProtectionInteractor: Trusted Key: \(trustedKey)", module: .interactor)
-        mainRepository.setTrustedKey(trustedKeyData)
-        
-        guard let secureKey = mainRepository.generateSecureKeyForVaultID(
-            vault.vaultID,
-            using: masterKey.hexEncodedString()
-        ), let secureKeyData = Data(hexString: secureKey)
-        else {
-            Log("Error while generating Secure Key", severity: .error)
-            return
-        }
-        Log("ProtectionInteractor: Secure Key: \(secureKey)", module: .interactor)
-        mainRepository.setSecureKey(secureKeyData)
-        
-        Log("ProtectionInteractor: Getting External Key", module: .interactor)
-        guard let externalKey = mainRepository.generateExternalKeyForVaultID(
-            vault.vaultID,
-            using: masterKey.hexEncodedString()
-        ), let externalKeyData = Data(hexString: externalKey)
-        else {
-            Log("ProtectionInteractor: Error while generating External Key", module: .interactor, severity: .error)
-            return
-        }
-        Log("ProtectionInteractor: External Key: \(externalKey)", module: .interactor)
-        mainRepository.setExternalKey(externalKeyData)
-        
-        // Caching keys - Keychain access is expensive
-        mainRepository.preparedCachedKeys()
-    }
-    
-    func selectVault() {
-        Log("ProtectionInteractor: Selecting Vault", module: .interactor)
-        guard let vault = mainRepository.listEncryptedVaults().first else {
-            Log("ProtectionInteractor: Can't find any Vault", module: .interactor, severity: .error)
-            return
-        }
-        Log("ProtectionInteractor: Found Vault: \(vault.vaultID)", module: .interactor)
-        mainRepository.selectVault(vault.vaultID)
     }
     
     func clearMasterKey() {
@@ -563,7 +521,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         mainRepository.clearEntropy()
     }
     
-    func createNewVault(with vaultID: VaultID, creationDate: Date?, modificationDate: Date?) {
+    func createNewVault(with vaultID: VaultID, name: String, color: String?, icon: String?, creationDate: Date?, modificationDate: Date?) {
         Log("ProtectionInteractor: Creating new Vault", module: .interactor)
         Log("ProtectionInteractor: Getting Master Key", module: .interactor)
         guard let masterKey = mainRepository.empheralMasterKey else {
@@ -572,43 +530,41 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
         Log("ProtectionInteractor: Getting App Key", module: .interactor)
-        
+
         guard let appKey = mainRepository.appKey else {
             Log("ProtectionInteractor: Error while getting App Key - it's missing", severity: .error)
             return
         }
-        
+
         Log("ProtectionInteractor: App Key obtained, creating new Vault", module: .interactor)
-        
-        guard storageInteractor.createNewVault(masterKey: masterKey, appKey: appKey, vaultID: vaultID, creationDate: creationDate, modificationDate: modificationDate) != nil else {
+
+        guard vaultsInteractor.createNewVault(masterKey: masterKey, appKey: appKey, vaultID: vaultID, name: name, color: color, icon: icon, creationDate: creationDate, modificationDate: modificationDate) != nil else {
             Log("ProtectionInteractor: Error while creating new Vault", severity: .error)
             return
         }
         Log("ProtectionInteractor: New Vault created successfuly", module: .interactor)
+        deriveAndCacheKeys(for: vaultID, using: masterKey.hexEncodedString())
     }
     
-    func updateExistingVault() {
-        Log("ProtectionInteractor: Updating extisting Vault", module: .interactor)
-        Log("ProtectionInteractor: Getting Master Key", module: .interactor)
+    func updateVaultsKeys() {
+        Log("ProtectionInteractor: Updating all vaults keys", module: .interactor)
         guard let masterKey = mainRepository.empheralMasterKey else {
             Log("ProtectionInteractor: Error while getting Master Key - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
-        Log("ProtectionInteractor: Getting App Key", module: .interactor)
-        
         guard let appKey = mainRepository.appKey else {
             Log("ProtectionInteractor: Error while getting App Key - it's missing", severity: .error)
             return
         }
-        
-        Log("ProtectionInteractor: App Key obtained, updating Vault", module: .interactor)
 
-        guard storageInteractor.updateExistingVault(with: masterKey, appKey: appKey) else {
-            Log("ProtectionInteractor: Error while updating exisitng Vault", severity: .error)
-            return
+        let vaults = vaultsInteractor.listEncryptedVaults()
+        for vault in vaults {
+            guard vaultsInteractor.changeVaultKeys(vaultID: vault.vaultID, with: masterKey, appKey: appKey) else {
+                Log("ProtectionInteractor: Error while changing keys for vault \(vault.vaultID)", severity: .error)
+                continue
+            }
+            Log("ProtectionInteractor: Vault \(vault.vaultID) keys updated", module: .interactor)
         }
-        Log("ProtectionInteractor: Vault updated successfuly", module: .interactor)
     }
     
     func getAllWords() -> [String] {
@@ -787,6 +743,44 @@ extension ProtectionInteractor: ProtectionInteracting {
 }
 
 private extension ProtectionInteractor {
+    @discardableResult
+    func deriveAndCacheKeys(for vaultID: VaultID, using masterKeyHex: String) -> Bool {
+        Log("ProtectionInteractor: Vault: \(vaultID). Deriving keys", module: .interactor)
+
+        guard let trustedKey = mainRepository.generateTrustedKeyForVaultID(
+            vaultID,
+            using: masterKeyHex
+        ), let trustedKeyData = Data(hexString: trustedKey)
+        else {
+            Log("ProtectionInteractor: Error while generating Trusted Key for vault \(vaultID)", severity: .error)
+            return false
+        }
+        mainRepository.setTrustedKey(trustedKeyData, forVault: vaultID)
+
+        guard let secureKey = mainRepository.generateSecureKeyForVaultID(
+            vaultID,
+            using: masterKeyHex
+        ), let secureKeyData = Data(hexString: secureKey)
+        else {
+            Log("ProtectionInteractor: Error while generating Secure Key for vault \(vaultID)", severity: .error)
+            return false
+        }
+        mainRepository.setSecureKey(secureKeyData, forVault: vaultID)
+
+        guard let externalKey = mainRepository.generateExternalKeyForVaultID(
+            vaultID,
+            using: masterKeyHex
+        ), let externalKeyData = Data(hexString: externalKey)
+        else {
+            Log("ProtectionInteractor: Error while generating External Key for vault \(vaultID)", severity: .error)
+            return false
+        }
+        mainRepository.setExternalKey(externalKeyData, forVault: vaultID)
+
+        mainRepository.preparedCachedKeys(for: vaultID)
+        return true
+    }
+
     func createMasterKey(using masterPassword: MasterPassword) -> MasterKey? {
         Log("ProtectionInteractor: Creating Master Key", module: .interactor)
         Log("ProtectionInteractor: Getting Seed", module: .interactor)

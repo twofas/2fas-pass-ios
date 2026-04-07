@@ -177,8 +177,6 @@ protocol MainRepository: AnyObject {
     )
     func createSymmetricKeyFromSecureEnclave(from key: Data) -> SymmetricKey?
     func createSymmetricKey(from key: Data) -> SymmetricKey
-    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey?
-    
     func encrypt(
         _ data: Data,
         key: SymmetricKey
@@ -194,8 +192,8 @@ protocol MainRepository: AnyObject {
     func generateRandom(byteCount: Int) -> Data?
     
     func importBIP0039Words() -> [String]?
-    func createSeedHashHexForExport() -> String?
-    func createReferenceForExport() -> String?
+    func createSeedHashHexForExport(forVault vaultID: VaultID) -> String?
+    func createReferenceForExport(forVault vaultID: VaultID) -> String?
     
     /// Used for Biometry, encrypted using Biometry Key
     var isMasterKeyStored: Bool { get }
@@ -207,24 +205,24 @@ protocol MainRepository: AnyObject {
     func saveBiometryKey(_ data: BiometryKey)
     func clearBiometryKey()
     
-    /// Decrypted key from current Vault
-    var trustedKeyFromVault: TrustedKey? { get }
+    /// Decrypted key from Vault entity (persistent storage)
+    func trustedKeyFromVault(_ vaultID: VaultID) -> TrustedKey?
 
-    /// Generated on every app start, kept in memory
-    var trustedKey: TrustedKey? { get }
-    func setTrustedKey(_ data: TrustedKey)
-    func clearTrustedKey()
-    
-    /// Generated on every app start, kept in memory
-    var secureKey: SecureKey? { get }
-    func setSecureKey(_ data: SecureKey)
-    func clearSecureKey()
-    
-    /// Generated on every app start, kept in memory
-    var externalKey: ExternalKey? { get }
-    func setExternalKey(_ data: ExternalKey)
-    func clearExternalKey()
-    var cachedExternalKey: SymmetricKey? { get }
+    /// Generated on every app start, kept in memory per vault
+    func trustedKey(forVault vaultID: VaultID) -> TrustedKey?
+    func setTrustedKey(_ data: TrustedKey, forVault vaultID: VaultID)
+
+    func secureKey(forVault vaultID: VaultID) -> SecureKey?
+    func setSecureKey(_ data: SecureKey, forVault vaultID: VaultID)
+
+    func externalKey(forVault vaultID: VaultID) -> ExternalKey?
+    func setExternalKey(_ data: ExternalKey, forVault vaultID: VaultID)
+    func cachedExternalKey(forVault vaultID: VaultID) -> SymmetricKey?
+
+    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel, forVault vaultID: VaultID) -> SymmetricKey?
+    func hasCachedKeys(for vaultID: VaultID) -> Bool
+    func clearCachedKeys(for vaultID: VaultID)
+    func preparedCachedKeys(for vaultID: VaultID)
     
     /// Generated on first start
     var appKey: AppKey? { get }
@@ -257,10 +255,7 @@ protocol MainRepository: AnyObject {
     func clearEmpheralMasterKey()
     
     func clearAllEmphemeral()
-    
-    func hasCachedKeys() -> Bool
-    func preparedCachedKeys()
-    
+
     /// Used for veryfiying the Master Key
     var hasEncryptionReference: Bool { get }
     func saveEncryptionReference(_ deviceID: DeviceID, masterKey: MasterKey)
@@ -512,10 +507,15 @@ protocol MainRepository: AnyObject {
     )
     func encryptedItemsBatchUpdate(_ items: [ItemEncryptedData])
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
+    func listAllEncryptedItems() -> [ItemEncryptedData]
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
     func listEncryptedItems(
         in vaultID: VaultID,
         itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData]
+    func listEncryptedItems(
+        itemIDs: [ItemID],
         excludeProtectionLevels: Set<ItemProtectionLevel>?
     ) -> [ItemEncryptedData]
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
@@ -532,24 +532,25 @@ protocol MainRepository: AnyObject {
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     )
     func updateEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
-    func selectVault(_ vaultID: VaultID)
-    func clearVault()
     func deleteAllVaults()
-    var selectedVault: VaultEncryptedData? { get }
-    
+
     // MARK: Deleted Items
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
@@ -760,8 +761,7 @@ protocol MainRepository: AnyObject {
     func webDAVEncodeIndex(_ index: WebDAVIndex) -> Data?
     func webDAVDecodeIndex(_ data: Data) -> WebDAVIndex?
     func webDAVClearConfig()
-    var webDAVSeedHash: String? { get }
-    var webDAVCurrentVaultID: VaultID? { get }
+    func webDAVSeedHash(forVault vaultID: VaultID) -> String?
     
     var webDAVIsConnected: Bool { get }
     func webDAVSetIsConnected(_ isConnected: Bool)

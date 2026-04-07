@@ -10,20 +10,27 @@ import CoreData
 
 public final class EncryptedStorageDataSourceImpl {
     private let coreDataStack: CoreDataStack
-    
+    private let migrator: CoreDataMigrator<EncryptedStorageModelVersion>
+
     public var storageError: ((String) -> Void)?
-    
+
     var context: NSManagedObjectContext {
         coreDataStack.context
     }
-    
+
     public init() {
+        let migrator = CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [
+            EncryptedStorageModelVersion("ColdStorage"),
+            EncryptedStorageModelVersion("ColdStorage2", requiresReencryption: true),
+            EncryptedStorageModelVersion("ColdStorage3", requiresReencryption: true)
+        ])
+        self.migrator = migrator
         self.coreDataStack = CoreDataStack(
             readOnly: false,
             name: "ColdStorage",
             bundle: Bundle(for: EncryptedStorageDataSourceImpl.self),
             storeInGroup: true,
-            migrator: CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [.init(rawValue: "ColdStorage"), .init(rawValue: "ColdStorage2")]),
+            migrator: migrator,
             isPersistent: true
         )
         coreDataStack.logError = { Log($0, module: .storage) }
@@ -33,8 +40,10 @@ public final class EncryptedStorageDataSourceImpl {
 
 extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     
-    public var migrationRequired: Bool {
-        coreDataStack.migrationRequired
+    public var requiresReencryptionMigration: Bool {
+        guard let storeURL = coreDataStack.storeURL else { return false }
+        return migrator.pendingDestinationVersions(at: storeURL)
+            .contains { $0.requiresReencryption }
     }
     
     public func loadStore(completion: @escaping LoadStoreCallback) {
@@ -157,6 +166,19 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             vaultID: vaultID
         ).map({ $0.toData() })
     }
+
+    public func listEncryptedItems(
+        itemIDs: [ItemID],
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData] {
+        guard itemIDs.isEmpty == false else { return [] }
+        let normalizedExcludedLevels = excludeProtectionLevels?.isEmpty == true ? nil : excludeProtectionLevels
+        return ItemEncryptedEntity.listItems(
+            on: context,
+            excludeProtectionLevels: normalizedExcludedLevels,
+            itemIDs: itemIDs
+        ).map({ $0.toData() })
+    }
     
     public func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID) {
         guard let entity = ItemEncryptedEntity.getEntity(on: context, itemID: itemID),
@@ -188,10 +210,12 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     
     public func createEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     ) {
         VaultEncryptedEntity.create(
             on: context,
@@ -199,16 +223,20 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             name: name,
             trustedKey: trustedKey,
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            color: color,
+            icon: icon
         )
     }
-    
+
     public func updateEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     ) {
         VaultEncryptedEntity.update(
             on: context,
@@ -216,10 +244,12 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             name: name,
             trustedKey: trustedKey,
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            color: color,
+            icon: icon
         )
     }
-    
+
     public func deleteEncryptedVault(_ vaultID: VaultID) {
         guard let entity = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID) else { return }
         VaultEncryptedEntity.delete(on: context, entity: entity)

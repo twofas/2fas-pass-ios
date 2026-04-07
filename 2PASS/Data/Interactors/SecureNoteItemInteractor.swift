@@ -10,6 +10,7 @@ import Common
 public protocol SecureNoteItemInteracting: AnyObject {
     func createSecureNote(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         text: String?,
@@ -18,6 +19,7 @@ public protocol SecureNoteItemInteracting: AnyObject {
 
     func updateSecureNote(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         text: String?,
@@ -37,34 +39,23 @@ final class SecureNoteItemInteractor {
 
 extension SecureNoteItemInteractor: SecureNoteItemInteracting {
 
-    func createSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?, additionalInfo: String?) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
-        let secureNoteItem = try makeSecureNote(id: id, vaultId: vaultId, metadata: metadata, name: name, text: text, additionalInfo: additionalInfo)
+    func createSecureNote(id: ItemID, vaultID: VaultID, metadata: ItemMetadata, name: String, text: String?, additionalInfo: String?) throws(ItemsInteractorSaveError) {
+        let secureNoteItem = try makeSecureNote(id: id, vaultId: vaultID, metadata: metadata, name: name, text: text, additionalInfo: additionalInfo)
         try itemsInteractor.createItem(.secureNote(secureNoteItem))
     }
 
-    func updateSecureNote(id: ItemID, metadata: ItemMetadata, name: String, text: String?, additionalInfo: String?) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
-        let secureNoteItem = try makeSecureNote(id: id, vaultId: vaultId, metadata: metadata, name: name, text: text, additionalInfo: additionalInfo)
+    func updateSecureNote(id: ItemID, vaultID: VaultID, metadata: ItemMetadata, name: String, text: String?, additionalInfo: String?) throws(ItemsInteractorSaveError) {
+        let secureNoteItem = try makeSecureNote(id: id, vaultId: vaultID, metadata: metadata, name: name, text: text, additionalInfo: additionalInfo)
         try itemsInteractor.updateItem(.secureNote(secureNoteItem))
     }
 }
 
 private extension SecureNoteItemInteractor {
 
-    var selectedVaultId: VaultID {
-        get throws(ItemsInteractorSaveError) {
-            guard let vaultId = mainRepository.selectedVault?.vaultID else {
-                throw .noVault
-            }
-            return vaultId
-        }
-    }
-
     func makeSecureNote(id: ItemID, vaultId: VaultID, metadata: ItemMetadata, name: String, text: String?, additionalInfo: String?) throws(ItemsInteractorSaveError) -> SecureNoteItemData {
         var encryptedText: Data?
         if let text = text?.trim(), !text.isEmpty {
-            guard let encrypted = itemsInteractor.encrypt(text, isSecureField: true, protectionLevel: metadata.protectionLevel) else {
+            guard let encrypted = itemsInteractor.encrypt(text, isSecureField: true, protectionLevel: metadata.protectionLevel, vaultID: vaultId) else {
                 Log(
                     "SecureNoteItemInteractor: Create secure note. Can't encrypt text",
                     module: .interactor,

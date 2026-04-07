@@ -32,6 +32,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
     private let loginItemInteractor: LoginItemInteracting
+    private let vaultsInteractor: VaultsInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let pushNotificationsInteractor: PushNotificationsInteracting
@@ -43,6 +44,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
         loginItemInteractor: LoginItemInteracting,
+        vaultsInteractor: VaultsInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         pushNotificationsInteractor: PushNotificationsInteracting
@@ -53,6 +55,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
         self.loginItemInteractor = loginItemInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
@@ -88,15 +91,15 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return nil
         }
 
-        guard itemsInteractor.loadTrustedKey() else {
+        guard itemsInteractor.loadTrustedKey(vaultID: vaultsInteractor.defaultVaultID) else {
             return nil
         }
 
-        guard let content = itemsInteractor.decryptContent(LoginItemData.Content.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel) else {
+        guard let content = itemsInteractor.decryptContent(LoginItemData.Content.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel, vaultID: vaultsInteractor.defaultVaultID) else {
             return nil
         }
 
-        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isSecureField: true, protectionLevel: encrypted.protectionLevel) else {
+        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isSecureField: true, protectionLevel: encrypted.protectionLevel, vaultID: vaultsInteractor.defaultVaultID) else {
             Log("AutoFill - Error while decrypting password", module: .autofill)
             return nil
         }
@@ -123,7 +126,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return ASPasswordCredential(user: loginItem.username ?? "", password: "")
         }
 
-        if let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: loginItem.protectionLevel) {
+        if let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: loginItem.protectionLevel, vaultID: loginItem.vaultId) {
             Log("AutoFill - Complete get credential", module: .autofill)
             return ASPasswordCredential(user: loginItem.username ?? "", password: decryptedPassword)
         } else {
@@ -141,7 +144,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return false
         }
 
-        return itemsInteractor.loadTrustedKey()
+        return itemsInteractor.loadTrustedKey(vaultID: vaultsInteractor.defaultVaultID)
     }
 
     func generatePassword() -> String {
@@ -167,6 +170,7 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         let iconDomain = serviceIdentifier.flatMap { uriInteractor.extractDomain(from: $0) }
         try loginItemInteractor.createLogin(
             id: itemID,
+            vaultID: vaultsInteractor.defaultVaultID,
             metadata: ItemMetadata(
                 creationDate: now,
                 modificationDate: now,

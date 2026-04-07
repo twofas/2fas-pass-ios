@@ -10,9 +10,15 @@ import Common
 
 final class CloudCacheStorageImpl {
     private let mainRepository: MainRepository
-    
-    init(mainRepository: MainRepository) {
+    private let vaultsInteractor: VaultsInteracting
+
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
+    init(mainRepository: MainRepository, vaultsInteractor: VaultsInteracting) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
     }
 }
 
@@ -24,11 +30,7 @@ extension CloudCacheStorageImpl: CloudCacheStorage {
     }
     
     var currentVault: VaultCloudData? {
-        guard let currentVaultID = mainRepository.selectedVault?.vaultID else {
-            Log("CloudCacheStorageImpl: can't get vaultID while getting current Vault", module: .interactor, severity: .error)
-            return nil
-        }
-        return mainRepository.cloudCacheListVaults().first(where: { $0.id == currentVaultID })
+        return mainRepository.cloudCacheListVaults().first(where: { $0.id == vaultID })
     }
     
     func purge() {

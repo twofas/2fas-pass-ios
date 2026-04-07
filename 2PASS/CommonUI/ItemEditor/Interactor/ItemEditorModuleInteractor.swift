@@ -42,9 +42,12 @@ protocol ItemEditorModuleInteracting: AnyObject {
     var changeRequest: (any ItemDataChangeRequest)? { get }
 
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
+    var defaultVaultID: VaultID { get }
 
     func getEditItem() -> ItemData?
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
+    func listVaults() -> [VaultData]
+    func vault(for vaultID: VaultID) -> VaultData?
 
     func saveLogin(
         name: String?,
@@ -53,6 +56,7 @@ protocol ItemEditorModuleInteracting: AnyObject {
         notes: String?,
         iconType: PasswordIconType,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
@@ -62,6 +66,7 @@ protocol ItemEditorModuleInteracting: AnyObject {
         text: String?,
         additionalInfo: String?,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
@@ -73,6 +78,7 @@ protocol ItemEditorModuleInteracting: AnyObject {
         securityCode: String?,
         notes: String?,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
@@ -84,10 +90,11 @@ protocol ItemEditorModuleInteracting: AnyObject {
         securityType: WiFiContent.SecurityType,
         hidden: Bool,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult
 
-    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String?
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer?
     func maxPaymentCardNumberLength(for issuer: PaymentCardIssuer?) -> Int
     func maxPaymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
@@ -109,6 +116,7 @@ final class ItemEditorModuleInteractor {
     public let changeRequest: (any ItemDataChangeRequest)?
 
     private let itemsInteractor: ItemsInteracting
+    private let vaultsInteractor: VaultsInteracting
     private let loginItemInteractor: LoginItemInteracting
     private let secureNoteItemInteractor: SecureNoteItemInteracting
     private let paymentCardItemInteractor: PaymentCardItemInteracting
@@ -129,6 +137,7 @@ final class ItemEditorModuleInteractor {
 
     init(
         itemsInteractor: ItemsInteracting,
+        vaultsInteractor: VaultsInteracting,
         loginItemInteractor: LoginItemInteracting,
         secureNoteItemInteractor: SecureNoteItemInteracting,
         paymentCardItemInteractor: PaymentCardItemInteracting,
@@ -147,6 +156,7 @@ final class ItemEditorModuleInteractor {
         changeRequest: (any ItemDataChangeRequest)? = nil
     ) {
         self.itemsInteractor = itemsInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.loginItemInteractor = loginItemInteractor
         self.secureNoteItemInteractor = secureNoteItemInteractor
         self.paymentCardItemInteractor = paymentCardItemInteractor
@@ -175,6 +185,18 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     var currentDefaultProtectionLevel: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
     }
+
+    var defaultVaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
+    func listVaults() -> [VaultData] {
+        vaultsInteractor.listVaults()
+    }
+
+    func vault(for vaultID: VaultID) -> VaultData? {
+        vaultsInteractor.vault(for: vaultID)
+    }
     
     func getEditItem() -> ItemData? {
         guard let editItemID else {
@@ -185,8 +207,8 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         return item
     }
     
-    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
-        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel)
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String? {
+        itemsInteractor.decrypt(data, isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultID)
     }
 
     func detectPaymentCardIssuer(from cardNumber: String?) -> PaymentCardIssuer? {
@@ -228,6 +250,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         notes: String?,
         iconType: PasswordIconType,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         uris: [PasswordURI]?,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult {
@@ -236,6 +259,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try loginItemInteractor.updateLogin(
                     id: current.id,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: current.creationDate,
                         modificationDate: date,
@@ -274,6 +298,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try loginItemInteractor.createLogin(
                     id: itemID,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: date,
                         modificationDate: date,
@@ -315,6 +340,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         text: String?,
         additionalInfo: String?,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult {
         let date = currentDateInteractor.currentDate
@@ -322,6 +348,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try secureNoteItemInteractor.updateSecureNote(
                     id: current.id,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: current.creationDate,
                         modificationDate: date,
@@ -347,6 +374,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try secureNoteItemInteractor.createSecureNote(
                     id: itemID,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: date,
                         modificationDate: date,
@@ -378,6 +406,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         securityCode: String?,
         notes: String?,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult {
         let date = currentDateInteractor.currentDate
@@ -385,6 +414,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try paymentCardItemInteractor.updatePaymentCard(
                     id: current.id,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: current.creationDate,
                         modificationDate: date,
@@ -413,6 +443,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try paymentCardItemInteractor.createPaymentCard(
                     id: itemID,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: date,
                         modificationDate: date,
@@ -447,6 +478,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         securityType: WiFiContent.SecurityType,
         hidden: Bool,
         protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID,
         tagIds: [ItemTagID]?
     ) -> SaveItemResult {
         let date = currentDateInteractor.currentDate
@@ -456,6 +488,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try wifiItemInteractor.updateWiFi(
                     id: current.id,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: current.creationDate,
                         modificationDate: date,
@@ -483,6 +516,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
             do {
                 try wifiItemInteractor.createWiFi(
                     id: itemID,
+                    vaultID: vaultID,
                     metadata: .init(
                         creationDate: date,
                         modificationDate: date,

@@ -155,7 +155,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     ) {
         if let initialData {
             let decryptedExpirationDate = initialData.content.expirationDate.flatMap {
-                interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel, vaultID: initialData.vaultId)
             }.map { $0.formatted(.expirationDate) } ?? ""
             let changeRequestExpirationDate = changeRequest?.expirationDate.map { $0.formatted(.expirationDate) }
 
@@ -170,7 +170,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
                 self.decryptedCardNumber = cardNumberFromRequest
                 self.isCardNumberRevealed = false
                 self.initialCardNumber = initialData.content.cardNumber.flatMap {
-                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel, vaultID: initialData.vaultId)
                 }
             } else {
                 self.isCardNumberRevealed = initialData.content.cardNumber == nil
@@ -179,7 +179,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
             if let securityCodeFromRequest = changeRequest?.securityCode {
                 self.decryptedSecurityCode = securityCodeFromRequest
                 self.initialSecurityCode = initialData.content.securityCode.flatMap {
-                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel, vaultID: initialData.vaultId)
                 }
             }
         } else {
@@ -249,6 +249,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
             securityCode: decryptedSecurityCode.nilIfEmpty,
             notes: notes.nonBlankTrimmedOrNil,
             protectionLevel: protectionLevel,
+            vaultID: selectedVaultID,
             tagIds: Array(selectedTags.map { $0.tagID })
         )
     }
@@ -292,7 +293,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
         guard decryptedCardNumber == nil else { return }
         guard let item = initialPaymentCardItem, let encrypted = item.content.cardNumber else { return }
 
-        let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel) ?? ""
+        let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel, vaultID: item.vaultId) ?? ""
         decryptedCardNumber = decrypted
         initialCardNumber = decrypted
     }
@@ -305,7 +306,7 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
             return
         }
 
-        let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel)
+        let decrypted = interactor.decryptSecureField(encrypted, protectionLevel: item.protectionLevel, vaultID: item.vaultId)
         decryptedSecurityCode = decrypted
         initialSecurityCode = decrypted
     }

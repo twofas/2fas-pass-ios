@@ -11,6 +11,7 @@ public protocol PaymentCardItemInteracting: AnyObject {
 
     func createPaymentCard(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         cardHolder: String?,
@@ -22,6 +23,7 @@ public protocol PaymentCardItemInteracting: AnyObject {
 
     func updatePaymentCard(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         cardHolder: String?,
@@ -52,6 +54,7 @@ extension PaymentCardItemInteractor: PaymentCardItemInteracting {
 
     func createPaymentCard(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         cardHolder: String?,
@@ -60,10 +63,9 @@ extension PaymentCardItemInteractor: PaymentCardItemInteracting {
         securityCode: String?,
         notes: String?
     ) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
         let paymentCardItem = try makePaymentCard(
             id: id,
-            vaultId: vaultId,
+            vaultId: vaultID,
             metadata: metadata,
             name: name,
             cardHolder: cardHolder,
@@ -77,6 +79,7 @@ extension PaymentCardItemInteractor: PaymentCardItemInteracting {
 
     func updatePaymentCard(
         id: ItemID,
+        vaultID: VaultID,
         metadata: ItemMetadata,
         name: String,
         cardHolder: String?,
@@ -85,10 +88,9 @@ extension PaymentCardItemInteractor: PaymentCardItemInteracting {
         securityCode: String?,
         notes: String?
     ) throws(ItemsInteractorSaveError) {
-        let vaultId = try selectedVaultId
         let paymentCardItem = try makePaymentCard(
             id: id,
-            vaultId: vaultId,
+            vaultId: vaultID,
             metadata: metadata,
             name: name,
             cardHolder: cardHolder,
@@ -102,15 +104,6 @@ extension PaymentCardItemInteractor: PaymentCardItemInteracting {
 }
 
 private extension PaymentCardItemInteractor {
-
-    var selectedVaultId: VaultID {
-        get throws(ItemsInteractorSaveError) {
-            guard let vaultId = mainRepository.selectedVault?.vaultID else {
-                throw .noVault
-            }
-            return vaultId
-        }
-    }
 
     func makePaymentCard(
         id: ItemID,
@@ -127,7 +120,7 @@ private extension PaymentCardItemInteractor {
 
         var encryptedCardNumber: Data?
         if let cardNumber = cardNumber?.trim(), !cardNumber.isEmpty {
-            guard let encrypted = itemsInteractor.encrypt(cardNumber, isSecureField: true, protectionLevel: protectionLevel) else {
+            guard let encrypted = itemsInteractor.encrypt(cardNumber, isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultId) else {
                 Log("PaymentCardItemInteractor: Can't encrypt cardNumber", module: .interactor, severity: .error)
                 throw .encryptionError
             }
@@ -136,7 +129,7 @@ private extension PaymentCardItemInteractor {
 
         var encryptedExpirationDate: Data?
         if let expirationDate = expirationDate?.trim(), !expirationDate.isEmpty {
-            guard let encrypted = itemsInteractor.encrypt(expirationDate, isSecureField: true, protectionLevel: protectionLevel) else {
+            guard let encrypted = itemsInteractor.encrypt(expirationDate, isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultId) else {
                 Log("PaymentCardItemInteractor: Can't encrypt expirationDate", module: .interactor, severity: .error)
                 throw .encryptionError
             }
@@ -145,7 +138,7 @@ private extension PaymentCardItemInteractor {
 
         var encryptedSecurityCode: Data?
         if let securityCode = securityCode?.trim(), !securityCode.isEmpty {
-            guard let encrypted = itemsInteractor.encrypt(securityCode, isSecureField: true, protectionLevel: protectionLevel) else {
+            guard let encrypted = itemsInteractor.encrypt(securityCode, isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultId) else {
                 Log("PaymentCardItemInteractor: Can't encrypt securityCode", module: .interactor, severity: .error)
                 throw .encryptionError
             }

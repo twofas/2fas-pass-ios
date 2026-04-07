@@ -12,26 +12,24 @@ import LocalAuthentication
 public protocol StorageInteracting: AnyObject {
     @MainActor func loadStore() async
     func initialize(completion: @escaping () -> Void)
-    func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> VaultID?
-    func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool
     func clear()
-}
-
-extension StorageInteracting {
-    
-    func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID()) -> VaultID? {
-        createNewVault(masterKey: masterKey, appKey: appKey, vaultID: vaultID, creationDate: nil, modificationDate: nil)
-    }
 }
 
 final class StorageInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let autoFillInteractor: AutoFillCredentialsInteracting
     private let migrationInteractor: MigrationInteracting
     private let queue: DispatchQueue
-    
-    init(mainRepository: MainRepository, autoFillInteractor: AutoFillCredentialsInteracting, migrationInteractor: MigrationInteracting) {
+
+    init(
+        mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
+        autoFillInteractor: AutoFillCredentialsInteracting,
+        migrationInteractor: MigrationInteracting
+    ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.autoFillInteractor = autoFillInteractor
         self.migrationInteractor = migrationInteractor
         self.queue = DispatchQueue(label: "InitializeStorageQueue", qos: .userInteractive, attributes: .concurrent)
@@ -91,11 +89,9 @@ extension StorageInteractor: StorageInteracting {
             return
         }
         
-        var vaultID: VaultID
-        if let vault = vaults.first {
-            vaultID = vault.vaultID
-        } else {
-            guard let createdVaultID = createNewVault(masterKey: masterKey, appKey: appKey) else {
+        var vaultIDs: [VaultID]
+        if vaults.isEmpty {
+            guard let createdVaultID = vaultsInteractor.createNewVault(masterKey: masterKey, appKey: appKey, vaultID: VaultID(), name: Config.mainVaultName, color: nil, icon: nil, creationDate: nil, modificationDate: nil) else {
                 Log(
                     "StorageInteractor - initialize. Can't create new vault!",
                     module: .interactor,
@@ -103,103 +99,111 @@ extension StorageInteractor: StorageInteracting {
                 )
                 return
             }
-            vaultID = createdVaultID
+            vaultIDs = [createdVaultID]
+        } else {
+            vaultIDs = vaults.map(\.vaultID)
         }
-        mainRepository.selectVault(vaultID)
-        
+
         mainRepository.createInMemoryStorage()
-        let items = mainRepository.listEncryptedItems(
-            in: vaultID,
-            itemIDs: nil,
-            excludeProtectionLevels: mainRepository.isMainAppProcess ? nil : Config.autoFillExcludeProtectionLevels
-        )
-        
-        let tags = mainRepository.listEncryptedTags(in: vaultID)
-        
+
+        let excludeProtectionLevels: Set<ItemProtectionLevel>? =
+            mainRepository.isMainAppProcess ? nil : Config.autoFillExcludeProtectionLevels
+
         let group = DispatchGroup()
-        
-        for encryptedData in items {
-            group.enter()
-            queue.async { [weak self] in
-                guard let self else {
-                    group.leave()
-                    return
-                }
-                let protectionLevel = encryptedData.protectionLevel
-                
-                let (name, contentData) = decryptContentData(
-                    encryptedData.content,
-                    protectionLevel: protectionLevel
-                )
-                
-                guard let contentData else {
-                    group.leave()
-                    return
-                }
-                DispatchQueue.main.async {
-                    self.mainRepository.createItem(
-                        itemID: encryptedData.itemID,
-                        vaultID: encryptedData.vaultID,
-                        creationDate: encryptedData.creationDate,
-                        modificationDate: encryptedData.modificationDate,
-                        trashedStatus: encryptedData.trashedStatus,
+
+        for vaultID in vaultIDs {
+            let items = mainRepository.listEncryptedItems(
+                in: vaultID,
+                itemIDs: nil,
+                excludeProtectionLevels: excludeProtectionLevels
+            )
+
+            let tags = mainRepository.listEncryptedTags(in: vaultID)
+
+            for encryptedData in items {
+                group.enter()
+                queue.async { [weak self] in
+                    guard let self else {
+                        group.leave()
+                        return
+                    }
+
+                    let (name, contentData) = decryptContentData(
+                        encryptedData.content,
                         protectionLevel: encryptedData.protectionLevel,
-                        tagIds: encryptedData.tagIds,
-                        name: name,
-                        contentType: encryptedData.contentType,
-                        contentVersion: encryptedData.contentVersion,
-                        content: contentData
+                        vaultID: vaultID
                     )
-                    
+
+                    guard let contentData else {
+                        group.leave()
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        self.mainRepository.createItem(
+                            itemID: encryptedData.itemID,
+                            vaultID: encryptedData.vaultID,
+                            creationDate: encryptedData.creationDate,
+                            modificationDate: encryptedData.modificationDate,
+                            trashedStatus: encryptedData.trashedStatus,
+                            protectionLevel: encryptedData.protectionLevel,
+                            tagIds: encryptedData.tagIds,
+                            name: name,
+                            contentType: encryptedData.contentType,
+                            contentVersion: encryptedData.contentVersion,
+                            content: contentData
+                        )
+
+                        group.leave()
+                    }
+                }
+            }
+
+            for tag in tags {
+                group.enter()
+
+                let decryptedName = decryptData(tag.name, protectionLevel: .normal, vaultID: vaultID) ?? ""
+
+                DispatchQueue.main.async {
+                    self.mainRepository.createTag(
+                        .init(
+                            tagID: tag.tagID,
+                            vaultID: tag.vaultID,
+                            name: decryptedName,
+                            color: ItemTagColor(rawValue: tag.color),
+                            position: tag.position,
+                            modificationDate: tag.modificationDate
+                        )
+                    )
                     group.leave()
                 }
             }
         }
-        
-        for tag in tags {
-            group.enter()
-            
-            let decryptedName = decryptData(tag.name, protectionLevel: .normal) ?? ""
-            
-            DispatchQueue.main.async {
-                self.mainRepository.createTag(
-                    .init(
-                        tagID: tag.tagID,
-                        vaultID: tag.vaultID,
-                        name: decryptedName,
-                        color: ItemTagColor(rawValue: tag.color),
-                        position: tag.position,
-                        modificationDate: tag.modificationDate
-                    )
-                )
-                group.leave()
-            }
-        }
-        
+
         group.notify(queue: .main) { [weak self] in
             Task.detached(priority: .utility) {
                 try await self?.autoFillInteractor.syncSuggestions()
             }
-            
+
             self?.mainRepository.saveStorage()
             completion()
-            }
+        }
     }
     
     func clear() {
         Log("StorageInteractor - clear", module: .interactor)
         mainRepository.saveEncryptedStorage()
-        mainRepository.clearVault()
         mainRepository.destroyInMemoryStorage()
     }
     
     func decryptData(
         _ data: Data?,
-        protectionLevel: ItemProtectionLevel) -> String? {
+        protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID) -> String? {
             guard let data else { return nil }
             guard let key = mainRepository.getKey(
                 isPassword: false,
-                protectionLevel: protectionLevel
+                protectionLevel: protectionLevel,
+                forVault: vaultID
             ) else {
                 Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
                 return nil
@@ -214,11 +218,13 @@ extension StorageInteractor: StorageInteracting {
     
     func decryptContentData(
         _ data: Data?,
-        protectionLevel: ItemProtectionLevel) -> (name: String?, content: Data?) {
+        protectionLevel: ItemProtectionLevel,
+        vaultID: VaultID) -> (name: String?, content: Data?) {
             guard let data else { return (nil, nil) }
             guard let key = mainRepository.getKey(
                 isPassword: false,
-                protectionLevel: protectionLevel
+                protectionLevel: protectionLevel,
+                forVault: vaultID
             ) else {
                 Log("StorageInteractor - can't get data or protection level", module: .interactor, severity: .error)
                 return (nil, nil)
@@ -231,113 +237,4 @@ extension StorageInteractor: StorageInteracting {
 
             return (mainRepository.extractItemName(fromContent: value), value)
         }
-    
-    func createNewVault(masterKey: Data, appKey: Data, vaultID: VaultID = VaultID(), creationDate: Date?, modificationDate: Date?) -> VaultID? {
-        let currentDate = mainRepository.currentDate
-        let createdAt = creationDate ?? currentDate
-        let updatedAt = {
-            let date = modificationDate ?? currentDate
-            if createdAt <= date {
-                return date
-            } else {
-                return createdAt
-            }
-        }()
-                
-        guard
-            let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(
-                vaultID,
-                using: masterKey.hexEncodedString()
-            ),
-            let trustedKey = Data(hexString: trustedKeyString) else {
-            Log("StorageInteractor - initialize. Can't generate Trusted Key!", module: .interactor, severity: .error)
-            return nil
-        }
-        guard let appKeySymm = mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
-            Log(
-                "StorageInteractor - initialize. Can't get Symmetric Key from App Key",
-                module: .interactor,
-                severity: .error
-            )
-            return nil
-        }
-        guard let encryptedTrustedKey = mainRepository.encrypt(trustedKey, key: appKeySymm) else {
-            Log(
-                "StorageInteractor - initialize. Can't encrypt Trusted Key!",
-                module: .interactor,
-                severity: .error
-            )
-            return nil
-        }
-        
-        mainRepository.createEncryptedVault(
-            vaultID: vaultID,
-            name: Config.mainVaultName,
-            trustedKey: encryptedTrustedKey,
-            createdAt: createdAt,
-            updatedAt: updatedAt
-        )
-        mainRepository.saveEncryptedStorage()
-        return vaultID
-    }
-    
-    func updateExistingVault(with masterKey: Data, appKey: Data) -> Bool {
-        Log("StorageInteractor - updating selected vault", module: .interactor)
-        guard let vault = mainRepository.selectedVault else {
-            Log("StorageInteractor - update. No selected vault!", module: .interactor, severity: .error)
-            return false
-        }
-        let date = mainRepository.currentDate
-        let vaultID = vault.vaultID
-        
-        Log(
-            "StorageInteractor - current trustedKey: \(vault.trustedKey.hexEncodedString())",
-            module: .interactor
-        )
-        
-        guard
-            let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(
-                vaultID,
-                using: masterKey.hexEncodedString()
-            ),
-            let trustedKey = Data(hexString: trustedKeyString) else {
-            Log("StorageInteractor - update. Can't generate Trusted Key!", module: .interactor, severity: .error)
-            return false
-        }
-        guard let appKeySymm = mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
-            Log(
-                "StorageInteractor - update. Can't get Symmetric Key from App Key",
-                module: .interactor,
-                severity: .error
-            )
-            return false
-        }
-        guard let encryptedTrustedKey = mainRepository.encrypt(trustedKey, key: appKeySymm) else {
-            Log(
-                "StorageInteractor - update. Can't encrypt Trusted Key!",
-                module: .interactor,
-                severity: .error
-            )
-            return false
-        }
-        
-        Log(
-            "StorageInteractor - new trustedKey: \(encryptedTrustedKey.hexEncodedString())",
-            module: .interactor
-        )
-        
-        mainRepository.updateEncryptedVault(
-            vaultID: vaultID,
-            name: vault.name,
-            trustedKey: encryptedTrustedKey,
-            createdAt: vault.createdAt,
-            updatedAt: date
-        )
-        mainRepository.saveEncryptedStorage()
-        mainRepository.selectVault(vaultID)
-        
-        Log("StorageInteractor - selected vault update!", module: .interactor)
-        
-        return true
-    }
 }

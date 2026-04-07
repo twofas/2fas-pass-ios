@@ -161,9 +161,10 @@ final class RawEntity: ItemMetadataEntity {
         contentVersion: Int,
         content: Data
     ) {
+        entity.vaultID = vaultID
         entity.modificationDate = modificationDate
         entity.name = name
-        
+
         switch trashedStatus {
         case .no:
             entity.isTrashed = false
@@ -171,15 +172,15 @@ final class RawEntity: ItemMetadataEntity {
             entity.isTrashed = true
             entity.trashingDate = trashingDate
         }
-        
+
         entity.level = protectionLevel.rawValue
-        
+
         if let tagIds, tagIds.isEmpty == false {
             entity.tagIds = tagIds
         } else {
             entity.tagIds = nil
         }
-        
+
         entity.contentType = contentType.rawValue
         entity.contentVersion = Int16(contentVersion)
         entity.content = content

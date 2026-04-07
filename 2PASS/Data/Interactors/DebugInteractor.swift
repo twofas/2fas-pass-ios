@@ -89,6 +89,7 @@ public protocol DebugInteracting: AnyObject {
 
 final class DebugInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let itemsInteractor: ItemsInteracting
     private let loginItemInteractor: LoginItemInteracting
     private let paymentCardItemInteractor: PaymentCardItemInteracting
@@ -96,12 +97,14 @@ final class DebugInteractor {
 
     init(
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         itemsInteractor: ItemsInteracting,
         loginItemInteractor: LoginItemInteracting,
         paymentCardItemInteractor: PaymentCardItemInteracting,
         secureNoteItemInteractor: SecureNoteItemInteracting
     ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.itemsInteractor = itemsInteractor
         self.loginItemInteractor = loginItemInteractor
         self.paymentCardItemInteractor = paymentCardItemInteractor
@@ -187,7 +190,7 @@ extension DebugInteractor: DebugInteracting {
     }
     
     var selectedVaultID: VaultID? {
-        mainRepository.selectedVault?.vaultID
+        vaultsInteractor.listVaults().first?.vaultID
     }
     
     var storedMasterKey: MasterKey? {
@@ -223,15 +226,18 @@ extension DebugInteractor: DebugInteracting {
     }
     
     var trustedKey: TrustedKey? {
-        mainRepository.trustedKey
+        guard let vid = selectedVaultID else { return nil }
+        return mainRepository.trustedKey(forVault: vid)
     }
-    
+
     var secureKey: SecureKey? {
-        mainRepository.secureKey
+        guard let vid = selectedVaultID else { return nil }
+        return mainRepository.secureKey(forVault: vid)
     }
-    
+
     var externalKey: ExternalKey? {
-        mainRepository.externalKey
+        guard let vid = selectedVaultID else { return nil }
+        return mainRepository.externalKey(forVault: vid)
     }
     
     // MARK: - Clear values
@@ -378,6 +384,7 @@ extension DebugInteractor: DebugInteracting {
 
             try? loginItemInteractor.createLogin(
                 id: .init(),
+                vaultID: vaultsInteractor.defaultVaultID,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,
@@ -419,6 +426,7 @@ extension DebugInteractor: DebugInteracting {
 
             try? secureNoteItemInteractor.createSecureNote(
                 id: .init(),
+                vaultID: vaultsInteractor.defaultVaultID,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,
@@ -453,7 +461,7 @@ extension DebugInteractor: DebugInteracting {
             let name = words.randomElement() ?? "Unknown\(i)"
             let contentDict: [String: Any] = [
                 "field1": words.randomElement() ?? "value1",
-                "s_field2": itemsInteractor.encrypt(words.randomElement() ?? "value2", isSecureField: true, protectionLevel: protectionLevel)!.base64EncodedString()
+                "s_field2": itemsInteractor.encrypt(words.randomElement() ?? "value2", isSecureField: true, protectionLevel: protectionLevel, vaultID: vaultId)!.base64EncodedString()
             ]
 
             guard let contentData = try? JSONEncoder().encode(AnyCodable(contentDict)) else { continue }
@@ -503,6 +511,7 @@ extension DebugInteractor: DebugInteracting {
 
             try? paymentCardItemInteractor.createPaymentCard(
                 id: .init(),
+                vaultID: vaultsInteractor.defaultVaultID,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,

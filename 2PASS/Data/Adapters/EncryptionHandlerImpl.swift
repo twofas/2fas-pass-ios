@@ -11,11 +11,17 @@ import CryptoKit
 
 final class EncryptionHandlerImpl {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
 
-    init(mainRepository: MainRepository, itemsInteractor: ItemsInteracting, tagInteractor: TagInteracting) {
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
+    init(mainRepository: MainRepository, vaultsInteractor: VaultsInteracting, itemsInteractor: ItemsInteracting, tagInteractor: TagInteracting) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.itemsInteractor = itemsInteractor
         self.tagInteractor = tagInteractor
     }
@@ -26,15 +32,12 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     var currentDeviceName: String { mainRepository.deviceName }
     
     func verifyEncryption(_ cloudData: VaultCloudData) -> EncryptionVerificationResult {
-        guard let key = mainRepository.cachedExternalKey else {
+        guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't external key", module: .interactor, severity: .error)
             return .missingEncryption
         }
-        
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("EncryptionHandlerImpl: can't get vaultID", module: .interactor, severity: .error)
-            return .missingEncryption
-        }
+
+        let vaultID = self.vaultID
         
         guard let data = Data(base64Encoded: cloudData.reference) else {
             Log("EncryptionHandlerImpl: can't encode data from cloud reference", module: .interactor, severity: .error)
@@ -48,7 +51,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
             return .rejected
         }
         
-        guard let seedHash = mainRepository.createSeedHashHexForExport() else {
+        guard let seedHash = mainRepository.createSeedHashHexForExport(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't get seed hash hex", module: .interactor, severity: .error)
             return .missingEncryption
         }
@@ -65,13 +68,14 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func localEncryptedItemToCloudEncryptedData(_ localEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {
-        guard let externalKey = mainRepository.cachedExternalKey else {
+        guard let externalKey = mainRepository.cachedExternalKey(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't get external key", module: .interactor, severity: .error)
             return nil
         }
         guard let localKey = mainRepository.getKey(
             isPassword: false,
-            protectionLevel: localEncryptedItem.protectionLevel
+            protectionLevel: localEncryptedItem.protectionLevel,
+            forVault: vaultID
         ) else {
             Log(
                 "EncryptionHandlerImpl: can't get key for local encryption with level: \(localEncryptedItem.protectionLevel.rawValue)",
@@ -106,13 +110,14 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func cloudEncryptedItemToLocalEncryptedItem(_ cloudEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {
-        guard let externalKey = mainRepository.cachedExternalKey else {
+        guard let externalKey = mainRepository.cachedExternalKey(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't get external key", module: .interactor, severity: .error)
             return nil
         }
         guard let localKey = mainRepository.getKey(
             isPassword: false,
-            protectionLevel: cloudEncryptedItem.protectionLevel
+            protectionLevel: cloudEncryptedItem.protectionLevel,
+            forVault: vaultID
         ) else {
             Log(
                 "EncryptionHandlerImpl: can't get key for local encryption with level: \(cloudEncryptedItem.protectionLevel.rawValue)",
@@ -147,7 +152,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func tagToTagEncrypted(_ tag: ItemTagData) -> ItemTagEncryptedData? {
-        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal),
+        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal, forVault: vaultID),
               let nameEnc = encrypt(tag.name, using: key)
         else {
             Log("EncryptionHandlerImpl - can't encrypt Tag name", module: .interactor, severity: .error)
@@ -164,7 +169,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func tagEncyptedToTag(_ tagEncrypted: ItemTagEncryptedData) -> ItemTagData? {
-        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal),
+        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal, forVault: vaultID),
               let name = decryptString(tagEncrypted.name, using: key)
         else {
             Log("EncryptionHandlerImpl - can't decrypt Tag name", module: .interactor, severity: .error)
@@ -181,8 +186,8 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func vaultEncryptedDataToVaultRawData(_ vault: VaultEncryptedData) -> VaultRawData? {
-        guard let seedHashHex = mainRepository.createSeedHashHexForExport(),
-              let reference = mainRepository.createReferenceForExport(),
+        guard let seedHashHex = mainRepository.createSeedHashHexForExport(forVault: vaultID),
+              let reference = mainRepository.createReferenceForExport(forVault: vaultID),
               let kdfSpec = try? mainRepository.jsonEncoder.encode(KDFSpec.default),
               let deviceID = mainRepository.deviceID,
               let deviceNames = try? mainRepository.jsonEncoder.encode([DeviceName(deviceID: deviceID, deviceName: mainRepository.deviceName)])
@@ -190,9 +195,13 @@ extension EncryptionHandlerImpl: EncryptionHandler {
             return nil
         }
          
+        guard let vaultName = vaultsInteractor.vault(for: vault.vaultID)?.name else {
+            return nil
+        }
+
         return VaultRawData(
             vaultID: vault.vaultID,
-            name: vault.name,
+            name: vaultName,
             createdAt: vault.createdAt,
             updatedAt: vault.updatedAt,
             deviceNames: deviceNames,
@@ -210,8 +219,8 @@ extension EncryptionHandlerImpl: EncryptionHandler {
         guard let deviceNames = mergeDeviceNames(cloudVault.deviceNames) else {
             return cloudVault
         }
-        guard let seedHashHex = mainRepository.createSeedHashHexForExport(),
-              let reference = mainRepository.createReferenceForExport(),
+        guard let seedHashHex = mainRepository.createSeedHashHexForExport(forVault: vaultID),
+              let reference = mainRepository.createReferenceForExport(forVault: vaultID),
               let kdfSpec = try? mainRepository.jsonEncoder.encode(KDFSpec.default),
               let deviceID = mainRepository.deviceID
         else {

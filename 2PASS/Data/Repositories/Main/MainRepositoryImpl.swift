@@ -21,10 +21,9 @@ final class MainRepositoryImpl: MainRepository {
     
     var _empheralDeviceID: UUID?
     var _ephemeralMasterKey: MasterKey?
-    var _selectedVault: VaultEncryptedData?
-    var _empheralSecureKey: SecureKey?
-    var _empheralTrustedKey: TrustedKey?
-    var _empheralExteralKey: ExternalKey?
+    var _empheralTrustedKeys: [VaultID: TrustedKey] = [:]
+    var _empheralSecureKeys: [VaultID: SecureKey] = [:]
+    var _empheralExternalKeys: [VaultID: ExternalKey] = [:]
     var _empheralSeed: Seed?
     var _empheralEntropy: Entropy?
     var _empheralWords: [String]?
@@ -48,9 +47,9 @@ final class MainRepositoryImpl: MainRepository {
     
     var authContext = LAContext()
     
-    var _trustedKeySymm: SymmetricKey?
-    var _secureKeySymm: SymmetricKey?
-    var _externalKeySymm: SymmetricKey?
+    var _trustedKeySymms: [VaultID: SymmetricKey] = [:]
+    var _secureKeySymms: [VaultID: SymmetricKey] = [:]
+    var _externalKeySymms: [VaultID: SymmetricKey] = [:]
     
     let cameraPermissions: CameraPermissions
     let userDefaultsDataSource: UserDefaultsDataSource

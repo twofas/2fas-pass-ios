@@ -34,9 +34,9 @@ public protocol ItemsInteracting: AnyObject {
         _ itemIDs: [ItemID],
         to protectionLevel: ItemProtectionLevel
     ) throws(ItemsInteractorSaveError) -> [ItemData]
-    
+
     func saveStorage()
-    
+
     func listItems(
         searchPhrase: String?,
         tagId: ItemTagID?,
@@ -48,30 +48,30 @@ public protocol ItemsInteracting: AnyObject {
     ) -> [ItemData]
     func listTrashedItems() -> [ItemData]
     func listAllItems() -> [ItemData]
-    
+
     func getPasswordEncryptedContents(
         for itemID: ItemID,
         checkInTrash: Bool
     ) -> Result<String?, ItemsInteractorGetError>
     func getItem(for item: ItemID, checkInTrash: Bool) -> ItemData?
-    func listEncryptedItems() -> [ItemEncryptedData]
+    func listEncryptedItems(vaultID: VaultID) -> [ItemEncryptedData]
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
     func createEncryptedItem(_ item: ItemEncryptedData)
     func updateEncryptedItem(_ item: ItemEncryptedData)
-    
+
     func deleteItem(for itemID: ItemID)
     func markAsTrashed(for itemID: ItemID)
     @discardableResult func markAsTrashed(for itemIDs: [ItemID]) -> [ItemData]
     func externalMarkAsTrashed(for itemID: ItemID)
     func markAsNotTrashed(for itemID: ItemID)
-    
-    @discardableResult func loadTrustedKey() -> Bool
-    
-    func encrypt(_ string: String, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data?
-    func encryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data?
-    func decrypt(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> String?
-    func decryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data?
-    func decryptContent<T>(_ result: T.Type, from data: Data, protectionLevel: ItemProtectionLevel) -> T? where T: Decodable
+
+    @discardableResult func loadTrustedKey(vaultID: VaultID) -> Bool
+
+    func encrypt(_ string: String, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> Data?
+    func encryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> Data?
+    func decrypt(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String?
+    func decryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> Data?
+    func decryptContent<T>(_ result: T.Type, from data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> T? where T: Decodable
 
     // MARK: - Change Password
     func getCompleteDecryptedList() -> ([RawItemData], [ItemTagData])
@@ -80,27 +80,30 @@ public protocol ItemsInteracting: AnyObject {
         tags: [ItemTagData],
         completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     )
-    
+
     func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int
 }
 
 final class ItemsInteractor {
     private let mostUsedUsernamesCount = 5
-    
+
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let uriInteractor: URIInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let tagInteractor: TagInteracting
-    
+
     init(
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         protectionInteractor: ProtectionInteracting,
         uriInteractor: URIInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
         tagInteractor: TagInteracting
     ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.protectionInteractor = protectionInteractor
         self.uriInteractor = uriInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
@@ -117,17 +120,14 @@ extension ItemsInteractor: ItemsInteracting {
     }
 
     func createItem(_ item: ItemData) throws(ItemsInteractorSaveError) {
-        guard let selectedVault = mainRepository.selectedVault else {
-            Log("ItemsInteractor: Create item. No vault", module: .interactor, severity: .error)
-            throw .noVault
-        }
+        let itemVaultID = item.vaultId
 
         guard let contentData = try? item.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
 
-        guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel) else {
+        guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel, vaultID: itemVaultID) else {
             Log("ItemsInteractor: Create item. Encryption error", module: .interactor, severity: .error)
             return
         }
@@ -136,7 +136,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .login(let loginItem):
             mainRepository.createLoginItem(
                 itemID: loginItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 creationDate: loginItem.creationDate,
                 modificationDate: loginItem.modificationDate,
                 trashedStatus: loginItem.trashedStatus,
@@ -152,7 +152,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .secureNote(let secureNoteItem):
             mainRepository.createSecureNoteItem(
                 itemID: secureNoteItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 creationDate: secureNoteItem.creationDate,
                 modificationDate: secureNoteItem.modificationDate,
                 trashedStatus: secureNoteItem.trashedStatus,
@@ -165,7 +165,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .paymentCard(let paymentCardItem):
             mainRepository.createPaymentCardItem(
                 itemID: paymentCardItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 creationDate: paymentCardItem.creationDate,
                 modificationDate: paymentCardItem.modificationDate,
                 trashedStatus: paymentCardItem.trashedStatus,
@@ -183,7 +183,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .wifi(let wifiItem):
             mainRepository.createWiFiItem(
                 itemID: wifiItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 creationDate: wifiItem.creationDate,
                 modificationDate: wifiItem.modificationDate,
                 trashedStatus: wifiItem.trashedStatus,
@@ -199,7 +199,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .raw:
             mainRepository.createItem(
                 itemID: item.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 creationDate: item.creationDate,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
@@ -221,23 +221,20 @@ extension ItemsInteractor: ItemsInteracting {
             contentType: item.contentType,
             contentVersion: item.contentVersion,
             content: contentDataEnc,
-            vaultID: selectedVault.vaultID,
+            vaultID: itemVaultID,
             tagIds: item.tagIds
         )
     }
     
     func updateItem(_ item: ItemData) throws(ItemsInteractorSaveError) {
-        guard let selectedVault = mainRepository.selectedVault else {
-            Log("ItemsInteractor: Update item. No vault", module: .interactor, severity: .error)
-            throw .noVault
-        }
+        let itemVaultID = item.vaultId
 
         guard let contentData = try? item.encodeContent(using: mainRepository.jsonEncoder) else {
             Log("ItemsInteractor - can't encode content", module: .interactor, severity: .error)
             throw .contentEncodingFailure
         }
 
-        guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel) else {
+        guard let contentDataEnc = encryptData(contentData, isSecureField: false, protectionLevel: item.protectionLevel, vaultID: itemVaultID) else {
             Log("ItemsInteractor: Update item. Encryption error", module: .interactor, severity: .error)
             return
         }
@@ -246,7 +243,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .login(let loginItem):
             mainRepository.updateLoginItem(
                 itemID: loginItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 modificationDate: loginItem.modificationDate,
                 trashedStatus: loginItem.trashedStatus,
                 protectionLevel: loginItem.protectionLevel,
@@ -261,7 +258,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .secureNote(let secureNoteItem):
             mainRepository.updateSecureNoteItem(
                 itemID: secureNoteItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 modificationDate: secureNoteItem.modificationDate,
                 trashedStatus: secureNoteItem.trashedStatus,
                 protectionLevel: secureNoteItem.protectionLevel,
@@ -273,7 +270,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .paymentCard(let paymentCardItem):
             mainRepository.updatePaymentCardItem(
                 itemID: paymentCardItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 modificationDate: paymentCardItem.modificationDate,
                 trashedStatus: paymentCardItem.trashedStatus,
                 protectionLevel: paymentCardItem.protectionLevel,
@@ -290,7 +287,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .wifi(let wifiItem):
             mainRepository.updateWiFiItem(
                 itemID: wifiItem.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 modificationDate: wifiItem.modificationDate,
                 trashedStatus: wifiItem.trashedStatus,
                 protectionLevel: wifiItem.protectionLevel,
@@ -305,7 +302,7 @@ extension ItemsInteractor: ItemsInteracting {
         case .raw:
             mainRepository.updateItem(
                 itemID: item.id,
-                vaultID: selectedVault.id,
+                vaultID: itemVaultID,
                 modificationDate: item.modificationDate,
                 trashedStatus: item.trashedStatus,
                 protectionLevel: item.protectionLevel,
@@ -325,11 +322,11 @@ extension ItemsInteractor: ItemsInteracting {
             contentType: item.contentType,
             contentVersion: item.contentVersion,
             content: contentDataEnc,
-            vaultID: selectedVault.vaultID,
+            vaultID: itemVaultID,
             tagIds: item.tagIds
         )
     }
-    
+
     func saveStorage() {
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
@@ -416,7 +413,8 @@ extension ItemsInteractor: ItemsInteracting {
         guard let decryptedPassword = decrypt(
             password,
             isSecureField: true,
-            protectionLevel: loginItem.protectionLevel
+            protectionLevel: loginItem.protectionLevel,
+            vaultID: loginItem.vaultId
         ) else {
             return .failure(.decryptionError)
         }
@@ -434,17 +432,13 @@ extension ItemsInteractor: ItemsInteracting {
         mainRepository.getEncryptedItemEntity(itemID: itemID)
     }
     
-    func listEncryptedItems() -> [ItemEncryptedData] {
-        guard let selectedVault = mainRepository.selectedVault else {
-            Log("ItemsInteractor: listEncryptedItems. No vault", module: .interactor, severity: .error)
-            return []
-        }
-        return mainRepository.listEncryptedItems(in: selectedVault.vaultID)
+    func listEncryptedItems(vaultID: VaultID) -> [ItemEncryptedData] {
+        return mainRepository.listEncryptedItems(in: vaultID)
             .filter({ $0.trashedStatus == .no })
     }
     
     func createEncryptedItem(_ item: ItemEncryptedData) {
-        guard let decyptedContent = decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
+        guard let decyptedContent = decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel, vaultID: item.vaultID) else {
             Log("Items interactor: createEncryptedItem. Error decrypting content", module: .interactor, severity: .error)
             return
         }
@@ -471,7 +465,7 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     func updateEncryptedItem(_ item: ItemEncryptedData) {
-        guard let decyptedContent = decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
+        guard let decyptedContent = decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel, vaultID: item.vaultID) else {
             Log("Items interactor: updateEncryptedItem. Error decrypting content", module: .interactor, severity: .error)
             return
         }
@@ -526,10 +520,6 @@ extension ItemsInteractor: ItemsInteracting {
     @discardableResult
     func markAsTrashed(for itemIDs: [ItemID]) -> [ItemData] {
         guard !itemIDs.isEmpty else { return [] }
-        guard let selectedVault = mainRepository.selectedVault else {
-            Log("ItemsInteractor: markAsTrashed batch. No vault", module: .interactor, severity: .error)
-            return []
-        }
 
         let date = mainRepository.currentDate
         let trashedStatus = ItemTrashedStatus.yes(trashingDate: date)
@@ -544,7 +534,6 @@ extension ItemsInteractor: ItemsInteracting {
         mainRepository.metadataItemsBatchUpdate(updatedItems)
 
         let encryptedItems = mainRepository.listEncryptedItems(
-            in: selectedVault.vaultID,
             itemIDs: itemIDs,
             excludeProtectionLevels: nil
         )
@@ -564,8 +553,8 @@ extension ItemsInteractor: ItemsInteracting {
         }
         mainRepository.encryptedItemsBatchUpdate(updatedEncryptedItems)
 
-        let deletedItems = itemIDs.map {
-            DeletedItemData(itemID: $0, vaultID: selectedVault.vaultID, kind: .login, deletedAt: date)
+        let deletedItems = items.map {
+            DeletedItemData(itemID: $0.id, vaultID: $0.vaultId, kind: .login, deletedAt: date)
         }
         deletedItemsInteractor.createDeletedItems(deletedItems)
 
@@ -625,35 +614,35 @@ extension ItemsInteractor: ItemsInteracting {
         deletedItemsInteractor.deleteDeletedItem(id: itemID)
     }
     
-    func encrypt(_ string: String, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data? {
+    func encrypt(_ string: String, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> Data? {
         guard let data = string.data(using: .utf8) else { return nil }
-        return encryptData(data, isSecureField: isSecureField, protectionLevel: protectionLevel)
+        return encryptData(data, isSecureField: isSecureField, protectionLevel: protectionLevel, vaultID: vaultID)
     }
-    
-    func encryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data? {
-        guard let key = mainRepository.getKey(isPassword: isSecureField, protectionLevel: protectionLevel) else {
+
+    func encryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> Data? {
+        guard let key = mainRepository.getKey(isPassword: isSecureField, protectionLevel: protectionLevel, forVault: vaultID) else {
             return nil
         }
         return mainRepository.encrypt(data, key: key)
     }
-    
-    func decryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> Data? {
-        guard let key = mainRepository.getKey(isPassword: isSecureField, protectionLevel: protectionLevel),
+
+    func decryptData(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> Data? {
+        guard let key = mainRepository.getKey(isPassword: isSecureField, protectionLevel: protectionLevel, forVault: vaultID),
               let decryptedData = mainRepository.decrypt(data, key: key) else {
             return nil
         }
         return decryptedData
     }
-    
-    func decrypt(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel) -> String? {
-        guard let decryptedData = decryptData(data, isSecureField: isSecureField, protectionLevel: protectionLevel) else {
+
+    func decrypt(_ data: Data, isSecureField: Bool, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String? {
+        guard let decryptedData = decryptData(data, isSecureField: isSecureField, protectionLevel: protectionLevel, vaultID: vaultID) else {
             return nil
         }
         return String(data: decryptedData, encoding: .utf8)
     }
-    
-    func decryptContent<T>(_ result: T.Type, from data: Data, protectionLevel: ItemProtectionLevel) -> T? where T : Decodable {
-        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: protectionLevel),
+
+    func decryptContent<T>(_ result: T.Type, from data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> T? where T : Decodable {
+        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: protectionLevel, forVault: vaultID),
               let decryptedData = mainRepository.decrypt(data, key: key) else {
             return nil
         }
@@ -665,13 +654,8 @@ extension ItemsInteractor: ItemsInteracting {
         to protectionLevel: ItemProtectionLevel
     ) throws(ItemsInteractorSaveError) -> [ItemData] {
         guard itemIDs.isEmpty == false else { return [] }
-        guard let selectedVault = mainRepository.selectedVault else {
-            Log("ItemsInteractor: Reencrypt items. No vault", module: .interactor, severity: .error)
-            throw .noVault
-        }
         let modificationDate = mainRepository.currentDate
         let encryptedItems = mainRepository.listEncryptedItems(
-            in: selectedVault.vaultID,
             itemIDs: itemIDs,
             excludeProtectionLevels: nil
         )
@@ -681,36 +665,38 @@ extension ItemsInteractor: ItemsInteracting {
         updatedItems.reserveCapacity(encryptedItems.count)
         updatedRawItems.reserveCapacity(encryptedItems.count)
         updatedEncryptedItems.reserveCapacity(encryptedItems.count)
-        
+
         for encryptedItem in encryptedItems {
             guard encryptedItem.protectionLevel != protectionLevel else { continue }
+            let itemVaultID = encryptedItem.vaultID
             guard let decryptedContent = decryptData(
                 encryptedItem.content,
                 isSecureField: false,
-                protectionLevel: encryptedItem.protectionLevel
+                protectionLevel: encryptedItem.protectionLevel,
+                vaultID: itemVaultID
             ) else {
                 throw .encryptionError
             }
             guard let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: decryptedContent).value as? [String: Any] else {
                 throw .contentEncodingFailure
             }
-            
+
             var updatedContentDict = contentDict
             for (key, value) in contentDict where encryptedItem.contentType.isSecureField(key: key) {
                 guard let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) else {
                     throw .contentEncodingFailure
                 }
-                guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: encryptedItem.protectionLevel),
-                      let encrypted = encrypt(decrypted, isSecureField: true, protectionLevel: protectionLevel) else {
+                guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: encryptedItem.protectionLevel, vaultID: itemVaultID),
+                      let encrypted = encrypt(decrypted, isSecureField: true, protectionLevel: protectionLevel, vaultID: itemVaultID) else {
                     throw .encryptionError
                 }
                 updatedContentDict[key] = encrypted.base64EncodedString()
             }
-            
+
             guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(updatedContentDict)) else {
                 throw .contentEncodingFailure
             }
-            
+
             let metadata = ItemMetadata(
                 creationDate: encryptedItem.creationDate,
                 modificationDate: modificationDate,
@@ -718,25 +704,26 @@ extension ItemsInteractor: ItemsInteracting {
                 trashedStatus: encryptedItem.trashedStatus,
                 tagIds: encryptedItem.tagIds
             )
-            
+
             let updatedRawItem = RawItemData(
                 id: encryptedItem.itemID,
-                vaultId: encryptedItem.vaultID,
+                vaultId: itemVaultID,
                 metadata: metadata,
                 name: updatedContentDict[ItemContentNameKey] as? String,
                 contentType: encryptedItem.contentType,
                 contentVersion: encryptedItem.contentVersion,
                 content: contentData
             )
-            
+
             guard let encryptedContent = encryptData(
                 contentData,
                 isSecureField: false,
-                protectionLevel: protectionLevel
+                protectionLevel: protectionLevel,
+                vaultID: itemVaultID
             ) else {
                 throw .encryptionError
             }
-            
+
             updatedEncryptedItems.append(.init(
                 itemID: encryptedItem.itemID,
                 creationDate: encryptedItem.creationDate,
@@ -746,11 +733,11 @@ extension ItemsInteractor: ItemsInteracting {
                 contentType: encryptedItem.contentType,
                 contentVersion: encryptedItem.contentVersion,
                 content: encryptedContent,
-                vaultID: selectedVault.vaultID,
+                vaultID: itemVaultID,
                 tagIds: encryptedItem.tagIds
             ))
             updatedRawItems.append(updatedRawItem)
-            
+
             guard let updatedItem = ItemData(updatedRawItem, decoder: mainRepository.jsonDecoder) else {
                 throw .contentEncodingFailure
             }
@@ -766,24 +753,21 @@ extension ItemsInteractor: ItemsInteracting {
     }
     
     // MARK: - Change Password
-    
-    func getCompleteDecryptedList() -> ([RawItemData], [ItemTagData])  {
-        guard let selectedVault = mainRepository.selectedVault else {
-            fatalError()
-        }
-        
+
+    func getCompleteDecryptedList() -> ([RawItemData], [ItemTagData]) {
         return (
-            mainRepository.listEncryptedItems(in: selectedVault.vaultID)
+            mainRepository.listAllEncryptedItems()
                 .compactMap({ entity -> RawItemData? in
                     do {
-                        guard let decryptedContent = decryptData(entity.content, isSecureField: false, protectionLevel: entity.protectionLevel), let contentDict = try mainRepository.jsonDecoder.decode(AnyCodable.self, from: decryptedContent).value as? [String: Any] else {
+                        let itemVaultID = entity.vaultID
+                        guard let decryptedContent = decryptData(entity.content, isSecureField: false, protectionLevel: entity.protectionLevel, vaultID: itemVaultID), let contentDict = try mainRepository.jsonDecoder.decode(AnyCodable.self, from: decryptedContent).value as? [String: Any] else {
                             return nil
                         }
-                        
+
                         var newContentDict = contentDict
                         for (key, value) in contentDict where entity.contentType.isSecureField(key: key) {
                             if let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) {
-                                guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: entity.protectionLevel),
+                                guard let decrypted = decrypt(dataValue, isSecureField: true, protectionLevel: entity.protectionLevel, vaultID: itemVaultID),
                                       let decryptedData = decrypted.data(using: .utf8)?.base64EncodedString() else {
                                     return nil
                                 }
@@ -792,11 +776,11 @@ extension ItemsInteractor: ItemsInteracting {
                                 return nil
                             }
                         }
-                        
+
                         let newContent = try mainRepository.jsonEncoder.encode(AnyCodable(newContentDict))
                         return RawItemData(
                             id: entity.id,
-                            vaultId: entity.vaultID,
+                            vaultId: itemVaultID,
                             metadata: .init(
                                 creationDate: entity.creationDate,
                                 modificationDate: entity.modificationDate,
@@ -824,30 +808,25 @@ extension ItemsInteractor: ItemsInteracting {
     ) {
         let date = mainRepository.currentDate
         Log("ItemsInteractor - Reencrypting \(list.count) items", module: .interactor)
-        guard let selectedVaultID = mainRepository.selectedVault?.vaultID else {
-            Log("ItemsInteractor: Update item. No vault", module: .interactor, severity: .error)
-            completion(.failure(.noVault))
-            return
-        }
-        
+
         enum DataFiller1: Equatable {
             case itemData(RawItemData)
             case error
         }
-        
+
         var itemsEncryptedBuffer: [DataFiller1] = list.map({ .itemData($0) })
-        
+
         itemsEncryptedBuffer.withUnsafeMutableBufferPointer { buffer in
             DispatchQueue.concurrentPerform(iterations: buffer.count) { i in
                 let current = buffer[i]
-                
+
                 switch current {
                 case .itemData(let rawItem):
                     if let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: rawItem.content).value as? [String: Any] {
                         var newContentDict = contentDict
                         for (key, value) in contentDict where rawItem.isSecureField(key: key) {
                             if let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) {
-                                if let decrypted = encryptData(dataValue, isSecureField: true, protectionLevel: rawItem.protectionLevel) {
+                                if let decrypted = encryptData(dataValue, isSecureField: true, protectionLevel: rawItem.protectionLevel, vaultID: rawItem.vaultId) {
                                     newContentDict[key] = decrypted.base64EncodedString()
                                 } else {
                                     buffer[i] = .error
@@ -855,46 +834,46 @@ extension ItemsInteractor: ItemsInteracting {
                                 }
                             }
                         }
-                        
+
                         guard let contentData = try? mainRepository.jsonEncoder.encode(AnyCodable(newContentDict)) else {
                             buffer[i] = .error
                             return
                         }
-                        
+
                         buffer[i] = .itemData(rawItem.updateContent(contentData, using: date))
                     }
                 default: break
                 }
             }
         }
-        
+
         Log("ItemsInteractor - Secure fields encrypted", module: .interactor)
-        
+
         let itemsEncrypted = itemsEncryptedBuffer.compactMap {
             switch $0 {
             case .itemData(let itemData): itemData
             case .error: nil
             }
         }
-        
+
         guard itemsEncrypted.count == itemsEncryptedBuffer.count else {
             completion(.failure(.encryptionError))
             return
         }
-        
+
         enum DataFiller2: Equatable {
             case empty
             case itemData(ItemEncryptedData)
             case error
         }
-        
+
         var fullyEncryptedBuffer: [DataFiller2] = [DataFiller2](repeating: .empty, count: itemsEncrypted.count)
-        
+
         fullyEncryptedBuffer.withUnsafeMutableBufferPointer { buffer in
             DispatchQueue.concurrentPerform(iterations: buffer.count) { i in
                 let current = itemsEncrypted[i]
-                
-                if let contentDataEnc = encryptData(current.content, isSecureField: false, protectionLevel: current.protectionLevel) {
+
+                if let contentDataEnc = encryptData(current.content, isSecureField: false, protectionLevel: current.protectionLevel, vaultID: current.vaultId) {
                     buffer[i] = .itemData(
                         ItemEncryptedData(
                             itemID: current.id,
@@ -905,7 +884,7 @@ extension ItemsInteractor: ItemsInteracting {
                             contentType: current.contentType,
                             contentVersion: current.contentVersion,
                             content: contentDataEnc,
-                            vaultID: selectedVaultID,
+                            vaultID: current.vaultId,
                             tagIds: current.tagIds
                         )
                     )
@@ -914,40 +893,40 @@ extension ItemsInteractor: ItemsInteracting {
                 }
             }
         }
-        
+
         let fullyEncrypted = fullyEncryptedBuffer.compactMap {
             switch $0 {
             case .itemData(let passData): passData
             default: nil
             }
         }
-        
+
         guard fullyEncrypted.count == fullyEncryptedBuffer.count else {
             completion(.failure(.encryptionError))
             return
         }
-        
+
         Log("ItemsInteractor - rest of the field encrypted", module: .interactor)
-        
+
         mainRepository.itemsBatchUpdate(itemsEncrypted)
         Log("ItemsInteractor - Items entries updated", module: .interactor)
         mainRepository.encryptedItemsBatchUpdate(fullyEncrypted)
         Log("ItemsInteractor - Items encrypted entries updated", module: .interactor)
-        
+
         tagInteractor.batchUpdateTagsForNewEncryption(tags)
-        
+
         saveStorage()
-        
+
         completion(.success(()))
     }
     
-    @discardableResult func loadTrustedKey() -> Bool {
-        guard let trustedKey = mainRepository.trustedKeyFromVault else {
+    @discardableResult func loadTrustedKey(vaultID: VaultID) -> Bool {
+        guard let trustedKey = mainRepository.trustedKeyFromVault(vaultID) else {
             Log("ItemsInteractor - error while loading trusted key", module: .interactor, severity: .error)
             return false
         }
-                
-        mainRepository.setTrustedKey(trustedKey)
+
+        mainRepository.setTrustedKey(trustedKey, forVault: vaultID)
         return true
     }
     

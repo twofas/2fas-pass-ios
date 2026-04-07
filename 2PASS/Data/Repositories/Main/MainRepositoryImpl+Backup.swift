@@ -94,19 +94,13 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.clearWebDAVConfig()
     }
     
-    var webDAVSeedHash: String? {
-        guard let vaultID = _selectedVault?.vaultID,
-              let seed,
+    func webDAVSeedHash(forVault vaultID: VaultID) -> String? {
+        guard let seed,
               let seedHashHex = generateExchangeSeedHash(vaultID, using: seed)
         else {
             return nil
         }
-        
         return seedHashHex
-    }
-    
-    var webDAVCurrentVaultID: VaultID? {
-        _selectedVault?.vaultID
     }
     
     var webDAVIsConnected: Bool {

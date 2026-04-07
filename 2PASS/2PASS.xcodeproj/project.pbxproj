@@ -481,6 +481,7 @@
 		54DBC5D62E950EC000092B00 /* InMemory */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InMemory; sourceTree = "<group>"; };
 		54EABA602DD252760018189F /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
 		54FD31A22E45644E00DFAC70 /* Tags */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tags; sourceTree = "<group>"; };
+		BA8FB7EB939D4706B1F81E90 /* ManageVaults */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ManageVaults; sourceTree = "<group>"; };
 		C2B0FC1C2CE91C4D005CFADD /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C2B0FC232CE91C4D005CFADD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
 		C8DDE0B8ABFFDE9B897416CE /* CredentialExchange */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CredentialExchange; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -958,6 +959,7 @@
 				549B1F652E8C01DA00228FE2 /* RestoreVault */,
 				547139D72D89644100A81142 /* AppSecurity */,
 				54B671632D86EC3100AB4691 /* About */,
+				BA8FB7EB939D4706B1F81E90 /* ManageVaults */,
 				54B664B42D85752200AB4691 /* Trash */,
 				54405B542D93FD7A009C66C1 /* MasterPassword */,
 				54AFB3212DA441BB00EE00E9 /* Connect */,
@@ -1212,6 +1214,7 @@
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				54EABA602DD252760018189F /* Backup */,
 				54FD31A22E45644E00DFAC70 /* Tags */,
+				BA8FB7EB939D4706B1F81E90 /* ManageVaults */,
 				C8DDE0B8ABFFDE9B897416CE /* CredentialExchange */,
 			);
 			name = 2PASS;

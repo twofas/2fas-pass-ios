@@ -8,7 +8,7 @@ import Foundation
 
 extension MainRepositoryImpl {
     var isUserLoggedIn: Bool {
-        _empheralSecureKey != nil
+        !_empheralTrustedKeys.isEmpty
     }
     
     var isAppInBackground: Bool {

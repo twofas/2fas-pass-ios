@@ -23,19 +23,22 @@ public protocol ExportInteracting: AnyObject {
 
 final class ExportInteractor {
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
     private let uriInteractor: URIInteracting
     private let queue: DispatchQueue
     private let writeQueue: DispatchQueue
-    
+
     init(
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         itemsInteractor: ItemsInteracting,
         tagInteractor: TagInteracting,
         uriInteractor: URIInteracting
     ) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.itemsInteractor = itemsInteractor
         self.tagInteractor = tagInteractor
         self.uriInteractor = uriInteractor
@@ -52,16 +55,17 @@ extension ExportInteractor: ExportInteracting {
                 completion(result)
             }
         }
+        let vaultID = self.vaultsInteractor.defaultVaultID
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let vault = self.mainRepository.selectedVault else {
+            guard let vault = self.vaultsInteractor.vault(for: vaultID) else {
                 end(.failure(.noSelectedVault))
                 return
             }
-            
+
             DispatchQueue.main.async {
-                let items = self.mainRepository.listEncryptedItems(in: vault.id)
+                let items = self.mainRepository.listEncryptedItems(in: vaultID)
                 let tags = self.tagInteractor.listAllTags()
-                let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vault.vaultID, limit: nil) : []
+                let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vaultID, limit: nil) : []
                 
                 DispatchQueue.global(qos: .userInitiated).async {
                     guard exportIfEmpty || (!items.isEmpty || !deleted.isEmpty) else {
@@ -69,19 +73,19 @@ extension ExportInteractor: ExportInteracting {
                         return
                     }
                     
-                    let exchangeLogins = items.compactMap { self.itemToExchangeItems($0, encrypt: encrypt) }
+                    let exchangeLogins = items.compactMap { self.itemToExchangeItems($0, encrypt: encrypt, vaultID: vaultID) }
                     let exchangeDeleted = deleted.map { self.deletedToExchangeDeleted($0) }
                     let exchangeTags = tags.map { self.tagsToExchangeTags($0) }
                     let jsonEncoder = self.mainRepository.jsonEncoder
                     
                     if encrypt {
-                        guard let key = self.mainRepository.cachedExternalKey else {
+                        guard let key = self.mainRepository.cachedExternalKey(forVault: vaultID) else {
                             completion(.failure(.missingExternalKey))
                             return
                         }
-                        
-                        guard let seedHashHex = self.mainRepository.createSeedHashHexForExport(),
-                              let reference = self.mainRepository.createReferenceForExport()
+
+                        guard let seedHashHex = self.mainRepository.createSeedHashHexForExport(forVault: vaultID),
+                              let reference = self.mainRepository.createReferenceForExport(forVault: vaultID)
                         else {
                             end(.failure(.encryptionDef))
                             return
@@ -297,7 +301,7 @@ private extension ExportInteractor {
     }
     
     func mainVault(
-        _ vault: VaultEncryptedData,
+        _ vault: VaultData,
         logins: [ExchangeVault.ExchangeVaultItem.ExchangeItem]?,
         loginsEncrypted: [String]?,
         loginsDeleted: [ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem]?,
@@ -329,8 +333,8 @@ private extension ExportInteractor {
         )
     }
     
-    func itemToExchangeItems(_ item: ItemEncryptedData, encrypt: Bool) -> ExchangeVault.ExchangeVaultItem.ExchangeItem? {
-        guard let content = itemsInteractor.decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel) else {
+    func itemToExchangeItems(_ item: ItemEncryptedData, encrypt: Bool, vaultID: VaultID) -> ExchangeVault.ExchangeVaultItem.ExchangeItem? {
+        guard let content = itemsInteractor.decryptData(item.content, isSecureField: false, protectionLevel: item.protectionLevel, vaultID: vaultID) else {
             return nil
         }
         
@@ -375,7 +379,7 @@ private extension ExportInteractor {
                         if encrypt {
                             return passwordValue.base64EncodedString()
                         } else {
-                            return itemsInteractor.decrypt(passwordValue, isSecureField: true, protectionLevel: item.protectionLevel)
+                            return itemsInteractor.decrypt(passwordValue, isSecureField: true, protectionLevel: item.protectionLevel, vaultID: vaultID)
                         }
                     }
                     return nil
@@ -406,7 +410,7 @@ private extension ExportInteractor {
                 if encrypt {
                     return contentDict
                 } else {
-                    guard let key = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel) else {
+                    guard let key = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel, forVault: vaultID) else {
                         return nil
                     }
                     return decryptSecureFields(in: contentDict, contentType: item.contentType, using: key)

@@ -18,18 +18,21 @@ public protocol DeletedItemsInteracting: AnyObject {
 
 final class DeletedItemsInteractor {
     private let mainRepository: MainRepository
-    
-    init(mainRepository: MainRepository) {
+    private let vaultsInteractor: VaultsInteracting
+
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
+    init(mainRepository: MainRepository, vaultsInteractor: VaultsInteracting) {
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
     }
 }
 
 extension DeletedItemsInteractor: DeletedItemsInteracting {
     func createDeletedItem(id: ItemTagID, kind: DeletedItemData.Kind, deletedAt: Date) {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("DeletedItemsInteractor: Error while getting vaultID for Deleted Password creation", module: .interactor, severity: .error)
-            return
-        }
+        let vaultID = self.vaultID
         if let existing = mainRepository.deletedItem(id: id) {
             if deletedAt > existing.deletedAt {
                 mainRepository.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
@@ -41,10 +44,7 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
 
     func createDeletedItems(_ items: [DeletedItemData]) {
         guard !items.isEmpty else { return }
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("DeletedItemsInteractor: Error while getting vaultID for batch Deleted Password creation", module: .interactor, severity: .error)
-            return
-        }
+        let vaultID = self.vaultID
         let ids = Set(items.map(\.itemID))
         let existingByID = mainRepository.listDeletedItems(ids: ids)
             .reduce(into: [DeletedItemID: DeletedItemData]()) { $0[$1.itemID] = $1 }
@@ -65,10 +65,6 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
     }
 
     func listDeletedItems() -> [DeletedItemData] {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("DeletedItemsInteractor: Error while getting vaultID for listing Deleted Password", module: .interactor, severity: .error)
-            return []
-        }
         return mainRepository.listDeletedItems(in: vaultID, limit: nil)
     }
     
@@ -77,10 +73,6 @@ extension DeletedItemsInteractor: DeletedItemsInteracting {
     }
     
     func updateDeletedItem(id: ItemID, kind: DeletedItemData.Kind, deletedAt: Date) {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("DeletedItemsInteractor: Error while getting vaultID for Deleted Password update", module: .interactor, severity: .error)
-            return
-        }
         mainRepository.updateDeletedItem(id: id, kind: kind, deletedAt: deletedAt, in: vaultID)
     }
 

@@ -49,7 +49,10 @@ extension ModuleInteractorFactory {
             webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
             pushNotificationsInteractor: InteractorFactory.shared.pushNotificationsPermissionInteractor(),
-            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
+            paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            biometryInteractor: InteractorFactory.shared.biometryInteractor(),
+            protectionInteractor: InteractorFactory.shared.protectionInteractor()
         )
     }
     
@@ -272,6 +275,16 @@ extension ModuleInteractorFactory {
         )
     }
     
+    @MainActor
+    func manageVaultsModuleInteractor() -> ManageVaultsModuleInteracting {
+        ManageVaultsModuleInteractor(
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
+            protectionInteractor: InteractorFactory.shared.protectionInteractor(),
+            currentDateInteractor: InteractorFactory.shared.currentDateInteractor()
+        )
+    }
+
     @MainActor
     func aboutModuleInteractor() -> AboutModuleInteracting {
         AboutModuleInteractor(

@@ -28,6 +28,7 @@ public final class ModuleInteractorFactory {
     func itemEditorInteractor(editItemID: ItemID?, changeRequest: (any ItemDataChangeRequest)? = nil) -> ItemEditorModuleInteracting {
         ItemEditorModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
             loginItemInteractor: InteractorFactory.shared.loginItemInteractor(),
             secureNoteItemInteractor: InteractorFactory.shared.secureNoteInteractor(),
             paymentCardItemInteractor: InteractorFactory.shared.paymentCardItemInteractor(),
@@ -51,6 +52,7 @@ public final class ModuleInteractorFactory {
         PasswordsModuleInteractor(
             securityInteractor: InteractorFactory.shared.securityInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),

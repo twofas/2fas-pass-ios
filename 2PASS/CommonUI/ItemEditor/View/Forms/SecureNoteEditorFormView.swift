@@ -30,6 +30,8 @@ struct SecureNoteEditorFormView: View {
     private var focusField: Field?
     
     var body: some View {
+        ItemEditorVaultSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
+
         HStack {
             Spacer()
             ItemEditorIconView(content: .contentType(.secureNote))
@@ -79,7 +81,6 @@ struct SecureNoteEditorFormView: View {
         }
         
         ItemEditorProtectionLevelSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
-        
         ItemEditorTagsSection(presenter: presenter, resignFirstResponder: resignFirstResponder)
         
         if presenter.additionalInfo != nil {

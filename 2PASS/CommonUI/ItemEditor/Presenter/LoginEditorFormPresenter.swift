@@ -86,7 +86,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
 
             let decryptedPassword: String
             if let encrypted = initialData.password {
-                decryptedPassword = interactor.decryptSecureField(encrypted, protectionLevel: initialData.protectionLevel) ?? ""
+                decryptedPassword = interactor.decryptSecureField(encrypted, protectionLevel: initialData.protectionLevel, vaultID: initialData.vaultId) ?? ""
             } else {
                 decryptedPassword = ""
             }
@@ -259,6 +259,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
             notes: notes.nonBlankTrimmedOrNil,
             iconType: iconType,
             protectionLevel: protectionLevel,
+            vaultID: selectedVaultID,
             uris: checkedURIs.map { content in
                 PasswordURI(uri: content.original, match: content.match)
             },

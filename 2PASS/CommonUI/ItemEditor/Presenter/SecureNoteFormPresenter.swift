@@ -45,7 +45,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
         if let initialData {
             if initialData.protectionLevel == .normal || changeRequest != nil {
                 let text = initialData.content.text.flatMap {
-                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                    interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel, vaultID: initialData.vaultId)
                 } ?? ""
                 self.text = changeRequest?.text ?? text
                 self.initialText = text
@@ -77,6 +77,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
             text: text.nonBlankTrimmedOrNil,
             additionalInfo: additionalInfo?.nonBlankTrimmedOrNil,
             protectionLevel: protectionLevel,
+            vaultID: selectedVaultID,
             tagIds: Array(selectedTags.map { $0.tagID })
         )
     }
@@ -84,6 +85,6 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
     private func decryptNote() -> String {
         guard let initialSecureNoteItem,
               let encrypted = initialSecureNoteItem.content.text else { return "" }
-        return interactor.decryptSecureField(encrypted, protectionLevel: initialSecureNoteItem.protectionLevel) ?? ""
+        return interactor.decryptSecureField(encrypted, protectionLevel: initialSecureNoteItem.protectionLevel, vaultID: initialSecureNoteItem.vaultId) ?? ""
     }
 }

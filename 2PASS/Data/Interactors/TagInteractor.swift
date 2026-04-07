@@ -44,13 +44,20 @@ public protocol TagInteracting: AnyObject {
 final class TagInteractor {
     private let deletedItemsInteractor: DeletedItemsInteracting
     private let mainRepository: MainRepository
-    
+    private let vaultsInteractor: VaultsInteracting
+
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
     init(
         deletedItemsInteractor: DeletedItemsInteracting,
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting
     ) {
         self.deletedItemsInteractor = deletedItemsInteractor
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
     }
 }
 
@@ -75,10 +82,6 @@ extension TagInteractor: TagInteracting {
     }
 
     func createTag(name: String, color: ItemTagColor) {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("TagInteractor: Error while getting vaultID for tag creation", module: .interactor, severity: .error)
-            return
-        }
         createTag(
             data: .init(
                 tagID: ItemTagID(),
@@ -92,7 +95,7 @@ extension TagInteractor: TagInteracting {
     }
     
     func createTag(data: ItemTagData) {
-        guard let selectedVault = mainRepository.selectedVault else {
+        guard let selectedVault = mainRepository.getEncryptedVault(for: vaultID) else {
             Log("TagInteractor: Create tag. No vault", module: .interactor, severity: .error)
             return
         }
@@ -146,7 +149,7 @@ extension TagInteractor: TagInteracting {
     }
     
     func updateTag(data: ItemTagData) {
-        guard let selectedVault = mainRepository.selectedVault else {
+        guard let selectedVault = mainRepository.getEncryptedVault(for: vaultID) else {
             Log("TagInteractor: Update tag. No vault", module: .interactor, severity: .error)
             return
         }
@@ -190,7 +193,7 @@ extension TagInteractor: TagInteracting {
     }
     
     func deleteTag(tagID: ItemTagID) {
-        guard let selectedVault = mainRepository.selectedVault else {
+        guard let selectedVault = mainRepository.getEncryptedVault(for: vaultID) else {
             Log("Tag interactor: Delete tag. No vault", module: .interactor, severity: .error)
             return
         }
@@ -248,10 +251,6 @@ extension TagInteractor: TagInteracting {
     }
     
     func listAllEncryptedTags() -> [ItemTagEncryptedData] {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("TagInteractor: Error while getting vaultID for listing tags", module: .interactor, severity: .error)
-            return []
-        }
         return mainRepository.listEncryptedTags(in: vaultID)
     }
 
@@ -272,10 +271,7 @@ extension TagInteractor: TagInteracting {
     }
     
     func batchUpdateTagsForNewEncryption(_ tags: [ItemTagData]) {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("TagInteractor: Error while getting vaultID for batch tag update", module: .interactor, severity: .error)
-            return
-        }
+        let vaultID = self.vaultID
         let date = mainRepository.currentDate
         var encryptedTags: [ItemTagEncryptedData] = []
 
@@ -352,7 +348,7 @@ extension TagInteractor: TagInteracting {
         tagsToAdd: Set<ItemTagID>,
         tagsToRemove: Set<ItemTagID>
     ) {
-        guard let selectedVault = mainRepository.selectedVault else {
+        guard let selectedVault = mainRepository.getEncryptedVault(for: vaultID) else {
             Log("TagInteractor: Apply tag changes. No vault", module: .interactor, severity: .error)
             return
         }
@@ -406,15 +402,11 @@ extension TagInteractor: TagInteracting {
 
 private extension TagInteractor {
     var lastPosition: Int {
-        guard let vaultID = mainRepository.selectedVault?.vaultID else {
-            Log("TagInteractor: Error while getting vaultID for last position", module: .interactor, severity: .error)
-            return 0
-        }
-        return mainRepository.listEncryptedTags(in: vaultID).count
+        mainRepository.listEncryptedTags(in: vaultID).count
     }
     
     func encryptName(_ name: String) -> Data? {
-        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal),
+        guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal, forVault: vaultID),
               let nameData = name.data(using: .utf8),
               let nameEnc = mainRepository.encrypt(nameData, key: key) else {
             return nil

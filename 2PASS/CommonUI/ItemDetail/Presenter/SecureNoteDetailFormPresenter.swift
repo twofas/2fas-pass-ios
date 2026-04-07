@@ -70,6 +70,6 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
 
     private func decryptNote() -> String? {
         guard let encrypted = secureNoteItem.content.text else { return nil }
-        return interactor.decryptSecureField(encrypted, protectionLevel: secureNoteItem.protectionLevel)
+        return interactor.decryptSecureField(encrypted, protectionLevel: secureNoteItem.protectionLevel, vaultID: secureNoteItem.vaultId)
     }
 }

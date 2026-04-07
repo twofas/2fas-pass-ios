@@ -54,7 +54,7 @@ final class WiFiEditorFormPresenter: ItemEditorFormPresenter {
     ) {
         if let initialData {
             let decryptedPassword = initialData.content.password.flatMap {
-                interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel)
+                interactor.decryptSecureField($0, protectionLevel: initialData.protectionLevel, vaultID: initialData.vaultId)
             } ?? ""
 
             self.ssid = changeRequest?.ssid ?? initialData.content.ssid ?? ""
@@ -89,6 +89,7 @@ final class WiFiEditorFormPresenter: ItemEditorFormPresenter {
             securityType: securityType,
             hidden: hidden,
             protectionLevel: protectionLevel,
+            vaultID: selectedVaultID,
             tagIds: Array(selectedTags.map { $0.tagID })
         )
     }

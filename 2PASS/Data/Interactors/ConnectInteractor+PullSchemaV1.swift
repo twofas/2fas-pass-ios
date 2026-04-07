@@ -106,7 +106,7 @@ extension ConnectInteractor {
 
         let passwordValue = {
             if let password = loginItem.password {
-                return itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: loginItem.protectionLevel)
+                return itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: loginItem.protectionLevel, vaultID: loginItem.vaultId)
             } else {
                 return ""
             }

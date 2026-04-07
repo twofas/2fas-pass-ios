@@ -18,6 +18,7 @@ protocol PasswordsViewControlling: AnyObject {
     func showEmptyScreen()
     func showSearchEmptyScreen()
     func filterDidChange()
+    func vaultSelectionDidChange()
     func clearSelectionForContentTypeChange()
     func exitEditingMode()
 }
@@ -88,6 +89,10 @@ extension PasswordsViewController: PasswordsViewControlling {
         ) {
             self.emptySearchList?.alpha = 1
         }
+    }
+
+    func vaultSelectionDidChange() {
+        updateVaultTitleMenu()
     }
 
     func clearSelectionForContentTypeChange() {

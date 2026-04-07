@@ -27,24 +27,31 @@ final class CloudSyncInteractor {
     private let encryptionHandler: EncryptionHandler
     private let localStorage: LocalStorage
     private let mainRepository: MainRepository
+    private let vaultsInteractor: VaultsInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
-        
+
+    private var vaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
     private var cloudDidSyncObservation: Task<Void, Never>?
     private var paymentStatusChanged: Task<Void, Never>?
-    
+
     private var takeoverVault = false
-    
+
     init(
         cloudCacheStorage: CloudCacheStorage,
         encryptionHandler: EncryptionHandler,
         localStorage: LocalStorage,
         mainRepository: MainRepository,
+        vaultsInteractor: VaultsInteracting,
         paymentStatusInteractor: PaymentStatusInteracting
     ) {
         self.cloudCacheStorage = cloudCacheStorage
         self.encryptionHandler = encryptionHandler
         self.localStorage = localStorage
         self.mainRepository = mainRepository
+        self.vaultsInteractor = vaultsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
         
         cloudDidSyncObservation = Task { [weak self] in
@@ -82,11 +89,7 @@ extension CloudSyncInteractor: CloudSyncInteracting {
             jsonDecoder: mainRepository.jsonDecoder,
             jsonEncoder: mainRepository.jsonEncoder
         )
-        guard let currentVaultID = mainRepository.selectedVault?.vaultID else {
-            Log("CloudSyncInteractor - Can't synchronize. No selected Vault", module: .interactor, severity: .error)
-            return
-        }
-        mainRepository.cloudSync.setVaultID(currentVaultID)
+        mainRepository.cloudSync.setVaultID(vaultID)
         mainRepository.cloudSync.setMultiDeviceSyncEnabled(paymentStatusInteractor.entitlements.multiDeviceSync, takingOver: takeoverVault)
         mainRepository.cloudSync.checkState()
         

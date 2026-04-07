@@ -28,16 +28,19 @@ struct EdgeImportInteractorTests {
         mockMainRepository
             .withSelectedVault(VaultEncryptedData(
                 vaultID: testVaultID,
-                name: "Test Vault",
+                name: "Test Vault".data(using: .utf8)!,
                 trustedKey: Data(),
                 createdAt: Date(),
                 updatedAt: Date(),
-                isEmpty: false
+                isEmpty: false,
+                color: nil,
+                icon: nil
             ))
             .withGetKey { _, _ in SymmetricKey(data: keyData) }
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
+            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -146,6 +149,7 @@ struct EdgeImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
+            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )

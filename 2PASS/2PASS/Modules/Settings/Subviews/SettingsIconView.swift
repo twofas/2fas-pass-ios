@@ -21,6 +21,7 @@ enum SettingsIcon {
     case about
     case help
     case discord
+    case vaults
     case debug
     case `import`
     case share
@@ -159,6 +160,8 @@ struct SettingsIconView: View {
             Image(systemName: "info.circle.fill")
         case .help:
             Image(systemName: "questionmark.circle.fill")
+        case .vaults:
+            Image(systemName: "rectangle.stack.fill")
         case .debug:
             Image(systemName: "ladybug.fill")
         case .import:

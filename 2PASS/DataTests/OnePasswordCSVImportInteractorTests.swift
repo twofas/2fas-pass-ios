@@ -24,6 +24,7 @@ struct OnePasswordCSVImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
+            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -392,6 +393,7 @@ extension OnePasswordCSVImportInteractorTests {
         func importCSV() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
+                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
                 uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
@@ -453,6 +455,7 @@ extension OnePasswordCSVImportInteractorTests {
         func import1Pux() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
+                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
                 uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )

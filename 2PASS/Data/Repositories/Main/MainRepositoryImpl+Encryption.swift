@@ -414,26 +414,23 @@ extension MainRepositoryImpl {
         keychainDataSource.clearMasterKey()
     }
     
-    var trustedKeyFromVault: TrustedKey? {
+    func trustedKeyFromVault(_ vaultID: VaultID) -> TrustedKey? {
         guard let appKey else {
-            Log("Can't get Secure Key - no App Key!", module: .mainRepository, severity: .error)
+            Log("Can't get Trusted Key from Vault - no App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        guard let trustedKeyEncrypted = selectedVault?.trustedKey else {
-            Log("Can't get Trusted Key - it's nil", module: .mainRepository, severity: .error)
+        guard let vault = getEncryptedVault(for: vaultID) else {
+            Log("Can't get Trusted Key - vault not found for \(vaultID)", module: .mainRepository, severity: .error)
             return nil
         }
-        
         guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        
-        guard let decrypted = decrypt(trustedKeyEncrypted, key: symm) else {
+        guard let decrypted = decrypt(vault.trustedKey, key: symm) else {
             Log("Can't get Trusted Key - error while decrypting!", module: .mainRepository, severity: .error)
             return nil
         }
-        
         return decrypted
     }
     
@@ -461,7 +458,9 @@ extension MainRepositoryImpl {
         keychainDataSource.clearBiometryKey()
     }
     
-    var trustedKey: TrustedKey? {
+    // MARK: - Per-Vault Key Accessors
+
+    func trustedKey(forVault vaultID: VaultID) -> TrustedKey? {
         guard let appKey else {
             Log("Can't get Trusted Key - no App Key!", module: .mainRepository, severity: .error)
             return nil
@@ -470,21 +469,18 @@ extension MainRepositoryImpl {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        
-        guard let empheralTrustedKey = _empheralTrustedKey else {
-            Log("Can't get Trusted Key - it's nil", module: .mainRepository, severity: .error)
+        guard let empheralTrustedKey = _empheralTrustedKeys[vaultID] else {
+            Log("Can't get Trusted Key - it's nil for vault \(vaultID)", module: .mainRepository, severity: .error)
             return nil
         }
-        
         guard let decrypted = decrypt(empheralTrustedKey, key: symm) else {
             Log("Can't get Trusted Key - error while decrypting!", module: .mainRepository, severity: .error)
             return nil
         }
-        
         return decrypted
     }
-    
-    func setTrustedKey(_ data: TrustedKey) {
+
+    func setTrustedKey(_ data: TrustedKey, forVault vaultID: VaultID) {
         guard let appKey else {
             Log("Can't save Trusted Key - no App Key!", module: .mainRepository, severity: .error)
             return
@@ -493,20 +489,14 @@ extension MainRepositoryImpl {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
-        
         guard let encrypted = encrypt(data, key: symm) else {
-            Log("Can't save Secure Key - error while encrypting", module: .mainRepository, severity: .error)
+            Log("Can't save Trusted Key - error while encrypting", module: .mainRepository, severity: .error)
             return
         }
-        
-        _empheralTrustedKey = encrypted
+        _empheralTrustedKeys[vaultID] = encrypted
     }
-    
-    func clearTrustedKey() {
-        _empheralTrustedKey = nil
-    }
-    
-    var secureKey: SecureKey? {
+
+    func secureKey(forVault vaultID: VaultID) -> SecureKey? {
         guard let appKey else {
             Log("Can't get Secure Key - no App Key!", module: .mainRepository, severity: .error)
             return nil
@@ -515,21 +505,18 @@ extension MainRepositoryImpl {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        
-        guard let empheralSecureKey = _empheralSecureKey else {
-            Log("Can't get Secure Key - it's nil", module: .mainRepository, severity: .error)
+        guard let empheralSecureKey = _empheralSecureKeys[vaultID] else {
+            Log("Can't get Secure Key - it's nil for vault \(vaultID)", module: .mainRepository, severity: .error)
             return nil
         }
-        
         guard let decrypted = decrypt(empheralSecureKey, key: symm) else {
             Log("Can't get Secure Key - error while decrypting!", module: .mainRepository, severity: .error)
             return nil
         }
-        
         return decrypted
     }
-    
-    func setSecureKey(_ data: SecureKey) {
+
+    func setSecureKey(_ data: SecureKey, forVault vaultID: VaultID) {
         guard let appKey else {
             Log("Can't save Secure Key - no App Key!", module: .mainRepository, severity: .error)
             return
@@ -538,30 +525,14 @@ extension MainRepositoryImpl {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
-        
         guard let encrypted = encrypt(data, key: symm) else {
             Log("Can't save Secure Key - error while encrypting", module: .mainRepository, severity: .error)
             return
         }
-        
-        _empheralSecureKey = encrypted
+        _empheralSecureKeys[vaultID] = encrypted
     }
-    
-    func clearSecureKey() {
-        _empheralSecureKey = nil
-    }
-    
-    var cachedExternalKey: SymmetricKey? {
-        if let _externalKeySymm {
-            return _externalKeySymm
-        }
-        guard let externalKey else {
-            return nil
-        }
-        return createSymmetricKey(from: externalKey)
-    }
-    
-    var externalKey: ExternalKey? {
+
+    func externalKey(forVault vaultID: VaultID) -> ExternalKey? {
         guard let appKey else {
             Log("Can't get External Key - no App Key!", module: .mainRepository, severity: .error)
             return nil
@@ -570,21 +541,18 @@ extension MainRepositoryImpl {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        
-        guard let empheralExteralKey = _empheralExteralKey else {
-            Log("Can't get External Key - it's nil", module: .mainRepository, severity: .error)
+        guard let empheralExternalKey = _empheralExternalKeys[vaultID] else {
+            Log("Can't get External Key - it's nil for vault \(vaultID)", module: .mainRepository, severity: .error)
             return nil
         }
-        
-        guard let decrypted = decrypt(empheralExteralKey, key: symm) else {
+        guard let decrypted = decrypt(empheralExternalKey, key: symm) else {
             Log("Can't get External Key - error while decrypting!", module: .mainRepository, severity: .error)
             return nil
         }
-        
         return decrypted
     }
-    
-    func setExternalKey(_ data: ExternalKey) {
+
+    func setExternalKey(_ data: ExternalKey, forVault vaultID: VaultID) {
         guard let appKey else {
             Log("Can't save External Key - no App Key!", module: .mainRepository, severity: .error)
             return
@@ -593,19 +561,21 @@ extension MainRepositoryImpl {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
-        
         guard let encrypted = encrypt(data, key: symm) else {
             Log("Can't save External Key - error while encrypting", module: .mainRepository, severity: .error)
             return
         }
-        
-        _empheralExteralKey = encrypted
+        _empheralExternalKeys[vaultID] = encrypted
     }
-    
-    func clearExternalKey() {
-        _empheralExteralKey = nil
+
+    func cachedExternalKey(forVault vaultID: VaultID) -> SymmetricKey? {
+        if let cached = _externalKeySymms[vaultID] {
+            return cached
+        }
+        guard let key = externalKey(forVault: vaultID) else { return nil }
+        return createSymmetricKey(from: key)
     }
-    
+
     var hasEncryptionReference: Bool {
         keychainDataSource.encryptionReference != nil
     }
@@ -768,19 +738,17 @@ extension MainRepositoryImpl {
     }
     
     func clearAllEmphemeral() {
-        clearTrustedKey()
-        clearSecureKey()
-        clearExternalKey()
-        
+        _empheralTrustedKeys.removeAll()
+        _empheralSecureKeys.removeAll()
+        _empheralExternalKeys.removeAll()
+
         clearCachedKeys()
-        
+
         clearSeed()
         clearEntropy()
         clearWords()
         clearSalt()
         clearEmpheralMasterKey()
-        
-        clearVault()
     }
     
     func generateTrustedKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String? {
@@ -799,35 +767,43 @@ extension MainRepositoryImpl {
         hmac(key: seed.hexEncodedString(), message: vaultID.exportString() + "/eKey")
     }
     
-    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey? {
+    func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel, forVault vaultID: VaultID) -> SymmetricKey? {
         switch (isPassword, protectionLevel) {
         case (false, .normal), (false, .confirm), (true, .normal):
-            if let _trustedKeySymm {
-                return _trustedKeySymm
+            if let cached = _trustedKeySymms[vaultID] {
+                return cached
             }
-            guard let trustedKey else {
+            guard let trustedKey = trustedKey(forVault: vaultID) else {
                 Log("Can't get trusted key for determining protection level", module: .mainRepository, severity: .error)
                 return nil
             }
             return createSymmetricKey(from: trustedKey)
         case (false, .topSecret), (true, .confirm), (true, .topSecret):
-            if let _secureKeySymm {
-                return _secureKeySymm
+            if let cached = _secureKeySymms[vaultID] {
+                return cached
             }
-            guard let secureKey else {
+            guard let secureKey = secureKey(forVault: vaultID) else {
                 Log("Can't get secure key for determining protection level", module: .mainRepository, severity: .error)
                 return nil
             }
             return createSymmetricKey(from: secureKey)
         }
     }
-    
-    func hasCachedKeys() -> Bool {
-        _trustedKeySymm != nil && _secureKeySymm != nil && _externalKeySymm != nil
+
+    func hasCachedKeys(for vaultID: VaultID) -> Bool {
+        _trustedKeySymms[vaultID] != nil && _secureKeySymms[vaultID] != nil && _externalKeySymms[vaultID] != nil
     }
-    
-    func preparedCachedKeys() {
-        guard let trustedKey, let secureKey, let externalKey else {
+
+    func clearCachedKeys(for vaultID: VaultID) {
+        _trustedKeySymms.removeValue(forKey: vaultID)
+        _secureKeySymms.removeValue(forKey: vaultID)
+        _externalKeySymms.removeValue(forKey: vaultID)
+    }
+
+    func preparedCachedKeys(for vaultID: VaultID) {
+        guard let trustedKey = trustedKey(forVault: vaultID),
+              let secureKey = secureKey(forVault: vaultID),
+              let externalKey = externalKey(forVault: vaultID) else {
             Log(
                 "Can't prepare cached keys! This will degredate the performance",
                 module: .mainRepository,
@@ -835,15 +811,15 @@ extension MainRepositoryImpl {
             )
             return
         }
-        _trustedKeySymm = createSymmetricKey(from: trustedKey)
-        _secureKeySymm = createSymmetricKey(from: secureKey)
-        _externalKeySymm = createSymmetricKey(from: externalKey)
+        _trustedKeySymms[vaultID] = createSymmetricKey(from: trustedKey)
+        _secureKeySymms[vaultID] = createSymmetricKey(from: secureKey)
+        _externalKeySymms[vaultID] = createSymmetricKey(from: externalKey)
     }
-    
+
     func clearCachedKeys() {
-        _trustedKeySymm = nil
-        _secureKeySymm = nil
-        _externalKeySymm = nil
+        _trustedKeySymms.removeAll()
+        _secureKeySymms.removeAll()
+        _externalKeySymms.removeAll()
     }
     
     func importBIP0039Words() -> [String]? {
@@ -889,9 +865,9 @@ extension MainRepositoryImpl {
         return (bitPacks: dataFromHexString, crc: crc)
     }
     
-    func createSeedHashHexForExport() -> String? {
-        guard let seed, let vaultID = selectedVault?.vaultID else {
-            Log("Error while creating SeedHashHexForExport - no seed or vaultID", module: .mainRepository, severity: .error)
+    func createSeedHashHexForExport(forVault vaultID: VaultID) -> String? {
+        guard let seed else {
+            Log("Error while creating SeedHashHexForExport - no seed", module: .mainRepository, severity: .error)
             return nil
         }
         guard let seedHash = generateExchangeSeedHash(vaultID, using: seed),
@@ -901,17 +877,17 @@ extension MainRepositoryImpl {
         }
         return baseString
     }
-    
-    func createReferenceForExport() -> String? {
-        guard let externalKey, let vaultID = selectedVault?.vaultID else {
-            Log("Error while creating createReferenceForExport - no externalKey or vaultID", module: .mainRepository, severity: .error)
+
+    func createReferenceForExport(forVault vaultID: VaultID) -> String? {
+        guard let extKey = externalKey(forVault: vaultID) else {
+            Log("Error while creating createReferenceForExport - no externalKey", module: .mainRepository, severity: .error)
             return nil
         }
         guard let data = vaultID.exportString().data(using: .utf8)
         else {
             return nil
         }
-        let key = createSymmetricKey(from: externalKey)
+        let key = createSymmetricKey(from: extKey)
         return encrypt(data, key: key)?
             .base64EncodedString()
     }

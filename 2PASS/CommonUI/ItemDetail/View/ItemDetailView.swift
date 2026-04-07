@@ -226,7 +226,7 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
         }
     }
     
-    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String? {
+    func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel, vaultID: VaultID) -> String? {
         String(data: data, encoding: .utf8)
     }
 

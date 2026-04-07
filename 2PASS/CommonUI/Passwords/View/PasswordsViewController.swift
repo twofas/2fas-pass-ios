@@ -103,7 +103,7 @@ final class PasswordsViewController: UIViewController {
         super.setEditing(editing, animated: animated)
         
         if editing == false {
-            navigationItem.title = String(localized: .homeTitle)
+            updateVaultTitleMenu()
             navigationItem.searchController = searchController
 
             if presenter.isAutoFillExtension {
@@ -220,6 +220,41 @@ final class PasswordsViewController: UIViewController {
             passwordsList?.deselectItem(at: indexPath, animated: false)
         }
         updateSelectionUI()
+    }
+
+    func updateVaultTitleMenu() {
+        guard presenter.hasMultipleVaults else {
+            navigationItem.title = String(localized: .homeTitle)
+            navigationItem.titleMenuProvider = nil
+            return
+        }
+
+        navigationItem.title = presenter.selectedVault?.name ?? String(localized: .homeAllVaults)
+
+        navigationItem.titleMenuProvider = { [weak self] _ in
+            guard let self else { return UIMenu() }
+
+            let vaults = self.presenter.listAllVaults()
+            var actions: [UIAction] = []
+
+            actions.append(UIAction(
+                title: String(localized: .homeAllVaults),
+                state: self.presenter.selectedVault == nil ? .on : .off
+            ) { [weak self] _ in
+                self?.presenter.onSelectVault(nil)
+            })
+
+            for vault in vaults {
+                actions.append(UIAction(
+                    title: vault.name,
+                    state: self.presenter.selectedVault?.vaultID == vault.vaultID ? .on : .off
+                ) { [weak self] _ in
+                    self?.presenter.onSelectVault(vault)
+                })
+            }
+
+            return UIMenu(options: [.singleSelection], children: actions)
+        }
     }
 }
 
@@ -421,14 +456,15 @@ private extension PasswordsViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .never
         title = String(localized: .homeTitle)
-        
+        updateVaultTitleMenu()
+
         updateNavigationBarButtons()
-        
+
         if presenter.isAutoFillExtension {
             navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
         }
     }
-    
+
     func setupNavigationBar() {
         guard let navigationBar = navigationController?.navigationBar else {
             return

@@ -10,7 +10,7 @@ import Common
 
 public protocol EncryptedStorageDataSource: AnyObject {
     func loadStore(completion: @escaping LoadStoreCallback)
-    var migrationRequired: Bool { get }
+    var requiresReencryptionMigration: Bool { get }
     
     var storageError: ((String) -> Void)? { get set }
     
@@ -44,10 +44,15 @@ public protocol EncryptedStorageDataSource: AnyObject {
     
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
     
+    func listAllEncryptedItems() -> [ItemEncryptedData]
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
     func listEncryptedItems(
         in vaultID: VaultID,
         itemIDs: [ItemID]?,
+        excludeProtectionLevels: Set<ItemProtectionLevel>?
+    ) -> [ItemEncryptedData]
+    func listEncryptedItems(
+        itemIDs: [ItemID],
         excludeProtectionLevels: Set<ItemProtectionLevel>?
     ) -> [ItemEncryptedData]
     
@@ -62,17 +67,21 @@ public protocol EncryptedStorageDataSource: AnyObject {
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     )
     func updateEncryptedVault(
         vaultID: VaultID,
-        name: String,
+        name: Data,
         trustedKey: Data,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        color: String?,
+        icon: String?
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
     

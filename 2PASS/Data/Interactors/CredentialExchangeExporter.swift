@@ -87,7 +87,7 @@ private extension CredentialExchangeExporter {
 
         // Basic authentication
         let decryptedPassword = data.password.flatMap {
-            itemsInteractor.decrypt($0, isSecureField: true, protectionLevel: protectionLevel)
+            itemsInteractor.decrypt($0, isSecureField: true, protectionLevel: protectionLevel, vaultID: data.vaultId)
         }
         if decryptedPassword != nil || data.username != nil {
             let userName = ASImportableEditableField(
@@ -138,7 +138,7 @@ private extension CredentialExchangeExporter {
         var noteText = ""
         if let encryptedText = data.content.text,
            let decrypted = itemsInteractor.decrypt(
-               encryptedText, isSecureField: true, protectionLevel: protectionLevel
+               encryptedText, isSecureField: true, protectionLevel: protectionLevel, vaultID: data.vaultId
            ) {
             noteText = decrypted
         }
@@ -170,7 +170,7 @@ private extension CredentialExchangeExporter {
         let number: ASImportableEditableField? = {
             guard let encrypted = data.content.cardNumber,
                   let decrypted = itemsInteractor.decrypt(
-                      encrypted, isSecureField: true, protectionLevel: protectionLevel
+                      encrypted, isSecureField: true, protectionLevel: protectionLevel, vaultID: data.vaultId
                   ) else { return nil }
             return ASImportableEditableField(
                 id: nil, fieldType: .concealedString, value: decrypted
@@ -180,7 +180,7 @@ private extension CredentialExchangeExporter {
         let expiryDate: ASImportableEditableField? = {
             guard let encrypted = data.content.expirationDate,
                   let decrypted = itemsInteractor.decrypt(
-                      encrypted, isSecureField: true, protectionLevel: protectionLevel
+                      encrypted, isSecureField: true, protectionLevel: protectionLevel, vaultID: data.vaultId
                   ),
                   let isoDate = convertExpirationDateToISO(decrypted) else { return nil }
             return ASImportableEditableField(
@@ -191,7 +191,7 @@ private extension CredentialExchangeExporter {
         let verificationNumber: ASImportableEditableField? = {
             guard let encrypted = data.content.securityCode,
                   let decrypted = itemsInteractor.decrypt(
-                      encrypted, isSecureField: true, protectionLevel: protectionLevel
+                      encrypted, isSecureField: true, protectionLevel: protectionLevel, vaultID: data.vaultId
                   ) else { return nil }
             return ASImportableEditableField(
                 id: nil, fieldType: .concealedString, value: decrypted
@@ -248,7 +248,7 @@ private extension CredentialExchangeExporter {
         )
 
         let passphrase: ASImportableEditableField? = content.password.flatMap {
-            itemsInteractor.decrypt($0, isSecureField: true, protectionLevel: protectionLevel)
+            itemsInteractor.decrypt($0, isSecureField: true, protectionLevel: protectionLevel, vaultID: data.vaultId)
         }.map {
             ASImportableEditableField(id: nil, fieldType: .concealedString, value: $0)
         }
