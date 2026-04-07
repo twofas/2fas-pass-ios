@@ -59,7 +59,7 @@ final class TrashPresenter {
         self.notificationCenter = .default
         
         notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudStateChanged, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
     
     deinit {
