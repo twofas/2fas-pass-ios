@@ -44,12 +44,8 @@ extension ItemsImportInteractor: ItemsImportInteracting {
     }
     
     func importDeleted(_ deleted: [DeletedItemData]) {
-        let current = Set(deletedItemsInteractor.listDeletedItems())
-        let toAdd = Set(deleted).subtracting(current)
-        toAdd.forEach {
-            deletedItemsInteractor.createDeletedItem(id: $0.itemID, kind: $0.kind, deletedAt: $0.deletedAt)
-        }
-        Log("ItemsImportInteractor - deleted items to add: \(toAdd.count)", module: .interactor)
+        deletedItemsInteractor.createDeletedItems(deleted)
+        Log("ItemsImportInteractor - deleted items to import: \(deleted.count)", module: .interactor)
         itemsInteractor.saveStorage()
     }
 }

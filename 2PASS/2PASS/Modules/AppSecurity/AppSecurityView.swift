@@ -90,8 +90,12 @@ struct AppSecurityView: View {
             
             Section {
                 Toggle(.settingsEntryScreenRecording, isOn: $presenter.isScreenCaptureEnabled)
-                    .disabled(presenter.lockInteraction)
                     .tint(.accentColor)
+                #if PROD
+                    .disabled(presenter.lockInteraction)
+                #else
+                    .disabled(true)
+                #endif
             } footer: {
                 Text(.settingsEntryScreenRecordingDescription(screenRecordingMinutes))
                     .settingsFooter()

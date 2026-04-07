@@ -25,6 +25,7 @@ final class CloudKit {
     var userLoggedOut: Callback?
     var resetStack: Callback?
     
+    var fetchZoneChangesStarted: Callback?
     var fetchFinishedSuccessfuly: Callback?
     var changesSavedSuccessfuly: Callback?
     
@@ -44,7 +45,9 @@ final class CloudKit {
     private var deletedRecords: [DeletedItem] = []
     
     private var collectedActions: [CloudKitAction] = []
-    
+    private var retryWorkItem: DispatchWorkItem?
+    private var retryCount: Int = 0
+
     private let syncTokenHandler = SyncTokenHandler()
     
     init() {
@@ -202,15 +205,18 @@ final class CloudKit {
     }
     
     private func fetchZoneChanges() {
+        fetchZoneChangesStarted?()
+
         guard zoneUpdated else {
             Log("CloudKit - NO zone changes - exiting", module: .cloudSync)
+            retryCount = 0
             DispatchQueue.main.async {
                 self.syncTokenHandler.commitChanges()
                 self.fetchFinishedSuccessfuly?()
             }
             return
         }
-        
+
         Log("CloudKit - clearing record changes", module: .cloudSync)
         clearRecordChanges()
         
@@ -335,6 +341,7 @@ final class CloudKit {
         syncTokenHandler.prepare()
         clearRecordChanges()
         collectedActions = []
+        cancelPendingRetry()
         operation?.cancel()
         operation = nil
     }
@@ -382,7 +389,7 @@ final class CloudKit {
     
     private func savePartialOperationError(_ error: Error) {
         Log("CloudKit - partialOperationError: \(error)", module: .cloudSync)
-        if let action = errorParser.handle(error: error as NSError) {
+        if let action = errorParser.handle(error: error as NSError, retryCount: retryCount) {
             collectedActions.append(action)
         }
     }
@@ -393,7 +400,7 @@ final class CloudKit {
             next?()
             return
         }
-        if let error, let action = errorParser.handle(error: error as NSError) {
+        if let error, let action = errorParser.handle(error: error as NSError, retryCount: retryCount) {
             collectedActions.append(action)
         }
         guard let mostImportant = collectedActions.sortedByImportance.last else {
@@ -457,6 +464,7 @@ final class CloudKit {
     
     private func finishedFetchingZoneChange() {
         Log("CloudKit - finishedFetchingZoneChange", module: .cloudSync)
+        retryCount = 0
         zoneUpdated = false
         
         DispatchQueue.main.async {
@@ -479,6 +487,7 @@ final class CloudKit {
     
     private func changesSaved() {
         Log("CloudKit - Changes were saved successfully", module: .cloudSync)
+        retryCount = 0
         DispatchQueue.main.async {
             self.changesSavedSuccessfuly?()
         }
@@ -495,12 +504,25 @@ final class CloudKit {
         }
     }
     
+    var isWaitingForRetry: Bool { retryWorkItem != nil }
+
+    func cancelPendingRetry() {
+        retryWorkItem?.cancel()
+        retryWorkItem = nil
+        retryCount = 0
+    }
+
     private func retryAction(_ retryIn: TimeInterval = 2.0) {
-        Log("CloudKit - Preparing to retry sync in \(retryIn)", module: .cloudSync)
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + retryIn) {
+        retryCount += 1
+        Log("CloudKit - Preparing to retry sync in \(retryIn) (retry #\(retryCount))", module: .cloudSync)
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.retryWorkItem = nil
             Log("CloudKit - Scheduled sync -> syncing", module: .cloudSync)
             self.cloudSync(zoneID: self.zoneID)
         }
+        retryWorkItem = workItem
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + retryIn, execute: workItem)
     }
 }
 

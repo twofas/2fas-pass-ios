@@ -61,6 +61,7 @@ public protocol ItemsInteracting: AnyObject {
     
     func deleteItem(for itemID: ItemID)
     func markAsTrashed(for itemID: ItemID)
+    @discardableResult func markAsTrashed(for itemIDs: [ItemID]) -> [ItemData]
     func externalMarkAsTrashed(for itemID: ItemID)
     func markAsNotTrashed(for itemID: ItemID)
     
@@ -428,7 +429,7 @@ extension ItemsInteractor: ItemsInteracting {
         }
         return item
     }
-    
+
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData? {
         mainRepository.getEncryptedItemEntity(itemID: itemID)
     }
@@ -522,6 +523,55 @@ extension ItemsInteractor: ItemsInteracting {
         deletedItemsInteractor.createDeletedItem(id: itemID, kind: .login, deletedAt: date)
     }
     
+    @discardableResult
+    func markAsTrashed(for itemIDs: [ItemID]) -> [ItemData] {
+        guard !itemIDs.isEmpty else { return [] }
+        guard let selectedVault = mainRepository.selectedVault else {
+            Log("ItemsInteractor: markAsTrashed batch. No vault", module: .interactor, severity: .error)
+            return []
+        }
+
+        let date = mainRepository.currentDate
+        let trashedStatus = ItemTrashedStatus.yes(trashingDate: date)
+
+        Log(
+            "ItemsInteractor: Batch marking as trashed for \(itemIDs.count) items",
+            module: .interactor
+        )
+
+        let items = mainRepository.listItems(options: .includeItems(itemIDs))
+        let updatedItems = items.map { $0.update(trashedStatus: trashedStatus) }
+        mainRepository.metadataItemsBatchUpdate(updatedItems)
+
+        let encryptedItems = mainRepository.listEncryptedItems(
+            in: selectedVault.vaultID,
+            itemIDs: itemIDs,
+            excludeProtectionLevels: nil
+        )
+        let updatedEncryptedItems = encryptedItems.map {
+            ItemEncryptedData(
+                itemID: $0.itemID,
+                creationDate: $0.creationDate,
+                modificationDate: date,
+                trashedStatus: trashedStatus,
+                protectionLevel: $0.protectionLevel,
+                contentType: $0.contentType,
+                contentVersion: $0.contentVersion,
+                content: $0.content,
+                vaultID: $0.vaultID,
+                tagIds: $0.tagIds
+            )
+        }
+        mainRepository.encryptedItemsBatchUpdate(updatedEncryptedItems)
+
+        let deletedItems = itemIDs.map {
+            DeletedItemData(itemID: $0, vaultID: selectedVault.vaultID, kind: .login, deletedAt: date)
+        }
+        deletedItemsInteractor.createDeletedItems(deletedItems)
+
+        return items
+    }
+
     func externalMarkAsTrashed(for itemID: ItemID) {
         Log(
             "ItemsInteractor: External marking as trashed for itemID: \(itemID)",

@@ -55,7 +55,11 @@ extension LocalStorageImpl: LocalStorage {
             deletedAt: deletedItem.deletedAt
         )
     }
-    
+
+    func createDeletedItems(_ items: [DeletedItemData]) {
+        deletedItemsInteractor.createDeletedItems(items)
+    }
+
     func moveFromTrash(_ itemID: ItemID) {
         itemsInteractor.markAsNotTrashed(for: itemID)
     }
@@ -66,6 +70,10 @@ extension LocalStorageImpl: LocalStorage {
             kind: deletedItem.kind,
             deletedAt: deletedItem.deletedAt
         )
+    }
+
+    func updateDeletedItems(_ items: [DeletedItemData]) {
+        deletedItemsInteractor.updateDeletedItems(items)
     }
     
     func createItem(_ item: ItemEncryptedData) {
@@ -89,11 +97,11 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func removeTag(_ tagID: ItemTagID) {
-        tagInteractor.deleteTag(tagID: tagID)
+        tagInteractor.externalDeleteTag(tagID: tagID)
     }
     
     func removeItem(_ itemID: ItemID) {
-        itemsInteractor.markAsTrashed(for: itemID)
+        itemsInteractor.externalMarkAsTrashed(for: itemID)
     }
     
     func currentVault() -> VaultEncryptedData? {

@@ -104,8 +104,9 @@ extension TagInteractor: TagInteracting {
         var data = data
         if shouldMigrateColor(data.color) {
             data.color = suggestedNewColor()
+            data.modificationDate = mainRepository.currentDate
         }
-        
+
         mainRepository.createTag(
             ItemTagData(
                 tagID: data.id,
@@ -163,6 +164,7 @@ extension TagInteractor: TagInteracting {
                     data.color = oldTag.color
                 }
             }
+            data.modificationDate = mainRepository.currentDate
         }
         
         mainRepository.updateTag(
@@ -232,7 +234,7 @@ extension TagInteractor: TagInteracting {
         
         mainRepository.deleteTag(tagID: tagID)
         mainRepository.deleteEncryptedTag(tagID: tagID)
-        
+
         deletedItemsInteractor.createDeletedItem(id: tagID, kind: .tag, deletedAt: currentDate)
     }
     

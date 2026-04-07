@@ -28,6 +28,7 @@ protocol ModifyStateModuleInteracting: AnyObject {
     func clearStoredEntropy()
     
     func randomizeAppKey()
+    func randomizeBiometryKey()
 
     // MARK: - WebDAV debug
     var writeDecryptedCopy: Bool { get }
@@ -95,5 +96,9 @@ extension ModifyStateModuleInteractor: ModifyStateModuleInteracting {
     
     func randomizeAppKey() {
         debugInteractor.randomizeAppKey()
+    }
+
+    func randomizeBiometryKey() {
+        debugInteractor.randomizeBiometryKey()
     }
 }

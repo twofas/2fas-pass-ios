@@ -30,8 +30,8 @@ extension MainRepositoryImpl {
         cloudSync.clearBackup()
     }
     
-    func synchronizeBackup() {
-        cloudSync.synchronize()
+    func synchronizeBackup(fromPush: Bool = false) {
+        cloudSync.synchronize(fromPush: fromPush)
     }
     
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {
@@ -80,6 +80,8 @@ private extension MainRepositoryImpl {
                 return .enabledNotAvailable(reason: .noAccount)
             case .restricted:
                 return .enabledNotAvailable(reason: .restricted)
+            case .syncNotAllowed:
+                return .enabledNotAvailable(reason: .syncNotAllowed)
             }
         case .disabled:
             return .disabled

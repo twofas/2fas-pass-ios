@@ -27,6 +27,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     func setSearchPhrase(_ searchPhrase: String?)
 
     func moveToTrash(_ itemID: ItemID)
+    func moveToTrash(_ itemIDs: [ItemID])
     func copyUsername(_ itemID: ItemID) -> Bool
     func copyPassword(_ itemID: ItemID) -> Bool
     func copySecureNote(_ itemID: ItemID) -> Bool
@@ -218,7 +219,20 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             }
         }
     }
-    
+
+    func moveToTrash(_ itemIDs: [ItemID]) {
+        Log("PasswordsModuleInteractor: Batch move to trash: \(itemIDs.count) items", module: .moduleInteractor)
+        let trashedItems = itemsInteractor.markAsTrashed(for: itemIDs)
+        let loginItems = trashedItems.compactMap(\.asLoginItem)
+        itemsInteractor.saveStorage()
+        syncChangeTriggerInteractor.trigger()
+        if !loginItems.isEmpty {
+            Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
+                try await autoFillCredentialsInteractor.removeSuggestions(for: loginItems)
+            }
+        }
+    }
+
     func copyUsername(_ itemID: ItemID) -> Bool {
         guard let loginItem = itemsInteractor.getItem(for: itemID, checkInTrash: false)?.asLoginItem,
               let username = loginItem.username
