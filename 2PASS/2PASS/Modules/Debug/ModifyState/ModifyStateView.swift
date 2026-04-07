@@ -32,6 +32,11 @@ struct ModifyStateView: View {
                 }
                 .buttonStyle(.filled)
                 .controlSize(.large)
+                Button("Randomize Biometry Key" as String, role: .destructive) {
+                    presenter.randomizeBiometryKey()
+                }
+                .buttonStyle(.filled)
+                .controlSize(.large)
             }
             Section("CUSTOM" as String) {
                 Toggle(

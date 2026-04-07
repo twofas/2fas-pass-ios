@@ -53,6 +53,7 @@ public protocol DebugInteracting: AnyObject {
     func clearEncryptionReference()
     func clearStoredEntropy()
     func randomizeAppKey()
+    func randomizeBiometryKey()
     func reboot()
     
     // MARK: - Logs
@@ -273,6 +274,10 @@ extension DebugInteractor: DebugInteracting {
     
     func randomizeAppKey() {
         mainRepository.saveAppKey(UUID().uuidString.data(using: .utf8)!)
+    }
+
+    func randomizeBiometryKey() {
+        mainRepository.saveBiometryKey(UUID().uuidString.data(using: .utf8)!)
     }
     
     func reboot() {

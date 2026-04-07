@@ -64,6 +64,8 @@ extension ExportInteractor: ExportInteracting {
 
             DispatchQueue.main.async {
                 let items = self.mainRepository.listEncryptedItems(in: vaultID)
+                    .filter { $0.trashedStatus == .no }
+
                 let tags = self.tagInteractor.listAllTags()
                 let deleted = includeDeletedItems ? self.mainRepository.listDeletedItems(in: vaultID, limit: nil) : []
                 
