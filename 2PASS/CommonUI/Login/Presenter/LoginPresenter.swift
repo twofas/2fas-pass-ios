@@ -43,6 +43,7 @@ public final class LoginPresenter {
     
     private(set) var errorDescription: String = ""
     private(set) var inputError = false
+    private(set) var inputErrorShakeCount: Int = 0
     private(set) var isUnlockAvailable = false
     private(set) var isBiometryAvailable = false
     private(set) var isBiometryAllowed = false
@@ -289,6 +290,7 @@ extension LoginPresenter {
                 Task { @MainActor in
                     self?.errorDescription = String(localized: .lockScreenUnlockInvalidPassword)
                     self?.inputError = true
+                    self?.inputErrorShakeCount += 1
                 }
             case .invalidPasswordAppLocked:
                 self?.loginInput = ""

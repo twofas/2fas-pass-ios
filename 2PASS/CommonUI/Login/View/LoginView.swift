@@ -233,11 +233,9 @@ public struct LoginView: View {
                 RoundedRectangle(cornerRadius: Constants.passwordInputCornerRadius)
                     .stroke(.danger500, lineWidth: presenter.inputError ? 1 : 0)
             }
-            .sensoryFeedback(trigger: presenter.inputError, { oldValue, newValue in
-                newValue ? .error : nil
-            })
+            .sensoryFeedback(.error, trigger: presenter.inputErrorShakeCount)
             .clipShape(RoundedRectangle(cornerRadius: Constants.passwordInputCornerRadius))
-            .shakeAnimation(trigger: presenter.inputError)
+            .shakeAnimation(trigger: presenter.inputErrorShakeCount)
     }
     
     @ViewBuilder
