@@ -15,6 +15,8 @@ struct CustomizationRouter: Router {
     
     func routingType(for destination: CustomizationDestination?) -> RoutingType? {
         switch destination {
+        case .editDeviceName:
+            return .push
         case .defaultPasswordsListAction:
             return .push
         case .manageTags:
@@ -23,17 +25,24 @@ struct CustomizationRouter: Router {
             return nil
         }
     }
-    
+
     @ViewBuilder
     func view(for destination: CustomizationDestination) -> some View {
         switch destination {
+        case .editDeviceName(let text, let onSave):
+            SettingsTextFieldView(
+                title: Text(.settingsEntryDeviceNickname),
+                text: text,
+                onSave: onSave
+            )
+
         case .defaultPasswordsListAction(let picker):
             SettingsPickerView(
                 title: Text(.settingsEntryLoginClickAction),
                 footer: Text(.settingsEntryLoginClickActionDescription),
                 picker: picker
             )
-            
+
         case .manageTags:
             ManageTagsRouter.buildView()
         }

@@ -131,6 +131,7 @@ protocol MainRepository: AnyObject {
     var cloudSync: CloudSync { get }
     
     var deviceName: String { get }
+    func setDeviceName(_ name: String)
     var deviceModelName: String { get }
     var deviceType: DeviceType { get }
     var systemVersion: String { get }

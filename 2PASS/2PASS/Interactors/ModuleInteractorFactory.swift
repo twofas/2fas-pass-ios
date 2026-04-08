@@ -252,7 +252,10 @@ extension ModuleInteractorFactory {
     }
     
     func customizationModuleInteractor() -> CustomizationModuleInteracting {
-        CustomizationModuleInteractor(configInteractor: InteractorFactory.shared.configInteractor())
+        CustomizationModuleInteractor(
+            configInteractor: InteractorFactory.shared.configInteractor(),
+            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+        )
     }
     
     func autoFillSettingsModuleInteractor() -> AutofillSettingsModuleInteracting {

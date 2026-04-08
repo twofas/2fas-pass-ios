@@ -9,11 +9,13 @@ import Common
 import SwiftUI
 
 enum CustomizationDestination: RouterDestination {
+    case editDeviceName(text: Binding<String>, onSave: () -> Void)
     case defaultPasswordsListAction(picker: SettingsPicker<PasswordListAction>)
     case manageTags
-    
+
     var id: String {
         switch self {
+        case .editDeviceName: "editDeviceName"
         case .defaultPasswordsListAction: "defaultPasswordsListAction"
         case .manageTags: "manageTags"
         }
@@ -24,21 +26,37 @@ enum CustomizationDestination: RouterDestination {
 final class CustomizationPresenter {
     
     var destination: CustomizationDestination?
-    
-    var deviceName: String {
-        interactor.deviceName
-    }
-    
+
+    var deviceName: String
+
     var selectedDefaultActionDesctiption: String {
         PasswordListActionFormatStyle().format(selectedDefaultAction)
     }
     private var selectedDefaultAction: PasswordListAction
-    
+
     private let interactor: CustomizationModuleInteracting
-    
+
     init(interactor: CustomizationModuleInteracting) {
         self.interactor = interactor
+        self.deviceName = interactor.deviceName
         self.selectedDefaultAction = interactor.defaultPassswordListAction
+    }
+
+    func onEditDeviceName() {
+        var editingText = deviceName
+        destination = .editDeviceName(
+            text: Binding(
+                get: { editingText },
+                set: { newValue in
+                    editingText = newValue
+                    let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                    self.deviceName = trimmed.isEmpty ? self.interactor.deviceName : trimmed
+                }
+            ),
+            onSave: { [self] in
+                interactor.setDeviceName(deviceName)
+            }
+        )
     }
 
     func onChangeDefaultAction() {
