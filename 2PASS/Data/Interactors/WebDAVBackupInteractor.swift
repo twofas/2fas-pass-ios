@@ -652,6 +652,7 @@ private extension WebDAVBackupInteractor {
             if let matchingVaultIndex = fetchedIndex.firstIndex(for: vault.vaultID, seedHash: seedHash) {
                 var matchingVault = index[matchingVaultIndex]
                 matchingVault.vaultUpdatedAt = updatedAt
+                matchingVault.deviceName = deviceName
                 index[matchingVaultIndex] = matchingVault
             } else {
                 index.append(entry)

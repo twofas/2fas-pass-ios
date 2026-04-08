@@ -119,4 +119,7 @@ protocol UserDefaultsDataSource: AnyObject {
     var screenCaptureAllowedUntil: Date? { get }
     func setScreenCaptureAllowedUntil(_ date: Date)
     func clearScreenCaptureAllowedUntil()
+
+    var deviceName: String? { get }
+    func setDeviceName(_ name: String)
 }
