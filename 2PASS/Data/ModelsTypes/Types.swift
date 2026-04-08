@@ -20,3 +20,4 @@ public typealias BiometryKey = Data
 public typealias TrustedKey = Data
 public typealias SecureKey = Data
 public typealias ExternalKey = Data
+public typealias MetadataKey = Data

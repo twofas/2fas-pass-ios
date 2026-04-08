@@ -494,6 +494,8 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
 
+        mainRepository.prepareMetadataKeyCache()
+        
         let vaults = vaultsInteractor.listEncryptedVaults()
         guard !vaults.isEmpty else {
             Log("Error while getting Vaults - none found", severity: .error)

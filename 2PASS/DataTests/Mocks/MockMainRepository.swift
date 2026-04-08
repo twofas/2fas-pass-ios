@@ -1164,6 +1164,34 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
+    private var stubbedMetadataKey: MetadataKey?
+    func metadataKey() -> MetadataKey? { stubbedMetadataKey }
+
+    @discardableResult
+    func withMetadataKey(_ value: MetadataKey?) -> Self {
+        stubbedMetadataKey = value
+        return self
+    }
+
+    private(set) var capturedMetadataKey: MetadataKey?
+    func setMetadataKey(_ data: MetadataKey) {
+        recordCall()
+        capturedMetadataKey = data
+    }
+
+    private var stubbedCachedMetadataKey: SymmetricKey?
+    func cachedMetadataKey() -> SymmetricKey? { stubbedCachedMetadataKey }
+
+    @discardableResult
+    func withCachedMetadataKey(_ value: SymmetricKey?) -> Self {
+        stubbedCachedMetadataKey = value
+        return self
+    }
+
+    func prepareMetadataKeyCache() {
+        recordCall()
+    }
+
     private var stubbedAppKey: AppKey?
     var appKey: AppKey? { stubbedAppKey }
 

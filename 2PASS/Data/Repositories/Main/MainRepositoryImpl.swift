@@ -24,6 +24,7 @@ final class MainRepositoryImpl: MainRepository {
     var _empheralTrustedKeys: [VaultID: TrustedKey] = [:]
     var _empheralSecureKeys: [VaultID: SecureKey] = [:]
     var _empheralExternalKeys: [VaultID: ExternalKey] = [:]
+    var _empheralMetadataKey: MetadataKey?
     var _empheralSeed: Seed?
     var _empheralEntropy: Entropy?
     var _empheralWords: [String]?
@@ -50,6 +51,7 @@ final class MainRepositoryImpl: MainRepository {
     var _trustedKeySymms: [VaultID: SymmetricKey] = [:]
     var _secureKeySymms: [VaultID: SymmetricKey] = [:]
     var _externalKeySymms: [VaultID: SymmetricKey] = [:]
+    var _metadataKeySymm: SymmetricKey?
     
     let cameraPermissions: CameraPermissions
     let userDefaultsDataSource: UserDefaultsDataSource

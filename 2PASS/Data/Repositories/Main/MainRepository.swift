@@ -219,6 +219,11 @@ protocol MainRepository: AnyObject {
     func setExternalKey(_ data: ExternalKey, forVault vaultID: VaultID)
     func cachedExternalKey(forVault vaultID: VaultID) -> SymmetricKey?
 
+    func metadataKey() -> MetadataKey?
+    func setMetadataKey(_ data: MetadataKey)
+    func cachedMetadataKey() -> SymmetricKey?
+    func prepareMetadataKeyCache()
+
     func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel, forVault vaultID: VaultID) -> SymmetricKey?
     func hasCachedKeys(for vaultID: VaultID) -> Bool
     func clearCachedKeys(for vaultID: VaultID)
@@ -267,6 +272,7 @@ protocol MainRepository: AnyObject {
     func saveMasterKeyEntropy(_ string: Entropy)
     func clearMasterKeyEntropy()
     
+    func generateMetadataKey(using masterKey: String) -> String?
     func generateTrustedKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?
     func generateSecureKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?
     func generateExternalKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?

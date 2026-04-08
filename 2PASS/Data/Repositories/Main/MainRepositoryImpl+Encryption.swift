@@ -576,6 +576,50 @@ extension MainRepositoryImpl {
         return createSymmetricKey(from: key)
     }
 
+    func metadataKey() -> MetadataKey? {
+        guard let appKey else {
+            Log("Can't get Metadata Key - no App Key!", module: .mainRepository, severity: .error)
+            return nil
+        }
+        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+            Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
+            return nil
+        }
+        guard let empheralMetadataKey = _empheralMetadataKey else {
+            Log("Can't get Metadata Key - it's nil", module: .mainRepository, severity: .error)
+            return nil
+        }
+        guard let decrypted = decrypt(empheralMetadataKey, key: symm) else {
+            Log("Can't get Metadata Key - error while decrypting!", module: .mainRepository, severity: .error)
+            return nil
+        }
+        return decrypted
+    }
+
+    func setMetadataKey(_ data: MetadataKey) {
+        guard let appKey else {
+            Log("Can't save Metadata Key - no App Key!", module: .mainRepository, severity: .error)
+            return
+        }
+        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+            Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
+            return
+        }
+        guard let encrypted = encrypt(data, key: symm) else {
+            Log("Can't save Metadata Key - error while encrypting", module: .mainRepository, severity: .error)
+            return
+        }
+        _empheralMetadataKey = encrypted
+    }
+
+    func cachedMetadataKey() -> SymmetricKey? {
+        if let cached = _metadataKeySymm {
+            return cached
+        }
+        guard let key = metadataKey() else { return nil }
+        return createSymmetricKey(from: key)
+    }
+
     var hasEncryptionReference: Bool {
         keychainDataSource.encryptionReference != nil
     }
@@ -741,6 +785,7 @@ extension MainRepositoryImpl {
         _empheralTrustedKeys.removeAll()
         _empheralSecureKeys.removeAll()
         _empheralExternalKeys.removeAll()
+        _empheralMetadataKey = nil
 
         clearCachedKeys()
 
@@ -749,6 +794,10 @@ extension MainRepositoryImpl {
         clearWords()
         clearSalt()
         clearEmpheralMasterKey()
+    }
+    
+    func generateMetadataKey(using masterKey: String) -> String? {
+        hmac(key: masterKey, message: "/metadataKey")
     }
     
     func generateTrustedKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String? {
@@ -799,6 +848,18 @@ extension MainRepositoryImpl {
         _secureKeySymms.removeValue(forKey: vaultID)
         _externalKeySymms.removeValue(forKey: vaultID)
     }
+    
+    func prepareMetadataKeyCache() {
+        guard let key = metadataKey() else {
+            Log(
+                "Can't prepare metadata key cache! This will degredate the performance",
+                module: .mainRepository,
+                severity: .error
+            )
+            return
+        }
+        _metadataKeySymm = createSymmetricKey(from: key)
+    }
 
     func preparedCachedKeys(for vaultID: VaultID) {
         guard let trustedKey = trustedKey(forVault: vaultID),
@@ -820,6 +881,7 @@ extension MainRepositoryImpl {
         _trustedKeySymms.removeAll()
         _secureKeySymms.removeAll()
         _externalKeySymms.removeAll()
+        _metadataKeySymm = nil
     }
     
     func importBIP0039Words() -> [String]? {
