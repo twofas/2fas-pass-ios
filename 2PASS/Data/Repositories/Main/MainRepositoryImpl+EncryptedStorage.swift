@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import CryptoKit
 import Common
 import Storage
 
@@ -191,55 +192,89 @@ extension MainRepositoryImpl {
     }
     
     func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void) {
-        var migrationVaultID: VaultID?
-        MigrationController.current = .init(
-            setupKeys: { vaultID in
-                migrationVaultID = vaultID
-                guard self.hasCachedKeys(for: vaultID) == false else {
-                    return
-                }
+        // Materialize the metadata key up front so the WebBrowser V2→V3 policy can
+        // re-encrypt rows during migration. The metadata key is deterministically
+        // derived from the master key via HMAC, matching the runtime derivation
+        // performed at unlock.
+        if let masterKey = empheralMasterKey,
+           let metadataKeyHex = generateMetadataKey(using: masterKey.hexEncodedString()),
+           let metadataKeyData = Data(hexString: metadataKeyHex) {
+            setMetadataKey(metadataKeyData)
+            prepareMetadataKeyCache()
+        } else {
+            Log("Error while preparing Metadata Key for migration", severity: .error)
+        }
 
-                guard let masterKey = self.empheralMasterKey else {
-                    Log("Error while getting Master Key - it's missing", severity: .error)
-                    return
-                }
+        // Lazily derive and cache per-vault trusted/secure/external keys on first
+        // use. Idempotent via `hasCachedKeys(for:)` so repeated calls for the same
+        // vault are effectively free.
+        let ensureVaultKeys: (VaultID) -> Void = { vaultID in
+            guard self.hasCachedKeys(for: vaultID) == false else {
+                return
+            }
 
-                guard let trustedKey = self.generateTrustedKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
-                    let trustedKeyData = Data(hexString: trustedKey) else {
-                    return
-                }
-                self.setTrustedKey(trustedKeyData, forVault: vaultID)
+            guard let masterKey = self.empheralMasterKey else {
+                Log("Error while getting Master Key - it's missing", severity: .error)
+                return
+            }
 
-                guard let secureKey = self.generateSecureKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
-                    let secureKeyData = Data(hexString: secureKey) else {
-                    return
-                }
-                self.setSecureKey(secureKeyData, forVault: vaultID)
+            guard let trustedKey = self.generateTrustedKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                let trustedKeyData = Data(hexString: trustedKey) else {
+                return
+            }
+            self.setTrustedKey(trustedKeyData, forVault: vaultID)
 
-                guard let externalKey = self.generateExternalKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
-                    let externalKeyData = Data(hexString: externalKey) else {
-                    return
-                }
-                self.setExternalKey(externalKeyData, forVault: vaultID)
+            guard let secureKey = self.generateSecureKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                let secureKeyData = Data(hexString: secureKey) else {
+                return
+            }
+            self.setSecureKey(secureKeyData, forVault: vaultID)
 
-                self.preparedCachedKeys(for: vaultID)
-            },
-            encrypt: { data, protectionLevel in
-                guard let vid = migrationVaultID,
-                      let key = self.getKey(isPassword: false, protectionLevel: protectionLevel, forVault: vid) else {
+            guard let externalKey = self.generateExternalKeyForVaultID(vaultID, using: masterKey.hexEncodedString()),
+                let externalKeyData = Data(hexString: externalKey) else {
+                return
+            }
+            self.setExternalKey(externalKeyData, forVault: vaultID)
+
+            self.preparedCachedKeys(for: vaultID)
+        }
+
+        // Resolve the AppKey-derived Secure Enclave symmetric key once. This is the
+        // pre-feature/new-keys WebBrowsersInteractor key path; the WebBrowser V2→V3
+        // policy invokes it 5× per row, and `createSymmetricKeyFromSecureEnclave`
+        // hits the Secure Enclave on every call (no internal memoization).
+        let appKeySymmetric: SymmetricKey? = self.appKey.flatMap(self.createSymmetricKeyFromSecureEnclave(from:))
+
+        let resolveKey: (EncryptionKey) -> SymmetricKey? = { encryptionKey in
+            switch encryptionKey {
+            case let .vault(vaultID, protectionLevel):
+                ensureVaultKeys(vaultID)
+                return self.getKey(isPassword: false, protectionLevel: protectionLevel, forVault: vaultID)
+            case .appKey:
+                if appKeySymmetric == nil {
+                    Log("Migration - can't resolve AppKey", severity: .error)
+                }
+                return appKeySymmetric
+            case .metadataKey:
+                guard let key = self.cachedMetadataKey() else {
+                    Log("Migration - can't get cached metadata key", severity: .error)
                     return nil
                 }
+                return key
+            }
+        }
+
+        MigrationController.current = .init(
+            encrypt: { data, encryptionKey in
+                guard let key = resolveKey(encryptionKey) else { return nil }
                 return self.encrypt(data, key: key)
             },
-            decrypt: { data, protectionLevel in
-                guard let vid = migrationVaultID,
-                      let key = self.getKey(isPassword: false, protectionLevel: protectionLevel, forVault: vid) else {
-                    return nil
-                }
+            decrypt: { data, encryptionKey in
+                guard let key = resolveKey(encryptionKey) else { return nil }
                 return self.decrypt(data, key: key)
             }
         )
-        
+
         encryptedStorage.loadStore { success in
             MigrationController.current = nil
             completion(success)

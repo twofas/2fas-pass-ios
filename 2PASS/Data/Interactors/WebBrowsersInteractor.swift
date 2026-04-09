@@ -114,16 +114,10 @@ final class WebBrowsersInteractor: WebBrowsersInteracting {
     }
     
     private var symetricKey: SymmetricKey? {
-        guard let appKey = mainRepository.appKey else {
-            Log("WebBrowsersInteractor - Can't get App Key!", module: .interactor, severity: .error)
+        guard let key = mainRepository.cachedMetadataKey() else {
+            Log("WebBrowsersInteractor - Can't get Metadata Key!", module: .interactor, severity: .error)
             return nil
         }
-        
-        guard let key = mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
-            Log("WebBrowsersInteractor - Can't get Symmetric Key from App Key", module: .interactor, severity: .error)
-            return nil
-        }
-        
         return key
     }
     

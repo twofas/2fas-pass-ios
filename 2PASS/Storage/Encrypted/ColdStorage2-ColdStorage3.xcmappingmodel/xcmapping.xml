@@ -51,7 +51,7 @@
         </metadata>
     </databaseInfo>
     <object type="XDDEVENTITYMAPPING" id="z102">
-        <attribute name="migrationpolicyclassname" type="string">Storage.VaultEncryptedEntityV2ToVaultEncryptedEntityV3</attribute>
+        <attribute name="migrationpolicyclassname" type="string">Storage.VaultEncryptedEntityV2ToV3</attribute>
         <attribute name="sourcename" type="string">VaultEncryptedEntity</attribute>
         <attribute name="mappingtypename" type="string">Undefined</attribute>
         <attribute name="mappingnumber" type="int16">4</attribute>
@@ -185,6 +185,7 @@ cxIAAYagXxAPTlNLZXllZEFyY2hpdmVy0QAIAAlUcm9vdIABrxEEKgALAAwAGQA1ADYANwBHAEgASQBK
         <relationship name="entitymapping" type="1/1" destination="XDDEVENTITYMAPPING" idrefs="z142"></relationship>
     </object>
     <object type="XDDEVENTITYMAPPING" id="z130">
+        <attribute name="migrationpolicyclassname" type="string">Storage.WebBrowserEncryptedEntityV2ToV3</attribute>
         <attribute name="sourcename" type="string">WebBrowserEncryptedEntity</attribute>
         <attribute name="mappingtypename" type="string">Undefined</attribute>
         <attribute name="mappingnumber" type="int16">3</attribute>

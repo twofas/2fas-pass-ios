@@ -55,16 +55,16 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
             throw MigrationError.missingMigrationController
         }
         
-        if let vault = sInstance.value(forKey: PasswordKeys.vault.rawValue) as? NSManagedObject,
-           let vaultID = vault.primitiveValue(forKey: VaultKeys.vaultID.rawValue) as? UUID {
-            migrationController.setupKeys(vaultID: vaultID)
+        guard let vault = sInstance.value(forKey: PasswordKeys.vault.rawValue) as? NSManagedObject,
+              let vaultID = vault.primitiveValue(forKey: VaultKeys.vaultID.rawValue) as? UUID else {
+            throw MigrationError.missingSourceValue(key: PasswordKeys.vault.rawValue)
         }
         
         let protectionLevel = ItemProtectionLevel(level: protectionLevelValue)
 
         let name: String? = try {
             if let nameEnc = sInstance.primitiveValue(forKey: PasswordKeys.name.rawValue) as? Data {
-                guard let nameData = migrationController.decrypt(nameEnc, protectionLevel: protectionLevel) else {
+                guard let nameData = migrationController.decrypt(nameEnc, using: .vault(vaultID, protectionLevel)) else {
                     throw MigrationError.decryptionFailed
                 }
                 return String(data: nameData, encoding: .utf8)
@@ -74,7 +74,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
         
         let username: String? = try {
             if let usernameEnc = sInstance.primitiveValue(forKey: PasswordKeys.username.rawValue) as? Data {
-                guard let usernameData = migrationController.decrypt(usernameEnc, protectionLevel: protectionLevel) else {
+                guard let usernameData = migrationController.decrypt(usernameEnc, using: .vault(vaultID, protectionLevel)) else {
                     throw MigrationError.decryptionFailed
                 }
                 return String(data: usernameData, encoding: .utf8)
@@ -84,7 +84,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
         
         let notes: String? = try {
             if let notesEnc = sInstance.primitiveValue(forKey: PasswordKeys.notes.rawValue) as? Data {
-                guard let notesData = migrationController.decrypt(notesEnc, protectionLevel: protectionLevel) else {
+                guard let notesData = migrationController.decrypt(notesEnc, using: .vault(vaultID, protectionLevel)) else {
                     throw MigrationError.decryptionFailed
                 }
                 return String(data: notesData, encoding: .utf8)
@@ -99,7 +99,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
                     guard let domainDataEnc = sInstance.primitiveValue(forKey: PasswordKeys.iconDomain.rawValue) as? Data else {
                         return nil
                     }
-                    guard let domainData = migrationController.decrypt(domainDataEnc, protectionLevel: protectionLevel) else {
+                    guard let domainData = migrationController.decrypt(domainDataEnc, using: .vault(vaultID, protectionLevel)) else {
                         throw MigrationError.decryptionFailed
                     }
                     return String(data: domainData, encoding: .utf8)
@@ -109,7 +109,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
                     guard let cutomURLDataEnc = sInstance.primitiveValue(forKey: PasswordKeys.iconCustomURL.rawValue) as? Data else {
                         return nil
                     }
-                    guard let customURLData = migrationController.decrypt(cutomURLDataEnc, protectionLevel: protectionLevel) else {
+                    guard let customURLData = migrationController.decrypt(cutomURLDataEnc, using: .vault(vaultID, protectionLevel)) else {
                         throw MigrationError.decryptionFailed
                     }
                     guard let customURLString = String(data: customURLData, encoding: .utf8) else {
@@ -122,7 +122,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
                     guard let labelTitleEnc = sInstance.primitiveValue(forKey: PasswordKeys.labelTitle.rawValue) as? Data else {
                         return nil
                     }
-                    guard let labelTitleData = migrationController.decrypt(labelTitleEnc, protectionLevel: protectionLevel) else {
+                    guard let labelTitleData = migrationController.decrypt(labelTitleEnc, using: .vault(vaultID, protectionLevel)) else {
                         throw MigrationError.decryptionFailed
                     }
                     return String(data: labelTitleData, encoding: .utf8)
@@ -145,7 +145,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
             guard let urisEnc = sInstance.primitiveValue(forKey: PasswordKeys.uris.rawValue) as? Data else {
                 return nil
             }
-            guard let urisData = migrationController.decrypt(urisEnc, protectionLevel: protectionLevel) else {
+            guard let urisData = migrationController.decrypt(urisEnc, using: .vault(vaultID, protectionLevel)) else {
                 throw MigrationError.decryptionFailed
             }
             guard let uris = try? JSONDecoder().decode([String].self, from: urisData) else {
@@ -169,7 +169,7 @@ final class PasswordEncryptedEntityToItemEncryptedEntityPolicy: NSEntityMigratio
         )
         
         let contentData = try JSONEncoder().encode(content)
-        let contentDataEnc = migrationController.encrypt(contentData, protectionLevel: protectionLevel)
+        let contentDataEnc = migrationController.encrypt(contentData, using: .vault(vaultID, protectionLevel))
         
         destination.setValue(1, forKey: ItemsKeys.contentVersion.rawValue)
         destination.setValue(ItemContentType.login.rawValue, forKey: ItemsKeys.contentType.rawValue)

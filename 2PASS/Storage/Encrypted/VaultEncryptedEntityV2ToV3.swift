@@ -1,5 +1,5 @@
 //
-//  VaultEncryptedEntityV2ToVaultEncryptedEntityV3.swift
+//  VaultEncryptedEntityV2ToV3.swift
 //  2PASS
 //
 //  Created by Maciej Szewczyk on 03/04/2026.
@@ -10,7 +10,7 @@ import CoreData
 import Common
 
 @objc
-final class VaultEncryptedEntityV2ToVaultEncryptedEntityV3: NSEntityMigrationPolicy {
+final class VaultEncryptedEntityV2ToV3: NSEntityMigrationPolicy {
 
     let migrationController = MigrationController.current
 
@@ -38,14 +38,12 @@ final class VaultEncryptedEntityV2ToVaultEncryptedEntityV3: NSEntityMigrationPol
             throw MigrationError.missingSourceValue(key: "vaultID")
         }
 
-        migrationController.setupKeys(vaultID: vaultID)
-
         guard let plainName = sInstance.primitiveValue(forKey: "name") as? String else {
             throw MigrationError.missingSourceValue(key: "name")
         }
 
         guard let nameData = plainName.data(using: .utf8),
-              let encryptedName = migrationController.encrypt(nameData, protectionLevel: .normal) else {
+              let encryptedName = migrationController.encrypt(nameData, using: .vault(vaultID, .normal)) else {
             throw MigrationError.encryptionFailed
         }
 
