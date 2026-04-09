@@ -20,6 +20,40 @@ struct ShareLinkItemView: View {
     @State private var frozenIconCardHeight: CGFloat?
     @State private var frozenIconCardSize: CGSize?
     
+    private enum Constants {
+        // Layout
+        static let backgroundImageScale: CGFloat = 2
+        static let cardSize = CGSize(width: 250, height: 170)
+        static let cardMinWidth: CGFloat = 200
+        static let paymentCardCornerRadius: CGFloat = 20
+        static let iconCardCornerRadius: CGFloat = 40
+        static let linkBadgeWidth: CGFloat = 260
+        static let iconFrameWidth: CGFloat = 24
+        static let fullSizeCardExtra: CGFloat = 70
+        static let linkOffset: CGFloat = 35
+
+        // Scale
+        static let paymentCardScale: CGFloat = 0.65
+        static let uploadingScale: CGFloat = 0.93
+
+        // Opacity
+        static let lightModeBackgroundOpacity: CGFloat = 0.6
+        static let paymentGlassTintOpacity: CGFloat = 0.08
+        static let iconGlassTintOpacity: CGFloat = 0.05
+
+        // Animation
+        static let transitionDuration: CGFloat = 0.3
+        static let successAnimationDelay: CGFloat = 0.1
+        static let springResponse: CGFloat = 0.4
+        static let springDamping: CGFloat = 0.7
+        static let smoothDuration: CGFloat = 0.4
+
+        // Blur transition
+        static let blurRadius: CGFloat = 8
+        static let blurBadgeScale: CGFloat = 0.8
+        static let blurBadgeOffsetY: CGFloat = -50
+    }
+
     private static let accentViolet = Color(UIColor(hexString: "#8800FF")!)
 
     private var glassAccentColor: Color? {
@@ -42,9 +76,9 @@ struct ShareLinkItemView: View {
         content
             .background(alignment: .top) {
                 Image(.shareLinkTop)
-                    .scaleEffect(2, anchor: .top)
+                    .scaleEffect(Constants.backgroundImageScale, anchor: .top)
                     .ignoresSafeArea()
-                    .opacity(colorScheme == .dark ? 1.0 : 0.6)
+                    .opacity(colorScheme == .dark ? 1.0 : Constants.lightModeBackgroundOpacity)
             }
             .background(Color(UIColor(light: .systemGroupedBackground, dark: .black)))
             .tint(.accent)
@@ -59,10 +93,8 @@ struct ShareLinkItemView: View {
             .sensoryFeedback(.error, trigger: uploadState.isFailure)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button {
+                    ToolbarCancelButton {
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
                     }
                 }
             }
@@ -84,7 +116,7 @@ struct ShareLinkItemView: View {
                 Spacer(minLength: 0)
 
                 iconCard
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.l)
 
                 Spacer(minLength: 0)
 
@@ -93,19 +125,23 @@ struct ShareLinkItemView: View {
                         configurationControls
                             .transition(
                                 .modifier(
-                                    active: BlurModifier(radius: 8, opacity: 0),
+                                    active: BlurModifier(radius: Constants.blurRadius, opacity: 0),
                                     identity: BlurModifier(radius: 0, opacity: 1)
                                 )
                             )
                     }
                 }
-                .animation(.easeInOut(duration: 0.3), value: uploadState.isUploading)
+                .animation(.easeInOut(duration: Constants.transitionDuration), value: uploadState.isUploading)
                 .fixedSize(horizontal: false, vertical: true)
 
                 if presenter.uploadState.isUploading || presenter.uploadState.isSuccess {
                     successSummary
                         .opacity(uploadState.isSuccess ? 1 : 0)
-                        .animation(.easeInOut(duration: 0.3).delay(0.1), value: uploadState.isSuccess)
+                        .animation(
+                            .easeInOut(duration: Constants.transitionDuration)
+                                .delay(Constants.successAnimationDelay),
+                            value: uploadState.isSuccess
+                        )
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -125,13 +161,16 @@ struct ShareLinkItemView: View {
                             name: presenter.name,
                             cardNumberMask: presenter.cardNumberMask
                         )
-                        .scaleEffect(0.65)
+                        .scaleEffect(Constants.paymentCardScale)
                         .offset(y: Spacing.xxs)
-                        .frame(width: 250, height: 170)
-                        .cardGlassEffect(cornerRadius: 20, tint: glassAccentColor?.opacity(uploadState.isSuccess ? 0.08 : 0.00))
+                        .frame(width: Constants.cardSize.width, height: Constants.cardSize.height)
+                        .cardGlassEffect(
+                            cornerRadius: Constants.paymentCardCornerRadius,
+                            tint: glassAccentColor?.opacity(uploadState.isSuccess ? Constants.paymentGlassTintOpacity : 0.00)
+                        )
                         .overlay {
                             ShareLinkProgressBorder(
-                                cornerRadius: 20,
+                                cornerRadius: Constants.paymentCardCornerRadius,
                                 phase: borderPhase
                             )
                         }
@@ -146,17 +185,20 @@ struct ShareLinkItemView: View {
                         }
                         .padding(.horizontal, Spacing.xll)
                         .offset(y: Spacing.xxs)
-                        .frame(minWidth: 200, maxHeight: 170)
-                        .cardGlassEffect(cornerRadius: 40, tint: glassAccentColor?.opacity(uploadState.isSuccess ? 0.05 : 0.00))
+                        .frame(minWidth: Constants.cardMinWidth, maxHeight: Constants.cardSize.height)
+                        .cardGlassEffect(
+                            cornerRadius: Constants.iconCardCornerRadius,
+                            tint: glassAccentColor?.opacity(uploadState.isSuccess ? Constants.iconGlassTintOpacity : 0.00)
+                        )
                         .overlay {
                             ShareLinkProgressBorder(
-                                cornerRadius: 40,
+                                cornerRadius: Constants.iconCardCornerRadius,
                                 phase: borderPhase
                             )
                         }
                     }
                 }
-                .scaleEffect(uploadState.isUploading ? 0.93 : 1)
+                .scaleEffect(uploadState.isUploading ? Constants.uploadingScale : 1)
                 .onGeometryChange(for: CGFloat.self) { proxy in
                     proxy.size.height
                 } action: { height in
@@ -165,7 +207,10 @@ struct ShareLinkItemView: View {
                     }
                 }
                 .frame(height: frozenIconCardHeight)
-                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: uploadState.isUploading)
+                .animation(
+                    .spring(response: Constants.springResponse, dampingFraction: Constants.springDamping),
+                    value: uploadState.isUploading
+                )
                 
                 if uploadState.isSuccess, proxy.size.height > fullSizeCard {
                     HStack {
@@ -178,11 +223,16 @@ struct ShareLinkItemView: View {
                     .padding(.leading, Spacing.xs)
                     .padding(.horizontal, Spacing.l)
                     .padding(.vertical, Spacing.m)
-                    .frame(width: 260)
-                    .cardGlassEffect(cornerRadius: 40)
+                    .frame(width: Constants.linkBadgeWidth)
+                    .cardGlassEffect(cornerRadius: Constants.iconCardCornerRadius)
                     .transition(
                         .modifier(
-                            active: BlurModifier(radius: 8, opacity: 0, scale: 0.8, offsetY: -50),
+                            active: BlurModifier(
+                                radius: Constants.blurRadius,
+                                opacity: 0,
+                                scale: Constants.blurBadgeScale,
+                                offsetY: Constants.blurBadgeOffsetY
+                            ),
                             identity: BlurModifier(radius: 0, opacity: 1, scale: 1, offsetY: 0)
                         )
                     )
@@ -193,7 +243,7 @@ struct ShareLinkItemView: View {
             .position(
                 cordPosition(in: proxy)
             )
-            .animation(.smooth(duration: 0.4), value: uploadState.isSuccess)
+            .animation(.smooth(duration: Constants.smoothDuration), value: uploadState.isSuccess)
             .onAppear {
                 iconCardSize = proxy.size
             }
@@ -206,7 +256,7 @@ struct ShareLinkItemView: View {
     }
     
     private var fullSizeCard: CGFloat {
-        (iconCardHeight ?? 0) + Spacing.xl + 70
+        (iconCardHeight ?? 0) + Spacing.xl + Constants.fullSizeCardExtra
     }
     
     private func cordPosition(in proxy: GeometryProxy) -> CGPoint {
@@ -220,7 +270,7 @@ struct ShareLinkItemView: View {
         let center = CGPoint(x: frozenSize.width / 2, y: frozenSize.height / 2)
         let fullSize = fullSizeCard
         let isLinkGenerated = proxy.size.height > fullSize
-        let linkOffset: CGFloat = 35
+        let linkOffset = Constants.linkOffset
 
         if frozenSize.height > fullSize {
             return CGPoint(
@@ -235,6 +285,11 @@ struct ShareLinkItemView: View {
         }
     }
 
+    private func rowIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
+            .frame(width: Constants.iconFrameWidth)
+    }
+
     // MARK: - Configuration Controls
 
     @ViewBuilder
@@ -242,8 +297,7 @@ struct ShareLinkItemView: View {
         VStack(spacing: Spacing.m) {
             GroupedSection {
                 HStack(spacing: Spacing.l) {
-                    Image(systemName: "timer")
-                        .frame(width: 24)
+                    rowIcon("timer")
                         .foregroundStyle(.primary)
                     Text(.shareLinkItemExpirationTime)
                     Spacer()
@@ -274,8 +328,7 @@ struct ShareLinkItemView: View {
 
             GroupedSection {
                 HStack(spacing: Spacing.l) {
-                    Image(systemName: "arrow.trianglehead.2.clockwise")
-                        .frame(width: 24)
+                    rowIcon("arrow.trianglehead.2.clockwise")
                         .foregroundStyle(.primary)
                     
                     VStack(alignment: .leading) {
@@ -295,8 +348,7 @@ struct ShareLinkItemView: View {
                     presenter.onAccessPasswordTapped()
                 } label: {
                     HStack(spacing: Spacing.l) {
-                        Image(systemName: "lock.fill")
-                            .frame(width: 24)
+                        rowIcon("lock.fill")
 
                         VStack(alignment: .leading) {
                             Text(.shareLinkItemAccessPassword)
@@ -326,7 +378,7 @@ struct ShareLinkItemView: View {
             }
             .buttonStyle(.filled)
             .controlSize(.large)
-            .padding()
+            .padding(Spacing.l)
         }
     }
 
@@ -342,8 +394,7 @@ struct ShareLinkItemView: View {
 
             GroupedSection {
                 HStack(spacing: Spacing.l) {
-                    Image(systemName: "timer")
-                        .frame(width: 24)
+                    rowIcon("timer")
                     Text(.shareLinkItemExpirationTime)
                     Spacer()
                     Text(presenter.selectedExpiration.duration, format: presenter.expirationFormat)
@@ -351,8 +402,7 @@ struct ShareLinkItemView: View {
 
                 if presenter.isOneTimeAccess {
                     HStack(spacing: Spacing.l) {
-                        Image(systemName: "arrow.trianglehead.2.clockwise")
-                            .frame(width: 24)
+                        rowIcon("arrow.trianglehead.2.clockwise")
                         Text(.shareLinkItemOneTimeAccess)
                         Spacer()
                         Image(systemName: "checkmark")
@@ -361,8 +411,7 @@ struct ShareLinkItemView: View {
 
                 if !presenter.password.isEmpty {
                     HStack(spacing: Spacing.l) {
-                        Image(systemName: "lock.fill")
-                            .frame(width: 24)
+                        rowIcon("lock.fill")
                         Text(.commonPassword)
                         Spacer()
                         Button(.commonCopy) {
@@ -378,7 +427,7 @@ struct ShareLinkItemView: View {
             }
             .buttonStyle(.filled)
             .controlSize(.large)
-            .padding()
+            .padding(Spacing.l)
         }
     }
 }

@@ -24,7 +24,6 @@ protocol RootModuleInteracting: AnyObject {
     var isOnboardingCompleted: Bool { get }
 
     func isBackupFileURL(_ url: URL) -> Bool
-    func isShareURL(_ url: URL) -> Bool
     func isShareDeepLink(_ url: URL) -> Bool
     func parseShareURL(_ url: URL) -> ShareLinkComponents?
     func parseShareDeepLink(_ url: URL) -> ShareLinkComponents?
@@ -208,10 +207,6 @@ extension RootModuleInteractor: RootModuleInteracting {
 
     func isBackupFileURL(_ url: URL) -> Bool {
         url.pathExtension == "2faspass"
-    }
-
-    func isShareURL(_ url: URL) -> Bool {
-        shareLinkInteractor.isShareURL(url)
     }
 
     func isShareDeepLink(_ url: URL) -> Bool {
