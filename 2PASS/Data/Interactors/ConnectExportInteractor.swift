@@ -62,10 +62,6 @@ protocol ConnectExportInteracting: AnyObject {
 
 final class ConnectExportInteractor: ConnectExportInteracting {
 
-    private var vaultID: VaultID {
-        vaultsInteractor.defaultVaultID
-    }
-
     private let mainRepository: MainRepository
     private let vaultsInteractor: VaultsInteracting
     private let itemsInteractor: ItemsInteracting
@@ -107,7 +103,7 @@ final class ConnectExportInteractor: ConnectExportInteracting {
         guard !vaultsInteractor.listVaults().isEmpty else {
             throw .noSelectedVault
         }
-        
+
         let items = Task { @MainActor in
             mainRepository.listItems(options: .allNotTrashed)
                 .filter { $0.protectionLevel != .topSecret }
@@ -309,7 +305,7 @@ private extension ConnectExportInteractor {
                 return nil
             }
             
-            guard let decryptedPassword = itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: item.protectionLevel, vaultID: vaultID) else {
+            guard let decryptedPassword = itemsInteractor.decrypt(pass, isSecureField: true, protectionLevel: item.protectionLevel, vaultID: item.vaultId) else {
                 return nil
             }
             
@@ -450,7 +446,7 @@ private extension ConnectExportInteractor {
             let passwordEnc: String? = {
                 if options.contains(.includeSecureFields),
                    let passwordValue = loginItem.password,
-                   let decryptKey = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel, forVault: vaultID),
+                   let decryptKey = mainRepository.getKey(isPassword: true, protectionLevel: item.protectionLevel, forVault: item.vaultId),
                    let decryptedValue = mainRepository.decrypt(passwordValue, key: decryptKey),
                    let nonce = mainRepository.generateRandom(byteCount: Config.Connect.secureFieldNonceByteCount),
                    let encryptKey = secureFieldEncryptionKeyProvider(item.protectionLevel),
@@ -514,25 +510,6 @@ private extension ConnectExportInteractor {
                 }
             }
         }
-    }
-    
-    func reencryptSecureFields(in content: [String: Any], key encryptKey: SymmetricKey, contentType: ItemContentType) -> [String: Any] {
-        Dictionary(uniqueKeysWithValues: content
-            .compactMap { key, value in
-                if contentType.isSecureField(key: key) {
-                    guard let encryptedData = value as? Data,
-                          let decryptKey = mainRepository.getKey(isPassword: true, protectionLevel: .normal, forVault: vaultID),
-                          let decryptedValue = mainRepository.decrypt(encryptedData, key: decryptKey),
-                          let nonce = mainRepository.generateRandom(byteCount: Config.Connect.secureFieldNonceByteCount),
-                          let encrypted = mainRepository.encrypt(decryptedValue, key: encryptKey, nonce: nonce) else {
-                        return nil
-                    }
-                    return (key, encrypted.base64EncodedString())
-                } else {
-                    return(key, value)
-                }
-            }
-        )
     }
     
     func encodeContent(from item: ItemData) throws(ExportError) -> Data {
