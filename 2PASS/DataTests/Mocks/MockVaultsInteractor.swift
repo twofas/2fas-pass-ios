@@ -53,6 +53,10 @@ final class MockVaultsInteractor: VaultsInteracting {
         stubbedListVaults
     }
 
+    func listEncryptedVaults() -> [VaultEncryptedData] {
+        []
+    }
+
     func vault(for vaultID: VaultID) -> VaultData? {
         stubbedListVaults.first { $0.vaultID == vaultID }
     }

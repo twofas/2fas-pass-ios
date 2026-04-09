@@ -544,7 +544,7 @@ struct EnpassImportInteractorTests {
 
     private func decrypt(_ data: Data?) -> String? {
         guard let data,
-              let key = mockMainRepository.getKey(isPassword: true, protectionLevel: .normal),
+              let key = mockMainRepository.getKey(isPassword: true, protectionLevel: .normal, forVault: UUID()),
               let decrypted = mockMainRepository.decrypt(data, key: key) else {
             return nil
         }

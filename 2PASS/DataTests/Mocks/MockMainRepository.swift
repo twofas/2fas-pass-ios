@@ -2974,4 +2974,66 @@ final class MockMainRepository: MainRepository {
         recordCall()
         return stubbedURICache[originalUri]
     }
+
+    // MARK: Metadata key derivation
+
+    private var stubbedGenerateMetadataKey: (String) -> String? = { _ in nil }
+
+    func generateMetadataKey(using masterKey: String) -> String? {
+        recordCall()
+        return stubbedGenerateMetadataKey(masterKey)
+    }
+
+    @discardableResult
+    func withGenerateMetadataKey(_ handler: @escaping (String) -> String?) -> Self {
+        stubbedGenerateMetadataKey = handler
+        return self
+    }
+
+    // MARK: Shared Secret
+
+    private var stubbedCreateSharedSecret: (Data, Int, Bool) async throws -> CreateShareSecretResponse = { _, _, _ in
+        CreateShareSecretResponse(id: "", validUntil: "", singleUse: false)
+    }
+
+    func createSharedSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> CreateShareSecretResponse {
+        recordCall()
+        return try await stubbedCreateSharedSecret(data, validForSeconds, singleUse)
+    }
+
+    @discardableResult
+    func withCreateSharedSecret(_ handler: @escaping (Data, Int, Bool) async throws -> CreateShareSecretResponse) -> Self {
+        stubbedCreateSharedSecret = handler
+        return self
+    }
+
+    private var stubbedFetchSharedSecret: (String) async throws -> SharedSecretResponse = { _ in
+        SharedSecretResponse(data: "")
+    }
+
+    func fetchSharedSecret(id: String) async throws -> SharedSecretResponse {
+        recordCall()
+        return try await stubbedFetchSharedSecret(id)
+    }
+
+    @discardableResult
+    func withFetchSharedSecret(_ handler: @escaping (String) async throws -> SharedSecretResponse) -> Self {
+        stubbedFetchSharedSecret = handler
+        return self
+    }
+
+    // MARK: Screen Capture
+
+    private(set) var stubbedScreenCaptureAllowedUntil: Date?
+    var screenCaptureAllowedUntil: Date? { stubbedScreenCaptureAllowedUntil }
+
+    func setScreenCaptureAllowedUntil(_ date: Date) {
+        recordCall()
+        stubbedScreenCaptureAllowedUntil = date
+    }
+
+    func clearScreenCaptureAllowedUntil() {
+        recordCall()
+        stubbedScreenCaptureAllowedUntil = nil
+    }
 }

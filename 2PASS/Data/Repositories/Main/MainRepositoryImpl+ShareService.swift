@@ -8,12 +8,12 @@ import Common
 
 extension MainRepositoryImpl {
 
-    func createSharedSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse {
+    func createSharedSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> CreateShareSecretResponse {
         let request = ShareSecretRequest(data: data, validForSeconds: validForSeconds, singleUse: singleUse)
         return try await twoFASShareServiceSession.createSecret(request: request)
     }
 
-    func fetchSharedSecret(id: String) async throws -> SharedSecret {
+    func fetchSharedSecret(id: String) async throws -> SharedSecretResponse {
         try await twoFASShareServiceSession.fetchSecret(id: id)
     }
 }

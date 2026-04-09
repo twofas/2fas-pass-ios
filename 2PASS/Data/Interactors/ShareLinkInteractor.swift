@@ -57,7 +57,7 @@ public struct ShareLinkComponents {
 public protocol ShareLinkInteracting: AnyObject {
     func exportItem(id: ItemID) async throws -> ShareExportResult
     func exportItem(id: ItemID, password: String) async throws -> ShareExportResult
-    func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse
+    func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> CreateShareSecretResponse
     func fetchSharedSecret(id: String) async throws -> String
     func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> Data
     func makeImportRequest(from plaintext: Data) throws -> any ItemDataChangeRequest
@@ -139,7 +139,7 @@ final class ShareLinkInteractor: ShareLinkInteracting {
 
     // MARK: - API
 
-    func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse {
+    func createSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> CreateShareSecretResponse {
         try await mainRepository.createSharedSecret(
             data: data,
             validForSeconds: validForSeconds,

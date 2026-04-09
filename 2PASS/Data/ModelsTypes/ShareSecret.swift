@@ -28,7 +28,7 @@ struct ShareSecretRequest: Encodable {
     let singleUse: Bool
 }
 
-public struct ShareSecretResponse: Decodable {
+public struct CreateShareSecretResponse: Decodable {
     public let id: String
     public let validUntil: String
     public let singleUse: Bool
@@ -40,7 +40,7 @@ public struct ShareSecretResponse: Decodable {
     }
 }
 
-public struct SharedSecret: Decodable {
+public struct SharedSecretResponse: Decodable {
     public let data: String
 
     public init(data: String) {
