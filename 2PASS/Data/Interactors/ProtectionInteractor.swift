@@ -496,21 +496,7 @@ extension ProtectionInteractor: ProtectionInteracting {
 
         let masterKeyHex = masterKey.hexEncodedString()
 
-        // Derive and store the metadata key before preparing its cache. The
-        // metadata key is app-scoped (no vault ID) and encrypts WebBrowser
-        // connection rows; without this, WebBrowsersInteractor has no key at
-        // runtime and every encrypt/decrypt fails for the session.
-        if let metadataKeyHex = mainRepository.generateMetadataKey(using: masterKeyHex),
-           let metadataKeyData = Data(hexString: metadataKeyHex) {
-            mainRepository.setMetadataKey(metadataKeyData)
-            mainRepository.prepareMetadataKeyCache()
-        } else {
-            Log(
-                "ProtectionInteractor: Error while generating Metadata Key",
-                module: .interactor,
-                severity: .error
-            )
-        }
+        setupMetadataKey(using: masterKeyHex)
 
         let vaults = vaultsInteractor.listEncryptedVaults()
         guard !vaults.isEmpty else {
@@ -759,6 +745,25 @@ extension ProtectionInteractor: ProtectionInteracting {
 }
 
 private extension ProtectionInteractor {
+    @discardableResult
+    func setupMetadataKey(using masterKeyHex: String) -> Bool {
+        Log("ProtectionInteractor: Deriving Metadata Key", module: .interactor)
+
+        guard let metadataKeyHex = mainRepository.generateMetadataKey(using: masterKeyHex),
+              let metadataKeyData = Data(hexString: metadataKeyHex) else {
+            Log(
+                "ProtectionInteractor: Error while generating Metadata Key",
+                module: .interactor,
+                severity: .error
+            )
+            return false
+        }
+
+        mainRepository.setMetadataKey(metadataKeyData)
+        mainRepository.prepareMetadataKeyCache()
+        return true
+    }
+
     @discardableResult
     func deriveAndCacheKeys(for vaultID: VaultID, using masterKeyHex: String) -> Bool {
         Log("ProtectionInteractor: Vault: \(vaultID). Deriving keys", module: .interactor)
