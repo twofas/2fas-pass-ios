@@ -12,6 +12,7 @@ final class MockVaultsInteractor: VaultsInteracting {
     private var stubbedDefaultVaultID: VaultID = UUID()
     private var stubbedDefaultVault: VaultData?
     private var stubbedListVaults: [VaultData] = []
+    private var stubbedListEncryptedVaults: [VaultEncryptedData] = []
 
     @discardableResult
     func withDefaultVaultID(_ id: VaultID) -> Self {
@@ -37,6 +38,12 @@ final class MockVaultsInteractor: VaultsInteracting {
         return self
     }
 
+    @discardableResult
+    func withListEncryptedVaults(_ vaults: [VaultEncryptedData]) -> Self {
+        stubbedListEncryptedVaults = vaults
+        return self
+    }
+
     var hasVault: Bool {
         !stubbedListVaults.isEmpty
     }
@@ -54,7 +61,7 @@ final class MockVaultsInteractor: VaultsInteracting {
     }
 
     func listEncryptedVaults() -> [VaultEncryptedData] {
-        []
+        stubbedListEncryptedVaults
     }
 
     func vault(for vaultID: VaultID) -> VaultData? {
