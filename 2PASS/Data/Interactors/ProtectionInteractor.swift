@@ -494,15 +494,29 @@ extension ProtectionInteractor: ProtectionInteracting {
         }
         Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
 
-        mainRepository.prepareMetadataKeyCache()
-        
+        let masterKeyHex = masterKey.hexEncodedString()
+
+        // Derive and store the metadata key before preparing its cache. The
+        // metadata key is app-scoped (no vault ID) and encrypts WebBrowser
+        // connection rows; without this, WebBrowsersInteractor has no key at
+        // runtime and every encrypt/decrypt fails for the session.
+        if let metadataKeyHex = mainRepository.generateMetadataKey(using: masterKeyHex),
+           let metadataKeyData = Data(hexString: metadataKeyHex) {
+            mainRepository.setMetadataKey(metadataKeyData)
+            mainRepository.prepareMetadataKeyCache()
+        } else {
+            Log(
+                "ProtectionInteractor: Error while generating Metadata Key",
+                module: .interactor,
+                severity: .error
+            )
+        }
+
         let vaults = vaultsInteractor.listEncryptedVaults()
         guard !vaults.isEmpty else {
             Log("Error while getting Vaults - none found", severity: .error)
             return
         }
-
-        let masterKeyHex = masterKey.hexEncodedString()
 
         for vault in vaults {
             deriveAndCacheKeys(for: vault.vaultID, using: masterKeyHex)

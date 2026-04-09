@@ -852,7 +852,7 @@ extension MainRepositoryImpl {
     func prepareMetadataKeyCache() {
         guard let key = metadataKey() else {
             Log(
-                "Can't prepare metadata key cache! This will degredate the performance",
+                "Can't prepare metadata key cache! This will degrade the performance",
                 module: .mainRepository,
                 severity: .error
             )
@@ -866,7 +866,7 @@ extension MainRepositoryImpl {
               let secureKey = secureKey(forVault: vaultID),
               let externalKey = externalKey(forVault: vaultID) else {
             Log(
-                "Can't prepare cached keys! This will degredate the performance",
+                "Can't prepare cached keys! This will degrade the performance",
                 module: .mainRepository,
                 severity: .error
             )
