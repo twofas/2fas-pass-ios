@@ -40,7 +40,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listAllDeletedItems() -> [DeletedItemData] {
-        deletedItemsInteractor.listDeletedItems()
+        deletedItemsInteractor.listDeletedItems(in: vaultsInteractor.defaultVaultID)
     }
     
     func listAllTags() -> [ItemTagEncryptedData] {
@@ -55,7 +55,8 @@ extension LocalStorageImpl: LocalStorage {
         deletedItemsInteractor.createDeletedItem(
             id: deletedItem.itemID,
             kind: deletedItem.kind,
-            deletedAt: deletedItem.deletedAt
+            deletedAt: deletedItem.deletedAt,
+            in: deletedItem.vaultID
         )
     }
 
@@ -71,7 +72,8 @@ extension LocalStorageImpl: LocalStorage {
         deletedItemsInteractor.updateDeletedItem(
             id: deletedItem.itemID,
             kind: deletedItem.kind,
-            deletedAt: deletedItem.deletedAt
+            deletedAt: deletedItem.deletedAt,
+            in: deletedItem.vaultID
         )
     }
 

@@ -364,7 +364,9 @@ private extension WebDAVBackupInteractor {
                         switch parsedVault {
                         case .decrypted(let items, let tags, let deleted, _, _, _, _):
                             Log("WebDAVBackupInteractor - Vault parsed correctly. Syncing with local database", module: .interactor)
-                            self?.syncInteractor.syncAndApplyChanges(from: items, externalTags: tags, externalDeleted: deleted)
+                            if let vaultID = self?.vaultID {
+                                self?.syncInteractor.syncAndApplyChanges(from: items, externalTags: tags, externalDeleted: deleted, in: vaultID)
+                            }
                             Log("WebDAVBackupInteractor - preparing for Vault export", module: .interactor)
                             self?.prepareForExport()
                         case .needsPassword:

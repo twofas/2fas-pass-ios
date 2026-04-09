@@ -405,7 +405,7 @@ public final class InteractorFactory {
     }
     
     public func deletedItemsInteractor() -> DeletedItemsInteracting {
-        DeletedItemsInteractor(mainRepository: MainRepositoryImpl.shared, vaultsInteractor: vaultsInteractor())
+        DeletedItemsInteractor(mainRepository: MainRepositoryImpl.shared)
     }
     
     public func passwordListInteractor() -> PasswordListInteracting {

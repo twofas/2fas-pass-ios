@@ -514,7 +514,7 @@ extension ItemsInteractor: ItemsInteracting {
         }
         
         markAsTrashed(entity: entity, encryptedEntity: encryptedEntity, date: date)
-        deletedItemsInteractor.createDeletedItem(id: itemID, kind: .login, deletedAt: date)
+        deletedItemsInteractor.createDeletedItem(id: itemID, kind: .login, deletedAt: date, in: entity.vaultId)
     }
     
     @discardableResult

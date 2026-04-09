@@ -8,7 +8,7 @@ import Foundation
 import Common
 
 public protocol SyncInteracting: AnyObject {
-    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData])
+    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData], in vaultID: VaultID)
 }
 
 final class SyncInteractor {
@@ -46,10 +46,10 @@ final class SyncInteractor {
 }
 
 extension SyncInteractor: SyncInteracting {
-    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
+    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData], in vaultID: VaultID) {
         let local = itemsInteractor.listAllItems()
         let localTags = tagInteractor.listAllTags()
-        let localDeleted = deletedItemsInteractor.listDeletedItems()
+        let localDeleted = deletedItemsInteractor.listDeletedItems(in: vaultID)
         
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
         
