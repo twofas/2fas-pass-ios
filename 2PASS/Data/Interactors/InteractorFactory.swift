@@ -415,8 +415,7 @@ public final class InteractorFactory {
     public func tagInteractor() -> TagInteracting {
         TagInteractor(
             deletedItemsInteractor: deletedItemsInteractor(),
-            mainRepository: MainRepositoryImpl.shared,
-            vaultsInteractor: vaultsInteractor()
+            mainRepository: MainRepositoryImpl.shared
         )
     }
     

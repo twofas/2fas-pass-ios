@@ -9,27 +9,30 @@ protocol ManageTagsModuleInteracting {
 }
 
 final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
-    
+
     private let tagInteractor: TagInteracting
     private let itemsInteractor: ItemsInteracting
+    private let vaultsInteractor: VaultsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
-    
+
     init(
         tagInteractor: TagInteracting,
         itemsInteractor: ItemsInteracting,
+        vaultsInteractor: VaultsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     ) {
         self.tagInteractor = tagInteractor
         self.itemsInteractor = itemsInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
-    
+
     func listAllTags() -> [ItemTagData] {
         tagInteractor.listAllTags()
     }
-    
+
     func deleteTag(tagID: ItemTagID) {
-        tagInteractor.deleteTag(tagID: tagID)
+        tagInteractor.deleteTag(tagID: tagID, in: vaultsInteractor.defaultVaultID)
         tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }

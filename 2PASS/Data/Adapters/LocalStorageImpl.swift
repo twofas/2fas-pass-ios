@@ -44,7 +44,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listAllTags() -> [ItemTagEncryptedData] {
-        tagInteractor.listAllEncryptedTags()
+        tagInteractor.listAllEncryptedTags(in: vaultsInteractor.defaultVaultID)
     }
     
     func listTrashedItemsIDs() -> [ItemID] {

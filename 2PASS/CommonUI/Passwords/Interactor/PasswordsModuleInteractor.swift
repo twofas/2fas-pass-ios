@@ -398,7 +398,8 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         tagInteractor.applyTagChangesToItems(
             itemIDs,
             tagsToAdd: tagsToAdd,
-            tagsToRemove: tagsToRemove
+            tagsToRemove: tagsToRemove,
+            in: vaultsInteractor.defaultVaultID
         )
         tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()

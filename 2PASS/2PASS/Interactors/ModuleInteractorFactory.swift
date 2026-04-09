@@ -428,6 +428,7 @@ extension ModuleInteractorFactory {
         ManageTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
         )
     }

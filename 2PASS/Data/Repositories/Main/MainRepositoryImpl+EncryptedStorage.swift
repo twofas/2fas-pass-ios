@@ -327,8 +327,8 @@ extension MainRepositoryImpl {
         encryptedStorage.listEncryptedTags(in: vaultID)
     }
     
-    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID) {
-        encryptedStorage.encryptedTagBatchUpdate(tags, in: vault)
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData]) {
+        encryptedStorage.encryptedTagBatchUpdate(tags)
     }
     
     func deleteAllEncryptedTags(in vault: VaultID) {

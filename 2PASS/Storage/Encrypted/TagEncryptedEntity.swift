@@ -92,6 +92,18 @@ extension TagEncryptedEntity {
         }
     }
 
+    @nonobjc static func list(on context: NSManagedObjectContext, tagIDs: [ItemTagID]) -> [TagEncryptedEntity] {
+        let request = TagEncryptedEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "%K IN %@", #keyPath(TagEncryptedEntity.tagID), tagIDs)
+        do {
+            return try context.fetch(request)
+        } catch {
+            let err = error as NSError
+            Log("TagEncryptedEntity in Storage list(tagIDs:): \(err.localizedDescription)", module: .storage)
+            return []
+        }
+    }
+
     @nonobjc static func listAll(on context: NSManagedObjectContext) -> [TagEncryptedEntity] {
         let request = TagEncryptedEntity.fetchRequest()
         do {

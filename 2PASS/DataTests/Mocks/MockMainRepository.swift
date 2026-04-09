@@ -2172,7 +2172,7 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID) {
+    func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData]) {
         recordCall()
     }
 

@@ -346,13 +346,15 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             .map(ItemTagEncryptedData.init)
     }
     
-    public func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vaultID: VaultID) {
-        let listAll: [ItemTagID: TagEncryptedEntity] = TagEncryptedEntity.list(on: context, in: vaultID)
+    public func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData]) {
+        guard tags.isEmpty == false else { return }
+        let tagIDs = tags.map { $0.tagID }
+        let existing: [ItemTagID: TagEncryptedEntity] = TagEncryptedEntity.list(on: context, tagIDs: tagIDs)
             .reduce(into: [:]) { result, entity in
                 result[entity.tagID] = entity
             }
         for tag in tags {
-            if let entity = listAll[tag.tagID] {
+            if let entity = existing[tag.tagID] {
                 entity.update(from: tag)
             } else {
                 Log("Error while searching for Tag Encrypted Entity \(tag.tagID)")

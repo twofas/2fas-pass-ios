@@ -10,20 +10,23 @@ protocol EditTagModuleInteracting {
 }
 
 final class EditTagModuleInteractor: EditTagModuleInteracting {
-    
+
     private let tagInteractor: TagInteracting
+    private let vaultsInteractor: VaultsInteracting
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
-    
+
     init(
         tagInteractor: TagInteracting,
+        vaultsInteractor: VaultsInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     ) {
         self.tagInteractor = tagInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
     }
-    
+
     func createTag(name: String, color: ItemTagColor) {
-        tagInteractor.createTag(name: name, color: color)
+        tagInteractor.createTag(name: name, color: color, in: vaultsInteractor.defaultVaultID)
         tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }
