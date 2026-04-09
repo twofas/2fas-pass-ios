@@ -192,10 +192,6 @@ extension MainRepositoryImpl {
     }
     
     func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void) {
-        // Materialize the metadata key up front so the WebBrowser V2→V3 policy can
-        // re-encrypt rows during migration. The metadata key is deterministically
-        // derived from the master key via HMAC, matching the runtime derivation
-        // performed at unlock.
         if let masterKey = empheralMasterKey,
            let metadataKeyHex = generateMetadataKey(using: masterKey.hexEncodedString()),
            let metadataKeyData = Data(hexString: metadataKeyHex) {
@@ -205,9 +201,6 @@ extension MainRepositoryImpl {
             Log("Error while preparing Metadata Key for migration", severity: .error)
         }
 
-        // Lazily derive and cache per-vault trusted/secure/external keys on first
-        // use. Idempotent via `hasCachedKeys(for:)` so repeated calls for the same
-        // vault are effectively free.
         let ensureVaultKeys: (VaultID) -> Void = { vaultID in
             guard self.hasCachedKeys(for: vaultID) == false else {
                 return
@@ -239,10 +232,6 @@ extension MainRepositoryImpl {
             self.preparedCachedKeys(for: vaultID)
         }
 
-        // Resolve the AppKey-derived Secure Enclave symmetric key once. This is the
-        // pre-feature/new-keys WebBrowsersInteractor key path; the WebBrowser V2→V3
-        // policy invokes it 5× per row, and `createSymmetricKeyFromSecureEnclave`
-        // hits the Secure Enclave on every call (no internal memoization).
         let appKeySymmetric: SymmetricKey? = self.appKey.flatMap(self.createSymmetricKeyFromSecureEnclave(from:))
 
         let resolveKey: (EncryptionKey) -> SymmetricKey? = { encryptionKey in
