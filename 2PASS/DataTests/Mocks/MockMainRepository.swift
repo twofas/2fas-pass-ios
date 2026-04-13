@@ -1378,6 +1378,40 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    private var stubbedHasVerificationReference: Bool = false
+    var hasVerificationReference: Bool { stubbedHasVerificationReference }
+
+    @discardableResult
+    func withHasVerificationReference(_ value: Bool) -> Self {
+        stubbedHasVerificationReference = value
+        return self
+    }
+
+    private var stubbedVerificationReferenceData: Data?
+    var verificationReferenceData: Data? { stubbedVerificationReferenceData }
+
+    @discardableResult
+    func withVerificationReferenceData(_ value: Data?) -> Self {
+        stubbedVerificationReferenceData = value
+        return self
+    }
+
+    func saveVerificationReference(_ deviceID: DeviceID, verificationKey: Data) {
+        recordCall()
+    }
+
+    func clearVerificationReference() {
+        recordCall()
+    }
+
+    func setVerificationKey(_ data: Data) {
+        recordCall()
+    }
+
+    func clearVerificationKey() {
+        recordCall()
+    }
+
     private var stubbedHasMasterKeyEntropy: Bool = false
     var hasMasterKeyEntropy: Bool { stubbedHasMasterKeyEntropy }
 
@@ -1451,6 +1485,18 @@ final class MockMainRepository: MainRepository {
     @discardableResult
     func withGenerateExchangeSeedHash(_ handler: @escaping (VaultID, Data) -> String?) -> Self {
         stubbedGenerateExchangeSeedHash = handler
+        return self
+    }
+
+    private var stubbedGenerateVerificationReference: (String) -> String? = { _ in nil }
+    func generateVerificationReference(using masterKey: String) -> String? {
+        recordCall()
+        return stubbedGenerateVerificationReference(masterKey)
+    }
+
+    @discardableResult
+    func withGenerateVerificationReference(_ handler: @escaping (String) -> String?) -> Self {
+        stubbedGenerateVerificationReference = handler
         return self
     }
 

@@ -194,6 +194,7 @@ extension StartupInteractor: StartupInteracting {
         }
         biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
             self?.protectionInteractor.saveEncryptionReference()
+            self?.protectionInteractor.saveVerificationReference()
             self?.protectionInteractor.createNewVault(with: .init())
             self?.protectionInteractor.setupKeys()
             self?.protectionInteractor.saveEntropy()
@@ -236,6 +237,7 @@ extension StartupInteractor: StartupInteracting {
     
     func createVault(for vaultID: VaultID, creationDate: Date?, modificationDate: Date?) -> Bool {
         protectionInteractor.saveEncryptionReference()
+        protectionInteractor.saveVerificationReference()
         protectionInteractor.createNewVault(with: vaultID, name: Config.mainVaultName, color: nil, icon: nil, creationDate: creationDate, modificationDate: modificationDate)
         protectionInteractor.setupKeys()
         protectionInteractor.saveEntropy()
@@ -259,7 +261,13 @@ extension StartupInteractor: StartupInteracting {
         }
         migrationInteractor.migrateStorageIfNeeded()
 
-        guard protectionInteractor.verifyMasterKeyUsingVault(masterKey) else {
+        let masterKeyVerified: Bool = if protectionInteractor.hasVerificationReference {
+            protectionInteractor.verifyMasterKeyUsingVerificationReference(masterKey)
+        } else {
+            protectionInteractor.verifyMasterKeyUsingVault(masterKey)
+        }
+
+        guard masterKeyVerified else {
             return false
         }
                 
@@ -283,6 +291,7 @@ extension StartupInteractor: StartupInteracting {
         
         protectionInteractor.setupDeviceID()
         protectionInteractor.saveEncryptionReference()
+        protectionInteractor.saveVerificationReference()
         protectionInteractor.setupKeys()
         protectionInteractor.updateVaultsKeys()
         protectionInteractor.saveEntropy()

@@ -58,9 +58,11 @@ public protocol ProtectionInteracting: AnyObject {
     func updateVaultsKeys()
     
     var hasEncryptionReference: Bool { get }
+    var hasVerificationReference: Bool { get }
     func createNewVault(with vaultID: VaultID, name: String, color: String?, icon: String?, creationDate: Date?, modificationDate: Date?)
     func saveEncryptionReference()
-    
+    func saveVerificationReference()
+
     func getAllWords() -> [String]
     func setWords(_ words: [String], masterPassword: MasterPassword?) -> Result<Void, SetWordsError>
     func setEntropy(_ entropy: Entropy, masterKey: MasterKey?) -> Bool
@@ -75,6 +77,7 @@ public protocol ProtectionInteracting: AnyObject {
     
     func createExternalSymmetricKey(from masterKey: MasterKey, vaultID: VaultID) -> SymmetricKey?
 
+    func verifyMasterKeyUsingVerificationReference(_ masterKey: MasterKey) -> Bool
     func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool
     func verifyMasterKey(_ masterKey: MasterKey) -> Bool
     func validateEntropyMatchesCurrentVault(_ entropy: Entropy) -> Bool
@@ -178,6 +181,10 @@ extension ProtectionInteractor: ProtectionInteracting {
     var hasEncryptionReference: Bool {
         mainRepository.hasEncryptionReference
     }
+
+    var hasVerificationReference: Bool {
+        mainRepository.hasVerificationReference
+    }
     
     func createAppKey(completion: @escaping (Bool) -> Void) {
         Log("ProtectionInteractor: Create App Key", module: .interactor)
@@ -211,50 +218,67 @@ extension ProtectionInteractor: ProtectionInteracting {
         return mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) != nil
     }
     
+    func verifyMasterKeyUsingVerificationReference(_ masterKey: MasterKey) -> Bool {
+        guard let deviceID = mainRepository.deviceID else {
+            return false
+        }
+
+        guard let verificationKeyHex = mainRepository.generateVerificationReference(
+            using: masterKey.hexEncodedString()
+        ), let verificationKey = Data(hexString: verificationKeyHex) else {
+            return false
+        }
+        let symm = mainRepository.createSymmetricKey(from: verificationKey)
+        guard let savedData = mainRepository.verificationReferenceData,
+              let decrypted = mainRepository.decrypt(savedData, key: symm),
+              let decryptedDeviceID = String(data: decrypted, encoding: .utf8)
+        else {
+            return false
+        }
+        return decryptedDeviceID == deviceID.exportString()
+    }
+
     func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool {
-        guard let vault = vaultsInteractor.defaultVault else {
+        let vaults = vaultsInteractor.listEncryptedVaults()
+        guard !vaults.isEmpty else {
             return false
         }
-        
-        guard let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(vault.vaultID, using: masterKey.hexEncodedString()),
-              let trustedKeyData = Data(hexString: trustedKeyString) else {
-            return false
-        }
-        
-        guard let secureKeyString = mainRepository.generateSecureKeyForVaultID(vault.vaultID, using: masterKey.hexEncodedString()),
-              let secureKeyData = Data(hexString: secureKeyString) else {
-            return false
-        }
-        
-        let trustedKey = mainRepository.createSymmetricKey(from: trustedKeyData)
-        let secureKey = mainRepository.createSymmetricKey(from: secureKeyData)
-        
-        // Find any encrypted element in the database and try to decrypt it.
-        
-        if let item = mainRepository.listEncryptedItems(in: vault.vaultID).first {
-            let key: SymmetricKey = {
-                switch item.protectionLevel {
-                case .normal, .confirm:
-                    return trustedKey
-                case .topSecret:
-                    return secureKey
+
+        let masterKeyHex = masterKey.hexEncodedString()
+
+        for vault in vaults {
+            guard let trustedKeyString = mainRepository.generateTrustedKeyForVaultID(vault.vaultID, using: masterKeyHex),
+                  let trustedKeyData = Data(hexString: trustedKeyString) else {
+                continue
+            }
+
+            guard let secureKeyString = mainRepository.generateSecureKeyForVaultID(vault.vaultID, using: masterKeyHex),
+                  let secureKeyData = Data(hexString: secureKeyString) else {
+                continue
+            }
+
+            let trustedKey = mainRepository.createSymmetricKey(from: trustedKeyData)
+            let secureKey = mainRepository.createSymmetricKey(from: secureKeyData)
+
+            if let item = mainRepository.listEncryptedItems(in: vault.vaultID).first {
+                let key: SymmetricKey = {
+                    switch item.protectionLevel {
+                    case .normal, .confirm:
+                        return trustedKey
+                    case .topSecret:
+                        return secureKey
+                    }
+                }()
+
+                if mainRepository.decrypt(item.content, key: key) != nil {
+                    return true
                 }
-            }()
-            
-            return mainRepository.decrypt(item.content, key: key) != nil
+            }
         }
-        
-        if let tag = mainRepository.listEncryptedTags(in: vault.vaultID).first {
-            return mainRepository.decrypt(tag.name, key: trustedKey) != nil
-        }
-        
-        if let browser = mainRepository.listEncryptedWebBrowsers().first {
-            return mainRepository.decrypt(browser.extName, key: trustedKey) != nil
-        }
-        
+
         return false
     }
-    
+
     func restoreEntropy() {
         Log("ProtectionInteractor: Restoring Entropy", module: .interactor)
         guard let entropy = mainRepository.masterKeyEntropy else {
@@ -383,7 +407,42 @@ extension ProtectionInteractor: ProtectionInteracting {
         )
         mainRepository.saveEncryptionReference(deviceID, masterKey: masterKey)
     }
-    
+
+    func saveVerificationReference() {
+        Log("ProtectionInteractor: Save Verification Reference", module: .interactor)
+        guard let deviceID = mainRepository.deviceID else {
+            Log(
+                "ProtectionInteractor: Error while getting DeviceID for saving Verification Reference",
+                module: .interactor,
+                severity: .error
+            )
+            return
+        }
+
+        guard let masterKey = mainRepository.empheralMasterKey else {
+            Log(
+                "ProtectionInteractor: Error while getting Master Key for saving Verification Reference",
+                module: .interactor,
+                severity: .error
+            )
+            return
+        }
+
+        guard let verificationKeyHex = mainRepository.generateVerificationReference(
+            using: masterKey.hexEncodedString()
+        ), let verificationKey = Data(hexString: verificationKeyHex) else {
+            Log(
+                "ProtectionInteractor: Error while generating Verification Key",
+                module: .interactor,
+                severity: .error
+            )
+            return
+        }
+
+        mainRepository.setVerificationKey(verificationKey)
+        mainRepository.saveVerificationReference(deviceID, verificationKey: verificationKey)
+    }
+
     func verifyMasterPassword(_ masterPassword: String) -> Bool {
         restoreEntropy()
         createSeed()

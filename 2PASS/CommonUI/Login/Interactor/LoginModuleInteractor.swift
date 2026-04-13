@@ -151,6 +151,7 @@ extension LoginModuleInteractor: LoginModuleInteracting {
                 case .success:
                     self?.loginInteractor.saveMasterPassword(masterPassword)
                     self?.loginInteractor.saveEncryptionReference()
+                    self?.loginInteractor.saveVerificationReferenceIfNeeded()
                     completion(result)
                 default: completion(result)
                 }

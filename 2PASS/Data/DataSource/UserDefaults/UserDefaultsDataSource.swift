@@ -125,4 +125,8 @@ protocol UserDefaultsDataSource: AnyObject {
 
     var deviceName: String? { get }
     func setDeviceName(_ name: String)
+
+    var verificationReference: Data? { get }
+    func setVerificationReference(_ data: Data)
+    func clearVerificationReference()
 }

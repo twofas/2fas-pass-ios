@@ -55,6 +55,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         protectionInteractor.setMasterKey(for: masterPassword)
         biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
             self?.protectionInteractor.saveEncryptionReference()
+            self?.protectionInteractor.saveVerificationReference()
             self?.protectionInteractor.updateVaultsKeys()
             self?.protectionInteractor.setupKeys()
             self?.itemsInteractor.reencryptDecryptedList(current, tags: tags) { [weak self] _ in

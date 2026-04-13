@@ -64,6 +64,7 @@ public protocol LoginInteracting: AnyObject {
     func setMasterKey(for masterPassword: MasterPassword)
     func clearMasterKey()
     func saveEncryptionReference()
+    func saveVerificationReferenceIfNeeded()
     func resetApp()
     func verifyMasterPassword(
         using masterPassword: MasterPassword,
@@ -360,7 +361,12 @@ extension LoginInteractor: LoginInteracting {
     func saveEncryptionReference() {
         protectionInteractor.saveEncryptionReference()
     }
-    
+
+    func saveVerificationReferenceIfNeeded() {
+        guard !mainRepository.hasVerificationReference else { return }
+        protectionInteractor.saveVerificationReference()
+    }
+
     func resetApp() {
         protectionInteractor.clearApp()
     }
@@ -468,12 +474,13 @@ private extension LoginInteractor {
         Log("LoginInteractor: User logged in using Master Password", module: .interactor)
         protectionInteractor.setMasterKey(for: masterPassword)
         protectionInteractor.setupKeys()
+        saveVerificationReferenceIfNeeded()
         storageInteractor.initialize { [weak self] in
             completion()
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)
         }
     }
-    
+
     func userLoggedInUsingMasterKey(_ masterKey: MasterKey, completion: @escaping () -> Void) {
         Log("LoginInteractor: login using Biometry", module: .interactor)
         protectionInteractor.restoreEntropy()
@@ -481,6 +488,7 @@ private extension LoginInteractor {
         protectionInteractor.createSalt()
         protectionInteractor.setMasterKey(masterKey)
         protectionInteractor.setupKeys()
+        saveVerificationReferenceIfNeeded()
         storageInteractor.initialize { [weak self] in
             completion()
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)

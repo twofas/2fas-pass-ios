@@ -47,6 +47,7 @@ final class UserDefaultsDataSourceImpl {
         case screenCaptureAllowedUntil
         case shareLinkConfig
         case deviceName
+        case verificationReference
     }
     
     private let userDefaults = UserDefaults()
@@ -502,5 +503,21 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func setDeviceName(_ name: String) {
         userDefaults.set(name, forKey: Keys.deviceName.rawValue)
         userDefaults.synchronize()
+    }
+
+    // MARK: Verification Reference
+
+    var verificationReference: Data? {
+        sharedDefaults.data(forKey: Keys.verificationReference.rawValue)
+    }
+
+    func setVerificationReference(_ data: Data) {
+        sharedDefaults.setValue(data, forKey: Keys.verificationReference.rawValue)
+        sharedDefaults.synchronize()
+    }
+
+    func clearVerificationReference() {
+        sharedDefaults.set(nil, forKey: Keys.verificationReference.rawValue)
+        sharedDefaults.synchronize()
     }
 }

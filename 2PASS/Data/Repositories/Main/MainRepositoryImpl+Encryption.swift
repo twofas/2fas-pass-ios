@@ -675,7 +675,38 @@ extension MainRepositoryImpl {
     func clearEncryptionReference() {
         keychainDataSource.clearEncryptionReference()
     }
-    
+
+    var hasVerificationReference: Bool {
+        userDefaultsDataSource.verificationReference != nil
+    }
+
+    var verificationReferenceData: Data? {
+        userDefaultsDataSource.verificationReference
+    }
+
+    func saveVerificationReference(_ deviceID: DeviceID, verificationKey: Data) {
+        let symm = createSymmetricKey(from: verificationKey)
+        guard let data = deviceID.exportString().data(using: .utf8),
+              let encrypted = encrypt(data, key: symm)
+        else {
+            Log("Can't encrypt Verification Reference", module: .mainRepository, severity: .error)
+            return
+        }
+        userDefaultsDataSource.setVerificationReference(encrypted)
+    }
+
+    func clearVerificationReference() {
+        userDefaultsDataSource.clearVerificationReference()
+    }
+
+    func setVerificationKey(_ data: Data) {
+        _empheralVerificationKey = data
+    }
+
+    func clearVerificationKey() {
+        _empheralVerificationKey = nil
+    }
+
     var hasMasterKeyEntropy: Bool {
         keychainDataSource.masterKeyEntropy != nil
     }
@@ -786,6 +817,7 @@ extension MainRepositoryImpl {
         _empheralSecureKeys.removeAll()
         _empheralExternalKeys.removeAll()
         _empheralMetadataKey = nil
+        clearVerificationKey()
 
         clearCachedKeys()
 
@@ -795,7 +827,7 @@ extension MainRepositoryImpl {
         clearSalt()
         clearEmpheralMasterKey()
     }
-    
+
     func generateMetadataKey(using masterKey: String) -> String? {
         hmac(key: masterKey, message: "/metadataKey")
     }
@@ -814,6 +846,10 @@ extension MainRepositoryImpl {
     
     func generateExchangeSeedHash(_ vaultID: VaultID, using seed: Data) -> String? {
         hmac(key: seed.hexEncodedString(), message: vaultID.exportString() + "/eKey")
+    }
+
+    func generateVerificationReference(using masterKey: String) -> String? {
+        hmac(key: masterKey, message: "/verificationKey")
     }
     
     func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel, forVault vaultID: VaultID) -> SymmetricKey? {

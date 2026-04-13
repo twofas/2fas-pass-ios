@@ -266,7 +266,15 @@ protocol MainRepository: AnyObject {
     func saveEncryptionReference(_ deviceID: DeviceID, masterKey: MasterKey)
     func verifyEncryptionReference(using masterKey: MasterKey, with deviceID: DeviceID) -> Bool
     func clearEncryptionReference()
-    
+
+    var hasVerificationReference: Bool { get }
+    var verificationReferenceData: Data? { get }
+    func saveVerificationReference(_ deviceID: DeviceID, verificationKey: Data)
+    func clearVerificationReference()
+
+    func setVerificationKey(_ data: Data)
+    func clearVerificationKey()
+
     var hasMasterKeyEntropy: Bool { get }
     var masterKeyEntropy: Entropy? { get }
     func saveMasterKeyEntropy(_ string: Entropy)
@@ -277,7 +285,8 @@ protocol MainRepository: AnyObject {
     func generateSecureKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?
     func generateExternalKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?
     func generateExchangeSeedHash(_ vaultID: VaultID, using seed: Data) -> String?
-    
+    func generateVerificationReference(using masterKey: String) -> String?
+
     // Recovering Entropy
     func convertWordsToDecimal(_ words: [String]) -> [Int]?
     func create11BitPacks(from decimals: [Int]) -> [UInt16]
