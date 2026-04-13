@@ -159,7 +159,7 @@ final class ShareLinkItemPresenter {
             } catch {
                 uploadState = .finished(.failure(error))
 
-                let message = if case ShareInteractorError.dataTooLarge = error {
+                let message = if case ShareLinkInteractorError.dataTooLarge = error {
                     String(localized: .shareLinkErrorDataTooLarge)
                 } else {
                     error.localizedDescription

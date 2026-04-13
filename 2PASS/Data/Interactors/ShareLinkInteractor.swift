@@ -88,17 +88,17 @@ final class ShareLinkInteractor: ShareLinkInteracting {
         guard let keyData = mainRepository.generateRandom(byteCount: 32),
               let nonce = mainRepository.generateRandom(byteCount: 12)
         else {
-            throw ShareInteractorError.encryptionFailed
+            throw ShareLinkInteractorError.encryptionFailed
         }
 
         let shareKey = mainRepository.createSymmetricKey(from: keyData)
 
         guard let encrypted = mainRepository.encryptWithoutNonce(plaintext, key: shareKey, nonce: nonce) else {
-            throw ShareInteractorError.encryptionFailed
+            throw ShareLinkInteractorError.encryptionFailed
         }
 
         guard encrypted.count <= Config.ShareLink.maxEncryptedSize else {
-            throw ShareInteractorError.dataTooLarge
+            throw ShareLinkInteractorError.dataTooLarge
         }
 
         return ShareExportResult(
@@ -116,18 +116,18 @@ final class ShareLinkInteractor: ShareLinkInteracting {
         guard let salt = mainRepository.generateRandom(byteCount: 16),
               let nonce = mainRepository.generateRandom(byteCount: 12)
         else {
-            throw ShareInteractorError.encryptionFailed
+            throw ShareLinkInteractorError.encryptionFailed
         }
 
         let keyData = try deriveKey(from: password, salt: salt)
         let shareKey = mainRepository.createSymmetricKey(from: keyData)
 
         guard let encrypted = mainRepository.encryptWithoutNonce(plaintext, key: shareKey, nonce: nonce) else {
-            throw ShareInteractorError.encryptionFailed
+            throw ShareLinkInteractorError.encryptionFailed
         }
 
         guard encrypted.count <= Config.ShareLink.maxEncryptedSize else {
-            throw ShareInteractorError.dataTooLarge
+            throw ShareLinkInteractorError.dataTooLarge
         }
 
         return ShareExportResult(
@@ -154,7 +154,7 @@ final class ShareLinkInteractor: ShareLinkInteracting {
 
     func decryptSharedSecret(encryptedData: String, components: ShareLinkComponents, password: String?) throws -> Data {
         guard let ciphertextAndTag = Data(base64Encoded: encryptedData) else {
-            throw ShareInteractorError.decodingFailed
+            throw ShareLinkInteractorError.decodingFailed
         }
 
         let key: SymmetricKey
@@ -164,14 +164,14 @@ final class ShareLinkInteractor: ShareLinkInteracting {
 
         case .password(let salt):
             guard let password else {
-                throw ShareInteractorError.passwordRequired
+                throw ShareLinkInteractorError.passwordRequired
             }
             let keyData = try deriveKey(from: password, salt: salt)
             key = mainRepository.createSymmetricKey(from: keyData)
         }
 
         guard let plaintext = mainRepository.decrypt(ciphertextAndTag, key: key, nonce: components.nonce) else {
-            throw ShareInteractorError.decryptionFailed
+            throw ShareLinkInteractorError.decryptionFailed
         }
 
         return plaintext
@@ -260,7 +260,7 @@ private extension ShareLinkInteractor {
         }
 
         guard let item else {
-            throw ShareInteractorError.itemNotFound
+            throw ShareLinkInteractorError.itemNotFound
         }
 
         let protectionLevel = item.metadata.protectionLevel
@@ -280,7 +280,7 @@ private extension ShareLinkInteractor {
             plaintext = try mainRepository.jsonEncoder.encode(shareContent(from: wifi, protectionLevel: protectionLevel))
 
         case .raw:
-            throw ShareInteractorError.decodingFailed
+            throw ShareLinkInteractorError.decodingFailed
         }
 
         return plaintext
@@ -391,7 +391,7 @@ private extension ShareLinkInteractor {
             return changeRequest(from: decoded.content)
 
         case .unknown:
-            throw ShareInteractorError.unsupportedContentType
+            throw ShareLinkInteractorError.unsupportedContentType
         }
     }
 
@@ -445,7 +445,7 @@ private extension ShareLinkInteractor {
 
     func deriveKey(from password: String, salt: Data) throws -> Data {
         guard let passwordData = password.data(using: .utf8) else {
-            throw ShareInteractorError.encryptionFailed
+            throw ShareLinkInteractorError.encryptionFailed
         }
 
         var derivedKey = Data(count: 32)
@@ -468,14 +468,14 @@ private extension ShareLinkInteractor {
         }
 
         guard status == kCCSuccess else {
-            throw ShareInteractorError.encryptionFailed
+            throw ShareLinkInteractorError.encryptionFailed
         }
 
         return derivedKey
     }
 }
 
-public enum ShareInteractorError: Error {
+public enum ShareLinkInteractorError: Error {
     case itemNotFound
     case decryptionFailed
     case decodingFailed
