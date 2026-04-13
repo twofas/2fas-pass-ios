@@ -297,7 +297,7 @@ private extension ShareLinkInteractor {
                 username: login.content.username,
                 password: decryptSecure(login.content.password, protectionLevel: protectionLevel),
                 notes: login.content.notes,
-                uris: login.content.uris
+                uris: login.content.uris?.map { ShareLoginContent.URI(text: $0.uri, matcher: $0.match.intValue) }
             )
         )
     }
@@ -403,7 +403,12 @@ private extension ShareLinkInteractor {
             username: content.username.map { .value($0) },
             password: content.password.map { .value($0) },
             notes: content.notes,
-            uris: content.uris
+            uris: content.uris?.compactMap {
+                guard let match = PasswordURI.Match(intValue: $0.matcher) else {
+                    return nil
+                }
+                return PasswordURI(uri: $0.text, match: match)
+            }
         )
     }
 

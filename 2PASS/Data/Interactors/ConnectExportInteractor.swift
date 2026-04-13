@@ -274,15 +274,7 @@ private extension ConnectExportInteractor {
     // MARK: - Common (Helpers)
     
     func uriToConnectURI(uri: PasswordURI) -> ConnectURI {
-        let matcher: Int = {
-            switch uri.match {
-            case .domain: 0
-            case .host: 1
-            case .startsWith: 2
-            case .exact: 3
-            }
-        }()
-        return .init(text: uri.uri, matcher: matcher)
+        .init(text: uri.uri, matcher: uri.match.intValue)
     }
     
     // MARK: - Scheme v1 (Helpers)

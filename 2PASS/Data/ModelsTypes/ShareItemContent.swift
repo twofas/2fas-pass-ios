@@ -9,11 +9,17 @@ import Common
 public protocol ShareContent: Codable {}
 
 public struct ShareLoginContent: ShareContent {
+    
+    public struct URI: Codable {
+        public let text: String
+        public let matcher: Int
+    }
+    
     public let name: String?
     public let username: String?
     public let password: String?
     public let notes: String?
-    public let uris: [PasswordURI]?
+    public let uris: [URI]?
 }
 
 public struct ShareSecureNoteContent: ShareContent {
