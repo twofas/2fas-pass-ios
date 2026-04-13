@@ -26,7 +26,7 @@
 			<string>2FAS Pass</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>twofaspass</string>
+				<string>$(URL_SCHEME)</string>
 			</array>
 		</dict>
 	</array>

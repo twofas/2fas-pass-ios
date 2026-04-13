@@ -125,7 +125,11 @@ public enum Config {
         public static let premiumEntitlements = SubscriptionPlan.Entitlements(itemsLimit: nil, connectedBrowsersLimit: nil, multiDeviceSync: true)
     }
     
+    #if PROD
     public static let deepLinkScheme = "twofaspass"
+    #else
+    public static let deepLinkScheme = "dev-twofaspass"
+    #endif
 
     public static let twofasAuthCheckLink = URL(string: "twofasauth://")!
     public static let twofasAuthOpenLink = URL(string: "twofasauth://open")!
