@@ -17,7 +17,7 @@ final class TwoFASShareServiceSession {
     }
 
     func createSecret(request: ShareSecretRequest) async throws -> CreateShareSecretResponse {
-        let url = baseURL.appending(path: "secret")
+        let url = baseURL.appending(path: "api/secret")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -28,7 +28,7 @@ final class TwoFASShareServiceSession {
     }
 
     func fetchSecret(id: String) async throws -> SharedSecretResponse {
-        let url = baseURL.appending(path: "secret/\(id)")
+        let url = baseURL.appending(path: "api/secret/\(id)")
         let data = try await session.validatedData(from: url)
         return try JSONDecoder().decode(SharedSecretResponse.self, from: data)
     }
