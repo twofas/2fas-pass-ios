@@ -82,8 +82,12 @@ public enum Config {
     public static let twoFASBaseURL = URL(string: "https://dev-pass.2fas.com/")!
     #endif
     
+    #if PROD
     public static let twoFASShareBaseURL = URL(string: "https://share.2fas.com/")!
-
+    #else
+    public static let twoFASShareBaseURL = URL(string: "https://dev-share.2fas.com/")!
+    #endif
+    
     public enum ShareLink {
         public static let pbkdf2Iterations: UInt32 = 600_000
         public static let maxEncryptedSize = 16_384
