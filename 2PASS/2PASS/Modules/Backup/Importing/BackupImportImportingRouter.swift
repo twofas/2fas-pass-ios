@@ -10,9 +10,9 @@ import SwiftUI
 
 struct BackupImportImportingRouter {
     
-    static func buildView(input: BackupImportInput, onClose: @escaping Callback) -> some View {
+    static func buildView(input: BackupImportInput, targetVaultID: VaultID? = nil, onClose: @escaping Callback) -> some View {
         BackupImportImportingView(presenter: .init(
-            interactor: ModuleInteractorFactory.shared.backupImportImportingModuleInteractor(input: input),
+            interactor: ModuleInteractorFactory.shared.backupImportImportingModuleInteractor(input: input, targetVaultID: targetVaultID),
             onClose: onClose)
         )
     }

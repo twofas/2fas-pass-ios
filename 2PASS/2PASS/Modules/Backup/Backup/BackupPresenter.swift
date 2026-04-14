@@ -40,7 +40,7 @@ enum BackupDestination: RouterDestination {
     case importFile(onClose: (FileImportResult) -> Void)
     case recoveryEnterPassword(ExchangeVaultVersioned, entropy: Entropy, onClose: Callback, onTryAgain: Callback)
     case recovery(ExchangeVaultVersioned, onClose: Callback)
-    case importing(BackupImportInput, onClose: Callback)
+    case importSummary(items: [ItemData], tags: [ItemTagData], deleted: [DeletedItemData], onClose: Callback)
     case importingFailure(onClose: Callback)
     case schemaNotSupported(schemaVersion: Int, onClose: Callback)
     case upgradePlanPrompt(itemsLimit: Int)
@@ -53,7 +53,7 @@ enum BackupDestination: RouterDestination {
         case .export: "export"
         case .recoveryEnterPassword: "recoveryEnterPassword"
         case .recovery: "recovery"
-        case .importing: "importing"
+        case .importSummary: "importSummary"
         case .importingFailure: "importingFailure"
         case .schemaNotSupported: "schemaNotSupported"
         case .upgradePlanPrompt: "upgradePlanPrompt"
@@ -119,8 +119,10 @@ extension BackupPresenter {
                         switch result {
                         case .decrypted(let items, let tags, let deleted):
                             if interactor.isVaultInitialized() {
-                                destination = .importing(
-                                    .decrypted(items, tags: tags, deleted: deleted),
+                                destination = .importSummary(
+                                    items: items,
+                                    tags: tags,
+                                    deleted: deleted,
                                     onClose: { [weak self] in
                                         self?.close()
                                     }

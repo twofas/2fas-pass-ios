@@ -23,7 +23,7 @@ struct BackupRouter: Router {
             .fileImporter(contentTypes: .vaultFiles, onClose: onClose)
         case .currentPassword, .upgradePlanPrompt:
             .sheet
-        case .export, .recoveryEnterPassword, .importing, .importingFailure, .schemaNotSupported, .recovery, .exportToAnotherApp:
+        case .export, .recoveryEnterPassword, .importSummary, .importingFailure, .schemaNotSupported, .recovery, .exportToAnotherApp:
             .push
         case nil:
             nil
@@ -34,8 +34,13 @@ struct BackupRouter: Router {
         switch destination {
         case .importingFailure(let onClose):
             BackupImportFailureView(onClose: onClose)
-        case .importing(let input, let onClose):
-            BackupImportImportingRouter.buildView(input: input, onClose: onClose)
+        case .importSummary(let items, let tags, let deleted, let onClose):
+            BackupImportSummaryRouter.buildView(
+                items: items,
+                tags: tags,
+                deleted: deleted,
+                onClose: onClose
+            )
         case .recoveryEnterPassword(let vault, let entropy, let onClose, let onTryAgain):
             VaultRecoveryEnterPasswordRouter.buildView(flowContext: .importVault(onClose: onClose), entropy: entropy, recoveryData: .file(vault), onTryAgain: onTryAgain)
         case .recovery(let vault, let onClose):

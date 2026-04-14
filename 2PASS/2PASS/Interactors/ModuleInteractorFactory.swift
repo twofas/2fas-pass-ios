@@ -121,11 +121,18 @@ extension ModuleInteractorFactory {
         )
     }
     
-    func backupImportImportingModuleInteractor(input: BackupImportInput) -> BackupImportImportingModuleInteracting {
+    func backupImportImportingModuleInteractor(input: BackupImportInput, targetVaultID: VaultID?) -> BackupImportImportingModuleInteracting {
         BackupImportImportingModuleInteractor(
             itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
-            input: input
+            input: input,
+            targetVaultID: targetVaultID
+        )
+    }
+
+    func backupImportSummaryModuleInteractor() -> BackupImportSummaryModuleInteracting {
+        BackupImportSummaryModuleInteractor(
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor()
         )
     }
     

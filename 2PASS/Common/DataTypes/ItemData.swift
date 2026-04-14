@@ -294,6 +294,18 @@ extension _ItemData {
             content: content
         )
     }
+
+    public func update(vaultId: VaultID) -> Self {
+        _ItemData(
+            id: id,
+            vaultId: vaultId,
+            metadata: metadata,
+            name: name,
+            contentType: contentType,
+            contentVersion: contentVersion,
+            content: content
+        )
+    }
 }
 
 extension ItemData {
@@ -340,6 +352,21 @@ extension ItemData {
             return .wifi(data.update(trashedStatus: trashedStatus))
         case .raw(let data):
             return .raw(data.update(trashedStatus: trashedStatus))
+        }
+    }
+
+    public func update(vaultId: VaultID) -> Self {
+        switch self {
+        case .login(let data):
+            return .login(data.update(vaultId: vaultId))
+        case .secureNote(let data):
+            return .secureNote(data.update(vaultId: vaultId))
+        case .paymentCard(let data):
+            return .paymentCard(data.update(vaultId: vaultId))
+        case .wifi(let data):
+            return .wifi(data.update(vaultId: vaultId))
+        case .raw(let data):
+            return .raw(data.update(vaultId: vaultId))
         }
     }
 }
