@@ -128,14 +128,15 @@ extension ProtectionInteractor: ProtectionInteracting {
     }
 
     var vaultHasTrustedItems: Bool {
-        guard let vault = vaultsInteractor.defaultVault else {
+        let vaults = vaultsInteractor.listEncryptedVaults()
+        guard !vaults.isEmpty else {
             return false
         }
-        guard !vault.isEmpty else {
-            return false
+        return vaults.contains { vault in
+            guard !vault.isEmpty else { return false }
+            return mainRepository.listEncryptedItems(in: vault.vaultID)
+                .contains { $0.protectionLevel != .topSecret }
         }
-        return !mainRepository.listEncryptedItems(in: vault.vaultID)
-            .filter({ $0.protectionLevel != .topSecret }).isEmpty
     }
     
     var hasEncryptedEntropy: Bool {
