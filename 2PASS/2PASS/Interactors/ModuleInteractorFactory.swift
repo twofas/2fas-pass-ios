@@ -105,6 +105,7 @@ extension ModuleInteractorFactory {
     func backupExportFileModuleInteractor() -> BackupExportFileModuleInteracting {
         BackupExportFileModuleInteractor(
             exportInteractor: InteractorFactory.shared.exportInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
             currentDateInteractor: InteractorFactory.shared.currentDateInteractor()
         )
     }

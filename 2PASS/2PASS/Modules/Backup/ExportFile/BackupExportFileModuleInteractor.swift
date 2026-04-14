@@ -9,27 +9,39 @@ import Data
 import Common
 
 protocol BackupExportFileModuleInteracting: AnyObject {
-    func export(encrypt: Bool) async throws -> URL
+    var defaultVaultID: VaultID { get }
+    func listVaults() -> [VaultData]
+    func export(vaultID: VaultID, encrypt: Bool) async throws -> URL
     func clear()
 }
 
 final class BackupExportFileModuleInteractor {
     private let exportInteractor: ExportInteracting
+    private let vaultsInteractor: VaultsInteracting
 
     private var fileURL: URL?
     private let currentDateInteractor: CurrentDateInteracting
-    
-    init(exportInteractor: ExportInteracting, currentDateInteractor: CurrentDateInteracting) {
+
+    init(exportInteractor: ExportInteracting, vaultsInteractor: VaultsInteracting, currentDateInteractor: CurrentDateInteracting) {
         self.exportInteractor = exportInteractor
+        self.vaultsInteractor = vaultsInteractor
         self.currentDateInteractor = currentDateInteractor
     }
 }
 
 extension BackupExportFileModuleInteractor: BackupExportFileModuleInteracting {
-    
-    func export(encrypt: Bool) async throws -> URL {
+
+    var defaultVaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
+    func listVaults() -> [VaultData] {
+        vaultsInteractor.listVaults()
+    }
+
+    func export(vaultID: VaultID, encrypt: Bool) async throws -> URL {
         try await withCheckedThrowingContinuation { continuation in
-            self.exportInteractor.prepareItemsForExport(encrypt: encrypt, exportIfEmpty: false, includeDeletedItems: false) { result in
+            self.exportInteractor.prepareItemsForExport(vaultID: vaultID, encrypt: encrypt, exportIfEmpty: false, includeDeletedItems: false) { result in
                 switch result {
                 case .success(let data):
                     do {                    

@@ -456,7 +456,7 @@ private extension WebDAVBackupInteractor {
     
     func prepareForExport() {
         Log("WebDAVBackupInteractor - preparing for export", module: .interactor)
-        exportInteractor.prepareItemsForExport(encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
+        exportInteractor.prepareItemsForExport(vaultID: vaultsInteractor.defaultVaultID, encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
             switch exportResult {
             case .success(let vaultForExport):
                 Log("WebDAVBackupInteractor - vault for export ready", module: .interactor)
@@ -471,7 +471,7 @@ private extension WebDAVBackupInteractor {
         
         Log("WebDAVBackupInteractor - preparing decrypted copy for debug", module: .interactor)
         
-        exportInteractor.prepareItemsForExport(encrypt: false, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
+        exportInteractor.prepareItemsForExport(vaultID: vaultsInteractor.defaultVaultID, encrypt: false, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
             switch exportResult {
             case .success(let vaultForExport):
                 Log("WebDAVBackupInteractor - decrypted vault for export ready", module: .interactor)

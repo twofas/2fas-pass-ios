@@ -18,7 +18,7 @@ public enum ExportError: Error {
 }
 
 public protocol ExportInteracting: AnyObject {
-    func prepareItemsForExport(encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void)
+    func prepareItemsForExport(vaultID: VaultID, encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void)
 }
 
 final class ExportInteractor {
@@ -49,13 +49,12 @@ final class ExportInteractor {
 
 extension ExportInteractor: ExportInteracting {
         
-    func prepareItemsForExport(encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void) {
+    func prepareItemsForExport(vaultID: VaultID, encrypt: Bool, exportIfEmpty: Bool, includeDeletedItems: Bool, completion: @escaping (Result<(Data, String), ExportError>) -> Void) {
         func end(_ result: Result<(Data, String), ExportError>) {
             DispatchQueue.main.async {
                 completion(result)
             }
         }
-        let vaultID = self.vaultsInteractor.defaultVaultID
         DispatchQueue.global(qos: .userInitiated).async {
             guard let vault = self.vaultsInteractor.vault(for: vaultID) else {
                 end(.failure(.noSelectedVault))

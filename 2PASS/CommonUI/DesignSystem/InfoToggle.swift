@@ -7,7 +7,6 @@
 import SwiftUI
 
 private struct Constants {
-    static let infoFrameCornerRadius = 16.0
     static let toggleWidth = 49.0
 }
 
@@ -27,7 +26,7 @@ public struct InfoToggle: View {
     
     public var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: Constants.infoFrameCornerRadius)
+            RoundedRectangle(cornerRadius: cornerRadius)
                 .foregroundStyle(.neutral50)
             
             HStack(spacing: Spacing.m) {
@@ -51,5 +50,13 @@ public struct InfoToggle: View {
             .padding(Spacing.l)
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+    
+    private var cornerRadius: CGFloat {
+        if #available(iOS 26, *) {
+            return 24
+        } else {
+            return 16
+        }
     }
 }

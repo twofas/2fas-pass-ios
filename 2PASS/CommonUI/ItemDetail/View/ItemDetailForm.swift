@@ -7,14 +7,14 @@
 import SwiftUI
 import Common
 
-struct GroupedForm<Content: View>: View {
+public struct GroupedForm<Content: View>: View {
     let content: () -> Content
 
-    init(@ViewBuilder content: @escaping () -> Content) {
+    public init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
     }
 
-    var body: some View {
+    public var body: some View {
         ScrollView {
             VStack(spacing: Spacing.xl) {
                 content()
@@ -25,14 +25,14 @@ struct GroupedForm<Content: View>: View {
     }
 }
 
-struct GroupedSection<Content: View>: View {
+public struct GroupedSection<Content: View>: View {
     private let content: () -> Content
 
-    init(@ViewBuilder content: @escaping () -> Content) {
+    public init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
     }
 
-    var body: some View {
+    public var body: some View {
         Group {
             if #available(iOS 18.0, *) {
                 Group(subviews: content()) { subviews in
@@ -69,20 +69,20 @@ struct GroupedSection<Content: View>: View {
     }
 }
 
-struct GroupedRowHighlightButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+public struct GroupedRowHighlightButtonStyle: ButtonStyle {
+    public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .groupedRowBackground(configuration.isPressed ? Color.neutral100 : nil)
     }
 }
 
-extension ButtonStyle where Self == GroupedRowHighlightButtonStyle {
+public extension ButtonStyle where Self == GroupedRowHighlightButtonStyle {
     static var groupedRowHighlight: Self {
         .init()
     }
 }
 
-extension View {
+public extension View {
 
     func groupedRowBackground<V>(_ view: V?) -> some View where V: View {
         preference(key: GroupedRowBackgroundKey.self, value: view.map { AnyView($0) })
