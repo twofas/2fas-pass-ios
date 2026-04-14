@@ -90,10 +90,11 @@ struct WiFiDetailFormView: View {
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
             ItemDetailFormNotes(presenter.notes)
         }
+        .padding(.horizontal, Spacing.l)
         .onAppear {
             selectedField = nil
         }
-        
+
         if presenter.canShowNetworkQRCode {
             GroupedSection {
                 Button {
@@ -108,6 +109,7 @@ struct WiFiDetailFormView: View {
                 }
                 .buttonStyle(.groupedRowHighlight)
             }
+            .padding(.horizontal, Spacing.l)
         }
     }
 }

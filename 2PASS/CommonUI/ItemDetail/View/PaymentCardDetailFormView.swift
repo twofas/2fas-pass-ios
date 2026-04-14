@@ -139,6 +139,7 @@ struct PaymentCardDetailFormView: View {
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
             ItemDetailFormNotes(presenter.notes)
         }
+        .padding(.horizontal, Spacing.l)
         .onAppear {
             selectedField = nil
         }

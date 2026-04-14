@@ -325,12 +325,13 @@ struct ShareLinkItemView: View {
                     trailing: Spacing.xs
                 ))
             }
+            .padding(.horizontal, Spacing.l)
 
             GroupedSection {
                 HStack(spacing: Spacing.l) {
                     rowIcon("arrow.trianglehead.2.clockwise")
                         .foregroundStyle(.primary)
-                    
+
                     VStack(alignment: .leading) {
                         Text(.shareLinkItemOneTimeAccess)
                             .font(.bodyEmphasized)
@@ -342,6 +343,7 @@ struct ShareLinkItemView: View {
                     Toggle(isOn: $presenter.isOneTimeAccess, label: {})
                 }
             }
+            .padding(.horizontal, Spacing.l)
 
             GroupedSection {
                 Button {
@@ -356,7 +358,7 @@ struct ShareLinkItemView: View {
                             Text(.shareLinkItemAccessPasswordDescription)
                                 .font(.subheadline)
                         }
-                        
+
                         Spacer()
 
                         HStack(spacing: Spacing.s) {
@@ -369,6 +371,7 @@ struct ShareLinkItemView: View {
                 }
                 .buttonStyle(.groupedRowHighlight)
             }
+            .padding(.horizontal, Spacing.l)
 
             Button(.commonContinue) {
                 frozenIconCardHeight = iconCardHeight
@@ -420,6 +423,7 @@ struct ShareLinkItemView: View {
                     }
                 }
             }
+            .padding(.horizontal, Spacing.l)
             .padding(.bottom, Spacing.s)
             
             Button(.commonShare) {

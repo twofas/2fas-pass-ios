@@ -366,7 +366,8 @@ extension ModuleInteractorFactory {
     func credentialExchangeExportModuleInteractor() -> CredentialExchangeExportModuleInteracting {
         CredentialExchangeExportModuleInteractor(
             exporter: InteractorFactory.shared.credentialExchangeExporter(),
-            itemsInteractor: InteractorFactory.shared.itemsInteractor()
+            itemsInteractor: InteractorFactory.shared.itemsInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor()
         )
     }
 

@@ -39,6 +39,7 @@ struct SecureNoteDetailFormView: View {
             ItemDetailFormProtectionLevel(presenter.protectionLevel)
             ItemDetailFormNotes(presenter.additionalInfo)
         }
+        .padding(.horizontal, Spacing.l)
     }
     
     @ViewBuilder

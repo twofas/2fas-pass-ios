@@ -36,6 +36,13 @@ final class CredentialExchangeExportPresenter {
     private(set) var state: State = .idle
     var destination: CredentialExchangeExportDestination?
 
+    var selectedVaultID: VaultID
+    let availableVaults: [VaultData]
+
+    var hasMultipleVaults: Bool {
+        availableVaults.count > 1
+    }
+
     private let interactor: CredentialExchangeExportModuleInteracting
     private let onClose: Callback
 
@@ -45,6 +52,14 @@ final class CredentialExchangeExportPresenter {
     ) {
         self.interactor = interactor
         self.onClose = onClose
+
+        let nonEmptyVaults = interactor.listVaults().filter { !$0.isEmpty }
+        self.availableVaults = nonEmptyVaults
+
+        let defaultVaultID = interactor.defaultVaultID
+        self.selectedVaultID = nonEmptyVaults.contains(where: { $0.vaultID == defaultVaultID })
+            ? defaultVaultID
+            : (nonEmptyVaults.first?.vaultID ?? defaultVaultID)
     }
 
     func startExport() {
@@ -60,7 +75,7 @@ final class CredentialExchangeExportPresenter {
                     throw ExportError.noWindow
                 }
                 
-                try await interactor.performExport(anchor: window)
+                try await interactor.performExport(vaultID: selectedVaultID, anchor: window)
                 onClose()
             } catch let error as NSError
                 where error.domain == "com.apple.AuthenticationServicesCore.AuthorizationError" && error.code == 2 {

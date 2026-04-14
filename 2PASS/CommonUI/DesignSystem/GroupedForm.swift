@@ -57,7 +57,6 @@ public struct GroupedSection<Content: View>: View {
         }
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-        .padding(.horizontal, Spacing.l)
     }
 
     private var cornerRadius: CGFloat {

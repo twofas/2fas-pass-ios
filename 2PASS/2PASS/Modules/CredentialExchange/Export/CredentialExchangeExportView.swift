@@ -6,6 +6,7 @@
 
 import SwiftUI
 import CommonUI
+import Common
 
 @available(iOS 26.0, *)
 struct CredentialExchangeExportView: View {
@@ -28,12 +29,19 @@ struct CredentialExchangeExportView: View {
 
             Spacer()
 
-            Button(.credentialExchangeExportCta) {
-                presenter.startExport()
+            VStack(spacing: Spacing.l) {
+                if presenter.hasMultipleVaults {
+                    vaultPicker
+                        .disabled(isExporting)
+                }
+                
+                Button(.credentialExchangeExportCta) {
+                    presenter.startExport()
+                }
+                .buttonStyle(.filled)
+                .controlSize(.large)
+                .disabled(isExporting)
             }
-            .buttonStyle(.filled)
-            .controlSize(.large)
-            .disabled(isExporting)
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal, Spacing.xl)
@@ -41,7 +49,26 @@ struct CredentialExchangeExportView: View {
         .readableContentMargins()
         .router(router: CredentialExchangeExportRouter(), destination: $presenter.destination)
     }
-    
+
+    private var vaultPicker: some View {
+        GroupedSection {
+            HStack {
+                Text("Vault")
+
+                Spacer()
+
+                Picker(selection: $presenter.selectedVaultID) {
+                    ForEach(presenter.availableVaults, id: \.vaultID) { vault in
+                        Text(vault.name).tag(vault.vaultID)
+                    }
+                } label: {
+                    EmptyView()
+                }
+            }
+            .groupedRowBackground(Color.neutral50)
+        }
+    }
+
     private var isExporting: Bool {
         if case .exporting = presenter.state { return true }
         return false

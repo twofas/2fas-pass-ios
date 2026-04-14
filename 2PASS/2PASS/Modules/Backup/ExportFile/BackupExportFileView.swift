@@ -78,6 +78,7 @@ struct BackupExportFileView: View {
             }
             .groupedRowBackground(Color.neutral50)
         }
+        .padding(.horizontal, Spacing.l)
     }
 }
 

@@ -11,7 +11,9 @@ import AuthenticationServices
 
 @available(iOS 26.0, *)
 protocol CredentialExchangeExportModuleInteracting: AnyObject {
-    @MainActor func performExport(anchor: ASPresentationAnchor) async throws
+    var defaultVaultID: VaultID { get }
+    func listVaults() -> [VaultData]
+    @MainActor func performExport(vaultID: VaultID, anchor: ASPresentationAnchor) async throws
 }
 
 @available(iOS 26.0, *)
@@ -19,21 +21,32 @@ final class CredentialExchangeExportModuleInteractor: CredentialExchangeExportMo
 
     private let exporter: CredentialExchangeExporting
     private let itemsInteractor: ItemsInteracting
+    private let vaultsInteractor: VaultsInteracting
 
     init(
         exporter: CredentialExchangeExporting,
-        itemsInteractor: ItemsInteracting
+        itemsInteractor: ItemsInteracting,
+        vaultsInteractor: VaultsInteracting
     ) {
         self.exporter = exporter
         self.itemsInteractor = itemsInteractor
+        self.vaultsInteractor = vaultsInteractor
+    }
+
+    var defaultVaultID: VaultID {
+        vaultsInteractor.defaultVaultID
+    }
+
+    func listVaults() -> [VaultData] {
+        vaultsInteractor.listVaults()
     }
 
     @MainActor
-    func performExport(anchor: ASPresentationAnchor) async throws {
+    func performExport(vaultID: VaultID, anchor: ASPresentationAnchor) async throws {
         let items = itemsInteractor.listItems(
             searchPhrase: nil,
             tagId: nil,
-            vaultId: nil,
+            vaultId: vaultID,
             contentTypes: nil,
             protectionLevel: nil,
             sortBy: .newestFirst,

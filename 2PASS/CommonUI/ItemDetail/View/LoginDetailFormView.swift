@@ -103,6 +103,7 @@ struct LoginDetailFormView: View {
         .onAppear {
             selectedField = nil
         }
+        .padding(.horizontal, Spacing.l)
         .onAppear {
             selectedField = nil
         }
