@@ -11,7 +11,7 @@ import Data
 protocol ManageVaultsModuleInteracting: AnyObject {
     var defaultVaultID: VaultID? { get }
     func listVaults() -> [VaultData]
-    func vaultItemCount(_ vaultID: VaultID) -> Int
+    func itemCountPerVault() -> [VaultID: Int]
     func createVault(name: String, color: String?, icon: String?)
     func editVault(_ vaultID: VaultID, name: String, color: String?, icon: String?)
     func deleteVault(_ vaultID: VaultID)
@@ -39,16 +39,19 @@ final class ManageVaultsModuleInteractor: ManageVaultsModuleInteracting {
         vaultsInteractor.listVaults()
     }
 
-    func vaultItemCount(_ vaultID: VaultID) -> Int {
-        itemsInteractor.listItems(
+    func itemCountPerVault() -> [VaultID: Int] {
+        let items = itemsInteractor.listItems(
             searchPhrase: nil,
             tagId: nil,
-            vaultId: vaultID,
+            vaultId: nil,
             contentTypes: nil,
             protectionLevel: nil,
             sortBy: .az,
             trashed: .no
-        ).count
+        )
+        return items.reduce(into: [:]) { counts, item in
+            counts[item.vaultId, default: 0] += 1
+        }
     }
 
     var defaultVaultID: VaultID? {

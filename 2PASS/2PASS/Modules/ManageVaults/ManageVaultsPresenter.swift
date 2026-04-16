@@ -89,11 +89,12 @@ final class ManageVaultsPresenter {
 
     private func refresh() {
         let defaultID = interactor.defaultVaultID
+        let counts = interactor.itemCountPerVault()
         vaults = interactor.listVaults().map { vault in
             VaultViewModel(
                 id: vault.vaultID,
                 name: vault.name,
-                itemCount: interactor.vaultItemCount(vault.vaultID),
+                itemCount: counts[vault.vaultID] ?? 0,
                 createdAt: vault.createdAt,
                 isDefault: vault.vaultID == defaultID,
                 color: VaultColor(rawValue: vault.color),
