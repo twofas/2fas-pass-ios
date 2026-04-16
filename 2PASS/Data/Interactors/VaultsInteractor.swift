@@ -44,7 +44,10 @@ extension VaultsInteractor: VaultsInteracting {
     }
 
     var defaultVaultID: VaultID {
-        mainRepository.listEncryptedVaults().first!.vaultID
+        guard let vault = mainRepository.listEncryptedVaults().first else {
+            preconditionFailure("VaultsInteractor.defaultVaultID accessed but no vaults exist. Ensure a vault is created during onboarding before accessing this property.")
+        }
+        return vault.vaultID
     }
 
     var defaultVault: VaultData? {
