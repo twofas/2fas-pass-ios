@@ -98,21 +98,11 @@ struct BackupImportSummaryView: View {
     }
 
     private var vaultPicker: some View {
-        GroupedSection {
-            HStack {
-                Text(.backupImportSummaryVaultPickerLabel)
-
-                Spacer()
-
-                Picker(selection: $presenter.selectedVaultID) {
-                    ForEach(presenter.availableVaults, id: \.vaultID) { vault in
-                        Text(vault.name).tag(vault.vaultID)
-                    }
-                } label: {
-                    EmptyView()
-                }
-            }
-        }
+        VaultPickerRow(
+            label: Text(.backupImportSummaryVaultPickerLabel),
+            vaults: presenter.availableVaults,
+            selectedVaultID: $presenter.selectedVaultID
+        )
     }
 
     @ViewBuilder

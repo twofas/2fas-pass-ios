@@ -51,22 +51,12 @@ struct CredentialExchangeExportView: View {
     }
 
     private var vaultPicker: some View {
-        GroupedSection {
-            HStack {
-                Text("Vault")
-
-                Spacer()
-
-                Picker(selection: $presenter.selectedVaultID) {
-                    ForEach(presenter.availableVaults, id: \.vaultID) { vault in
-                        Text(vault.name).tag(vault.vaultID)
-                    }
-                } label: {
-                    EmptyView()
-                }
-            }
-            .groupedRowBackground(Color.neutral50)
-        }
+        VaultPickerRow(
+            label: Text(.backupImportSummaryVaultPickerLabel),
+            vaults: presenter.availableVaults,
+            selectedVaultID: $presenter.selectedVaultID,
+            rowBackground: Color.neutral50
+        )
     }
 
     private var isExporting: Bool {
