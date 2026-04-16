@@ -29,7 +29,7 @@ final class BackupImportSummaryPresenter {
 
     private(set) var state: State
 
-    var selectedVaultID: VaultID
+    var selectedVaultID: VaultID?
     let availableVaults: [VaultData]
 
     var hasMultipleVaults: Bool {
@@ -53,11 +53,12 @@ final class BackupImportSummaryPresenter {
         self.input = input
         self.onClose = onClose
 
-        self.availableVaults = interactor.listVaults()
+        let vaults = interactor.listVaults()
+        self.availableVaults = vaults
         let defaultVaultID = interactor.defaultVaultID
-        self.selectedVaultID = availableVaults.contains(where: { $0.vaultID == defaultVaultID })
-            ? defaultVaultID
-            : (availableVaults.first?.vaultID ?? defaultVaultID)
+        self.selectedVaultID = defaultVaultID.flatMap { id in
+            vaults.contains(where: { $0.vaultID == id }) ? id : nil
+        }
 
         self.state = .loading
     }
@@ -79,7 +80,7 @@ final class BackupImportSummaryPresenter {
     }
 
     func onProceed() {
-        guard let payload else { return }
+        guard let payload, let selectedVaultID else { return }
         destination = .importing(
             .decrypted(payload.items, tags: payload.tags, deleted: payload.deleted),
             targetVaultID: selectedVaultID,

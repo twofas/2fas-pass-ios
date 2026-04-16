@@ -17,7 +17,7 @@ class _ItemEditorFormPresenter {
     
     var name: String
     var protectionLevel: ItemProtectionLevel
-    var selectedVaultID: VaultID
+    var selectedVaultID: VaultID?
     let availableVaults: [VaultData]
     var selectedTags: [ItemTagData] = []
     
@@ -26,7 +26,7 @@ class _ItemEditorFormPresenter {
     let flowController: ItemEditorFlowControlling
     
     var canSave: Bool {
-        name.isEmpty == false
+        name.isEmpty == false && selectedVaultID != nil
     }
     
     var isEditMode: Bool {

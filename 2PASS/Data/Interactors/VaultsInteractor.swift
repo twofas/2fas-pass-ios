@@ -10,7 +10,7 @@ import CryptoKit
 
 public protocol VaultsInteracting: AnyObject {
     var hasVault: Bool { get }
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
     var defaultVault: VaultData? { get }
     func listVaults() -> [VaultData]
     func listEncryptedVaults() -> [VaultEncryptedData]
@@ -43,15 +43,13 @@ extension VaultsInteractor: VaultsInteracting {
         mainRepository.listEncryptedVaults().isEmpty == false
     }
 
-    var defaultVaultID: VaultID {
-        guard let vault = mainRepository.listEncryptedVaults().first else {
-            preconditionFailure("VaultsInteractor.defaultVaultID accessed but no vaults exist. Ensure a vault is created during onboarding before accessing this property.")
-        }
-        return vault.vaultID
+    var defaultVaultID: VaultID? {
+        mainRepository.listEncryptedVaults().first?.vaultID
     }
 
     var defaultVault: VaultData? {
-        guard let encrypted = mainRepository.getEncryptedVault(for: defaultVaultID) else { return nil }
+        guard let vaultID = defaultVaultID,
+              let encrypted = mainRepository.getEncryptedVault(for: vaultID) else { return nil }
         return decryptVault(encrypted)
     }
 

@@ -36,15 +36,18 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func listItems() -> [ItemEncryptedData] {
-        itemsInteractor.listEncryptedItems(vaultID: vaultsInteractor.defaultVaultID)
+        guard let vaultID = vaultsInteractor.defaultVaultID else { return [] }
+        return itemsInteractor.listEncryptedItems(vaultID: vaultID)
     }
-    
+
     func listAllDeletedItems() -> [DeletedItemData] {
-        deletedItemsInteractor.listDeletedItems(in: vaultsInteractor.defaultVaultID)
+        guard let vaultID = vaultsInteractor.defaultVaultID else { return [] }
+        return deletedItemsInteractor.listDeletedItems(in: vaultID)
     }
-    
+
     func listAllTags() -> [ItemTagEncryptedData] {
-        tagInteractor.listAllEncryptedTags(in: vaultsInteractor.defaultVaultID)
+        guard let vaultID = vaultsInteractor.defaultVaultID else { return [] }
+        return tagInteractor.listAllEncryptedTags(in: vaultID)
     }
     
     func listTrashedItemsIDs() -> [ItemID] {
@@ -110,6 +113,7 @@ extension LocalStorageImpl: LocalStorage {
     }
     
     func currentVault() -> VaultEncryptedData? {
-        mainRepository.getEncryptedVault(for: vaultsInteractor.defaultVaultID)
+        guard let vaultID = vaultsInteractor.defaultVaultID else { return nil }
+        return mainRepository.getEncryptedVault(for: vaultID)
     }
 }

@@ -12,7 +12,7 @@ final class CloudCacheStorageImpl {
     private let mainRepository: MainRepository
     private let vaultsInteractor: VaultsInteracting
 
-    private var vaultID: VaultID {
+    private var vaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 

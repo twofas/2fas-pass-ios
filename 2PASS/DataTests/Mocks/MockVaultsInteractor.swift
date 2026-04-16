@@ -9,7 +9,7 @@ import Common
 @testable import Data
 
 final class MockVaultsInteractor: VaultsInteracting {
-    private var stubbedDefaultVaultID: VaultID = UUID()
+    private var stubbedDefaultVaultID: VaultID? = UUID()
     private var stubbedDefaultVault: VaultData?
     private var stubbedListVaults: [VaultData] = []
     private var stubbedListEncryptedVaults: [VaultEncryptedData] = []
@@ -48,7 +48,7 @@ final class MockVaultsInteractor: VaultsInteracting {
         !stubbedListVaults.isEmpty
     }
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         stubbedDefaultVaultID
     }
 

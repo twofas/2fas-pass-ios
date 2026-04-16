@@ -238,6 +238,8 @@ final class PaymentCardEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     func onSave() -> SaveItemResult {
+        guard let selectedVaultID else { return .failure(.interactorError(.noVault)) }
+
         decryptCardNumberIfNeeded()
         decryptSecurityCodeIfNeeded()
         

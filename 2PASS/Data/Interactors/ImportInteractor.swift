@@ -129,7 +129,7 @@ final class ImportInteractor {
     private let protectionInteractor: ProtectionInteracting
     private let uriInteractor: URIInteracting
 
-    private var vaultID: VaultID {
+    private var vaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 
@@ -218,6 +218,9 @@ extension ImportInteractor: ImportInteracting {
         if file.hasUnencryptedServices {
             return .noEncryption
         }
+        guard let vaultID else {
+            return .noSelectedVaultError
+        }
         guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
             return .noExternalKeyError
         }
@@ -266,6 +269,7 @@ extension ImportInteractor: ImportInteracting {
     }
 
     func extractUnencryptedTags(from file: ExchangeVaultVersioned) -> [ItemTagData] {
+        guard let vaultID else { return [] }
         return file.tags.compactMap({ self.exchangeTagToItemTagData($0, vaultID: vaultID) })
     }
 
@@ -294,7 +298,10 @@ extension ImportInteractor: ImportInteracting {
     func extractDataUsingCurrentEncryption(
         from vault: ExchangeVaultVersioned
     ) async throws(ImportExtractCurrentEncryptionError) -> ImportedDataPayload {
-        guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
+        guard let defaultVaultID = self.vaultID else {
+            throw .noExternalKey
+        }
+        guard let key = mainRepository.cachedExternalKey(forVault: defaultVaultID) else {
             throw .noExternalKey
         }
 
@@ -780,7 +787,8 @@ extension ImportInteractor: ImportInteracting {
     }
     
     func isVaultReadyForImport() -> Bool {
-        mainRepository.trustedKey(forVault: vaultID) != nil
+        guard let vaultID else { return false }
+        return mainRepository.trustedKey(forVault: vaultID) != nil
     }
     
     func generateSeedHash(from entropy: Entropy, vaultID: VaultID) -> String? {

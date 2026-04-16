@@ -64,6 +64,7 @@ final class SecureNoteEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     func onSave() -> SaveItemResult {
+        guard let selectedVaultID else { return .failure(.interactorError(.noVault)) }
         let text = {
             if isReveal {
                 return self.text

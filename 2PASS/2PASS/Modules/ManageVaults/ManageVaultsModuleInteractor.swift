@@ -9,7 +9,7 @@ import Common
 import Data
 
 protocol ManageVaultsModuleInteracting: AnyObject {
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
     func listVaults() -> [VaultData]
     func vaultItemCount(_ vaultID: VaultID) -> Int
     func createVault(name: String, color: String?, icon: String?)
@@ -51,7 +51,7 @@ final class ManageVaultsModuleInteractor: ManageVaultsModuleInteracting {
         ).count
     }
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 

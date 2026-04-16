@@ -29,7 +29,7 @@ final class TransferItemsFileSummaryPresenter {
     let tagsCount: Int
     let itemsConvertedToSecureNotes: Int
 
-    var selectedVaultID: VaultID
+    var selectedVaultID: VaultID?
     let availableVaults: [VaultData]
 
     var hasMultipleVaults: Bool {
@@ -51,11 +51,12 @@ final class TransferItemsFileSummaryPresenter {
         self.onClose = onClose
         self.itemsConvertedToSecureNotes = result.itemsConvertedToSecureNotes
 
-        self.availableVaults = interactor.listVaults()
+        let vaults = interactor.listVaults()
+        self.availableVaults = vaults
         let defaultVaultID = interactor.defaultVaultID
-        self.selectedVaultID = availableVaults.contains(where: { $0.vaultID == defaultVaultID })
-            ? defaultVaultID
-            : (availableVaults.first?.vaultID ?? defaultVaultID)
+        self.selectedVaultID = defaultVaultID.flatMap { id in
+            vaults.contains(where: { $0.vaultID == id }) ? id : nil
+        }
 
         var summary: [ItemContentType: Int] = result.items.reduce(into: [:], { result, item in
             let count = result[item.contentType] ?? 0
@@ -79,6 +80,7 @@ final class TransferItemsFileSummaryPresenter {
     }
 
     func onProceed() {
+        guard let selectedVaultID else { return }
         destination = .importItems(result, service: service, targetVaultID: selectedVaultID, onClose: onClose)
     }
 }

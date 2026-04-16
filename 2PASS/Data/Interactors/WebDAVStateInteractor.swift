@@ -46,7 +46,7 @@ public protocol WebDAVStateInteracting: AnyObject {
 }
 
 final class WebDAVStateInteractor {
-    private var vaultID: VaultID {
+    private var vaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 
@@ -122,7 +122,10 @@ extension WebDAVStateInteractor {
     
     func setConfig(baseURL: String, normalizedBaseURL: URL, allowTLSOff: Bool, login: String?, password: String?) {
         Log("WebDAVStateInteractor - setting config", module: .interactor)
-        let vid = vaultID
+        guard let vid = vaultID else {
+            Log("WebDAVStateInteractor - no default vault, can't set config", module: .interactor, severity: .error)
+            return
+        }
 
         let current = getConfig()
         guard current?.baseURL != baseURL

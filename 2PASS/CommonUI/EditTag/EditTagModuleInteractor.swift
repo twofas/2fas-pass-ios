@@ -26,7 +26,8 @@ final class EditTagModuleInteractor: EditTagModuleInteracting {
     }
 
     func createTag(name: String, color: ItemTagColor) {
-        tagInteractor.createTag(name: name, color: color, in: vaultsInteractor.defaultVaultID)
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
+        tagInteractor.createTag(name: name, color: color, in: defaultVaultID)
         tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }

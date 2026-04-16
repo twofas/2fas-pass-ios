@@ -81,7 +81,9 @@ final class WiFiEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     func onSave() -> SaveItemResult {
-        interactor.saveWiFi(
+        guard let selectedVaultID else { return .failure(.interactorError(.noVault)) }
+
+        return interactor.saveWiFi(
             name: name,
             ssid: ssid.nonBlankTrimmedOrNil,
             password: password.nonBlankTrimmedOrNil,

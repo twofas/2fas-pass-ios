@@ -30,7 +30,7 @@ final class CloudSyncInteractor {
     private let vaultsInteractor: VaultsInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
 
-    private var vaultID: VaultID {
+    private var vaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 
@@ -89,7 +89,9 @@ extension CloudSyncInteractor: CloudSyncInteracting {
             jsonDecoder: mainRepository.jsonDecoder,
             jsonEncoder: mainRepository.jsonEncoder
         )
-        mainRepository.cloudSync.setVaultID(vaultID)
+        if let vaultID {
+            mainRepository.cloudSync.setVaultID(vaultID)
+        }
         mainRepository.cloudSync.setMultiDeviceSyncEnabled(paymentStatusInteractor.entitlements.multiDeviceSync, takingOver: takeoverVault)
         mainRepository.cloudSync.checkState()
         

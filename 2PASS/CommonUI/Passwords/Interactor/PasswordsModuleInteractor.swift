@@ -395,11 +395,12 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         guard itemIDs.isEmpty == false else { return }
         guard tagsToAdd.isEmpty == false || tagsToRemove.isEmpty == false else { return }
 
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
         tagInteractor.applyTagChangesToItems(
             itemIDs,
             tagsToAdd: tagsToAdd,
             tagsToRemove: tagsToRemove,
-            in: vaultsInteractor.defaultVaultID
+            in: defaultVaultID
         )
         tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()

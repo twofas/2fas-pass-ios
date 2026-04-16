@@ -36,7 +36,7 @@ final class CredentialExchangeExportPresenter {
     private(set) var state: State = .idle
     var destination: CredentialExchangeExportDestination?
 
-    var selectedVaultID: VaultID
+    var selectedVaultID: VaultID?
     let availableVaults: [VaultData]
 
     var hasMultipleVaults: Bool {
@@ -56,14 +56,16 @@ final class CredentialExchangeExportPresenter {
         let nonEmptyVaults = interactor.listVaults().filter { !$0.isEmpty }
         self.availableVaults = nonEmptyVaults
 
-        let defaultVaultID = interactor.defaultVaultID
-        self.selectedVaultID = nonEmptyVaults.contains(where: { $0.vaultID == defaultVaultID })
-            ? defaultVaultID
-            : (nonEmptyVaults.first?.vaultID ?? defaultVaultID)
+        let defaultVaultID = interactor.defaultVaultID ?? nonEmptyVaults.first?.vaultID
+        self.selectedVaultID = defaultVaultID.flatMap { id in
+            nonEmptyVaults.contains(where: { $0.vaultID == id }) ? id : nil
+        }
     }
 
     func startExport() {
+        guard let selectedVaultID else { return }
         guard case .idle = state else { return }
+        
         state = .exporting
         Task { @MainActor in
             do {

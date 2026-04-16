@@ -15,7 +15,7 @@ final class EncryptionHandlerImpl {
     private let itemsInteractor: ItemsInteracting
     private let tagInteractor: TagInteracting
 
-    private var vaultID: VaultID {
+    private var vaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 
@@ -30,14 +30,16 @@ final class EncryptionHandlerImpl {
 extension EncryptionHandlerImpl: EncryptionHandler {
     var currentCloudSchemaVersion: Int { Config.cloudSchemaVersion }
     var currentDeviceName: String { mainRepository.deviceName }
-    
+
     func verifyEncryption(_ cloudData: VaultCloudData) -> EncryptionVerificationResult {
+        guard let vaultID else {
+            Log("EncryptionHandlerImpl: no default vault", module: .interactor, severity: .error)
+            return .missingEncryption
+        }
         guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't external key", module: .interactor, severity: .error)
             return .missingEncryption
         }
-
-        let vaultID = self.vaultID
         
         guard let data = Data(base64Encoded: cloudData.reference) else {
             Log("EncryptionHandlerImpl: can't encode data from cloud reference", module: .interactor, severity: .error)
@@ -68,6 +70,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func localEncryptedItemToCloudEncryptedData(_ localEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {
+        guard let vaultID else { return nil }
         guard let externalKey = mainRepository.cachedExternalKey(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't get external key", module: .interactor, severity: .error)
             return nil
@@ -110,6 +113,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func cloudEncryptedItemToLocalEncryptedItem(_ cloudEncryptedItem: ItemEncryptedData) -> ItemEncryptedData? {
+        guard let vaultID else { return nil }
         guard let externalKey = mainRepository.cachedExternalKey(forVault: vaultID) else {
             Log("EncryptionHandlerImpl: can't get external key", module: .interactor, severity: .error)
             return nil
@@ -152,6 +156,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func tagToTagEncrypted(_ tag: ItemTagData) -> ItemTagEncryptedData? {
+        guard let vaultID else { return nil }
         guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal, forVault: vaultID),
               let nameEnc = encrypt(tag.name, using: key)
         else {
@@ -169,6 +174,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func tagEncyptedToTag(_ tagEncrypted: ItemTagEncryptedData) -> ItemTagData? {
+        guard let vaultID else { return nil }
         guard let key = mainRepository.getKey(isPassword: false, protectionLevel: .normal, forVault: vaultID),
               let name = decryptString(tagEncrypted.name, using: key)
         else {
@@ -186,6 +192,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func vaultEncryptedDataToVaultRawData(_ vault: VaultEncryptedData) -> VaultRawData? {
+        guard let vaultID else { return nil }
         guard let seedHashHex = mainRepository.createSeedHashHexForExport(forVault: vaultID),
               let reference = mainRepository.createReferenceForExport(forVault: vaultID),
               let kdfSpec = try? mainRepository.jsonEncoder.encode(KDFSpec.default),
@@ -215,6 +222,7 @@ extension EncryptionHandlerImpl: EncryptionHandler {
     }
     
     func updateCloudVault(_ cloudVault: VaultCloudData) -> VaultCloudData? {
+        guard let vaultID else { return nil }
         var cloudVault = cloudVault
         guard let deviceNames = mergeDeviceNames(cloudVault.deviceNames) else {
             return cloudVault

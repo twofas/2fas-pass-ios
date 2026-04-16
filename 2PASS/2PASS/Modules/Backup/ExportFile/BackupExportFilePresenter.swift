@@ -27,7 +27,7 @@ final class BackupExportFilePresenter {
 
     var destination: BackupExportFileDestination?
     var encryptFile = true
-    var selectedVaultID: VaultID
+    var selectedVaultID: VaultID?
 
     let availableVaults: [VaultData]
 
@@ -49,16 +49,18 @@ final class BackupExportFilePresenter {
         let nonEmptyVaults = interactor.listVaults().filter { !$0.isEmpty }
         self.availableVaults = nonEmptyVaults
 
-        let defaultVaultID = interactor.defaultVaultID
-        self.selectedVaultID = nonEmptyVaults.contains(where: { $0.vaultID == defaultVaultID })
-            ? defaultVaultID
-            : (nonEmptyVaults.first?.vaultID ?? defaultVaultID)
+        let defaultVaultID = interactor.defaultVaultID ?? nonEmptyVaults.first?.vaultID
+        self.selectedVaultID = defaultVaultID.flatMap { id in
+            nonEmptyVaults.contains(where: { $0.vaultID == id }) ? id : nil
+        }
     }
 }
 
 extension BackupExportFilePresenter {
     
     func onExport() {
+        guard let selectedVaultID else { return }
+        
         isExporting = true
         exportingTask = Task {
             do {

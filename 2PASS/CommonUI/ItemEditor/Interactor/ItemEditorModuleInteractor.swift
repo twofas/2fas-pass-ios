@@ -42,7 +42,7 @@ protocol ItemEditorModuleInteracting: AnyObject {
     var changeRequest: (any ItemDataChangeRequest)? { get }
 
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
 
     func getEditItem() -> ItemData?
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
@@ -186,7 +186,7 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         configInteractor.currentDefaultProtectionLevel
     }
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 

@@ -32,7 +32,8 @@ final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     }
 
     func deleteTag(tagID: ItemTagID) {
-        tagInteractor.deleteTag(tagID: tagID, in: vaultsInteractor.defaultVaultID)
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
+        tagInteractor.deleteTag(tagID: tagID, in: defaultVaultID)
         tagInteractor.saveStorage()
         syncChangeTriggerInteractor.trigger()
     }

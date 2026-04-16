@@ -31,7 +31,7 @@ final class CredentialExchangePerformImportModuleInteractor: CredentialExchangeP
 
     @MainActor
     func performImport(_ result: ExternalServiceImportResult) async {
-        let targetVaultID = vaultsInteractor.defaultVaultID
+        guard let targetVaultID = vaultsInteractor.defaultVaultID else { return }
         let readyItems: [ItemData] = result.items.compactMap {
             importInteractor.encryptItem($0, forVault: targetVaultID)
         }

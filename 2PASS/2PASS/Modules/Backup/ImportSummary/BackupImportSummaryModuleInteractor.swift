@@ -15,7 +15,7 @@ struct BackupImportSummaryPayload {
 }
 
 protocol BackupImportSummaryModuleInteracting: AnyObject {
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
     func listVaults() -> [VaultData]
     func extractItems(from input: BackupImportInput) async -> Result<BackupImportSummaryPayload, Error>
 }
@@ -32,7 +32,7 @@ final class BackupImportSummaryModuleInteractor {
 
 extension BackupImportSummaryModuleInteractor: BackupImportSummaryModuleInteracting {
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 

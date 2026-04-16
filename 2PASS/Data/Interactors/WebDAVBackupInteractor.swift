@@ -15,7 +15,7 @@ public protocol WebDAVBackupInteracting: AnyObject {
 }
 
 final class WebDAVBackupInteractor {
-    private var vaultID: VaultID {
+    private var vaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 
@@ -185,8 +185,8 @@ private extension WebDAVBackupInteractor {
             Log("WebDAVBackupInteractor - stopping parsing index", module: .interactor)
             return
         }
-        let vid = vaultID
-        guard let seedHash = mainRepository.webDAVSeedHash(forVault: vid) else {
+        guard let vid = vaultID,
+              let seedHash = mainRepository.webDAVSeedHash(forVault: vid) else {
             webDAVStateInteractor.syncError(.syncError(nil))
             Log("WebDAVBackupInteractor - error. No vaultID or seed hash", module: .interactor, severity: .error)
             return
@@ -474,7 +474,11 @@ private extension WebDAVBackupInteractor {
     
     func prepareForExport() {
         Log("WebDAVBackupInteractor - preparing for export", module: .interactor)
-        exportInteractor.prepareItemsForExport(vaultID: vaultsInteractor.defaultVaultID, encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else {
+            webDAVStateInteractor.syncError(.syncError(nil))
+            return
+        }
+        exportInteractor.prepareItemsForExport(vaultID: defaultVaultID, encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
             switch exportResult {
             case .success(let vaultForExport):
                 Log("WebDAVBackupInteractor - vault for export ready", module: .interactor)
@@ -484,12 +488,12 @@ private extension WebDAVBackupInteractor {
                 self?.webDAVStateInteractor.syncError(.syncError(exportError.localizedDescription))
             }
         })
-        
+
         guard mainRepository.webDAVWriteDecryptedCopy else { return }
-        
+
         Log("WebDAVBackupInteractor - preparing decrypted copy for debug", module: .interactor)
-        
-        exportInteractor.prepareItemsForExport(vaultID: vaultsInteractor.defaultVaultID, encrypt: false, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
+
+        exportInteractor.prepareItemsForExport(vaultID: defaultVaultID, encrypt: false, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
             switch exportResult {
             case .success(let vaultForExport):
                 Log("WebDAVBackupInteractor - decrypted vault for export ready", module: .interactor)
@@ -654,7 +658,8 @@ private extension WebDAVBackupInteractor {
             return nil
         }
         
-        guard let vault = mainRepository.getEncryptedVault(for: vaultID),
+        guard let vaultID,
+              let vault = mainRepository.getEncryptedVault(for: vaultID),
               let seedHash = mainRepository.webDAVSeedHash(forVault: vaultID) else {
             webDAVStateInteractor.syncError(.syncError(nil))
             Log("WebDAVBackupInteractor - error. No vault or seed hash", module: .interactor, severity: .error)

@@ -387,9 +387,10 @@ extension DebugInteractor: DebugInteracting {
             let notes = Array(repeating: "", count: Int.random(in: 5..<100)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
 
+            guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
             try? loginItemInteractor.createLogin(
                 id: .init(),
-                vaultID: vaultsInteractor.defaultVaultID,
+                vaultID: defaultVaultID,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,
@@ -429,9 +430,10 @@ extension DebugInteractor: DebugInteracting {
             let text = Array(repeating: "", count: Int.random(in: 10..<150)).compactMap({ _ in words.randomElement() }).joined(separator: " ")
             let date = randomDate()
 
+            guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
             try? secureNoteItemInteractor.createSecureNote(
                 id: .init(),
-                vaultID: vaultsInteractor.defaultVaultID,
+                vaultID: defaultVaultID,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,
@@ -514,9 +516,10 @@ extension DebugInteractor: DebugInteracting {
             let year = String(format: "%02d", Int.random(in: 26...36))
             let expirationDate = "\(month)/\(year)"
 
+            guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
             try? paymentCardItemInteractor.createPaymentCard(
                 id: .init(),
-                vaultID: vaultsInteractor.defaultVaultID,
+                vaultID: defaultVaultID,
                 metadata: .init(
                     creationDate: date,
                     modificationDate: date,

@@ -226,6 +226,8 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
     }
     
     func onSave() -> SaveItemResult {
+        guard let selectedVaultID else { return .failure(.interactorError(.noVault)) }
+
         var incorrectURI: [String] = []
 
         let checkedURIs: [(original: String, match: PasswordURI.Match)] = uri

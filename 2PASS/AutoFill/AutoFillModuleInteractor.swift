@@ -91,15 +91,19 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return nil
         }
 
-        guard itemsInteractor.loadTrustedKey(vaultID: vaultsInteractor.defaultVaultID) else {
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else {
             return nil
         }
 
-        guard let content = itemsInteractor.decryptContent(LoginItemData.Content.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel, vaultID: vaultsInteractor.defaultVaultID) else {
+        guard itemsInteractor.loadTrustedKey(vaultID: defaultVaultID) else {
             return nil
         }
 
-        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isSecureField: true, protectionLevel: encrypted.protectionLevel, vaultID: vaultsInteractor.defaultVaultID) else {
+        guard let content = itemsInteractor.decryptContent(LoginItemData.Content.self, from: encrypted.content, protectionLevel: encrypted.protectionLevel, vaultID: defaultVaultID) else {
+            return nil
+        }
+
+        guard let passwordEnc = content.password, let password = itemsInteractor.decrypt(passwordEnc, isSecureField: true, protectionLevel: encrypted.protectionLevel, vaultID: defaultVaultID) else {
             Log("AutoFill - Error while decrypting password", module: .autofill)
             return nil
         }
@@ -144,7 +148,8 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
             return false
         }
 
-        return itemsInteractor.loadTrustedKey(vaultID: vaultsInteractor.defaultVaultID)
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return false }
+        return itemsInteractor.loadTrustedKey(vaultID: defaultVaultID)
     }
 
     func generatePassword() -> String {
@@ -168,9 +173,12 @@ final class AutoFillModuleInteractor: AutoFillModuleInteracting {
         let defaultProtectionLevel = configInteractor.currentDefaultProtectionLevel
         let serviceIdentifier = changeRequest.uris?.first?.uri
         let iconDomain = serviceIdentifier.flatMap { uriInteractor.extractDomain(from: $0) }
+        guard let defaultVaultID = vaultsInteractor.defaultVaultID else {
+            throw ItemsInteractorSaveError.noVault
+        }
         try loginItemInteractor.createLogin(
             id: itemID,
-            vaultID: vaultsInteractor.defaultVaultID,
+            vaultID: defaultVaultID,
             metadata: ItemMetadata(
                 creationDate: now,
                 modificationDate: now,

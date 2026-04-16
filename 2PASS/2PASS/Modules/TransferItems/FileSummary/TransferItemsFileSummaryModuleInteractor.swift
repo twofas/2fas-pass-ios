@@ -8,7 +8,7 @@ import Common
 import Data
 
 protocol TransferItemsFileSummaryModuleInteracting: AnyObject {
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
     func listVaults() -> [VaultData]
 }
 
@@ -20,7 +20,7 @@ final class TransferItemsFileSummaryModuleInteractor: TransferItemsFileSummaryMo
         self.vaultsInteractor = vaultsInteractor
     }
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 

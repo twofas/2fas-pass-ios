@@ -9,7 +9,7 @@ import Data
 import Common
 
 protocol BackupExportFileModuleInteracting: AnyObject {
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
     func listVaults() -> [VaultData]
     func export(vaultID: VaultID, encrypt: Bool) async throws -> URL
     func clear()
@@ -31,7 +31,7 @@ final class BackupExportFileModuleInteractor {
 
 extension BackupExportFileModuleInteractor: BackupExportFileModuleInteracting {
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 

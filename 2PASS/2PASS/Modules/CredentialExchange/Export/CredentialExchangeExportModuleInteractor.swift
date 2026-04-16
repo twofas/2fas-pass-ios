@@ -11,7 +11,7 @@ import AuthenticationServices
 
 @available(iOS 26.0, *)
 protocol CredentialExchangeExportModuleInteracting: AnyObject {
-    var defaultVaultID: VaultID { get }
+    var defaultVaultID: VaultID? { get }
     func listVaults() -> [VaultData]
     @MainActor func performExport(vaultID: VaultID, anchor: ASPresentationAnchor) async throws
 }
@@ -33,7 +33,7 @@ final class CredentialExchangeExportModuleInteractor: CredentialExchangeExportMo
         self.vaultsInteractor = vaultsInteractor
     }
 
-    var defaultVaultID: VaultID {
+    var defaultVaultID: VaultID? {
         vaultsInteractor.defaultVaultID
     }
 
