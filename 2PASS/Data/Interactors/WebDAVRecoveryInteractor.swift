@@ -160,11 +160,11 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
             switch result {
             case .success(let vaultData):
                 Log("WebDAVRecoveryInteractor - Vault fetched. Parsing", module: .interactor)
-                self?.backupImportInteractor.parseRaw(data: vaultData) { parseResult in
-                    switch parseResult {
-                    case .success(let exchangeVault):
+                Task { [weak self] in
+                    do {
+                        guard let exchangeVault = try await self?.backupImportInteractor.parseRaw(data: vaultData) else { return }
                         completion(.success(exchangeVault))
-                    case .failure(let parseError):
+                    } catch let parseError as ImportParseError {
                         switch parseError {
                         case .jsonError(let error):
                             Log("WebDAVRecoveryInteractor - error, Vault file corrupted: \(error)", module: .interactor, severity: .error)
@@ -176,6 +176,9 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
                             Log("WebDAVRecoveryInteractor - schema not supported: version \(actualVersion)", module: .interactor)
                             completion(.failure(.schemaNotSupported(actualVersion)))
                         }
+                    } catch {
+                        Log("WebDAVRecoveryInteractor - unexpected error: \(error)", module: .interactor, severity: .error)
+                        completion(.failure(.vaultIsDamaged))
                     }
                 }
             case .failure(let error):

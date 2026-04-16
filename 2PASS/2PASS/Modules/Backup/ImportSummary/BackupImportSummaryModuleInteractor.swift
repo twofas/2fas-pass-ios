@@ -46,17 +46,11 @@ extension BackupImportSummaryModuleInteractor: BackupImportSummaryModuleInteract
             return .success(BackupImportSummaryPayload(items: items, tags: tags, deleted: deleted))
 
         case .encrypted(_, let masterKey, let vault):
-            return await withCheckedContinuation { continuation in
-                importInteractor.extractDecryptedItemsUsingMasterKey(masterKey, exchangeVault: vault) { result in
-                    switch result {
-                    case .success(let data):
-                        continuation.resume(returning: .success(
-                            BackupImportSummaryPayload(items: data.0, tags: data.1, deleted: data.2)
-                        ))
-                    case .failure(let error):
-                        continuation.resume(returning: .failure(error))
-                    }
-                }
+            do {
+                let (items, tags, deleted) = try await importInteractor.extractDecryptedItemsUsingMasterKey(masterKey, exchangeVault: vault)
+                return .success(BackupImportSummaryPayload(items: items, tags: tags, deleted: deleted))
+            } catch {
+                return .failure(error)
             }
         }
     }

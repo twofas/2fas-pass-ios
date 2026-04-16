@@ -57,49 +57,66 @@ public enum ImportExtractMasterPasswordReferenceVerificationError: Error {
     case referenceMismatch
 }
 
+extension ImportExtractMasterPasswordEncryptionError {
+    init(_ referenceError: ImportExtractMasterPasswordReferenceVerificationError) {
+        switch referenceError {
+        case .masterKey: self = .masterKey
+        case .symmetricalKey: self = .symmetricalKey
+        case .noReference: self = .noReference
+        case .decryptingReference: self = .decryptingReference
+        case .referenceMismatch: self = .referenceMismatch
+        }
+    }
+}
+
+public typealias ImportedDataPayload = ([ItemData], [ItemTagData], [DeletedItemData])
+public typealias ImportedDecryptedDataPayload = ([ItemDecryptedData], [ItemTagData], [DeletedItemData])
+
 public protocol ImportInteracting: AnyObject {
-    func openFile(url: URL, completion: @escaping (Result<Data, ImportOpenFileError>) -> Void)
-    func parseContents(of data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void)
+    func openFile(url: URL) async throws(ImportOpenFileError) -> Data
+    func parseContents(of data: Data) async throws(ImportParseError) -> ExchangeVaultVersioned
     func checkDeviceId(in vault: ExchangeVaultVersioned) -> Bool
     func checkEncryption(in vault: ExchangeVaultVersioned) -> ImportEncryptionType
     func checkEncryptionWithoutParsing(in vault: ExchangeVaultVersioned) -> ImportEncryptionTypeNoParsing
-    func extractItemsUsingCurrentEncryption(
-        from vault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
-    )
-    func extractDecryptedItemsUsingCurrentEncryption(
-        from vault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemDecryptedData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
-    )
+
+    func extractDataUsingCurrentEncryption(
+        from vault: ExchangeVaultVersioned
+    ) async throws(ImportExtractCurrentEncryptionError) -> ImportedDataPayload
+
+    func extractDecryptedDataUsingCurrentEncryption(
+        from vault: ExchangeVaultVersioned
+    ) async throws(ImportExtractCurrentEncryptionError) -> ImportedDecryptedDataPayload
+
     func extractUnencryptedItems(from file: ExchangeVaultVersioned) -> [ItemData]
     func extractUnencryptedTags(from file: ExchangeVaultVersioned) -> [ItemTagData]
     func extractDecryptedUnencryptedItems(from file: ExchangeVaultVersioned) -> [ItemDecryptedData]
 
-    func extractItemsUsingMasterPassword(
+    func extractDataUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
-        vault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
-    )
+        vault: ExchangeVaultVersioned
+    ) async throws(ImportExtractMasterPasswordEncryptionError) -> ImportedDataPayload
+
     func extractItemsUsingMasterKey(
         _ masterKey: MasterKey,
-        exchangeVault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
-    )
+        exchangeVault: ExchangeVaultVersioned
+    ) async throws(ImportExtractMasterPasswordEncryptionError) -> ImportedDataPayload
+
     func extractDecryptedItemsUsingMasterKey(
         _ masterKey: MasterKey,
-        exchangeVault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemDecryptedData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
-    )
+        exchangeVault: ExchangeVaultVersioned
+    ) async throws(ImportExtractMasterPasswordEncryptionError) -> ImportedDecryptedDataPayload
+    
     func extractUnencryptedDeletedItems(from file: ExchangeVaultVersioned) -> [DeletedItemData]
     func validateWords(_ words: [String], using seedHash: String, vaultID: VaultID) -> Bool
+    
     func validateReference(
         _ reference: String,
         using masterKey: MasterKey,
         for vaultID: VaultID
     ) -> Result<SymmetricKey, ImportExtractMasterPasswordReferenceVerificationError>
+    
     func isVaultReadyForImport() -> Bool
-    func scan(image: UIImage, completion: @escaping VisionScanCompletion)
     func generateSeedHash(from entropy: Entropy, vaultID: VaultID) -> String?
     func encryptItem(_ decrypted: ItemDecryptedData, forVault targetVaultID: VaultID) -> ItemData?
     func rebindTag(_ tag: ItemTagData, forVault targetVaultID: VaultID) -> ItemTagData
@@ -111,8 +128,6 @@ final class ImportInteractor {
     private let itemsInteractor: ItemsInteracting
     private let protectionInteractor: ProtectionInteracting
     private let uriInteractor: URIInteracting
-    private let queue: DispatchQueue
-    private let writeQueue: DispatchQueue
 
     private var vaultID: VaultID {
         vaultsInteractor.defaultVaultID
@@ -130,75 +145,68 @@ final class ImportInteractor {
         self.itemsInteractor = itemsInteractor
         self.protectionInteractor = protectionInteractor
         self.uriInteractor = uriInteractor
-        self.queue = DispatchQueue(label: "ImportQueue", qos: .userInteractive, attributes: .concurrent)
-        self.writeQueue = DispatchQueue(label: "ExportWriteArray", qos: .userInitiated)
     }
 }
 
 extension ImportInteractor: ImportInteracting {
-    func openFile(url: URL, completion: @escaping (Result<Data, ImportOpenFileError>) -> Void) {
+    func openFile(url: URL) async throws(ImportOpenFileError) -> Data {
         do {
             var data: Data?
+            var readError: Error?
             if url.startAccessingSecurityScopedResource() {
-                var error: NSError?
-                NSFileCoordinator().coordinate(readingItemAt: url, options: [.withoutChanges], error: &error) { url in
+                var coordinatorError: NSError?
+                NSFileCoordinator().coordinate(readingItemAt: url, options: [.withoutChanges], error: &coordinatorError) { url in
                     do {
                         data = try Data(contentsOf: url)
                     } catch {
-                        url.stopAccessingSecurityScopedResource()
-                        completion(.failure(.cantReadFile(reason: error.localizedDescription)))
-                        return
+                        readError = error
                     }
                 }
                 url.stopAccessingSecurityScopedResource()
+                if let coordinatorError {
+                    throw ImportOpenFileError.cantReadFile(reason: coordinatorError.localizedDescription)
+                }
             } else {
                 data = try Data(contentsOf: url)
             }
-            
+
             guard let data else {
-                completion(.failure(.cantReadFile(reason: nil)))
-                return
+                throw ImportOpenFileError.cantReadFile(reason: readError?.localizedDescription)
             }
-            
-            completion(.success(data))
+
+            return data
+        } catch let error as ImportOpenFileError {
+            throw error
         } catch {
             Log("Can't import data from file: \(url), error: \(error)")
-            completion(.failure(.cantReadFile(reason: error.localizedDescription)))
-            return
+            throw .cantReadFile(reason: error.localizedDescription)
         }
     }
     
-    func parseContents(of data: Data, completion: @escaping (Result<ExchangeVaultVersioned, ImportParseError>) -> Void) {
-        func end(_ result: Result<ExchangeVaultVersioned, ImportParseError>) {
-            DispatchQueue.main.async {
-                completion(result)
+    func parseContents(of data: Data) async throws(ImportParseError) -> ExchangeVaultVersioned {
+        let jsonDecoder = mainRepository.jsonDecoder
+        do {
+            let parsedJSON = try jsonDecoder.decode(ExchangeVault.self, from: data)
+            return .v2(parsedJSON)
+        } catch let ExchangeError.mismatchSchemaVersion(schemaVersion, expected: _) {
+            guard schemaVersion <= Config.schemaVersion else {
+                throw .schemaNotSupported(schemaVersion)
             }
-        }
-        queue.async {
-            let jsonDecoder = self.mainRepository.jsonDecoder
             do {
-                let parsedJSON = try jsonDecoder.decode(ExchangeVault.self, from: data)
-                end(.success(.v2(parsedJSON)))
-            } catch let ExchangeError.mismatchSchemaVersion(schemaVersion, expected: _) {
-                guard schemaVersion <= Config.schemaVersion else {
-                    end(.failure(.schemaNotSupported(schemaVersion)))
-                    return
+                switch schemaVersion {
+                case 1:
+                    let parsedJSON = try jsonDecoder.decode(ExchangeSchemaV1.ExchangeVault.self, from: data)
+                    return .v1(parsedJSON)
+                default:
+                    throw ImportParseError.schemaNotSupported(schemaVersion)
                 }
-
-                do {
-                    switch schemaVersion {
-                    case 1:
-                        let parsedJSON = try jsonDecoder.decode(ExchangeSchemaV1.ExchangeVault.self, from: data)
-                        end(.success(.v1(parsedJSON)))
-                    default:
-                        end(.failure(.schemaNotSupported(schemaVersion)))
-                    }
-                } catch {
-                    end(.failure(.jsonError(error)))
-                }
+            } catch let error as ImportParseError {
+                throw error
             } catch {
-                end(.failure(.jsonError(error)))
+                throw .jsonError(error)
             }
+        } catch {
+            throw .jsonError(error)
         }
     }
     
@@ -283,58 +291,44 @@ extension ImportInteractor: ImportInteracting {
         return .needsPassword
     }
     
-    func extractItemsUsingCurrentEncryption(
-        from vault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
-    ) {
+    func extractDataUsingCurrentEncryption(
+        from vault: ExchangeVaultVersioned
+    ) async throws(ImportExtractCurrentEncryptionError) -> ImportedDataPayload {
         guard let key = mainRepository.cachedExternalKey(forVault: vaultID) else {
-            completion(.failure(.noExternalKey))
-            return
+            throw .noExternalKey
         }
 
         guard let vaultID = UUID(uuidString: vault.vaultID) else {
-            completion(.failure(.noVaultID))
-            return
+            throw .noVaultID
         }
 
         switch vault {
         case .v1(let v1Vault):
             guard let loginsEncrypted = v1Vault.vault.loginsEncrypted else {
-                completion(.failure(.noPasswordsField))
-                return
+                throw .noPasswordsField
             }
             let deletedPasswords = v1Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v1Vault.vault.tagsEncrypted ?? []
-
-            extractItemsV1(from: loginsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
-                completion(.success((itemsData, tagsData, deletedData)))
-            }
+            return await extractDataV1(from: loginsEncrypted, tags: tags, deleted: deletedPasswords, vaultID: vaultID, using: key)
 
         case .v2(let v2Vault):
             guard let itemsEncrypted = v2Vault.vault.itemsEncrypted else {
-                completion(.failure(.noPasswordsField))
-                return
+                throw .noPasswordsField
             }
             let deletedPasswords = v2Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v2Vault.vault.tagsEncrypted ?? []
-
-            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { itemsData, tagsData, deletedData in
-                completion(.success((itemsData, tagsData, deletedData)))
-            }
+            return await extractDataV2(from: itemsEncrypted, tags: tags, deleted: deletedPasswords, vaultID: vaultID, using: key)
         }
     }
 
-    public func extractDecryptedItemsUsingCurrentEncryption(
-        from vault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemDecryptedData], [ItemTagData], [DeletedItemData]), ImportExtractCurrentEncryptionError>) -> Void
-    ) {
+    public func extractDecryptedDataUsingCurrentEncryption(
+        from vault: ExchangeVaultVersioned
+    ) async throws(ImportExtractCurrentEncryptionError) -> ImportedDecryptedDataPayload {
         guard let vaultID = UUID(uuidString: vault.vaultID) else {
-            completion(.failure(.noVaultID))
-            return
+            throw .noVaultID
         }
         guard let outerKey = mainRepository.cachedExternalKey(forVault: vaultID) else {
-            completion(.failure(.noExternalKey))
-            return
+            throw .noExternalKey
         }
 
         let encryptedItems: [String]
@@ -344,8 +338,7 @@ extension ImportInteractor: ImportInteracting {
         switch vault {
         case .v1(let v1Vault):
             guard let items = v1Vault.vault.loginsEncrypted else {
-                completion(.failure(.noPasswordsField))
-                return
+                throw .noPasswordsField
             }
             encryptedItems = items
             encryptedTags = v1Vault.vault.tagsEncrypted ?? []
@@ -353,8 +346,7 @@ extension ImportInteractor: ImportInteracting {
             isV1 = true
         case .v2(let v2Vault):
             guard let items = v2Vault.vault.itemsEncrypted else {
-                completion(.failure(.noPasswordsField))
-                return
+                throw .noPasswordsField
             }
             encryptedItems = items
             encryptedTags = v2Vault.vault.tagsEncrypted ?? []
@@ -362,28 +354,17 @@ extension ImportInteractor: ImportInteracting {
             isV1 = false
         }
 
-        // For currentEncryption, secure fields in the exchange payload are already encrypted
-        // under per-protection-level vault-local keys. Look them up per item.
-        let keyProvider: (ItemProtectionLevel) -> SymmetricKey? = { [mainRepository] level in
+        let keyProvider: @Sendable (ItemProtectionLevel) -> SymmetricKey? = { [mainRepository] level in
             mainRepository.getKey(isPassword: true, protectionLevel: level, forVault: vaultID)
         }
 
-        let decoder = mainRepository.jsonDecoder
-        let decryptedItems: [ItemDecryptedData] = encryptedItems.compactMap { string in
-            guard let data = Data(base64Encoded: string),
-                  let jsonData = mainRepository.decrypt(data, key: outerKey) else {
-                return nil
-            }
+        async let parsedItems: [ItemDecryptedData] = decryptAndParse(encryptedItems, using: outerKey) { [self] jsonData, decoder in
             if isV1 {
-                guard let exchangeLogin = try? decoder.decode(ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self, from: jsonData) else {
-                    return nil
-                }
-                return exchangeV1LoginToDecryptedItemData(exchangeLogin, vaultID: vaultID)
+                let login = try decoder.decode(ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self, from: jsonData)
+                return self.exchangeV1LoginToDecryptedItemData(login, vaultID: vaultID)
             } else {
-                guard let exchangeItem = try? decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeItem.self, from: jsonData) else {
-                    return nil
-                }
-                return exchangeItemToDecryptedItemData(exchangeItem, vaultID: vaultID, secureFieldPlaintext: { [mainRepository] base64, level in
+                let item = try decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeItem.self, from: jsonData)
+                return self.exchangeItemToDecryptedItemData(item, vaultID: vaultID, secureFieldPlaintext: { [mainRepository] base64, level in
                     guard let key = keyProvider(level),
                           let cipher = Data(base64Encoded: base64),
                           let plain = mainRepository.decrypt(cipher, key: key),
@@ -393,33 +374,24 @@ extension ImportInteractor: ImportInteracting {
             }
         }
 
-        let decryptedTags: [ItemTagData] = encryptedTags.compactMap { string in
-            guard let data = Data(base64Encoded: string),
-                  let jsonData = mainRepository.decrypt(data, key: outerKey),
-                  let exchangeTag = try? decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeTag.self, from: jsonData) else {
-                return nil
-            }
-            return exchangeTagToItemTagData(exchangeTag, vaultID: vaultID)
+        async let parsedTags: [ItemTagData] = decryptAndParse(encryptedTags, using: outerKey) { [self] jsonData, decoder in
+            let exchangeTag = try decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeTag.self, from: jsonData)
+            return self.exchangeTagToItemTagData(exchangeTag, vaultID: vaultID)
         }
 
-        let decryptedDeletedItems: [DeletedItemData] = encryptedDeleted.compactMap { string in
-            guard let data = Data(base64Encoded: string),
-                  let jsonData = mainRepository.decrypt(data, key: outerKey),
-                  let exchangeDeleted = try? decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self, from: jsonData) else {
-                return nil
-            }
-            return exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID)
+        async let parsedDeleted: [DeletedItemData] = decryptAndParse(encryptedDeleted, using: outerKey) { [self] jsonData, decoder in
+            let exchangeDeleted = try decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self, from: jsonData)
+            return self.exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID)
         }
 
-        completion(.success((decryptedItems, decryptedTags, decryptedDeletedItems)))
+        return await (parsedItems, parsedTags, parsedDeleted)
     }
 
-    func extractItemsUsingMasterPassword(
+    func extractDataUsingMasterPassword(
         _ masterPassword: MasterPassword,
         words: [String],
-        vault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
-    ) {
+        vault: ExchangeVaultVersioned
+    ) async throws(ImportExtractMasterPasswordEncryptionError) -> ImportedDataPayload {
         let kdfSpec: KDFSpec = {
             guard let spec = vault.encryption?.kdfSpec else {
                 return .default
@@ -427,104 +399,63 @@ extension ImportInteractor: ImportInteracting {
             return KDFSpec(spec) ?? .default
         }()
         guard let masterKey = createMasterKey(using: masterPassword, words: words, kdfSpec: kdfSpec) else {
-            completion(.failure(.masterKey))
-            return
+            throw .masterKey
         }
-        extractItemsUsingMasterKey(masterKey, exchangeVault: vault, completion: completion)
+        return try await extractItemsUsingMasterKey(masterKey, exchangeVault: vault)
     }
 
     func extractItemsUsingMasterKey(
         _ masterKey: MasterKey,
-        exchangeVault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
-    ) {
+        exchangeVault: ExchangeVaultVersioned
+    ) async throws(ImportExtractMasterPasswordEncryptionError) -> ImportedDataPayload {
         guard let vaultID = UUID(uuidString: exchangeVault.vaultID) else {
-            completion(.failure(.incorrectVaultID))
-            return
+            throw .incorrectVaultID
         }
         guard let reference = exchangeVault.encryption?.reference else {
-            completion(.failure(.noReference))
-            return
+            throw .noReference
         }
 
-        let key: SymmetricKey
-        switch validateReference(reference, using: masterKey, for: vaultID) {
-        case .success(let symmKey): key = symmKey
-        case .failure(let error):
-            switch error {
-            case .masterKey:
-                completion(.failure(.masterKey))
-            case .symmetricalKey:
-                completion(.failure(.symmetricalKey))
-            case .noReference:
-                completion(.failure(.noReference))
-            case .decryptingReference:
-                completion(.failure(.decryptingReference))
-            case .referenceMismatch:
-                completion(.failure(.referenceMismatch))
-            }
-            return
-        }
+        let key: SymmetricKey = try validateReference(reference, using: masterKey, for: vaultID)
+            .mapError { ImportExtractMasterPasswordEncryptionError($0) }
+            .get()
 
         switch exchangeVault {
         case .v1(let v1Vault):
             guard let loginsEncrypted = v1Vault.vault.loginsEncrypted else {
-                completion(.failure(.noPasswords))
-                return
+                throw .noPasswords
             }
             let deletedPasswords = v1Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v1Vault.vault.tagsEncrypted ?? []
-
-            extractItemsV1(from: loginsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key) { items, tagsData, deleted in
-                completion(.success((items, tagsData, deleted)))
-            }
+            return await extractDataV1(from: loginsEncrypted, tags: tags, deleted: deletedPasswords, vaultID: vaultID, using: key)
 
         case .v2(let v2Vault):
             guard let itemsEncrypted = v2Vault.vault.itemsEncrypted else {
-                completion(.failure(.noPasswords))
-                return
+                throw .noPasswords
             }
             let deletedPasswords = v2Vault.vault.itemsDeletedEncrypted ?? []
             let tags = v2Vault.vault.tagsEncrypted ?? []
-
-            extractItemsV2(from: itemsEncrypted, tags: tags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key, importMasterKey: masterKey) { items, tagsData, deleted in
-                completion(.success((items, tagsData, deleted)))
-            }
+            return await extractDataV2(from: itemsEncrypted, tags: tags, deleted: deletedPasswords, vaultID: vaultID, using: key, importMasterKey: masterKey)
         }
     }
 
     public func extractDecryptedItemsUsingMasterKey(
         _ masterKey: MasterKey,
-        exchangeVault: ExchangeVaultVersioned,
-        completion: @escaping (Result<([ItemDecryptedData], [ItemTagData], [DeletedItemData]), ImportExtractMasterPasswordEncryptionError>) -> Void
-    ) {
+        exchangeVault: ExchangeVaultVersioned
+    ) async throws(ImportExtractMasterPasswordEncryptionError) -> ImportedDecryptedDataPayload {
         guard let vaultID = UUID(uuidString: exchangeVault.vaultID) else {
-            completion(.failure(.incorrectVaultID))
-            return
+            throw .incorrectVaultID
         }
         guard let reference = exchangeVault.encryption?.reference else {
-            completion(.failure(.noReference))
-            return
+            throw .noReference
         }
-        let outerKey: SymmetricKey
-        switch validateReference(reference, using: masterKey, for: vaultID) {
-        case .success(let symmKey):
-            outerKey = symmKey
-        case .failure(let error):
-            switch error {
-            case .masterKey: completion(.failure(.masterKey))
-            case .symmetricalKey: completion(.failure(.symmetricalKey))
-            case .noReference: completion(.failure(.noReference))
-            case .decryptingReference: completion(.failure(.decryptingReference))
-            case .referenceMismatch: completion(.failure(.referenceMismatch))
-            }
-            return
-        }
+        let outerKey: SymmetricKey = try validateReference(reference, using: masterKey, for: vaultID)
+            .mapError { ImportExtractMasterPasswordEncryptionError($0) }
+            .get()
+
         guard let importTrustedKey = getImportKey(for: .normal, masterKey: masterKey, vaultID: vaultID),
               let importSecureKey = getImportKey(for: .topSecret, masterKey: masterKey, vaultID: vaultID) else {
             Log("Import Interactor - Error deriving import keys", severity: .error)
-            completion(.success(([], [], [])))
-            return
+            return ([], [], [])
         }
 
         let encryptedItems: [String]
@@ -534,8 +465,7 @@ extension ImportInteractor: ImportInteracting {
         switch exchangeVault {
         case .v1(let v1Vault):
             guard let items = v1Vault.vault.loginsEncrypted else {
-                completion(.failure(.noPasswords))
-                return
+                throw .noPasswords
             }
             encryptedItems = items
             encryptedTags = v1Vault.vault.tagsEncrypted ?? []
@@ -543,8 +473,7 @@ extension ImportInteractor: ImportInteracting {
             isV1 = true
         case .v2(let v2Vault):
             guard let items = v2Vault.vault.itemsEncrypted else {
-                completion(.failure(.noPasswords))
-                return
+                throw .noPasswords
             }
             encryptedItems = items
             encryptedTags = v2Vault.vault.tagsEncrypted ?? []
@@ -552,22 +481,13 @@ extension ImportInteractor: ImportInteracting {
             isV1 = false
         }
 
-        let decoder = mainRepository.jsonDecoder
-        let decryptedItems: [ItemDecryptedData] = encryptedItems.compactMap { string in
-            guard let data = Data(base64Encoded: string),
-                  let jsonData = mainRepository.decrypt(data, key: outerKey) else {
-                return nil
-            }
+        async let parsedItems: [ItemDecryptedData] = decryptAndParse(encryptedItems, using: outerKey) { [self] jsonData, decoder in
             if isV1 {
-                guard let exchangeLogin = try? decoder.decode(ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self, from: jsonData) else {
-                    return nil
-                }
-                return exchangeV1LoginToDecryptedItemData(exchangeLogin, vaultID: vaultID)
+                let login = try decoder.decode(ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self, from: jsonData)
+                return self.exchangeV1LoginToDecryptedItemData(login, vaultID: vaultID)
             } else {
-                guard let exchangeItem = try? decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeItem.self, from: jsonData) else {
-                    return nil
-                }
-                return exchangeItemToDecryptedItemData(exchangeItem, vaultID: vaultID, secureFieldPlaintext: { [mainRepository] base64, level in
+                let item = try decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeItem.self, from: jsonData)
+                return self.exchangeItemToDecryptedItemData(item, vaultID: vaultID, secureFieldPlaintext: { [mainRepository] base64, level in
                     let key: SymmetricKey = {
                         switch level {
                         case .normal: importTrustedKey
@@ -582,25 +502,17 @@ extension ImportInteractor: ImportInteracting {
             }
         }
 
-        let decryptedTags: [ItemTagData] = encryptedTags.compactMap { string in
-            guard let data = Data(base64Encoded: string),
-                  let jsonData = mainRepository.decrypt(data, key: outerKey),
-                  let exchangeTag = try? mainRepository.jsonDecoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeTag.self, from: jsonData) else {
-                return nil
-            }
-            return exchangeTagToItemTagData(exchangeTag, vaultID: vaultID)
+        async let parsedTags: [ItemTagData] = decryptAndParse(encryptedTags, using: outerKey) { [self] jsonData, decoder in
+            let exchangeTag = try decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeTag.self, from: jsonData)
+            return self.exchangeTagToItemTagData(exchangeTag, vaultID: vaultID)
         }
 
-        let decryptedDeletedItems: [DeletedItemData] = encryptedDeleted.compactMap { string in
-            guard let data = Data(base64Encoded: string),
-                  let jsonData = mainRepository.decrypt(data, key: outerKey),
-                  let exchangeDeleted = try? mainRepository.jsonDecoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self, from: jsonData) else {
-                return nil
-            }
-            return exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID)
+        async let parsedDeleted: [DeletedItemData] = decryptAndParse(encryptedDeleted, using: outerKey) { [self] jsonData, decoder in
+            let exchangeDeleted = try decoder.decode(ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self, from: jsonData)
+            return self.exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID)
         }
 
-        completion(.success((decryptedItems, decryptedTags, decryptedDeletedItems)))
+        return await (parsedItems, parsedTags, parsedDeleted)
     }
 
     public func encryptItem(_ decrypted: ItemDecryptedData, forVault targetVaultID: VaultID) -> ItemData? {
@@ -871,10 +783,6 @@ extension ImportInteractor: ImportInteracting {
         mainRepository.trustedKey(forVault: vaultID) != nil
     }
     
-    func scan(image: UIImage, completion: @escaping VisionScanCompletion) {
-        mainRepository.scan(image: image, completion: completion)
-    }
-    
     func generateSeedHash(from entropy: Entropy, vaultID: VaultID) -> String? {
         let seed = mainRepository.createSeed(from: entropy)
         return mainRepository.generateExchangeSeedHash(vaultID, using: seed)
@@ -945,211 +853,81 @@ private extension ImportInteractor {
         return masterKey
     }
     
-    func extractItemsV2(
+    func extractDataV2(
         from items: [String],
         tags: [String],
-        deletedPasswords: [String],
+        deleted: [String],
         vaultID: VaultID,
         using key: SymmetricKey,
-        importMasterKey: MasterKey? = nil,
-        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
-    ) {
-        // Pre-compute import keys once if importing from different vault
+        importMasterKey: MasterKey? = nil
+    ) async -> ImportedDataPayload {
         let encryption: ItemEncryption
         if let importMasterKey {
             guard let importTrustedKey = getImportKey(for: .normal, masterKey: importMasterKey, vaultID: vaultID),
                   let importSecureKey = getImportKey(for: .topSecret, masterKey: importMasterKey, vaultID: vaultID) else {
                 Log("Import Interactor - Error deriving import keys", severity: .error)
-                completion([], [], [])
-                return
+                return ([], [], [])
             }
             encryption = .otherEncryption(trustedKey: importTrustedKey, secureKey: importSecureKey)
         } else {
             encryption = .currentEncryption
         }
 
-        func parse(_ string: String) -> ItemData? {
-            let jsonDecoder = mainRepository.jsonDecoder
-            guard let data = Data(base64Encoded: string) else {
-                Log("Import Interactor - Error creating Data from base64 encoded string for Password", severity: .error)
-                return nil
-            }
+        Log("ImportInteractor - importing \(items.count) items, \(tags.count) tags and \(deleted.count) deleted entries", module: .interactor)
 
-                guard let jsonData = self.mainRepository.decrypt(data, key: key) else {
-                    Log("Import Interactor - Error decrypting JSON data for Password", severity: .error)
-                    return nil
-                }
-                    do {
-                        let exchangeLogin = try jsonDecoder.decode(
-                            ExchangeVault.ExchangeVaultItem.ExchangeItem.self,
-                            from: jsonData
-                        )
-                        if let pass = self.exchangeItemToItemData(exchangeLogin, vaultID: vaultID, encryption: encryption) {
-                            return pass
-                        } else {
-                            Log("Import Interactor - Error creating Password Data", severity: .error)
-                        }
-                    } catch {
-                        Log("Import Interactor - Error while parsing ExchangeLogin for Password: \(error)", severity: .error)
-                    }
-            return nil
-        }
-        
-        Log("ImportInteractor - importing \(items.count) items and \(deletedPasswords.count) deleted entries", module: .interactor)
-        
-        if items.isEmpty {
-            Log("ImportInteractor - no items to parse", module: .interactor)
-            continueExtractionOfItemsTags(
-                items: [],
-                tags: tags,
-                deletedPasswords: deletedPasswords,
-                vaultID: vaultID,
-                using: key,
-                completion: completion
+        async let parsedItems: [ItemData] = decryptAndParse(items, using: key) { [self] jsonData, decoder in
+            let exchangeItem = try decoder.decode(
+                ExchangeVault.ExchangeVaultItem.ExchangeItem.self,
+                from: jsonData
             )
-            return
+            return self.exchangeItemToItemData(exchangeItem, vaultID: vaultID, encryption: encryption)
         }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            let group = DispatchGroup()
-            
-            var results: [ItemData] = []
-            
-            for string in items {
-                group.enter()
-                self.queue.async {
-                    let result = parse(string)
-                    self.writeQueue.async {
-                        if let result {
-                            results.append(result)
-                        }
-                        group.leave()
+
+        async let parsedTags: [ItemTagData] = decryptAndParse(tags, using: key) { [self] jsonData, decoder in
+            let exchangeTag = try decoder.decode(
+                ExchangeVault.ExchangeVaultItem.ExchangeTag.self,
+                from: jsonData
+            )
+            return self.exchangeTagToItemTagData(exchangeTag, vaultID: vaultID)
+        }
+
+        async let parsedDeleted: [DeletedItemData] = decryptAndParse(deleted, using: key) { [self] jsonData, decoder in
+            let exchangeDeleted = try decoder.decode(
+                ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self,
+                from: jsonData
+            )
+            return self.exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID)
+        }
+
+        let (resultItems, resultTags, resultDeleted) = await (parsedItems, parsedTags, parsedDeleted)
+        Log("ImportInteractor - parsed \(resultItems.count) items, \(resultTags.count) tags and \(resultDeleted.count) deleted entries", module: .interactor)
+        return (resultItems, resultTags, resultDeleted)
+    }
+    
+    private func decryptAndParse<T: Sendable>(
+        _ encrypted: [String],
+        using key: SymmetricKey,
+        transform: @escaping @Sendable (Data, JSONDecoder) throws -> T?
+    ) async -> [T] {
+        guard !encrypted.isEmpty else { return [] }
+        return await withTaskGroup(of: T?.self) { group in
+            for string in encrypted {
+                group.addTask { [mainRepository] in
+                    guard let data = Data(base64Encoded: string),
+                          let jsonData = mainRepository.decrypt(data, key: key) else {
+                        return nil
                     }
+                    return try? transform(jsonData, JSONDecoder())
                 }
             }
-            
-            group.notify(queue: .global()) {
-                Log("ImportInteractor - parsed \(results.count) items", module: .interactor)
-                self.continueExtractionOfItemsTags(
-                    items: results,
-                    tags: tags,
-                    deletedPasswords: deletedPasswords,
-                    vaultID: vaultID,
-                    using: key,
-                    completion: completion
-                )
+            var collected: [T] = []
+            for await result in group {
+                if let result { collected.append(result) }
             }
+            return collected
         }
     }
 
-    func continueExtractionOfItemsTags(
-        items: [ItemData],
-        tags: [String],
-        deletedPasswords: [String],
-        vaultID: VaultID,
-        using key: SymmetricKey,
-        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
-    ) {
-        func parse(_ string: String) -> ItemTagData? {
-            let jsonDecoder = mainRepository.jsonDecoder
-            guard let data = Data(base64Encoded: string) else {
-                Log("Import Interactor - Error creating Data from base64 encoded string for Tag", severity: .error)
-                return nil
-            }
-            
-                guard let jsonData = self.mainRepository.decrypt(data, key: key) else {
-                    Log("Import Interactor - Error decrypting JSON data for Tag", severity: .error)
-                    return nil
-                }
-                    do {
-                        let exchangeLogin = try jsonDecoder.decode(
-                            ExchangeVault.ExchangeVaultItem.ExchangeTag.self,
-                            from: jsonData
-                        )
-                        if let tag = self.exchangeTagToItemTagData(exchangeLogin, vaultID: vaultID) {
-                            return tag
-                        } else {
-                            Log("Import Interactor - Error creating ItemTagData", severity: .error)
-                        }
-                    } catch {
-                        Log("Import Interactor - Error while parsing ExchangeTag for Tagd: \(error)", severity: .error)
-                    }
-            return nil
-        }
-
-        let decryptedTags = tags.compactMap(parse)
-        continueExtractionOfDeletedPasswords(items: items, tags: decryptedTags, deletedPasswords: deletedPasswords, vaultID: vaultID, using: key, completion: completion)
-    }
-    
-    func continueExtractionOfDeletedPasswords(
-        items: [ItemData],
-        tags: [ItemTagData],
-        deletedPasswords: [String],
-        vaultID: VaultID,
-        using key: SymmetricKey,
-        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
-    ) {
-        func parse(_ string: String, vaultID: VaultID) -> DeletedItemData? {
-            let jsonDecoder = mainRepository.jsonDecoder
-            
-            guard let data = Data(base64Encoded: string) else {
-                Log("Import Interactor - Error creating Data from base64 encoded string for Deleted", severity: .error)
-                return nil
-            }
-            guard let jsonData = self.mainRepository.decrypt(data, key: key) else {
-                Log("Import Interactor - Error decrypting JSON data for Deleted", severity: .error)
-                return nil
-            }
-            do {
-                let exchangeDeleted = try jsonDecoder.decode(
-                    ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self,
-                    from: jsonData
-                )
-                if let deleted = self.exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID) {
-                    return deleted
-                } else {
-                    Log("Import Interactor - Error creating Deleted Password Data", severity: .error)
-                }
-            } catch {
-                Log("Import Interactor - Error while parsing ExchangeLogin for Deleted: \(error)", severity: .error)
-            }
-            return nil
-        }
-        
-        Log("ImportInteractor - importing \(deletedPasswords.count) deleted entries", module: .interactor)
-        
-        if deletedPasswords.isEmpty {
-            DispatchQueue.main.async {
-                completion(items, tags, [])
-            }
-            return
-        }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            let group = DispatchGroup()
-            
-            var deletedResults: [DeletedItemData] = []
-            
-            for string in deletedPasswords {
-                group.enter()
-                self.queue.async {
-                    let result = parse(string, vaultID: vaultID)
-                    self.writeQueue.async {
-                        if let result {
-                            deletedResults.append(result)
-                        }
-                        group.leave()
-                    }
-                }
-            }
-            
-            group.notify(queue: .main) {
-                Log("ImportInteractor - parsed \(items.count) items and \(deletedResults.count) deleted entries", module: .interactor)
-                completion(items, tags, deletedResults)
-            }
-        }
-    }
-    
     func exchangeItemToItemData(_ exchangeLogin: ExchangeVault.ExchangeVaultItem.ExchangeItem, vaultID: VaultID, encryption: ItemEncryption) -> ItemData? {
         guard let itemID = UUID(uuidString: exchangeLogin.id) else {
             return nil
@@ -1493,85 +1271,41 @@ private extension ImportInteractor {
     }
 
 
-    func extractItemsV1(
+    func extractDataV1(
         from logins: [String],
         tags: [String],
-        deletedPasswords: [String],
+        deleted: [String],
         vaultID: VaultID,
-        using key: SymmetricKey,
-        completion: @escaping ([ItemData], [ItemTagData], [DeletedItemData]) -> Void
-    ) {
-        func parse(_ string: String) -> ItemData? {
-            let jsonDecoder = mainRepository.jsonDecoder
-            guard let data = Data(base64Encoded: string) else {
-                Log("Import Interactor - Error creating Data from base64 encoded string for V1 Login", severity: .error)
-                return nil
-            }
+        using key: SymmetricKey
+    ) async -> ImportedDataPayload {
+        Log("ImportInteractor - importing \(logins.count) v1 logins, \(tags.count) tags and \(deleted.count) deleted entries", module: .interactor)
 
-            guard let jsonData = self.mainRepository.decrypt(data, key: key) else {
-                Log("Import Interactor - Error decrypting JSON data for V1 Login", severity: .error)
-                return nil
-            }
-            do {
-                let exchangeLogin = try jsonDecoder.decode(
-                    ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self,
-                    from: jsonData
-                )
-                if let pass = self.exchangeV1LoginToItemData(exchangeLogin, vaultID: vaultID) {
-                    return pass
-                } else {
-                    Log("Import Interactor - Error creating Password Data from V1 Login", severity: .error)
-                }
-            } catch {
-                Log("Import Interactor - Error while parsing V1 ExchangeLogin: \(error)", severity: .error)
-            }
-            return nil
-        }
-
-        Log("ImportInteractor - importing \(logins.count) v1 logins and \(deletedPasswords.count) deleted entries", module: .interactor)
-
-        if logins.isEmpty {
-            Log("ImportInteractor - no v1 logins to parse", module: .interactor)
-            continueExtractionOfItemsTags(
-                items: [],
-                tags: tags,
-                deletedPasswords: deletedPasswords,
-                vaultID: vaultID,
-                using: key,
-                completion: completion
+        async let parsedItems: [ItemData] = decryptAndParse(logins, using: key) { [self] jsonData, decoder in
+            let exchangeLogin = try decoder.decode(
+                ExchangeSchemaV1.ExchangeVault.ExchangeVaultItem.ExchangeLogin.self,
+                from: jsonData
             )
-            return
+            return self.exchangeV1LoginToItemData(exchangeLogin, vaultID: vaultID)
         }
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            let group = DispatchGroup()
-
-            var results: [ItemData] = []
-
-            for string in logins {
-                group.enter()
-                self.queue.async {
-                    let result = parse(string)
-                    self.writeQueue.async {
-                        if let result {
-                            results.append(result)
-                        }
-                        group.leave()
-                    }
-                }
-            }
-
-            group.notify(queue: .global()) {
-                Log("ImportInteractor - parsed \(results.count) v1 logins", module: .interactor)
-                self.continueExtractionOfItemsTags(
-                    items: results,
-                    tags: tags,
-                    deletedPasswords: deletedPasswords,
-                    vaultID: vaultID,
-                    using: key,
-                    completion: completion
-                )
-            }
+        async let parsedTags: [ItemTagData] = decryptAndParse(tags, using: key) { [self] jsonData, decoder in
+            let exchangeTag = try decoder.decode(
+                ExchangeVault.ExchangeVaultItem.ExchangeTag.self,
+                from: jsonData
+            )
+            return self.exchangeTagToItemTagData(exchangeTag, vaultID: vaultID)
         }
+
+        async let parsedDeleted: [DeletedItemData] = decryptAndParse(deleted, using: key) { [self] jsonData, decoder in
+            let exchangeDeleted = try decoder.decode(
+                ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem.self,
+                from: jsonData
+            )
+            return self.exchangeDeletedPasswordToDeletedPasswordData(exchangeDeleted, vaultID: vaultID)
+        }
+
+        let (resultItems, resultTags, resultDeleted) = await (parsedItems, parsedTags, parsedDeleted)
+        Log("ImportInteractor - parsed \(resultItems.count) v1 logins, \(resultTags.count) tags and \(resultDeleted.count) deleted entries", module: .interactor)
+        return (resultItems, resultTags, resultDeleted)
     }
 }

@@ -358,9 +358,12 @@ private extension WebDAVBackupInteractor {
                     return
                 }
                 Log("WebDAVBackupInteractor - Vault fetched. Parsing", module: .interactor)
-                self?.backupImportInteractor.parseContents(of: vaultData, decryptItemsIfPossible: true, preferCurrentVaultEncryption: true, allowsAnyDeviceId: allowsAnyDeviceId, completion: { [weak self] parseResult in
-                    switch parseResult {
-                    case .success(let parsedVault):
+                Task { [weak self] in
+                    do {
+                        let parsedVault = try await self?.backupImportInteractor.parseContents(
+                            of: vaultData, decryptItemsIfPossible: true,
+                            preferCurrentVaultEncryption: true, allowsAnyDeviceId: allowsAnyDeviceId
+                        )
                         switch parsedVault {
                         case .decrypted(let decItems, let decTags, let deleted, _, _, _, _):
                             Log("WebDAVBackupInteractor - Vault parsed correctly. Syncing with local database", module: .interactor)
@@ -382,8 +385,10 @@ private extension WebDAVBackupInteractor {
                         case .needsPassword:
                             Log("WebDAVBackupInteractor - can't decrypt Vault. Aborting", module: .interactor, severity: .error)
                             self?.webDAVStateInteractor.syncError(.notConfigured)
+                        case .none:
+                            break
                         }
-                    case .failure(let parseError):
+                    } catch let parseError as BackupImportParseError {
                         switch parseError {
                         case .corruptedFile(let error):
                             Log("WebDAVBackupInteractor - error, Vault file corrupted: \(error)", module: .interactor, severity: .error)
@@ -410,8 +415,11 @@ private extension WebDAVBackupInteractor {
                             Log("WebDAVBackupInteractor - error while parsing Vault - possibly password changed", module: .interactor)
                             self?.webDAVStateInteractor.syncError(.passwordChanged)
                         }
+                    } catch {
+                        Log("WebDAVBackupInteractor - unexpected error: \(error)", module: .interactor, severity: .error)
+                        self?.webDAVStateInteractor.syncError(.notConfigured)
                     }
-                })
+                }
             case .failure(let error):
                 switch error {
                 case .unauthorized:

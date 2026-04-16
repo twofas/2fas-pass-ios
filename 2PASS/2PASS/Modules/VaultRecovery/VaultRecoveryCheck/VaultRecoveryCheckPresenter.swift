@@ -44,26 +44,19 @@ final class VaultRecoveryCheckPresenter {
 
 extension VaultRecoveryCheckPresenter {
     func onAppear() {
-        interactor.openFile { [weak self] result in
-            switch result {
-            case .success(let data):
-                self?.interactor.parseContents(of: data, completion: { [weak self] parseResult in
-                    guard let self else { return }
-                    switch parseResult {
-                    case .success(let result):
-                        switch result {
-                        case .decrypted:
-                            state = .decrypted
-                            
-                        case .needsPassword(let vault, _, _, _, _):
-                            destination = .encrypted(fileData: vault)
-                        }
-                    case .failure(let error):
-                        state = .error(error.localizedDescription)
-                    }
-                })
-            case .failure(let error):
-                self?.state = .error(error.localizedDescription)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let data = try await interactor.openFile()
+                let result = try await interactor.parseContents(of: data)
+                switch result {
+                case .decrypted:
+                    state = .decrypted
+                case .needsPassword(let vault, _, _, _, _):
+                    destination = .encrypted(fileData: vault)
+                }
+            } catch {
+                state = .error(error.localizedDescription)
             }
         }
     }

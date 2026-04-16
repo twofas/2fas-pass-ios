@@ -19,12 +19,9 @@ protocol BackupModuleInteracting: AnyObject {
     var hasItems: Bool { get }
 
     func loginUsingBiometryIfAvailable() async -> Bool
-    
-    func openFile(url: URL, completion: @escaping (Result<Data, BackupImportFileError>) -> Void)
-    func parseContents(
-        of data: Data,
-        completion: @escaping (Result<BackupModuleImportResult, BackupImportParseError>) -> Void
-    )
+
+    func openFile(url: URL) async throws(BackupImportFileError) -> Data
+    func parseContents(of data: Data) async throws -> BackupModuleImportResult
     func isVaultInitialized() -> Bool
 }
 
@@ -80,44 +77,36 @@ extension BackupModuleInteractor: BackupModuleInteracting {
         }
     }
     
-    func openFile(url: URL, completion: @escaping (Result<Data, BackupImportFileError>) -> Void) {
-        importInteractor.openFile(url: url, completion: completion)
+    func openFile(url: URL) async throws(BackupImportFileError) -> Data {
+        try await importInteractor.openFile(url: url)
     }
-    
+
     func isVaultInitialized() -> Bool {
         importInteractor.isVaultReadyForImport()
     }
-    
-    func parseContents(
-        of data: Data,
-        completion: @escaping (Result<BackupModuleImportResult, BackupImportParseError>) -> Void
-    ) {
-        importInteractor.parseContents(of: data, decryptItemsIfPossible: false, preferCurrentVaultEncryption: false, allowsAnyDeviceId: true) { [weak self] result in
-            guard let self else { return }
 
-            switch result {
-            case .success(let importResult):
-                switch importResult {
-                case .decrypted(let items, let tags, let deleted, _, _, _, _):
-                    completion(.success(.decrypted(items, tags: tags, deleted: deleted)))
-                case .encryptedForCurrentVault:
-                    assertionFailure("encryptedForCurrentVault unreachable when decryptItemsIfPossible == false")
-                    completion(.failure(.errorDecrypting))
-                case .needsPassword(let vault, let currentSeed, _, _, _, _):
-                    let entropy: Entropy? = {
-                        if currentSeed {
-                            self.protectionInteractor.restoreEntropy()
-                            let entropy = self.protectionInteractor.entropy
-                            self.protectionInteractor.clearEntropy()
-                            return entropy
-                        }
-                        return nil
-                    }()
-                    completion(.success(.encrypted(vault, entropy: entropy)))
+    func parseContents(of data: Data) async throws -> BackupModuleImportResult {
+        let importResult = try await importInteractor.parseContents(
+            of: data, decryptItemsIfPossible: false, preferCurrentVaultEncryption: false, allowsAnyDeviceId: true
+        )
+
+        switch importResult {
+        case .decrypted(let items, let tags, let deleted, _, _, _, _):
+            return .decrypted(items, tags: tags, deleted: deleted)
+        case .encryptedForCurrentVault:
+            assertionFailure("encryptedForCurrentVault unreachable when decryptItemsIfPossible == false")
+            throw BackupImportParseError.errorDecrypting
+        case .needsPassword(let vault, let currentSeed, _, _, _, _):
+            let entropy: Entropy? = {
+                if currentSeed {
+                    protectionInteractor.restoreEntropy()
+                    let entropy = protectionInteractor.entropy
+                    protectionInteractor.clearEntropy()
+                    return entropy
                 }
-            case .failure(let error):
-                completion(.failure(error))
-            }
+                return nil
+            }()
+            return .encrypted(vault, entropy: entropy)
         }
     }
 }

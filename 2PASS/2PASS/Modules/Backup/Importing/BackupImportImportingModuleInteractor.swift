@@ -65,10 +65,10 @@ extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInte
 
         case .encrypted(_, let masterKey, let vault):
             let fallbackTarget = UUID(uuidString: vault.vaultID)
-            importInteractor.extractDecryptedItemsUsingMasterKey(masterKey, exchangeVault: vault) { [weak self] result in
-                guard let self else { return }
-                switch result {
-                case .success((let decItems, let decTags, let deleted)):
+            Task { [weak self] in
+                do {
+                    let (decItems, decTags, deleted) = try await importInteractor.extractDecryptedItemsUsingMasterKey(masterKey, exchangeVault: vault)
+                    guard let self else { return }
                     guard let target = self.targetVaultID ?? fallbackTarget else {
                         completion(.success(0))
                         return
@@ -78,7 +78,7 @@ extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInte
                     self.itemsImportInteractor.importItems(ready.items, tags: ready.tags, completion: {
                         completion(.success($0))
                     })
-                case .failure(let error):
+                } catch {
                     completion(.failure(error))
                 }
             }

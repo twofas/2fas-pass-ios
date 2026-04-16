@@ -10,8 +10,8 @@ import Common
 
 protocol ForgotMasterPasswordModuleInteracting: AnyObject {
     var loginConfig: LoginModuleInteractorConfig { get }
-    
-    func openFile(url: URL, completion: @escaping (Result<Data, ImportOpenFileError>) -> Void)
+
+    func openFile(url: URL) async throws(ImportOpenFileError) -> Data
     func scan(image: UIImage, completion: @escaping VisionScanCompletion)
     func parseQRCodeContents(_ str: String) -> (entropy: Entropy, masterKey: MasterKey?)?
     func isPDF(fileURL: URL) -> Bool
@@ -45,8 +45,8 @@ final class ForgotMasterPasswordModuleInteractor {
 }
 
 extension ForgotMasterPasswordModuleInteractor: ForgotMasterPasswordModuleInteracting {
-    func openFile(url: URL, completion: @escaping (Result<Data, ImportOpenFileError>) -> Void) {
-        importInteractor.openFile(url: url, completion: completion)
+    func openFile(url: URL) async throws(ImportOpenFileError) -> Data {
+        try await importInteractor.openFile(url: url)
     }
 
     func scan(image: UIImage, completion: @escaping VisionScanCompletion) {

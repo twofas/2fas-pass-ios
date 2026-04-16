@@ -114,9 +114,9 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             
             switch recoveryData {
             case .file(let exchangeVault):
-                importInteractor.extractItemsUsingMasterKey(masterKey, exchangeVault: exchangeVault) { [weak self] result in
-                    switch result {
-                    case .success((let items, let tags, let deletedItems)):
+                Task { [weak self] in
+                    do {
+                        let (items, tags, deletedItems) = try await importInteractor.extractItemsUsingMasterKey(masterKey, exchangeVault: exchangeVault)
                         Log("VaultRecoveryRecoverModuleInteractor - items: \(items.count), deleted: \(deletedItems.count)", module: .moduleInteractor)
                         self?.itemsImportInteractor.importDeleted(deletedItems)
                         self?.itemsImportInteractor.importItems(items, tags: tags, completion: { count in
@@ -131,7 +131,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                                 completion(false)
                             }
                         })
-                    case .failure(let error):
+                    } catch {
                         Log("Error while extracting items during Vault Recovery, error: \(error)")
                         completion(false)
                     }

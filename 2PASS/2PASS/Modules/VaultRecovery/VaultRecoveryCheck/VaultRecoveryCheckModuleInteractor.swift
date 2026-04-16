@@ -10,11 +10,8 @@ import Common
 
 protocol VaultRecoveryCheckModuleInteracting: AnyObject {
     var url: URL { get }
-    func openFile(completion: @escaping (Result<Data, BackupImportFileError>) -> Void)
-    func parseContents(
-        of data: Data,
-        completion: @escaping (Result<BackupImportWithoutEncryptionResult, BackupImportParseError>) -> Void
-    )
+    func openFile() async throws(BackupImportFileError) -> Data
+    func parseContents(of data: Data) async throws -> BackupImportWithoutEncryptionResult
     func parseItems(_ exchangeVault: ExchangeVaultVersioned) -> [ItemData]?
 }
 
@@ -29,15 +26,12 @@ final class VaultRecoveryCheckModuleInteractor {
 }
 
 extension VaultRecoveryCheckModuleInteractor: VaultRecoveryCheckModuleInteracting {
-    func openFile(completion: @escaping (Result<Data, BackupImportFileError>) -> Void) {
-        importInteractor.openFile(url: url, completion: completion)
+    func openFile() async throws(BackupImportFileError) -> Data {
+        try await importInteractor.openFile(url: url)
     }
-    
-    func parseContents(
-        of data: Data,
-        completion: @escaping (Result<BackupImportWithoutEncryptionResult, BackupImportParseError>) -> Void
-    ) {
-        importInteractor.parseContentsWithoutEncryption(of: data, completion: completion)
+
+    func parseContents(of data: Data) async throws -> BackupImportWithoutEncryptionResult {
+        try await importInteractor.parseContentsWithoutEncryption(of: data)
     }
     
     func parseItems(_ exchangeVault: ExchangeVaultVersioned) -> [ItemData]? {

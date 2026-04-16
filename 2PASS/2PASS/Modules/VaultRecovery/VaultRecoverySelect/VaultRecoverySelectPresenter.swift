@@ -125,36 +125,35 @@ extension VaultRecoverySelectPresenter {
     }
     
     func onFileOpen(_ url: URL) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.interactor.openFile(url: url) { [weak self] result in
-                switch result {
-                case .success(let data):
-                    var image: UIImage?
-                    if self?.interactor.isPDF(fileURL: url) == true {
-                        image = self?.interactor.pdfToImage(url: url)
-                    } else if let img = UIImage(data: data) {
-                        image = img
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let data = try await interactor.openFile(url: url)
+                var image: UIImage?
+                if interactor.isPDF(fileURL: url) {
+                    image = interactor.pdfToImage(url: url)
+                } else if let img = UIImage(data: data) {
+                    image = img
+                }
+
+                guard let image else {
+                    destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorOpenFile)) { [weak self] in
+                        self?.destination = nil
                     }
-                    
-                    guard let image else {
-                        DispatchQueue.main.async {
-                            self?.destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorOpenFile)) { [weak self] in
-                                self?.destination = nil
-                            }
-                        }
-                        return
+                    return
+                }
+                scan(image)
+            } catch let error as ImportOpenFileError {
+                switch error {
+                case .cantReadFile(let reason):
+                    let reason = reason ?? ""
+                    destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorOpenFileDetails(reason))) { [weak self] in
+                        self?.destination = nil
                     }
-                    self?.scan(image)
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        switch error {
-                        case .cantReadFile(let reason):
-                            let reason = reason ?? ""
-                            self?.destination = .errorOpeningFile(message: String(localized: .vaultRecoveryErrorOpenFileDetails(reason))) { [weak self] in
-                                self?.destination = nil
-                            }
-                        }
-                    }
+                }
+            } catch {
+                destination = .errorOpeningFile(message: error.localizedDescription) { [weak self] in
+                    self?.destination = nil
                 }
             }
         }

@@ -109,63 +109,59 @@ extension BackupPresenter {
     }
     
     private func openFile(at url: URL) {
-        interactor.openFile(url: url) { [weak self] result in
-            switch result {
-            case .success(let data):
-                self?.interactor.parseContents(of: data, completion: { [weak self] parseResult in
-                    guard let self else { return }
-                    switch parseResult {
-                    case .success(let result):
-                        switch result {
-                        case .decrypted(let items, let tags, let deleted):
-                            if interactor.isVaultInitialized() {
-                                destination = .importSummary(
-                                    .decrypted(items, tags: tags, deleted: deleted),
-                                    onClose: { [weak self] in
-                                        self?.close()
-                                    }
-                                )
-                            } else {
-                                destination = .importingFailure(onClose: { [weak self] in
-                                    self?.close()
-                                })
-                            }
-                        case .encrypted(let vault, let entropy):
-                            if let entropy {
-                                destination = .recoveryEnterPassword(
-                                    vault,
-                                    entropy: entropy,
-                                    onClose: { [weak self] in
-                                        self?.close()
-                                    },
-                                    onTryAgain: { [weak self] in
-                                        self?.destination = nil
-                                    }
-                                )
-                            } else {
-                                destination = .recovery(vault, onClose: { [weak self] in
-                                    self?.close()
-                                })
-                            }
-                        }
-                    case .failure(let error):
-                        switch error {
-                        case .schemaNotSupported(let schemaVersion):
-                            destination = .schemaNotSupported(
-                                schemaVersion: schemaVersion,
-                                onClose: { [weak self] in
-                                    self?.close()
-                                }
-                            )
-                        default:
-                            destination = .importingFailure(onClose: { [weak self] in
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let data = try await interactor.openFile(url: url)
+                let result = try await interactor.parseContents(of: data)
+                switch result {
+                case .decrypted(let items, let tags, let deleted):
+                    if interactor.isVaultInitialized() {
+                        destination = .importSummary(
+                            .decrypted(items, tags: tags, deleted: deleted),
+                            onClose: { [weak self] in
                                 self?.close()
-                            })
-                        }
+                            }
+                        )
+                    } else {
+                        destination = .importingFailure(onClose: { [weak self] in
+                            self?.close()
+                        })
                     }
-                })
-            case .failure:
-                self?.destination = .importingFailure(onClose: { [weak self] in
+                case .encrypted(let vault, let entropy):
+                    if let entropy {
+                        destination = .recoveryEnterPassword(
+                            vault,
+                            entropy: entropy,
+                            onClose: { [weak self] in
+                                self?.close()
+                            },
+                            onTryAgain: { [weak self] in
+                                self?.destination = nil
+                            }
+                        )
+                    } else {
+                        destination = .recovery(vault, onClose: { [weak self] in
+                            self?.close()
+                        })
+                    }
+                }
+            } catch let error as BackupImportParseError {
+                switch error {
+                case .schemaNotSupported(let schemaVersion):
+                    destination = .schemaNotSupported(
+                        schemaVersion: schemaVersion,
+                        onClose: { [weak self] in
+                            self?.close()
+                        }
+                    )
+                default:
+                    destination = .importingFailure(onClose: { [weak self] in
+                        self?.close()
+                    })
+                }
+            } catch {
+                destination = .importingFailure(onClose: { [weak self] in
                     self?.close()
                 })
             }
