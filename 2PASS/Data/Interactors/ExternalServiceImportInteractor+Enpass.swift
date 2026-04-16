@@ -16,10 +16,8 @@ extension ExternalServiceImportInteractor {
             guard let parsedJSON = try? context.jsonDecoder.decode(Enpass.self, from: content) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
 
@@ -139,13 +137,13 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.title.formattedName
         let notes = item.note?.nonBlankTrimmedOrNil
 
         var username: String?
         var email: String?
-        var password: Data?
+        var password: String?
         var urlString: String?
         var additionalFields: [(label: String, value: String)] = []
 
@@ -168,7 +166,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
                 }
             case "password":
                 if password == nil {
-                    password = context.encryptSecureField(value, for: protectionLevel)
+                    password = value
                 } else {
                     additionalFields.append((field.label ?? "Password", value))
                 }
@@ -230,7 +228,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.title.formattedName
         let notes = item.note?.nonBlankTrimmedOrNil
 
@@ -291,13 +289,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
             }
         }
 
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber: String? = cardNumberString
 
         let expirationDateString: String? = {
             guard let month = expirationMonth, let year = expirationYear else { return nil }
@@ -305,21 +297,9 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
             return "\(month)/\(yearSuffix)"
         }()
 
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let expirationDate: String? = expirationDateString
 
-        let securityCode: Data? = {
-            if let value = securityCodeString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let securityCode: String? = securityCodeString
 
         // Add PIN to additional fields if present
         if let pin = pinString {
@@ -361,17 +341,11 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.title.formattedName
         let noteText = item.note?.nonBlankTrimmedOrNil
 
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text: String? = noteText
 
         var additionalFields: [(label: String, value: String)] = []
         item.fields?.forEach { field in
@@ -408,7 +382,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.title.formattedName
 
         var ssid: String?
@@ -433,13 +407,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
             }
         }
 
-        let password: Data? = {
-            if let value = passwordString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let password: String? = passwordString
 
         let securityType = WiFiContent.SecurityType(enpassValue: securityString)
 
@@ -473,7 +441,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let categoryName = item.categoryName ?? formatFieldType(item.category)
         let name: String = {
             if let itemName = item.title.formattedName, !itemName.isEmpty {
@@ -494,13 +462,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         let additionalInfo = formatAdditionalFields(additionalFields)
         let noteText = context.mergeNote(additionalInfo, with: item.note?.nonBlankTrimmedOrNil)
 
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text: String? = noteText
 
         return .secureNote(.init(
             id: .init(),

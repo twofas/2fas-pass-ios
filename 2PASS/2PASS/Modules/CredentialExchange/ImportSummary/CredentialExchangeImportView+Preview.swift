@@ -11,7 +11,7 @@ import SwiftUI
 
 @available(iOS 26.0, *)
 private final class PreviewInteractor: CredentialExchangeImportModuleInteracting {
-    func convertCredentials(_ data: ASExportedCredentialData) throws(CredentialExchangeImportError) -> ExternalServiceImportResult {
+    func convertCredentials(_ data: ASExportedCredentialData) -> ExternalServiceImportResult {
         let vaultID = VaultID()
         let workTagID = ItemTagID()
         let personalTagID = ItemTagID()
@@ -36,7 +36,7 @@ private final class PreviewInteractor: CredentialExchangeImportModuleInteracting
             )
         ]
 
-        let loginItem: ItemData = .login(.init(
+        let loginItem: ItemDecryptedData = .login(.init(
             id: ItemID(),
             vaultId: vaultID,
             metadata: .init(
@@ -57,7 +57,7 @@ private final class PreviewInteractor: CredentialExchangeImportModuleInteracting
             )
         ))
 
-        let paymentCardItem: ItemData = .paymentCard(.init(
+        let paymentCardItem: ItemDecryptedData = .paymentCard(.init(
             id: ItemID(),
             vaultId: vaultID,
             metadata: .init(
@@ -80,7 +80,7 @@ private final class PreviewInteractor: CredentialExchangeImportModuleInteracting
             )
         ))
 
-        let secureNoteItem: ItemData = .secureNote(.init(
+        let secureNoteItem: ItemDecryptedData = .secureNote(.init(
             id: ItemID(),
             vaultId: vaultID,
             metadata: .init(
@@ -93,12 +93,12 @@ private final class PreviewInteractor: CredentialExchangeImportModuleInteracting
             name: "Example Secure Note",
             content: .init(
                 name: "Example Secure Note",
-                text: "This is an imported secure note.".data(using: .utf8),
+                text: "This is an imported secure note.",
                 additionalInfo: nil
             )
         ))
 
-        let convertedSecureNoteItem: ItemData = .secureNote(.init(
+        let convertedSecureNoteItem: ItemDecryptedData = .secureNote(.init(
             id: ItemID(),
             vaultId: vaultID,
             metadata: .init(
@@ -111,7 +111,7 @@ private final class PreviewInteractor: CredentialExchangeImportModuleInteracting
             name: "Example Imported Item (Address)",
             content: .init(
                 name: "Example Imported Item (Address)",
-                text: "Street Address: Infinite Loop 1".data(using: .utf8),
+                text: "Street Address: Infinite Loop 1",
                 additionalInfo: nil
             )
         ))

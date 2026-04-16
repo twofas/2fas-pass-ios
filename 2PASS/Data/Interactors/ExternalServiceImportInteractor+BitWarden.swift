@@ -33,10 +33,8 @@ extension ExternalServiceImportInteractor {
         }
 
         private func importJSON(_ parsedJSON: BitWarden) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
 
@@ -128,10 +126,8 @@ extension ExternalServiceImportInteractor {
         }
 
         private func importCSV(_ csvString: String) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             let protectionLevel = context.currentProtectionLevel
 
             // Track unique folder names to create tags
@@ -207,17 +203,11 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
         let notes = dict["notes"]?.nonBlankTrimmedOrNil
         let username = dict["login_username"]?.nonBlankTrimmedOrNil
-        let password: Data? = {
-            if let passwordString = dict["login_password"]?.nonBlankOrNil,
-               let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return password
-            }
-            return nil
-        }()
+        let password = dict["login_password"]?.nonBlankOrNil
         let uris: [PasswordURI]? = {
             guard let urlString = dict["login_uri"]?.nonBlankTrimmedOrNil else { return nil }
             let uri = PasswordURI(uri: urlString, match: .domain)
@@ -253,17 +243,11 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
         let noteText = dict["notes"]?.nonBlankTrimmedOrNil
 
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text = noteText
 
         let fieldsInfo = dict["fields"]?.nonBlankTrimmedOrNil
 
@@ -291,7 +275,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
         let notes = dict["notes"]?.nonBlankTrimmedOrNil
 
@@ -306,29 +290,9 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
             return "\(month)/\(yearSuffix)"
         }()
 
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let securityCode: Data? = {
-            if let value = securityCodeString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber = cardNumberString
+        let expirationDate = expirationDateString
+        let securityCode = securityCodeString
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? dict["card_brand"]?.nonBlankTrimmedOrNil
@@ -382,17 +346,11 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.name?.nonBlankTrimmedOrNil
         let notes = item.notes?.nonBlankTrimmedOrNil
         let username = login.username?.nonBlankTrimmedOrNil
-        let password: Data? = {
-            if let passwordString = login.password?.nonBlankOrNil,
-               let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return password
-            }
-            return nil
-        }()
+        let password = login.password?.nonBlankOrNil
         let uris: [PasswordURI]? = {
             guard let uriList = login.uris else {
                 return nil
@@ -455,17 +413,11 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.name.formattedName
         let noteText = item.notes?.nonBlankTrimmedOrNil
 
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text = noteText
 
         let secureNoteInfo = context.formatDictionary(secureNote.unknownData)
         let fieldsInfo = formatCustomFields(item.fields)
@@ -499,7 +451,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.name.formattedName
         let notes = item.notes?.nonBlankTrimmedOrNil
 
@@ -514,29 +466,9 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
             return "\(month)/\(yearSuffix)"
         }()
 
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let securityCode: Data? = {
-            if let value = securityCodeString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber = cardNumberString
+        let expirationDate = expirationDateString
+        let securityCode = securityCodeString
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString) ?? card.brand?.nonBlankTrimmedOrNil
@@ -580,7 +512,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         contentTypeName: String,
         data: [String: AnyCodable]?,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name: String = {
             var output = ""
             if let name = item.name.formattedName {
@@ -596,13 +528,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         let additionalInfo = context.mergeNote(dataInfo, with: fieldsInfo)
         let noteText = context.mergeNote(additionalInfo, with: item.notes?.nonBlankTrimmedOrNil)
 
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text = noteText
 
         let creationDate = item.creationDate ?? .importPasswordPlaceholder
         let modificationDate = item.revisionDate ?? .importPasswordPlaceholder

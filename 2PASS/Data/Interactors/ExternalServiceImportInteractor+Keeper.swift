@@ -16,10 +16,8 @@ extension ExternalServiceImportInteractor {
             guard let parsedJSON = try? context.jsonDecoder.decode(Keeper.self, from: content) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
 
@@ -111,16 +109,11 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = record.title.formattedName
         let notes = record.notes?.nonBlankTrimmedOrNil
         let username = record.login?.nonBlankTrimmedOrNil
-        let password: Data? = {
-            if let passwordString = record.password?.nonBlankTrimmedOrNil {
-                return context.encryptSecureField(passwordString, for: protectionLevel)
-            }
-            return nil
-        }()
+        let password: String? = record.password?.nonBlankTrimmedOrNil
 
         let uris: [PasswordURI]? = {
             guard let urlString = record.loginUrl?.nonBlankTrimmedOrNil else { return nil }
@@ -158,7 +151,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = record.title.formattedName
 
         // For encrypted notes, the main content is in custom_fields.$note::1
@@ -168,13 +161,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         // Combine the note content with record notes
         let fullNoteText = context.mergeNote(noteContent, with: recordNotes)
 
-        let text: Data? = {
-            if let note = fullNoteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text: String? = fullNoteText
 
         // Format remaining custom fields (excluding note)
         let customFieldsInfo = formatCustomFields(record.customFields, excludeNote: true)
@@ -203,7 +190,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = record.title.formattedName
         let notes = record.notes?.nonBlankTrimmedOrNil
 
@@ -216,29 +203,9 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         let securityCodeString = paymentCard?.cardSecurityCode
         let expirationDateString = context.formatExpirationDate(paymentCard?.cardExpirationDate)
 
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let securityCode: Data? = {
-            if let value = securityCodeString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber: String? = cardNumberString
+        let expirationDate: String? = expirationDateString
+        let securityCode: String? = securityCodeString
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString)
@@ -280,7 +247,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let recordType = record.type ?? "Unknown"
         let name: String = {
             var output = ""
@@ -311,13 +278,7 @@ private extension ExternalServiceImportInteractor.KeeperImporter {
 
         let fullNoteText = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n")
 
-        let text: Data? = {
-            if let note = fullNoteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text: String? = fullNoteText
 
         return .secureNote(.init(
             id: .init(),

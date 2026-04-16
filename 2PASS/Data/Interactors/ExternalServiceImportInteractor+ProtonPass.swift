@@ -49,16 +49,13 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
     }
     
     func importFromJSON(_ data: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-        guard let vaultID = context.selectedVaultId else {
-            throw .wrongFormat
-        }
-        
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
         let protectionLevel = context.currentProtectionLevel
-        
+
         do {
             let export = try JSONDecoder().decode(ProtonPassExport.self, from: data)
-            
-            var items: [ItemData] = []
+
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             
             for (_, vault) in export.vaults {
@@ -149,11 +146,9 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         guard let csvString = String(data: data, encoding: .utf8) else {
             throw .wrongFormat
         }
-        guard let vaultID = context.selectedVaultId else {
-            throw .wrongFormat
-        }
-        
-        var items: [ItemData] = []
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+
+        var items: [ItemDecryptedData] = []
         var itemsConvertedToSecureNotes = 0
         let protectionLevel = context.currentProtectionLevel
         
@@ -275,19 +270,13 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
         let itemUsername = dict["username"]?.nonBlankTrimmedOrNil
         let itemEmail = dict["email"]?.nonBlankTrimmedOrNil
         let username: String? = itemUsername ?? itemEmail
 
-        let password: Data? = {
-            if let passwordString = dict["password"]?.nonBlankOrNil,
-               let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let password = dict["password"]?.nonBlankOrNil
 
         let uris: [PasswordURI]? = {
             guard let urlString = dict["url"]?.nonBlankTrimmedOrNil
@@ -317,7 +306,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             noteComponents.append("Vault: \(sourceVaultName)")
         }
         let notes = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
-        
+
         return .login(.init(
             id: .init(),
             vaultId: vaultID,
@@ -339,7 +328,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             )
         ))
     }
-    
+
     func importCreditCardFromCSV(
         dict: [String: String],
         vaultID: VaultID,
@@ -347,7 +336,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
 
         // Credit card data is in the "note" field as JSON
@@ -359,25 +348,11 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
 
         let cardHolder = cardData.cardholderName?.nonBlankTrimmedOrNil
         let cardNumberString = cardData.number?.nonBlankTrimmedOrNil
-
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let securityCode: Data? = {
-            if let value = cardData.verificationNumber?.nonBlankTrimmedOrNil,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber = cardNumberString
+        let securityCode = cardData.verificationNumber?.nonBlankTrimmedOrNil
 
         // Parse expiration date from "YYYY-MM" format to "MM/YY"
-        let expirationDateString: String? = {
+        let expirationDate: String? = {
             guard let expDate = cardData.expirationDate?.nonBlankTrimmedOrNil
             else { return nil }
             let components = expDate.split(separator: "-")
@@ -386,14 +361,6 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                   let month = components.last else { return expDate }
             let yearSuffix = year.suffix(2)
             return "\(month)/\(yearSuffix)"
-        }()
-
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
         }()
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
@@ -442,18 +409,9 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
-        let noteContent = dict["note"]?.nonBlankTrimmedOrNil
-
-        let text: Data? = {
-            if let content = noteContent,
-               let encrypted = context.encryptSecureField(content, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
+        let text = dict["note"]?.nonBlankTrimmedOrNil
         let additionalInfo = sourceVaultName.map { "Vault: \($0)" }
 
         return .secureNote(.init(
@@ -482,16 +440,9 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
-
-        let password: Data? = {
-            if let passwordString = dict["password"]?.nonBlankOrNil,
-               let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let password = dict["password"]?.nonBlankOrNil
 
         var noteComponents: [String] = []
         if let unknownFields = context.formatDictionary(
@@ -538,7 +489,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let typeName = formatTypeName(itemType)
         let itemName = dict["name"]?.nonBlankTrimmedOrNil
         let name: String = {
@@ -569,16 +520,8 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             noteComponents.append("Vault: \(sourceVaultName)")
         }
         
-        let noteText = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
-        
-        let text: Data? = {
-            if let content = noteText,
-               let encrypted = context.encryptSecureField(content, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-        
+        let text = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
+
         return .secureNote(.init(
             id: .init(),
             vaultId: vaultID,
@@ -597,7 +540,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             )
         ))
     }
-    
+
     func extractIdentityFields(_ identity: ProtonPassCSVIdentity) -> String {
         var fields: [(String, String)] = []
 
@@ -630,20 +573,13 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.data.metadata.name.nonBlankTrimmedOrNil
         let content = ProtonPassLoginContent(item.data.content)
 
         let itemUsername = content.itemUsername?.nonBlankTrimmedOrNil
         let username: String? = itemUsername ?? content.itemEmail?.nonBlankTrimmedOrNil
-
-        let password: Data? = {
-            if let passwordString = content.password?.nonBlankOrNil,
-               let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let password = content.password?.nonBlankOrNil
 
         let uris: [PasswordURI]? = {
             guard let urls = content.urls, !urls.isEmpty else { return nil }
@@ -706,31 +642,17 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.data.metadata.name.nonBlankTrimmedOrNil
         let content = ProtonPassCreditCardContent(item.data.content)
 
         let cardHolder = content.cardholderName?.nonBlankTrimmedOrNil
         let cardNumberString = content.number?.nonBlankTrimmedOrNil
-
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let securityCode: Data? = {
-            if let value = content.verificationNumber?.nonBlankTrimmedOrNil,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber = cardNumberString
+        let securityCode = content.verificationNumber?.nonBlankTrimmedOrNil
 
         // Parse expiration date from "YYYY-MM" format to "MM/YY"
-        let expirationDateString: String? = {
+        let expirationDate: String? = {
             guard let expDate = content.expirationDate?.nonBlankTrimmedOrNil
             else { return nil }
             let components = expDate.split(separator: "-")
@@ -739,14 +661,6 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
                   let month = components.last else { return expDate }
             let yearSuffix = year.suffix(2)
             return "\(month)/\(yearSuffix)"
-        }()
-
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
         }()
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
@@ -799,7 +713,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.data.metadata.name.nonBlankTrimmedOrNil
 
         var additionalInfoComponents: [String] = []
@@ -813,15 +727,8 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             additionalInfoComponents.append("Vault: \(sourceVaultName)")
         }
         let additionalInfo = additionalInfoComponents.isEmpty ? nil : additionalInfoComponents.joined(separator: "\n\n")
-        
-        let noteContent = item.data.metadata.note.nonBlankTrimmedOrNil
-        let text: Data? = {
-            if let content = noteContent,
-               let encrypted = context.encryptSecureField(content, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+
+        let text = item.data.metadata.note.nonBlankTrimmedOrNil
         
         return .secureNote(.init(
             id: .init(),
@@ -849,19 +756,12 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.data.metadata.name.nonBlankTrimmedOrNil
         let content = ProtonPassWiFiContent(item.data.content)
 
         let ssid = content.ssid?.nonBlankTrimmedOrNil
-
-        let password: Data? = {
-            if let passwordString = content.password?.nonBlankOrNil,
-               let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let password = content.password?.nonBlankOrNil
 
         let securityType = WiFiContent.SecurityType(protonPassValue: content.security)
 
@@ -909,7 +809,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         creationDate: Date,
         modificationDate: Date,
         sourceVaultName: String?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let typeName = formatTypeName(item.data.type)
         let itemName = item.data.metadata.name.nonBlankTrimmedOrNil
 
@@ -943,16 +843,8 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             noteComponents.append("Vault: \(sourceVaultName)")
         }
 
-        let noteText = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
-        
-        let text: Data? = {
-            if let content = noteText,
-               let encrypted = context.encryptSecureField(content, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-        
+        let text = noteComponents.isEmpty ? nil : noteComponents.joined(separator: "\n\n")
+
         return .secureNote(.init(
             id: .init(),
             vaultId: vaultID,

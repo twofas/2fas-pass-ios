@@ -16,15 +16,30 @@ protocol CredentialExchangePerformImportModuleInteracting: AnyObject {
 final class CredentialExchangePerformImportModuleInteractor: CredentialExchangePerformImportModuleInteracting {
 
     private let itemsImportInteractor: ItemsImportInteracting
+    private let importInteractor: ImportInteracting
+    private let vaultsInteractor: VaultsInteracting
 
-    init(itemsImportInteractor: ItemsImportInteracting) {
+    init(
+        itemsImportInteractor: ItemsImportInteracting,
+        importInteractor: ImportInteracting,
+        vaultsInteractor: VaultsInteracting
+    ) {
         self.itemsImportInteractor = itemsImportInteractor
+        self.importInteractor = importInteractor
+        self.vaultsInteractor = vaultsInteractor
     }
 
     @MainActor
     func performImport(_ result: ExternalServiceImportResult) async {
+        let targetVaultID = vaultsInteractor.defaultVaultID
+        let readyItems: [ItemData] = result.items.compactMap {
+            importInteractor.encryptItem($0, forVault: targetVaultID)
+        }
+        let readyTags = result.tags.map {
+            importInteractor.rebindTag($0, forVault: targetVaultID)
+        }
         await withCheckedContinuation { continuation in
-            itemsImportInteractor.importItems(result.items, tags: result.tags) { _ in
+            itemsImportInteractor.importItems(readyItems, tags: readyTags) { _ in
                 continuation.resume()
             }
         }

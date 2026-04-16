@@ -15,10 +15,8 @@ extension ExternalServiceImportInteractor {
         let context: ImportContext
 
         func importMobileCSV(_ files: [Data]) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
             let tagResolver = TagResolver(vaultID: vaultID)
@@ -84,10 +82,8 @@ extension ExternalServiceImportInteractor {
             guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
             let tagResolver = TagResolver(vaultID: vaultID)
@@ -163,8 +159,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         resolveTagIds: @escaping (String?) -> [ItemTagID]?
-    ) throws(ExternalServiceImportError) -> [ItemData] {
-        var items: [ItemData] = []
+    ) throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        var items: [ItemDecryptedData] = []
 
         do {
             guard let csvString = String(data: data, encoding: .utf8) else {
@@ -187,13 +183,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 let username = dict["username"]?.nonBlankTrimmedOrNil
                     ?? dict["username2"]?.nonBlankTrimmedOrNil
                     ?? dict["username3"]?.nonBlankTrimmedOrNil
-                let password: Data? = {
-                    if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
-                       let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
+                let password: String? = dict["password"]?.nonBlankTrimmedOrNil
 
                 let note = dict["note"]?.nonBlankTrimmedOrNil
                 let tagIds = resolveTagIds(dict["category"])
@@ -253,8 +243,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         resolveTagIds: @escaping (String?) -> [ItemTagID]?
-    ) throws(ExternalServiceImportError) -> [ItemData] {
-        var items: [ItemData] = []
+    ) throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        var items: [ItemDecryptedData] = []
 
         do {
             guard let csvString = String(data: data, encoding: .utf8) else {
@@ -269,13 +259,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 guard dict.allValuesEmpty == false else { return }
 
                 let name = dict["title"].formattedName
-                let text: Data? = {
-                    if let noteString = dict["note"]?.nonBlankTrimmedOrNil,
-                       let encrypted = context.encryptSecureField(noteString, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
+                let text: String? = dict["note"]?.nonBlankTrimmedOrNil
 
                 let tagIds = resolveTagIds(dict["category"])
                 let additionalInfo = context.formatDictionary(dict, excludingKeys: ["title", "note", "category"])
@@ -313,8 +297,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         _ data: Data,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel
-    ) throws(ExternalServiceImportError) -> (items: [ItemData], convertedCount: Int) {
-        var items: [ItemData] = []
+    ) throws(ExternalServiceImportError) -> (items: [ItemDecryptedData], convertedCount: Int) {
+        var items: [ItemDecryptedData] = []
         var convertedCount = 0
 
         do {
@@ -343,27 +327,9 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                         return "\(month)/\(year)"
                     }()
 
-                    let cardNumber: Data? = {
-                        if let value = cardNumberString,
-                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
-                    let expirationDate: Data? = {
-                        if let value = expirationDateString,
-                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
-                    let securityCode: Data? = {
-                        if let value = securityCodeString,
-                           let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
+                    let cardNumber: String? = cardNumberString
+                    let expirationDate: String? = expirationDateString
+                    let securityCode: String? = securityCodeString
                     let cardNumberMask = context.cardNumberMask(from: cardNumberString)
                     let cardIssuer = context.detectCardIssuer(from: cardNumberString)
 
@@ -416,13 +382,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     )
                     let noteText = context.mergeNote(additionalInfo, with: dict["note"]?.nonBlankTrimmedOrNil)
 
-                    let text: Data? = {
-                        if let note = noteText,
-                           let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                            return encrypted
-                        }
-                        return nil
-                    }()
+                    let text: String? = noteText
 
                     items.append(
                         .secureNote(.init(
@@ -459,8 +419,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         _ data: Data,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel
-    ) throws(ExternalServiceImportError) -> [ItemData] {
-        var items: [ItemData] = []
+    ) throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        var items: [ItemDecryptedData] = []
 
         do {
             guard let csvString = String(data: data, encoding: .utf8) else {
@@ -490,13 +450,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     excludingKeys: ["type", "name"]
                 )
 
-                let text: Data? = {
-                    if let info = additionalInfo,
-                       let encrypted = context.encryptSecureField(info, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
+                let text: String? = additionalInfo
 
                 items.append(
                     .secureNote(.init(
@@ -531,8 +485,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         _ data: Data,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel
-    ) throws(ExternalServiceImportError) -> [ItemData] {
-        var items: [ItemData] = []
+    ) throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        var items: [ItemDecryptedData] = []
 
         do {
             guard let csvString = String(data: data, encoding: .utf8) else {
@@ -582,13 +536,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                     excludingKeys: ["type", "item_name"]
                 )
 
-                let text: Data? = {
-                    if let info = additionalInfo,
-                       let encrypted = context.encryptSecureField(info, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
+                let text: String? = additionalInfo
 
                 items.append(
                     .secureNote(.init(
@@ -623,8 +571,8 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
         _ data: Data,
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel
-    ) throws(ExternalServiceImportError) -> [ItemData] {
-        var items: [ItemData] = []
+    ) throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        var items: [ItemDecryptedData] = []
 
         do {
             guard let csvString = String(data: data, encoding: .utf8) else {
@@ -642,13 +590,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 let wifiName = dict["name"]?.nonBlankTrimmedOrNil
                 let name = wifiName ?? ssid
 
-                let password: Data? = {
-                    if let passphrase = dict["passphrase"]?.nonBlankTrimmedOrNil,
-                       let encrypted = context.encryptSecureField(passphrase, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
+                let password: String? = dict["passphrase"]?.nonBlankTrimmedOrNil
 
                 let securityType = WiFiContent.SecurityType(
                     dashlaneValue: dict["encription_type"]?.nonBlankTrimmedOrNil

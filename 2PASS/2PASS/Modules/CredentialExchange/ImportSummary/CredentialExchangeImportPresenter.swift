@@ -60,34 +60,29 @@ final class CredentialExchangeImportPresenter {
         exporterDisplayName = credentials.exporterDisplayName
         exporterRelyingPartyIdentifier = credentials.exporterRelyingPartyIdentifier
 
-        do {
-            let result = try interactor.convertCredentials(credentials)
-            importResult = result
-            itemsConvertedToSecureNotes = result.itemsConvertedToSecureNotes
+        let result = interactor.convertCredentials(credentials)
+        importResult = result
+        itemsConvertedToSecureNotes = result.itemsConvertedToSecureNotes
 
-            var counts: [ItemContentType: Int] = result.items.reduce(into: [:]) { result, item in
-                result[item.contentType, default: 0] += 1
-            }
-
-            tagsCount = result.tags.count
-
-            // Subtract converted items from secure notes count
-            if let secureNoteCount = counts[.secureNote], result.itemsConvertedToSecureNotes > 0 {
-                let adjustedCount = secureNoteCount - result.itemsConvertedToSecureNotes
-                if adjustedCount > 0 {
-                    counts[.secureNote] = adjustedCount
-                } else {
-                    counts.removeValue(forKey: .secureNote)
-                }
-            }
-
-            contentTypes = ItemContentType.allKnownTypes.filter { counts[$0] != nil }
-            summary = counts
-            viewState = .summary
-        } catch {
-            Log("Credential exchange conversion failed: \(error)", module: .moduleInteractor)
-            viewState = .error
+        var counts: [ItemContentType: Int] = result.items.reduce(into: [:]) { result, item in
+            result[item.contentType, default: 0] += 1
         }
+
+        tagsCount = result.tags.count
+
+        // Subtract converted items from secure notes count
+        if let secureNoteCount = counts[.secureNote], result.itemsConvertedToSecureNotes > 0 {
+            let adjustedCount = secureNoteCount - result.itemsConvertedToSecureNotes
+            if adjustedCount > 0 {
+                counts[.secureNote] = adjustedCount
+            } else {
+                counts.removeValue(forKey: .secureNote)
+            }
+        }
+
+        contentTypes = ItemContentType.allKnownTypes.filter { counts[$0] != nil }
+        summary = counts
+        viewState = .summary
     }
 
     func startImport() {

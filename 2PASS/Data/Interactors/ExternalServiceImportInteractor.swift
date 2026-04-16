@@ -19,11 +19,11 @@ public enum ImportContent {
 }
 
 public struct ExternalServiceImportResult {
-    public let items: [ItemData]
+    public let items: [ItemDecryptedData]
     public let tags: [ItemTagData]
     public let itemsConvertedToSecureNotes: Int
 
-    public init(items: [ItemData], tags: [ItemTagData] = [], itemsConvertedToSecureNotes: Int = 0) {
+    public init(items: [ItemDecryptedData], tags: [ItemTagData] = [], itemsConvertedToSecureNotes: Int = 0) {
         self.items = items
         self.tags = tags
         self.itemsConvertedToSecureNotes = itemsConvertedToSecureNotes
@@ -42,24 +42,16 @@ public protocol ExternalServiceImportInteracting: AnyObject {
 
 final class ExternalServiceImportInteractor {
     private let mainRepository: MainRepository
-    private let vaultsInteractor: VaultsInteracting
     private let context: ImportContext
-
-    private var vaultID: VaultID {
-        vaultsInteractor.defaultVaultID
-    }
 
     init(
         mainRepository: MainRepository,
-        vaultsInteractor: VaultsInteracting,
         uriInteractor: URIInteracting,
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     ) {
         self.mainRepository = mainRepository
-        self.vaultsInteractor = vaultsInteractor
         self.context = ImportContext(
             mainRepository: mainRepository,
-            vaultsInteractor: vaultsInteractor,
             uriInteractor: uriInteractor,
             paymentCardUtilityInteractor: paymentCardUtilityInteractor
         )
@@ -199,15 +191,14 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
 
 extension ExternalServiceImportInteractor {
 
+    /// Placeholder vault ID used during parsing. The real vault ID is assigned
+    /// later when the user picks a target vault and items are encrypted.
+    static let placeholderVaultID: VaultID = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+
     struct ImportContext {
         let mainRepository: MainRepository
-        let vaultsInteractor: VaultsInteracting
         let uriInteractor: URIInteracting
         let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
-
-        var selectedVaultId: VaultID? {
-            vaultsInteractor.defaultVaultID
-        }
 
         var currentProtectionLevel: ItemProtectionLevel {
             mainRepository.currentDefaultProtectionLevel
@@ -215,16 +206,6 @@ extension ExternalServiceImportInteractor {
 
         var jsonDecoder: JSONDecoder {
             mainRepository.jsonDecoder
-        }
-
-        func encryptSecureField(_ string: String, for protectionLevel: ItemProtectionLevel) -> Data? {
-            guard let vaultID = selectedVaultId,
-                  let key = mainRepository.getKey(isPassword: true, protectionLevel: protectionLevel, forVault: vaultID),
-                  let data = string.data(using: .utf8),
-                  let encrypted = mainRepository.encrypt(data, key: key) else {
-                return nil
-            }
-            return encrypted
         }
         
         func formatDictionary(

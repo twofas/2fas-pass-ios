@@ -11,7 +11,7 @@ import AuthenticationServices
 
 @available(iOS 26.0, *)
 protocol CredentialExchangeImportModuleInteracting: AnyObject {
-    func convertCredentials(_ data: ASExportedCredentialData) throws(CredentialExchangeImportError) -> ExternalServiceImportResult
+    func convertCredentials(_ data: ASExportedCredentialData) -> ExternalServiceImportResult
 }
 
 @available(iOS 26.0, *)
@@ -23,7 +23,7 @@ final class CredentialExchangeImportModuleInteractor: CredentialExchangeImportMo
         self.credentialExchangeImporter = credentialExchangeImporter
     }
 
-    func convertCredentials(_ data: ASExportedCredentialData) throws(CredentialExchangeImportError) -> ExternalServiceImportResult {
-        try credentialExchangeImporter.convert(data)
+    func convertCredentials(_ data: ASExportedCredentialData) -> ExternalServiceImportResult {
+        credentialExchangeImporter.convert(data)
     }
 }

@@ -337,7 +337,6 @@ public final class InteractorFactory {
     public func externalServiceImportInteractor() -> ExternalServiceImportInteracting {
         ExternalServiceImportInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            vaultsInteractor: vaultsInteractor(),
             uriInteractor: uriInteractor(),
             paymentCardUtilityInteractor: paymentCardUtilityInteractor()
         )
@@ -357,7 +356,6 @@ public final class InteractorFactory {
         CredentialExchangeImporter(
             context: ExternalServiceImportInteractor.ImportContext(
                 mainRepository: MainRepositoryImpl.shared,
-                vaultsInteractor: vaultsInteractor(),
                 uriInteractor: uriInteractor(),
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor()
             )

@@ -32,10 +32,8 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         guard let csvString = String(data: content, encoding: .utf8) else {
             throw .wrongFormat
         }
-        guard let vaultID = context.selectedVaultId else {
-            throw .wrongFormat
-        }
-        var items: [ItemData] = []
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+        var items: [ItemDecryptedData] = []
         let protectionLevel = context.currentProtectionLevel
 
         // Track tags for tag creation
@@ -47,7 +45,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             let name: String?
             let uris: [PasswordURI]?
             let username: String?
-            let password: Data?
+            let password: String?
             let notes: String?
             let tagStrings: [String]
         }
@@ -76,13 +74,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                     return [uri]
                 }()
                 let username = dict["Username"]?.nonBlankTrimmedOrNil
-                let password: Data? = {
-                    if let passwordString = dict["Password"]?.nonBlankTrimmedOrNil,
-                       let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
+                let password: String? = dict["Password"]?.nonBlankTrimmedOrNil
 
                 // Parse tags (semicolon-separated)
                 let tagStrings: [String] = {
@@ -176,9 +168,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
 fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
 
     func import1Pux(_ archive: Archive) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-        guard let vaultID = context.selectedVaultId else {
-            throw .wrongFormat
-        }
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
 
         // Find and extract export.data file
         guard let exportDataEntry = archive.first(where: { $0.path == "export.data" }) else {
@@ -198,7 +188,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             throw .wrongFormat
         }
 
-        var items: [ItemData] = []
+        var items: [ItemDecryptedData] = []
         var itemsConvertedToSecureNotes = 0
         let protectionLevel = context.currentProtectionLevel
 
@@ -354,29 +344,21 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.overview?.title.formattedName
         let notes = item.details?.notesPlain?.nonBlankTrimmedOrNil
 
         // Extract username and password from loginFields
         var username: String?
-        var passwordString: String?
+        var password: String?
 
         for field in item.details?.loginFields ?? [] {
             if field.designation == "username" {
                 username = field.value?.nonBlankTrimmedOrNil
             } else if field.designation == "password" {
-                passwordString = field.value?.nonBlankTrimmedOrNil
+                password = field.value?.nonBlankTrimmedOrNil
             }
         }
-
-        let password: Data? = {
-            if let pwd = passwordString,
-               let encrypted = context.encryptSecureField(pwd, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
 
         // Extract URLs
         let uris: [PasswordURI]? = {
@@ -445,17 +427,9 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.overview?.title.formattedName
-        let noteText = item.details?.notesPlain?.nonBlankTrimmedOrNil
-
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text = item.details?.notesPlain?.nonBlankTrimmedOrNil
 
         // Extract additional fields from sections
         var additionalFields: [String] = []
@@ -506,7 +480,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.overview?.title.formattedName
         let notes = item.details?.notesPlain?.nonBlankTrimmedOrNil
 
@@ -559,29 +533,9 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             }
         }
 
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-
-        let securityCode: Data? = {
-            if let value = securityCodeString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber: String? = cardNumberString
+        let expirationDate: String? = expirationDateString
+        let securityCode: String? = securityCodeString
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString)
@@ -636,7 +590,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = item.overview?.title.formattedName
 
         var ssid: String?
@@ -664,13 +618,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             }
         }
 
-        let password: Data? = {
-            if let value = passwordString?.nonBlankOrNil,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let password: String? = passwordString?.nonBlankOrNil
 
         let securityType = WiFiContent.SecurityType(onePasswordValue: securityString)
 
@@ -719,7 +667,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
         protectionLevel: ItemProtectionLevel,
         contentTypeName: String,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name: String = {
             var output = ""
             if let itemName = item.overview?.title.formattedName {
@@ -742,15 +690,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             }
         }
         let fieldsInfo = allFields.isEmpty ? nil : allFields.joined(separator: "\n")
-        let noteText = context.mergeNote(fieldsInfo, with: item.details?.notesPlain?.nonBlankTrimmedOrNil)
-
-        let text: Data? = {
-            if let note = noteText,
-               let encrypted = context.encryptSecureField(note, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let text = context.mergeNote(fieldsInfo, with: item.details?.notesPlain?.nonBlankTrimmedOrNil)
 
         let creationDate: Date = {
             if let timestamp = item.createdAt {

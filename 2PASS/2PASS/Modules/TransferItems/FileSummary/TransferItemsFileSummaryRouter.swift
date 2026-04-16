@@ -12,7 +12,12 @@ import Data
 struct TransferItemsFileSummaryRouter: Router {
 
     static func buildView(service: ExternalService, result: ExternalServiceImportResult, onClose: @escaping Callback) -> some View {
-        TransferItemsFileSummaryView(presenter: .init(service: service, result: result, onClose: onClose))
+        TransferItemsFileSummaryView(presenter: .init(
+            interactor: ModuleInteractorFactory.shared.transferItemsFileSummaryModuleInteractor(),
+            service: service,
+            result: result,
+            onClose: onClose
+        ))
     }
 
     func routingType(for destination: TransferItemsFileSummaryDestination?) -> RoutingType? {
@@ -26,8 +31,8 @@ struct TransferItemsFileSummaryRouter: Router {
 
     func view(for destination: TransferItemsFileSummaryDestination) -> some View {
         switch destination {
-        case .importItems(let result, let service, let onClose):
-            TransferItemsImportingRouter.buildView(service: service, result: result, onClose: onClose)
+        case .importItems(let result, let service, let targetVaultID, let onClose):
+            TransferItemsImportingRouter.buildView(service: service, result: result, targetVaultID: targetVaultID, onClose: onClose)
         }
     }
 }

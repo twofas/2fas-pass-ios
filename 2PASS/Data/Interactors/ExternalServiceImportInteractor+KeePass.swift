@@ -25,10 +25,8 @@ extension ExternalServiceImportInteractor {
             guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var passwords: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var passwords: [ItemDecryptedData] = []
             let protectionLevel = context.currentProtectionLevel
 
             do {
@@ -46,13 +44,7 @@ extension ExternalServiceImportInteractor {
                         return [uri]
                     }()
                     let username = dict["Login Name"]?.nonBlankTrimmedOrNil
-                    let password: Data? = {
-                        if let passwordString = dict["Password"]?.nonBlankTrimmedOrNil,
-                           let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                            return password
-                        }
-                        return nil
-                    }()
+                    let password = dict["Password"]?.nonBlankTrimmedOrNil
 
                     let knownCSVColumns: Set<String> = [
                         "Account", "Login Name", "Password", "Web Site", "Comments"
@@ -96,9 +88,7 @@ extension ExternalServiceImportInteractor {
         }
 
         private func importXML(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
 
             let parser = KeePassXMLParser(source: .keePass)
             
@@ -107,7 +97,7 @@ extension ExternalServiceImportInteractor {
             }
 
             let protectionLevel = context.currentProtectionLevel
-            var items: [ItemData] = []
+            var items: [ItemDecryptedData] = []
 
             var tagNameToId: [String: ItemTagID] = [:]
             var tagNames: [String] = []
@@ -119,13 +109,7 @@ extension ExternalServiceImportInteractor {
 
                 let name = entry.fields["Title"].formattedName
                 let username = entry.fields["UserName"]?.nonBlankTrimmedOrNil
-                let password: Data? = {
-                    if let passwordString = entry.fields["Password"]?.nonBlankTrimmedOrNil,
-                       let encrypted = context.encryptSecureField(passwordString, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
+                let password = entry.fields["Password"]?.nonBlankTrimmedOrNil
                 let uris: [PasswordURI]? = {
                     guard let urlString = entry.fields["URL"]?.nonBlankTrimmedOrNil else { return nil }
                     return [PasswordURI(uri: urlString, match: .domain)]

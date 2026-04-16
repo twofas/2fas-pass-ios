@@ -13,14 +13,12 @@ extension ExternalServiceImportInteractor {
     struct FirefoxImporter {
         let context: ImportContext
 
-        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemDecryptedData] {
             guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             let protectionLevel = context.currentProtectionLevel
 
             do {
@@ -45,13 +43,7 @@ extension ExternalServiceImportInteractor {
                         return [uri]
                     }()
                     let username = dict["username"]?.nonBlankTrimmedOrNil
-                    let password: Data? = {
-                        if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
-                           let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                            return password
-                        }
-                        return nil
-                    }()
+                    let password = dict["password"]?.nonBlankTrimmedOrNil
                     let timeCreated = dict["timeCreated"]?.nonBlankTrimmedOrNil
                     let timePasswordChanged = dict["timePasswordChanged"]?.nonBlankTrimmedOrNil
                     let timeLastUsed: String? = {

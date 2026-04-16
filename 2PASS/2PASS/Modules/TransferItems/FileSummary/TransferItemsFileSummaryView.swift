@@ -63,13 +63,20 @@ struct TransferItemsFileSummaryView: View {
             }
             .listSectionSpacing(Spacing.m)
             
-            Button(.transferFileSummaryCta) {
-                presenter.onProceed()
+            VStack(spacing: Spacing.l) {
+                if presenter.hasMultipleVaults {
+                    vaultPicker
+                }
+
+                Button(.transferFileSummaryCta) {
+                    presenter.onProceed()
+                }
+                .buttonStyle(.filled)
+                .controlSize(.large)
             }
-            .buttonStyle(.filled)
-            .controlSize(.large)
             .padding(.horizontal, Spacing.xl)
             .padding(.bottom, Spacing.xl)
+            .padding(.top, Spacing.m)
             .background(Color(UIColor.systemGroupedBackground))
             .router(router: TransferItemsFileSummaryRouter(), destination: $presenter.destination)
         }
@@ -104,6 +111,24 @@ struct TransferItemsFileSummaryView: View {
         .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
     }
 
+    private var vaultPicker: some View {
+        GroupedSection {
+            HStack {
+                Text(.backupImportSummaryVaultPickerLabel)
+
+                Spacer()
+
+                Picker(selection: $presenter.selectedVaultID) {
+                    ForEach(presenter.availableVaults, id: \.vaultID) { vault in
+                        Text(vault.name).tag(vault.vaultID)
+                    }
+                } label: {
+                    EmptyView()
+                }
+            }
+        }
+    }
+
     private func descriptionForContentType(_ contentType: ItemContentType) -> LocalizedStringResource {
         switch contentType {
         case .login:
@@ -121,10 +146,15 @@ struct TransferItemsFileSummaryView: View {
 }
 
 #Preview {
-    TransferItemsFileSummaryView(presenter: .init(service: .bitWarden, result: ExternalServiceImportResult(
-        items: [
-            .login(.init(id: .init(), vaultId: .init(), metadata: .init(creationDate: Date(), modificationDate: Date(), protectionLevel: .confirm, trashedStatus: .no, tagIds: nil), name: nil, content: .init(name: nil, username: nil, password: nil, notes: nil, iconType: .domainIcon(nil), uris: nil))),
-        ],
-        itemsConvertedToSecureNotes: 12), onClose: {}
+    TransferItemsFileSummaryView(presenter: .init(
+        interactor: ModuleInteractorFactory.shared.transferItemsFileSummaryModuleInteractor(),
+        service: .bitWarden,
+        result: ExternalServiceImportResult(
+            items: [
+                .login(.init(id: .init(), vaultId: .init(), metadata: .init(creationDate: Date(), modificationDate: Date(), protectionLevel: .confirm, trashedStatus: .no, tagIds: nil), name: nil, content: .init(name: nil, username: nil, password: nil, notes: nil, iconType: .domainIcon(nil), uris: nil))),
+            ],
+            itemsConvertedToSecureNotes: 12
+        ),
+        onClose: {}
     ))
 }

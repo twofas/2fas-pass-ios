@@ -13,23 +13,21 @@ extension ExternalServiceImportInteractor {
     struct ChromeImporter {
         let context: ImportContext
 
-        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func `import`(_ content: Data) async throws(ExternalServiceImportError) -> [ItemDecryptedData] {
             guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             let protectionLevel = context.currentProtectionLevel
 
             do {
                 let csv = try CSV<Enumerated>(string: csvString, delimiter: .comma)
-                
+
                 let knownCSVColumns: Set<String> = [
                     "name", "url", "username", "password", "note"
                 ]
-                
+
                 guard csv.header.containsAll(Array(knownCSVColumns)) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
@@ -44,13 +42,7 @@ extension ExternalServiceImportInteractor {
                         return [uri]
                     }()
                     let username = dict["username"]?.nonBlankTrimmedOrNil
-                    let password: Data? = {
-                        if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
-                           let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                            return password
-                        }
-                        return nil
-                    }()
+                    let password = dict["password"]?.nonBlankTrimmedOrNil
 
                     let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
                     let notes = context.mergeNote(dict["note"]?.nonBlankTrimmedOrNil, with: csvAdditionalInfo)

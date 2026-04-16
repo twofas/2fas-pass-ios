@@ -12,11 +12,12 @@ import Data
 struct TransferItemsImportingRouter {
 
     @MainActor
-    static func buildView(service: ExternalService, result: ExternalServiceImportResult, onClose: @escaping Callback) -> some View {
+    static func buildView(service: ExternalService, result: ExternalServiceImportResult, targetVaultID: VaultID, onClose: @escaping Callback) -> some View {
         TransferItemsImportingView(presenter: .init(
             interactor: ModuleInteractorFactory.shared.transferItemsImportingModuleInteractor(
                 service: service,
-                result: result
+                result: result,
+                targetVaultID: targetVaultID
             ),
             onClose: onClose
         ))

@@ -17,10 +17,8 @@ extension ExternalServiceImportInteractor {
             guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
-            guard let vaultID = context.selectedVaultId else {
-                throw .wrongFormat
-            }
-            var items: [ItemData] = []
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
 
@@ -143,7 +141,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
         let uris: [PasswordURI]? = {
             guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
@@ -151,13 +149,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
             return [uri]
         }()
         let username = dict["username"]?.nonBlankTrimmedOrNil
-        let password: Data? = {
-            if let passwordString = dict["password"]?.nonBlankTrimmedOrNil,
-               let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                return password
-            }
-            return nil
-        }()
+        let password = dict["password"]?.nonBlankTrimmedOrNil
 
         // Build additional info from unknown CSV columns
         let knownCSVColumns: Set<String> = [
@@ -194,38 +186,18 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
-        
+
         let cardHolder = fields["Name on Card"]
         let cardNumberString = fields["Number"]
         let securityCodeString = fields["Security Code"]
         let expirationDateString = parseExpirationDate(from: fields["Expiration Date"])
         let notes = fields["Notes"]?.nonBlankTrimmedOrNil
 
-        let cardNumber: Data? = {
-            if let value = cardNumberString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-        
-        let expirationDate: Data? = {
-            if let value = expirationDateString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
-        
-        let securityCode: Data? = {
-            if let value = securityCodeString,
-               let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                return encrypted
-            }
-            return nil
-        }()
+        let cardNumber = cardNumberString
+        let expirationDate = expirationDateString
+        let securityCode = securityCodeString
         
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString)
@@ -276,7 +248,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
         guard let extra = dict["extra"]?.nonBlankTrimmedOrNil else { return nil }
 
@@ -287,14 +259,6 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
         let fullText = context.mergeNote(extra, with: csvAdditionalInfo)
 
-        let encryptedText: Data? = {
-            guard let text = fullText,
-                  let encrypted = context.encryptSecureField(text, for: protectionLevel) else {
-                return nil
-            }
-            return encrypted
-        }()
-        
         return .secureNote(.init(
             id: .init(),
             vaultId: vaultID,
@@ -308,7 +272,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
             name: name,
             content: .init(
                 name: name,
-                text: encryptedText,
+                text: fullText,
                 additionalInfo: nil
             )
         ))
@@ -320,7 +284,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
         guard let extra = dict["extra"]?.nonBlankTrimmedOrNil else { return nil }
         let fields = parseExtraFields(from: extra)
@@ -344,15 +308,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
         let notes = fields["Notes"]?.nonBlankTrimmedOrNil
         let combinedAdditionalInfo = context.mergeNote(extraAdditionalInfo, with: csvAdditionalInfo)
         let fullText = context.mergeNote(combinedAdditionalInfo, with: notes)
-        
-        let encryptedText: Data? = {
-            guard let text = fullText,
-                  let encrypted = context.encryptSecureField(text, for: protectionLevel) else {
-                return nil
-            }
-            return encrypted
-        }()
-        
+
         return .secureNote(.init(
             id: .init(),
             vaultId: vaultID,
@@ -366,7 +322,7 @@ private extension ExternalServiceImportInteractor.LastPassImporter {
             name: displayName,
             content: .init(
                 name: displayName,
-                text: encryptedText,
+                text: fullText,
                 additionalInfo: nil
             )
         ))

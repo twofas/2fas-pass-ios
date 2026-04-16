@@ -14,7 +14,7 @@ extension ExternalServiceImportInteractor {
     struct ApplePasswordsImporter {
         let context: ImportContext
 
-        func importMobile(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func importMobile(_ content: Data) async throws(ExternalServiceImportError) -> [ItemDecryptedData] {
             guard let archive = try? Archive(data: content, accessMode: .read, pathEncoding: .utf8) else {
                 throw .wrongFormat
             }
@@ -24,7 +24,7 @@ extension ExternalServiceImportInteractor {
             }
 
             do {
-                var items: [ItemData] = []
+                var items: [ItemDecryptedData] = []
 
                 // Import passwords from CSV
                 var csvData = Data()
@@ -53,7 +53,7 @@ extension ExternalServiceImportInteractor {
             }
         }
 
-        func importDesktop(_ content: Data) async throws(ExternalServiceImportError) -> [ItemData] {
+        func importDesktop(_ content: Data) async throws(ExternalServiceImportError) -> [ItemDecryptedData] {
             guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
@@ -66,11 +66,9 @@ extension ExternalServiceImportInteractor {
 
 private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
 
-    func importCSV(_ csvContent: String) async throws(ExternalServiceImportError) -> [ItemData] {
-        guard let vaultID = context.selectedVaultId else {
-            throw .wrongFormat
-        }
-        var items: [ItemData] = []
+    func importCSV(_ csvContent: String) async throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
+        var items: [ItemDecryptedData] = []
         let protectionLevel = context.currentProtectionLevel
 
         do {
@@ -102,13 +100,7 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
                     let uri = PasswordURI(uri: urlString, match: .domain)
                     return [uri]
                 }()
-                let password: Data? = {
-                    if let passwordString = dict["Password"]?.nonBlankTrimmedOrNil,
-                       let password = context.encryptSecureField(passwordString, for: protectionLevel) {
-                        return password
-                    }
-                    return nil
-                }()
+                let password = dict["Password"]?.nonBlankTrimmedOrNil
 
                 let csvAdditionalInfo = context.formatDictionary(dict, excludingKeys: knownCSVColumns)
                 let notes = context.mergeNote(dict["Notes"]?.nonBlankTrimmedOrNil, with: csvAdditionalInfo)
@@ -145,18 +137,15 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
         return items
     }
 
-    func importPaymentCardsJSON(_ jsonData: Data) async throws(ExternalServiceImportError) -> [ItemData] {
-        guard let vaultID = context.selectedVaultId else {
-            throw .wrongFormat
-        }
-
+    func importPaymentCardsJSON(_ jsonData: Data) async throws(ExternalServiceImportError) -> [ItemDecryptedData] {
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
         let protectionLevel = context.currentProtectionLevel
 
         do {
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let parsed = try decoder.decode(ApplePaymentCards.self, from: jsonData)
-            var items: [ItemData] = []
+            var items: [ItemDecryptedData] = []
 
             for rawCard in parsed.paymentCards {
                 let card = ApplePaymentCard(rawCard)
@@ -167,22 +156,6 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
                           let year = card.cardExpirationYear else { return nil }
                     let yearSuffix = year > 99 ? year % 100 : year
                     return "\(month)/\(yearSuffix)"
-                }()
-
-                let cardNumber: Data? = {
-                    if let value = cardNumberString,
-                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
-                }()
-
-                let expirationDate: Data? = {
-                    if let value = expirationDateString,
-                       let encrypted = context.encryptSecureField(value, for: protectionLevel) {
-                        return encrypted
-                    }
-                    return nil
                 }()
 
                 let cardNumberMask = context.cardNumberMask(from: cardNumberString)
@@ -206,9 +179,9 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
                         name: name,
                         cardHolder: card.cardholderName?.nonBlankTrimmedOrNil,
                         cardIssuer: cardIssuer,
-                        cardNumber: cardNumber,
+                        cardNumber: cardNumberString,
                         cardNumberMask: cardNumberMask,
-                        expirationDate: expirationDate,
+                        expirationDate: expirationDateString,
                         securityCode: nil,
                         notes: notes
                     )

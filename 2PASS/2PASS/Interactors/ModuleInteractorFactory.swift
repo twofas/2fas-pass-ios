@@ -362,11 +362,19 @@ extension ModuleInteractorFactory {
         TransferItemsInstructionsModuleInteractor(service: service, externalServiceImportInteractor: InteractorFactory.shared.externalServiceImportInteractor())
     }
     
-    func transferItemsImportingModuleInteractor(service: ExternalService, result: ExternalServiceImportResult) -> TransferItemsImportingModuleInteracting {
+    func transferItemsFileSummaryModuleInteractor() -> TransferItemsFileSummaryModuleInteracting {
+        TransferItemsFileSummaryModuleInteractor(
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor()
+        )
+    }
+
+    func transferItemsImportingModuleInteractor(service: ExternalService, result: ExternalServiceImportResult, targetVaultID: VaultID) -> TransferItemsImportingModuleInteracting {
         TransferItemsImportingModuleInteractor(
             service: service,
             result: result,
-            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
+            targetVaultID: targetVaultID,
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
+            importInteractor: InteractorFactory.shared.importInteractor()
         )
     }
     
@@ -389,7 +397,9 @@ extension ModuleInteractorFactory {
     @available(iOS 26.0, *)
     func credentialExchangePerformImportModuleInteractor() -> CredentialExchangePerformImportModuleInteracting {
         CredentialExchangePerformImportModuleInteractor(
-            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor()
+            itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
+            importInteractor: InteractorFactory.shared.importInteractor(),
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor()
         )
     }
 

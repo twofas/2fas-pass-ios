@@ -14,12 +14,12 @@ extension ExternalServiceImportInteractor {
         let context: ImportContext
 
         func `import`(_ content: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-            guard let csvString = String(data: content, encoding: .utf8),
-                  let vaultID = context.selectedVaultId else {
+            guard let csvString = String(data: content, encoding: .utf8) else {
                 throw .wrongFormat
             }
+            let vaultID = ExternalServiceImportInteractor.placeholderVaultID
 
-            var items: [ItemData] = []
+            var items: [ItemDecryptedData] = []
             var itemsConvertedToSecureNotes = 0
             let protectionLevel = context.currentProtectionLevel
 
@@ -161,15 +161,11 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"]?.nonBlankTrimmedOrNil
         let notes = dict["note"]?.nonBlankTrimmedOrNil
         let username = dict["username"]?.nonBlankTrimmedOrNil
-
-        let password: Data? = {
-            guard let passwordString = dict["password"]?.nonBlankOrNil else { return nil }
-            return context.encryptSecureField(passwordString, for: protectionLevel)
-        }()
+        let password = dict["password"]?.nonBlankOrNil
 
         let uris: [PasswordURI]? = parseURIs(dict: dict)
 
@@ -239,7 +235,7 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
         let notes = dict["note"]?.nonBlankTrimmedOrNil
         let cardHolder = dict["cardholdername"]?.nonBlankTrimmedOrNil
@@ -249,20 +245,9 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
         // NordPass uses MM/YY format
         let expirationDateString = dict["expirydate"]?.nonBlankTrimmedOrNil
 
-        let cardNumber: Data? = {
-            guard let value = cardNumberString else { return nil }
-            return context.encryptSecureField(value, for: protectionLevel)
-        }()
-
-        let expirationDate: Data? = {
-            guard let value = expirationDateString else { return nil }
-            return context.encryptSecureField(value, for: protectionLevel)
-        }()
-
-        let securityCode: Data? = {
-            guard let value = securityCodeString else { return nil }
-            return context.encryptSecureField(value, for: protectionLevel)
-        }()
+        let cardNumber: String? = cardNumberString
+        let expirationDate: String? = expirationDateString
+        let securityCode: String? = securityCodeString
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString)
@@ -326,14 +311,11 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = dict["name"].formattedName
         let noteText = dict["note"]?.nonBlankTrimmedOrNil
 
-        let text: Data? = {
-            guard let note = noteText else { return nil }
-            return context.encryptSecureField(note, for: protectionLevel)
-        }()
+        let text: String? = noteText
 
         let customFieldsInfo = parseCustomFields(dict["custom_fields"])
 
@@ -369,7 +351,7 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
         protectionLevel: ItemProtectionLevel,
         contentTypeName: String,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let baseName = dict["name"]?.nonBlankTrimmedOrNil
         let name: String = {
             if let baseName {
@@ -390,10 +372,7 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
         let combinedInfo = context.mergeNote(fieldsInfo, with: customFieldsInfo)
         let noteText = context.mergeNote(combinedInfo, with: notes)
 
-        let text: Data? = {
-            guard let note = noteText else { return nil }
-            return context.encryptSecureField(note, for: protectionLevel)
-        }()
+        let text: String? = noteText
 
         return .secureNote(.init(
             id: .init(),

@@ -8,20 +8,16 @@ import Foundation
 import Common
 import AuthenticationServices
 
-public enum CredentialExchangeImportError: Error {
-    case noVaultSelected
-}
-
 public protocol CredentialExchangeImporting: AnyObject {
-    
+
     @available(iOS 26.0, *)
     func extractToken(from userActivity: NSUserActivity) -> UUID?
-    
+
     @available(iOS 26.0, *)
     func fetchCredentials(token: UUID) async throws -> ASExportedCredentialData
-    
+
     @available(iOS 26.0, *)
-    func convert(_ data: ASExportedCredentialData) throws(CredentialExchangeImportError) -> ExternalServiceImportResult
+    func convert(_ data: ASExportedCredentialData) -> ExternalServiceImportResult
 }
 
 
@@ -45,13 +41,11 @@ public final class CredentialExchangeImporter: CredentialExchangeImporting {
     }
 
     @available(iOS 26.0, *)
-    public func convert(_ data: ASExportedCredentialData) throws(CredentialExchangeImportError) -> ExternalServiceImportResult {
-        guard let vaultID = context.selectedVaultId else {
-            throw .noVaultSelected
-        }
+    public func convert(_ data: ASExportedCredentialData) -> ExternalServiceImportResult {
+        let vaultID = ExternalServiceImportInteractor.placeholderVaultID
 
         let protectionLevel = context.currentProtectionLevel
-        var items: [ItemData] = []
+        var items: [ItemDecryptedData] = []
         var secureNoteFallbackCount = 0
 
         // Build tag name to ID mapping from all items
@@ -115,7 +109,7 @@ public final class CredentialExchangeImporter: CredentialExchangeImporting {
 private extension CredentialExchangeImporter {
 
     struct ConvertedItem {
-        let item: ItemData?
+        let item: ItemDecryptedData?
         let isSecureNoteFallback: Bool
     }
 
@@ -294,18 +288,16 @@ private extension CredentialExchangeImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = importableItem.title.nonBlankTrimmedOrNil
         let metadataDates = makeMetadataDates(from: importableItem)
 
         var username: String?
-        var password: Data?
+        var password: String?
 
         if let basicAuth {
             username = basicAuth.userName?.value.nonBlankTrimmedOrNil
-            if let passwordString = basicAuth.password?.value.nonBlankTrimmedOrNil {
-                password = context.encryptSecureField(passwordString, for: protectionLevel)
-            }
+            password = basicAuth.password?.value.nonBlankTrimmedOrNil
         }
 
         let uris: [PasswordURI]? = {
@@ -350,26 +342,20 @@ private extension CredentialExchangeImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = importableItem.title.nonBlankTrimmedOrNil
         let metadataDates = makeMetadataDates(from: importableItem)
         let cardNumberString = credential.number?.value.nonBlankTrimmedOrNil
 
-        let cardNumber: Data? = {
-            guard let value = cardNumberString else { return nil }
-            return context.encryptSecureField(value, for: protectionLevel)
-        }()
+        let cardNumber: String? = cardNumberString
 
-        let expirationDate: Data? = {
+        let expirationDate: String? = {
             guard let isoDate = credential.expiryDate?.value.nonBlankTrimmedOrNil,
                   let formatted = convertISOExpirationDate(isoDate) else { return nil }
-            return context.encryptSecureField(formatted, for: protectionLevel)
+            return formatted
         }()
 
-        let securityCode: Data? = {
-            guard let value = credential.verificationNumber?.value.nonBlankTrimmedOrNil else { return nil }
-            return context.encryptSecureField(value, for: protectionLevel)
-        }()
+        let securityCode: String? = credential.verificationNumber?.value.nonBlankTrimmedOrNil
 
         let cardNumberMask = context.cardNumberMask(from: cardNumberString)
         let cardIssuer = context.detectCardIssuer(from: cardNumberString)
@@ -408,15 +394,12 @@ private extension CredentialExchangeImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData {
+    ) -> ItemDecryptedData {
         let name = importableItem.title.nonBlankTrimmedOrNil
         let metadataDates = makeMetadataDates(from: importableItem)
         let ssid = credential.ssid?.value.nonBlankTrimmedOrNil
 
-        let passphrase: Data? = {
-            guard let value = credential.passphrase?.value.nonBlankTrimmedOrNil else { return nil }
-            return context.encryptSecureField(value, for: protectionLevel)
-        }()
+        let passphrase: String? = credential.passphrase?.value.nonBlankTrimmedOrNil
 
         let securityType = WiFiContent.SecurityType(cxfValue: credential.networkSecurityType?.value)
         let hidden = credential.hidden?.value.asCredentialExchangeBoolean ?? false
@@ -452,12 +435,10 @@ private extension CredentialExchangeImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let name = importableItem.title.nonBlankTrimmedOrNil
         let metadataDates = makeMetadataDates(from: importableItem)
-        let text: Data? = {
-            return context.encryptSecureField(noteText, for: protectionLevel)
-        }()
+        let text: String? = noteText
 
         return .secureNote(.init(
             id: id,
@@ -488,7 +469,7 @@ private extension CredentialExchangeImporter {
         vaultID: VaultID,
         protectionLevel: ItemProtectionLevel,
         tagIds: [ItemTagID]?
-    ) -> ItemData? {
+    ) -> ItemDecryptedData? {
         let title = importableItem.title.nonBlankTrimmedOrNil
         let metadataDates = makeMetadataDates(from: importableItem)
         let credentialType = getCredentialTypeName(credential)
@@ -496,7 +477,7 @@ private extension CredentialExchangeImporter {
 
         let formattedContent = formatCredentialAsKeyValuePairs(credential)
         let mergedText = context.mergeNote(notes, with: formattedContent) ?? formattedContent
-        let text: Data? = context.encryptSecureField(mergedText, for: protectionLevel)
+        let text: String? = mergedText
 
         return .secureNote(.init(
             id: id,
