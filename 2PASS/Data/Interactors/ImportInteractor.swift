@@ -175,8 +175,6 @@ extension ImportInteractor: ImportInteracting {
             }
 
             return data
-        } catch let error as ImportOpenFileError {
-            throw error
         } catch {
             Log("Can't import data from file: \(url), error: \(error)")
             throw .cantReadFile(reason: error.localizedDescription)
@@ -918,6 +916,7 @@ private extension ImportInteractor {
         transform: @escaping @Sendable (Data, JSONDecoder) throws -> T?
     ) async -> [T] {
         guard !encrypted.isEmpty else { return [] }
+        let decoder = JSONDecoder()
         return await withTaskGroup(of: T?.self) { group in
             for string in encrypted {
                 group.addTask { [mainRepository] in
@@ -925,7 +924,7 @@ private extension ImportInteractor {
                           let jsonData = mainRepository.decrypt(data, key: key) else {
                         return nil
                     }
-                    return try? transform(jsonData, JSONDecoder())
+                    return try? transform(jsonData, decoder)
                 }
             }
             var collected: [T] = []

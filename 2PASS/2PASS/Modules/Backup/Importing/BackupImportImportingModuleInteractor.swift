@@ -54,7 +54,7 @@ extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInte
             // Tags have no source vaultID to fall back to, so the guard is strict here.
             guard let target = targetVaultID else {
                 Log("BackupImportImportingModuleInteractor - .decrypted requires targetVaultID", severity: .error)
-                completion(.success(0))
+                completion(.failure(ImportExtractCurrentEncryptionError.noVaultID))
                 return
             }
             let ready = encryptForWrite(items: decItems, tags: decTags, targetVaultID: target)
@@ -70,7 +70,7 @@ extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInte
                     let (decItems, decTags, deleted) = try await importInteractor.extractDecryptedItemsUsingMasterKey(masterKey, exchangeVault: vault)
                     guard let self else { return }
                     guard let target = self.targetVaultID ?? fallbackTarget else {
-                        completion(.success(0))
+                        completion(.failure(ImportExtractCurrentEncryptionError.noVaultID))
                         return
                     }
                     let ready = self.encryptForWrite(items: decItems, tags: decTags, targetVaultID: target)

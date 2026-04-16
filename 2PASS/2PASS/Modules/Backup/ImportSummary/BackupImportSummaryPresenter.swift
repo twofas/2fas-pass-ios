@@ -69,9 +69,10 @@ final class BackupImportSummaryPresenter {
         switch await interactor.extractItems(from: input) {
         case .success(let payload):
             self.payload = payload
+            let summary = Self.makeSummary(items: payload.items)
             self.state = .ready(
-                summary: Self.makeSummary(items: payload.items),
-                contentTypes: Self.makeContentTypes(items: payload.items),
+                summary: summary,
+                contentTypes: ItemContentType.allKnownTypes.filter { summary[$0] != nil },
                 tagsCount: payload.tags.count
             )
         case .failure:
@@ -94,8 +95,4 @@ final class BackupImportSummaryPresenter {
         }
     }
 
-    private static func makeContentTypes(items: [ItemDecryptedData]) -> [ItemContentType] {
-        let summary = makeSummary(items: items)
-        return ItemContentType.allKnownTypes.filter { summary[$0] != nil }
-    }
 }

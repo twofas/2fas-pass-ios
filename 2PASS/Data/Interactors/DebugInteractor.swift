@@ -191,7 +191,7 @@ extension DebugInteractor: DebugInteracting {
     }
     
     var selectedVaultID: VaultID? {
-        vaultsInteractor.listVaults().first?.vaultID
+        vaultsInteractor.defaultVaultID
     }
     
     var storedMasterKey: MasterKey? {

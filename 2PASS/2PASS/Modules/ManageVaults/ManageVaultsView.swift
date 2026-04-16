@@ -118,37 +118,35 @@ private struct VaultEditorSheet: View {
     private var sheetHeight: CGFloat { isPad ? 420 : 380 }
 
     var body: some View {
-        GeometryReader { _ in
-            VStack(spacing: Spacing.xll3) {
-                Text(presenter.isEditing
-                    ? .manageVaultsEditVaultTitle
-                    : .manageVaultsNewVaultTitle
-                )
-                .font(.title1Emphasized)
-                .foregroundStyle(.neutral950)
+        VStack(spacing: Spacing.xll3) {
+            Text(presenter.isEditing
+                ? .manageVaultsEditVaultTitle
+                : .manageVaultsNewVaultTitle
+            )
+            .font(.title1Emphasized)
+            .foregroundStyle(.neutral950)
 
-                VStack(spacing: Spacing.l) {
-                    nameField
+            VStack(spacing: Spacing.l) {
+                nameField
 
-                    iconField
+                iconField
 
-                    colorPicker
-                }
-
-                Button {
-                    presenter.onConfirmVaultEditor()
-                } label: {
-                    Text(.commonSave)
-                }
-                .disabled(presenter.editorVaultName
-                    .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                .padding(.horizontal, Spacing.l)
-                .buttonStyle(.filled)
-                .controlSize(.large)
+                colorPicker
             }
-            .padding(.top, Spacing.xxl4)
-            .padding(.bottom, Spacing.l)
+
+            Button {
+                presenter.onConfirmVaultEditor()
+            } label: {
+                Text(.commonSave)
+            }
+            .disabled(presenter.editorVaultName
+                .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .padding(.horizontal, Spacing.l)
+            .buttonStyle(.filled)
+            .controlSize(.large)
         }
+        .padding(.top, Spacing.xxl4)
+        .padding(.bottom, Spacing.l)
         .overlay(alignment: .topTrailing) {
             CloseButton { dismiss() }
                 .padding(Spacing.l)
