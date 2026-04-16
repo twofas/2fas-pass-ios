@@ -38,7 +38,7 @@ struct VaultRecoveryEnterPasswordRouter: Router {
                 onTryAgain: onTryAgain
             )
         case .importVault(let entropy, let masterKey, let vault, let onClose):
-            BackupImportImportingRouter.buildView(input: .encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: onClose)
+            BackupImportSummaryRouter.buildView(input: .encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: onClose)
         case .masterPasswordError:
             Button(.commonOk, action: {})
         }

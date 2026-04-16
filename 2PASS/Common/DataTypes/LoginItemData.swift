@@ -4,21 +4,40 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-public typealias LoginItemData = _ItemData<LoginItemContent>
+public typealias LoginItemData = _ItemData<_LoginItemContent<Encrypted>>
+public typealias LoginItemDecryptedData = _ItemData<LoginItemDecryptedContent>
+       
+public typealias LoginItemContent = _LoginItemContent<Encrypted>
+public typealias LoginItemDecryptedContent = _LoginItemContent<Decrypted>
 
-public struct LoginItemContent: ItemContent {
+public struct _LoginItemContent<State: EncryptionState>: ItemContent {
 
-    public static let contentType: ItemContentType = .login
-    public static let contentVersion = 1
-    
+    public static var contentType: ItemContentType { .login }
+    public static var contentVersion: Int { 1 }
+
     public let name: String?
     public let username: String?
-    public let password: Data?
+    public let password: State.SecureField?
     public let notes: String?
     public let iconType: PasswordIconType
     public let uris: [PasswordURI]?
+}
+
+extension LoginItemContent {
     
     public init(name: String?, username: String?, password: Data?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) {
+        self.name = name
+        self.username = username
+        self.password = password
+        self.notes = notes
+        self.iconType = iconType
+        self.uris = uris
+    }
+}
+
+extension LoginItemDecryptedContent {
+    
+    public init(name: String?, username: String?, password: String?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) {
         self.name = name
         self.username = username
         self.password = password
@@ -52,8 +71,18 @@ extension LoginItemData {
 }
 
 extension ItemData {
-    
+
     public var asLoginItem: LoginItemData? {
+        switch self {
+        case .login(let loginItem): loginItem
+        default: nil
+        }
+    }
+}
+
+extension ItemDecryptedData {
+
+    public var asLoginItem: LoginItemDecryptedData? {
         switch self {
         case .login(let loginItem): loginItem
         default: nil

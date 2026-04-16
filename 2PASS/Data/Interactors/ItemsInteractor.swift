@@ -822,7 +822,7 @@ extension ItemsInteractor: ItemsInteracting {
 
                 switch current {
                 case .itemData(let rawItem):
-                    if let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: rawItem.content).value as? [String: Any] {
+                    if let contentDict = try? mainRepository.jsonDecoder.decode(AnyCodable.self, from: rawItem.content.data).value as? [String: Any] {
                         var newContentDict = contentDict
                         for (key, value) in contentDict where rawItem.isSecureField(key: key) {
                             if let stringValue = value as? String, let dataValue = Data(base64Encoded: stringValue) {
@@ -873,7 +873,7 @@ extension ItemsInteractor: ItemsInteracting {
             DispatchQueue.concurrentPerform(iterations: buffer.count) { i in
                 let current = itemsEncrypted[i]
 
-                if let contentDataEnc = encryptData(current.content, isSecureField: false, protectionLevel: current.protectionLevel, vaultID: current.vaultId) {
+                if let contentDataEnc = encryptData(current.content.data, isSecureField: false, protectionLevel: current.protectionLevel, vaultID: current.vaultId) {
                     buffer[i] = .itemData(
                         ItemEncryptedData(
                             itemID: current.id,

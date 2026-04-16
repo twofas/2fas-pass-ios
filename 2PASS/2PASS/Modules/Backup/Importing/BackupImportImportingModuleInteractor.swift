@@ -9,7 +9,7 @@ import Data
 import Common
 
 enum BackupImportInput {
-    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData])
+    case decrypted([ItemDecryptedData], tags: [ItemTagData], deleted: [DeletedItemData])
     case encrypted(entropy: Entropy, masterKey: MasterKey, vault: ExchangeVaultVersioned)
 }
 
@@ -23,10 +23,6 @@ final class BackupImportImportingModuleInteractor {
     private let input: BackupImportInput
     private let targetVaultID: VaultID?
 
-    /// - Parameter targetVaultID: When non-nil, every imported item's `vaultId` is
-    ///   rewritten to this vault before insertion. When nil, items keep their original
-    ///   `vaultId` from the backup (used by the encrypted/recovery flow, which doesn't
-    ///   go through the import-summary screen).
     init(
         itemsImportInteractor: ItemsImportInteracting,
         importInteractor: ImportInteracting,
@@ -39,28 +35,47 @@ final class BackupImportImportingModuleInteractor {
         self.targetVaultID = targetVaultID
     }
 
-    private func retargeted(_ items: [ItemData]) -> [ItemData] {
-        guard let targetVaultID else { return items }
-        return items.map { $0.update(vaultId: targetVaultID) }
+    private func encryptForWrite(
+        items: [ItemDecryptedData],
+        tags: [ItemTagData],
+        targetVaultID: VaultID
+    ) -> (items: [ItemData], tags: [ItemTagData]) {
+        let readyItems: [ItemData] = items.compactMap { importInteractor.encryptItem($0, forVault: targetVaultID) }
+        let readyTags = tags.map { importInteractor.rebindTag($0, forVault: targetVaultID) }
+        return (readyItems, readyTags)
     }
 }
 
 extension BackupImportImportingModuleInteractor: BackupImportImportingModuleInteracting {
     func importItems(completion: @escaping (Result<Int, Error>) -> Void) {
         switch input {
-        case .decrypted(let items, let tags, deleted: let deleted):
+        case .decrypted(let decItems, let decTags, let deleted):
+            // `.decrypted` input is only produced by the summary, which always supplies a target.
+            // Tags have no source vaultID to fall back to, so the guard is strict here.
+            guard let target = targetVaultID else {
+                Log("BackupImportImportingModuleInteractor - .decrypted requires targetVaultID", severity: .error)
+                completion(.success(0))
+                return
+            }
+            let ready = encryptForWrite(items: decItems, tags: decTags, targetVaultID: target)
             itemsImportInteractor.importDeleted(deleted)
-            itemsImportInteractor.importItems(retargeted(items), tags: tags, completion: {
+            itemsImportInteractor.importItems(ready.items, tags: ready.tags, completion: {
                 completion(.success($0))
             })
 
         case .encrypted(_, let masterKey, let vault):
-            importInteractor.extractItemsUsingMasterKey(masterKey, exchangeVault: vault) { [weak self] result in
+            let fallbackTarget = UUID(uuidString: vault.vaultID)
+            importInteractor.extractDecryptedItemsUsingMasterKey(masterKey, exchangeVault: vault) { [weak self] result in
                 guard let self else { return }
                 switch result {
-                case .success((let items, let tags, let deleted)):
+                case .success((let decItems, let decTags, let deleted)):
+                    guard let target = self.targetVaultID ?? fallbackTarget else {
+                        completion(.success(0))
+                        return
+                    }
+                    let ready = self.encryptForWrite(items: decItems, tags: decTags, targetVaultID: target)
                     self.itemsImportInteractor.importDeleted(deleted)
-                    self.itemsImportInteractor.importItems(self.retargeted(items), tags: tags, completion: {
+                    self.itemsImportInteractor.importItems(ready.items, tags: ready.tags, completion: {
                         completion(.success($0))
                     })
                 case .failure(let error):

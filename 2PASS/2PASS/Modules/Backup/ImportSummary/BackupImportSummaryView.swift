@@ -16,19 +16,47 @@ struct BackupImportSummaryView: View {
     private let iconWidth = 20.0
 
     var body: some View {
+        Group {
+            switch presenter.state {
+            case .loading:
+                ProgressView(label: {
+                    Text(.backupImportingFileText)
+                })
+                .progressViewStyle(.circular)
+                .tint(nil)
+                .controlSize(.large)
+
+            case .ready(let summary, let contentTypes, let tagsCount):
+                readyContent(summary: summary, contentTypes: contentTypes, tagsCount: tagsCount)
+
+            case .failure:
+                BackupImportFailureView(onClose: presenter.onClose)
+            }
+        }
+        .task {
+            await presenter.onAppear()
+        }
+        .router(router: BackupImportSummaryRouter(), destination: $presenter.destination)
+    }
+
+    private func readyContent(
+        summary: [ItemContentType: Int],
+        contentTypes: [ItemContentType],
+        tagsCount: Int
+    ) -> some View {
         VStack(spacing: 0) {
             SettingsDetailsForm(.backupImportSummaryTitle) {
-                ForEach(presenter.contentTypes, id: \.self) { contentType in
+                ForEach(contentTypes, id: \.self) { contentType in
                     summarySection(
-                        count: presenter.summary[contentType] ?? 0,
+                        count: summary[contentType] ?? 0,
                         icon: contentType.iconSystemName.map { Image(systemName: $0) },
                         description: descriptionForContentType(contentType)
                     )
                 }
 
-                if presenter.tagsCount > 0 {
+                if tagsCount > 0 {
                     summarySection(
-                        count: presenter.tagsCount,
+                        count: tagsCount,
                         icon: Image(systemName: "tag"),
                         description: .transferFileSummaryTagsCounterDescription
                     )
@@ -66,7 +94,6 @@ struct BackupImportSummaryView: View {
             .padding(.bottom, Spacing.xl)
             .padding(.top, Spacing.m)
             .background(Color(UIColor.systemGroupedBackground))
-            .router(router: BackupImportSummaryRouter(), destination: $presenter.destination)
         }
     }
 

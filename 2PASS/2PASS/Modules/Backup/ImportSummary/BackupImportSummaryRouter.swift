@@ -12,17 +12,10 @@ import Data
 struct BackupImportSummaryRouter: Router {
 
     @MainActor
-    static func buildView(
-        items: [ItemData],
-        tags: [ItemTagData],
-        deleted: [DeletedItemData],
-        onClose: @escaping Callback
-    ) -> some View {
+    static func buildView(input: BackupImportInput, onClose: @escaping Callback) -> some View {
         BackupImportSummaryView(presenter: .init(
             interactor: ModuleInteractorFactory.shared.backupImportSummaryModuleInteractor(),
-            items: items,
-            tags: tags,
-            deleted: deleted,
+            input: input,
             onClose: onClose
         ))
     }
@@ -39,11 +32,7 @@ struct BackupImportSummaryRouter: Router {
     func view(for destination: BackupImportSummaryDestination) -> some View {
         switch destination {
         case .importing(let input, let targetVaultID, let onClose):
-            BackupImportImportingRouter.buildView(
-                input: input,
-                targetVaultID: targetVaultID,
-                onClose: onClose
-            )
+            BackupImportImportingRouter.buildView(input: input, targetVaultID: targetVaultID, onClose: onClose)
         }
     }
 }

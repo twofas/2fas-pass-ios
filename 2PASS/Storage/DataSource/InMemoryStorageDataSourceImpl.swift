@@ -127,7 +127,7 @@ extension InMemoryStorageDataSourceImpl: InMemoryStorageDataSource {
                 name: item.name,
                 contentType: item.contentType,
                 contentVersion: item.contentVersion,
-                content: item.content
+                content: item.content.data
             )
         }
     }

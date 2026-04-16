@@ -9,7 +9,7 @@ import Data
 import Common
 
 enum BackupModuleImportResult {
-    case decrypted([ItemData], tags: [ItemTagData], deleted: [DeletedItemData])
+    case decrypted([ItemDecryptedData], tags: [ItemTagData], deleted: [DeletedItemData])
     case encrypted(ExchangeVaultVersioned, entropy: Entropy?)
 }
 
@@ -92,14 +92,17 @@ extension BackupModuleInteractor: BackupModuleInteracting {
         of data: Data,
         completion: @escaping (Result<BackupModuleImportResult, BackupImportParseError>) -> Void
     ) {
-        importInteractor.parseContents(of: data, decryptItemsIfPossible: false, allowsAnyDeviceId: true) { [weak self] result in
+        importInteractor.parseContents(of: data, decryptItemsIfPossible: false, preferCurrentVaultEncryption: false, allowsAnyDeviceId: true) { [weak self] result in
             guard let self else { return }
-            
+
             switch result {
             case .success(let importResult):
                 switch importResult {
                 case .decrypted(let items, let tags, let deleted, _, _, _, _):
                     completion(.success(.decrypted(items, tags: tags, deleted: deleted)))
+                case .encryptedForCurrentVault:
+                    assertionFailure("encryptedForCurrentVault unreachable when decryptItemsIfPossible == false")
+                    completion(.failure(.errorDecrypting))
                 case .needsPassword(let vault, let currentSeed, _, _, _, _):
                     let entropy: Entropy? = {
                         if currentSeed {

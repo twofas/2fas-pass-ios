@@ -25,3 +25,17 @@ public struct ItemTagData: Identifiable, Hashable {
         self.modificationDate = modificationDate
     }
 }
+
+extension ItemTagData {
+
+    public func update(vaultId: VaultID) -> Self {
+        ItemTagData(
+            tagID: tagID,
+            vaultID: vaultId,
+            name: name,
+            color: color,
+            position: position,
+            modificationDate: modificationDate
+        )
+    }
+}

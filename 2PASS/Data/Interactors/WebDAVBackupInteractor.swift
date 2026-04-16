@@ -358,14 +358,24 @@ private extension WebDAVBackupInteractor {
                     return
                 }
                 Log("WebDAVBackupInteractor - Vault fetched. Parsing", module: .interactor)
-                self?.backupImportInteractor.parseContents(of: vaultData, decryptItemsIfPossible: true, allowsAnyDeviceId: allowsAnyDeviceId, completion: { [weak self] parseResult in
+                self?.backupImportInteractor.parseContents(of: vaultData, decryptItemsIfPossible: true, preferCurrentVaultEncryption: true, allowsAnyDeviceId: allowsAnyDeviceId, completion: { [weak self] parseResult in
                     switch parseResult {
                     case .success(let parsedVault):
                         switch parsedVault {
-                        case .decrypted(let items, let tags, let deleted, _, _, _, _):
+                        case .decrypted(let decItems, let decTags, let deleted, _, _, _, _):
                             Log("WebDAVBackupInteractor - Vault parsed correctly. Syncing with local database", module: .interactor)
-                            if let vaultID = self?.vaultID {
+                            if let vaultID = self?.vaultID, let backupImportInteractor = self?.backupImportInteractor {
+                                let items = decItems.compactMap { backupImportInteractor.encryptItem($0, forVault: vaultID) }
+                                let tags = decTags.map { backupImportInteractor.rebindTag($0, forVault: vaultID) }
                                 self?.syncInteractor.syncAndApplyChanges(from: items, externalTags: tags, externalDeleted: deleted, in: vaultID)
+                            }
+                            Log("WebDAVBackupInteractor - preparing for Vault export", module: .interactor)
+                            self?.prepareForExport()
+                        case .encryptedForCurrentVault(let items, let tags, let deleted, _, _, _, _):
+                            Log("WebDAVBackupInteractor - Vault parsed (encrypted for current vault). Syncing with local database", module: .interactor)
+                            if let vaultID = self?.vaultID, let backupImportInteractor = self?.backupImportInteractor {
+                                let reboundTags = tags.map { backupImportInteractor.rebindTag($0, forVault: vaultID) }
+                                self?.syncInteractor.syncAndApplyChanges(from: items, externalTags: reboundTags, externalDeleted: deleted, in: vaultID)
                             }
                             Log("WebDAVBackupInteractor - preparing for Vault export", module: .interactor)
                             self?.prepareForExport()

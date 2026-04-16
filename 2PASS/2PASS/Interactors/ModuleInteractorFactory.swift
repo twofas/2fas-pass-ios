@@ -132,7 +132,8 @@ extension ModuleInteractorFactory {
 
     func backupImportSummaryModuleInteractor() -> BackupImportSummaryModuleInteracting {
         BackupImportSummaryModuleInteractor(
-            vaultsInteractor: InteractorFactory.shared.vaultsInteractor()
+            vaultsInteractor: InteractorFactory.shared.vaultsInteractor(),
+            importInteractor: InteractorFactory.shared.importInteractor()
         )
     }
     

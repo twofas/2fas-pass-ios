@@ -89,6 +89,18 @@ public protocol ItemContent: Hashable, Codable {
     static var contentType: ItemContentType { get }
 }
 
+public protocol EncryptionState {
+    associatedtype SecureField: Codable & Hashable
+}
+
+public enum Encrypted: EncryptionState {
+    public typealias SecureField = Data
+}
+
+public enum Decrypted: EncryptionState {
+    public typealias SecureField = String
+}
+
 extension ItemDataType {
     
     public func isSecureField(key: String) -> Bool {
@@ -135,7 +147,7 @@ public enum ItemData: ItemDataType {
                     name: rawData.name,
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
-                    content: try decoder.decode(LoginItemData.Content.self, from: rawData.content)
+                    content: try decoder.decode(LoginItemData.Content.self, from: rawData.content.data)
                 ))
             case .secureNote:
                 self = .secureNote(.init(
@@ -145,7 +157,7 @@ public enum ItemData: ItemDataType {
                     name: rawData.name,
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
-                    content: try decoder.decode(SecureNoteItemData.Content.self, from: rawData.content)
+                    content: try decoder.decode(SecureNoteItemData.Content.self, from: rawData.content.data)
                 ))
             case .paymentCard:
                 self = .paymentCard(.init(
@@ -155,7 +167,7 @@ public enum ItemData: ItemDataType {
                     name: rawData.name,
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
-                    content: try decoder.decode(PaymentCardItemData.Content.self, from: rawData.content)
+                    content: try decoder.decode(PaymentCardItemData.Content.self, from: rawData.content.data)
                 ))
             case .wifi:
                 self = .wifi(.init(
@@ -165,7 +177,87 @@ public enum ItemData: ItemDataType {
                     name: rawData.name,
                     contentType: rawData.contentType,
                     contentVersion: rawData.contentVersion,
-                    content: try decoder.decode(WiFiItemData.Content.self, from: rawData.content)
+                    content: try decoder.decode(WiFiItemData.Content.self, from: rawData.content.data)
+                ))
+            case .unknown:
+                self = .raw(rawData)
+            }
+        } catch {
+            return nil
+        }
+    }
+}
+
+public enum ItemDecryptedData: ItemDataType {
+    case login(LoginItemDecryptedData)
+    case secureNote(SecureNoteItemDecryptedData)
+    case paymentCard(PaymentCardItemDecryptedData)
+    case wifi(WiFiItemDecryptedData)
+    case raw(RawItemDecryptedData)
+
+    public var id: ItemID { base.id }
+    public var vaultId: VaultID { base.vaultId }
+    public var metadata: ItemMetadata { base.metadata }
+    public var name: String? { base.name }
+    public var contentType: ItemContentType { base.contentType }
+    public var contentVersion: Int { base.contentVersion }
+
+    public func encodeContent(using encoder: JSONEncoder) throws -> Data {
+        try base.encodeContent(using: encoder)
+    }
+
+    private var base: any ItemDataType {
+        switch self {
+        case .login(let data): return data
+        case .secureNote(let data): return data
+        case .paymentCard(let data): return data
+        case .wifi(let data): return data
+        case .raw(let data): return data
+        }
+    }
+
+    public init?(_ rawData: RawItemDecryptedData, decoder: JSONDecoder = .init()) {
+        do {
+            switch rawData.contentType {
+            case .login:
+                self = .login(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(LoginItemDecryptedData.Content.self, from: rawData.content.data)
+                ))
+            case .secureNote:
+                self = .secureNote(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(SecureNoteItemDecryptedData.Content.self, from: rawData.content.data)
+                ))
+            case .paymentCard:
+                self = .paymentCard(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(PaymentCardItemDecryptedData.Content.self, from: rawData.content.data)
+                ))
+            case .wifi:
+                self = .wifi(.init(
+                    id: rawData.id,
+                    vaultId: rawData.vaultId,
+                    metadata: rawData.metadata,
+                    name: rawData.name,
+                    contentType: rawData.contentType,
+                    contentVersion: rawData.contentVersion,
+                    content: try decoder.decode(WiFiItemDecryptedData.Content.self, from: rawData.content.data)
                 ))
             case .unknown:
                 self = .raw(rawData)
@@ -188,11 +280,10 @@ public struct _ItemData<Content>: ItemDataType where Content: Hashable, Content:
     public let content: Content
     
     public func encodeContent(using encoder: JSONEncoder) throws -> Data {
-        if let contentData = content as? Data {
-            return contentData
-        } else {
-            return try encoder.encode(content)
+        if let raw = content as? any RawJSONContent {
+            return raw.rawJSONBytes
         }
+        return try encoder.encode(content)
     }
 }
 
