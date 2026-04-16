@@ -552,7 +552,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("Error while getting Master Key - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
+        Log("ProtectionInteractor: Master Key obtained", module: .interactor)
 
         let masterKeyHex = masterKey.hexEncodedString()
 
@@ -590,7 +590,7 @@ extension ProtectionInteractor: ProtectionInteracting {
             Log("ProtectionInteractor: Error while getting Master Key - it's missing", severity: .error)
             return
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
+        Log("ProtectionInteractor: Master Key obtained", module: .interactor)
         Log("ProtectionInteractor: Getting App Key", module: .interactor)
 
         guard let appKey = mainRepository.appKey else {
@@ -938,7 +938,7 @@ private extension ProtectionInteractor {
             Log("ProtectionInteractor: Error while generating Master Key", module: .interactor, severity: .error)
             return nil
         }
-        Log("ProtectionInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
+        Log("ProtectionInteractor: Master Key created", module: .interactor)
         return masterKey
     }
 }

@@ -849,7 +849,7 @@ private extension ImportInteractor {
             Log("ImportInteractor: Error while generating Master Key", module: .interactor, severity: .error)
             return nil
         }
-        Log("ImportInteractor: Master Key: \(masterKey.hexEncodedString())", module: .interactor)
+        Log("ImportInteractor: Master Key created", module: .interactor)
         return masterKey
     }
     
