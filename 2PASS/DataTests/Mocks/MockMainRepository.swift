@@ -2539,7 +2539,7 @@ final class MockMainRepository: MainRepository {
         capturedSyncHasError = value
     }
 
-    func copyToClipboard(_ str: String) {
+    func copyToClipboard(_ str: String, isSecure: Bool) {
         recordCall()
     }
 

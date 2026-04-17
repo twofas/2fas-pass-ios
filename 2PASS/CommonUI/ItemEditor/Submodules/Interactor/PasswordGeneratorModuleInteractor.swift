@@ -55,7 +55,7 @@ extension PasswordGeneratorModuleInteractor: PasswordGeneratorModuleInteracting 
     }
     
     func copyPassword(_ password: String) {
-        systemInteractor.copyToClipboard(password)
+        systemInteractor.copyToClipboard(password, isSecure: true)
     }
     
     func generatePassword(using config: PasswordGenerateConfig) -> String {

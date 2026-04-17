@@ -121,7 +121,7 @@ final class ShareLinkItemPresenter {
             return
         }
 
-        interactor.copyToClipboard(password)
+        interactor.copyToClipboard(password, isSecure: true)
         ToastPresenter.shared.presentPasswordCopied()
     }
 

@@ -47,12 +47,12 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     
     func onCopyNote() {
         guard let note else { return }
-        interactor.copy(note)
+        interactor.copy(note, isSecure: true)
         toastPresenter.presentCopied()
     }
-    
+
     func onCopy(_ url: URL) {
-        interactor.copy(url.absoluteString)
+        interactor.copy(url.absoluteString, isSecure: false)
         toastPresenter.presentCopied()
     }
     

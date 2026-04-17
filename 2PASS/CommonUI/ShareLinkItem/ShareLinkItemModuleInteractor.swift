@@ -19,7 +19,7 @@ protocol ShareLinkItemModuleInteracting: AnyObject {
     ) async throws -> URL
     var shareLinkConfig: ShareLinkConfig? { get }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool)
-    func copyToClipboard(_ str: String)
+    func copyToClipboard(_ str: String, isSecure: Bool)
 }
 
 final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
@@ -90,7 +90,7 @@ final class ShareLinkItemModuleInteractor: ShareLinkItemModuleInteracting {
         )
     }
 
-    func copyToClipboard(_ str: String) {
-        systemInteractor.copyToClipboard(str)
+    func copyToClipboard(_ str: String, isSecure: Bool) {
+        systemInteractor.copyToClipboard(str, isSecure: isSecure)
     }
 }

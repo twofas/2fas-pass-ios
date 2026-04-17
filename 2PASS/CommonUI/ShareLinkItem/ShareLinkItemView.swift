@@ -500,7 +500,7 @@ class ShareLinkItemPreviewInteractor: ShareLinkItemModuleInteracting {
 
     var shareLinkConfig: ShareLinkConfig? { nil }
     func saveShareLinkConfig(expirationSeconds: TimeInterval, isOneTimeAccess: Bool) {}
-    func copyToClipboard(_ str: String) {}
+    func copyToClipboard(_ str: String, isSecure: Bool) {}
 }
 
 #Preview {

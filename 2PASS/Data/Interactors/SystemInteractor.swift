@@ -12,8 +12,8 @@ public protocol SystemInteracting: AnyObject {
     
     var isMainAppProcess: Bool { get }
     
-    func copyToClipboard(_ str: String)
-    
+    func copyToClipboard(_ str: String, isSecure: Bool)
+
     var syncHasError: Bool { get }
     func setSyncHasError(_ value: Bool)
     
@@ -45,8 +45,8 @@ extension SystemInteractor: SystemInteracting {
         mainRepository.isMainAppProcess
     }
     
-    func copyToClipboard(_ str: String) {
-        mainRepository.copyToClipboard(str)
+    func copyToClipboard(_ str: String, isSecure: Bool) {
+        mainRepository.copyToClipboard(str, isSecure: isSecure)
     }
     
     var syncHasError: Bool {

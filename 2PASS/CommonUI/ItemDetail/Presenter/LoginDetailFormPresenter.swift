@@ -80,7 +80,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     
     func onCopyUsername() {
         if let username {
-            interactor.copy(username)
+            interactor.copy(username, isSecure: false)
             toastPresenter.presentUsernameCopied()
         } else {
             toastPresenter.present(
@@ -89,10 +89,10 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
             )
         }
     }
-    
+
     func onCopyPassword() {
         if let passwordDecrypted {
-            interactor.copy(passwordDecrypted)
+            interactor.copy(passwordDecrypted, isSecure: true)
             toastPresenter.presentPasswordCopied()
         } else {
             toastPresenter.present(
@@ -107,7 +107,7 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
     }
     
     func onCopyURI(_ url: URL) {
-        interactor.copy(url.absoluteString)
+        interactor.copy(url.absoluteString, isSecure: false)
         toastPresenter.presentCopied()
     }
     

@@ -86,28 +86,28 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
 
     func onCopyCardHolder() {
         if let cardHolder {
-            interactor.copy(cardHolder)
+            interactor.copy(cardHolder, isSecure: false)
             toastPresenter.presentCopied()
         }
     }
 
     func onCopyCardNumber() {
         if let decrypted = decryptCardNumber() {
-            interactor.copy(decrypted)
+            interactor.copy(decrypted, isSecure: true)
             toastPresenter.presentPaymentCardNumberCopied()
         }
     }
 
     func onCopyExpirationDate() {
         if let expirationDate {
-            interactor.copy(expirationDate)
+            interactor.copy(expirationDate, isSecure: false)
             toastPresenter.presentCopied()
         }
     }
 
     func onCopySecurityCode() {
         if let decrypted = decryptSecurityCode() {
-            interactor.copy(decrypted)
+            interactor.copy(decrypted, isSecure: true)
             toastPresenter.presentPaymentCardSecurityCodeCopied()
         }
     }

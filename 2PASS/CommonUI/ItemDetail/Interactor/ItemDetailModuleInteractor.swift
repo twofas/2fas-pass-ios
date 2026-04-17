@@ -13,7 +13,7 @@ protocol ItemDetailModuleInteracting: AnyObject {
     func fetchTags(for tagIDs: [ItemTagID]) -> [ItemTagData]
     func decryptSecureField(_ data: Data, protectionLevel: ItemProtectionLevel) -> String?
     func makeWiFiQRCodePayload(from data: WiFiQRCodeData) -> String
-    func copy(_ str: String)
+    func copy(_ str: String, isSecure: Bool)
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
     func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
@@ -60,8 +60,8 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
         wifiQRCodeInteractor.makeWiFiQRCodePayload(from: data)
     }
     
-    func copy(_ str: String) {
-        systemInteractor.copyToClipboard(str)
+    func copy(_ str: String, isSecure: Bool) {
+        systemInteractor.copyToClipboard(str, isSecure: isSecure)
     }
     
     func fetchIconImage(from url: URL) async throws -> Data {

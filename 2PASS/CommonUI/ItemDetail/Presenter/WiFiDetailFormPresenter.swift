@@ -65,7 +65,7 @@ final class WiFiDetailFormPresenter: ItemDetailFormPresenter {
 
     func onCopyPassword() {
         guard let decryptedPassword else { return }
-        interactor.copy(decryptedPassword)
+        interactor.copy(decryptedPassword, isSecure: true)
         toastPresenter.presentPasswordCopied()
     }
 
@@ -82,7 +82,7 @@ final class WiFiDetailFormPresenter: ItemDetailFormPresenter {
         guard let ssid else {
             return
         }
-        interactor.copy(ssid)
+        interactor.copy(ssid, isSecure: false)
         toastPresenter.presentCopied()
     }
 

@@ -234,7 +234,7 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
         "WIFI:T:WEP;S:SSIDValue;P:PasswordValue;H:true;"
     }
     
-    func copy(_ str: String) {}
+    func copy(_ str: String, isSecure: Bool) {}
 
     func fetchIconImage(from url: URL) async throws -> Data {
         Data()

@@ -713,7 +713,7 @@ protocol MainRepository: AnyObject {
     var syncHasError: Bool { get }
     func setSyncHasError(_ value: Bool)
     
-    func copyToClipboard(_ str: String)
+    func copyToClipboard(_ str: String, isSecure: Bool)
     func positiveFeedback()
     func negativeFeedback()
     func warningFeedback()

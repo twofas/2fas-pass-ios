@@ -7,8 +7,17 @@
 import UIKit
 
 extension MainRepositoryImpl {
-    func copyToClipboard(_ str: String) {
-        UIPasteboard.general.string = str
+    func copyToClipboard(_ str: String, isSecure: Bool) {
+        if isSecure {
+            UIPasteboard.general.setItems(
+                [[UIPasteboard.typeAutomatic: str]],
+                options: [
+                    .expirationDate: Date().addingTimeInterval(60)
+                ]
+            )
+        } else {
+            UIPasteboard.general.string = str
+        }
     }
     
     var syncHasError: Bool {
