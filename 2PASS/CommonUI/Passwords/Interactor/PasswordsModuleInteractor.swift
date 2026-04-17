@@ -243,7 +243,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         else {
             return false
         }
-        systemInteractor.copyToClipboard(username)
+        systemInteractor.copyToClipboard(username, isSecure: false)
         return true
     }
     
@@ -253,13 +253,13 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         switch passwordResult {
         case .success(let password):
             if let password {
-                systemInteractor.copyToClipboard(password)
+                systemInteractor.copyToClipboard(password, isSecure: true)
                 return true
             } else {
                 return false
             }
         case .failure(.noPassword):
-            systemInteractor.copyToClipboard("")
+            systemInteractor.copyToClipboard("", isSecure: true)
             return true
         case .failure:
             return false
@@ -272,7 +272,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         }
         
         guard let noteText = secureNoteItem.content.text else {
-            systemInteractor.copyToClipboard("")
+            systemInteractor.copyToClipboard("", isSecure: true)
             return true
         }
         
@@ -280,7 +280,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             return false
         }
         
-        systemInteractor.copyToClipboard(decryptedText)
+        systemInteractor.copyToClipboard(decryptedText, isSecure: true)
         return true
     }
 
@@ -291,7 +291,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         else {
             return false
         }
-        systemInteractor.copyToClipboard(decryptedNumber)
+        systemInteractor.copyToClipboard(decryptedNumber, isSecure: true)
         return true
     }
 
@@ -302,7 +302,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         else {
             return false
         }
-        systemInteractor.copyToClipboard(decryptedCode)
+        systemInteractor.copyToClipboard(decryptedCode, isSecure: true)
         return true
     }
 
@@ -311,7 +311,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
               let ssid = wifiItem.content.ssid else {
             return false
         }
-        systemInteractor.copyToClipboard(ssid)
+        systemInteractor.copyToClipboard(ssid, isSecure: false)
         return true
     }
 
@@ -321,7 +321,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
               let decryptedPassword = itemsInteractor.decrypt(password, isSecureField: true, protectionLevel: wifiItem.protectionLevel) else {
             return false
         }
-        systemInteractor.copyToClipboard(decryptedPassword)
+        systemInteractor.copyToClipboard(decryptedPassword, isSecure: true)
         return true
     }
 

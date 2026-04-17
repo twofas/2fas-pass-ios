@@ -57,6 +57,6 @@ final class ManageSubscriptionModuleInteractor: ManageSubscriptionModuleInteract
     }
     
     func copy(_ str: String) {
-        systemInteractor.copyToClipboard(str)
+        systemInteractor.copyToClipboard(str, isSecure: false)
     }
 }

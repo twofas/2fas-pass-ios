@@ -2509,7 +2509,7 @@ final class MockMainRepository: MainRepository {
 
     // MARK: System
 
-    func copyToClipboard(_ str: String) {
+    func copyToClipboard(_ str: String, isSecure: Bool) {
         recordCall()
     }
 

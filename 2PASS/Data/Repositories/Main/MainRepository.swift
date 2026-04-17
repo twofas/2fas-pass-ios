@@ -715,7 +715,7 @@ protocol MainRepository: AnyObject {
     func cloudCacheSave()
 
     // MARK: - System
-    func copyToClipboard(_ str: String)
+    func copyToClipboard(_ str: String, isSecure: Bool)
     func positiveFeedback()
     func negativeFeedback()
     func warningFeedback()
