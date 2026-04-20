@@ -87,4 +87,44 @@ public extension Data {
         }
         self.init(base64Encoded: base64)
     }
+
+    // MARK: - Constant-time equality
+
+    /// Compares two byte sequences in time that depends only on their length,
+    /// not on their content. Use for security-relevant equality (MAC tags,
+    /// session-key proofs, password-derived hashes, encryption-reference
+    /// plaintexts) to avoid leaking the position of the first differing byte
+    /// through a measurable timing side-channel.
+    ///
+    /// A length mismatch short-circuits — the lengths of our comparands are
+    /// either fixed (UUID strings, 16-byte salts) or derived from public
+    /// HMAC/hash sizes, so leaking "are they the same length" is not sensitive.
+    func constantTimeEquals(_ other: Data) -> Bool {
+        guard count == other.count else { return false }
+        var accumulator: UInt8 = 0
+        withUnsafeBytes { (lhs: UnsafeRawBufferPointer) in
+            other.withUnsafeBytes { (rhs: UnsafeRawBufferPointer) in
+                for i in 0..<count {
+                    accumulator |= lhs[i] ^ rhs[i]
+                }
+            }
+        }
+        return accumulator == 0
+    }
+}
+
+public extension String {
+    /// Constant-time equality over the UTF-8 byte representation of two
+    /// strings. Callers are expected to normalize ahead of time (both sides
+    /// in the same form) — e.g., both ASCII hex digests, both `.exportString()`
+    /// UUID outputs. For general Unicode input, normalize via
+    /// `decomposedStringWithCompatibilityMapping` before calling.
+    ///
+    /// See `Data.constantTimeEquals(_:)` for the timing-attack rationale.
+    func constantTimeEquals(_ other: String) -> Bool {
+        guard let a = data(using: .utf8), let b = other.data(using: .utf8) else {
+            return false
+        }
+        return a.constantTimeEquals(b)
+    }
 }

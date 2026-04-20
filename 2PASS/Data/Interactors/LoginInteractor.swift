@@ -304,7 +304,7 @@ extension LoginInteractor: LoginInteracting {
             return
         }
         
-        guard comparisionSeedHash == externalSeedHashHexString else {
+        guard comparisionSeedHash.constantTimeEquals(externalSeedHashHexString) else {
             Log("LoginInteractor: SeedHashHex do not match", module: .interactor)
             completion(nil)
             return

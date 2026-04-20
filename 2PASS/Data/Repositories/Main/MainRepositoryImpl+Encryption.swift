@@ -655,7 +655,7 @@ extension MainRepositoryImpl {
             Log("Can't decrypt Encryption Reference using Master Key. Wrong Master Key", module: .mainRepository)
             return false
         }
-        return decryptedDeviceID == deviceID.exportString()
+        return decryptedDeviceID.constantTimeEquals(deviceID.exportString())
     }
     
     func clearEncryptionReference() {

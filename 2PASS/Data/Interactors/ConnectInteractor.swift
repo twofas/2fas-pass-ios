@@ -75,8 +75,8 @@ final class ConnectInteractor: ConnectInteracting {
             throw ConnectError.keyVerificationFailure
         }
         
-        let decrypted = mainRepository.decrypt(hkdfSaltEncData, key: keys.sessionKey)
-        guard decrypted == keys.hkdfSalt else {
+        guard let decrypted = mainRepository.decrypt(hkdfSaltEncData, key: keys.sessionKey),
+              decrypted.constantTimeEquals(keys.hkdfSalt) else {
             throw ConnectError.keyVerificationFailure
         }
     }

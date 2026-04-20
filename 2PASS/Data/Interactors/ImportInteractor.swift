@@ -410,7 +410,7 @@ extension ImportInteractor: ImportInteracting {
             Log("ImportInteractor: Can't create Seed Hash Hex String for validation", module: .interactor)
             return false
         }
-        return comparisionSeedHash == externalSeedHashHexString
+        return comparisionSeedHash.constantTimeEquals(externalSeedHashHexString)
     }
     
     func isVaultReadyForImport() -> Bool {
