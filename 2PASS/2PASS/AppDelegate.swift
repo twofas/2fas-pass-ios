@@ -77,7 +77,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Push Notifications
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        Log("App did register for Remote Notifications. Device Token: \(String(data: deviceToken, encoding: .utf8) ?? "<error>")")
+        Log(
+            "App did register for Remote Notifications. Device Token: \(deviceToken.hexEncodedString(), privacy: .private)",
+            module: .appEvent
+        )
         
         Messaging.messaging().apnsToken = deviceToken
     }
