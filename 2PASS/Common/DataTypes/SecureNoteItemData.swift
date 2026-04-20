@@ -1,6 +1,6 @@
 public typealias SecureNoteItemData = _ItemData<SecureNoteContent>
 
-public struct SecureNoteContent: ItemContent {
+public struct SecureNoteContent: ItemContent, CustomDebugStringConvertible {
 
     public static let contentType: ItemContentType = .secureNote
     public static let contentVersion = 1
@@ -8,6 +8,10 @@ public struct SecureNoteContent: ItemContent {
     public let name: String?
     public let text: Data?
     public let additionalInfo: String?
+
+    public var debugDescription: String {
+        "SecureNoteContent(name: \(name ?? "nil"), text: <redacted>, additionalInfo: \(additionalInfo == nil ? "nil" : "<redacted>"))"
+    }
 
     private enum CodingKeys: String, CodingKey {
         case name

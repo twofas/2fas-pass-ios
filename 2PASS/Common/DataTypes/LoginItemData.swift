@@ -6,18 +6,18 @@
 
 public typealias LoginItemData = _ItemData<LoginItemContent>
 
-public struct LoginItemContent: ItemContent {
+public struct LoginItemContent: ItemContent, CustomDebugStringConvertible {
 
     public static let contentType: ItemContentType = .login
     public static let contentVersion = 1
-    
+
     public let name: String?
     public let username: String?
     public let password: Data?
     public let notes: String?
     public let iconType: PasswordIconType
     public let uris: [PasswordURI]?
-    
+
     public init(name: String?, username: String?, password: Data?, notes: String?, iconType: PasswordIconType, uris: [PasswordURI]?) {
         self.name = name
         self.username = username
@@ -25,6 +25,10 @@ public struct LoginItemContent: ItemContent {
         self.notes = notes
         self.iconType = iconType
         self.uris = uris
+    }
+
+    public var debugDescription: String {
+        "LoginItemContent(name: \(name ?? "nil"), username: <redacted>, password: <redacted>, notes: \(notes == nil ? "nil" : "<redacted>"), iconType: \(iconType), uris: \(uris?.count ?? 0) uri(s))"
     }
 }
 

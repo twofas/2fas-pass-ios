@@ -1,6 +1,6 @@
 public typealias PaymentCardItemData = _ItemData<PaymentCardContent>
 
-public struct PaymentCardContent: ItemContent {
+public struct PaymentCardContent: ItemContent, CustomDebugStringConvertible {
 
     public static let contentType: ItemContentType = .paymentCard
     public static let contentVersion = 1
@@ -13,6 +13,10 @@ public struct PaymentCardContent: ItemContent {
     public let expirationDate: Data?
     public let securityCode: Data?
     public let notes: String?
+
+    public var debugDescription: String {
+        "PaymentCardContent(name: \(name ?? "nil"), cardHolder: <redacted>, cardIssuer: \(cardIssuer ?? "nil"), cardNumber: <redacted>, cardNumberMask: \(cardNumberMask ?? "nil"), expirationDate: <redacted>, securityCode: <redacted>, notes: \(notes == nil ? "nil" : "<redacted>"))"
+    }
 
     private enum CodingKeys: String, CodingKey {
         case name
