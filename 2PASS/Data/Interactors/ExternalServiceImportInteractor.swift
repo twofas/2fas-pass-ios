@@ -204,6 +204,10 @@ extension ExternalServiceImportInteractor {
             mainRepository.currentDefaultProtectionLevel
         }
 
+        var defaultURIMatchRule: PasswordURI.Match {
+            mainRepository.defaultURIMatchRule
+        }
+
         var jsonDecoder: JSONDecoder {
             mainRepository.jsonDecoder
         }

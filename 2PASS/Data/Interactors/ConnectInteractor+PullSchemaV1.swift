@@ -32,7 +32,7 @@ extension ConnectInteractor {
             name: name,
             username: actionRequestData.data.username == nil ? .generate : .value(actionRequestData.data.username.value),
             password: actionRequestData.data.usernamePasswordMobile == true ? .generate : newPassword.map { .value($0) },
-            uris: [PasswordURI(uri: actionRequestData.data.url, match: .domain)]
+            uris: [PasswordURI(uri: actionRequestData.data.url, match: mainRepository.defaultURIMatchRule)]
         )
 
         let (accepted, newPasswordId) = await shouldPerfromAction(.changeRequest(.addLogin(changeRequst)))

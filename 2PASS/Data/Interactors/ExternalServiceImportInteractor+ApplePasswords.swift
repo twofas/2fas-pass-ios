@@ -99,7 +99,7 @@ private extension ExternalServiceImportInteractor.ApplePasswordsImporter {
                 }()
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["URL"]?.nonBlankTrimmedOrNil else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
                     return [uri]
                 }()
                 let password: Data? = {

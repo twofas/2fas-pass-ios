@@ -214,7 +214,7 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
 
         // Primary URL
         if let urlString = dict["url"]?.nonBlankTrimmedOrNil {
-            uris.append(PasswordURI(uri: urlString, match: .domain))
+            uris.append(PasswordURI(uri: urlString, match: context.defaultURIMatchRule))
         }
 
         // Additional URLs (JSON array format: ["url1","url2"])
@@ -222,7 +222,7 @@ private extension ExternalServiceImportInteractor.NordPassImporter {
            let data = additionalUrlsJson.data(using: .utf8),
            let additionalList = try? JSONDecoder().decode([String].self, from: data) {
             for urlString in additionalList where !urlString.isEmpty {
-                uris.append(PasswordURI(uri: urlString, match: .domain))
+                uris.append(PasswordURI(uri: urlString, match: context.defaultURIMatchRule))
             }
         }
 

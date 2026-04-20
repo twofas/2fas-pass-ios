@@ -312,7 +312,7 @@ private extension CredentialExchangeImporter {
             guard let urls = importableItem.scope?.urls, !urls.isEmpty else { return nil }
             return urls.compactMap { url in
                 guard let urlString = url.absoluteString.nonBlankTrimmedOrNil else { return nil }
-                return PasswordURI(uri: urlString, match: .domain)
+                return PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
             }
         }()
 

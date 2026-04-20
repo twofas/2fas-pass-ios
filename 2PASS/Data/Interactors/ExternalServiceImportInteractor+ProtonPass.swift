@@ -297,7 +297,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             let urls = urlString.split(separator: ", ").map { String($0) }
             let passwordURIs = urls.compactMap { url -> PasswordURI? in
                 guard !url.isEmpty else { return nil }
-                return PasswordURI(uri: url, match: .domain)
+                return PasswordURI(uri: url, match: context.defaultURIMatchRule)
             }
 
             return passwordURIs.isEmpty ? nil : passwordURIs
@@ -649,7 +649,7 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
             guard let urls = content.urls, !urls.isEmpty else { return nil }
             return urls.compactMap { urlString -> PasswordURI? in
                 guard let url = urlString.nonBlankTrimmedOrNil else { return nil }
-                return PasswordURI(uri: url, match: .domain)
+                return PasswordURI(uri: url, match: context.defaultURIMatchRule)
             }
         }()
 

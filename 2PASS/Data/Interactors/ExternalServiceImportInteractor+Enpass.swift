@@ -196,7 +196,7 @@ private extension ExternalServiceImportInteractor.EnpassImporter {
         
         let uris: [PasswordURI]? = {
             guard let urlString else { return nil }
-            let uri = PasswordURI(uri: urlString, match: .domain)
+            let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
             return [uri]
         }()
 

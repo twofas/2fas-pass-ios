@@ -72,7 +72,7 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
                 let name = dict["Title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["Url"]?.nonBlankTrimmedOrNil else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
                     return [uri]
                 }()
                 let username = dict["Username"]?.nonBlankTrimmedOrNil
@@ -383,11 +383,11 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             if let urls = item.overview?.urls, !urls.isEmpty {
                 let uriList = urls.compactMap { urlEntry -> PasswordURI? in
                     guard let urlString = urlEntry.url?.nonBlankTrimmedOrNil else { return nil }
-                    return PasswordURI(uri: urlString, match: .domain)
+                    return PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
                 }
                 return uriList.isEmpty ? nil : uriList
             } else if let urlString = item.overview?.url?.nonBlankTrimmedOrNil {
-                return [PasswordURI(uri: urlString, match: .domain)]
+                return [PasswordURI(uri: urlString, match: context.defaultURIMatchRule)]
             }
             return nil
         }()
