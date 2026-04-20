@@ -6,7 +6,6 @@
 
 import Foundation
 import Common
-import CoreLocation
 
 public protocol SecurityInteracting: AnyObject {
     var didLoginLock: NotificationCenter.Notifications { get }
@@ -81,17 +80,18 @@ extension SecurityInteractor: SecurityInteracting {
     
     var isAppLocked: Bool {
         guard let lockTimestamp = mainRepository.lockAppUntil else { return false }
-        
-        let isBlocked = currentTimestamp < lockTimestamp
+
+        let isBlocked = mainRepository.currentDate < lockTimestamp
         if !isBlocked {
             mainRepository.clearLockAppUntil()
         }
         return isBlocked
     }
-    
+
     var appLockRemainingSeconds: Int? {
-        guard let lockTimestamp = mainRepository.lockAppUntil, currentTimestamp < lockTimestamp else { return nil }
-        return Int(lockTimestamp.timeIntervalSince1970 - currentTimestamp.timeIntervalSince1970)
+        let now = mainRepository.currentDate
+        guard let lockTimestamp = mainRepository.lockAppUntil, now < lockTimestamp else { return nil }
+        return Int(lockTimestamp.timeIntervalSince1970 - now.timeIntervalSince1970)
     }
     
     // MARK: - App State
@@ -178,7 +178,7 @@ private extension SecurityInteractor {
         let appBlockTime = nextAppLockBlockTime
         mainRepository.setAppLockBlockTime(appBlockTime)
         let lockForSeconds = TimeInterval(appBlockTime.value * minute)
-        mainRepository.setLockAppUntil(date: Date(timeInterval: lockForSeconds, since: currentTimestamp))
+        mainRepository.setLockAppUntil(date: Date(timeInterval: lockForSeconds, since: mainRepository.currentDate))
     }
     
     func unlockApplication() {
@@ -192,12 +192,6 @@ private extension SecurityInteractor {
         let current = mainRepository.incorrectBiometryCountAttemp
         let next = current + 1
         mainRepository.setIncorrectBiometryCountAttempt(next)
-    }
-    
-    var currentTimestamp: Date {
-        let location = CLLocation(latitude: 0, longitude: 0)
-        let timestamp = location.timestamp
-        return timestamp
     }
     
     var nextAppLockBlockTime: AppLockBlockTime {
