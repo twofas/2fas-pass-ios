@@ -35,17 +35,8 @@ private extension ExternalServiceImportInteractor.ProtonPassImporter {
         archive: Archive,
         jsonEntry: Entry
     ) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {
-        do {
-            var jsonData = Data()
-            _ = try archive.extract(jsonEntry) { data in
-                jsonData.append(data)
-            }
-            return try await importFromJSON(jsonData)
-        } catch let error as ExternalServiceImportError {
-            throw error
-        } catch {
-            throw .wrongFormat
-        }
+        let jsonData = try context.extract(jsonEntry, from: archive)
+        return try await importFromJSON(jsonData)
     }
     
     func importFromJSON(_ data: Data) async throws(ExternalServiceImportError) -> ExternalServiceImportResult {

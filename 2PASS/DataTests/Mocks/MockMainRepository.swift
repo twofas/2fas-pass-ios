@@ -7,7 +7,7 @@
 import UIKit
 import Common
 import Security
-import CryptoKit
+import struct CryptoKit.SymmetricKey
 import LocalAuthentication
 import Backup
 import Storage
@@ -2920,5 +2920,34 @@ final class MockMainRepository: MainRepository {
     func uriCacheGet(originalUri: String) -> String? {
         recordCall()
         return stubbedURICache[originalUri]
+    }
+
+    // MARK: Share Service
+
+    var stubbedCreateSharedSecretResult: Result<ShareSecretResponse, Error> = .failure(TestError.resourceNotFound("createSharedSecret"))
+    func createSharedSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> ShareSecretResponse {
+        recordCall()
+        return try stubbedCreateSharedSecretResult.get()
+    }
+
+    var stubbedFetchSharedSecretResult: Result<SharedSecret, Error> = .failure(TestError.resourceNotFound("fetchSharedSecret"))
+    func fetchSharedSecret(id: String) async throws -> SharedSecret {
+        recordCall()
+        return try stubbedFetchSharedSecretResult.get()
+    }
+
+    // MARK: Screen Capture
+
+    var stubbedScreenCaptureAllowedUntil: Date?
+    var screenCaptureAllowedUntil: Date? { stubbedScreenCaptureAllowedUntil }
+
+    func setScreenCaptureAllowedUntil(_ date: Date) {
+        recordCall()
+        stubbedScreenCaptureAllowedUntil = date
+    }
+
+    func clearScreenCaptureAllowedUntil() {
+        recordCall()
+        stubbedScreenCaptureAllowedUntil = nil
     }
 }

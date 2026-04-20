@@ -60,6 +60,7 @@ public enum Config {
     #endif
     
     public static let maximumExternalImportFileSize = 1024 * 1024 * 20
+    public static let maximumOnePasswordImportFileSize = 1024 * 1024 * 100
     
     // AutoFill
     public static let autoFillExcludeProtectionLevels: Set<ItemProtectionLevel> = [.topSecret]

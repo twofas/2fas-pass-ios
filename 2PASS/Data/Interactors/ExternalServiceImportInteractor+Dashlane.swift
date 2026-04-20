@@ -724,15 +724,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
     }
 
     func extractData(from archive: Archive, entry: Entry) throws(ExternalServiceImportError) -> Data {
-        do {
-            var fileData = Data()
-            _ = try archive.extract(entry) { data in
-                fileData.append(data)
-            }
-            return fileData
-        } catch {
-            throw .wrongFormat
-        }
+        try context.extract(entry, from: archive)
     }
     
     func formatTypeName(_ type: String) -> String {

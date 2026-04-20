@@ -119,7 +119,7 @@ extension ExternalServiceImportInteractor: ExternalServiceImportInteracting {
 
     private func maximumImportFileSize(for service: ExternalService) -> Int {
         switch service {
-        case .onePassword: 1024 * 1024 * 100
+        case .onePassword: Config.maximumOnePasswordImportFileSize
         default: Config.maximumExternalImportFileSize
         }
     }

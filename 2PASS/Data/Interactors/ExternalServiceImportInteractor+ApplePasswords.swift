@@ -27,10 +27,7 @@ extension ExternalServiceImportInteractor {
                 var items: [ItemData] = []
 
                 // Import passwords from CSV
-                var csvData = Data()
-                _ = try archive.extract(passwordsCSVFile) { data in
-                    csvData.append(data)
-                }
+                let csvData = try context.extract(passwordsCSVFile, from: archive)
                 guard let csvString = String(data: csvData, encoding: .utf8) else {
                     throw ExternalServiceImportError.wrongFormat
                 }
@@ -38,10 +35,7 @@ extension ExternalServiceImportInteractor {
 
                 // Import payment cards from JSON if present
                 if let paymentCardsFile = archive.first(where: { $0.path.hasSuffix("PaymentCards.json") }) {
-                    var jsonData = Data()
-                    _ = try archive.extract(paymentCardsFile) { data in
-                        jsonData.append(data)
-                    }
+                    let jsonData = try context.extract(paymentCardsFile, from: archive)
                     items.append(contentsOf: try await importPaymentCardsJSON(jsonData))
                 }
 

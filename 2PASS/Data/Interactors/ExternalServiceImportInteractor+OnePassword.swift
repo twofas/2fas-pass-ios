@@ -185,14 +185,11 @@ fileprivate extension ExternalServiceImportInteractor.OnePasswordImporter {
             throw .wrongFormat
         }
 
-        var fileData = Data()
-        do {
-            _ = try archive.extract(exportDataEntry) { data in
-                fileData.append(data)
-            }
-        } catch {
-            throw .wrongFormat
-        }
+        let fileData = try context.extract(
+            exportDataEntry,
+            from: archive,
+            maxBytes: Config.maximumOnePasswordImportFileSize
+        )
 
         guard let parsedJSON = try? context.jsonDecoder.decode(OnePassword1Pux.self, from: fileData) else {
             throw .wrongFormat
