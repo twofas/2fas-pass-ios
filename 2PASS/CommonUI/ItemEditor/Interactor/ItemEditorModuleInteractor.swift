@@ -43,6 +43,8 @@ protocol ItemEditorModuleInteracting: AnyObject {
 
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
 
+    var defaultURIMatchRule: PasswordURI.Match { get }
+
     func getEditItem() -> ItemData?
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
 
@@ -174,6 +176,10 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     
     var currentDefaultProtectionLevel: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
+    }
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        configInteractor.defaultURIMatchRule
     }
     
     func getEditItem() -> ItemData? {

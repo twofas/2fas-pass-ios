@@ -21,6 +21,9 @@ public protocol ConfigInteracting: AnyObject {
     func setDeviceName(_ name: String)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
+
+    var defaultURIMatchRule: PasswordURI.Match { get }
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
     
     var appLockAttempts: AppLockAttempts { get }
     func setAppLockAttempts(_ attempts: AppLockAttempts)
@@ -59,7 +62,15 @@ extension ConfigInteractor: ConfigInteracting {
     func setDefaultPassswordListAction(_ action: PasswordListAction) {
         mainRepository.setDefaultPassswordListAction(action)
     }
-    
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        mainRepository.defaultURIMatchRule
+    }
+
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
+        mainRepository.setDefaultURIMatchRule(rule)
+    }
+
     var currentDefaultProtectionLevel: ItemProtectionLevel {
         mainRepository.currentDefaultProtectionLevel
     }

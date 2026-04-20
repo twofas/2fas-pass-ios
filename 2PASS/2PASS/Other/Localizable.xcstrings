@@ -8185,6 +8185,57 @@
         }
       }
     },
+    "logs_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No logs available"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ""
+          }
+        }
+      }
+    },
+    "logs_share_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share logs"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ""
+          }
+        }
+      }
+    },
+    "logs_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logs"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ""
+          }
+        }
+      }
+    },
     "manage_subscription_apple_info" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -14760,6 +14811,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jeśli straciłeś swój zestaw deszyfrujący, pobierz go ponownie."
+          }
+        }
+      }
+    },
+    "settings_entry_default_uri_match_rule" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default URI match rule"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Domyślna reguła dopasowania URI"
+          }
+        }
+      }
+    },
+    "settings_entry_default_uri_match_rule_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match rule pre-selected when adding a new URI to a Login."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reguła dopasowania ustawiana domyślnie przy dodawaniu nowego URI do loginu."
           }
         }
       }

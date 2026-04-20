@@ -33,6 +33,7 @@ final class UserDefaultsDataSourceImpl {
         case onboardingCompleted
         case connectOnboardingCompleted
         case defaultPasswordListAction
+        case defaultURIMatchRule
         case webDAVWriteDecryptedCopy
         case timeOffset
         case requestedForBiometryToLogin
@@ -350,7 +351,19 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.set(action.rawValue, forKey: Keys.defaultPasswordListAction.rawValue)
         userDefaults.synchronize()
     }
-    
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        guard let raw = userDefaults.string(forKey: Keys.defaultURIMatchRule.rawValue) else {
+            return .domain
+        }
+        return PasswordURI.Match(rawValue: raw) ?? .domain
+    }
+
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
+        userDefaults.set(rule.rawValue, forKey: Keys.defaultURIMatchRule.rawValue)
+        userDefaults.synchronize()
+    }
+
     var lastSuccessCloudSyncDate: Date? {
         userDefaults.object(forKey: Keys.cloudLastSuccessSync.rawValue) as? Date
     }

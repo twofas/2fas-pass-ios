@@ -12,6 +12,8 @@ protocol CustomizationModuleInteracting: AnyObject {
     func setDeviceName(_ name: String)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
+    var defaultURIMatchRule: PasswordURI.Match { get }
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
 }
 
 final class CustomizationModuleInteractor: CustomizationModuleInteracting {
@@ -39,5 +41,13 @@ final class CustomizationModuleInteractor: CustomizationModuleInteracting {
     
     func setDefaultPassswordListAction(_ action: PasswordListAction) {
         configInteractor.setDefaultPassswordListAction(action)
+    }
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        configInteractor.defaultURIMatchRule
+    }
+
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
+        configInteractor.setDefaultURIMatchRule(rule)
     }
 }

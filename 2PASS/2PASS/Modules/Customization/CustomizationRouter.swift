@@ -19,6 +19,8 @@ struct CustomizationRouter: Router {
             return .push
         case .defaultPasswordsListAction:
             return .push
+        case .defaultURIMatchRule:
+            return .push
         case .manageTags:
             return .push
         case nil:
@@ -40,6 +42,13 @@ struct CustomizationRouter: Router {
             SettingsPickerView(
                 title: Text(.settingsEntryLoginClickAction),
                 footer: Text(.settingsEntryLoginClickActionDescription),
+                picker: picker
+            )
+
+        case .defaultURIMatchRule(let picker):
+            SettingsPickerView(
+                title: Text(.settingsEntryDefaultUriMatchRule),
+                footer: Text(.settingsEntryDefaultUriMatchRuleDescription),
                 picker: picker
             )
 

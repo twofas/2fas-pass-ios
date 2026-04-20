@@ -727,7 +727,9 @@ protocol MainRepository: AnyObject {
     func setShareLinkConfig(_ data: Data)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
-    
+    var defaultURIMatchRule: PasswordURI.Match { get }
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
+
     // MARK: - Network
     func fetchFile(from url: URL, completion: @escaping (Result<Data, NetworkError>) -> Void)
     

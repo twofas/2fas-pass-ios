@@ -85,6 +85,9 @@ protocol UserDefaultsDataSource: AnyObject {
     
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
+
+    var defaultURIMatchRule: PasswordURI.Match { get }
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
     
     var lastSuccessCloudSyncDate: Date? { get }
     func setLastSuccessCloudSyncDate(_ date: Date)

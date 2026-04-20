@@ -172,7 +172,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
     }
 
     func onAddURI() {
-        uri.append(.empty())
+        uri.append(URI(id: UUID(), uri: "", match: interactor.defaultURIMatchRule))
     }
 
     func onSelectMatch(_ uuid: UUID, match: PasswordURI.Match) {
