@@ -68,9 +68,7 @@ public enum Config {
     // Screen Recording
     public static let screenRecordingAllowanceDuration: Duration = .seconds(5 * 60)
     
-    #if DEBUG
     public static let debugUseDevIconsKey = "debugUseDevIcons"
-    #endif
 
     public static func iconURL(forDomain domain: String) -> URL? {
         #if DEBUG

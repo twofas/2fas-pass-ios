@@ -14,10 +14,8 @@ struct SettingsDebugView: View {
     @AppStorage(DebugOverlay.enablingKey)
     private var isDebugOverlayEnabled = false
 
-    #if DEBUG
     @AppStorage(Config.debugUseDevIconsKey)
     private var useDevIcons = false
-    #endif
     
     @State var presenter: SettingsDebugPresenter
     
