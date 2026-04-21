@@ -14,6 +14,7 @@ public enum WebDAVState: Equatable, Codable {
         case notConfigured
         case passwordChanged
         case sslError
+        case insecureRedirect
         case urlError(String)
         case syncError(String?)
         case networkError(String)

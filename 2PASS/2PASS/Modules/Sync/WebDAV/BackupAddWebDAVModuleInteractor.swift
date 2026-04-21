@@ -14,6 +14,7 @@ enum BackupAddWebDAVModuleInteractorStatus {
     case unauthorized
     case forbidden
     case sslError
+    case insecureRedirect
     case methodNotAllowed
     case notConfigured
     case urlError(String)
@@ -141,6 +142,7 @@ private extension BackupAddWebDAVModuleInteractor {
             case .serverError(let string): return .serverError(string)
             case .urlError(let string): return .urlError(string)
             case .sslError: return .sslError
+            case .insecureRedirect: return .insecureRedirect
             case .methodNotAllowed: return .methodNotAllowed
             case .limitDevicesReached: return .limitDevicesReached
             case .passwordChanged: return .passwordChanged

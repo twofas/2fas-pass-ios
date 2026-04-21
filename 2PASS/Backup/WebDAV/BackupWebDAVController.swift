@@ -13,6 +13,7 @@ public enum BackupWebDAVSyncError: Error {
     case syncErrorTryingAgain
     case notFound
     case sslError
+    case insecureRedirect
     case methodNotAllowed
     case syncError(Error)
     case networkError(Error)
@@ -133,6 +134,7 @@ private extension BackupWebDAVController {
         case .networkError(let netError): .networkError(netError)
         case .serverError(let serverError): .serverError(serverError)
         case .sslError: .sslError
+        case .insecureRedirect: .insecureRedirect
         case .urlError(let urlError): .urlError(urlError)
         }
     }

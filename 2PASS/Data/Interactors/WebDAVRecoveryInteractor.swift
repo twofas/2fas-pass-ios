@@ -19,6 +19,7 @@ public enum WebDAVRecoveryInteractorError: Error {
     case nothingToImport
     case schemaNotSupported(Int)
     case sslError
+    case insecureRedirect
     case syncError(message: String?)
     case networkError(message: String)
     case serverError(message: String)
@@ -121,6 +122,9 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
                 case .sslError:
                     Log("WebDAVRecoveryInteractor - getting index error: SSL error)", module: .interactor, severity: .error)
                     completion(.failure(.sslError))
+                case .insecureRedirect:
+                    Log("WebDAVRecoveryInteractor - getting index error: insecure redirect", module: .interactor, severity: .error)
+                    completion(.failure(.insecureRedirect))
                 case .methodNotAllowed:
                     Log("WebDAVRecoveryInteractor - getting index error: method not allowed", module: .interactor, severity: .error)
                     completion(.failure(.methodNotAllowed))
@@ -207,6 +211,9 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
                 case .sslError:
                     Log("WebDAVRecoveryInteractor - fetching Vault error: SSL error)", module: .interactor, severity: .error)
                     completion(.failure(.sslError))
+                case .insecureRedirect:
+                    Log("WebDAVRecoveryInteractor - fetching Vault error: insecure redirect", module: .interactor, severity: .error)
+                    completion(.failure(.insecureRedirect))
                 case .methodNotAllowed:
                     Log("WebDAVRecoveryInteractor - getting index error: method not allowed", module: .interactor, severity: .error)
                     completion(.failure(.methodNotAllowed))

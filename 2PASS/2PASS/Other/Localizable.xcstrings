@@ -17093,6 +17093,23 @@
         }
       }
     },
+    "sync_status_error_insecure_redirect" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server redirected the connection to an insecure or different address. Verify your WebDAV URL."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer przekierował połączenie na niezabezpieczony lub inny adres. Sprawdź adres serwera WebDAV."
+          }
+        }
+      }
+    },
     "sync_status_error_ssl_error" : {
       "extractionState" : "manual",
       "localizations" : {

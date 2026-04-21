@@ -223,17 +223,17 @@ final class BackupWebDAVConnection {
     }
 }
 
-private final class SessionDelegate: NSObject, URLSessionDelegate {
+private final class SessionDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     private var login: String?
     private var password: String?
     private var allowTLSOff: Bool = false
-    
+
     func setCredentials(allowTLSOff: Bool, login: String?, password: String?) {
         self.allowTLSOff = allowTLSOff
         self.login = login
         self.password = password
     }
-    
+
     func urlSession(
         _ session: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
@@ -252,20 +252,20 @@ private final class SessionDelegate: NSObject, URLSessionDelegate {
             }
             return
         }
-        
+
         guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
               let serverTrust = challenge.protectionSpace.serverTrust else {
             completionHandler(.performDefaultHandling, nil)
             return
         }
-        
+
         if allowTLSOff {
             let credential = URLCredential(trust: serverTrust)
             completionHandler(.useCredential, credential)
         } else {
             var error: CFError?
             let isValid = SecTrustEvaluateWithError(serverTrust, &error)
-            
+
             if isValid {
                 let credential = URLCredential(trust: serverTrust)
                 completionHandler(.useCredential, credential)
@@ -274,5 +274,56 @@ private final class SessionDelegate: NSObject, URLSessionDelegate {
                 completionHandler(.performDefaultHandling, nil)
             }
         }
+    }
+
+    // Refuses 3xx redirects that either downgrade the scheme (HTTPS → HTTP) or leave
+    // the user-configured host. Passing `nil` to the completion handler stops URLSession
+    // from following the redirect; the 3xx response surfaces to the caller, which treats
+    // any non-2xx result as an error.
+    //
+    // Host-change policy is intentionally strict (exact host match, case-insensitive):
+    // DNS rebinding or a compromised WebDAV host can otherwise coerce credentials or the
+    // encrypted vault blob to a different server, even when TLS is valid end-to-end.
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        guard let originalURL = task.originalRequest?.url,
+              let newURL = request.url else {
+            Log("WebDAV: refusing redirect with missing URL", module: .backup, severity: .error)
+            completionHandler(nil)
+            return
+        }
+
+        let originalScheme = originalURL.scheme?.lowercased()
+        let newScheme = newURL.scheme?.lowercased()
+
+        if originalScheme == "https" && newScheme != "https" {
+            Log(
+                "WebDAV: refusing scheme downgrade redirect https → \(newScheme ?? "?")",
+                module: .backup,
+                severity: .error
+            )
+            completionHandler(nil)
+            return
+        }
+
+        let originalHost = originalURL.host?.lowercased()
+        let newHost = newURL.host?.lowercased()
+
+        if originalHost != newHost {
+            Log(
+                "WebDAV: refusing cross-host redirect \(originalHost ?? "?") → \(newHost ?? "?")",
+                module: .backup,
+                severity: .error
+            )
+            completionHandler(nil)
+            return
+        }
+
+        completionHandler(request)
     }
 }

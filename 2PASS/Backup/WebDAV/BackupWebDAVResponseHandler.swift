@@ -21,6 +21,7 @@ enum BackupWebDAVResponseError: Error, Equatable {
             (.alreadyLocked, .alreadyLocked),
             (.cantUnlock, .cantUnlock),
             (.sslError, .sslError),
+            (.insecureRedirect, .insecureRedirect),
             (.error, .error),
             (.parseError, .parseError),
             (.networkError, .networkError),
@@ -31,7 +32,7 @@ enum BackupWebDAVResponseError: Error, Equatable {
             false
         }
     }
-    
+
     case generalError
     case incorrectResponse
     case methodNotAllowed
@@ -43,6 +44,7 @@ enum BackupWebDAVResponseError: Error, Equatable {
     case alreadyLocked
     case cantUnlock
     case sslError
+    case insecureRedirect
     case error(Error)
     case parseError(Error)
     case networkError(Error)
@@ -177,6 +179,10 @@ private extension BackupWebDAVResponseHandler {
     }
     
     func parseErrorCode(_ code: Int) -> BackupWebDAVResponseError? {
+        if (300...399).contains(code) {
+            Log("BackupWebDAVResponseHandler: refused redirect (status \(code))", severity: .error)
+            return .insecureRedirect
+        }
         if code == 400 {
             return .generalError
         }

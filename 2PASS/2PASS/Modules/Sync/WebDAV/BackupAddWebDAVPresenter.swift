@@ -153,6 +153,8 @@ extension BackupAddWebDAVPresenter {
             uriError = String(localized: .syncStatusErrorIncorrectUrl)
         case .sslError:
             uriError = String(localized: .syncStatusErrorTlsCertFailed)
+        case .insecureRedirect:
+            uriError = String(localized: .syncStatusErrorInsecureRedirect)
         case .methodNotAllowed:
             uriError = String(localized: .syncStatusErrorNoWebDavServer)
         case .limitDevicesReached:

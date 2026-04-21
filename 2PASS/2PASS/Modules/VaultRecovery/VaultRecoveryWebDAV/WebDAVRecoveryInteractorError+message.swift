@@ -28,6 +28,7 @@ extension WebDAVRecoveryInteractorError {
         case .networkError(let message): String(localized: .generalNetworkErrorDetails(message))
         case .serverError(let message): String(localized: .generalServerErrorDetails(message))
         case .sslError: String(localized: .syncStatusErrorTlsCertFailed)
+        case .insecureRedirect: String(localized: .syncStatusErrorInsecureRedirect)
         case .methodNotAllowed: String(localized: .syncStatusErrorNoWebDavServer)
         case .schemaNotSupported: String(localized: .cloudSyncInvalidSchemaErrorMsg)
         }

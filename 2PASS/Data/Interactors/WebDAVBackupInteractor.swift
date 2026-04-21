@@ -163,6 +163,9 @@ private extension WebDAVBackupInteractor {
                 case .sslError:
                     Log("WebDAVBackupInteractor - getting index error: SSL error", module: .interactor, severity: .error)
                     self?.webDAVStateInteractor.syncError(.sslError)
+                case .insecureRedirect:
+                    Log("WebDAVBackupInteractor - getting index error: insecure redirect", module: .interactor, severity: .error)
+                    self?.webDAVStateInteractor.syncError(.insecureRedirect)
                 case .methodNotAllowed:
                     Log("WebDAVBackupInteractor - getting index error: method not allowed", module: .interactor, severity: .error)
                     self?.webDAVStateInteractor.syncError(.methodNotAllowed)
@@ -170,7 +173,7 @@ private extension WebDAVBackupInteractor {
             }
         }
     }
-    
+
     func parseIndex(_ index: WebDAVIndex) {
         Log("WebDAVBackupInteractor - parsing index", module: .interactor)
         guard !shouldStop else {
@@ -295,6 +298,9 @@ private extension WebDAVBackupInteractor {
                 case .sslError:
                     Log("WebDAVBackupInteractor - fetching lock error: SSL error)", module: .interactor, severity: .error)
                     self?.webDAVStateInteractor.syncError(.sslError)
+                case .insecureRedirect:
+                    Log("WebDAVBackupInteractor - fetching lock error: insecure redirect", module: .interactor, severity: .error)
+                    self?.webDAVStateInteractor.syncError(.insecureRedirect)
                 case .methodNotAllowed:
                     Log("WebDAVBackupInteractor - fetching lock error: method not allowed", module: .interactor, severity: .error)
                     self?.webDAVStateInteractor.syncError(.methodNotAllowed)
@@ -302,7 +308,7 @@ private extension WebDAVBackupInteractor {
             }
         }
     }
-    
+
     func createLock() {
         Log("WebDAVBackupInteractor - creating lock", module: .interactor)
         guard !shouldStop else {
@@ -437,6 +443,9 @@ private extension WebDAVBackupInteractor {
                 case .sslError:
                     Log("WebDAVBackupInteractor - fetching Vault error: SSL error)", module: .interactor, severity: .error)
                     self?.webDAVStateInteractor.syncError(.sslError)
+                case .insecureRedirect:
+                    Log("WebDAVBackupInteractor - fetching Vault error: insecure redirect", module: .interactor, severity: .error)
+                    self?.webDAVStateInteractor.syncError(.insecureRedirect)
                 case .methodNotAllowed:
                     Log("WebDAVBackupInteractor - fetching Vault error: method not allowed", module: .interactor, severity: .error)
                     self?.webDAVStateInteractor.syncError(.methodNotAllowed)
@@ -444,7 +453,7 @@ private extension WebDAVBackupInteractor {
             }
         }
     }
-    
+
     func prepareForExport() {
         Log("WebDAVBackupInteractor - preparing for export", module: .interactor)
         exportInteractor.prepareItemsForExport(encrypt: true, exportIfEmpty: true, includeDeletedItems: true, completion: { [weak self] exportResult in
@@ -593,11 +602,14 @@ private extension WebDAVBackupInteractor {
             webDAVStateInteractor.syncError(.urlError(error.localizedDescription))
         case .sslError:
             webDAVStateInteractor.syncError(.sslError)
+        case .insecureRedirect:
+            Log("WebDAVBackupInteractor - common error: insecure redirect", module: .interactor, severity: .error)
+            webDAVStateInteractor.syncError(.insecureRedirect)
         case .methodNotAllowed:
             webDAVStateInteractor.syncError(.methodNotAllowed)
         }
     }
-    
+
     func success() {
         Log("WebDAVBackupInteractor - success", module: .interactor)
         webDAVStateInteractor.syncSucceded()

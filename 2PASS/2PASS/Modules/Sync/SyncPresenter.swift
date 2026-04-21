@@ -177,6 +177,7 @@ struct WebDAVStatusFormatStyle: FormatStyle {
             case .limitDevicesReached: String(localized: .syncStatusErrorLimitDevicesReached)
             case .serverError(let serverError): serverError
             case .sslError: String(localized: .syncStatusErrorSslError)
+            case .insecureRedirect: String(localized: .syncStatusErrorInsecureRedirect)
             case .syncError(let syncError): syncError ?? error.localizedDescription
             case .unauthorized: String(localized: .syncStatusErrorUnauthorized)
             case .urlError(let urlError): urlError
