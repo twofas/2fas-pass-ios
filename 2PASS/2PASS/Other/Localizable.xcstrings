@@ -8196,8 +8196,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : ""
+            "state" : "translated",
+            "value" : "Brak dostępnych logów"
           }
         }
       }
@@ -8213,8 +8213,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : ""
+            "state" : "translated",
+            "value" : "Wyślij logi"
           }
         }
       }
@@ -8230,8 +8230,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : ""
+            "state" : "translated",
+            "value" : "Logi"
           }
         }
       }
@@ -14838,13 +14838,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Match rule pre-selected when adding a new URI to a Login."
+            "value" : "Pre-selected matching rule when adding a new URI to a Login."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reguła dopasowania ustawiana domyślnie przy dodawaniu nowego URI do loginu."
+            "value" : "Domyślna reguła dopasowania przy dodawaniu nowego URI do loginu."
           }
         }
       }
