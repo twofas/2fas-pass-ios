@@ -68,8 +68,19 @@ public enum Config {
     // Screen Recording
     public static let screenRecordingAllowanceDuration: Duration = .seconds(5 * 60)
     
+    #if DEBUG
+    public static let debugUseDevIconsKey = "debugUseDevIcons"
+    #endif
+
     public static func iconURL(forDomain domain: String) -> URL? {
-        URL(string: "https://icon.2fas.com/\(domain)/favicon.png")
+        #if DEBUG
+        let host = UserDefaults.standard.bool(forKey: debugUseDevIconsKey)
+            ? "dev-icons.2fas.com"
+            : "icon.2fas.com"
+        return URL(string: "https://\(host)/\(domain)/favicon.png")
+        #else
+        return URL(string: "https://icon.2fas.com/\(domain)/favicon.png")
+        #endif
     }
     
     public static func defaultIconLabel(forName name: String) -> String {

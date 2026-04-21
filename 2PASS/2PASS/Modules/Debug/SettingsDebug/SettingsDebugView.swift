@@ -13,6 +13,11 @@ struct SettingsDebugView: View {
     
     @AppStorage(DebugOverlay.enablingKey)
     private var isDebugOverlayEnabled = false
+
+    #if DEBUG
+    @AppStorage(Config.debugUseDevIconsKey)
+    private var useDevIcons = false
+    #endif
     
     @State var presenter: SettingsDebugPresenter
     
@@ -98,6 +103,16 @@ struct SettingsDebugView: View {
                 }
                 .onChange(of: isDebugOverlayEnabled) { _, _ in
                     NotificationCenter.default.post(name: .debugOverlayStateChange, object: nil)
+                }
+            }
+
+            Section {
+                Toggle(isOn: $useDevIcons) {
+                    SettingsRowView(
+                        icon: .debug,
+                        title: Text("Use Dev Icons URL" as String),
+                        actionIcon: nil
+                    )
                 }
             }
         }
