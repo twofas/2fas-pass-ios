@@ -73,7 +73,7 @@ public struct S3URLRequest: Sendable, Equatable {
     }
 }
 
-public final class S3ServiceSession: @unchecked Sendable {
+public final class S3ServiceSession: Sendable {
     public let config: S3ServiceConfig
     private let session: URLSession
 
