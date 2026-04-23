@@ -31,31 +31,38 @@ public protocol BackupLocalMerging: Sendable {
 
 public protocol BackupVaultExporting: Sendable {
     func prepareEncryptedExport(
+        vaultID: UUID,
         includeDeleted: Bool
     ) async throws(BackupVaultExportError) -> ExchangeVault
 
 #if DEBUG
     func prepareDecryptedExport(
+        vaultID: UUID,
         includeDeleted: Bool
     ) async throws(BackupVaultExportError) -> ExchangeVault
 #endif
 }
 
-public protocol BackupSyncContextProviding: Sendable {
-    var deviceName: String { get }
-    var deviceID: UUID { get }
-    
+public protocol VaultBackup: Sendable {
     var vaultID: UUID { get }
     var vaultCreatedAt: Int { get }
     var seedHash: String { get }
-    
+
     var lastSyncTimestamp: Int? { get }
     var hasLocalChanges: Bool { get }
+
+    func clearHasLocalChanges() async
+}
+
+public protocol BackupSyncContext: Sendable {
+    var deviceID: UUID { get }
+    var deviceName: String { get }
     var allowsMultiDeviceSync: Bool { get }
-    
+
 #if DEBUG
     var shouldWriteDecryptedCopy: Bool { get }
 #endif
-    
-    func clearHasLocalChanges() async
+
+    var vaultID: UUID { get }
+    func vaultBackup(for vaultID: UUID) -> VaultBackup?
 }

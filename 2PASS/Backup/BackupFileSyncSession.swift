@@ -14,7 +14,7 @@ public final class BackupFileSyncSession: Sendable {
     private let statusContinuation: AsyncStream<BackupSyncStatus>.Continuation
 
     private let service: BackupFileServiceSession
-    private let context: BackupSyncContextProviding
+    private let context: BackupSyncContext
     private let vaultExporter: BackupVaultExporting
     private let localMerger: BackupLocalMerging
     private let maxRetries: Int
@@ -23,7 +23,7 @@ public final class BackupFileSyncSession: Sendable {
 
     public init(
         service: BackupFileServiceSession,
-        context: BackupSyncContextProviding,
+        context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,
         localMerger: BackupLocalMerging,
         maxRetries: Int = 3,
@@ -57,7 +57,6 @@ public final class BackupFileSyncSession: Sendable {
             attempt += 1
             do {
                 let madeLocalChanges = try await runAttempt(overwritingVault: overwritingVault)
-                await context.clearHasLocalChanges()
                 emit(.succeeded)
                 return madeLocalChanges
             } catch let error where error.isTransient && attempt < maxRetries {
@@ -92,11 +91,17 @@ private extension BackupFileSyncSession {
     func runAttempt(overwritingVault: Bool) async throws(BackupSyncError) -> Bool {
         let currentSyncDate = Date()
 
+        guard let vaultBackup = context.vaultBackup(for: context.vaultID) else {
+            throw .unexpected("no vault to sync")
+        }
+        
+        let vaultID = vaultBackup.vaultID
+
         try checkCancellation()
         let fetchedIndex = try await fetchIndex()
 
         try checkCancellation()
-        let action = try decideAction(for: fetchedIndex)
+        let action = try decideAction(for: fetchedIndex, vaultBackup: vaultBackup)
         guard action == .needsRemoteMerge else { return false }
 
         try checkCancellation()
@@ -107,30 +112,33 @@ private extension BackupFileSyncSession {
             Log("BackupFileSyncSession - overwritingVault requested, skipping remote merge", module: .backup)
         } else {
             try checkCancellation()
-            if let remoteVault = try await fetchRemoteVault() {
+            if let remoteVault = try await fetchRemoteVault(vaultID: vaultID) {
                 try checkCancellation()
                 madeLocalChanges = try await mergeRemoteVault(remoteVault)
             }
         }
 
         try checkCancellation()
-        let exported = try await prepareEncryptedExport()
+        let exported = try await prepareEncryptedExport(vaultID: vaultID)
 
         try checkCancellation()
-        try await writeExportedVault(encrypted: exported)
+        try await writeExportedVault(encrypted: exported, vaultID: vaultID)
 
     #if DEBUG
-        writeDecryptedCopyIfNeeded()
+        writeDecryptedCopyIfNeeded(vaultID: vaultID)
     #endif
-        
+
         try checkCancellation()
         try await writeUpdatedIndex(
             basedOn: fetchedIndex,
-            at: currentSyncDate
+            at: currentSyncDate,
+            vaultBackup: vaultBackup
         )
 
         try checkCancellation()
         try await deleteLock()
+
+        await vaultBackup.clearHasLocalChanges()
 
         return madeLocalChanges
     }
@@ -155,9 +163,9 @@ private extension BackupFileSyncSession {
         }
     }
 
-    func decideAction(for fetchedIndex: BackupIndex?) throws(BackupSyncError) -> VaultAction {
+    func decideAction(for fetchedIndex: BackupIndex?, vaultBackup: VaultBackup) throws(BackupSyncError) -> VaultAction {
         guard let fetchedIndex,
-              let matchIndex = fetchedIndex.firstIndex(for: context.vaultID, seedHash: context.seedHash) else {
+              let matchIndex = fetchedIndex.firstIndex(for: vaultBackup.vaultID, seedHash: vaultBackup.seedHash) else {
             return .needsRemoteMerge
         }
 
@@ -168,8 +176,8 @@ private extension BackupFileSyncSession {
             throw .schemaNotSupported(version: entry.schemaVersion)
         }
 
-        if let lastSync = context.lastSyncTimestamp, lastSync == entry.vaultUpdatedAt {
-            if context.hasLocalChanges {
+        if let lastSync = vaultBackup.lastSyncTimestamp, lastSync == entry.vaultUpdatedAt {
+            if vaultBackup.hasLocalChanges {
                 Log("BackupFileSyncSession - timestamps match, local changes to push", module: .backup)
                 return .needsRemoteMerge
             } else {
@@ -178,7 +186,7 @@ private extension BackupFileSyncSession {
             }
         }
 
-        Log("BackupFileSyncSession - timestamps differ (\(context.lastSyncTimestamp ?? -1) vs \(entry.vaultUpdatedAt))", module: .backup)
+        Log("BackupFileSyncSession - timestamps differ (\(vaultBackup.lastSyncTimestamp ?? -1) vs \(entry.vaultUpdatedAt))", module: .backup)
         return .needsRemoteMerge
     }
 
@@ -243,11 +251,11 @@ private extension BackupFileSyncSession {
         }
     }
 
-    func fetchRemoteVault() async throws(BackupSyncError) -> ExchangeVaultVersioned? {
+    func fetchRemoteVault(vaultID: UUID) async throws(BackupSyncError) -> ExchangeVaultVersioned? {
         Log("BackupFileSyncSession - fetching remote vault", module: .backup)
         let vaultData: Data
         do {
-            vaultData = try await service.fetchVault(vaultID: context.vaultID)
+            vaultData = try await service.fetchVault(vaultID: vaultID)
         } catch let error {
             if case .notFound = error {
                 Log("BackupFileSyncSession - no remote vault (first push)", module: .backup)
@@ -283,11 +291,11 @@ private extension BackupFileSyncSession {
         }
     }
 
-    func prepareEncryptedExport() async throws(BackupSyncError) -> Data {
+    func prepareEncryptedExport(vaultID: UUID) async throws(BackupSyncError) -> Data {
         Log("BackupFileSyncSession - preparing encrypted export", module: .backup)
         let vault: ExchangeVault
         do {
-            vault = try await vaultExporter.prepareEncryptedExport(includeDeleted: true)
+            vault = try await vaultExporter.prepareEncryptedExport(vaultID: vaultID, includeDeleted: true)
         } catch {
             throw BackupSyncError.export(error)
         }
@@ -307,8 +315,7 @@ private extension BackupFileSyncSession {
         }
     }
 
-    func writeExportedVault(encrypted: Data) async throws(BackupSyncError) {
-        let vaultID = context.vaultID
+    func writeExportedVault(encrypted: Data, vaultID: UUID) async throws(BackupSyncError) {
         do {
             try await service.writeVault(encrypted, vaultID: vaultID)
             try await service.finalizeVault(vaultID: vaultID)
@@ -318,12 +325,11 @@ private extension BackupFileSyncSession {
     }
 
 #if DEBUG
-    func writeDecryptedCopyIfNeeded() {
+    func writeDecryptedCopyIfNeeded(vaultID: UUID) {
         guard context.shouldWriteDecryptedCopy else { return }
-        let vaultID = context.vaultID
         Task.detached { [vaultExporter, service] in
             do {
-                let vault = try await vaultExporter.prepareDecryptedExport(includeDeleted: true)
+                let vault = try await vaultExporter.prepareDecryptedExport(vaultID: vaultID, includeDeleted: true)
                 let plaintext = try JSONEncoder().encode(vault)
                 try await service.writeDecryptedVault(plaintext, vaultID: vaultID)
             } catch {
@@ -335,11 +341,13 @@ private extension BackupFileSyncSession {
 
     func writeUpdatedIndex(
         basedOn fetchedIndex: BackupIndex?,
-        at syncDate: Date
+        at syncDate: Date,
+        vaultBackup: VaultBackup
     ) async throws(BackupSyncError) {
         let index = makeUpdatedIndex(
             basedOn: fetchedIndex,
-            at: syncDate
+            at: syncDate,
+            vaultBackup: vaultBackup
         )
         let data: Data
         do {
@@ -366,13 +374,14 @@ private extension BackupFileSyncSession {
 
     func makeUpdatedIndex(
         basedOn fetchedIndex: BackupIndex?,
-        at syncDate: Date
+        at syncDate: Date,
+        vaultBackup: VaultBackup
     ) -> BackupIndex {
         let timestamp = syncDate.exportTimestamp
         let entry = BackupIndexEntry(
-            seedHashHex: context.seedHash,
-            vaultId: context.vaultID.uuidString.lowercased(),
-            vaultCreatedAt: context.vaultCreatedAt,
+            seedHashHex: vaultBackup.seedHash,
+            vaultId: vaultBackup.vaultID.uuidString.lowercased(),
+            vaultCreatedAt: vaultBackup.vaultCreatedAt,
             vaultUpdatedAt: timestamp,
             deviceName: context.deviceName,
             deviceId: context.deviceID,
@@ -384,7 +393,7 @@ private extension BackupFileSyncSession {
         }
 
         var entries = fetchedIndex.backups
-        if let existing = fetchedIndex.firstIndex(for: context.vaultID, seedHash: context.seedHash) {
+        if let existing = fetchedIndex.firstIndex(for: vaultBackup.vaultID, seedHash: vaultBackup.seedHash) {
             var updated = entries[existing]
             updated.vaultUpdatedAt = timestamp
             updated.deviceName = context.deviceName
