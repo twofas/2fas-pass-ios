@@ -16,21 +16,21 @@ public final class BackupS3ServiceSession: BackupFileServiceSession {
         self.session = S3ServiceSession(config: config)
     }
 
-    public func getIndex() async throws(BackupFileServiceError) -> Data {
+    public func fetchIndex() async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .index)
         let (data, response) = try await perform(request)
         try validateStatus(response, expected: [200])
         return data
     }
 
-    public func getLock() async throws(BackupFileServiceError) -> Data {
+    public func fetchLock() async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .indexLock)
         let (data, response) = try await perform(request)
         try validateStatus(response, expected: [200])
         return data
     }
 
-    public func getVault(vaultID: String) async throws(BackupFileServiceError) -> Data {
+    public func fetchVault(vaultID: UUID) async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .vault(vaultID: vaultID))
         let (data, response) = try await perform(request)
         try validateStatus(response, expected: [200])
@@ -49,28 +49,28 @@ public final class BackupS3ServiceSession: BackupFileServiceSession {
         try validateStatus(response, expected: [200, 201, 204])
     }
 
-    public func writeVault(_ data: Data, vaultID: String) async throws(BackupFileServiceError) {
+    public func writeVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError) {
         let request = Self.putRequest(for: .vaultTemp(vaultID: vaultID), body: data)
         let (_, response) = try await perform(request)
         try validateStatus(response, expected: [200, 201, 204])
     }
 
-    public func writeDecryptedVault(_ data: Data, vaultID: String) async throws(BackupFileServiceError) {
+    public func writeDecryptedVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError) {
         let request = Self.putRequest(for: .vaultDecrypted(vaultID: vaultID), body: data)
         let (_, response) = try await perform(request)
         try validateStatus(response, expected: [200, 201, 204])
     }
 
-    public func move(vaultID: String) async throws(BackupFileServiceError) {
-        let tempKey: ObjectKey = .vaultTemp(vaultID: vaultID)
-        let finalKey: ObjectKey = .vault(vaultID: vaultID)
+    public func finalizeVault(vaultID: UUID) async throws(BackupFileServiceError) {
+        let tempResource: BackupFileResource = .vaultTemp(vaultID: vaultID)
+        let finalResource: BackupFileResource = .vault(vaultID: vaultID)
 
-        var copyRequest = Self.request(.put, for: finalKey)
-        copyRequest.setValue("/\(config.bucket)/\(tempKey.path)", forHTTPHeaderField: "x-amz-copy-source")
+        var copyRequest = Self.request(.put, for: finalResource)
+        copyRequest.setValue("/\(config.bucket)/\(tempResource.filename)", forHTTPHeaderField: "x-amz-copy-source")
         let (_, copyResponse) = try await perform(copyRequest)
         try validateStatus(copyResponse, expected: [200])
 
-        let deleteRequest = Self.request(.delete, for: tempKey)
+        let deleteRequest = Self.request(.delete, for: tempResource)
         let (_, deleteResponse) = try await perform(deleteRequest)
         try validateStatus(deleteResponse, expected: [200, 204])
     }
@@ -83,35 +83,12 @@ public final class BackupS3ServiceSession: BackupFileServiceSession {
 }
 
 private extension BackupS3ServiceSession {
-    enum ObjectKey {
-        case index
-        case indexLock
-        case vault(vaultID: String)
-        case vaultTemp(vaultID: String)
-        case vaultDecrypted(vaultID: String)
-
-        var path: String {
-            switch self {
-            case .index:
-                "index.2faspass"
-            case .indexLock:
-                "index.2faspass.lock"
-            case .vault(let vaultID):
-                "\(vaultID.lowercased())_v\(Config.webDAVURLSchemaVersion).2faspass"
-            case .vaultTemp(let vaultID):
-                "\(vaultID.lowercased())_v\(Config.webDAVURLSchemaVersion).2faspass.tmp"
-            case .vaultDecrypted(let vaultID):
-                "\(vaultID.lowercased())_v\(Config.webDAVURLSchemaVersion).2faspass-decrypted_ios.json"
-            }
-        }
+    static func request(_ method: S3URLRequest.HTTPMethod = .get, for resource: BackupFileResource) -> S3URLRequest {
+        S3URLRequest(objectKey: resource.filename, httpMethod: method)
     }
 
-    static func request(_ method: S3URLRequest.HTTPMethod = .get, for key: ObjectKey) -> S3URLRequest {
-        S3URLRequest(objectKey: key.path, httpMethod: method)
-    }
-
-    static func putRequest(for key: ObjectKey, body: Data) -> S3URLRequest {
-        var request = Self.request(.put, for: key)
+    static func putRequest(for resource: BackupFileResource, body: Data) -> S3URLRequest {
+        var request = Self.request(.put, for: resource)
         request.httpBody = body
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         return request

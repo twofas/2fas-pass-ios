@@ -7,13 +7,14 @@
 import SwiftUI
 import Common
 import Data
+import Backup
 import CommonUI
 
 struct VaultRecoverySelectWebDAVIndexRouter: Router {
     
     @ViewBuilder
     static func buildView(
-        index: WebDAVIndex,
+        index: BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,

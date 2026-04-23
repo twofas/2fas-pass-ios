@@ -31,7 +31,7 @@ final class WebDAVBackupInteractor {
     // Internal state during sync
     private var shouldStop = false
     private var overwriteVault = false
-    private var fetchedIndex: WebDAVIndex?
+    private var fetchedIndex: BackupIndex?
     
     init(
         ignoreDeviceId: Bool = false,
@@ -171,7 +171,7 @@ private extension WebDAVBackupInteractor {
         }
     }
     
-    func parseIndex(_ index: WebDAVIndex) {
+    func parseIndex(_ index: BackupIndex) {
         Log("WebDAVBackupInteractor - parsing index", module: .interactor)
         guard !shouldStop else {
             stop()
@@ -619,7 +619,7 @@ private extension WebDAVBackupInteractor {
         shouldStop = false
     }
     
-    func prepareIndex() -> WebDAVIndex? {
+    func prepareIndex() -> BackupIndex? {
         Log("WebDAVBackupInteractor - preparing index", module: .interactor)
         
         guard let deviceId = mainRepository.deviceID else {
@@ -637,7 +637,7 @@ private extension WebDAVBackupInteractor {
         let updatedAt = webDAVStateInteractor.currentSyncTimestamp ?? Date().exportTimestamp
         let deviceName = mainRepository.deviceName
         
-        let entry = WebDAVIndexEntry(
+        let entry = BackupIndexEntry(
             seedHashHex: seedHash,
             vaultId: vault.vaultID.uuidString.lowercased(),
             vaultCreatedAt: vault.createdAt.exportTimestamp,
@@ -646,7 +646,7 @@ private extension WebDAVBackupInteractor {
             deviceId: deviceId,
             schemaVersion: Config.schemaVersion
         )
-        let result: WebDAVIndex
+        let result: BackupIndex
         if let fetchedIndex {
             var index = fetchedIndex.backups
             if let matchingVaultIndex = fetchedIndex.firstIndex(for: vault.vaultID, seedHash: seedHash) {
@@ -657,9 +657,9 @@ private extension WebDAVBackupInteractor {
             } else {
                 index.append(entry)
             }
-            result = WebDAVIndex(backups: index)
+            result = BackupIndex(backups: index)
         } else {
-            result = WebDAVIndex(backups: [entry])
+            result = BackupIndex(backups: [entry])
         }
         return result
     }

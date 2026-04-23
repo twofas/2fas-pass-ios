@@ -5,11 +5,10 @@
 // See LICENSE file for full terms
 
 import Foundation
-import Common
 
 public typealias ExchangeVault = ExchangeSchemaV2.ExchangeVault
 
-enum ExchangeError: Error {
+public enum ExchangeError: Error {
     case mismatchSchemaVersion(Int, expected: Int)
 }
 
@@ -23,20 +22,6 @@ public enum ExchangeVaultVersioned {
             return vault.encryption
         case .v2(let vault):
             return vault.encryption
-        }
-    }
-
-    public var summary: (date: Date, vaultName: String, deviceName: String?, itemsCount: Int) {
-        switch self {
-        case .v1(let vault):
-            return (
-                date: Date(exportTimestamp: vault.vault.updatedAt),
-                vaultName: vault.vault.name,
-                deviceName: vault.origin.deviceName,
-                itemsCount: vault.itemsCount
-            )
-        case .v2(let vault):
-            return vault.summary
         }
     }
 
@@ -66,7 +51,7 @@ public enum ExchangeVaultVersioned {
             return vault.hasServices
         }
     }
-    
+
     public var hasUnencryptedServices: Bool {
         switch self {
         case .v1(let vault):
@@ -101,7 +86,7 @@ public enum ExchangeVaultVersioned {
             )
         }
     }
-    
+
     public var itemsDeleted: [ExchangeCommon.ExchangeDeletedItem] {
         switch self {
         case .v1(let v1Vault):
@@ -116,7 +101,7 @@ public enum ExchangeVaultVersioned {
             return items
         }
     }
-    
+
     public var tags: [ExchangeCommon.ExchangeTag] {
         switch self {
         case .v1(let v1Vault):
@@ -138,31 +123,59 @@ public enum ExchangeVaultVersioned {
 public enum ExchangeCommon {
 
     public struct ExchangeVaultOrigin: Codable {
-        let os: String
-        let appVersionCode: Int
-        let appVersionName: String
-        let deviceName: String
-        let deviceId: UUID?
+        public let os: String
+        public let appVersionCode: Int
+        public let appVersionName: String
+        public let deviceName: String
+        public let deviceId: UUID?
+
+        public init(os: String, appVersionCode: Int, appVersionName: String, deviceName: String, deviceId: UUID?) {
+            self.os = os
+            self.appVersionCode = appVersionCode
+            self.appVersionName = appVersionName
+            self.deviceName = deviceName
+            self.deviceId = deviceId
+        }
     }
 
     public struct ExchangeEncryption: Codable {
         public struct ExchangeKDFSpec: Codable {
-            let type: String?
-            let hashLength: Int?
-            let memoryMb: Int?
-            let iterations: Int?
-            let parallelism: Int?
+            public let type: String?
+            public let hashLength: Int?
+            public let memoryMb: Int?
+            public let iterations: Int?
+            public let parallelism: Int?
+
+            public init(type: String?, hashLength: Int?, memoryMb: Int?, iterations: Int?, parallelism: Int?) {
+                self.type = type
+                self.hashLength = hashLength
+                self.memoryMb = memoryMb
+                self.iterations = iterations
+                self.parallelism = parallelism
+            }
         }
 
         public let seedHash: String
         public let reference: String
         public let kdfSpec: ExchangeKDFSpec
+
+        public init(seedHash: String, reference: String, kdfSpec: ExchangeKDFSpec) {
+            self.seedHash = seedHash
+            self.reference = reference
+            self.kdfSpec = kdfSpec
+        }
     }
 
     public struct ExchangeDeletedItem: Codable {
-        let id: String
-        let type: String
-        let deletedAt: Int
+        public let id: String
+        public let type: String
+        public let deletedAt: Int
+
+        public init(id: String, type: String, deletedAt: Int) {
+            self.id = id
+            self.type = type
+            self.deletedAt = deletedAt
+        }
     }
 
     public struct ExchangeTag: Codable {
@@ -171,11 +184,24 @@ public enum ExchangeCommon {
         public let color: String?
         public let position: Int
         public let updatedAt: Int
+
+        public init(id: String, name: String, color: String?, position: Int, updatedAt: Int) {
+            self.id = id
+            self.name = name
+            self.color = color
+            self.position = position
+            self.updatedAt = updatedAt
+        }
     }
 
     public struct ExchangeURI: Codable {
-        let text: String
-        let matcher: Int
+        public let text: String
+        public let matcher: Int
+
+        public init(text: String, matcher: Int) {
+            self.text = text
+            self.matcher = matcher
+        }
     }
 }
 
@@ -184,42 +210,76 @@ public enum ExchangeSchemaV1 {
     public struct ExchangeVault: Codable {
         public typealias ExchangeVaultOrigin = ExchangeCommon.ExchangeVaultOrigin
         public typealias ExchangeEncryption = ExchangeCommon.ExchangeEncryption
-        
+
         public struct ExchangeVaultItem: Codable {
-            struct ExchangeLogin: Codable {
-                typealias ExchangeURI = ExchangeCommon.ExchangeURI
-                
-                let id: String
-                let name: String?
-                let username: String?
-                let password: String?
-                let notes: String?
-                let securityType: Int?
-                let iconType: Int?
-                let iconUriIndex: Int?
-                let labelText: String?
-                let labelColor: String?
-                let customImageUrl: String?
-                let createdAt: Int
-                let updatedAt: Int
-                let uris: [ExchangeURI]?
-                let tags: [String]?
+            public struct ExchangeLogin: Codable {
+                public typealias ExchangeURI = ExchangeCommon.ExchangeURI
+
+                public let id: String
+                public let name: String?
+                public let username: String?
+                public let password: String?
+                public let notes: String?
+                public let securityType: Int?
+                public let iconType: Int?
+                public let iconUriIndex: Int?
+                public let labelText: String?
+                public let labelColor: String?
+                public let customImageUrl: String?
+                public let createdAt: Int
+                public let updatedAt: Int
+                public let uris: [ExchangeURI]?
+                public let tags: [String]?
+
+                public init(
+                    id: String,
+                    name: String?,
+                    username: String?,
+                    password: String?,
+                    notes: String?,
+                    securityType: Int?,
+                    iconType: Int?,
+                    iconUriIndex: Int?,
+                    labelText: String?,
+                    labelColor: String?,
+                    customImageUrl: String?,
+                    createdAt: Int,
+                    updatedAt: Int,
+                    uris: [ExchangeURI]?,
+                    tags: [String]?
+                ) {
+                    self.id = id
+                    self.name = name
+                    self.username = username
+                    self.password = password
+                    self.notes = notes
+                    self.securityType = securityType
+                    self.iconType = iconType
+                    self.iconUriIndex = iconUriIndex
+                    self.labelText = labelText
+                    self.labelColor = labelColor
+                    self.customImageUrl = customImageUrl
+                    self.createdAt = createdAt
+                    self.updatedAt = updatedAt
+                    self.uris = uris
+                    self.tags = tags
+                }
             }
 
-            typealias ExchangeDeletedItem = ExchangeCommon.ExchangeDeletedItem
-            typealias ExchangeTag = ExchangeCommon.ExchangeTag
+            public typealias ExchangeDeletedItem = ExchangeCommon.ExchangeDeletedItem
+            public typealias ExchangeTag = ExchangeCommon.ExchangeTag
 
             public let id: String
             public let createdAt: Int?
             public let updatedAt: Int
-            let name: String
-            var logins: [ExchangeLogin]?
-            var loginsEncrypted: [String]?
-            var itemsDeleted: [ExchangeDeletedItem]?
-            var itemsDeletedEncrypted: [String]?
-            var tags: [ExchangeTag]?
-            var tagsEncrypted: [String]?
-            
+            public let name: String
+            public var logins: [ExchangeLogin]?
+            public var loginsEncrypted: [String]?
+            public var itemsDeleted: [ExchangeDeletedItem]?
+            public var itemsDeletedEncrypted: [String]?
+            public var tags: [ExchangeTag]?
+            public var tagsEncrypted: [String]?
+
             private enum CodingKeys: String, CodingKey {
                 case id
                 case name
@@ -232,8 +292,8 @@ public enum ExchangeSchemaV1 {
                 case itemsDeleted
                 case itemsDeletedEncrypted
             }
-            
-            init(
+
+            public init(
                 id: String,
                 name: String,
                 createdAt: Int?,
@@ -256,15 +316,15 @@ public enum ExchangeSchemaV1 {
                 self.itemsDeleted = itemsDeleted
                 self.itemsDeletedEncrypted = itemsDeletedEncrypted
             }
-            
+
             public init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
-                
+
                 id = try container.decode(String.self, forKey: .id)
                 name = try container.decode(String.self, forKey: .name)
                 createdAt = try container.decode(Int.self, forKey: .createdAt)
                 updatedAt = try container.decode(Int.self, forKey: .updatedAt)
-                
+
                 logins = try container.decodeIfPresent([ExchangeLogin].self, forKey: .logins)
                 loginsEncrypted = try container.decodeIfPresent([String].self, forKey: .loginsEncrypted)
                 itemsDeleted = try container.decodeIfPresent([ExchangeDeletedItem].self, forKey: .itemsDeleted)
@@ -273,39 +333,39 @@ public enum ExchangeSchemaV1 {
                 tagsEncrypted = try container.decodeIfPresent([String].self, forKey: .tagsEncrypted)
             }
         }
-        
-        let schemaVersion: Int
-        let origin: ExchangeVaultOrigin
-        
+
+        public let schemaVersion: Int
+        public let origin: ExchangeVaultOrigin
+
         public let encryption: ExchangeEncryption?
         public let vault: ExchangeVaultItem
-        
+
         private enum CodingKeys: String, CodingKey {
             case schemaVersion
             case origin
             case encryption
             case vault
         }
-        
+
         public init(schemaVersion: Int, origin: ExchangeVaultOrigin, encryption: ExchangeEncryption?, vault: ExchangeVaultItem) {
             self.schemaVersion = schemaVersion
             self.origin = origin
             self.encryption = encryption
             self.vault = vault
         }
-        
+
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            
-            schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)            
+
+            schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
             origin = try container.decode(ExchangeVaultOrigin.self, forKey: .origin)
             encryption = try container.decodeIfPresent(ExchangeEncryption.self, forKey: .encryption)
             vault = try container.decode(ExchangeVaultItem.self, forKey: .vault)
         }
-        
+
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            
+
             try container.encode(schemaVersion, forKey: .schemaVersion)
             try container.encode(origin, forKey: .origin)
             try container.encodeIfPresent(encryption, forKey: .encryption)
@@ -319,12 +379,12 @@ public enum ExchangeSchemaV2 {
     public struct ExchangeVault: Codable {
         public typealias ExchangeVaultOrigin = ExchangeCommon.ExchangeVaultOrigin
         public typealias ExchangeEncryption = ExchangeCommon.ExchangeEncryption
-        
-        public struct ExchangeVaultItem: Codable {
-            struct ExchangeItem: Codable {
-                typealias ExchangeURI = ExchangeCommon.ExchangeURI
 
-                struct ExchangeLoginContent: Codable {
+        public struct ExchangeVaultItem: Codable {
+            public struct ExchangeItem: Codable {
+                public typealias ExchangeURI = ExchangeCommon.ExchangeURI
+
+                public struct ExchangeLoginContent: Codable {
                     private enum CodingKeys: String, CodingKey {
                         case name
                         case username
@@ -337,28 +397,52 @@ public enum ExchangeSchemaV2 {
                         case customImageUrl
                         case uris
                     }
-                    
-                    let name: String?
-                    let username: String?
-                    let password: String?
-                    let notes: String?
-                    let iconType: Int?
-                    let iconUriIndex: Int?
-                    let labelText: String?
-                    let labelColor: String?
-                    let customImageUrl: String?
-                    let uris: [ExchangeURI]?
+
+                    public let name: String?
+                    public let username: String?
+                    public let password: String?
+                    public let notes: String?
+                    public let iconType: Int?
+                    public let iconUriIndex: Int?
+                    public let labelText: String?
+                    public let labelColor: String?
+                    public let customImageUrl: String?
+                    public let uris: [ExchangeURI]?
+
+                    public init(
+                        name: String?,
+                        username: String?,
+                        password: String?,
+                        notes: String?,
+                        iconType: Int?,
+                        iconUriIndex: Int?,
+                        labelText: String?,
+                        labelColor: String?,
+                        customImageUrl: String?,
+                        uris: [ExchangeURI]?
+                    ) {
+                        self.name = name
+                        self.username = username
+                        self.password = password
+                        self.notes = notes
+                        self.iconType = iconType
+                        self.iconUriIndex = iconUriIndex
+                        self.labelText = labelText
+                        self.labelColor = labelColor
+                        self.customImageUrl = customImageUrl
+                        self.uris = uris
+                    }
                 }
-                
-                let id: String
-                let contentType: String
-                let contentVersion: Int
-                let content: [String: Any]
-                let securityType: Int?
-                let createdAt: Int
-                let updatedAt: Int
-                let tags: [String]?
-                
+
+                public let id: String
+                public let contentType: String
+                public let contentVersion: Int
+                public let content: [String: Any]
+                public let securityType: Int?
+                public let createdAt: Int
+                public let updatedAt: Int
+                public let tags: [String]?
+
                 private enum CodingKeys: String, CodingKey {
                     case id
                     case contentType
@@ -369,9 +453,8 @@ public enum ExchangeSchemaV2 {
                     case updatedAt
                     case tags
                 }
-                
-                // MARK: - Memberwise initializer
-                init(
+
+                public init(
                     id: String,
                     contentType: String,
                     contentVersion: Int,
@@ -390,40 +473,36 @@ public enum ExchangeSchemaV2 {
                     self.updatedAt = updatedAt
                     self.tags = tags
                 }
-                
-                // MARK: - Decodable
-                init(from decoder: Decoder) throws {
+
+                public init(from decoder: Decoder) throws {
                     let container = try decoder.container(keyedBy: CodingKeys.self)
-                    
+
                     id = try container.decode(String.self, forKey: .id)
                     contentType = try container.decode(String.self, forKey: .contentType)
                     contentVersion = try container.decode(Int.self, forKey: .contentVersion)
-                    
-                    // Decode content directly as dictionary using AnyCodable
+
                     if let contentValue = try? container.decode(AnyCodable.self, forKey: .content),
                        let dict = contentValue.value as? [String: Any] {
                         content = dict
                     } else {
                         content = [:]
                     }
-                    
+
                     securityType = try container.decodeIfPresent(Int.self, forKey: .securityType)
                     createdAt = try container.decode(Int.self, forKey: .createdAt)
                     updatedAt = try container.decode(Int.self, forKey: .updatedAt)
                     tags = try container.decodeIfPresent([String].self, forKey: .tags)
                 }
-                
-                // MARK: - Encodable
-                func encode(to encoder: Encoder) throws {
+
+                public func encode(to encoder: Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
-                    
+
                     try container.encode(id, forKey: .id)
                     try container.encode(contentType, forKey: .contentType)
                     try container.encode(contentVersion, forKey: .contentVersion)
-                    
-                    // Encode content dictionary directly as JSON object
+
                     try container.encode(AnyCodable(content), forKey: .content)
-                    
+
                     try container.encodeIfPresent(securityType, forKey: .securityType)
                     try container.encode(createdAt, forKey: .createdAt)
                     try container.encode(updatedAt, forKey: .updatedAt)
@@ -431,21 +510,21 @@ public enum ExchangeSchemaV2 {
                 }
             }
 
-            typealias ExchangeDeletedItem = ExchangeCommon.ExchangeDeletedItem
-            typealias ExchangeTag = ExchangeCommon.ExchangeTag
+            public typealias ExchangeDeletedItem = ExchangeCommon.ExchangeDeletedItem
+            public typealias ExchangeTag = ExchangeCommon.ExchangeTag
 
             public let id: String
             public let createdAt: Int?
             public let updatedAt: Int
-            let name: String
-            var items: [ExchangeItem]?
-            var itemsEncrypted: [String]?
-            var itemsDeleted: [ExchangeDeletedItem]?
-            var itemsDeletedEncrypted: [String]?
-            var tags: [ExchangeTag]?
-            var tagsEncrypted: [String]?
-            
-            init(
+            public let name: String
+            public var items: [ExchangeItem]?
+            public var itemsEncrypted: [String]?
+            public var itemsDeleted: [ExchangeDeletedItem]?
+            public var itemsDeletedEncrypted: [String]?
+            public var tags: [ExchangeTag]?
+            public var tagsEncrypted: [String]?
+
+            public init(
                 id: String,
                 name: String,
                 createdAt: Int?,
@@ -469,20 +548,20 @@ public enum ExchangeSchemaV2 {
                 self.itemsDeletedEncrypted = itemsDeletedEncrypted
             }
         }
-        
-        let schemaVersion: Int
-        let origin: ExchangeVaultOrigin
+
+        public let schemaVersion: Int
+        public let origin: ExchangeVaultOrigin
 
         public let encryption: ExchangeEncryption?
         public var vault: ExchangeVaultItem
-        
+
         private enum CodingKeys: String, CodingKey {
             case schemaVersion
             case origin
             case encryption
             case vault
         }
-        
+
         public init(
             schemaVersion: Int,
             origin: ExchangeVaultOrigin,
@@ -494,25 +573,25 @@ public enum ExchangeSchemaV2 {
             self.encryption = encryption
             self.vault = vault
         }
-        
+
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            
+
             schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
-            
+
             guard schemaVersion == 2 else {
                 throw ExchangeError.mismatchSchemaVersion(schemaVersion, expected: 2)
             }
-            
+
             origin = try container.decode(ExchangeVaultOrigin.self, forKey: .origin)
             encryption = try container.decodeIfPresent(ExchangeEncryption.self, forKey: .encryption)
-            
+
             vault = try container.decode(ExchangeVaultItem.self, forKey: .vault)
         }
-        
+
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            
+
             try container.encode(schemaVersion, forKey: .schemaVersion)
             try container.encode(origin, forKey: .origin)
             try container.encodeIfPresent(encryption, forKey: .encryption)
@@ -521,7 +600,7 @@ public enum ExchangeSchemaV2 {
     }
 }
 
-extension ExchangeSchemaV1.ExchangeVault {
+public extension ExchangeSchemaV1.ExchangeVault {
     var hasServices: Bool {
         return vault.logins?.isEmpty == false || vault.loginsEncrypted?.isEmpty == false
     }
@@ -536,14 +615,14 @@ extension ExchangeSchemaV1.ExchangeVault {
     }
 }
 
-extension ExchangeSchemaV2.ExchangeVault {
-    
+public extension ExchangeSchemaV2.ExchangeVault {
+
     static let contentNameKey = "name"
-    
+
     var hasServices: Bool {
         return vault.items?.isEmpty == false || vault.itemsEncrypted?.isEmpty == false
     }
-    
+
     var itemsCount: Int {
         if let lCount = vault.items?.count {
             return lCount
@@ -554,10 +633,35 @@ extension ExchangeSchemaV2.ExchangeVault {
     }
 }
 
-extension ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem {
-    
+public extension ExchangeVault.ExchangeVaultItem.ExchangeDeletedItem {
+
     enum DeletedItemType: String {
         case login
         case tag
+    }
+}
+
+public enum ExchangeDecodeError: Error, Sendable {
+    case schemaNotSupported(version: Int)
+}
+
+extension ExchangeVaultVersioned: Decodable {
+    /// Peeks the `schemaVersion` first, then decodes into the matching case.
+    /// Unknown versions throw `ExchangeDecodeError.schemaNotSupported`;
+    /// malformed JSON or per-schema decoding failures propagate as `DecodingError`.
+    public init(from decoder: Decoder) throws {
+        struct SchemaPeek: Decodable {
+            let schemaVersion: Int
+        }
+        let peek = try SchemaPeek(from: decoder)
+
+        switch peek.schemaVersion {
+        case 1:
+            self = .v1(try ExchangeSchemaV1.ExchangeVault(from: decoder))
+        case 2:
+            self = .v2(try ExchangeSchemaV2.ExchangeVault(from: decoder))
+        default:
+            throw ExchangeDecodeError.schemaNotSupported(version: peek.schemaVersion)
+        }
     }
 }

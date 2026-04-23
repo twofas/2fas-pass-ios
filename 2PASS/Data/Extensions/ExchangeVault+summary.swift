@@ -17,3 +17,19 @@ public extension ExchangeVault {
         )
     }
 }
+
+public extension ExchangeVaultVersioned {
+    var summary: (date: Date, vaultName: String, deviceName: String?, itemsCount: Int) {
+        switch self {
+        case .v1(let vault):
+            return (
+                date: Date(exportTimestamp: vault.vault.updatedAt),
+                vaultName: vault.vault.name,
+                deviceName: vault.origin.deviceName,
+                itemsCount: vault.itemsCount
+            )
+        case .v2(let vault):
+            return vault.summary
+        }
+    }
+}

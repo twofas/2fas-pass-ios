@@ -5,25 +5,26 @@
 // See LICENSE file for full terms
 
 import Foundation
-import Common
 
-public struct WebDAVIndex: Codable, Equatable {
-    public let backups: [WebDAVIndexEntry]
+public struct BackupIndex: Codable, Equatable, Sendable {
+    public let backups: [BackupIndexEntry]
+
+    public init(backups: [BackupIndexEntry]) {
+        self.backups = backups
+    }
 }
 
-extension WebDAVIndex {
-    func firstIndex(for vid: UUID, seedHash: String) -> Int? {
+extension BackupIndex {
+    public func firstIndex(for vaultID: UUID, seedHash: String) -> Int? {
         backups.firstIndex(
-            where: { UUID(uuidString: $0.vaultId) == vid && $0.seedHashHex.lowercased() == seedHash.lowercased() }
+            where: { UUID(uuidString: $0.vaultId) == vaultID && $0.seedHashHex.lowercased() == seedHash.lowercased() }
         )
     }
 }
 
-public struct WebDAVIndexEntry: Codable, Identifiable, Equatable, Hashable {
-    public var id: String {
-        vaultId
-    }
-    
+public struct BackupIndexEntry: Codable, Identifiable, Equatable, Hashable, Sendable {
+    public var id: String { vaultId }
+
     public let seedHashHex: String
     public let vaultId: String
     public let vaultCreatedAt: Int
@@ -31,8 +32,8 @@ public struct WebDAVIndexEntry: Codable, Identifiable, Equatable, Hashable {
     public var deviceName: String
     public let deviceId: UUID
     public let schemaVersion: Int
-    
-    init(
+
+    public init(
         seedHashHex: String,
         vaultId: String,
         vaultCreatedAt: Int,

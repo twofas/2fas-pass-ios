@@ -20,15 +20,15 @@ public enum BackupFileServiceError: Error, Sendable {
 }
 
 public protocol BackupFileServiceSession: Sendable {
-    func getIndex() async throws(BackupFileServiceError) -> Data
-    func getLock() async throws(BackupFileServiceError) -> Data
-    func getVault(vaultID: String) async throws(BackupFileServiceError) -> Data
+    func fetchIndex() async throws(BackupFileServiceError) -> Data
+    func fetchLock() async throws(BackupFileServiceError) -> Data
+    func fetchVault(vaultID: UUID) async throws(BackupFileServiceError) -> Data
 
     func writeIndex(_ data: Data) async throws(BackupFileServiceError)
     func writeLock(_ data: Data) async throws(BackupFileServiceError)
-    func writeVault(_ data: Data, vaultID: String) async throws(BackupFileServiceError)
-    func writeDecryptedVault(_ data: Data, vaultID: String) async throws(BackupFileServiceError)
+    func writeVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError)
+    func writeDecryptedVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError)
 
-    func move(vaultID: String) async throws(BackupFileServiceError)
+    func finalizeVault(vaultID: UUID) async throws(BackupFileServiceError)
     func deleteLock() async throws(BackupFileServiceError)
 }

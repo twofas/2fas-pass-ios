@@ -759,8 +759,8 @@ protocol MainRepository: AnyObject {
     func webDAVSaveSavedConfig(_ config: BackupWebDAVConfig)
     func webDAVEncodeLock(timestamp: Int, deviceId: UUID) -> Data?
     func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)?
-    func webDAVEncodeIndex(_ index: WebDAVIndex) -> Data?
-    func webDAVDecodeIndex(_ data: Data) -> WebDAVIndex?
+    func webDAVEncodeIndex(_ index: BackupIndex) -> Data?
+    func webDAVDecodeIndex(_ data: Data) -> BackupIndex?
     func webDAVClearConfig()
     var webDAVSeedHash: String? { get }
     var webDAVCurrentVaultID: VaultID? { get }

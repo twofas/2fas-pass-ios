@@ -7,6 +7,7 @@
 import SwiftUI
 import Common
 import Data
+import Backup
 
 enum VaultRecoveryWebDAVDestination: Identifiable {
     var id: String {
@@ -18,7 +19,7 @@ enum VaultRecoveryWebDAVDestination: Identifiable {
     }
     
     case selectVault(
-        WebDAVIndex,
+        BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,

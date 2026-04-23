@@ -6,6 +6,7 @@
 
 import Foundation
 import Data
+import Backup
 
 protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
     func isSecureURL(_ url: URL) -> Bool
@@ -16,7 +17,7 @@ protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<BackupIndex, WebDAVRecoveryInteractorError>) -> Void
     )
     func resetConfiguration()
 }
@@ -51,7 +52,7 @@ extension VaultRecoveryWebDAVModuleInteractor: VaultRecoveryWebDAVModuleInteract
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<BackupIndex, WebDAVRecoveryInteractorError>) -> Void
     ) {
         webDAVRecoveryInteractor
             .recover(

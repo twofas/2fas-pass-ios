@@ -82,12 +82,12 @@ extension MainRepositoryImpl {
         return (timestamp: decoded.timestamp, deviceId: decoded.deviceId)
     }
     
-    func webDAVEncodeIndex(_ index: WebDAVIndex) -> Data? {
+    func webDAVEncodeIndex(_ index: BackupIndex) -> Data? {
         try? jsonEncoder.encode(index)
     }
     
-    func webDAVDecodeIndex(_ data: Data) -> WebDAVIndex? {
-        try? jsonDecoder.decode(WebDAVIndex.self, from: data)
+    func webDAVDecodeIndex(_ data: Data) -> BackupIndex? {
+        try? jsonDecoder.decode(BackupIndex.self, from: data)
     }
     
     func webDAVClearConfig() {

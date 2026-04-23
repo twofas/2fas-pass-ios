@@ -32,7 +32,7 @@ public protocol WebDAVRecoveryInteracting: AnyObject {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<BackupIndex, WebDAVRecoveryInteractorError>) -> Void
     )
     func fetchVault(
         baseURL: URL,
@@ -52,7 +52,7 @@ final class WebDAVRecoveryInteractor {
     private let backupImportInteractor: BackupImportInteracting
     
     private var shouldStop = false
-    private var fetchedIndex: WebDAVIndex?
+    private var fetchedIndex: BackupIndex?
     
     init(
         mainRepository: MainRepository,
@@ -71,7 +71,7 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
+        completion: @escaping (Result<BackupIndex, WebDAVRecoveryInteractorError>) -> Void
     ) {
         mainRepository.webDAVSetBackupConfig(
             .init(baseURL: baseURL,

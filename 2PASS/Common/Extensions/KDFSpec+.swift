@@ -5,7 +5,6 @@
 // See LICENSE file for full terms
 
 import Foundation
-import Common
 
 public extension KDFSpec {
     init?(_ spec: ExchangeVault.ExchangeEncryption.ExchangeKDFSpec) {

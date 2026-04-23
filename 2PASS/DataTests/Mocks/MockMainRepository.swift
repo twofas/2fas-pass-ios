@@ -2723,13 +2723,13 @@ final class MockMainRepository: MainRepository {
     }
 
     var stubbedWebDAVEncodeIndex: Data?
-    func webDAVEncodeIndex(_ index: WebDAVIndex) -> Data? {
+    func webDAVEncodeIndex(_ index: BackupIndex) -> Data? {
         recordCall()
         return stubbedWebDAVEncodeIndex
     }
 
-    var stubbedWebDAVDecodeIndex: WebDAVIndex?
-    func webDAVDecodeIndex(_ data: Data) -> WebDAVIndex? {
+    var stubbedWebDAVDecodeIndex: BackupIndex?
+    func webDAVDecodeIndex(_ data: Data) -> BackupIndex? {
         recordCall()
         return stubbedWebDAVDecodeIndex
     }

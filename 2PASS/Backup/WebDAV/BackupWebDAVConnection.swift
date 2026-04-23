@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-public struct BackupWebDAVConfig: Codable, Equatable {
+public struct BackupWebDAVConfig: Codable, Equatable, Sendable {
     public let baseURL: String
     public let normalizedURL: URL
     public let lockTime: Int

@@ -8,6 +8,7 @@ import SwiftUI
 import UIKit
 import Common
 import Data
+import Backup
 
 enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
     var id: String {
@@ -25,8 +26,8 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
 
 @Observable
 final class VaultRecoverySelectWebDAVIndexPresenter {
-    let backups: [WebDAVIndexEntry]
-    private let index: WebDAVIndex
+    let backups: [BackupIndexEntry]
+    private let index: BackupIndex
    
     var isLoading = false
     
@@ -41,7 +42,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
 
     init(
         interactor: VaultRecoverySelectWebDAVIndexModuleInteracting,
-        index: WebDAVIndex,
+        index: BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,
@@ -60,7 +61,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
 }
 
 extension VaultRecoverySelectWebDAVIndexPresenter {
-    func onSelectVault(_ vault: WebDAVIndexEntry) {
+    func onSelectVault(_ vault: BackupIndexEntry) {
         isLoading = true
         
         guard let uuid = UUID(uuidString: vault.vaultId) else {
