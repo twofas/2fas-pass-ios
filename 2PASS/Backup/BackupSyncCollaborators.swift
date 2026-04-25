@@ -43,26 +43,16 @@ public protocol BackupVaultExporting: Sendable {
 #endif
 }
 
-public protocol VaultBackup: Sendable {
-    var vaultID: UUID { get }
-    var vaultCreatedAt: Int { get }
-    var seedHash: String { get }
-
-    var lastSyncTimestamp: Int? { get }
-    var hasLocalChanges: Bool { get }
-
-    func clearHasLocalChanges() async
-}
-
 public protocol BackupSyncContext: Sendable {
     var deviceID: UUID { get }
     var deviceName: String { get }
     var allowsMultiDeviceSync: Bool { get }
 
+    var vaultID: UUID { get }
+    func vault(for vaultID: UUID) -> VaultEncryptedData?
+    func seedHash(for vaultID: UUID) -> String?
+    
 #if DEBUG
     var shouldWriteDecryptedCopy: Bool { get }
 #endif
-
-    var vaultID: UUID { get }
-    func vaultBackup(for vaultID: UUID) -> VaultBackup?
 }
