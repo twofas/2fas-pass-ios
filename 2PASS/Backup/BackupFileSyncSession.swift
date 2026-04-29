@@ -184,7 +184,7 @@ private extension BackupFileSyncSession {
 
         let entry = fetchedIndex.backups[matchIndex]
 
-        if entry.schemaVersion > Config.webDAVURLSchemaVersion {
+        if entry.schemaVersion > Config.schemaVersion {
             Log("BackupFileSyncSession - remote schema \(entry.schemaVersion) unsupported", module: .backup, severity: .error)
             throw .schemaNotSupported(version: entry.schemaVersion)
         }

@@ -20,33 +20,33 @@ protocol MainModuleInteracting: AnyObject {
 final class MainModuleInteractor {
     var updateBadge: ((Bool) -> Void)?
     var paymentScreen: Callback?
-    
-    private let webDAVBackupInteractor: WebDAVBackupInteracting
+
     private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
     private let webDAVStateInteractor: WebDAVStateInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
+    private let triggerInteractor: BackupSyncTriggerInteracting
     private let systemInteractor: SystemInteracting
     private let quickSetupInteractor: QuickSetupInteracting
     private let loginInteractor: LoginInteracting
     private let notificationCenter: NotificationCenter
-    
+
     private var syncErroredLately = false
-    
+
     private var awaitsWebDAVSyncEnd = false
-    
+
     init(
-        webDAVBackupInteractor: WebDAVBackupInteracting,
         syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
         webDAVStateInteractor: WebDAVStateInteracting,
         cloudSyncInteractor: CloudSyncInteracting,
+        triggerInteractor: BackupSyncTriggerInteracting,
         systemInteractor: SystemInteracting,
         quickSetupInteractor: QuickSetupInteracting,
         loginInteractor: LoginInteracting
     ) {
-        self.webDAVBackupInteractor = webDAVBackupInteractor
         self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
         self.webDAVStateInteractor = webDAVStateInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
+        self.triggerInteractor = triggerInteractor
         self.systemInteractor = systemInteractor
         self.quickSetupInteractor = quickSetupInteractor
         self.loginInteractor = loginInteractor
@@ -183,11 +183,14 @@ private extension MainModuleInteractor {
     }
     
     func sync() {
-        if webDAVStateInteractor.isConnected {
-            Log("MainModuleInteractor - triggering sync on Main", module: .moduleInteractor)
-            webDAVBackupInteractor.sync()
+        Log("MainModuleInteractor - triggering sync on Main", module: .moduleInteractor)
+        // Drives the new `BackupSyncContainer` over every config registered through the
+        // BackupConfigs UI (WebDAV, S3, iCloud). Fire-and-forget — the previous legacy calls
+        // (`webDAVBackupInteractor.sync()`, `cloudSyncInteractor.synchronize()`) had the same
+        // semantics. The container no-ops when no configs are registered.
+        Task { [weak self] in
+            await self?.triggerInteractor.syncAll()
         }
-        cloudSyncInteractor.synchronize()
     }
     
     func postBadgeChange(_ showErrorBadge: Bool) {

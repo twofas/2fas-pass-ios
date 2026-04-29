@@ -471,7 +471,7 @@
 		54B66D912D86DA7700AB4691 /* PushNotifications */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PushNotifications; sourceTree = "<group>"; };
 		54B671632D86EC3100AB4691 /* About */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = About; sourceTree = "<group>"; };
 		54B6719F2D87260900AB4691 /* Debug */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Debug; sourceTree = "<group>"; };
-		54B676172D87719800AB4691 /* Sync */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sync; sourceTree = "<group>"; };
+		54B676172D87719800AB4691 /* BackupSync */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = BackupSync; sourceTree = "<group>"; };
 		54BB9E4E2DC8A90800BDD13F /* AppNotifications */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppNotifications; sourceTree = "<group>"; };
 		54BB9E582DC8AC4800BDD13F /* NotificationService */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54BB9E622DC8AC4800BDD13F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = NotificationService; sourceTree = "<group>"; };
 		54C0900B2D6E658300954E76 /* CommonUI */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54E7B1032D6F209E002B1462 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 54C090142D6E658300954E76 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 54E7B1042D6F209E002B1462 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CommonUI; sourceTree = "<group>"; };
@@ -946,7 +946,7 @@
 				5415B8402E2A796000FBEE71 /* Logs */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
-				54B676172D87719800AB4691 /* Sync */,
+				54B676172D87719800AB4691 /* BackupSync */,
 				54B66D912D86DA7700AB4691 /* PushNotifications */,
 				54B664C52D85820A00AB4691 /* KnownBrowsers */,
 				54B6643F2D84E09700AB4691 /* AutofillSettings */,
@@ -1205,7 +1205,7 @@
 				54B66D912D86DA7700AB4691 /* PushNotifications */,
 				54B671632D86EC3100AB4691 /* About */,
 				54B6719F2D87260900AB4691 /* Debug */,
-				54B676172D87719800AB4691 /* Sync */,
+				54B676172D87719800AB4691 /* BackupSync */,
 				54BB9E4E2DC8A90800BDD13F /* AppNotifications */,
 				54C7EBFD2D5CCE35000E79D0 /* SwiftUI */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,

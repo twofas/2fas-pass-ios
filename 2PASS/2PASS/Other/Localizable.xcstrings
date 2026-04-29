@@ -3879,6 +3879,76 @@
         }
       }
     },
+    "connection_test_error_forbidden" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Access denied. The credentials don't have permission for this location." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak dostępu. Te dane uwierzytelniające nie mają uprawnień do tej lokalizacji." } }
+      }
+    },
+    "connection_test_error_invalid_response" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The server returned an unexpected response." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Serwer zwrócił nieoczekiwaną odpowiedź." } }
+      }
+    },
+    "connection_test_error_method_not_allowed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The server does not support the operations required for backup sync." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Serwer nie obsługuje operacji wymaganych do synchronizacji kopii zapasowej." } }
+      }
+    },
+    "connection_test_error_network" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't reach the server. Check your network connection." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie można połączyć się z serwerem. Sprawdź połączenie internetowe." } }
+      }
+    },
+    "connection_test_error_not_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The location was not found." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie znaleziono lokalizacji." } }
+      }
+    },
+    "connection_test_error_server" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The server returned an error. Please try again later." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Serwer zwrócił błąd. Spróbuj ponownie później." } }
+      }
+    },
+    "connection_test_error_ssl" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't establish a secure connection. Check the server's TLS certificate." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie można nawiązać bezpiecznego połączenia. Sprawdź certyfikat TLS serwera." } }
+      }
+    },
+    "connection_test_error_unauthorized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Authentication failed. Check your credentials." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Uwierzytelnianie nie powiodło się. Sprawdź dane logowania." } }
+      }
+    },
+    "connection_test_error_unexpected_status" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The server returned an unexpected response (HTTP %lld)." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Serwer zwrócił nieoczekiwaną odpowiedź (HTTP %lld)." } }
+      }
+    },
+    "connection_test_error_url" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The address appears to be invalid." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Adres wydaje się być nieprawidłowy." } }
+      }
+    },
     "content_type_card_name" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -14305,57 +14375,6 @@
         }
       }
     },
-    "settings_cloud_sync_icloud_label" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud Sync"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Synchronizacja iCloud"
-          }
-        }
-      }
-    },
-    "settings_cloud_sync_last_sync %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last successful synchronization: **%@**"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ostatnia udana synchronizacja: **%@**"
-          }
-        }
-      }
-    },
-    "settings_cloud_sync_status %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status: **%@**"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status: **%@**"
-          }
-        }
-      }
-    },
     "settings_cloud_sync_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -18912,57 +18931,6 @@
         }
       }
     },
-    "webdav_disable_icloud_confirm_body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disable iCloud sync"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wyłącz synchronizację iCloud"
-          }
-        }
-      }
-    },
-    "webdav_disable_icloud_confirm_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Are you sure?"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jesteś pewien?"
-          }
-        }
-      }
-    },
-    "webdav_disable_webdav_confirm_body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disable WebDAV"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wyłącz WebDAV"
-          }
-        }
-      }
-    },
     "webdav_disconnect" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19335,6 +19303,167 @@
             "value" : "Kopiuj SSID"
           }
         }
+      }
+    },
+    "backup_configs_add_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Configuration" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Dodaj konfigurację" } }
+      }
+    },
+    "backup_configs_empty_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No backup configurations yet. Add one to start syncing your vault." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak konfiguracji kopii zapasowej. Dodaj jedną, aby rozpocząć synchronizację skarbca." } }
+      }
+    },
+    "backup_configs_last_synced" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Synced %@" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Zsynchronizowano %@" } }
+      }
+    },
+    "backup_configs_never_synced" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not synced yet" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Jeszcze nie zsynchronizowano" } }
+      }
+    },
+    "backup_configs_provider_icloud" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "iCloud Drive" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "iCloud Drive" } }
+      }
+    },
+    "backup_configs_provider_picker_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add backup destination" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Dodaj miejsce docelowe kopii zapasowej" } }
+      }
+    },
+    "backup_configs_provider_s3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "S3-compatible Storage" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Pamięć zgodna z S3" } }
+      }
+    },
+    "backup_configs_provider_webdav" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "WebDAV" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "WebDAV" } }
+      }
+    },
+    "backup_configs_remove_confirm_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This configuration will stop syncing. Your vault stays on this device." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ta konfiguracja przestanie się synchronizować. Twój skarbiec pozostanie na tym urządzeniu." } }
+      }
+    },
+    "backup_configs_remove_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove %@?" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usunąć %@?" } }
+      }
+    },
+    "backup_configs_row_icloud_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "iCloud Drive" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "iCloud Drive" } }
+      }
+    },
+    "backup_configs_row_s3_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "S3 Storage" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Pamięć S3" } }
+      }
+    },
+    "backup_configs_row_webdav_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "WebDAV" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "WebDAV" } }
+      }
+    },
+    "backup_configs_sync_now_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sync Now" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Synchronizuj teraz" } }
+      }
+    },
+    "s3_access_key_id" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Access Key ID" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Identyfikator klucza dostępu" } }
+      }
+    },
+    "s3_allow_untrusted_certificates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Allow Untrusted Certificates" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Zezwalaj na niezaufane certyfikaty" } }
+      }
+    },
+    "s3_bucket" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bucket" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Bucket" } }
+      }
+    },
+    "s3_connect" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connect" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Połącz" } }
+      }
+    },
+    "s3_credentials" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Credentials" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Poświadczenia" } }
+      }
+    },
+    "s3_endpoint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Endpoint URL" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Adres URL endpointu" } }
+      }
+    },
+    "s3_missing_required_fields" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Please fill in all required fields." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wypełnij wszystkie wymagane pola." } }
+      }
+    },
+    "s3_region" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Region" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Region" } }
+      }
+    },
+    "s3_secret_access_key" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Secret Access Key" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Tajny klucz dostępu" } }
       }
     }
   },

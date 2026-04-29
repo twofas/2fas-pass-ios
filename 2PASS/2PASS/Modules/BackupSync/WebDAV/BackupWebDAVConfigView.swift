@@ -7,40 +7,36 @@
 import SwiftUI
 import CommonUI
 
-struct BackupAddWebDAVView: View {
-    
+struct BackupWebDAVConfigView: View {
+
     @State
-    var presenter: BackupAddWebDAVPresenter
+    var presenter: BackupWebDAVConfigPresenter
 
     @Environment(\.dismiss) private var dismiss
-        
+
     var body: some View {
         VStack(spacing: 0) {
-            SettingsDetailsForm(.settingsEntryWebdav) {
+            SettingsDetailsForm(.settingsCloudSyncWebdavLabel) {
                 Section(.webdavServerUrl) {
                     TextField("https://host:port/path/" as String, text: $presenter.url)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .textContentType(.URL)
                         .frame(maxWidth: .infinity)
-                        .disabled(!presenter.isEditable)
+
                     Toggle(.webdavAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
                         .frame(maxWidth: .infinity)
-                        .disabled(!presenter.isEditable)
                         .tint(.accentColor)
                 }
-                
+
                 Section(.webdavCredentials) {
-                    TextField(String(localized:.webdavUsername), text: $presenter.username)
+                    TextField(String(localized: .webdavUsername), text: $presenter.username)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
                         .textContentType(.username)
-                        .disabled(!presenter.isEditable)
-                    
+
                     SecureInput(label: .webdavPassword, value: $presenter.password)
-                        .disabled(!presenter.isEditable)
                 }
-  
             } header: {
                 HStack {
                     Spacer()
@@ -53,7 +49,7 @@ struct BackupAddWebDAVView: View {
                 .listRowBackground(Color.clear)
                 .settingsFormNavigationBarTitleHidden(true)
             }
-            
+
             VStack(spacing: Spacing.l) {
                 if let uriError = presenter.uriError {
                     HStack {
@@ -64,40 +60,46 @@ struct BackupAddWebDAVView: View {
                             .foregroundStyle(.mainText)
                     }
                 }
-                
-                if presenter.isConnected {
-                    Button(.webdavDisconnect, role: .destructive) {
-                        presenter.onDisconnect()
+
+                if let connectionError = presenter.connectionError {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.destructiveAction)
+                        Text(connectionError)
+                            .font(.caption)
+                            .foregroundStyle(.mainText)
                     }
-                    .buttonStyle(.filled)
-                } else {
-                    Button {
-                        presenter.onConnect()
-                    } label: {
-                        Text(presenter.isLoading ? .webdavConnecting : .webdavConnect)
-                            .accessoryLoader(presenter.isLoading)
-                    }
-                    .allowsHitTesting(presenter.isLoading == false)
-                    .buttonStyle(.filled)
                 }
+
+                Button {
+                    presenter.onSave()
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        if presenter.isTesting {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(.white)
+                        }
+                        Text(presenter.isEditMode ? .commonSave : .webdavConnect)
+                    }
+                }
+                .buttonStyle(.filled)
+                .disabled(presenter.isTesting)
             }
             .controlSize(.large)
             .padding(.horizontal, Spacing.xl)
             .padding(.vertical, Spacing.xl)
             .background(Color(UIColor.systemGroupedBackground))
         }
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                ToolbarCancelButton {
+                    dismiss()
+                }
+            }
+        }
         .onAppear {
             presenter.onAppear()
         }
-        .onDisappear {
-            presenter.onDisappear()
-        }
-        .router(router: BackupAddWebDAVRouter(), destination: $presenter.destination)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        BackupAddWebDAVRouter.buildView()
     }
 }

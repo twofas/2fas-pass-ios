@@ -23,6 +23,10 @@ public final class InteractorFactory {
         BackupSyncConfigsInteractor(mainRepository: MainRepositoryImpl.shared)
     }
 
+    public func backupSyncTriggerInteractor() -> BackupSyncTriggerInteracting {
+        BackupSyncTriggerInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
     public func rootInteractor() -> RootInteracting {
         RootInteractor(
             mainRepository: MainRepositoryImpl.shared,

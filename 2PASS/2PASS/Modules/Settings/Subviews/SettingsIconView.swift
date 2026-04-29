@@ -59,6 +59,9 @@ enum SettingsIcon {
     case enpass
     case keeper
     case nordPass
+    case iCloud
+    case webDAV
+    case s3
 }
 
 enum SettingIconStyle {
@@ -239,6 +242,12 @@ struct SettingsIconView: View {
             Image(.keeperIcon)
         case .nordPass:
             Image(.nordpassIcon)
+        case .iCloud:
+            Image(systemName: "icloud.fill")
+        case .webDAV:
+            Image(systemName: "server.rack")
+        case .s3:
+            Image(systemName: "externaldrive.fill.badge.icloud")
         }
     }
     

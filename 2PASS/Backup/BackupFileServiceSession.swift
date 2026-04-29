@@ -31,4 +31,20 @@ public protocol BackupFileServiceSession: Sendable {
 
     func finalizeVault(vaultID: UUID) async throws(BackupFileServiceError)
     func deleteLock() async throws(BackupFileServiceError)
+
+    /// Read probe used to verify a config before persisting it. Default implementation calls
+    /// `fetchIndex()` and treats `.notFound` (HTTP 404) as success — that's the fresh-setup
+    /// case where the destination is reachable and credentials are valid but no backup yet
+    /// exists. All other errors (`.unauthorized`, `.forbidden`, `.network`, etc.) propagate.
+    func testConnection() async throws(BackupFileServiceError)
+}
+
+public extension BackupFileServiceSession {
+    func testConnection() async throws(BackupFileServiceError) {
+        do {
+            _ = try await fetchIndex()
+        } catch BackupFileServiceError.notFound {
+            return
+        }
+    }
 }

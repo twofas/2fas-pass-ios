@@ -7,20 +7,16 @@
 import Foundation
 import Backup
 
-/// CRUD-style access to the backup-sync configs.
-///
-/// Wraps `MainRepository`'s persistence methods directly — does not reach through the
-/// `BackupSyncContainer`. UI flows that need a single homogeneous list of all configured
-/// backends (settings screens, "all backends" overview) consume this interactor; flows that
-/// need per-kind specifics filter `allConfigs` themselves via the
-/// `[BackupConfig].webDAVEntries` / `.s3Entries` extensions.
+/// CRUD-style access to the backup-sync configs, plus a connection probe used to validate a
+/// config before persisting it. Persistence reads/writes go straight to `MainRepository` and
+/// never touch `BackupSyncContainer` — that orchestration surface lives in
+/// `BackupSyncTriggerInteracting`. The probe is included here because it's a "thing you can do
+/// with a config" alongside read/write; it constructs a transient `BackupFileServiceSession`
+/// for the supplied config and runs `testConnection()` against it. Per-kind filtering is left
+/// to callers via the `[BackupConfig].webDAVEntries` / `.iCloudEntry` extensions.
 public protocol BackupSyncConfigsInteracting: AnyObject {
     /// Every registered config in registration order.
     var allConfigs: [BackupConfig] { get }
-
-    /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
-    /// Reads through to the persistent date store; intended for UI display ("Last synced …").
-    func lastSyncDate(for id: UUID) -> Date?
 
     /// Adds a new WebDAV backend; returns the assigned id.
     @discardableResult
@@ -47,6 +43,13 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
 
     /// Removes the entry with `id` regardless of kind. No-op if no entry matches.
     func removeConfig(id: UUID)
+
+    /// Read probe: builds a transient `BackupFileServiceSession` for the supplied config and
+    /// runs its `testConnection()` (auth + index-read in one call). Throws on auth failure,
+    /// network error, or read denial. Returns silently on success including the
+    /// no-index-yet fresh-setup case (`fetchIndex()` 404 is folded into success).
+    func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
+    func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
 }
 
 final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
@@ -58,10 +61,6 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
 
     var allConfigs: [BackupConfig] {
         mainRepository.loadBackupConfigs()
-    }
-
-    func lastSyncDate(for id: UUID) -> Date? {
-        mainRepository.loadLastSyncDates()[id]
     }
 
     @discardableResult
@@ -113,5 +112,15 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         guard configs.contains(where: { $0.id == id }) else { return }
         configs.removeAll { $0.id == id }
         mainRepository.saveBackupConfigs(configs)
+    }
+
+    func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError) {
+        let session = BackupWebDAVServiceSession(config: config)
+        try await session.testConnection()
+    }
+
+    func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError) {
+        let session = BackupS3ServiceSession(config: config)
+        try await session.testConnection()
     }
 }

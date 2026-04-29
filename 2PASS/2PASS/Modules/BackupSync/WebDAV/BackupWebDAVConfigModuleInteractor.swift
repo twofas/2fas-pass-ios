@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
+import Foundation
+import Backup
+import Data
+
+@MainActor
+protocol BackupWebDAVConfigModuleInteracting: AnyObject {
+    var existingConfig: BackupWebDAVConfig? { get }
+    func isSecureURL(_ url: URL) -> Bool
+    func normalizeURL(_ str: String) -> URL?
+    func testConnection(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
+    func saveAdd(_ config: BackupWebDAVConfig)
+    func saveUpdate(id: UUID, with config: BackupWebDAVConfig)
+}
+
+@MainActor
+final class BackupWebDAVConfigModuleInteractor: BackupWebDAVConfigModuleInteracting {
+
+    private let configsInteractor: BackupSyncConfigsInteracting
+    private let uriInteractor: URIInteracting
+    private let configID: UUID?
+
+    init(
+        configsInteractor: BackupSyncConfigsInteracting,
+        uriInteractor: URIInteracting,
+        configID: UUID?
+    ) {
+        self.configsInteractor = configsInteractor
+        self.uriInteractor = uriInteractor
+        self.configID = configID
+    }
+
+    var existingConfig: BackupWebDAVConfig? {
+        guard let configID else { return nil }
+        for case .webDAV(let entry) in configsInteractor.allConfigs where entry.id == configID {
+            return entry.config
+        }
+        return nil
+    }
+
+    func isSecureURL(_ url: URL) -> Bool {
+        uriInteractor.isSecureURL(url)
+    }
+
+    func normalizeURL(_ str: String) -> URL? {
+        uriInteractor.normalizeURL(str, options: .trailingSlash)
+    }
+
+    func testConnection(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError) {
+        try await configsInteractor.test(config)
+    }
+
+    func saveAdd(_ config: BackupWebDAVConfig) {
+        configsInteractor.addWebDAVConfig(config)
+    }
+
+    func saveUpdate(id: UUID, with config: BackupWebDAVConfig) {
+        configsInteractor.updateWebDAVConfig(id: id, with: config)
+    }
+}

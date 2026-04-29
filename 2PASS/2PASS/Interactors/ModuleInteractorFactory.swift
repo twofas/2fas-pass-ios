@@ -160,24 +160,41 @@ extension ModuleInteractorFactory {
         )
     }
     
-    func backupAddWebDAVModuleInteractor() -> BackupAddWebDAVModuleInteracting {
-        BackupAddWebDAVModuleInteractor(
-            webDAVBackupInteractor: InteractorFactory.shared.webDAVBackupInteractor(),
-            webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
-            uriInteractor: InteractorFactory.shared.uriInteractor(),
+    @MainActor
+    func backupConfigsModuleInteractor() -> BackupConfigsModuleInteracting {
+        BackupConfigsModuleInteractor(
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            triggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor()
+        )
+    }
+
+    @MainActor
+    func backupWebDAVConfigModuleInteractor(configID: UUID?) -> BackupWebDAVConfigModuleInteracting {
+        BackupWebDAVConfigModuleInteractor(
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
+            configID: configID
+        )
+    }
+
+    @MainActor
+    func backupS3ConfigModuleInteractor(configID: UUID?) -> BackupS3ConfigModuleInteracting {
+        BackupS3ConfigModuleInteractor(
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            configID: configID
         )
     }
     
     func mainModuleInteracting() -> MainModuleInteracting {
         MainModuleInteractor(
-            webDAVBackupInteractor: InteractorFactory.shared.webDAVBackupInteractor(),
             syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: true),
             webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
+            triggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
-            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor()
         )
     }
     
@@ -285,14 +302,6 @@ extension ModuleInteractorFactory {
         SettingsDebugModuleInteractor(
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             debugInteractor: InteractorFactory.shared.debugInteractor()
-        )
-    }
-    
-    @MainActor
-    func syncModuleInteractor() -> SyncModuleInteracting {
-        SyncModuleInteractor(
-            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
-            webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor()
         )
     }
     
