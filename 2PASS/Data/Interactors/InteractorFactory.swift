@@ -9,7 +9,20 @@ import Common
 
 public final class InteractorFactory {
     public static let shared = InteractorFactory()
-    
+
+    public func backupSyncSetupInteractor() -> BackupSyncInstalling {
+        BackupSyncSetupInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            exportInteractor: exportInteractor(),
+            backupImportInteractor: backupImportInteractor(),
+            syncInteractor: syncInteractor()
+        )
+    }
+
+    public func backupSyncConfigsInteractor() -> BackupSyncConfigsInteracting {
+        BackupSyncConfigsInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
     public func rootInteractor() -> RootInteracting {
         RootInteractor(
             mainRepository: MainRepositoryImpl.shared,
@@ -218,7 +231,10 @@ public final class InteractorFactory {
     }
     
     public func webDAVStateInteractor() -> WebDAVStateInteracting {
-        WebDAVStateInteractor(mainRepository: MainRepositoryImpl.shared)
+        WebDAVStateInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            configsInteractor: backupSyncConfigsInteractor()
+        )
     }
     
     public func syncChangeTriggerInteractor(callsChange: Bool) -> SyncChangeTriggerInteracting {
@@ -238,7 +254,8 @@ public final class InteractorFactory {
     public func webDAVRecoveryInteractor() -> WebDAVRecoveryInteracting {
         WebDAVRecoveryInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            backupImportInteractor: backupImportInteractor()
+            backupImportInteractor: backupImportInteractor(),
+            configsInteractor: backupSyncConfigsInteractor()
         )
     }
 

@@ -2701,13 +2701,43 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
-    var stubbedWebDAVSavedConfig: BackupWebDAVConfig?
-    var webDAVSavedConfig: BackupWebDAVConfig? { stubbedWebDAVSavedConfig }
+    var stubbedBackupConfigs: [BackupConfig] = []
 
-    var capturedWebDAVSavedConfig: BackupWebDAVConfig?
-    func webDAVSaveSavedConfig(_ config: BackupWebDAVConfig) {
+    func loadBackupConfigs() -> [BackupConfig] {
         recordCall()
-        capturedWebDAVSavedConfig = config
+        return stubbedBackupConfigs
+    }
+
+    var capturedSaveBackupConfigs: [BackupConfig]?
+    func saveBackupConfigs(_ configs: [BackupConfig]) {
+        recordCall()
+        capturedSaveBackupConfigs = configs
+        stubbedBackupConfigs = configs
+    }
+
+    var stubbedLastSyncDates: [UUID: Date] = [:]
+
+    func loadLastSyncDates() -> [UUID: Date] {
+        recordCall()
+        return stubbedLastSyncDates
+    }
+
+    var capturedSaveLastSyncDates: [UUID: Date]?
+    func saveLastSyncDates(_ dates: [UUID: Date]) {
+        recordCall()
+        capturedSaveLastSyncDates = dates
+        stubbedLastSyncDates = dates
+    }
+
+    var stubbedLegacyWebDAVSavedConfig: BackupWebDAVConfig?
+    var legacyWebDAVSavedConfig: BackupWebDAVConfig? {
+        recordCall()
+        return stubbedLegacyWebDAVSavedConfig
+    }
+
+    func clearLegacyWebDAVSavedConfig() {
+        recordCall()
+        stubbedLegacyWebDAVSavedConfig = nil
     }
 
     var stubbedWebDAVEncodeLock: Data?
@@ -2732,10 +2762,6 @@ final class MockMainRepository: MainRepository {
     func webDAVDecodeIndex(_ data: Data) -> BackupIndex? {
         recordCall()
         return stubbedWebDAVDecodeIndex
-    }
-
-    func webDAVClearConfig() {
-        recordCall()
     }
 
     var stubbedWebDAVSeedHash: String?
@@ -2920,5 +2946,20 @@ final class MockMainRepository: MainRepository {
     func uriCacheGet(originalUri: String) -> String? {
         recordCall()
         return stubbedURICache[originalUri]
+    }
+
+    // MARK: Backup Sync Container
+
+    var stubbedBackupSyncContainer: BackupSyncContainer?
+    var backupSyncContainer: BackupSyncContainer? {
+        recordCall()
+        return stubbedBackupSyncContainer
+    }
+
+    var capturedSetBackupSyncContainer: BackupSyncContainer?
+    func setBackupSyncContainer(_ container: BackupSyncContainer) {
+        recordCall()
+        capturedSetBackupSyncContainer = container
+        stubbedBackupSyncContainer = container
     }
 }

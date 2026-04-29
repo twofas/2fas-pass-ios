@@ -24,7 +24,8 @@ extension ModuleInteractorFactory {
             updateAppPromptInteractor: InteractorFactory.shared.updateAppPromptInteractor(),
             credentialExchangeImporter: InteractorFactory.shared.credentialExchangeImporter(),
             configInteractor: InteractorFactory.shared.configInteractor(),
-            shareLinkInteractor: InteractorFactory.shared.shareInteractor()
+            shareLinkInteractor: InteractorFactory.shared.shareInteractor(),
+            backupSyncInstaller: InteractorFactory.shared.backupSyncSetupInteractor()
         )
     }
 

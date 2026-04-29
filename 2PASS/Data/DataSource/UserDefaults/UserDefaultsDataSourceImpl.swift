@@ -24,6 +24,10 @@ final class UserDefaultsDataSourceImpl {
         case incorrectBiometryCountAttemp
         case defaultProtectionLevel
         case passwordGeneratorConfig
+        case backupConfigsBlob
+        case lastSyncDatesBlob
+        /// Legacy key: a single encrypted `BackupWebDAVConfig` blob used before the multi-config
+        /// rework. Retained read-only to support migration into `backupConfigsBlob`.
         case webDAVSavedConfig
         case webDAVIsConnected
         case webDAVState
@@ -246,20 +250,43 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         sharedDefaults.synchronize()
     }
     
-    var webDAVSavedConfig: Data? {
-        userDefaults.data(forKey: Keys.webDAVSavedConfig.rawValue)
-     }
-    
-    func saveWebDAVSavedConfig(_ config: Data) {
-        userDefaults.setValue(config, forKey: Keys.webDAVSavedConfig.rawValue)
+    var backupConfigsBlob: Data? {
+        userDefaults.data(forKey: Keys.backupConfigsBlob.rawValue)
+    }
+
+    func saveBackupConfigsBlob(_ data: Data) {
+        userDefaults.setValue(data, forKey: Keys.backupConfigsBlob.rawValue)
         userDefaults.synchronize()
     }
-    
-    func clearWebDAVConfig() {
+
+    func clearBackupConfigsBlob() {
+        userDefaults.setValue(nil, forKey: Keys.backupConfigsBlob.rawValue)
+        userDefaults.synchronize()
+    }
+
+    var legacyWebDAVSavedConfig: Data? {
+        userDefaults.data(forKey: Keys.webDAVSavedConfig.rawValue)
+    }
+
+    func clearLegacyWebDAVSavedConfig() {
         userDefaults.setValue(nil, forKey: Keys.webDAVSavedConfig.rawValue)
         userDefaults.synchronize()
     }
-    
+
+    var lastSyncDatesBlob: Data? {
+        userDefaults.data(forKey: Keys.lastSyncDatesBlob.rawValue)
+    }
+
+    func saveLastSyncDatesBlob(_ data: Data) {
+        userDefaults.setValue(data, forKey: Keys.lastSyncDatesBlob.rawValue)
+        userDefaults.synchronize()
+    }
+
+    func clearLastSyncDatesBlob() {
+        userDefaults.setValue(nil, forKey: Keys.lastSyncDatesBlob.rawValue)
+        userDefaults.synchronize()
+    }
+
     var webDAVIsConnected: Bool {
         userDefaults.bool(forKey: Keys.webDAVIsConnected.rawValue)
     }

@@ -55,9 +55,21 @@ protocol UserDefaultsDataSource: AnyObject {
     
     func migrateLegacyValuesToSharedDefaults()
     
-    var webDAVSavedConfig: Data? { get }
-    func saveWebDAVSavedConfig(_ config: Data)
-    func clearWebDAVConfig()
+    var backupConfigsBlob: Data? { get }
+    func saveBackupConfigsBlob(_ data: Data)
+    func clearBackupConfigsBlob()
+
+    /// Plaintext per-config last-successful-sync timestamps. Not encrypted: timestamps aren't
+    /// sensitive, and dropping the encryption removes the `appKey` dependency so reads work in
+    /// any auth state.
+    var lastSyncDatesBlob: Data? { get }
+    func saveLastSyncDatesBlob(_ data: Data)
+    func clearLastSyncDatesBlob()
+
+    /// Legacy single-config blob, retained read-only so migration code can hoist a pre-existing
+    /// WebDAV config into the new `backupConfigsBlob` list and then clear this slot.
+    var legacyWebDAVSavedConfig: Data? { get }
+    func clearLegacyWebDAVSavedConfig()
     
     var webDAVIsConnected: Bool { get }
     func webDAVSetIsConnected(_ isConnected: Bool)

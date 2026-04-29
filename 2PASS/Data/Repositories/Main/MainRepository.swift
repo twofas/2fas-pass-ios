@@ -755,13 +755,36 @@ protocol MainRepository: AnyObject {
     func webDAVMove(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
     func webDAVDeleteLock(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
     func webDAVSetBackupConfig(_ config: BackupWebDAVConfig)
-    var webDAVSavedConfig: BackupWebDAVConfig? { get }
-    func webDAVSaveSavedConfig(_ config: BackupWebDAVConfig)
+
+    // MARK: - Backup Sync config persistence
+    // Used by `BackupSyncAdapter` (the production `BackupSyncConfigStore`), which forwards 1:1.
+    // These methods own the full persistence boundary: encryption with the Secure Enclave-derived
+    // key, JSON encoding of `[BackupConfig]`, and UserDefaults blob storage. Callers deal only
+    // in typed configs — they never see raw bytes or encryption.
+    //
+    // Returns an empty array on any failure (no configs persisted, decryption failed, decode
+    // failed). Callers cannot distinguish "no entries" from "load failed"; that's deliberate
+    // since both states present the same way to the user (no backends configured).
+    func loadBackupConfigs() -> [BackupConfig]
+    func saveBackupConfigs(_ configs: [BackupConfig])
+
+    /// Per-config "last successful sync" timestamps. Plaintext storage — timestamps are not
+    /// sensitive, and skipping encryption removes the `appKey` dependency so reads work in any
+    /// auth state. Returns an empty map if nothing has been written or decoding fails.
+    func loadLastSyncDates() -> [UUID: Date]
+    func saveLastSyncDates(_ dates: [UUID: Date])
+
+    /// Legacy single-config accessor, retained for one-shot migration into the new
+    /// `loadBackupConfigs` list. Decrypts and decodes the pre-multi-config blob if present.
+    /// Returns `nil` once `clearLegacyWebDAVSavedConfig()` has been called or no legacy blob
+    /// was ever stored.
+    var legacyWebDAVSavedConfig: BackupWebDAVConfig? { get }
+    func clearLegacyWebDAVSavedConfig()
+
     func webDAVEncodeLock(timestamp: Int, deviceId: UUID) -> Data?
     func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)?
     func webDAVEncodeIndex(_ index: BackupIndex) -> Data?
     func webDAVDecodeIndex(_ data: Data) -> BackupIndex?
-    func webDAVClearConfig()
     var webDAVSeedHash: String? { get }
     var webDAVCurrentVaultID: VaultID? { get }
     
@@ -826,4 +849,13 @@ protocol MainRepository: AnyObject {
     // MARK: - URI Cache
     func uriCacheSet(originalUri: String, parsedUri: String)
     func uriCacheGet(originalUri: String) -> String?
+
+    // MARK: - Backup Sync Container
+    /// The app-lifetime `BackupSyncContainer`. `nil` until installed by
+    /// `BackupSyncSetupInteractor.initialize()`, which is invoked from
+    /// `RootModuleInteractor.initializeApp()` at app launch. After installation this stays
+    /// non-nil for the process lifetime. The container proxies the underlying
+    /// `BackupSyncCoordinator` and owns the typed saved configs (WebDAV persisted, S3 in-memory).
+    var backupSyncContainer: BackupSyncContainer? { get }
+    func setBackupSyncContainer(_ container: BackupSyncContainer)
 }

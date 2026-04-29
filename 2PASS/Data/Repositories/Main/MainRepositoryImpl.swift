@@ -33,6 +33,7 @@ final class MainRepositoryImpl: MainRepository {
     var _isInBackground = false
     var _webDAVState: WebDAVState = .idle
     var _isAutoFillEnabled: Bool = false
+    var _backupSyncContainer: BackupSyncContainer?
     var _pushNotificationToken: String?
     var _syncHasError = false
     var _startPurchaseBlock: StartPurchaseBlock?

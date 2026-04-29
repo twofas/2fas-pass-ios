@@ -71,6 +71,7 @@ final class RootModuleInteractor {
     private let credentialExchangeImporter: CredentialExchangeImporting
     private let configInteractor: ConfigInteracting
     private let shareLinkInteractor: ShareLinkInteracting
+    private let backupSyncInstaller: BackupSyncInstalling
     private let notificationCenter = NotificationCenter.default
 
     init(
@@ -85,7 +86,8 @@ final class RootModuleInteractor {
         updateAppPromptInteractor: UpdateAppPromptInteracting,
         credentialExchangeImporter: CredentialExchangeImporting,
         configInteractor: ConfigInteracting,
-        shareLinkInteractor: ShareLinkInteracting
+        shareLinkInteractor: ShareLinkInteracting,
+        backupSyncInstaller: BackupSyncInstalling
     ) {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
@@ -99,6 +101,7 @@ final class RootModuleInteractor {
         self.credentialExchangeImporter = credentialExchangeImporter
         self.configInteractor = configInteractor
         self.shareLinkInteractor = shareLinkInteractor
+        self.backupSyncInstaller = backupSyncInstaller
 
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
@@ -138,6 +141,7 @@ extension RootModuleInteractor: RootModuleInteracting {
     func initializeApp() {
         Log("RootModuleInteractor: Initialize app", module: .moduleInteractor)
         startupInteractor.initialize()
+        backupSyncInstaller.initialize()
         rootInteractor.initializeApp()
         UIApplication.shared.registerForRemoteNotifications()
         timeVerificationInteractor.startVerification()

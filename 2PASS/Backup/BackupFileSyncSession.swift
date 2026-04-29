@@ -7,8 +7,10 @@
 import Foundation
 import Common
 
-public final class BackupFileSyncSession: Sendable {
+public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
 
+    public let id: UUID
+    public let kind: SyncServiceKind
     public let status: AsyncStream<BackupSyncStatus>
 
     private let statusContinuation: AsyncStream<BackupSyncStatus>.Continuation
@@ -17,23 +19,30 @@ public final class BackupFileSyncSession: Sendable {
     private let context: BackupSyncContext
     private let vaultExporter: BackupVaultExporting
     private let localMerger: BackupLocalMerging
+    private let dateStore: BackupSyncDateStore
     private let maxRetries: Int
     private let networkRetryDelay: Duration
     private let serverRetryDelay: Duration
 
     public init(
+        id: UUID,
+        kind: SyncServiceKind,
         service: BackupFileServiceSession,
         context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,
         localMerger: BackupLocalMerging,
+        dateStore: BackupSyncDateStore,
         maxRetries: Int = 3,
         networkRetryDelay: Duration = .seconds(10),
         serverRetryDelay: Duration = .seconds(Config.webDAVLockFileTime)
     ) {
+        self.id = id
+        self.kind = kind
         self.service = service
         self.context = context
         self.vaultExporter = vaultExporter
         self.localMerger = localMerger
+        self.dateStore = dateStore
         self.maxRetries = max(1, maxRetries)
         self.networkRetryDelay = networkRetryDelay
         self.serverRetryDelay = serverRetryDelay
@@ -48,17 +57,17 @@ public final class BackupFileSyncSession: Sendable {
     }
 
     /// Runs a full sync attempt, retrying transient errors up to `maxRetries` times.
-    /// - Returns: `true` if the sync applied any changes to the local database, `false` otherwise.
-    public func sync(overwritingVault: Bool = false) async throws(BackupSyncError) -> Bool {
+    public func performSync(overwritingVault: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
         emit(.started)
 
         var attempt = 0
         while true {
             attempt += 1
             do {
-                let madeLocalChanges = try await runAttempt(overwritingVault: overwritingVault)
+                let appliedRemoteChanges = try await runAttempt(overwritingVault: overwritingVault)
                 emit(.succeeded)
-                return madeLocalChanges
+                dateStore.setLastSyncDate(Date(), for: id)
+                return BackupSyncOutcome(appliedRemoteChanges: appliedRemoteChanges)
             } catch let error where error.isTransient && attempt < maxRetries {
                 emit(.retrying(reason: "\(error)"))
                 do {
@@ -91,12 +100,12 @@ private extension BackupFileSyncSession {
     func runAttempt(overwritingVault: Bool) async throws(BackupSyncError) -> Bool {
         let currentSyncDate = Date()
 
-        guard let vault = context.vault(for: context.vaultID),
-              let seedHash = context.seedHash(for: context.vaultID) else {
-            throw .unexpected("no vault to sync")
+        guard let vaultID = context.vaultID,
+              let vault = context.vault(for: vaultID),
+              let seedHash = context.seedHash(for: vaultID),
+              let deviceID = context.deviceID else {
+            throw .unexpected("missing context: vault ID, vault, seed hash, or device ID")
         }
-
-        let vaultID = vault.vaultID
 
         try checkCancellation()
         let fetchedIndex = try await fetchIndex()
@@ -106,7 +115,7 @@ private extension BackupFileSyncSession {
         guard action == .needsRemoteMerge else { return false }
 
         try checkCancellation()
-        try await resolveLock(at: currentSyncDate)
+        try await resolveLock(at: currentSyncDate, deviceID: deviceID)
 
         var madeLocalChanges = false
         if overwritingVault {
@@ -133,7 +142,8 @@ private extension BackupFileSyncSession {
         try await writeUpdatedIndex(
             basedOn: fetchedIndex,
             vault: vault,
-            seedHash: seedHash
+            seedHash: seedHash,
+            deviceID: deviceID
         )
 
         try checkCancellation()
@@ -188,12 +198,12 @@ private extension BackupFileSyncSession {
         return .needsRemoteMerge
     }
 
-    func resolveLock(at syncDate: Date) async throws(BackupSyncError) {
+    func resolveLock(at syncDate: Date, deviceID: UUID) async throws(BackupSyncError) {
         for attempt in 0..<maxRetries {
             let verdict = try await inspectLock()
             switch verdict {
             case .takeOver:
-                try await writeLock(at: syncDate)
+                try await writeLock(at: syncDate, deviceID: deviceID)
                 return
             case .waitAndRetry(let waitTimestamp):
                 Log("BackupFileSyncSession - foreign lock fresh, waiting (attempt \(attempt + 1)/\(maxRetries))", module: .backup)
@@ -239,9 +249,9 @@ private extension BackupFileSyncSession {
         }
     }
 
-    func writeLock(at syncDate: Date) async throws(BackupSyncError) {
+    func writeLock(at syncDate: Date, deviceID: UUID) async throws(BackupSyncError) {
         Log("BackupFileSyncSession - writing lock", module: .backup)
-        let payload = encodeLock(timestamp: syncDate.exportTimestamp, deviceId: context.deviceID)
+        let payload = encodeLock(timestamp: syncDate.exportTimestamp, deviceId: deviceID)
         do {
             try await service.writeLock(payload)
         } catch {
@@ -340,12 +350,14 @@ private extension BackupFileSyncSession {
     func writeUpdatedIndex(
         basedOn fetchedIndex: BackupIndex?,
         vault: VaultEncryptedData,
-        seedHash: String
+        seedHash: String,
+        deviceID: UUID
     ) async throws(BackupSyncError) {
         let index = makeUpdatedIndex(
             basedOn: fetchedIndex,
             vault: vault,
-            seedHash: seedHash
+            seedHash: seedHash,
+            deviceID: deviceID
         )
         let data: Data
         do {
@@ -373,7 +385,8 @@ private extension BackupFileSyncSession {
     func makeUpdatedIndex(
         basedOn fetchedIndex: BackupIndex?,
         vault: VaultEncryptedData,
-        seedHash: String
+        seedHash: String,
+        deviceID: UUID
     ) -> BackupIndex {
         let vaultUpdatedAt = vault.updatedAt.exportTimestamp
         let entry = BackupIndexEntry(
@@ -382,7 +395,7 @@ private extension BackupFileSyncSession {
             vaultCreatedAt: vault.createdAt.exportTimestamp,
             vaultUpdatedAt: vaultUpdatedAt,
             deviceName: context.deviceName,
-            deviceId: context.deviceID,
+            deviceId: deviceID,
             schemaVersion: Config.webDAVURLSchemaVersion
         )
 

@@ -50,16 +50,19 @@ public protocol WebDAVRecoveryInteracting: AnyObject {
 final class WebDAVRecoveryInteractor {
     private let mainRepository: MainRepository
     private let backupImportInteractor: BackupImportInteracting
-    
+    private let configsInteractor: BackupSyncConfigsInteracting
+
     private var shouldStop = false
     private var fetchedIndex: BackupIndex?
-    
+
     init(
         mainRepository: MainRepository,
         backupImportInteractor: BackupImportInteracting,
+        configsInteractor: BackupSyncConfigsInteracting
     ) {
         self.mainRepository = mainRepository
         self.backupImportInteractor = backupImportInteractor
+        self.configsInteractor = configsInteractor
     }
 }
 
@@ -215,8 +218,12 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
         }
     }
     
-    func saveConfiguration(baseURL: URL, allowTLSOff: Bool, vaultID: VaultID, login: String?, password: String?) {        
-        mainRepository.webDAVSaveSavedConfig(
+    func saveConfiguration(baseURL: URL, allowTLSOff: Bool, vaultID: VaultID, login: String?, password: String?) {
+        // Legacy single-server semantics: clear any existing webDAV configs, then add this one.
+        for entry in configsInteractor.allConfigs.webDAVEntries {
+            configsInteractor.removeConfig(id: entry.id)
+        }
+        configsInteractor.addWebDAVConfig(
             .init(
                 baseURL: baseURL.absoluteString,
                 normalizedURL: baseURL,
@@ -229,9 +236,11 @@ extension WebDAVRecoveryInteractor: WebDAVRecoveryInteracting {
         )
         mainRepository.webDAVSetIsConnected(true)
     }
-    
+
     func resetConfiguration() {
-        mainRepository.webDAVClearConfig()
+        for entry in configsInteractor.allConfigs.webDAVEntries {
+            configsInteractor.removeConfig(id: entry.id)
+        }
         mainRepository.webDAVClearIsConnected()
     }
 }

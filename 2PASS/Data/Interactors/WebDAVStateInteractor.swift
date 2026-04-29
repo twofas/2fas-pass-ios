@@ -47,19 +47,21 @@ public protocol WebDAVStateInteracting: AnyObject {
 
 final class WebDAVStateInteractor {
     private let mainRepository: MainRepository
+    private let configsInteractor: BackupSyncConfigsInteracting
     private let notificationCenter: NotificationCenter
-    
+
     private let maxRetryConnected = 2
     private let maxRetryDisconnected = 1
     private var retryLimit = 0
-    
+
     private(set) var currentSyncTimestamp: Int?
     private var wasIndexWritten = false
-    
-    init(mainRepository: MainRepository) {
+
+    init(mainRepository: MainRepository, configsInteractor: BackupSyncConfigsInteracting) {
         self.mainRepository = mainRepository
+        self.configsInteractor = configsInteractor
         self.notificationCenter = NotificationCenter.default
-        
+
         notificationCenter.post(
             name: .webDAVStateChange,
             object: nil,
@@ -99,7 +101,7 @@ extension WebDAVStateInteractor {
     }
     
     func getConfig() -> BackupWebDAVConfig? {
-        mainRepository.webDAVSavedConfig
+        configsInteractor.allConfigs.webDAVEntries.first?.config
     }
     
     var awaitsVaultOverrideAfterPasswordChange: Bool {
@@ -130,7 +132,11 @@ extension WebDAVStateInteractor {
         else {
             return
         }
-        mainRepository.webDAVSaveSavedConfig(
+        // Legacy single-server semantics: clear any existing webDAV configs, then add this one.
+        for entry in configsInteractor.allConfigs.webDAVEntries {
+            configsInteractor.removeConfig(id: entry.id)
+        }
+        configsInteractor.addWebDAVConfig(
             .init(
                 baseURL: baseURL,
                 normalizedURL: normalizedBaseURL,
@@ -254,7 +260,9 @@ extension WebDAVStateInteractor: WebDAVStateInteracting {
     }
     
     func clearConfig() {
-        mainRepository.webDAVClearConfig()
+        for entry in configsInteractor.allConfigs.webDAVEntries {
+            configsInteractor.removeConfig(id: entry.id)
+        }
     }
     
     func clearFlags() {
