@@ -22,6 +22,11 @@ public enum BackupSyncError: Error, Sendable {
     case export(BackupVaultExportError)
     case invalidResponse
     case unexpected(String)
+    /// iCloud-specific terminal condition: account signed out, container unavailable, or
+    /// equivalent state where the user must take action in Settings before sync can resume.
+    /// Distinct from `.unauthorized` (which the UX layer treats as "ask for credentials") and
+    /// `.network` (transient, retried). Other backends never throw this case.
+    case iCloudUnavailable
 }
 
 extension BackupSyncError {

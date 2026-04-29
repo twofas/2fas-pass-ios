@@ -113,6 +113,24 @@ import Backup
         #expect(webDAV2.recording.calls == 1)
     }
 
+    /// `.iCloud` is the third backend kind. The coordinator works on the `BackupSynchronizing`
+    /// abstraction, so adding the kind shouldn't perturb ordering, convergence, or aggregation —
+    /// this smoke test pins that assumption.
+    @Test func syncAllRoundTripsiCloudKind() async throws {
+        let coordinator = BackupSyncCoordinator()
+        let iCloud = FakeSynchronizer(
+            kind: .iCloud,
+            outcome: BackupSyncOutcome(appliedRemoteChanges: true)
+        )
+        let webDAV = FakeSynchronizer(kind: .webDAV)
+
+        let results = await coordinator.syncAll([iCloud, webDAV])
+
+        #expect(results.map(\.kind) == [.iCloud, .webDAV])
+        #expect(iCloud.recording.calls == 1)
+        #expect(webDAV.recording.calls == 2, "iCloud's appliedRemoteChanges must re-queue the WebDAV peer")
+    }
+
     // MARK: - Convergence loop
 
     /// When a later-iterated service applies remote changes, an earlier-iterated peer that already

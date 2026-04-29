@@ -24,6 +24,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     private let context: BackupSyncContext
     private let vaultExporter: BackupVaultExporting
     private let localMerger: BackupLocalMerging
+    private let cloudSync: CloudSync
     private let coordinator: BackupSyncCoordinator
 
     public init(
@@ -31,13 +32,15 @@ public final class BackupSyncContainer: @unchecked Sendable {
         dateStore: BackupSyncDateStore,
         context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,
-        localMerger: BackupLocalMerging
+        localMerger: BackupLocalMerging,
+        cloudSync: CloudSync
     ) {
         self.configStore = configStore
         self.dateStore = dateStore
         self.context = context
         self.vaultExporter = vaultExporter
         self.localMerger = localMerger
+        self.cloudSync = cloudSync
         self.coordinator = BackupSyncCoordinator()
     }
 
@@ -76,6 +79,8 @@ public final class BackupSyncContainer: @unchecked Sendable {
                     kind: .s3,
                     session: BackupS3ServiceSession(config: entry.config)
                 )
+            case .iCloud(let entry):
+                CloudSyncAdapter(id: entry.id, cloudSync: cloudSync)
             }
         }
     }

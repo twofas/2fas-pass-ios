@@ -53,13 +53,15 @@ final class BackupSyncSetupInteractor: BackupSyncInstalling {
             syncInteractor: syncInteractor
         )
         // The adapter satisfies all four collaborator protocols, so a single instance fills
-        // every container slot.
+        // every container slot. `cloudSync` comes straight from `MainRepository` — the
+        // container materializes `CloudSyncAdapter` over it for any registered iCloud entry.
         let container = BackupSyncContainer(
             configStore: adapter,
             dateStore: adapter,
             context: adapter,
             vaultExporter: adapter,
-            localMerger: adapter
+            localMerger: adapter,
+            cloudSync: mainRepository.cloudSync
         )
 
         mainRepository.setBackupSyncContainer(container)

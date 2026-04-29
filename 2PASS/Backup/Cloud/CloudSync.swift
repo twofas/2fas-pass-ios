@@ -8,6 +8,10 @@ import UIKit
 import Common
 
 public final class CloudSync {
+    /// Notification userInfo key carrying the `Bool` "did this sync apply remote changes to
+    /// local state?" on `.cloudDidSync`. Read by `syncOnce` to populate `BackupSyncOutcome`.
+    public static let appliedRemoteChangesKey = "CloudSync.appliedRemoteChangesKey"
+
     private var cloudHandler: CloudHandler?
     private var syncHandler: SyncHandler?
     private var mergeHandler: MergeHandler?

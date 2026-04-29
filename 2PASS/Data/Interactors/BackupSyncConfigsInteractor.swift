@@ -30,6 +30,13 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     @discardableResult
     func addS3Config(_ config: S3ServiceConfig) -> UUID
 
+    /// Adds the iCloud backend; returns the assigned id, or `nil` if an iCloud entry already
+    /// exists. Single-instance: there is exactly one CloudKit container per build, so a
+    /// second iCloud config would point at the same data and create a phantom duplicate in
+    /// the convergence loop.
+    @discardableResult
+    func addiCloudConfig() -> UUID?
+
     /// Replaces the WebDAV config bound to `id`, preserving id and `createdAt`. No-op if the
     /// id either doesn't exist or maps to an entry of another kind.
     func updateWebDAVConfig(id: UUID, with config: BackupWebDAVConfig)
@@ -71,6 +78,16 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         let id = UUID()
         var configs = mainRepository.loadBackupConfigs()
         configs.append(.s3(BackupConfigEntry(id: id, createdAt: Date(), config: config)))
+        mainRepository.saveBackupConfigs(configs)
+        return id
+    }
+
+    @discardableResult
+    func addiCloudConfig() -> UUID? {
+        var configs = mainRepository.loadBackupConfigs()
+        guard configs.iCloudEntry == nil else { return nil }
+        let id = UUID()
+        configs.append(.iCloud(BackupConfigEntry(id: id, createdAt: Date(), config: BackupiCloudConfig())))
         mainRepository.saveBackupConfigs(configs)
         return id
     }

@@ -24,9 +24,10 @@ final class SyncHandler {
     private var lastZoneID: CKRecordZone.ID?
         
     typealias OtherError = (NSError) -> Void
-    
+    typealias FinishedSync = (_ appliedRemoteChanges: Bool) -> Void
+
     var startedSync: Callback?
-    var finishedSync: Callback?
+    var finishedSync: FinishedSync?
     var refreshLocalData: Callback?
     var otherError: OtherError?
     var quotaExceeded: Callback?
@@ -220,7 +221,7 @@ final class SyncHandler {
         Log("SyncHandler - Sending current cloud state to local database", module: .cloudSync)
         let shouldRefreshLocalData = mergeHandler.applyChanges()
 
-        finishedSync?()
+        finishedSync?(shouldRefreshLocalData)
         if shouldRefreshLocalData {
             refreshLocalData?()
         }

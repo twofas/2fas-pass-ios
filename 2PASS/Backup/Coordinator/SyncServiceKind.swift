@@ -12,6 +12,7 @@ import Foundation
 public enum SyncServiceKind: String, Hashable, Sendable, Codable {
     case webDAV
     case s3
+    case iCloud
 }
 
 public struct BackupSyncOutcome: Equatable, Sendable {

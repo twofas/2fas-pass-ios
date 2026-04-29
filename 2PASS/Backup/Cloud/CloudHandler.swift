@@ -78,7 +78,7 @@ final class CloudHandler: CloudHandlerType {
         }
         
         syncHandler.startedSync = { [weak self] in self?.startedSync() }
-        syncHandler.finishedSync = { [weak self] in self?.finishedSync() }
+        syncHandler.finishedSync = { [weak self] applied in self?.finishedSync(appliedRemoteChanges: applied) }
         syncHandler.otherError = { [weak self] error in self?.otherError(error) }
         syncHandler.quotaExceeded = { [weak self] in self?.quotaError() }
         syncHandler.userDisabledCloud = { [weak self] in self?.disabledByUser() }
@@ -294,12 +294,16 @@ final class CloudHandler: CloudHandlerType {
         currentState = .enabled(sync: .syncing)
     }
     
-    private func finishedSync() {
-        Log("Cloud Handler - Finished Sync", module: .cloudSync)
+    private func finishedSync(appliedRemoteChanges: Bool) {
+        Log("Cloud Handler - Finished Sync (appliedRemoteChanges=\(appliedRemoteChanges))", module: .cloudSync)
         currentState = .enabled(sync: .synced)
         ConstStorage.passwordWasChanged = false
-        NotificationCenter.default.post(name: .cloudDidSync, object: nil)
-        
+        NotificationCenter.default.post(
+            name: .cloudDidSync,
+            object: nil,
+            userInfo: [CloudSync.appliedRemoteChangesKey: appliedRemoteChanges]
+        )
+
         if isClearing {
             clearBackup()
         }

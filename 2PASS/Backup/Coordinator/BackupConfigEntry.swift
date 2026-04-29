@@ -45,11 +45,13 @@ public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
 public enum BackupConfig: Sendable, Identifiable, Codable {
     case webDAV(BackupConfigEntry<BackupWebDAVConfig>)
     case s3(BackupConfigEntry<S3ServiceConfig>)
+    case iCloud(BackupConfigEntry<BackupiCloudConfig>)
 
     public var id: UUID {
         switch self {
         case .webDAV(let entry): return entry.id
         case .s3(let entry): return entry.id
+        case .iCloud(let entry): return entry.id
         }
     }
 
@@ -57,6 +59,7 @@ public enum BackupConfig: Sendable, Identifiable, Codable {
         switch self {
         case .webDAV: return .webDAV
         case .s3: return .s3
+        case .iCloud: return .iCloud
         }
     }
 
@@ -64,6 +67,7 @@ public enum BackupConfig: Sendable, Identifiable, Codable {
         switch self {
         case .webDAV(let entry): return entry.createdAt
         case .s3(let entry): return entry.createdAt
+        case .iCloud(let entry): return entry.createdAt
         }
     }
 }
@@ -74,5 +78,14 @@ public extension Array where Element == BackupConfig {
         compactMap {
             if case .webDAV(let entry) = $0 { return entry } else { return nil }
         }
+    }
+
+    /// The single iCloud entry from this list, if any. Single-instance is enforced at
+    /// registration time by the configs interactor; this accessor returns the first hit and
+    /// silently ignores duplicates if the persisted blob ever contains more than one (e.g. a
+    /// future migration bug).
+    var iCloudEntry: BackupConfigEntry<BackupiCloudConfig>? {
+        for case .iCloud(let entry) in self { return entry }
+        return nil
     }
 }
