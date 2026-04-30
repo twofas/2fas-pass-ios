@@ -46,16 +46,17 @@ final class BackupConfigsPresenter {
     private(set) var rows: [BackupConfigRowItem] = []
     private(set) var isSyncing: Bool = false
 
-    /// IDs of configs the coordinator is *actively running right now*. Updated from per-service
-    /// `started`/`finished` events emitted by `BackupSyncCoordinator`, so the UI reflects the
-    /// coordinator's serial execution row-by-row instead of marking every config in flight for
+    /// IDs of configs the sync session is *actively running right now*. Updated from per-service
+    /// `started`/`finished` events emitted by `BackupSyncSession`, so the UI reflects the
+    /// session's serial execution row-by-row instead of marking every config in flight for
     /// the whole `syncAll` run. iCloud rows derive their syncing state from
     /// `interactor.cloudState.isSyncing` because CloudKit owns its own state machine.
     private var syncingConfigIDs: Set<UUID> = []
 
     /// In-flight task spawned by `onSyncNow()`. Held so the user can cancel a running sync
-    /// via the same button. Cancellation propagates through the coordinator's
-    /// `withTaskCancellationHandler` to the in-flight service; queued services are skipped.
+    /// via the same button. Cancellation propagates through standard Swift task cancellation
+    /// to the in-flight service; queued services are skipped between iterations of the
+    /// session's convergence loop.
     private var syncAllTask: Task<Void, Never>?
 
     var isEmpty: Bool { rows.isEmpty }
@@ -107,7 +108,7 @@ final class BackupConfigsPresenter {
             await MainActor.run {
                 guard let self else { return }
                 self.isSyncing = false
-                // Defensive: clear any straggler ids the coordinator could not retire (e.g. if
+                // Defensive: clear any straggler ids the session could not retire (e.g. if
                 // its task was cancelled mid-`finished` emission).
                 self.syncingConfigIDs.removeAll()
                 self.syncAllTask = nil
@@ -132,12 +133,12 @@ final class BackupConfigsPresenter {
         }
     }
 
-    /// Builds a `@Sendable` closure that hops the coordinator's lifecycle events back to the
+    /// Builds a `@Sendable` closure that hops the session's lifecycle events back to the
     /// main actor and updates `syncingConfigIDs`. Captures the presenter weakly so a view
     /// dismissed mid-sync doesn't keep itself alive for the rest of the run.
     private static func makeProgressForwarder(
         _ presenter: BackupConfigsPresenter?
-    ) -> BackupSyncCoordinator.ProgressHandler {
+    ) -> BackupSyncSession.ProgressHandler {
         { [weak presenter] event in
             Task { @MainActor in
                 presenter?.handle(event)
@@ -145,7 +146,7 @@ final class BackupConfigsPresenter {
         }
     }
 
-    private func handle(_ event: BackupSyncCoordinator.ProgressEvent) {
+    private func handle(_ event: BackupSyncSession.ProgressEvent) {
         switch event {
         case .started(let id, _):
             syncingConfigIDs.insert(id)

@@ -28,11 +28,11 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// can reflect the coordinator's serial execution row-by-row instead of a global flag.
     /// Events fire from the coordinator actor; consumers running on the main actor must hop
     /// themselves (e.g. via `Task { @MainActor in ... }`).
-    func syncAll(onEvent: BackupSyncCoordinator.ProgressHandler?) async
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async
 
     /// Runs only the backend with the given id through the coordinator. No-op if no entry
     /// matches or the container hasn't been installed yet.
-    func sync(id: UUID, onEvent: BackupSyncCoordinator.ProgressHandler?) async
+    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async
 
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
@@ -51,11 +51,11 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         self.mainRepository = mainRepository
     }
 
-    func syncAll(onEvent: BackupSyncCoordinator.ProgressHandler?) async {
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async {
         await mainRepository.backupSyncContainer?.syncAll(onEvent: onEvent)
     }
 
-    func sync(id: UUID, onEvent: BackupSyncCoordinator.ProgressHandler?) async {
+    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
         _ = await mainRepository.backupSyncContainer?.sync(id, onEvent: onEvent)
     }
 

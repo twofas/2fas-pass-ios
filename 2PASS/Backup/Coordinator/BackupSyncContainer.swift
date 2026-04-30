@@ -16,14 +16,17 @@ import Common
 /// `BackupSyncConfigsInteracting`'s domain. The container is purely an orchestrator over
 /// whatever configs the store currently holds.
 ///
-/// Each `syncAll` / `sync` call freshly loads configs and rebuilds services. `FileBasedSyncService`
-/// is a cheap struct; rebuild cost is dominated by the configStore's decrypt+decode, which
-/// happens at most once per orchestration call.
+/// Each `syncAll` / `sync` call freshly loads configs, rebuilds services, and constructs a
+/// fresh `BackupSyncSession` to run them. `FileBasedSyncService` is a cheap struct; rebuild
+/// cost is dominated by the configStore's decrypt+decode, which happens at most once per
+/// orchestration call.
 ///
 /// **In-progress guard.** `syncAll` and `sync(_:)` debounce overlapping triggers via an unfair
 /// lock — while a sync is in flight, additional invocations return immediately (`syncAll` → `[]`,
 /// `sync(_:)` → `.failure(.cancelled)`) instead of chaining behind the in-flight work. This stops
-/// e.g. a periodic refresh from queueing up behind a user-initiated `Sync Now`.
+/// e.g. a periodic refresh from queueing up behind a user-initiated `Sync Now`. Cross-trigger
+/// serialization is *only* this debounce — the session itself is single-use, with no internal
+/// task chain.
 public final class BackupSyncContainer: @unchecked Sendable {
 
     private let configStore: BackupSyncConfigStore
@@ -32,7 +35,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
     private let vaultExporter: BackupVaultExporting
     private let localMerger: BackupLocalMerging
     private let cloudSync: CloudSync
-    private let coordinator: BackupSyncCoordinator
     private let isSyncing = OSAllocatedUnfairLock(initialState: false)
 
     public init(
@@ -49,34 +51,34 @@ public final class BackupSyncContainer: @unchecked Sendable {
         self.vaultExporter = vaultExporter
         self.localMerger = localMerger
         self.cloudSync = cloudSync
-        self.coordinator = BackupSyncCoordinator()
     }
 
-    // MARK: - Sync (async; touches coordinator actor)
+    // MARK: - Sync (each call builds a fresh BackupSyncSession)
 
     @discardableResult
     public func syncAll(
         overwritingVault: Bool = false,
-        onEvent: BackupSyncCoordinator.ProgressHandler? = nil
-    ) async -> [BackupSyncCoordinator.SyncResult] {
+        onEvent: BackupSyncSession.ProgressHandler? = nil
+    ) async -> [BackupSyncSession.SyncResult] {
         guard acquireSyncSlot() else {
             Log("BackupSyncContainer - syncAll ignored: sync already in progress", module: .backup)
             return []
         }
         defer { releaseSyncSlot() }
-        return await coordinator.syncAll(
-            currentServices(),
+        let session = BackupSyncSession(
+            services: currentServices(),
             overwritingVault: overwritingVault,
             lastSyncDate: { [dateStore] id in dateStore.lastSyncDate(for: id) },
             onEvent: onEvent
         )
+        return await session.run()
     }
 
     @discardableResult
     public func sync(
         _ id: UUID,
         overwritingVault: Bool = false,
-        onEvent: BackupSyncCoordinator.ProgressHandler? = nil
+        onEvent: BackupSyncSession.ProgressHandler? = nil
     ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
         guard let service = currentServices().first(where: { $0.id == id }) else { return nil }
         guard acquireSyncSlot() else {
@@ -84,7 +86,13 @@ public final class BackupSyncContainer: @unchecked Sendable {
             return .failure(.cancelled)
         }
         defer { releaseSyncSlot() }
-        return await coordinator.sync(service, overwritingVault: overwritingVault, onEvent: onEvent)
+        let session = BackupSyncSession(
+            services: [service],
+            overwritingVault: overwritingVault,
+            lastSyncDate: { [dateStore] id in dateStore.lastSyncDate(for: id) },
+            onEvent: onEvent
+        )
+        return await session.run().first?.outcome
     }
 
     // MARK: - Internals

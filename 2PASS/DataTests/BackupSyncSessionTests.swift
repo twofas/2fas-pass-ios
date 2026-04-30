@@ -10,16 +10,16 @@ import os
 import Common
 import Backup
 
-@Suite struct BackupSyncCoordinatorTests {
+@Suite struct BackupSyncSessionTests {
 
-    // MARK: - Sync ordering and serialization
+    // MARK: - Sync ordering
 
     @Test func syncAllRunsServicesInRegistrationOrder() async {
-        let coordinator = BackupSyncCoordinator()
         let first = FakeSynchronizer(kind: .webDAV)
         let second = FakeSynchronizer(kind: .s3)
 
-        let results = await coordinator.syncAll([first, second])
+        let session = BackupSyncSession(services: [first, second])
+        let results = await session.run()
 
         #expect(results.map(\.id) == [first.id, second.id])
         #expect(results.map(\.kind) == [.webDAV, .s3])
@@ -29,7 +29,6 @@ import Backup
     /// sync (`nil`) sort before any dated entry so brand-new configs and never-synced backends get
     /// priority on first sync.
     @Test func syncAllRunsServicesByLastSyncDateAscending() async {
-        let coordinator = BackupSyncCoordinator()
         let neverSynced = FakeSynchronizer(kind: .webDAV)
         let oldest = FakeSynchronizer(kind: .s3)
         let newest = FakeSynchronizer(kind: .iCloud)
@@ -41,11 +40,12 @@ import Backup
             // neverSynced.id intentionally absent → nil
         ]
 
-        let results = await coordinator.syncAll(
-            // Pass them in a non-matching input order to prove the sort actually runs.
-            [newest, oldest, neverSynced],
+        // Pass them in a non-matching input order to prove the sort actually runs.
+        let session = BackupSyncSession(
+            services: [newest, oldest, neverSynced],
             lastSyncDate: { dates[$0] }
         )
+        let results = await session.run()
 
         #expect(results.map(\.id) == [neverSynced.id, oldest.id, newest.id])
     }
@@ -54,49 +54,36 @@ import Backup
     /// stable tiebreaker. This is what keeps `syncAllRunsServicesInRegistrationOrder` valid: with
     /// no date provider supplied, every service ties at `nil` and falls back to input order.
     @Test func syncAllPreservesInputOrderWhenDatesTie() async {
-        let coordinator = BackupSyncCoordinator()
         let a = FakeSynchronizer(kind: .webDAV)
         let b = FakeSynchronizer(kind: .s3)
 
         let sameDate = Date(timeIntervalSince1970: 1_700_000_000)
         let dates: [UUID: Date] = [a.id: sameDate, b.id: sameDate]
 
-        let results = await coordinator.syncAll(
-            [a, b],
+        let session = BackupSyncSession(
+            services: [a, b],
             lastSyncDate: { dates[$0] }
         )
+        let results = await session.run()
 
         #expect(results.map(\.id) == [a.id, b.id])
     }
 
     @Test func syncAllForwardsOverwritingFlagToServices() async {
-        let coordinator = BackupSyncCoordinator()
         let fake = FakeSynchronizer(kind: .webDAV)
 
-        _ = await coordinator.syncAll([fake], overwritingVault: true)
+        let session = BackupSyncSession(services: [fake], overwritingVault: true)
+        _ = await session.run()
 
         #expect(fake.recording.lastOverwriting == true)
     }
 
-    @Test func syncAllSerializesConcurrentTriggers() async {
-        let coordinator = BackupSyncCoordinator()
-        let fake = FakeSynchronizer(kind: .webDAV, workDuration: .milliseconds(50))
-
-        async let first: [BackupSyncCoordinator.SyncResult] = coordinator.syncAll([fake])
-        async let second: [BackupSyncCoordinator.SyncResult] = coordinator.syncAll([fake])
-        _ = await (first, second)
-
-        let r = fake.recording
-        #expect(r.calls == 2)
-        #expect(r.maxConcurrent == 1, "Coordinator must serialize across concurrent triggers")
-    }
-
     @Test func syncAllContinuesAfterServiceFailure() async throws {
-        let coordinator = BackupSyncCoordinator()
         let failing = FakeSynchronizer(kind: .webDAV, error: .unauthorized)
         let succeeding = FakeSynchronizer(kind: .s3)
 
-        let results = await coordinator.syncAll([failing, succeeding])
+        let session = BackupSyncSession(services: [failing, succeeding])
+        let results = await session.run()
 
         try #require(results.count == 2)
         guard case .failure = results[0].outcome else {
@@ -111,17 +98,17 @@ import Backup
     }
 
     @Test func syncAllReturnsEmptyForEmptyInput() async {
-        let coordinator = BackupSyncCoordinator()
-        let results = await coordinator.syncAll([])
+        let session = BackupSyncSession(services: [])
+        let results = await session.run()
         #expect(results.isEmpty)
     }
 
     @Test func cancellationStopsBetweenServices() async {
-        let coordinator = BackupSyncCoordinator()
         let slow = FakeSynchronizer(kind: .webDAV, workDuration: .seconds(10))
         let next = FakeSynchronizer(kind: .s3)
 
-        let task = Task { await coordinator.syncAll([slow, next]) }
+        let session = BackupSyncSession(services: [slow, next])
+        let task = Task { await session.run() }
 
         try? await Task.sleep(for: .milliseconds(50))
         task.cancel()
@@ -132,43 +119,46 @@ import Backup
         #expect(results.count == 1, "only the cancelled first service should appear in results")
     }
 
-    @Test func syncSingleServiceReturnsResult() async {
-        let coordinator = BackupSyncCoordinator()
+    /// Single-service sessions return a one-element results array. The convergence loop runs one
+    /// pass, finds no peers to re-queue, and terminates. Container's `sync(_ id:)` relies on this.
+    @Test func runWithSingleServiceReturnsOneResult() async throws {
         let fake = FakeSynchronizer(kind: .webDAV)
 
-        let result = await coordinator.sync(fake)
+        let session = BackupSyncSession(services: [fake])
+        let results = await session.run()
 
-        guard case .success = result else {
-            Issue.record("expected success, got \(result)")
+        try #require(results.count == 1)
+        guard case .success = results[0].outcome else {
+            Issue.record("expected success, got \(results[0].outcome)")
             return
         }
         #expect(fake.recording.calls == 1)
     }
 
     @Test func syncAllRunsMultipleServicesOfSameKind() async {
-        let coordinator = BackupSyncCoordinator()
         let webDAV1 = FakeSynchronizer(kind: .webDAV)
         let webDAV2 = FakeSynchronizer(kind: .webDAV)
 
-        let results = await coordinator.syncAll([webDAV1, webDAV2])
+        let session = BackupSyncSession(services: [webDAV1, webDAV2])
+        let results = await session.run()
 
         #expect(results.map(\.id) == [webDAV1.id, webDAV2.id], "two webDAV instances are tracked separately")
         #expect(webDAV1.recording.calls == 1)
         #expect(webDAV2.recording.calls == 1)
     }
 
-    /// `.iCloud` is the third backend kind. The coordinator works on the `BackupSynchronizing`
+    /// `.iCloud` is the third backend kind. The session works on the `BackupSynchronizing`
     /// abstraction, so adding the kind shouldn't perturb ordering, convergence, or aggregation —
     /// this smoke test pins that assumption.
     @Test func syncAllRoundTripsiCloudKind() async throws {
-        let coordinator = BackupSyncCoordinator()
         let iCloud = FakeSynchronizer(
             kind: .iCloud,
             outcome: BackupSyncOutcome(appliedRemoteChanges: true)
         )
         let webDAV = FakeSynchronizer(kind: .webDAV)
 
-        let results = await coordinator.syncAll([iCloud, webDAV])
+        let session = BackupSyncSession(services: [iCloud, webDAV])
+        let results = await session.run()
 
         #expect(results.map(\.kind) == [.iCloud, .webDAV])
         #expect(iCloud.recording.calls == 1)
@@ -180,14 +170,14 @@ import Backup
     /// When a later-iterated service applies remote changes, an earlier-iterated peer that already
     /// completed its sync this pass must run again so its remote learns about the new local state.
     @Test func syncAllReRunsEarlierPeerWhenLaterServiceAppliesRemoteChanges() async {
-        let coordinator = BackupSyncCoordinator()
         let earlier = FakeSynchronizer(kind: .webDAV)
         let later = FakeSynchronizer(
             kind: .s3,
             outcomes: [BackupSyncOutcome(appliedRemoteChanges: true)]
         )
 
-        _ = await coordinator.syncAll([earlier, later])
+        let session = BackupSyncSession(services: [earlier, later])
+        _ = await session.run()
 
         #expect(earlier.recording.calls == 2, "earlier peer must be re-run after later peer pulled changes")
         #expect(later.recording.calls == 1, "the service that pulled does not need to re-run itself")
@@ -196,14 +186,14 @@ import Backup
     /// When the FIRST-iterated service applies remote changes, peers later in the same pass run
     /// once with the updated local state — no second pass needed.
     @Test func syncAllDoesNotRePassWhenChangesAppliedBeforePeers() async {
-        let coordinator = BackupSyncCoordinator()
         let first = FakeSynchronizer(
             kind: .webDAV,
             outcomes: [BackupSyncOutcome(appliedRemoteChanges: true)]
         )
         let second = FakeSynchronizer(kind: .s3)
 
-        _ = await coordinator.syncAll([first, second])
+        let session = BackupSyncSession(services: [first, second])
+        _ = await session.run()
 
         #expect(first.recording.calls == 1)
         #expect(second.recording.calls == 1, "later peer in same pass already runs with new local state")
@@ -211,11 +201,11 @@ import Backup
 
     /// All services quiescent → exactly one pass.
     @Test func syncAllStopsAfterOnePassWhenAllServicesQuiescent() async {
-        let coordinator = BackupSyncCoordinator()
         let a = FakeSynchronizer(kind: .webDAV)
         let b = FakeSynchronizer(kind: .s3)
 
-        _ = await coordinator.syncAll([a, b])
+        let session = BackupSyncSession(services: [a, b])
+        _ = await session.run()
 
         #expect(a.recording.calls == 1)
         #expect(b.recording.calls == 1)
@@ -224,7 +214,6 @@ import Backup
     /// `appliedRemoteChanges` should be OR'd across passes — a service that applied changes in any
     /// pass must report true in the final aggregated result, even if its last pass was quiescent.
     @Test func syncAllAggregatesAppliedRemoteChangesAcrossPasses() async throws {
-        let coordinator = BackupSyncCoordinator()
         let a = FakeSynchronizer(
             kind: .webDAV,
             // Pass 1: quiescent. Pass 2: applies changes (because B caused a re-pass).
@@ -239,7 +228,8 @@ import Backup
             outcomes: [BackupSyncOutcome(appliedRemoteChanges: true)]
         )
 
-        let results = await coordinator.syncAll([a, b])
+        let session = BackupSyncSession(services: [a, b])
+        let results = await session.run()
 
         #expect(a.recording.calls == 2)
         #expect(b.recording.calls == 2)
@@ -259,21 +249,20 @@ import Backup
     /// A failing service must not re-queue its peers: failure means we don't know the state
     /// changed, and re-running peers would just pile up duplicate failures.
     @Test func syncAllFailureDoesNotTriggerPeerReRuns() async {
-        let coordinator = BackupSyncCoordinator()
         let failing = FakeSynchronizer(kind: .webDAV, error: .unauthorized)
         let quiet = FakeSynchronizer(kind: .s3)
 
-        _ = await coordinator.syncAll([failing, quiet])
+        let session = BackupSyncSession(services: [failing, quiet])
+        _ = await session.run()
 
-        #expect(failing.recording.calls == 1, "failure not retried within syncAll")
+        #expect(failing.recording.calls == 1, "failure not retried within run")
         #expect(quiet.recording.calls == 1, "peer not re-run because peer's failure cannot have applied changes")
     }
 
-    /// Pathological oscillation must not loop forever — the coordinator caps at a small number of
+    /// Pathological oscillation must not loop forever — the session caps at a small number of
     /// passes. With two services both always claiming to apply changes, each pass runs both, so
     /// total invocations equal 2 * maxPasses.
     @Test func syncAllRespectsMaxConvergencePasses() async {
-        let coordinator = BackupSyncCoordinator()
         let a = FakeSynchronizer(
             kind: .webDAV,
             outcome: BackupSyncOutcome(appliedRemoteChanges: true)
@@ -283,7 +272,8 @@ import Backup
             outcome: BackupSyncOutcome(appliedRemoteChanges: true)
         )
 
-        _ = await coordinator.syncAll([a, b])
+        let session = BackupSyncSession(services: [a, b])
+        _ = await session.run()
 
         // The cap is private; assert "bounded" rather than coupling the test to the exact value.
         #expect(a.recording.calls > 1, "convergence should re-run when changes are applied")

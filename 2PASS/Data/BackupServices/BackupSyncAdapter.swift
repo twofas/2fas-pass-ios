@@ -8,11 +8,12 @@ import Foundation
 import Backup
 import Common
 
-/// **Hexagonal-architecture adapter** that fulfills `BackupSyncCoordinator`'s three collaborator
-/// ports — `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging` — over the app's
-/// existing `MainRepository` + callback-based interactor stack. A single instance is constructed
-/// by `BackupSyncSetupInteractor.initialize()` and registered in all three
-/// slots on the coordinator.
+/// **Hexagonal-architecture adapter** that fulfills the backup-sync collaborator ports —
+/// `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging`, plus the persisted
+/// `BackupSyncConfigStore` / `BackupSyncDateStore` — over the app's existing `MainRepository` +
+/// callback-based interactor stack. A single instance is constructed by
+/// `BackupSyncSetupInteractor.initialize()` and registered with the long-lived
+/// `BackupSyncContainer`, which in turn passes it through to each per-call `BackupSyncSession`.
 ///
 /// ## Why one class, not three
 ///
@@ -20,30 +21,30 @@ import Common
 /// local merge), but every realistic implementation shares the same dependencies: `MainRepository`
 /// for context state plus the trio of interactors (`ExportInteracting`, `BackupImportInteracting`,
 /// `SyncInteracting`) for the work itself. Splitting the adapter into three classes would
-/// duplicate that dependency graph; merging lets the coordinator hold a single reference for all
+/// duplicate that dependency graph; merging lets the container hold a single reference for all
 /// three roles and keeps the `@unchecked Sendable` boundary defined exactly once.
 ///
 /// ## Layering
 ///
 /// Lives in `Data/BackupServices/`, not `Data/Interactors/`, because it isn't feature/UI business
 /// logic — it's cross-cutting infrastructure that wires `MainRepository` and the interactor stack
-/// to the coordinator's async port protocols (defined in the `Backup` module).
+/// to the async port protocols (defined in the `Backup` module).
 ///
 /// Dependency direction: `BackupSyncSetupInteractor` (an interactor) builds the adapter and the
-/// coordinator, then pushes the coordinator into `MainRepository` via a setter. `MainRepository`
+/// container, then pushes the container into `MainRepository` via a setter. `MainRepository`
 /// itself neither constructs this class nor imports anything from this layer — only reads
 /// flow upward, only construction flows downward.
 ///
 /// ## Strong reference and the deliberate cycle
 ///
 /// `mainRepository` is held strongly. The chain
-/// `MainRepository → coordinator → adapter → MainRepository` is a real strong retain cycle. Today
+/// `MainRepository → container → adapter → MainRepository` is a real strong retain cycle. Today
 /// `MainRepository` is a process-lifetime singleton (`MainRepositoryImpl._shared`) and never
 /// deallocates, so the cycle is benign — "everything lives forever" is the same outcome with or
 /// without it. The matching caveat is documented next to `_backupSyncContainer` in
 /// `MainRepositoryImpl+Backup.swift`: when `MainRepository` becomes per-user-session, the cycle
 /// becomes a real leak and must be broken — either restore a `weak` reference here, or move
-/// strong ownership of the coordinator out of `MainRepository` into a session-scoped container.
+/// strong ownership of the container out of `MainRepository` into a session-scoped container.
 ///
 /// ## Sendable contract
 ///
@@ -53,12 +54,15 @@ import Common
 ///
 /// 1. **Interactors are stateless service objects.** They hold references to `MainRepository`
 ///    and other interactors and delegate all real work; they keep no mutable cross-call state.
-/// 2. **The coordinator serializes its calls.** `BackupSyncCoordinator` is an actor with an
-///    explicit task chain, so calls into this adapter are never parallel — there is only ever
-///    one in-flight `prepareEncryptedExport` / `applyRemoteChanges` per coordinator instance.
+/// 2. **The container debounces overlapping triggers.** `BackupSyncContainer.acquireSyncSlot()`
+///    holds an `OSAllocatedUnfairLock`-guarded boolean that drops a second trigger while a
+///    sync is in flight. Each `syncAll` / `sync(_:)` call builds a fresh single-use
+///    `BackupSyncSession` whose `run()` executes services serially. Together that means calls
+///    into this adapter are never parallel — there is only ever one in-flight
+///    `prepareEncryptedExport` / `applyRemoteChanges` across the whole sync subsystem.
 ///
 /// Both are preconditions, not guarantees. If a future change introduces mutable cross-call
-/// state into one of the held interactors, or removes the coordinator's serial queue, the
+/// state into one of the held interactors, or removes the container's debounce, the
 /// `@unchecked Sendable` here becomes unsafe and must be re-audited.
 final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLocalMerging, BackupSyncConfigStore, BackupSyncDateStore, @unchecked Sendable {
 
@@ -201,7 +205,7 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     // Mutation accuracy: the returned `Bool` mirrors `SyncInteractor.syncAndApplyChanges`'s
     // own change-tracking arrays — `true` only when at least one item, tag, or deleted-tombstone
     // row was added, modified, or removed. Genuine no-op merges (remote ≡ local, or remote
-    // strictly older) return `false`, so `BackupSyncCoordinator`'s convergence loop does not
+    // strictly older) return `false`, so `BackupSyncSession`'s convergence loop does not
     // re-queue peer services unnecessarily. The local push in `BackupFileSyncSession.runAttempt`
     // happens unconditionally, so an accurate `false` is safe here — it never gates the push.
 

@@ -855,7 +855,7 @@ protocol MainRepository: AnyObject {
     /// `BackupSyncSetupInteractor.initialize()`, which is invoked from
     /// `RootModuleInteractor.initializeApp()` at app launch. After installation this stays
     /// non-nil for the process lifetime. The container proxies the underlying
-    /// `BackupSyncCoordinator` and owns the typed saved configs (WebDAV persisted, S3 in-memory).
+    /// per-call `BackupSyncSession` and owns the typed saved configs (WebDAV persisted, S3 in-memory).
     var backupSyncContainer: BackupSyncContainer? { get }
     func setBackupSyncContainer(_ container: BackupSyncContainer)
 }

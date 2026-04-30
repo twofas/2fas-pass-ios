@@ -18,8 +18,8 @@ protocol BackupConfigsModuleInteracting: AnyObject {
     func lastSyncDate(for id: UUID) -> Date?
     @discardableResult func addiCloud() -> UUID?
     func remove(id: UUID, kind: SyncServiceKind)
-    func syncAll(onEvent: BackupSyncCoordinator.ProgressHandler?) async
-    func sync(id: UUID, onEvent: BackupSyncCoordinator.ProgressHandler?) async
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async
+    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async
 }
 
 @MainActor
@@ -81,11 +81,11 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         }
     }
 
-    func syncAll(onEvent: BackupSyncCoordinator.ProgressHandler?) async {
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async {
         await triggerInteractor.syncAll(onEvent: onEvent)
     }
 
-    func sync(id: UUID, onEvent: BackupSyncCoordinator.ProgressHandler?) async {
+    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
         await triggerInteractor.sync(id: id, onEvent: onEvent)
     }
 

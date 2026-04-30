@@ -12,7 +12,7 @@ extension CloudSync {
     ///
     /// Bridges `CloudSync`'s event-driven flow (`synchronize()` is fire-and-forget; result is
     /// observed via `.cloudDidSync` / `.cloudStateChanged` notifications) into the imperative
-    /// `BackupSynchronizing.performSync(...)` shape required by `BackupSyncCoordinator`.
+    /// `BackupSynchronizing.performSync(...)` shape required by `BackupSyncSession`.
     ///
     /// **Coexistence with legacy callers.** Legacy paths (push handlers, app foregrounding,
     /// vault edits) call `synchronize(fromPush:)` directly without awaiting. They share the
