@@ -8,7 +8,14 @@ import Foundation
 import Common
 
 public protocol SyncInteracting: AnyObject {
-    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData])
+    /// Returns `true` if any item, tag, or deleted-tombstone row was added, modified, or removed
+    /// as a result of merging `external*` into the local store; `false` for a genuine no-op.
+    @discardableResult
+    func syncAndApplyChanges(
+        from external: [ItemData],
+        externalTags: [ItemTagData],
+        externalDeleted: [DeletedItemData]
+    ) -> Bool
 }
 
 final class SyncInteractor {
@@ -46,56 +53,68 @@ final class SyncInteractor {
 }
 
 extension SyncInteractor: SyncInteracting {
-    func syncAndApplyChanges(from external: [ItemData], externalTags: [ItemTagData], externalDeleted: [DeletedItemData]) {
+    @discardableResult
+    func syncAndApplyChanges(
+        from external: [ItemData],
+        externalTags: [ItemTagData],
+        externalDeleted: [DeletedItemData]
+    ) -> Bool {
         let local = itemsInteractor.listAllItems()
         let localTags = tagInteractor.listAllTags()
         let localDeleted = deletedItemsInteractor.listDeletedItems()
-        
+
         sync(local: local, external: external, localTags: localTags, externalTags: externalTags, localDeleted: localDeleted, externalDeleted: externalDeleted)
-        
+
         addedItems.forEach { item in
             try? itemsInteractor.createItem(item)
         }
-        
+
         modifiedItems.forEach { item in
             try? itemsInteractor.updateItem(item)
         }
-        
+
         deletedItems.forEach { item in
             itemsInteractor.externalMarkAsTrashed(for: item.id)
         }
-        
+
         addedTags.forEach({
             tagInteractor.createTag(data: $0)
         })
-        
+
         modifiedTags.forEach({
             tagInteractor.updateTag(data: $0)
         })
-                             
+
         deletedTags.forEach({
             tagInteractor.externalDeleteTag(tagID: $0.tagID)
         })
-        
+
         deletedItemsInteractor.createDeletedItems(addedDeleted)
-        
+
         deletedItemsInteractor.updateDeletedItems(modifiedDeleted)
-        
+
         removedDeleted.forEach { deleted in
             deletedItemsInteractor.deleteDeletedItem(id: deleted.itemID)
         }
-        
+
         Log("SyncInteractor:\nadded: \(addedItems.count)\nmodified: \(modifiedItems.count)\ntrashed: \(deletedItems.count)\nadded deletitions: \(addedDeleted.count)\nremoved deletitions: \(removedDeleted.count)")
-        
+
         itemsInteractor.saveStorage()
-        
+
         if addedItems.isEmpty == false || modifiedItems.isEmpty == false || deletedItems.isEmpty == false {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                 try await autoFillCredentialsInteractor.syncSuggestions()
             }
         }
-        
+
+        let didMutate =
+            !addedItems.isEmpty || !modifiedItems.isEmpty || !deletedItems.isEmpty
+            || !addedTags.isEmpty || !modifiedTags.isEmpty || !deletedTags.isEmpty
+            || !addedDeleted.isEmpty || !modifiedDeleted.isEmpty || !removedDeleted.isEmpty
+
         clearChangeList()
+
+        return didMutate
     }
     
     @discardableResult

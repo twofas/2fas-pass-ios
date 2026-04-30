@@ -198,12 +198,12 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     // coordinator hands us an already-decoded `ExchangeVaultVersioned`. We re-encode the typed
     // value back to `Data` so the legacy parser can decode it again.
     //
-    // Optimistic-true: `SyncInteractor.syncAndApplyChanges` is synchronous and side-effecting,
-    // does not report whether any rows actually mutated. We return `true` after a successful
-    // merge regardless. The convergence loop in `BackupSyncCoordinator` tolerates the false
-    // positive (one extra harmless pass). Returning `false` after a real merge would be
-    // dangerous — the sync engine would push the unmerged-local state to the remote and
-    // overwrite the freshly-fetched remote content, causing data loss.
+    // Mutation accuracy: the returned `Bool` mirrors `SyncInteractor.syncAndApplyChanges`'s
+    // own change-tracking arrays — `true` only when at least one item, tag, or deleted-tombstone
+    // row was added, modified, or removed. Genuine no-op merges (remote ≡ local, or remote
+    // strictly older) return `false`, so `BackupSyncCoordinator`'s convergence loop does not
+    // re-queue peer services unnecessarily. The local push in `BackupFileSyncSession.runAttempt`
+    // happens unconditionally, so an accurate `false` is safe here — it never gates the push.
 
     func applyRemoteChanges(
         _ remoteVault: ExchangeVaultVersioned,
@@ -232,14 +232,13 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         case .success(let parsed):
             switch parsed {
             case .decrypted(let items, let tags, let deleted, _, _, _, _):
-                await MainActor.run {
+                return await MainActor.run {
                     syncInteractor.syncAndApplyChanges(
                         from: items,
                         externalTags: tags,
                         externalDeleted: deleted
                     )
                 }
-                return true
             case .needsPassword:
                 throw .needsPassword
             }
