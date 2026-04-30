@@ -188,9 +188,7 @@ private extension MainModuleInteractor {
         // BackupConfigs UI (WebDAV, S3, iCloud). Fire-and-forget — the previous legacy calls
         // (`webDAVBackupInteractor.sync()`, `cloudSyncInteractor.synchronize()`) had the same
         // semantics. The container no-ops when no configs are registered.
-        Task { [weak self] in
-            await self?.triggerInteractor.syncAll()
-        }
+        triggerInteractor.syncAll()
     }
     
     func postBadgeChange(_ showErrorBadge: Bool) {

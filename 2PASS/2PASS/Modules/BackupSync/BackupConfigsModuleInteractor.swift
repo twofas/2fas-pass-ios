@@ -13,19 +13,23 @@ import Common
 protocol BackupConfigsModuleInteracting: AnyObject {
     var allConfigs: [BackupConfig] { get }
     var cloudState: CloudState { get }
+    var currentActivity: BackupSyncActivity { get }
     var cloudStateChanged: Callback? { get set }
+    var backupSyncActivityChanged: Callback? { get set }
 
     func lastSyncDate(for id: UUID) -> Date?
     @discardableResult func addiCloud() -> UUID?
     func remove(id: UUID, kind: SyncServiceKind)
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?)
     func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async
+    func cancelCurrentSync()
 }
 
 @MainActor
 final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     var cloudStateChanged: Callback?
+    var backupSyncActivityChanged: Callback?
 
     private let configsInteractor: BackupSyncConfigsInteracting
     private let triggerInteractor: BackupSyncTriggerInteracting
@@ -47,6 +51,12 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
             name: .cloudStateChanged,
             object: nil
         )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(handleBackupSyncActivityChanged),
+            name: .backupSyncActivityChanged,
+            object: nil
+        )
     }
 
     deinit {
@@ -59,6 +69,10 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     var cloudState: CloudState {
         cloudSyncInteractor.currentState
+    }
+
+    var currentActivity: BackupSyncActivity {
+        triggerInteractor.currentActivity
     }
 
     func lastSyncDate(for id: UUID) -> Date? {
@@ -81,16 +95,25 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         }
     }
 
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async {
-        await triggerInteractor.syncAll(onEvent: onEvent)
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) {
+        triggerInteractor.syncAll(onEvent: onEvent)
     }
 
     func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
         await triggerInteractor.sync(id: id, onEvent: onEvent)
     }
 
+    func cancelCurrentSync() {
+        triggerInteractor.cancelCurrentSync()
+    }
+
     @objc
     private func handleCloudStateChanged() {
         cloudStateChanged?()
+    }
+
+    @objc
+    private func handleBackupSyncActivityChanged() {
+        backupSyncActivityChanged?()
     }
 }

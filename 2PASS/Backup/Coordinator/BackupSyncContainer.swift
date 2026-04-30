@@ -28,14 +28,19 @@ import Common
 /// serialization is *only* this debounce — the session itself is single-use, with no internal
 /// task chain.
 public final class BackupSyncContainer: @unchecked Sendable {
+    private struct State {
+        var isSyncing = false
+        var activeConfigIDs: Set<UUID> = []
+        var cancelCurrentSync: (@Sendable () -> Void)?
 
-    private let configStore: BackupSyncConfigStore
-    private let dateStore: BackupSyncDateStore
-    private let context: BackupSyncContext
-    private let vaultExporter: BackupVaultExporting
-    private let localMerger: BackupLocalMerging
-    private let cloudSync: CloudSync
-    private let isSyncing = OSAllocatedUnfairLock(initialState: false)
+        var activity: BackupSyncActivity {
+            BackupSyncActivity(isRunning: isSyncing, activeConfigIDs: activeConfigIDs)
+        }
+    }
+
+    private let servicesProvider: @Sendable () -> [any BackupSynchronizing]
+    private let lastSyncDateProvider: @Sendable (UUID) -> Date?
+    private let state = OSAllocatedUnfairLock(initialState: State())
 
     public init(
         configStore: BackupSyncConfigStore,
@@ -45,33 +50,68 @@ public final class BackupSyncContainer: @unchecked Sendable {
         localMerger: BackupLocalMerging,
         cloudSync: CloudSync
     ) {
-        self.configStore = configStore
-        self.dateStore = dateStore
-        self.context = context
-        self.vaultExporter = vaultExporter
-        self.localMerger = localMerger
-        self.cloudSync = cloudSync
+        servicesProvider = Self.makeServicesProvider(
+            configStore: configStore,
+            dateStore: dateStore,
+            context: context,
+            vaultExporter: vaultExporter,
+            localMerger: localMerger,
+            cloudSync: cloudSync
+        )
+        lastSyncDateProvider = { [dateStore] id in
+            dateStore.lastSyncDate(for: id)
+        }
+    }
+
+    init(
+        servicesProvider: @escaping @Sendable () -> [any BackupSynchronizing],
+        lastSyncDateProvider: @escaping @Sendable (UUID) -> Date? = { _ in nil }
+    ) {
+        self.servicesProvider = servicesProvider
+        self.lastSyncDateProvider = lastSyncDateProvider
     }
 
     // MARK: - Sync (each call builds a fresh BackupSyncSession)
 
-    @discardableResult
+    public var currentActivity: BackupSyncActivity {
+        state.withLock { $0.activity }
+    }
+
+    public func cancelCurrentSync() {
+        let cancel = state.withLock { $0.cancelCurrentSync }
+        cancel?()
+    }
+
     public func syncAll(
         overwritingVault: Bool = false,
         onEvent: BackupSyncSession.ProgressHandler? = nil
-    ) async -> [BackupSyncSession.SyncResult] {
-        guard acquireSyncSlot() else {
+    ) {
+        _ = syncAllTask(overwritingVault: overwritingVault, onEvent: onEvent)
+    }
+
+    @discardableResult
+    func syncAllTask(
+        overwritingVault: Bool = false,
+        onEvent: BackupSyncSession.ProgressHandler? = nil
+    ) -> Task<[BackupSyncSession.SyncResult], Never>? {
+        guard reserveSyncSlot() else {
             Log("BackupSyncContainer - syncAll ignored: sync already in progress", module: .backup)
-            return []
+            return nil
         }
-        defer { releaseSyncSlot() }
         let session = BackupSyncSession(
-            services: currentServices(),
+            services: servicesProvider(),
             overwritingVault: overwritingVault,
-            lastSyncDate: { [dateStore] id in dateStore.lastSyncDate(for: id) },
-            onEvent: onEvent
+            lastSyncDate: lastSyncDateProvider,
+            onEvent: makeProgressHandler(adding: onEvent)
         )
-        return await session.run()
+        let task = Task {
+            defer { self.clearSyncSlot() }
+            return await session.run()
+        }
+        installCancellationHandler {
+            task.cancel()
+        }
+        return task
     }
 
     @discardableResult
@@ -80,65 +120,146 @@ public final class BackupSyncContainer: @unchecked Sendable {
         overwritingVault: Bool = false,
         onEvent: BackupSyncSession.ProgressHandler? = nil
     ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
-        guard let service = currentServices().first(where: { $0.id == id }) else { return nil }
-        guard acquireSyncSlot() else {
+        guard let service = servicesProvider().first(where: { $0.id == id }) else { return nil }
+        guard reserveSyncSlot() else {
             Log("BackupSyncContainer - sync ignored: sync already in progress", module: .backup)
             return .failure(.cancelled)
         }
-        defer { releaseSyncSlot() }
         let session = BackupSyncSession(
             services: [service],
             overwritingVault: overwritingVault,
-            lastSyncDate: { [dateStore] id in dateStore.lastSyncDate(for: id) },
-            onEvent: onEvent
+            lastSyncDate: lastSyncDateProvider,
+            onEvent: makeProgressHandler(adding: onEvent)
         )
-        return await session.run().first?.outcome
+        let task = Task {
+            await session.run().first?.outcome
+        }
+        installCancellationHandler {
+            task.cancel()
+        }
+        defer { clearSyncSlot() }
+        return await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
     }
 
     // MARK: - Internals
 
-    /// Atomic check-and-set: returns `true` if the slot was acquired (caller may run a sync),
-    /// `false` if a sync is already in flight (caller must drop its trigger). The lock is held
-    /// for the duration of the boolean flip — nanoseconds — never across the actual sync work.
-    private func acquireSyncSlot() -> Bool {
-        isSyncing.withLock { state in
-            guard !state else { return false }
-            state = true
+    private func reserveSyncSlot() -> Bool {
+        let shouldNotify = state.withLock { state in
+            guard !state.isSyncing else { return false }
+            state.isSyncing = true
             return true
+        }
+        if shouldNotify {
+            postActivityChanged()
+        }
+        return shouldNotify
+    }
+
+    private func installCancellationHandler(
+        _ cancelCurrentSync: @escaping @Sendable () -> Void
+    ) {
+        let shouldNotify = state.withLock { state in
+            let previous = state.activity
+            state.cancelCurrentSync = cancelCurrentSync
+            return state.activity != previous
+        }
+        if shouldNotify {
+            postActivityChanged()
         }
     }
 
-    private func releaseSyncSlot() {
-        isSyncing.withLock { $0 = false }
+    private func clearSyncSlot() {
+        let shouldNotify = state.withLock { state in
+            let previous = state.activity
+            state.isSyncing = false
+            state.activeConfigIDs.removeAll()
+            state.cancelCurrentSync = nil
+            return state.activity != previous
+        }
+        if shouldNotify {
+            postActivityChanged()
+        }
     }
 
-    /// Materializes the live services from configs read fresh from the store. Order is taken
-    /// directly from the persisted list — global registration order across kinds.
-    private func currentServices() -> [any BackupSynchronizing] {
-        configStore.loadConfigs().map { config in
-            switch config {
-            case .webDAV(let entry):
-                makeService(
-                    id: entry.id,
-                    kind: .webDAV,
-                    session: BackupWebDAVServiceSession(config: entry.config)
-                )
-            case .s3(let entry):
-                makeService(
-                    id: entry.id,
-                    kind: .s3,
-                    session: BackupS3ServiceSession(config: entry.config)
-                )
-            case .iCloud(let entry):
-                CloudSyncAdapter(id: entry.id, cloudSync: cloudSync, dateStore: dateStore)
+    private func makeProgressHandler(
+        adding downstream: BackupSyncSession.ProgressHandler?
+    ) -> BackupSyncSession.ProgressHandler {
+        { [weak self] event in
+            self?.handle(event)
+            downstream?(event)
+        }
+    }
+
+    private func handle(_ event: BackupSyncSession.ProgressEvent) {
+        let shouldNotify = state.withLock { state in
+            let previous = state.activity
+            switch event {
+            case .started(let id, _):
+                state.activeConfigIDs.insert(id)
+            case .finished(let id, _, _):
+                state.activeConfigIDs.remove(id)
+            }
+            return state.activity != previous
+        }
+        if shouldNotify {
+            postActivityChanged()
+        }
+    }
+
+    private func postActivityChanged() {
+        NotificationCenter.default.post(name: .backupSyncActivityChanged, object: nil)
+    }
+
+    private static func makeServicesProvider(
+        configStore: BackupSyncConfigStore,
+        dateStore: BackupSyncDateStore,
+        context: BackupSyncContext,
+        vaultExporter: BackupVaultExporting,
+        localMerger: BackupLocalMerging,
+        cloudSync: CloudSync
+    ) -> @Sendable () -> [any BackupSynchronizing] {
+        {
+            configStore.loadConfigs().map { config in
+                switch config {
+                case .webDAV(let entry):
+                    Self.makeService(
+                        id: entry.id,
+                        kind: .webDAV,
+                        session: BackupWebDAVServiceSession(config: entry.config),
+                        context: context,
+                        vaultExporter: vaultExporter,
+                        localMerger: localMerger,
+                        dateStore: dateStore
+                    )
+                case .s3(let entry):
+                    Self.makeService(
+                        id: entry.id,
+                        kind: .s3,
+                        session: BackupS3ServiceSession(config: entry.config),
+                        context: context,
+                        vaultExporter: vaultExporter,
+                        localMerger: localMerger,
+                        dateStore: dateStore
+                    )
+                case .iCloud(let entry):
+                    CloudSyncAdapter(id: entry.id, cloudSync: cloudSync, dateStore: dateStore)
+                }
             }
         }
     }
 
-    private func makeService(
+    private static func makeService(
         id: UUID,
         kind: SyncServiceKind,
-        session: BackupFileServiceSession
+        session: BackupFileServiceSession,
+        context: BackupSyncContext,
+        vaultExporter: BackupVaultExporting,
+        localMerger: BackupLocalMerging,
+        dateStore: BackupSyncDateStore
     ) -> BackupFileSyncSession {
         BackupFileSyncSession(
             id: id,

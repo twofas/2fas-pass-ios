@@ -12,3 +12,19 @@ public enum BackupSyncStatus: Sendable {
     case succeeded
     case failed(BackupSyncError)
 }
+
+public struct BackupSyncActivity: Sendable, Equatable {
+    public let isRunning: Bool
+    public let activeConfigIDs: Set<UUID>
+
+    public init(isRunning: Bool, activeConfigIDs: Set<UUID>) {
+        self.isRunning = isRunning
+        self.activeConfigIDs = activeConfigIDs
+    }
+
+    public static let idle = BackupSyncActivity(isRunning: false, activeConfigIDs: [])
+}
+
+public extension Notification.Name {
+    static let backupSyncActivityChanged = Notification.Name("backupSyncActivityChanged")
+}

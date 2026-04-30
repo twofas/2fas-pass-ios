@@ -22,13 +22,16 @@ import Backup
 /// piece; the configs themselves are persisted in `MainRepository` and outlive any container
 /// lifecycle.
 public protocol BackupSyncTriggerInteracting: AnyObject {
+    /// Live app-wide backup sync activity snapshot.
+    var currentActivity: BackupSyncActivity { get }
+
     /// Runs every registered backend through the convergence loop. No-op if no container.
     ///
     /// `onEvent` (optional) receives per-service `started`/`finished` lifecycle events so the UI
     /// can reflect the coordinator's serial execution row-by-row instead of a global flag.
     /// Events fire from the coordinator actor; consumers running on the main actor must hop
     /// themselves (e.g. via `Task { @MainActor in ... }`).
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?)
 
     /// Runs only the backend with the given id through the coordinator. No-op if no entry
     /// matches or the container hasn't been installed yet.
@@ -37,10 +40,13 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
     func lastSyncDate(for id: UUID) -> Date?
+
+    /// Cancels the currently running backup sync session, if any.
+    func cancelCurrentSync()
 }
 
 public extension BackupSyncTriggerInteracting {
-    func syncAll() async { await syncAll(onEvent: nil) }
+    func syncAll() { syncAll(onEvent: nil) }
     func sync(id: UUID) async { await sync(id: id, onEvent: nil) }
 }
 
@@ -51,8 +57,12 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         self.mainRepository = mainRepository
     }
 
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) async {
-        await mainRepository.backupSyncContainer?.syncAll(onEvent: onEvent)
+    var currentActivity: BackupSyncActivity {
+        mainRepository.backupSyncContainer?.currentActivity ?? .idle
+    }
+
+    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) {
+        mainRepository.backupSyncContainer?.syncAll(onEvent: onEvent)
     }
 
     func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
@@ -61,5 +71,9 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
 
     func lastSyncDate(for id: UUID) -> Date? {
         mainRepository.loadLastSyncDates()[id]
+    }
+
+    func cancelCurrentSync() {
+        mainRepository.backupSyncContainer?.cancelCurrentSync()
     }
 }

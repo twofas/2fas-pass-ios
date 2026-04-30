@@ -46,6 +46,7 @@ struct BackupConfigsView: View {
                 Section {
                     BackupConfigRowView(
                         row: row,
+                        isSyncActionEnabled: !presenter.isSyncing,
                         onSyncNow: { presenter.onSyncRow(row) },
                         onEdit: { presenter.onSelect(row) },
                         onRemove: { presenter.onDelete(row) }
@@ -146,6 +147,7 @@ private extension View {
 
 private struct BackupConfigRowView: View {
     let row: BackupConfigRowItem
+    let isSyncActionEnabled: Bool
     let onSyncNow: () -> Void
     let onEdit: () -> Void
     let onRemove: () -> Void
@@ -179,6 +181,7 @@ private struct BackupConfigRowView: View {
                         Text(.backupConfigsSyncNowButton)
                     }
                 }
+                .disabled(!isSyncActionEnabled)
 
                 if row.kind != .iCloud {
                     Button {
