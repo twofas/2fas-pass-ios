@@ -19,12 +19,18 @@ struct BackupConfigsView: View {
         SettingsDetailsForm(.settingsEntryCloudSync) {
             if !presenter.isEmpty {
                 Section {
-                    Button {
-                        presenter.onSyncNow()
+                    Button(role: presenter.isSyncing ? .cancel : nil) {
+                        if presenter.isSyncing {
+                            presenter.onCancelSyncAll()
+                        } else {
+                            presenter.onSyncNow()
+                        }
                     } label: {
                         HStack(spacing: Spacing.xs) {
-                            Image(systemName: "arrow.clockwise")
-                            Text(.backupConfigsSyncNowButton)
+                            Image(systemName: presenter.isSyncing ? "xmark" : "arrow.clockwise")
+                            Text(presenter.isSyncing
+                                 ? .backupConfigsCancelSyncButton
+                                 : .backupConfigsSyncAllNowButton)
                                 .font(.body)
                             Spacer()
                             if presenter.isSyncing {
@@ -33,7 +39,6 @@ struct BackupConfigsView: View {
                         }
                         .contentShape(Rectangle())
                     }
-                    .disabled(presenter.isSyncing)
                 }
             }
 
@@ -96,17 +101,6 @@ struct BackupConfigsView: View {
         .onChange(of: presenter.destination?.id) { _, newValue in
             if newValue == nil {
                 presenter.onAppear()
-            }
-        }
-        // Tick the relative "Synced X ago" footer every 30s so it stays accurate while the
-        // user is looking at the screen. Caps user-visible staleness at 30s — important around
-        // the "now" → "1m ago" transition, which a 60s tick could leave stale for nearly two
-        // minutes in the worst case. The task is scoped to the view's lifetime; navigating
-        // away cancels it automatically.
-        .task {
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(30))
-                presenter.refresh()
             }
         }
     }

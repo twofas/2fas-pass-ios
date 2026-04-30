@@ -101,7 +101,7 @@ private extension BackupFileSyncSession {
         let currentSyncDate = Date()
 
         guard let vaultID = context.vaultID,
-              let vault = context.vault(for: vaultID),
+              let vault = await context.vault(for: vaultID),
               let seedHash = context.seedHash(for: vaultID),
               let deviceID = context.deviceID else {
             throw .unexpected("missing context: vault ID, vault, seed hash, or device ID")
@@ -111,7 +111,7 @@ private extension BackupFileSyncSession {
         let fetchedIndex = try await fetchIndex()
 
         try checkCancellation()
-        let action = try decideAction(for: fetchedIndex, vault: vault, seedHash: seedHash)
+        let action = try await decideAction(for: fetchedIndex, vault: vault, seedHash: seedHash)
         guard action == .needsRemoteMerge else { return false }
 
         try checkCancellation()
@@ -176,7 +176,7 @@ private extension BackupFileSyncSession {
         for fetchedIndex: BackupIndex?,
         vault: VaultEncryptedData,
         seedHash: String
-    ) throws(BackupSyncError) -> VaultAction {
+    ) async throws(BackupSyncError) -> VaultAction {
         guard let fetchedIndex,
               let matchIndex = fetchedIndex.firstIndex(for: vault.vaultID, seedHash: seedHash) else {
             return .needsRemoteMerge
@@ -189,12 +189,13 @@ private extension BackupFileSyncSession {
             throw .schemaNotSupported(version: entry.schemaVersion)
         }
 
-        if vault.updatedAt.exportTimestamp == entry.vaultUpdatedAt {
+        let localTimestamp = await vaultContentTimestamp(vault)
+        if localTimestamp == entry.vaultUpdatedAt {
             Log("BackupFileSyncSession - vault unchanged on both sides, nothing to do", module: .backup)
             return .noop
         }
 
-        Log("BackupFileSyncSession - vault timestamps differ (local \(vault.updatedAt.exportTimestamp) vs remote \(entry.vaultUpdatedAt))", module: .backup)
+        Log("BackupFileSyncSession - vault timestamps differ (local \(localTimestamp) vs remote \(entry.vaultUpdatedAt))", module: .backup)
         return .needsRemoteMerge
     }
 
@@ -353,7 +354,7 @@ private extension BackupFileSyncSession {
         seedHash: String,
         deviceID: UUID
     ) async throws(BackupSyncError) {
-        let index = makeUpdatedIndex(
+        let index = await makeUpdatedIndex(
             basedOn: fetchedIndex,
             vault: vault,
             seedHash: seedHash,
@@ -382,13 +383,20 @@ private extension BackupFileSyncSession {
 
     // MARK: - Helpers (pure)
 
+    /// Index timestamp derived from the newest item, tag, or tombstone modification in the vault.
+    /// Falls back to `vault.createdAt` for a vault with no content yet, so the index still has a
+    /// stable, comparable value on first sync.
+    func vaultContentTimestamp(_ vault: VaultEncryptedData) async -> Int {
+        (await context.latestContentModification(for: vault.vaultID) ?? vault.updatedAt).exportTimestamp
+    }
+
     func makeUpdatedIndex(
         basedOn fetchedIndex: BackupIndex?,
         vault: VaultEncryptedData,
         seedHash: String,
         deviceID: UUID
-    ) -> BackupIndex {
-        let vaultUpdatedAt = vault.updatedAt.exportTimestamp
+    ) async -> BackupIndex {
+        let vaultUpdatedAt = await vaultContentTimestamp(vault)
         let entry = BackupIndexEntry(
             seedHashHex: seedHash,
             vaultId: vault.vaultID.uuidString.lowercased(),

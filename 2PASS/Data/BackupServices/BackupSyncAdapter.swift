@@ -97,13 +97,25 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         mainRepository.selectedVault?.vaultID
     }
 
-    func vault(for vaultID: UUID) -> VaultEncryptedData? {
-        mainRepository.getEncryptedVault(for: vaultID)
+    func vault(for vaultID: UUID) async -> VaultEncryptedData? {
+        await MainActor.run {
+            mainRepository.getEncryptedVault(for: vaultID)
+        }
     }
 
     func seedHash(for vaultID: UUID) -> String? {
         guard let seed = mainRepository.seed else { return nil }
         return mainRepository.generateExchangeSeedHash(vaultID, using: seed)
+    }
+
+    func latestContentModification(for vaultID: UUID) async -> Date? {
+        await MainActor.run {
+            let vaultUpdatedAt = mainRepository.getEncryptedVault(for: vaultID)?.updatedAt
+            let itemMax = mainRepository.listEncryptedItems(in: vaultID).lazy.map(\.modificationDate).max()
+            let tagMax = mainRepository.listEncryptedTags(in: vaultID).lazy.map(\.modificationDate).max()
+            let deletedMax = mainRepository.listDeletedItems(in: vaultID, limit: nil).lazy.map(\.deletedAt).max()
+            return [vaultUpdatedAt, itemMax, tagMax, deletedMax].compactMap { $0 }.max()
+        }
     }
 
 #if DEBUG
@@ -220,11 +232,13 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         case .success(let parsed):
             switch parsed {
             case .decrypted(let items, let tags, let deleted, _, _, _, _):
-                syncInteractor.syncAndApplyChanges(
-                    from: items,
-                    externalTags: tags,
-                    externalDeleted: deleted
-                )
+                await MainActor.run {
+                    syncInteractor.syncAndApplyChanges(
+                        from: items,
+                        externalTags: tags,
+                        externalDeleted: deleted
+                    )
+                }
                 return true
             case .needsPassword:
                 throw .needsPassword

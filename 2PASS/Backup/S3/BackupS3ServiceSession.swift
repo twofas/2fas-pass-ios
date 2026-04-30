@@ -95,8 +95,24 @@ private extension BackupS3ServiceSession {
     }
 
     func perform(_ request: S3URLRequest) async throws(BackupFileServiceError) -> (Data, HTTPURLResponse) {
+        Log(
+            "BackupS3ServiceSession: request \(request.httpMethod.rawValue) \(request.objectKey) (body \(request.httpBody?.count ?? 0) B)",
+            module: .backup
+        )
         do {
-            return try await session.data(for: request)
+            let (data, response) = try await session.data(for: request)
+            if response.statusCode >= 400, let body = String(data: data, encoding: .utf8) {
+                Log(
+                    "BackupS3ServiceSession: response \(response.statusCode) \(request.objectKey) (body \(data.count) B): \(body)",
+                    module: .backup
+                )
+            } else {
+                Log(
+                    "BackupS3ServiceSession: response \(response.statusCode) \(request.objectKey) (body \(data.count) B)",
+                    module: .backup
+                )
+            }
+            return (data, response)
         } catch {
             throw Self.mapServiceError(error)
         }

@@ -82,6 +82,10 @@ public final class S3ServiceSession: Sendable {
         let sessionConfiguration = URLSessionConfiguration.default
         sessionConfiguration.timeoutIntervalForRequest = 30
         sessionConfiguration.timeoutIntervalForResource = 120
+        // GET requests benefit from conditional revalidation (304 saves the body on unchanged
+        // vaults). Non-GET methods opt out of cache lookups per-request in `buildURLRequest`,
+        // because some S3-compatible backends respond `501 NotImplemented` when conditional
+        // headers ride along with writes/deletes.
         sessionConfiguration.requestCachePolicy = .reloadRevalidatingCacheData
         sessionConfiguration.networkServiceType = .responsiveData
         sessionConfiguration.waitsForConnectivity = true
@@ -118,6 +122,9 @@ private extension S3ServiceSession {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.httpMethod.rawValue
         urlRequest.httpBody = request.httpBody
+        if request.httpMethod != .get {
+            urlRequest.cachePolicy = .reloadIgnoringLocalCacheData
+        }
         for (name, value) in request.allHTTPHeaderFields {
             urlRequest.setValue(value, forHTTPHeaderField: name)
         }

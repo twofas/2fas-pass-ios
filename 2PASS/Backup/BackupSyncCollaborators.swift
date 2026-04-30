@@ -54,9 +54,14 @@ public protocol BackupSyncContext: Sendable {
     /// `nil` when no vault is currently selected (typical between logout and login). Sync
     /// attempts must guard for nil and fail fast: there's nothing to sync without a target vault.
     var vaultID: UUID? { get }
-    func vault(for vaultID: UUID) -> VaultEncryptedData?
+    func vault(for vaultID: UUID) async -> VaultEncryptedData?
     func seedHash(for vaultID: UUID) -> String?
-    
+
+    /// Newest modification timestamp across all vault content — items (active and trashed), tags,
+    /// and deleted-item tombstones. Returns `nil` only when the vault has none of those.
+    /// Implementations must run on the main thread (Core Data view-context affinity).
+    func latestContentModification(for vaultID: UUID) async -> Date?
+
 #if DEBUG
     var shouldWriteDecryptedCopy: Bool { get }
 #endif

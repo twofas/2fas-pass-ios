@@ -25,6 +25,50 @@ import Backup
         #expect(results.map(\.kind) == [.webDAV, .s3])
     }
 
+    /// Services are reordered by oldest successful `lastSyncDate` first; entries with no recorded
+    /// sync (`nil`) sort before any dated entry so brand-new configs and never-synced backends get
+    /// priority on first sync.
+    @Test func syncAllRunsServicesByLastSyncDateAscending() async {
+        let coordinator = BackupSyncCoordinator()
+        let neverSynced = FakeSynchronizer(kind: .webDAV)
+        let oldest = FakeSynchronizer(kind: .s3)
+        let newest = FakeSynchronizer(kind: .iCloud)
+
+        let now = Date()
+        let dates: [UUID: Date] = [
+            oldest.id: now.addingTimeInterval(-7200),
+            newest.id: now.addingTimeInterval(-3600)
+            // neverSynced.id intentionally absent → nil
+        ]
+
+        let results = await coordinator.syncAll(
+            // Pass them in a non-matching input order to prove the sort actually runs.
+            [newest, oldest, neverSynced],
+            lastSyncDate: { dates[$0] }
+        )
+
+        #expect(results.map(\.id) == [neverSynced.id, oldest.id, newest.id])
+    }
+
+    /// When two services share the same `lastSyncDate`, the original input array order is the
+    /// stable tiebreaker. This is what keeps `syncAllRunsServicesInRegistrationOrder` valid: with
+    /// no date provider supplied, every service ties at `nil` and falls back to input order.
+    @Test func syncAllPreservesInputOrderWhenDatesTie() async {
+        let coordinator = BackupSyncCoordinator()
+        let a = FakeSynchronizer(kind: .webDAV)
+        let b = FakeSynchronizer(kind: .s3)
+
+        let sameDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let dates: [UUID: Date] = [a.id: sameDate, b.id: sameDate]
+
+        let results = await coordinator.syncAll(
+            [a, b],
+            lastSyncDate: { dates[$0] }
+        )
+
+        #expect(results.map(\.id) == [a.id, b.id])
+    }
+
     @Test func syncAllForwardsOverwritingFlagToServices() async {
         let coordinator = BackupSyncCoordinator()
         let fake = FakeSynchronizer(kind: .webDAV)

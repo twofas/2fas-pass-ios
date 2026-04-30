@@ -16,7 +16,12 @@ import Common
 ///
 /// **Concurrency contract.** Every `syncAll` / `sync` invocation chains behind any earlier sync
 /// work on this coordinator, so two calls fired from different triggers cannot interleave. Within
-/// a single `syncAll`, the supplied services run one at a time in array order.
+/// a single `syncAll`, the supplied services run one at a time, ordered by oldest successful
+/// `lastSyncDate` first (services that have never synced run first); input array order is the
+/// stable tiebreaker. The order is computed once per `syncAll` call and reused across the
+/// convergence loop's passes. Higher-level callers (e.g. `BackupSyncContainer`) decide whether to
+/// drop overlapping triggers entirely instead of chaining them — that's not the coordinator's
+/// concern.
 ///
 /// Actor isolation alone is insufficient because each service call awaits non-actor async work,
 /// which releases the actor and would let parallel `syncAll` calls enter. The coordinator builds
@@ -73,10 +78,16 @@ public actor BackupSyncCoordinator {
     public func syncAll(
         _ services: [any BackupSynchronizing],
         overwritingVault: Bool = false,
+        lastSyncDate: @Sendable @escaping (UUID) -> Date? = { _ in nil },
         onEvent: ProgressHandler? = nil
     ) async -> [SyncResult] {
         await runOnSerialQueue {
-            await Self.runUntilQuiescent(services, overwritingVault: overwritingVault, onEvent: onEvent)
+            await Self.runUntilQuiescent(
+                services,
+                overwritingVault: overwritingVault,
+                lastSyncDate: lastSyncDate,
+                onEvent: onEvent
+            )
         }
     }
 
@@ -119,9 +130,16 @@ public actor BackupSyncCoordinator {
     private static func runUntilQuiescent(
         _ services: [any BackupSynchronizing],
         overwritingVault: Bool,
+        lastSyncDate: (UUID) -> Date?,
         onEvent: ProgressHandler?
     ) async -> [SyncResult] {
         guard !services.isEmpty else { return [] }
+        let services = services.enumerated().sorted { lhs, rhs in
+            let l = lastSyncDate(lhs.element.id) ?? .distantPast
+            let r = lastSyncDate(rhs.element.id) ?? .distantPast
+            if l != r { return l < r }
+            return lhs.offset < rhs.offset
+        }.map(\.element)
         let allIDs = services.map(\.id)
         let kindByID: [UUID: SyncServiceKind] = Dictionary(
             uniqueKeysWithValues: services.map { ($0.id, $0.kind) }

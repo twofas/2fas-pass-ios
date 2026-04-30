@@ -53,6 +53,11 @@ final class BackupConfigsPresenter {
     /// `interactor.cloudState.isSyncing` because CloudKit owns its own state machine.
     private var syncingConfigIDs: Set<UUID> = []
 
+    /// In-flight task spawned by `onSyncNow()`. Held so the user can cancel a running sync
+    /// via the same button. Cancellation propagates through the coordinator's
+    /// `withTaskCancellationHandler` to the in-flight service; queued services are skipped.
+    private var syncAllTask: Task<Void, Never>?
+
     var isEmpty: Bool { rows.isEmpty }
     var canAddiCloud: Bool { !rows.contains { $0.kind == .iCloud } }
 
@@ -67,13 +72,6 @@ final class BackupConfigsPresenter {
     }
 
     func onAppear() {
-        reload()
-    }
-
-    /// Re-runs `reload()` so each row's `statusText` recomputes against the current `Date`.
-    /// Called from a periodic `.task` in the View — without it, "Synced 5m ago" would stay
-    /// "Synced 5m ago" indefinitely while the user looks at the screen.
-    func refresh() {
         reload()
     }
 
@@ -104,16 +102,22 @@ final class BackupConfigsPresenter {
         guard !isSyncing else { return }
         isSyncing = true
         reload()
-        Task { [weak self] in
+        syncAllTask = Task { [weak self] in
             await self?.interactor.syncAll(onEvent: Self.makeProgressForwarder(self))
             await MainActor.run {
-                self?.isSyncing = false
+                guard let self else { return }
+                self.isSyncing = false
                 // Defensive: clear any straggler ids the coordinator could not retire (e.g. if
                 // its task was cancelled mid-`finished` emission).
-                self?.syncingConfigIDs.removeAll()
-                self?.reload()
+                self.syncingConfigIDs.removeAll()
+                self.syncAllTask = nil
+                self.reload()
             }
         }
+    }
+
+    func onCancelSyncAll() {
+        syncAllTask?.cancel()
     }
 
     func onSyncRow(_ row: BackupConfigRowItem) {
@@ -215,11 +219,9 @@ private extension BackupConfigsPresenter {
             if syncingConfigIDs.contains(config.id) {
                 return String(localized: .syncSyncing)
             } else if let date = interactor.lastSyncDate(for: config.id) {
-                // `Date.RelativeFormatStyle(presentation: .named, unitsStyle: .narrow)` produces
-                // a localized "now" for sub-minute timestamps, then "1m ago", "1h ago",
-                // "yesterday", etc. Replaces the legacy `RelativeDateTimeFormatter` which
-                // returned ugly "0 sec ago" / "in 0 sec" strings for fresh syncs.
-                return String(localized: .backupConfigsLastSynced(date.formatted(Self.relativeStyle)))
+                return String(localized: .backupConfigsLastSynced(
+                    date.formatted(date: .abbreviated, time: .shortened)
+                ))
             } else {
                 return String(localized: .backupConfigsNeverSynced)
             }
@@ -233,11 +235,6 @@ private extension BackupConfigsPresenter {
         case .s3: .s3
         }
     }
-
-    static let relativeStyle: Date.RelativeFormatStyle = .init(
-        presentation: .named,
-        unitsStyle: .narrow
-    )
 }
 
 private extension CloudState {

@@ -5,6 +5,8 @@
 // See LICENSE file for full terms
 
 import Foundation
+import os
+import Common
 
 /// Runs registered backup-sync backends through the convergence loop.
 ///
@@ -17,6 +19,11 @@ import Foundation
 /// Each `syncAll` / `sync` call freshly loads configs and rebuilds services. `FileBasedSyncService`
 /// is a cheap struct; rebuild cost is dominated by the configStore's decrypt+decode, which
 /// happens at most once per orchestration call.
+///
+/// **In-progress guard.** `syncAll` and `sync(_:)` debounce overlapping triggers via an unfair
+/// lock — while a sync is in flight, additional invocations return immediately (`syncAll` → `[]`,
+/// `sync(_:)` → `.failure(.cancelled)`) instead of chaining behind the in-flight work. This stops
+/// e.g. a periodic refresh from queueing up behind a user-initiated `Sync Now`.
 public final class BackupSyncContainer: @unchecked Sendable {
 
     private let configStore: BackupSyncConfigStore
@@ -26,6 +33,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     private let localMerger: BackupLocalMerging
     private let cloudSync: CloudSync
     private let coordinator: BackupSyncCoordinator
+    private let isSyncing = OSAllocatedUnfairLock(initialState: false)
 
     public init(
         configStore: BackupSyncConfigStore,
@@ -51,7 +59,17 @@ public final class BackupSyncContainer: @unchecked Sendable {
         overwritingVault: Bool = false,
         onEvent: BackupSyncCoordinator.ProgressHandler? = nil
     ) async -> [BackupSyncCoordinator.SyncResult] {
-        await coordinator.syncAll(currentServices(), overwritingVault: overwritingVault, onEvent: onEvent)
+        guard acquireSyncSlot() else {
+            Log("BackupSyncContainer - syncAll ignored: sync already in progress", module: .backup)
+            return []
+        }
+        defer { releaseSyncSlot() }
+        return await coordinator.syncAll(
+            currentServices(),
+            overwritingVault: overwritingVault,
+            lastSyncDate: { [dateStore] id in dateStore.lastSyncDate(for: id) },
+            onEvent: onEvent
+        )
     }
 
     @discardableResult
@@ -61,10 +79,30 @@ public final class BackupSyncContainer: @unchecked Sendable {
         onEvent: BackupSyncCoordinator.ProgressHandler? = nil
     ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
         guard let service = currentServices().first(where: { $0.id == id }) else { return nil }
+        guard acquireSyncSlot() else {
+            Log("BackupSyncContainer - sync ignored: sync already in progress", module: .backup)
+            return .failure(.cancelled)
+        }
+        defer { releaseSyncSlot() }
         return await coordinator.sync(service, overwritingVault: overwritingVault, onEvent: onEvent)
     }
 
     // MARK: - Internals
+
+    /// Atomic check-and-set: returns `true` if the slot was acquired (caller may run a sync),
+    /// `false` if a sync is already in flight (caller must drop its trigger). The lock is held
+    /// for the duration of the boolean flip — nanoseconds — never across the actual sync work.
+    private func acquireSyncSlot() -> Bool {
+        isSyncing.withLock { state in
+            guard !state else { return false }
+            state = true
+            return true
+        }
+    }
+
+    private func releaseSyncSlot() {
+        isSyncing.withLock { $0 = false }
+    }
 
     /// Materializes the live services from configs read fresh from the store. Order is taken
     /// directly from the persisted list — global registration order across kinds.
@@ -84,7 +122,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
                     session: BackupS3ServiceSession(config: entry.config)
                 )
             case .iCloud(let entry):
-                CloudSyncAdapter(id: entry.id, cloudSync: cloudSync)
+                CloudSyncAdapter(id: entry.id, cloudSync: cloudSync, dateStore: dateStore)
             }
         }
     }

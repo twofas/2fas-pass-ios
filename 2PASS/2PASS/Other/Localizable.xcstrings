@@ -19312,6 +19312,13 @@
         "pl" : { "stringUnit" : { "state" : "translated", "value" : "Dodaj konfigurację" } }
       }
     },
+    "backup_configs_cancel_sync_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel sync" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Anuluj synchronizację" } }
+      }
+    },
     "backup_configs_empty_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19394,6 +19401,13 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "WebDAV" } },
         "pl" : { "stringUnit" : { "state" : "translated", "value" : "WebDAV" } }
+      }
+    },
+    "backup_configs_sync_all_now_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sync all now" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Synchronizuj wszystkie teraz" } }
       }
     },
     "backup_configs_sync_now_button" : {
