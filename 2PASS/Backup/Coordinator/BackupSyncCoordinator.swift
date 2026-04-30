@@ -27,6 +27,20 @@ public actor BackupSyncCoordinator {
 
     public typealias SyncResult = (id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
+    /// Per-service lifecycle event emitted by the coordinator. Lets callers reflect actual serial
+    /// progress in the UI instead of a global "everything syncing" flag.
+    ///
+    /// `started` fires before each `performSync` invocation; `finished` fires after, with the
+    /// per-call outcome. A single service may emit multiple `started`/`finished` pairs across the
+    /// convergence loop's passes — that's by design (it really is running again), and consumers
+    /// can simply track currently-running ids by inserting on `started` and removing on `finished`.
+    public enum ProgressEvent: Sendable {
+        case started(id: UUID, kind: SyncServiceKind)
+        case finished(id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
+    }
+
+    public typealias ProgressHandler = @Sendable (ProgressEvent) -> Void
+
     private var tail: Task<Void, Never>?
 
     public init() {}
@@ -58,10 +72,11 @@ public actor BackupSyncCoordinator {
     @discardableResult
     public func syncAll(
         _ services: [any BackupSynchronizing],
-        overwritingVault: Bool = false
+        overwritingVault: Bool = false,
+        onEvent: ProgressHandler? = nil
     ) async -> [SyncResult] {
         await runOnSerialQueue {
-            await Self.runUntilQuiescent(services, overwritingVault: overwritingVault)
+            await Self.runUntilQuiescent(services, overwritingVault: overwritingVault, onEvent: onEvent)
         }
     }
 
@@ -69,10 +84,11 @@ public actor BackupSyncCoordinator {
     @discardableResult
     public func sync(
         _ service: any BackupSynchronizing,
-        overwritingVault: Bool = false
+        overwritingVault: Bool = false,
+        onEvent: ProgressHandler? = nil
     ) async -> Result<BackupSyncOutcome, BackupSyncError> {
         await runOnSerialQueue {
-            await Self.runService(service, overwritingVault: overwritingVault)
+            await Self.runService(service, overwritingVault: overwritingVault, onEvent: onEvent)
         }
     }
 
@@ -98,11 +114,12 @@ public actor BackupSyncCoordinator {
         }
     }
 
-    private static let maxConvergencePasses = 5
+    private static let maxConvergencePasses = 3
 
     private static func runUntilQuiescent(
         _ services: [any BackupSynchronizing],
-        overwritingVault: Bool
+        overwritingVault: Bool,
+        onEvent: ProgressHandler?
     ) async -> [SyncResult] {
         guard !services.isEmpty else { return [] }
         let allIDs = services.map(\.id)
@@ -124,7 +141,11 @@ public actor BackupSyncCoordinator {
                 if Task.isCancelled { break }
                 guard needsSync.contains(service.id) else { continue }
 
-                let outcome = await runService(service, overwritingVault: overwritingVault && pass == 0)
+                let outcome = await runService(
+                    service,
+                    overwritingVault: overwritingVault && pass == 0,
+                    onEvent: onEvent
+                )
                 needsSync.remove(service.id)
                 merge(outcome, for: service.id, into: &aggregate)
 
@@ -165,14 +186,19 @@ public actor BackupSyncCoordinator {
 
     private static func runService(
         _ service: any BackupSynchronizing,
-        overwritingVault: Bool
+        overwritingVault: Bool,
+        onEvent: ProgressHandler?
     ) async -> Result<BackupSyncOutcome, BackupSyncError> {
+        onEvent?(.started(id: service.id, kind: service.kind))
+        let result: Result<BackupSyncOutcome, BackupSyncError>
         do {
             let outcome = try await service.performSync(overwritingVault: overwritingVault)
-            return .success(outcome)
+            result = .success(outcome)
         } catch {
             Log("BackupSyncCoordinator - service \(service.kind.rawValue) failed", module: .backup)
-            return .failure(error)
+            result = .failure(error)
         }
+        onEvent?(.finished(id: service.id, kind: service.kind, outcome: result))
+        return result
     }
 }

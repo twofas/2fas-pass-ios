@@ -23,15 +23,25 @@ import Backup
 /// lifecycle.
 public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Runs every registered backend through the convergence loop. No-op if no container.
-    func syncAll() async
+    ///
+    /// `onEvent` (optional) receives per-service `started`/`finished` lifecycle events so the UI
+    /// can reflect the coordinator's serial execution row-by-row instead of a global flag.
+    /// Events fire from the coordinator actor; consumers running on the main actor must hop
+    /// themselves (e.g. via `Task { @MainActor in ... }`).
+    func syncAll(onEvent: BackupSyncCoordinator.ProgressHandler?) async
 
     /// Runs only the backend with the given id through the coordinator. No-op if no entry
     /// matches or the container hasn't been installed yet.
-    func sync(id: UUID) async
+    func sync(id: UUID, onEvent: BackupSyncCoordinator.ProgressHandler?) async
 
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
     func lastSyncDate(for id: UUID) -> Date?
+}
+
+public extension BackupSyncTriggerInteracting {
+    func syncAll() async { await syncAll(onEvent: nil) }
+    func sync(id: UUID) async { await sync(id: id, onEvent: nil) }
 }
 
 final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
@@ -41,12 +51,12 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         self.mainRepository = mainRepository
     }
 
-    func syncAll() async {
-        await mainRepository.backupSyncContainer?.syncAll()
+    func syncAll(onEvent: BackupSyncCoordinator.ProgressHandler?) async {
+        await mainRepository.backupSyncContainer?.syncAll(onEvent: onEvent)
     }
 
-    func sync(id: UUID) async {
-        _ = await mainRepository.backupSyncContainer?.sync(id)
+    func sync(id: UUID, onEvent: BackupSyncCoordinator.ProgressHandler?) async {
+        _ = await mainRepository.backupSyncContainer?.sync(id, onEvent: onEvent)
     }
 
     func lastSyncDate(for id: UUID) -> Date? {

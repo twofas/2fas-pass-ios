@@ -46,9 +46,11 @@ final class BackupConfigsPresenter {
     private(set) var rows: [BackupConfigRowItem] = []
     private(set) var isSyncing: Bool = false
 
-    /// IDs of configs whose sync is currently in flight (per-row "Sync now" or covered by the
-    /// global "Sync now"). webDAV/s3 rows derive their `isSyncing` from this set; iCloud rows
-    /// derive theirs from `interactor.cloudState.isSyncing` since CloudKit owns its own state.
+    /// IDs of configs the coordinator is *actively running right now*. Updated from per-service
+    /// `started`/`finished` events emitted by `BackupSyncCoordinator`, so the UI reflects the
+    /// coordinator's serial execution row-by-row instead of marking every config in flight for
+    /// the whole `syncAll` run. iCloud rows derive their syncing state from
+    /// `interactor.cloudState.isSyncing` because CloudKit owns its own state machine.
     private var syncingConfigIDs: Set<UUID> = []
 
     var isEmpty: Bool { rows.isEmpty }
@@ -101,16 +103,14 @@ final class BackupConfigsPresenter {
     func onSyncNow() {
         guard !isSyncing else { return }
         isSyncing = true
-        // Mark every webDAV/s3 row as in-flight for the duration of the global run. iCloud is
-        // skipped: it has its own observable state machine via `CloudState`.
-        let inFlightIDs = rows.filter { $0.kind != .iCloud }.map(\.id)
-        syncingConfigIDs.formUnion(inFlightIDs)
         reload()
         Task { [weak self] in
-            await self?.interactor.syncAll()
+            await self?.interactor.syncAll(onEvent: Self.makeProgressForwarder(self))
             await MainActor.run {
                 self?.isSyncing = false
-                self?.syncingConfigIDs.subtract(inFlightIDs)
+                // Defensive: clear any straggler ids the coordinator could not retire (e.g. if
+                // its task was cancelled mid-`finished` emission).
+                self?.syncingConfigIDs.removeAll()
                 self?.reload()
             }
         }
@@ -118,15 +118,37 @@ final class BackupConfigsPresenter {
 
     func onSyncRow(_ row: BackupConfigRowItem) {
         guard !syncingConfigIDs.contains(row.id) else { return }
-        syncingConfigIDs.insert(row.id)
-        reload()
         Task { [weak self] in
-            await self?.interactor.sync(id: row.id)
+            await self?.interactor.sync(id: row.id, onEvent: Self.makeProgressForwarder(self))
             await MainActor.run {
+                // Defensive cleanup if the started/finished pair did not fire.
                 self?.syncingConfigIDs.remove(row.id)
                 self?.reload()
             }
         }
+    }
+
+    /// Builds a `@Sendable` closure that hops the coordinator's lifecycle events back to the
+    /// main actor and updates `syncingConfigIDs`. Captures the presenter weakly so a view
+    /// dismissed mid-sync doesn't keep itself alive for the rest of the run.
+    private static func makeProgressForwarder(
+        _ presenter: BackupConfigsPresenter?
+    ) -> BackupSyncCoordinator.ProgressHandler {
+        { [weak presenter] event in
+            Task { @MainActor in
+                presenter?.handle(event)
+            }
+        }
+    }
+
+    private func handle(_ event: BackupSyncCoordinator.ProgressEvent) {
+        switch event {
+        case .started(let id, _):
+            syncingConfigIDs.insert(id)
+        case .finished(let id, _, _):
+            syncingConfigIDs.remove(id)
+        }
+        reload()
     }
 
     private func handleAddChoice(_ kind: SyncServiceKind) {

@@ -47,17 +47,21 @@ public final class BackupSyncContainer: @unchecked Sendable {
     // MARK: - Sync (async; touches coordinator actor)
 
     @discardableResult
-    public func syncAll(overwritingVault: Bool = false) async -> [BackupSyncCoordinator.SyncResult] {
-        await coordinator.syncAll(currentServices(), overwritingVault: overwritingVault)
+    public func syncAll(
+        overwritingVault: Bool = false,
+        onEvent: BackupSyncCoordinator.ProgressHandler? = nil
+    ) async -> [BackupSyncCoordinator.SyncResult] {
+        await coordinator.syncAll(currentServices(), overwritingVault: overwritingVault, onEvent: onEvent)
     }
 
     @discardableResult
     public func sync(
         _ id: UUID,
-        overwritingVault: Bool = false
+        overwritingVault: Bool = false,
+        onEvent: BackupSyncCoordinator.ProgressHandler? = nil
     ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
         guard let service = currentServices().first(where: { $0.id == id }) else { return nil }
-        return await coordinator.sync(service, overwritingVault: overwritingVault)
+        return await coordinator.sync(service, overwritingVault: overwritingVault, onEvent: onEvent)
     }
 
     // MARK: - Internals
