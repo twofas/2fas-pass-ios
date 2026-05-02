@@ -224,13 +224,13 @@ final class CloudHandler: CloudHandlerType {
             otherError(error)
         case .noAccount:
             clearCache()
-            currentState = .enabledNotAvailable(reason: .noAccount)
+            currentState = isEnabled ? .enabledNotAvailable(reason: .noAccount) : .disabled
         case .restricted:
             clearCache()
-            currentState = .enabledNotAvailable(reason: .restricted)
+            currentState = isEnabled ? .enabledNotAvailable(reason: .restricted) : .disabled
         case .notAvailable:
             clearCache()
-            currentState = .enabledNotAvailable(reason: .other)
+            currentState = isEnabled ? .enabledNotAvailable(reason: .other) : .disabled
         }
     }
     
