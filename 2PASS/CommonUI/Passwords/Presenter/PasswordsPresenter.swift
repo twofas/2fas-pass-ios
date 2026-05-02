@@ -92,7 +92,7 @@ final class PasswordsPresenter {
         self.toastPresenter = .shared
         self.iconsDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
 
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
         notificationCenter.addObserver(self, selector: #selector(userLoggedIn), name: .userLoggedIn, object: nil)
         notificationCenter.addObserver(self, selector: #selector(didImportItems), name: .didImportItems, object: nil)
@@ -603,10 +603,7 @@ private extension PasswordsPresenter {
     }
 
     @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
+    func syncFinished() {
         DispatchQueue.main.async {
             self.reload()
         }

@@ -32,17 +32,17 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
     var backupSyncActivityChanged: Callback?
 
     private let configsInteractor: BackupSyncConfigsInteracting
-    private let triggerInteractor: BackupSyncTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
     private let notificationCenter: NotificationCenter
 
     init(
         configsInteractor: BackupSyncConfigsInteracting,
-        triggerInteractor: BackupSyncTriggerInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         cloudSyncInteractor: CloudSyncInteracting
     ) {
         self.configsInteractor = configsInteractor
-        self.triggerInteractor = triggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
         self.notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(
@@ -72,11 +72,11 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
     }
 
     var currentActivity: BackupSyncActivity {
-        triggerInteractor.currentActivity
+        syncTriggerInteractor.currentActivity
     }
 
     func lastSyncDate(for id: UUID) -> Date? {
-        triggerInteractor.lastSyncDate(for: id)
+        syncTriggerInteractor.lastSyncDate(for: id)
     }
 
     @discardableResult
@@ -96,15 +96,15 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
     }
 
     func syncAll(onEvent: BackupSyncSession.ProgressHandler?) {
-        triggerInteractor.syncAll(onEvent: onEvent)
+        syncTriggerInteractor.syncAll(onEvent: onEvent)
     }
 
     func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
-        await triggerInteractor.sync(id: id, onEvent: onEvent)
+        await syncTriggerInteractor.sync(id: id, onEvent: onEvent)
     }
 
     func cancelCurrentSync() {
-        triggerInteractor.cancelCurrentSync()
+        syncTriggerInteractor.cancelCurrentSync()
     }
 
     @objc

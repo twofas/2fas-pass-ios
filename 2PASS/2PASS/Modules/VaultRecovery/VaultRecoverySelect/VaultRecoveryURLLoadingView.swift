@@ -14,7 +14,10 @@ struct VaultRecoveryURLLoadingView: View {
     var body: some View {
         switch presenter.destination {
         case .encrypted(let fileData):
-            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: presenter.onClose), recoveryData: .file(fileData))
+            // File-picker entry: no transport credentials to persist. `.localFile` is the
+            // explicit "user opened a file directly" marker — `persistRecoverySource` no-ops
+            // for this case.
+            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: presenter.onClose), recoveryData: .file(fileData, source: .localFile))
         default:
             VaultRecoveryCheckView(presenter: presenter)
         }

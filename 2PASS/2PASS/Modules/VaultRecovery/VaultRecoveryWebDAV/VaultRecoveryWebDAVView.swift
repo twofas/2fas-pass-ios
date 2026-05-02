@@ -70,8 +70,5 @@ struct VaultRecoveryWebDAVView: View {
         }
         .background(Color(UIColor.systemGroupedBackground))
         .router(router: VaultRecoveryWebDAVRouter(), destination: $presenter.destination)
-        .onDisappear {
-            presenter.onDisappear()
-        }
     }
 }

@@ -50,9 +50,7 @@ final class ManageTagsPresenter {
                 }
             }
             group.addTask { [weak self] in
-                for await notification in NotificationCenter.default.notifications(named: .webDAVStateChange) {
-                    guard let state = notification.userInfo?[Notification.webDAVState] as? WebDAVState,
-                          state == .synced else { continue }
+                for await _ in NotificationCenter.default.notifications(named: .backupSyncDidApplyRemoteChanges) {
                     await self?.reload()
                 }
             }

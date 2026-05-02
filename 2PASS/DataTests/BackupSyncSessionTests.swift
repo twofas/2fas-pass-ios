@@ -72,10 +72,28 @@ import Backup
     @Test func syncAllForwardsOverwritingFlagToServices() async {
         let fake = FakeSynchronizer(kind: .webDAV)
 
-        let session = BackupSyncSession(services: [fake], overwritingVault: true)
+        let session = BackupSyncSession(services: [fake], overwritingVault: { _ in true })
         _ = await session.run()
 
         #expect(fake.recording.lastOverwriting == true)
+    }
+
+    /// The new per-id resolver must address each service independently. With two services,
+    /// only the one whose id is `true` in the closure should see `overwritingVault: true` —
+    /// the other should get `false`. This is the precise guarantee that makes a multi-config
+    /// post-password-change sync re-push only the marked backends, not all of them.
+    @Test func syncAllResolvesOverwritingPerService() async {
+        let marked = FakeSynchronizer(kind: .webDAV)
+        let unmarked = FakeSynchronizer(kind: .s3)
+
+        let session = BackupSyncSession(
+            services: [marked, unmarked],
+            overwritingVault: { id in id == marked.id }
+        )
+        _ = await session.run()
+
+        #expect(marked.recording.lastOverwriting == true)
+        #expect(unmarked.recording.lastOverwriting == false)
     }
 
     @Test func syncAllContinuesAfterServiceFailure() async throws {
@@ -324,7 +342,10 @@ private final class FakeSynchronizer: BackupSynchronizing, @unchecked Sendable {
 
     var recording: Recording { state.withLock { $0.recording } }
 
-    func performSync(overwritingVault: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
+    func performSync(
+        overwritingVault: Bool,
+        allowingAnyDeviceId: Bool
+    ) async throws(BackupSyncError) -> BackupSyncOutcome {
         let nextOutcome: BackupSyncOutcome = state.withLock { state in
             state.recording.calls += 1
             state.recording.currentConcurrent += 1

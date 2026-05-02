@@ -26,9 +26,23 @@ public final class CloudSyncAdapter: BackupSynchronizing, @unchecked Sendable {
         self.dateStore = dateStore
     }
 
-    public func performSync(overwritingVault: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
+    public func performSync(
+        overwritingVault: Bool,
+        allowingAnyDeviceId: Bool
+    ) async throws(BackupSyncError) -> BackupSyncOutcome {
         let outcome = try await cloudSync.syncOnce(overwritingVault: overwritingVault)
-        dateStore.setLastSyncDate(Date(), for: id)
+        // iCloud doesn't participate in the device-id registration flag (recovery only marks
+        // file-based backends), so `allowingAnyDeviceId` is always false here in practice —
+        // we still thread it through truthfully so the adapter's conditional clears stay
+        // correct if that ever changes.
+        dateStore.setLastSyncDate(
+            Date(),
+            for: id,
+            consumed: BackupSyncFlags(
+                overwritingVault: overwritingVault,
+                allowingAnyDeviceId: allowingAnyDeviceId
+            )
+        )
         return outcome
     }
 }

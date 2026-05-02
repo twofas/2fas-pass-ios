@@ -28,17 +28,17 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
 final class VaultRecoverySelectWebDAVIndexPresenter {
     let backups: [BackupIndexEntry]
     private let index: BackupIndex
-   
+
     var isLoading = false
-    
+
     var destination: VaultRecoverySelectWebDAVIndexDestination?
-    
+
     private let interactor: VaultRecoverySelectWebDAVIndexModuleInteracting
     private let baseURL: URL
     private let allowTLSOff: Bool
     private let login: String?
     private let password: String?
-    private let onSelect: (ExchangeVaultVersioned) -> Void
+    private let onSelect: (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void
 
     init(
         interactor: VaultRecoverySelectWebDAVIndexModuleInteracting,
@@ -47,7 +47,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        onSelect: @escaping (ExchangeVaultVersioned) -> Void,
+        onSelect: @escaping (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void,
     ) {
         self.interactor = interactor
         self.index = index
@@ -63,42 +63,51 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
 extension VaultRecoverySelectWebDAVIndexPresenter {
     func onSelectVault(_ vault: BackupIndexEntry) {
         isLoading = true
-        
+
         guard let uuid = UUID(uuidString: vault.vaultId) else {
             Log("VaultRecoverySelectWebDAVIndexPresenter - incorrect UUID", severity: .error)
             isLoading = false
             return
         }
-        
-        interactor.fetchVault(
-            baseURL: baseURL,
-            allowTLSOff: allowTLSOff,
-            vaultID: uuid,
-            schemeVersion: vault.schemaVersion,
-            login: login,
-            password: password
-        ) { [weak self] result in
+
+        Task { @MainActor [weak self] in
             guard let self else { return }
-            switch result {
-            case .success(let exchangeVault):
-                interactor
-                    .saveConfiguration(
-                        baseURL: baseURL,
+            do {
+                let exchangeVault = try await interactor.fetchVault(
+                    baseURL: baseURL,
+                    allowTLSOff: allowTLSOff,
+                    vaultID: uuid,
+                    schemeVersion: vault.schemaVersion,
+                    login: login,
+                    password: password
+                )
+                // Build the source-config now (we have all the credentials and the picked
+                // vault id), but DON'T persist yet — `VaultRecoveryRecoverModuleInteractor`
+                // will save it only after items are actually committed to local storage,
+                // closing the regression where credentials persisted on `fetchVault` success
+                // and leaked through every subsequent flow abort.
+                let source = VaultRecoveryFileSource.webDAV(
+                    BackupWebDAVConfig(
+                        baseURL: baseURL.absoluteString,
+                        normalizedURL: baseURL,
+                        lockTime: Config.webDAVLockFileTime,
                         allowTLSOff: allowTLSOff,
-                        vaultID: uuid,
                         login: login,
                         password: password
                     )
-                onSelect(exchangeVault)
-            case .failure(let status):
-                showStatus(status)
+                )
+                onSelect(exchangeVault, source)
+            } catch let error as VaultRecoveryWebDAVError {
+                self.showStatus(error)
+            } catch {
+                self.showStatus(.transport(.invalidResponse))
             }
         }
     }
-    
-    private func showStatus(_ status: WebDAVRecoveryInteractorError) {
+
+    private func showStatus(_ status: VaultRecoveryWebDAVError) {
         isLoading = false
-        
+
         switch status {
         case .schemaNotSupported(let schemaVersion):
             destination = .appUpdateNeeded(
@@ -114,13 +123,13 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
             showError(status.message)
         }
     }
-    
+
     func showError(_ message: String) {
         destination = .error(message: message, onClose: { [weak self] in
             self?.destination = nil
         })
     }
-    
+
     private func onUpdateApp() {
         UIApplication.shared.open(Config.appStoreURL)
     }

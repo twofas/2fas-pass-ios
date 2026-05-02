@@ -24,11 +24,11 @@ protocol GenerateContentModuleInteracting: AnyObject {
 
 final class GenerateContentModuleInteractor {
     private let debugInteractor: DebugInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     
-    init(debugInteractor: DebugInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting) {
+    init(debugInteractor: DebugInteracting, syncTriggerInteractor: BackupSyncTriggerInteracting) {
         self.debugInteractor = debugInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
     }
 }
 
@@ -56,31 +56,31 @@ extension GenerateContentModuleInteractor: GenerateContentModuleInteracting {
 
     func generateItems(count: Int, completion: @escaping Callback) {
         debugInteractor.generateItems(count: count, completion: completion)
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     func generateSecureNotes(count: Int, completion: @escaping Callback) {
         debugInteractor.generateSecureNotes(count: count, completion: completion)
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     func generateUnknown(count: Int, completion: @escaping Callback) {
         debugInteractor.generateUnknown(count: count, completion: completion)
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     func generatePaymentCards(count: Int, completion: @escaping Callback) {
         debugInteractor.generatePaymentCards(count: count, completion: completion)
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     func removeAllItems() {
         debugInteractor.deleteAllItems()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     func removeAllTags() {
         debugInteractor.deleteAllTags()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 }

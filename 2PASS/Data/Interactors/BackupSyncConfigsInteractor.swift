@@ -8,12 +8,12 @@ import Foundation
 import Backup
 
 /// CRUD-style access to the backup-sync configs, plus a connection probe used to validate a
-/// config before persisting it. Persistence reads/writes go straight to `MainRepository` and
-/// never touch `BackupSyncContainer` — that orchestration surface lives in
-/// `BackupSyncTriggerInteracting`. The probe is included here because it's a "thing you can do
-/// with a config" alongside read/write; it constructs a transient `BackupFileServiceSession`
-/// for the supplied config and runs `testConnection()` against it. Per-kind filtering is left
-/// to callers via the `[BackupConfig].webDAVEntries` / `.iCloudEntry` extensions.
+/// config before persisting it. Persistence reads/writes go straight to `MainRepository` —
+/// orchestrated sync lives in `BackupSyncTriggerInteracting`. The probe is included here
+/// because it's a "thing you can do with a config" alongside read/write; it routes through
+/// `BackupSyncContainer.testConnection(config:)`, which constructs a transient
+/// `BackupFileServiceSession` for the supplied config. Per-kind filtering is left to callers
+/// via the `[BackupConfig].webDAVEntries` / `.iCloudEntry` extensions.
 public protocol BackupSyncConfigsInteracting: AnyObject {
     /// Every registered config in registration order.
     var allConfigs: [BackupConfig] { get }
@@ -44,10 +44,11 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     /// Removes the entry with `id` regardless of kind. No-op if no entry matches.
     func removeConfig(id: UUID)
 
-    /// Read probe: builds a transient `BackupFileServiceSession` for the supplied config and
-    /// runs its `testConnection()` (auth + index-read in one call). Throws on auth failure,
-    /// network error, or read denial. Returns silently on success including the
-    /// no-index-yet fresh-setup case (`fetchIndex()` 404 is folded into success).
+    /// Read probe: routes through `BackupSyncContainer.testConnection(config:)`, which builds
+    /// a transient `BackupFileServiceSession` for the supplied config and runs auth +
+    /// index-read in one call. Throws on auth failure, network error, or read denial. Returns
+    /// silently on success including the no-index-yet fresh-setup case (`fetchIndex()` 404 is
+    /// folded into success).
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
 }
@@ -115,12 +116,10 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
     }
 
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError) {
-        let session = BackupWebDAVServiceSession(config: config)
-        try await session.testConnection()
+        try await mainRepository.backupSyncContainer.testConnection(config: config)
     }
 
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError) {
-        let session = BackupS3ServiceSession(config: config)
-        try await session.testConnection()
+        try await mainRepository.backupSyncContainer.testConnection(config: config)
     }
 }

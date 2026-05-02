@@ -68,7 +68,7 @@ final class ItemDetailPresenter {
         self.toastPresenter = .shared
         self.autoFillEnvironment = autoFillEnvironment
         
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
     
@@ -126,10 +126,7 @@ extension ItemDetailPresenter {
 private extension ItemDetailPresenter {
     
     @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
+    func syncFinished() {
         refreshState()
     }
     

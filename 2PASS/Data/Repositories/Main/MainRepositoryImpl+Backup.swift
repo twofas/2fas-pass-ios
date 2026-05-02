@@ -9,67 +9,6 @@ import Backup
 import Common
 
 extension MainRepositoryImpl {
-    func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.getIndex(completion: completion)
-    }
-    
-    func webDAVGetLock(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.getLock(completion: completion)
-    }
-    
-    func webDAVGetVault(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.getVault(completion: completion)
-    }
-    
-    func webDAVWriteIndex(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.writeIndex(fileContents: fileContents, completion: completion)
-    }
-    
-    func webDAVWriteLock(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.writeLock(fileContents: fileContents, completion: completion)
-    }
-    
-    func webDAVWriteVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.writeVault(fileContents: fileContents, completion: completion)
-    }
-    
-    func webDAVWriteDecryptedVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.writeDecryptedVault(fileContents: fileContents, completion: completion)
-    }
-
-    
-    func webDAVMove(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.move(completion: completion)
-    }
-    
-    func webDAVDeleteLock(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        backupWebDAV.delete(completion: completion)
-    }
-    
-    func webDAVSetBackupConfig(_ config: BackupWebDAVConfig) {
-        backupWebDAV.setConfig(config)
-    }
-    
-    func webDAVEncodeLock(timestamp: Int, deviceId: UUID = .init()) -> Data? {
-        let data = WebDAVLock(deviceId: deviceId, timestamp: timestamp)
-        return try? jsonEncoder.encode(data)
-    }
-    
-    func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)? {
-        guard let decoded = try? jsonDecoder.decode(WebDAVLock.self, from: data) else {
-            return nil
-        }
-        return (timestamp: decoded.timestamp, deviceId: decoded.deviceId)
-    }
-    
-    func webDAVEncodeIndex(_ index: BackupIndex) -> Data? {
-        try? jsonEncoder.encode(index)
-    }
-    
-    func webDAVDecodeIndex(_ data: Data) -> BackupIndex? {
-        try? jsonDecoder.decode(BackupIndex.self, from: data)
-    }
-    
     var webDAVSeedHash: String? {
         guard let vaultID = _selectedVault?.vaultID,
               let seed,
@@ -77,107 +16,73 @@ extension MainRepositoryImpl {
         else {
             return nil
         }
-        
+
         return seedHashHex
     }
-    
+
     var webDAVCurrentVaultID: VaultID? {
         _selectedVault?.vaultID
     }
-    
-    var webDAVIsConnected: Bool {
-        userDefaultsDataSource.webDAVIsConnected
-    }
-    
-    func webDAVSetIsConnected(_ isConnected: Bool) {
-        userDefaultsDataSource.webDAVSetIsConnected(isConnected)
-    }
-    
-    func webDAVClearIsConnected() {
-        userDefaultsDataSource.webDAVClearIsConnected()
-    }
-    
-    var webDAVState: WebDAVState {
-        _webDAVState
-    }
-    
-    func webDAVSetState(_ state: WebDAVState) {
-        _webDAVState = state
-    }
-    
-    func webDAVClearState() {
-        _webDAVState = .idle
-    }
-    
-    var webDAVHasLocalChanges: Bool {
-        userDefaultsDataSource.webDAVHasLocalChanges
-    }
-    
-    func webDAVSetHasLocalChanges() {
-        userDefaultsDataSource.webDAVSetHasLocalChanges()
-    }
-    
-    func webDAVClearHasLocalChanges() {
-        userDefaultsDataSource.webDAVClearHasLocalChanges()
-    }
-    
-    var webDAVLastSync: WebDAVLock? {
-        guard let state = userDefaultsDataSource.webDAVLastSync,
-              let decoded = try? jsonDecoder.decode(WebDAVLock.self, from: state) else {
-            return nil
-        }
-        return decoded
-    }
-    
-    func webDAVSetLastSync(_ lastSync: WebDAVLock) {
-        guard let data = try? jsonEncoder.encode(lastSync) else { return }
-        userDefaultsDataSource.webDAVSetLastSync(data)
-    }
-    
-    func webDAVClearLastSync() {
-        userDefaultsDataSource.webDAVClearLastSync()
-    }
-    
+
     var webDAVWriteDecryptedCopy: Bool {
         userDefaultsDataSource.webDAVWriteDecryptedCopy
     }
-    
+
     func webDAVSetWriteDecryptedCopy(_ writeDecryptedCopy: Bool) {
         userDefaultsDataSource.webDAVSetWriteDecryptedCopy(writeDecryptedCopy)
     }
-    
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool {
-        userDefaultsDataSource.webDAVAwaitsVaultOverrideAfterPasswordChange
+
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+        userDefaultsDataSource.vaultOverrideAwaitingConfigIDs
     }
 
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool) {
-        userDefaultsDataSource.setWebDAVAwaitsVaultOverrideAfterPasswordChange(value)
+    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
+        // Additive merge: a second password-change-then-add-config sequence shouldn't drop
+        // ids the first one already marked. The global progress observer is responsible for
+        // removing entries; callers only ever insert.
+        let merged = userDefaultsDataSource.vaultOverrideAwaitingConfigIDs.union(configIDs)
+        userDefaultsDataSource.saveVaultOverrideAwaitingConfigIDs(merged)
+    }
+
+    func clearVaultOverrideAwaiting(configID: UUID) {
+        var current = userDefaultsDataSource.vaultOverrideAwaitingConfigIDs
+        guard current.remove(configID) != nil else { return }
+        userDefaultsDataSource.saveVaultOverrideAwaitingConfigIDs(current)
+    }
+
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+        userDefaultsDataSource.deviceRegistrationAwaitingConfigIDs
+    }
+
+    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+        // Additive merge — same shape as `markVaultOverrideAwaiting`. Concurrent recovery
+        // flows for different configs are vanishingly rare, but the merge keeps the rule
+        // "callers only ever insert; the success path removes" symmetrical with the sister
+        // override flag.
+        let merged = userDefaultsDataSource.deviceRegistrationAwaitingConfigIDs.union(configIDs)
+        userDefaultsDataSource.saveDeviceRegistrationAwaitingConfigIDs(merged)
+    }
+
+    func clearDeviceRegistrationAwaiting(configID: UUID) {
+        var current = userDefaultsDataSource.deviceRegistrationAwaitingConfigIDs
+        guard current.remove(configID) != nil else { return }
+        userDefaultsDataSource.saveDeviceRegistrationAwaitingConfigIDs(current)
     }
 
     // MARK: - Backup Sync Container
     //
-    // Stored by value. The container itself is a `Sendable` struct, but it holds a registry
-    // (actor) which holds the factory (struct) which holds the `BackupSyncAdapter` (class),
-    // and that adapter retains `MainRepository`. The transitive chain
-    // `MainRepository → container → registry → factory → adapter → MainRepository` is therefore
-    // still a real strong retain cycle — value-typing the container does not break it. Today
-    // `MainRepository` is `static var _shared` (singleton), so the cycle is benign — the
-    // singleton never deallocates, and "everything lives forever" is the same outcome with or
-    // without the cycle.
+    // The container is a `let` stored property on `MainRepositoryImpl` itself (declared in
+    // `MainRepositoryImpl.swift`) — single instance for the process lifetime, present from
+    // birth, non-optional. This file used to host a getter+setter pair for an Optional that
+    // was pushed in by `BackupSyncSetupInteractor.initialize()`; that flow is gone now.
+    // Two-phase init handles the dependency cycle: `init()` builds an inert container,
+    // `setup(...)` wires its collaborators afterwards from the interactor layer.
     //
-    // **Caveat for a future per-session `MainRepository`.** When `_shared` is removed and
-    // `MainRepository` becomes per-user-session, this cycle becomes a real leak: the session
-    // graph would be retained beyond logout. At that point the cycle must be broken — either by
-    // moving strong ownership of the container/registry out of `MainRepository` into a
-    // logged-in-session container, or by reworking the adapter to hold `MainRepository` weakly.
-
-    var backupSyncContainer: BackupSyncContainer? {
-        _backupSyncContainer
-    }
-
-    func setBackupSyncContainer(_ container: BackupSyncContainer) {
-        _backupSyncContainer = container
-    }
+    // The cycle `MainRepository → container → adapter → MainRepository` is unchanged — the
+    // adapter still retains `MainRepository` strongly. Today this is benign because
+    // `MainRepository` is the `static var _shared` singleton; if that ever becomes per-session
+    // the cycle becomes a real leak and must be broken (move container ownership out of
+    // `MainRepository`, or weak-ref `MainRepository` from the adapter).
 
     // MARK: - Backup Sync config persistence
     //

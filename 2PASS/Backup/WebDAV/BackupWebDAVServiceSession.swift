@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-public final class BackupWebDAVServiceSession: BackupFileServiceSession {
+final class BackupWebDAVServiceSession: BackupFileServiceSession {
     public let config: BackupWebDAVConfig
     private let session: URLSession
     private let sessionDelegate: TLSBypassDelegate?

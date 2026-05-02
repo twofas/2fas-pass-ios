@@ -21,13 +21,14 @@ final class VaultRecoveryRecoverModuleInteractor {
     private let importInteractor: ImportInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
     private let onboardingInteractor: OnboardingInteracting
-    private let webDAVBackupInteractor: WebDAVBackupInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
+    private let configsInteractor: BackupSyncConfigsInteracting
     private let notificationCenter: NotificationCenter
-    
+
     private let syncAwaitSeconds = 60
-    
+
     private var syncCompletion: ((Bool) -> Void)?
-    
+
     init(
         kind: VaultRecoveryRecoverKind,
         itemsImportInteractor: ItemsImportInteracting,
@@ -35,7 +36,8 @@ final class VaultRecoveryRecoverModuleInteractor {
         importInteractor: ImportInteracting,
         cloudSyncInteractor: CloudSyncInteracting,
         onboardingInteractor: OnboardingInteracting,
-        webDAVBackupInteractor: WebDAVBackupInteracting
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
+        configsInteractor: BackupSyncConfigsInteracting
     ) {
         self.kind = kind
         self.itemsImportInteractor = itemsImportInteractor
@@ -43,13 +45,13 @@ final class VaultRecoveryRecoverModuleInteractor {
         self.importInteractor = importInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
         self.onboardingInteractor = onboardingInteractor
-        self.webDAVBackupInteractor = webDAVBackupInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
+        self.configsInteractor = configsInteractor
         notificationCenter = .default
         notificationCenter.addObserver(self, selector: #selector(stateChanged), name: .cloudStateChanged, object: nil)
         notificationCenter.addObserver(self, selector: #selector(didSync), name: .cloudDidSync, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(webDAVStateChanged), name: .webDAVStateChange, object: nil)
     }
-    
+
     deinit {
         notificationCenter.removeObserver(self)
     }
@@ -77,7 +79,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             let modificationDate: Date
             let reference: String
             switch recoveryData {
-            case .file(let exchangeVault):
+            case .file(let exchangeVault, _):
                 let vaultIDString = exchangeVault.vault.id
                 guard let vaultIDValue = VaultID(uuidString: vaultIDString),
                       let referenceValue = exchangeVault.encryption?.reference else {
@@ -113,23 +115,26 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             startupInteractor.clearAfterInit()
             
             switch recoveryData {
-            case .file(let exchangeVault):
+            case .file(let exchangeVault, let source):
                 importInteractor.extractItemsUsingMasterKey(masterKey, exchangeVault: exchangeVault) { [weak self] result in
                     switch result {
                     case .success((let items, let tags, let deletedItems)):
                         Log("VaultRecoveryRecoverModuleInteractor - items: \(items.count), deleted: \(deletedItems.count)", module: .moduleInteractor)
                         self?.itemsImportInteractor.importDeleted(deletedItems)
-                        self?.itemsImportInteractor.importItems(items, tags: tags, completion: { count in
-                            if count == items.count {
-                                if self?.webDAVBackupInteractor.hasConfiguration == true {
-                                    self?.syncCompletion = completion
-                                    self?.webDAVBackupInteractor.sync()
-                                } else {
-                                    completion(true)
-                                }
-                            } else {
+                        self?.itemsImportInteractor.importItems(items, tags: tags, completion: { [weak self] count in
+                            guard count == items.count else {
                                 completion(false)
+                                return
                             }
+                            // Persist the source-of-truth config NOW — items are committed to
+                            // local storage, so the credentials match a vault we successfully
+                            // decrypted and imported. The order matters: `runWebDAVRecoverySync`
+                            // looks up by `kind == .webDAV` from `configsInteractor.allConfigs`,
+                            // so the save must precede it. (Earlier the persistence happened on
+                            // `fetchVault` success, which leaked credentials whenever recovery
+                            // was aborted between fetch and import.)
+                            self?.persistRecoverySource(source)
+                            self?.runWebDAVRecoverySync(completion: completion)
                         })
                     case .failure(let error):
                         Log("Error while extracting items during Vault Recovery, error: \(error)")
@@ -164,25 +169,57 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         self.syncCompletion = nil
         return
     }
-    
-    @objc
-    func webDAVStateChanged(_ notification: Notification) {
-        guard let state = notification.userInfo?[Notification.webDAVState] as? WebDAVState else {
-            return
-        }
-        
-        switch state {
-        case .synced:
-            syncCompletion?(true)
-            syncCompletion = nil
-        case .error:
-            syncCompletion?(false)
-            syncCompletion = nil
-        default:
+
+    /// Persists the recovery's source-of-truth config (e.g. the WebDAV credentials the user
+    /// entered to fetch this vault). Called *only* after a successful item import — the
+    /// guarantee being: a config record exists in `MainRepository.loadBackupConfigs` only
+    /// for backends whose vaults are actually decrypted and stored locally. iCloud and the
+    /// file-picker entry points pass `nil` and no-op here.
+    private func persistRecoverySource(_ source: VaultRecoveryFileSource) {
+        switch source {
+        case .webDAV(let config):
+            // Persist the config and mark it as needing first-sync device-id registration.
+            // The flag drives `allowingAnyDeviceId: true` on every sync (this immediate
+            // `runWebDAVRecoverySync` AND any future retry — routine, per-row, etc.) until
+            // the first successful sync clears it via `BackupSyncAdapter.setLastSyncDate`.
+            // Closes the regression where a transient post-recovery sync failure left
+            // routine syncs permanently broken on the multi-device-id gate.
+            let id = configsInteractor.addWebDAVConfig(config)
+            syncTriggerInteractor.markDeviceRegistrationAwaiting(configIDs: [id])
+        case .localFile:
             break
         }
     }
-    
+
+    /// If a WebDAV backend is configured, kick off a recovery sync against it through the new
+    /// `BackupSyncContainer`. `allowingAnyDeviceId: true` lets the merge tolerate a vault that
+    /// was created on a different device id even on a non-multi-device entitlement —
+    /// recovery's whole point is "this vault used to live somewhere else." If no WebDAV
+    /// backend is configured, recovery completes immediately.
+    private func runWebDAVRecoverySync(completion: @escaping (Bool) -> Void) {
+        guard let webDAVID = configsInteractor.allConfigs.first(where: { $0.kind == .webDAV })?.id else {
+            completion(true)
+            return
+        }
+        Task { [syncTriggerInteractor] in
+            let result = await syncTriggerInteractor.sync(
+                id: webDAVID,
+                overwritingVault: false,
+                allowingAnyDeviceId: true,
+                onEvent: nil
+            )
+            // `nil` happens when no service matched (shouldn't, since we just resolved an id)
+            // or the container hasn't been installed yet — treat both as a soft success so
+            // recovery doesn't get stuck. `.cancelled` and other failures map to `false`.
+            switch result {
+            case .none, .success:
+                completion(true)
+            case .failure:
+                completion(false)
+            }
+        }
+    }
+
     func finish() {
         onboardingInteractor.finishVaultRecovery()
     }

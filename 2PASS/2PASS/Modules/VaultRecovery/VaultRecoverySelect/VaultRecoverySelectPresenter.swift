@@ -227,7 +227,7 @@ private extension VaultRecoverySelectPresenter {
                                 fatalError("Unsupported importing vault from cloud")
                             case .localVault:
                                 fatalError("Unsupported importing local vault")
-                            case .file(let file):
+                            case .file(let file, _):
                                 self.destination = .importVault(
                                     .encrypted(entropy: parseResult.entropy, masterKey: masterKey, vault: file),
                                     onClose: self.flowContext.onClose

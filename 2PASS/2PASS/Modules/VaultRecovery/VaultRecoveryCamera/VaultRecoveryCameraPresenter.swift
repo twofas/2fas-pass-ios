@@ -110,7 +110,7 @@ private extension VaultRecoveryCameraPresenter {
                     fatalError("Unsupported importing vault from cloud")
                 case .localVault:
                     fatalError("Unsupported importing vault from local database")
-                case .file(let vault):
+                case .file(let vault, _):
                     destination = .importVault(.encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: flowContext.onClose)
                 }
             }

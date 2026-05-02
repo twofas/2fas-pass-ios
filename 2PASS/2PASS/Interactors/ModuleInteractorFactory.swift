@@ -47,7 +47,7 @@ extension ModuleInteractorFactory {
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
-            webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
             pushNotificationsInteractor: InteractorFactory.shared.pushNotificationsPermissionInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
@@ -58,7 +58,7 @@ extension ModuleInteractorFactory {
         TrashModuleInteractor(
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
         )
     }
@@ -164,7 +164,7 @@ extension ModuleInteractorFactory {
     func backupConfigsModuleInteractor() -> BackupConfigsModuleInteracting {
         BackupConfigsModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
-            triggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor()
         )
     }
@@ -188,10 +188,8 @@ extension ModuleInteractorFactory {
     
     func mainModuleInteracting() -> MainModuleInteracting {
         MainModuleInteractor(
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: true),
-            webDAVStateInteractor: InteractorFactory.shared.webDAVStateInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
-            triggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
             loginInteractor: InteractorFactory.shared.loginInteractor()
@@ -201,7 +199,7 @@ extension ModuleInteractorFactory {
     func generateContentModuleInteractor() -> GenerateContentModuleInteracting {
         GenerateContentModuleInteractor(
             debugInteractor: InteractorFactory.shared.debugInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
     
@@ -213,7 +211,8 @@ extension ModuleInteractorFactory {
             importInteractor: InteractorFactory.shared.importInteractor(),
             cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
-            webDAVBackupInteractor: InteractorFactory.shared.webDAVBackupInteractor(ignoreDeviceId: true)
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor()
         )
     }
     
@@ -240,14 +239,14 @@ extension ModuleInteractorFactory {
     
     func vaultRecoveryWebDAVModuleInteractor() -> VaultRecoveryWebDAVModuleInteracting {
         VaultRecoveryWebDAVModuleInteractor(
-            webDAVRecoveryInteractor: InteractorFactory.shared.webDAVRecoveryInteractor(),
+            recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor()
         )
     }
-    
+
     func vaultRecoverySelectWebDAVIndexModuleInteractor() -> VaultRecoverySelectWebDAVIndexModuleInteracting {
         VaultRecoverySelectWebDAVIndexModuleInteractor(
-            webDAVRecoveryInteractor: InteractorFactory.shared.webDAVRecoveryInteractor()
+            recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor()
         )
     }
     
@@ -272,7 +271,7 @@ extension ModuleInteractorFactory {
     func customizationModuleInteractor() -> CustomizationModuleInteracting {
         CustomizationModuleInteractor(
             configInteractor: InteractorFactory.shared.configInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
     
@@ -338,7 +337,7 @@ extension ModuleInteractorFactory {
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
             paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
     
@@ -425,7 +424,7 @@ extension ModuleInteractorFactory {
         ManageTagsModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
             itemsInteractor: InteractorFactory.shared.itemsInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
 }

@@ -27,13 +27,13 @@ protocol TrashModuleInteracting: AnyObject {
 final class TrashModuleInteractor {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(itemsInteractor: ItemsInteracting, fileIconInteractor: FileIconInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+    init(itemsInteractor: ItemsInteracting, fileIconInteractor: FileIconInteracting, syncTriggerInteractor: BackupSyncTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
     }
 }
@@ -69,7 +69,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         Log("TrashModuleInteractor: Restoring item: \(itemID)", module: .moduleInteractor)
         itemsInteractor.markAsNotTrashed(for: itemID)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
     
     func restoreAll() {
@@ -78,7 +78,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
             itemsInteractor.markAsNotTrashed(for: item.id)
         }
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
     
     func emptyTrash() {

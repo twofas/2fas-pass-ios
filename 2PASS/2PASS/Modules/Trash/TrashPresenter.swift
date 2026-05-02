@@ -58,7 +58,7 @@ final class TrashPresenter {
         self.iconDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
         self.notificationCenter = .default
         
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
     
@@ -207,10 +207,7 @@ private extension TrashPresenter {
     }
     
     @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
+    func syncFinished() {
         DispatchQueue.main.async {
             self.reload()
         }

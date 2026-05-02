@@ -23,28 +23,28 @@ protocol SettingsModuleInteracting: AnyObject {
 
 final class SettingsModuleInteractor {
     var updatePaymentStatus: Callback?
-    
+
     private let systemInteractor: SystemInteracting
     private let configInteractor: ConfigInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
-    private let webDAVStateInteractor: WebDAVStateInteracting
+    private let configsInteractor: BackupSyncConfigsInteracting
     private let autoFillStatusInteractor: AutoFillStatusInteracting
     private let pushNotificationsInteractor: PushNotificationsPermissionInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
-    
+
     private let notificationCenter = NotificationCenter.default
-    
+
     init(systemInteractor: SystemInteracting,
          configInteractor: ConfigInteracting,
          cloudSyncInteractor: CloudSyncInteracting,
-         webDAVStateInteractor: WebDAVStateInteracting,
+         configsInteractor: BackupSyncConfigsInteracting,
          autoFillStatusInteractor: AutoFillStatusInteracting,
          pushNotificationsInteractor: PushNotificationsPermissionInteracting,
          paymentStatusInteractor: PaymentStatusInteracting) {
         self.systemInteractor = systemInteractor
         self.configInteractor = configInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
-        self.webDAVStateInteractor = webDAVStateInteractor
+        self.configsInteractor = configsInteractor
         self.autoFillStatusInteractor = autoFillStatusInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
@@ -78,12 +78,17 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
         default:
             break
         }
-        
-        if webDAVStateInteractor.isConnected {
-            return true
+        // "WebDAV is enabled" used to mean `webDAVIsConnected` (a derived flag set after a
+        // successful sync). With multi-config BackupSync the equivalent is "the user has at
+        // least one non-iCloud backend configured" — file-based backends (WebDAV, S3) only get
+        // configs persisted when the user finishes setup.
+        let hasFileBackend = configsInteractor.allConfigs.contains { config in
+            switch config.kind {
+            case .webDAV, .s3: return true
+            case .iCloud: return false
+            }
         }
-        
-        return false
+        return hasFileBackend
     }
     
     var syncHasError: Bool {

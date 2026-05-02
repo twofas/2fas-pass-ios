@@ -21,10 +21,8 @@ final class MainModuleInteractor {
     var updateBadge: ((Bool) -> Void)?
     var paymentScreen: Callback?
 
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
-    private let webDAVStateInteractor: WebDAVStateInteracting
     private let cloudSyncInteractor: CloudSyncInteracting
-    private let triggerInteractor: BackupSyncTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let systemInteractor: SystemInteracting
     private let quickSetupInteractor: QuickSetupInteracting
     private let loginInteractor: LoginInteracting
@@ -32,28 +30,22 @@ final class MainModuleInteractor {
 
     private var syncErroredLately = false
 
-    private var awaitsWebDAVSyncEnd = false
-
     init(
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
-        webDAVStateInteractor: WebDAVStateInteracting,
         cloudSyncInteractor: CloudSyncInteracting,
-        triggerInteractor: BackupSyncTriggerInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         systemInteractor: SystemInteracting,
         quickSetupInteractor: QuickSetupInteracting,
         loginInteractor: LoginInteracting
     ) {
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
-        self.webDAVStateInteractor = webDAVStateInteractor
         self.cloudSyncInteractor = cloudSyncInteractor
-        self.triggerInteractor = triggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.systemInteractor = systemInteractor
         self.quickSetupInteractor = quickSetupInteractor
         self.loginInteractor = loginInteractor
         self.notificationCenter = NotificationCenter.default
-        
+
         cloudSyncInteractor.setup(takeoverVault: false)
-        
+
         notificationCenter.addObserver(
             self,
             selector: #selector(userLoggedIn),
@@ -74,23 +66,12 @@ final class MainModuleInteractor {
         )
         notificationCenter.addObserver(
             self,
-            selector: #selector(updateWebDAVStateChange),
-            name: .webDAVStateChange,
+            selector: #selector(backupSyncActivityChanged),
+            name: .backupSyncActivityChanged,
             object: nil
         )
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(passwordWasChanged),
-            name: .passwordWasChanged,
-            object: nil
-        )
-        
-        syncChangeTriggerInteractor.newChangeForSync = { [weak self] in
-            Log("MainModuleInteractor - trigger on change", module: .moduleInteractor)
-            self?.sync()
-        }
     }
-    
+
     deinit {
         notificationCenter.removeObserver(self)
     }
@@ -120,75 +101,49 @@ private extension MainModuleInteractor {
     
     @objc
     func updateBadgeAction() {
+        // Backup-sync error state is no longer persisted — the new `BackupSyncContainer` reports
+        // errors per-run via the `ProgressHandler`, not as a recoverable property. The badge now
+        // reflects only iCloud's terminal state (still persisted via `CloudSyncInteractor`) plus
+        // a "currently syncing" indicator that includes every backend wired into the container.
         let cloudHasSynced = cloudSyncInteractor.currentState.isSynced
-        let webdavHasSynced = webDAVStateInteractor.state.isSynced
-        
-        if cloudHasSynced || webdavHasSynced {
+        if cloudHasSynced {
             syncErroredLately = false
             postBadgeChange(false)
             return
         }
-        
+
+        let backupIsRunning = syncTriggerInteractor.currentActivity.isRunning
         let cloudIsSyncing = cloudSyncInteractor.currentState.isSyncing
-        let webdavIsSyncing = webDAVStateInteractor.state.isSyncing
-        
-        if cloudIsSyncing || webdavIsSyncing {
+        if backupIsRunning || cloudIsSyncing {
             postBadgeChange(syncErroredLately)
             return
         }
 
-        let cloudHasError = cloudSyncInteractor.currentState.hasError
-        let webdavHasError = webDAVStateInteractor.state.hasError && webDAVStateInteractor.isConnected
-        
-        let showErrorBadge = cloudHasError || webdavHasError
+        let showErrorBadge = cloudSyncInteractor.currentState.hasError
         syncErroredLately = showErrorBadge
-        
         postBadgeChange(showErrorBadge)
     }
-    
+
     @objc
     func presentPaymentScreen() {
         paymentScreen?()
     }
-    
+
+    /// Re-evaluate the badge whenever a backup sync starts or finishes. The password-change
+    /// retry that used to live here moved into `ChangePasswordInteractor.changeMasterPassword`
+    /// — co-located with the cause now, no longer Main's concern.
     @objc
-    func updateWebDAVStateChange() {
+    func backupSyncActivityChanged() {
         updateBadgeAction()
-        
-        if webDAVStateInteractor.isConnected && webDAVStateInteractor.awaitsVaultOverrideAfterPasswordChange {
-            if webDAVStateInteractor.state == .synced {
-                if awaitsWebDAVSyncEnd {
-                    awaitsWebDAVSyncEnd = false
-                    sync()
-                } else {
-                    webDAVStateInteractor.clearAwaitsVaultOverrideAfterPasswordChange()
-                }
-            } else if webDAVStateInteractor.state == .error(.passwordChanged) && awaitsWebDAVSyncEnd {
-                awaitsWebDAVSyncEnd = false
-                sync()
-            }
-        }
     }
-    
-    @objc
-    func passwordWasChanged() {
-        if webDAVStateInteractor.isConnected {
-            webDAVStateInteractor.setAwaitsVaultOverrideAfterPasswordChange()
-            if webDAVStateInteractor.state == .synced {
-                sync()
-            } else {
-                awaitsWebDAVSyncEnd = true
-            }
-        }
-    }
-    
+
     func sync() {
         Log("MainModuleInteractor - triggering sync on Main", module: .moduleInteractor)
         // Drives the new `BackupSyncContainer` over every config registered through the
         // BackupConfigs UI (WebDAV, S3, iCloud). Fire-and-forget — the previous legacy calls
         // (`webDAVBackupInteractor.sync()`, `cloudSyncInteractor.synchronize()`) had the same
         // semantics. The container no-ops when no configs are registered.
-        triggerInteractor.syncAll()
+        syncTriggerInteractor.syncAll()
     }
     
     func postBadgeChange(_ showErrorBadge: Bool) {

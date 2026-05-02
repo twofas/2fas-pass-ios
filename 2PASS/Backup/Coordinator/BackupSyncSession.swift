@@ -63,18 +63,31 @@ public final class BackupSyncSession: Sendable {
     public typealias ProgressHandler = @Sendable (ProgressEvent) -> Void
 
     private let services: [any BackupSynchronizing]
-    private let overwritingVault: Bool
+    /// Per-service overwriting decision. Resolved at runtime per `runService` call so the
+    /// caller (`BackupSyncContainer`) can supply a function that consults a per-config flag
+    /// (e.g. `MainRepository.vaultOverrideAwaitingConfigIDs`). A static "true for everyone"
+    /// run is just `{ _ in true }`; the default value `{ _ in false }` keeps existing call
+    /// sites and tests that don't care about overwriting compiling unchanged.
+    private let overwritingVault: @Sendable (UUID) -> Bool
+    /// Per-service multi-device-id override. Same per-id closure shape as `overwritingVault`
+    /// so the caller can consult `MainRepository.deviceRegistrationAwaitingConfigIDs` (set
+    /// after recovery, cleared on first successful sync) and selectively bypass the gate
+    /// only for configs awaiting their first post-recovery sync. Routine syncs default to
+    /// `{ _ in false }`.
+    private let allowingAnyDeviceId: @Sendable (UUID) -> Bool
     private let lastSyncDate: @Sendable (UUID) -> Date?
     private let onEvent: ProgressHandler?
 
     public init(
         services: [any BackupSynchronizing],
-        overwritingVault: Bool = false,
+        overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
+        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false },
         lastSyncDate: @Sendable @escaping (UUID) -> Date? = { _ in nil },
         onEvent: ProgressHandler? = nil
     ) {
         self.services = services
         self.overwritingVault = overwritingVault
+        self.allowingAnyDeviceId = allowingAnyDeviceId
         self.lastSyncDate = lastSyncDate
         self.onEvent = onEvent
     }
@@ -113,7 +126,8 @@ public final class BackupSyncSession: Sendable {
 
                 let outcome = await runService(
                     service,
-                    overwritingVault: overwritingVault && pass == 0
+                    overwritingVault: overwritingVault(service.id) && pass == 0,
+                    allowingAnyDeviceId: allowingAnyDeviceId(service.id)
                 )
                 needsSync.remove(service.id)
                 Self.merge(outcome, for: service.id, into: &aggregate)
@@ -157,12 +171,16 @@ public final class BackupSyncSession: Sendable {
 
     private func runService(
         _ service: any BackupSynchronizing,
-        overwritingVault: Bool
+        overwritingVault: Bool,
+        allowingAnyDeviceId: Bool
     ) async -> Result<BackupSyncOutcome, BackupSyncError> {
         onEvent?(.started(id: service.id, kind: service.kind))
         let result: Result<BackupSyncOutcome, BackupSyncError>
         do {
-            let outcome = try await service.performSync(overwritingVault: overwritingVault)
+            let outcome = try await service.performSync(
+                overwritingVault: overwritingVault,
+                allowingAnyDeviceId: allowingAnyDeviceId
+            )
             result = .success(outcome)
         } catch {
             Log("BackupSyncSession - service \(service.kind.rawValue) failed", module: .backup)

@@ -54,7 +54,7 @@ final class PasswordsModuleInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let systemInteractor: SystemInteracting
     private let uriInteractor: URIInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     private let configInteractor: ConfigInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
@@ -69,7 +69,7 @@ final class PasswordsModuleInteractor {
         fileIconInteractor: FileIconInteracting,
         systemInteractor: SystemInteracting,
         uriInteractor: URIInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting,
         configInteractor: ConfigInteracting,
         paymentStatusInteractor: PaymentStatusInteracting,
@@ -81,7 +81,7 @@ final class PasswordsModuleInteractor {
         self.fileIconInteractor = fileIconInteractor
         self.systemInteractor = systemInteractor
         self.uriInteractor = uriInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.configInteractor = configInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
@@ -212,7 +212,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         let deletedPassword = itemsInteractor.getItem(for: itemID, checkInTrash: false)
         itemsInteractor.markAsTrashed(for: itemID)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
         if let loginItem = deletedPassword?.asLoginItem {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                 try await autoFillCredentialsInteractor.removeSuggestions(for: loginItem)
@@ -225,7 +225,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         let trashedItems = itemsInteractor.markAsTrashed(for: itemIDs)
         let loginItems = trashedItems.compactMap(\.asLoginItem)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
         if !loginItems.isEmpty {
             Task.detached(priority: .utility) { [autoFillCredentialsInteractor] in
                 try await autoFillCredentialsInteractor.removeSuggestions(for: loginItems)
@@ -375,7 +375,7 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
                 )
             }
         }
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     func applyTagChanges(to itemIDs: [ItemID], tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) throws {
@@ -388,6 +388,6 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
             tagsToRemove: tagsToRemove
         )
         tagInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 }

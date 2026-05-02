@@ -159,7 +159,7 @@ final class ItemEditorPresenter {
         }
         
         if initalData != nil {
-            notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
+            notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
             notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
         }
         
@@ -296,10 +296,7 @@ private extension ItemEditorPresenter {
     }
 
     @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
+    func syncFinished() {
         checkCurrentPasswordState()
     }
     

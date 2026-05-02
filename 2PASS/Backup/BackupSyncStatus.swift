@@ -27,4 +27,10 @@ public struct BackupSyncActivity: Sendable, Equatable {
 
 public extension Notification.Name {
     static let backupSyncActivityChanged = Notification.Name("backupSyncActivityChanged")
+    /// Posted when a `BackupSyncSession` finishes and at least one service reported
+    /// `BackupSyncOutcome.appliedRemoteChanges == true`. Distinct from `.backupSyncActivityChanged`
+    /// (which fires on every activity transition, including no-op finishes): this notification
+    /// fires only when remote content was actually merged into the local database, making it the
+    /// right edge for view layers that want to refresh their data.
+    static let backupSyncDidApplyRemoteChanges = Notification.Name("backupSyncDidApplyRemoteChanges")
 }

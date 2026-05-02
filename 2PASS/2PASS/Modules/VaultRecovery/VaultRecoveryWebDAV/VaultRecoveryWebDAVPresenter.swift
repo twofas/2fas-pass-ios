@@ -17,14 +17,14 @@ enum VaultRecoveryWebDAVDestination: Identifiable {
         case .error: "error"
         }
     }
-    
+
     case selectVault(
         BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        onSelect: (ExchangeVaultVersioned) -> Void
+        onSelect: (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void
     )
     case select(VaultRecoveryData, onClose: Callback)
     case error(message: String, onClose: Callback)
@@ -32,18 +32,18 @@ enum VaultRecoveryWebDAVDestination: Identifiable {
 
 @Observable
 final class VaultRecoveryWebDAVPresenter {
-    
+
     var url: String = ""
     var allowTLSOff: Bool = false
     var username: String = ""
     var password: String = ""
-    
+
     var isLoading = false
-    
+
     var destination: VaultRecoveryWebDAVDestination?
-    
+
     private let interactor: VaultRecoveryWebDAVModuleInteracting
-    
+
     init(
         interactor: VaultRecoveryWebDAVModuleInteracting
     ) {
@@ -52,7 +52,7 @@ final class VaultRecoveryWebDAVPresenter {
 }
 
 extension VaultRecoveryWebDAVPresenter {
-    
+
     func onConnect() {
         isLoading = true
 
@@ -61,62 +61,59 @@ extension VaultRecoveryWebDAVPresenter {
             isLoading = false
             return
         }
-        
+
         guard interactor.isSecureURL(normalizedURL) else {
             showError("Unsecure URL!")
             isLoading = false
             return
         }
-                
-        interactor.recover(
-            baseUrl: url,
-            normalizedURL: normalizedURL,
-            allowTLSOff: allowTLSOff,
-            login: username,
-            password: password
-        ) { [weak self] result in
+
+        Task { @MainActor [weak self] in
             guard let self else { return }
-            
-            self.isLoading = false
-            
-            switch result {
-            case .success(let index):
-                destination = .selectVault(
+            do {
+                let index = try await interactor.recover(
+                    baseURL: url,
+                    normalizedURL: normalizedURL,
+                    allowTLSOff: allowTLSOff,
+                    login: username,
+                    password: password
+                )
+                self.isLoading = false
+                self.destination = .selectVault(
                     index,
                     baseURL: normalizedURL,
                     allowTLSOff: allowTLSOff,
                     login: username,
                     password: password,
-                    onSelect: { [weak self] vault in
+                    onSelect: { [weak self] vault, source in
                         self?.destination = nil
-                        
+
                         Task {
                             try await Task.sleep(for: .milliseconds(700))
                             guard let self else { return }
-                            
-                            self.destination = .select(.file(vault), onClose: { [weak self] in
+
+                            self.destination = .select(.file(vault, source: source), onClose: { [weak self] in
                                 self?.destination = nil
                             })
                         }
                     }
                 )
-            case .failure(let status):
-                showStatus(status)
+            } catch let error as VaultRecoveryWebDAVError {
+                self.showStatus(error)
+            } catch {
+                // Typed throws on a protocol erase to `any Error` at the Task boundary; the
+                // catch above handles every realistic case, but a defensive fallback keeps
+                // the UI responsive if a future change introduces a new error type.
+                self.showStatus(.transport(.invalidResponse))
             }
         }
     }
-    
-    func onDisappear() {
-        if destination == nil {
-            interactor.resetConfiguration()
-        }
-    }
-    
-    private func showStatus(_ status: WebDAVRecoveryInteractorError) {
+
+    private func showStatus(_ status: VaultRecoveryWebDAVError) {
         isLoading = false
         showError(status.message)
     }
-    
+
     func showError(_ message: String) {
         destination = .error(message: message, onClose: { [weak self] in
             self?.destination = nil

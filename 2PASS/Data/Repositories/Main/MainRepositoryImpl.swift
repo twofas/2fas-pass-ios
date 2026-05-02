@@ -31,9 +31,7 @@ final class MainRepositoryImpl: MainRepository {
     var _empheralSalt: Data?
     var _empheralMasterPassword: MasterPassword?
     var _isInBackground = false
-    var _webDAVState: WebDAVState = .idle
     var _isAutoFillEnabled: Bool = false
-    var _backupSyncContainer: BackupSyncContainer?
     var _pushNotificationToken: String?
     var _syncHasError = false
     var _startPurchaseBlock: StartPurchaseBlock?
@@ -62,7 +60,6 @@ final class MainRepositoryImpl: MainRepository {
     let feedbackGenerator: UINotificationFeedbackGenerator
     let network: NetworkDataSource
     let logDataSource: LogStorageDataSource
-    let backupWebDAV: BackupWebDAVController
     let cloudSync: CloudSync
     let cloudCache: CloudCacheStorageDataSource
     let cloudRecovery: CloudRecovering
@@ -71,7 +68,8 @@ final class MainRepositoryImpl: MainRepository {
     let twoFASWebServiceSession: TwoFASWebServiceSession
     let twoFASShareServiceSession: TwoFASShareServiceSession
     let revenueCatDelegate: RevenueCatDelegate
-    
+    let backupSyncContainer: BackupSyncContainer
+
     var inMemoryStorage: InMemoryStorageDataSource?
     var storageError: ((String) -> Void)?
     
@@ -94,7 +92,7 @@ final class MainRepositoryImpl: MainRepository {
         encryptedStorage: EncryptedStorageDataSource = EncryptedStorageDataSourceImpl(),
         network: NetworkDataSource = NetworkDataSourceImpl(),
         logDataSource: LogStorageDataSource = LogStorageDataSourceImpl(),
-        backupWebDAV: BackupWebDAVController = BackupWebDAVController(),
+        backupSyncContainer: BackupSyncContainer = .init(),
         cloudSync: CloudSync = CloudSync(),
         cloudCache: CloudCacheStorageDataSource = CloudCacheStorageDataSourceImpl(),
         cloudRecovery: CloudRecovering = CloudRecovery(),
@@ -112,7 +110,7 @@ final class MainRepositoryImpl: MainRepository {
         self.encryptedStorage = encryptedStorage
         self.network = network
         self.logDataSource = logDataSource
-        self.backupWebDAV = backupWebDAV
+        self.backupSyncContainer = backupSyncContainer
         self.cloudSync = cloudSync
         self.cloudCache = cloudCache
         self.cloudRecovery = cloudRecovery

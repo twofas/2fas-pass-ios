@@ -27,6 +27,10 @@ public final class InteractorFactory {
         BackupSyncTriggerInteractor(mainRepository: MainRepositoryImpl.shared)
     }
 
+    public func backupSyncRecoveryInteractor() -> BackupSyncRecoveryInteracting {
+        BackupSyncRecoveryInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
     public func rootInteractor() -> RootInteracting {
         RootInteractor(
             mainRepository: MainRepositoryImpl.shared,
@@ -202,7 +206,8 @@ public final class InteractorFactory {
             biometryInteractor: biometryInteractor(),
             itemsInteractor: itemsInteractor(),
             protectionInteractor: protectionInteractor(),
-            syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false)
+            configsInteractor: backupSyncConfigsInteractor(),
+            syncTriggerInteractor: backupSyncTriggerInteractor()
         )
     }
     
@@ -215,34 +220,10 @@ public final class InteractorFactory {
             fileIconInteractor: fileIconInteractor(),
             itemsInteractor: itemsInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
-            syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false),
+            syncTriggerInteractor: backupSyncTriggerInteractor(),
             tagInteractor: tagInteractor(),
             mainRepository: MainRepositoryImpl.shared
         )
-    }
-    
-    public func webDAVBackupInteractor(ignoreDeviceId: Bool = false) -> WebDAVBackupInteracting {
-        WebDAVBackupInteractor(
-            ignoreDeviceId: ignoreDeviceId,
-            mainRepository: MainRepositoryImpl.shared,
-            backupImportInteractor: backupImportInteractor(),
-            exportInteractor: exportInteractor(),
-            webDAVStateInteractor: webDAVStateInteractor(),
-            timerInteractor: timerInteractor(),
-            syncInteractor: syncInteractor(),
-            paymentStatusInteractor: paymentStatusInteractor()
-        )
-    }
-    
-    public func webDAVStateInteractor() -> WebDAVStateInteracting {
-        WebDAVStateInteractor(
-            mainRepository: MainRepositoryImpl.shared,
-            configsInteractor: backupSyncConfigsInteractor()
-        )
-    }
-    
-    public func syncChangeTriggerInteractor(callsChange: Bool) -> SyncChangeTriggerInteracting {
-        SyncChangeTriggerInteractor(mainRepository: MainRepositoryImpl.shared, callsChange: callsChange)
     }
     
     public func syncInteractor() -> SyncInteracting {
@@ -255,14 +236,6 @@ public final class InteractorFactory {
         )
     }
     
-    public func webDAVRecoveryInteractor() -> WebDAVRecoveryInteracting {
-        WebDAVRecoveryInteractor(
-            mainRepository: MainRepositoryImpl.shared,
-            backupImportInteractor: backupImportInteractor(),
-            configsInteractor: backupSyncConfigsInteractor()
-        )
-    }
-
     public func passwordGeneratorInteractor() -> PasswordGeneratorInteracting {
         PasswordGeneratorInteractor()
     }

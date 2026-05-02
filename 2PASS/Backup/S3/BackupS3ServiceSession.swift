@@ -7,7 +7,7 @@
 import Foundation
 import Common
 
-public final class BackupS3ServiceSession: BackupFileServiceSession {
+final class BackupS3ServiceSession: BackupFileServiceSession {
     public let config: S3ServiceConfig
     private let session: S3ServiceSession
 

@@ -292,16 +292,37 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
 
     // MARK: - BackupSyncDateStore
     //
-    // Pure forwarders. The mutation does load-mutate-save inline since the protocol's API is
-    // per-id, while the underlying persistence is a single `[UUID: Date]` blob.
+    // `lastSyncDate(for:)` is a pure read-through forwarder. `setLastSyncDate(_:for:consumed:)`
+    // does two things: stamps the success timestamp AND conditionally clears per-config
+    // awaiting-flags based on what the sync actually honored (see the `consumed` parameter
+    // below). The sync engine (`BackupFileSyncSession.performSync`, `CloudSyncAdapter.performSync`)
+    // calls this method exactly once per successful sync, so it's the synchronous pivot
+    // point for "this config no longer needs X next time" — closer to the success signal
+    // than an external `progressEvents()` observer would be, with no async race window
+    // between sync completion and a concurrent flag-set call (e.g. `passwordWasChanged`
+    // marking mid-sync).
 
     func lastSyncDate(for id: UUID) -> Date? {
         mainRepository.loadLastSyncDates()[id]
     }
 
-    func setLastSyncDate(_ date: Date, for id: UUID) {
+    func setLastSyncDate(_ date: Date, for id: UUID, consumed: BackupSyncFlags) {
         var dates = mainRepository.loadLastSyncDates()
         dates[id] = date
         mainRepository.saveLastSyncDates(dates)
+        // Conditional clears on the awaiting-sets: each one is only cleared when the
+        // just-completed sync actually honored the flag. The unconditional version had a
+        // race — a routine sync that finished *after* a password change marked the flag
+        // (but didn't itself overwrite, since it captured the pre-change snapshot via the
+        // trigger interactor's per-id closure) would wipe a flag whose work hadn't been
+        // performed. With `consumed`, the cancel-and-retry flow's pre-change sync exits
+        // here with `consumed.overwritingVault == false` and leaves the freshly-set flag
+        // alone for the retry to consume.
+        if consumed.overwritingVault {
+            mainRepository.clearVaultOverrideAwaiting(configID: id)
+        }
+        if consumed.allowingAnyDeviceId {
+            mainRepository.clearDeviceRegistrationAwaiting(configID: id)
+        }
     }
 }

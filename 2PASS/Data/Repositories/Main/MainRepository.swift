@@ -744,18 +744,6 @@ protocol MainRepository: AnyObject {
     func removeAllLogs()
     func removeOldStoreLogs()
     
-    // MARK: - WebDAV Backup
-    func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)
-    func webDAVGetLock(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)
-    func webDAVGetVault(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteIndex(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteLock(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteDecryptedVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVMove(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVDeleteLock(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVSetBackupConfig(_ config: BackupWebDAVConfig)
-
     // MARK: - Backup Sync config persistence
     // Used by `BackupSyncAdapter` (the production `BackupSyncConfigStore`), which forwards 1:1.
     // These methods own the full persistence boundary: encryption with the Secure Enclave-derived
@@ -781,34 +769,36 @@ protocol MainRepository: AnyObject {
     var legacyWebDAVSavedConfig: BackupWebDAVConfig? { get }
     func clearLegacyWebDAVSavedConfig()
 
-    func webDAVEncodeLock(timestamp: Int, deviceId: UUID) -> Data?
-    func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)?
-    func webDAVEncodeIndex(_ index: BackupIndex) -> Data?
-    func webDAVDecodeIndex(_ data: Data) -> BackupIndex?
     var webDAVSeedHash: String? { get }
     var webDAVCurrentVaultID: VaultID? { get }
-    
-    var webDAVIsConnected: Bool { get }
-    func webDAVSetIsConnected(_ isConnected: Bool)
-    func webDAVClearIsConnected()
-    
-    var webDAVHasLocalChanges: Bool { get }
-    func webDAVSetHasLocalChanges()
-    func webDAVClearHasLocalChanges()
-    
-    var webDAVState: WebDAVState { get }
-    func webDAVSetState(_ state: WebDAVState)
-    func webDAVClearState()
-    
-    var webDAVLastSync: WebDAVLock? { get }
-    func webDAVSetLastSync(_ lastSync: WebDAVLock)
-    func webDAVClearLastSync()
-    
+
     var webDAVWriteDecryptedCopy: Bool { get }
     func webDAVSetWriteDecryptedCopy(_ writeDecryptedCopy: Bool)
-    
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool { get }
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool)
+
+    /// Set of backup-config IDs that should overwrite their remote on the next sync. Populated
+    /// by `MainModuleInteractor.passwordWasChanged()` for every file-based backend (`.webDAV`,
+    /// `.s3`); each entry is removed by the global progress observer the first time that
+    /// specific config syncs successfully. Per-id (rather than a single Bool) so a multi-config
+    /// user with N WebDAV / S3 backends gets all of them re-pushed after a master-password
+    /// change, not just whichever one finishes first.
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> { get }
+    func markVaultOverrideAwaiting(configIDs: Set<UUID>)
+    func clearVaultOverrideAwaiting(configID: UUID)
+
+    /// Set of backup-config IDs awaiting their first successful sync after recovery. The
+    /// recovery flow needs to write *this* device's `deviceID` into the WebDAV index so
+    /// subsequent routine syncs (which use `allowingAnyDeviceId: false`) don't trip the
+    /// multi-device-id gate when merging a vault that originated on another device. The
+    /// post-import `runWebDAVRecoverySync` is the first attempt, but it can fail (network,
+    /// lock contention, server hiccup); the flag persists through those failures so the next
+    /// sync attempt — routine, manual, or otherwise — automatically retries with
+    /// `allowingAnyDeviceId: true`. Each entry is cleared by `BackupSyncAdapter.setLastSyncDate`
+    /// the first time a sync that *consumed* this flag (`consumed.allowingAnyDeviceId == true`)
+    /// completes successfully — conditional clear, so a routine sync that happened to finish
+    /// while the flag was set doesn't wipe it without honoring it.
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
+    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>)
+    func clearDeviceRegistrationAwaiting(configID: UUID)
 
     // MARK: 2FAS Web Service
     func appNotifications() async throws -> AppNotifications
@@ -851,11 +841,10 @@ protocol MainRepository: AnyObject {
     func uriCacheGet(originalUri: String) -> String?
 
     // MARK: - Backup Sync Container
-    /// The app-lifetime `BackupSyncContainer`. `nil` until installed by
-    /// `BackupSyncSetupInteractor.initialize()`, which is invoked from
-    /// `RootModuleInteractor.initializeApp()` at app launch. After installation this stays
-    /// non-nil for the process lifetime. The container proxies the underlying
-    /// per-call `BackupSyncSession` and owns the typed saved configs (WebDAV persisted, S3 in-memory).
-    var backupSyncContainer: BackupSyncContainer? { get }
-    func setBackupSyncContainer(_ container: BackupSyncContainer)
+    /// The app-lifetime `BackupSyncContainer`. Single instance for the process lifetime —
+    /// constructed inert by `MainRepositoryImpl.init`, then wired by
+    /// `BackupSyncSetupInteractor.initialize()` (called from
+    /// `RootModuleInteractor.initializeApp()`) via `BackupSyncContainer.setup(...)`.
+    /// Reads before setup-time no-op gracefully (zero services, `.idle` activity).
+    var backupSyncContainer: BackupSyncContainer { get }
 }

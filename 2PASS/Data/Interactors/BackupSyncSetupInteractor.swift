@@ -6,27 +6,30 @@
 
 import Foundation
 import Backup
+import Common
 
 public protocol BackupSyncInstalling: AnyObject {
-    /// Builds the backup-sync stack and installs the resulting `BackupSyncContainer` into
-    /// `MainRepository.backupSyncContainer`. Idempotent: calling more than once replaces the
-    /// existing container. Intended to be invoked exactly once at app launch from
-    /// `RootModuleInteractor.initializeApp()`.
+    /// Wires the existing `MainRepository.backupSyncContainer` (constructed inert by
+    /// `MainRepositoryImpl.init`) with its production collaborators via
+    /// `BackupSyncContainer.setup(...)`. Idempotent: calling more than once re-runs
+    /// `setup`, which atomically replaces the providers.
     func initialize()
 }
 
-/// Composition-root interactor for the backup sync stack.
+/// Wires the app-lifetime `BackupSyncContainer` after construction.
 ///
-/// Resolves the layering tension that earlier surfaced when `MainRepositoryImpl.init` reached
-/// up into `InteractorFactory`. The dependency direction here is honest: this upper-layer
-/// interactor *builds* the container (it has access to the export/import/sync interactors)
-/// and pushes it down into the data layer via `MainRepository.setBackupSyncContainer(_:)`.
-/// The data layer thereby holds the container without knowing how to construct it.
+/// `MainRepositoryImpl` owns the container as a `let` stored property and creates it inert
+/// via `BackupSyncContainer()` in its own init. This interactor — which has access to the
+/// `Export` / `BackupImport` / `Sync` interactors needed to build the adapter — finishes
+/// the job by calling `BackupSyncContainer.setup(...)` on the existing instance. Two-phase
+/// init resolves the cycle: the data layer holds the container without needing its
+/// dependencies, and this upper layer supplies the dependencies without owning the
+/// container.
 ///
 /// `BackupSyncAdapter` is the single bridge from the new sync stack into the existing data
 /// layer — it conforms to `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging`,
-/// AND `BackupSyncConfigStore`. The container takes the same adapter instance for both the
-/// factory's collaborators and its own configStore.
+/// AND `BackupSyncConfigStore`. The container takes the same adapter instance for every
+/// collaborator slot.
 final class BackupSyncSetupInteractor: BackupSyncInstalling {
     private let mainRepository: MainRepository
     private let exportInteractor: ExportInteracting
@@ -55,7 +58,7 @@ final class BackupSyncSetupInteractor: BackupSyncInstalling {
         // The adapter satisfies all four collaborator protocols, so a single instance fills
         // every container slot. `cloudSync` comes straight from `MainRepository` — the
         // container materializes `CloudSyncAdapter` over it for any registered iCloud entry.
-        let container = BackupSyncContainer(
+        mainRepository.backupSyncContainer.setup(
             configStore: adapter,
             dateStore: adapter,
             context: adapter,
@@ -63,7 +66,5 @@ final class BackupSyncSetupInteractor: BackupSyncInstalling {
             localMerger: adapter,
             cloudSync: mainRepository.cloudSync
         )
-
-        mainRepository.setBackupSyncContainer(container)
     }
 }

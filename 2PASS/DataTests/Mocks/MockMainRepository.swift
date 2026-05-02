@@ -2643,64 +2643,6 @@ final class MockMainRepository: MainRepository {
 
     // MARK: WebDAV Backup
 
-    var stubbedWebDAVGetIndex: Result<Data, BackupWebDAVSyncError> = .success(Data())
-    func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVGetIndex)
-    }
-
-    var stubbedWebDAVGetLock: Result<Data, BackupWebDAVSyncError> = .success(Data())
-    func webDAVGetLock(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVGetLock)
-    }
-
-    var stubbedWebDAVGetVault: Result<Data, BackupWebDAVSyncError> = .success(Data())
-    func webDAVGetVault(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVGetVault)
-    }
-
-    var stubbedWebDAVWriteIndex: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteIndex(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVWriteIndex)
-    }
-
-    var stubbedWebDAVWriteLock: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteLock(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVWriteLock)
-    }
-
-    var stubbedWebDAVWriteVault: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVWriteVault)
-    }
-
-    var stubbedWebDAVWriteDecryptedVault: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteDecryptedVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVWriteDecryptedVault)
-    }
-
-    var stubbedWebDAVMove: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVMove(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVMove)
-    }
-
-    var stubbedWebDAVDeleteLock: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVDeleteLock(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
-        recordCall()
-        completion(stubbedWebDAVDeleteLock)
-    }
-
-    func webDAVSetBackupConfig(_ config: BackupWebDAVConfig) {
-        recordCall()
-    }
-
     var stubbedBackupConfigs: [BackupConfig] = []
 
     func loadBackupConfigs() -> [BackupConfig] {
@@ -2740,85 +2682,11 @@ final class MockMainRepository: MainRepository {
         stubbedLegacyWebDAVSavedConfig = nil
     }
 
-    var stubbedWebDAVEncodeLock: Data?
-    func webDAVEncodeLock(timestamp: Int, deviceId: UUID) -> Data? {
-        recordCall()
-        return stubbedWebDAVEncodeLock
-    }
-
-    var stubbedWebDAVDecodeLock: (timestamp: Int, deviceId: UUID)?
-    func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)? {
-        recordCall()
-        return stubbedWebDAVDecodeLock
-    }
-
-    var stubbedWebDAVEncodeIndex: Data?
-    func webDAVEncodeIndex(_ index: BackupIndex) -> Data? {
-        recordCall()
-        return stubbedWebDAVEncodeIndex
-    }
-
-    var stubbedWebDAVDecodeIndex: BackupIndex?
-    func webDAVDecodeIndex(_ data: Data) -> BackupIndex? {
-        recordCall()
-        return stubbedWebDAVDecodeIndex
-    }
-
     var stubbedWebDAVSeedHash: String?
     var webDAVSeedHash: String? { stubbedWebDAVSeedHash }
 
     var stubbedWebDAVCurrentVaultID: VaultID?
     var webDAVCurrentVaultID: VaultID? { stubbedWebDAVCurrentVaultID }
-
-    var stubbedWebDAVIsConnected: Bool = false
-    var webDAVIsConnected: Bool { stubbedWebDAVIsConnected }
-
-    var capturedWebDAVIsConnected: Bool?
-    func webDAVSetIsConnected(_ isConnected: Bool) {
-        recordCall()
-        capturedWebDAVIsConnected = isConnected
-    }
-
-    func webDAVClearIsConnected() {
-        recordCall()
-    }
-
-    var stubbedWebDAVHasLocalChanges: Bool = false
-    var webDAVHasLocalChanges: Bool { stubbedWebDAVHasLocalChanges }
-
-    func webDAVSetHasLocalChanges() {
-        recordCall()
-    }
-
-    func webDAVClearHasLocalChanges() {
-        recordCall()
-    }
-
-    var stubbedWebDAVState: WebDAVState = .idle
-    var webDAVState: WebDAVState { stubbedWebDAVState }
-
-    var capturedWebDAVState: WebDAVState?
-    func webDAVSetState(_ state: WebDAVState) {
-        recordCall()
-        capturedWebDAVState = state
-    }
-
-    func webDAVClearState() {
-        recordCall()
-    }
-
-    var stubbedWebDAVLastSync: WebDAVLock?
-    var webDAVLastSync: WebDAVLock? { stubbedWebDAVLastSync }
-
-    var capturedWebDAVLastSync: WebDAVLock?
-    func webDAVSetLastSync(_ lastSync: WebDAVLock) {
-        recordCall()
-        capturedWebDAVLastSync = lastSync
-    }
-
-    func webDAVClearLastSync() {
-        recordCall()
-    }
 
     var stubbedWebDAVWriteDecryptedCopy: Bool = false
     var webDAVWriteDecryptedCopy: Bool { stubbedWebDAVWriteDecryptedCopy }
@@ -2829,13 +2697,38 @@ final class MockMainRepository: MainRepository {
         capturedWebDAVWriteDecryptedCopy = writeDecryptedCopy
     }
 
-    var stubbedWebDAVAwaitsVaultOverrideAfterPasswordChange: Bool = false
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool { stubbedWebDAVAwaitsVaultOverrideAfterPasswordChange }
+    var stubbedVaultOverrideAwaitingConfigIDs: Set<UUID> = []
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> { stubbedVaultOverrideAwaitingConfigIDs }
 
-    var capturedWebDAVAwaitsVaultOverrideAfterPasswordChange: Bool?
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool) {
+    var capturedMarkVaultOverrideAwaiting: Set<UUID>?
+    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
         recordCall()
-        capturedWebDAVAwaitsVaultOverrideAfterPasswordChange = value
+        capturedMarkVaultOverrideAwaiting = configIDs
+        stubbedVaultOverrideAwaitingConfigIDs.formUnion(configIDs)
+    }
+
+    var capturedClearVaultOverrideAwaiting: UUID?
+    func clearVaultOverrideAwaiting(configID: UUID) {
+        recordCall()
+        capturedClearVaultOverrideAwaiting = configID
+        stubbedVaultOverrideAwaitingConfigIDs.remove(configID)
+    }
+
+    var stubbedDeviceRegistrationAwaitingConfigIDs: Set<UUID> = []
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { stubbedDeviceRegistrationAwaitingConfigIDs }
+
+    var capturedMarkDeviceRegistrationAwaiting: Set<UUID>?
+    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+        recordCall()
+        capturedMarkDeviceRegistrationAwaiting = configIDs
+        stubbedDeviceRegistrationAwaitingConfigIDs.formUnion(configIDs)
+    }
+
+    var capturedClearDeviceRegistrationAwaiting: UUID?
+    func clearDeviceRegistrationAwaiting(configID: UUID) {
+        recordCall()
+        capturedClearDeviceRegistrationAwaiting = configID
+        stubbedDeviceRegistrationAwaitingConfigIDs.remove(configID)
     }
 
     // MARK: 2FAS Web Service
@@ -2950,16 +2843,46 @@ final class MockMainRepository: MainRepository {
 
     // MARK: Backup Sync Container
 
-    var stubbedBackupSyncContainer: BackupSyncContainer?
-    var backupSyncContainer: BackupSyncContainer? {
+    /// Default empty container — tests that don't exercise sync paths can leave this alone;
+    /// `syncAll`/`sync` no-op (zero services) and `currentActivity` reads `.idle`. Tests that
+    /// want a specific container can assign before exercising the system.
+    var stubbedBackupSyncContainer: BackupSyncContainer = BackupSyncContainer()
+    var backupSyncContainer: BackupSyncContainer {
         recordCall()
         return stubbedBackupSyncContainer
     }
 
-    var capturedSetBackupSyncContainer: BackupSyncContainer?
-    func setBackupSyncContainer(_ container: BackupSyncContainer) {
+    // MARK: - Pre-existing protocol stubs (added with the WebDAVStateInteractor cleanup —
+    // these protocol methods were already on `MainRepository` but missing from the mock,
+    // silently breaking DataTests compilation. Stubbing them here unblocks the test suite.)
+
+    var stubbedDefaultURIMatchRule: PasswordURI.Match = .domain
+    var defaultURIMatchRule: PasswordURI.Match { stubbedDefaultURIMatchRule }
+
+    var capturedDefaultURIMatchRule: PasswordURI.Match?
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
         recordCall()
-        capturedSetBackupSyncContainer = container
-        stubbedBackupSyncContainer = container
+        capturedDefaultURIMatchRule = rule
+        stubbedDefaultURIMatchRule = rule
+    }
+
+    // `createSharedSecret` and `fetchSharedSecret` are stubbed in
+    // `MockMainRepository+SharedSecret.swift`. They live there so the file can omit the
+    // `import CryptoKit` that this file needs (`SymmetricKey`), avoiding the symbol collision
+    // between CryptoKit's `SharedSecret` and the Data module's `SharedSecret`.
+
+    var stubbedScreenCaptureAllowedUntil: Date?
+    var screenCaptureAllowedUntil: Date? { stubbedScreenCaptureAllowedUntil }
+
+    var capturedScreenCaptureAllowedUntil: Date?
+    func setScreenCaptureAllowedUntil(_ date: Date) {
+        recordCall()
+        capturedScreenCaptureAllowedUntil = date
+        stubbedScreenCaptureAllowedUntil = date
+    }
+
+    func clearScreenCaptureAllowedUntil() {
+        recordCall()
+        stubbedScreenCaptureAllowedUntil = nil
     }
 }

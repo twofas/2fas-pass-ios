@@ -114,8 +114,11 @@ protocol UserDefaultsDataSource: AnyObject {
     var requestedForBiometryToLogin: Bool { get }
     func setRequestedForBiometryToLogin(_ requested: Bool)
     
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool { get }
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool)
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> { get }
+    func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<UUID>)
+
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
+    func saveDeviceRegistrationAwaitingConfigIDs(_ ids: Set<UUID>)
     
     var debugSubscriptionPlan: SubscriptionPlan? { get }
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan)

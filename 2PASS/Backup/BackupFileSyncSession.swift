@@ -57,16 +57,29 @@ public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
     }
 
     /// Runs a full sync attempt, retrying transient errors up to `maxRetries` times.
-    public func performSync(overwritingVault: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
+    public func performSync(
+        overwritingVault: Bool,
+        allowingAnyDeviceId: Bool
+    ) async throws(BackupSyncError) -> BackupSyncOutcome {
         emit(.started)
 
         var attempt = 0
         while true {
             attempt += 1
             do {
-                let appliedRemoteChanges = try await runAttempt(overwritingVault: overwritingVault)
+                let appliedRemoteChanges = try await runAttempt(
+                    overwritingVault: overwritingVault,
+                    allowingAnyDeviceId: allowingAnyDeviceId
+                )
                 emit(.succeeded)
-                dateStore.setLastSyncDate(Date(), for: id)
+                dateStore.setLastSyncDate(
+                    Date(),
+                    for: id,
+                    consumed: BackupSyncFlags(
+                        overwritingVault: overwritingVault,
+                        allowingAnyDeviceId: allowingAnyDeviceId
+                    )
+                )
                 return BackupSyncOutcome(appliedRemoteChanges: appliedRemoteChanges)
             } catch let error where error.isTransient && attempt < maxRetries {
                 emit(.retrying(reason: "\(error)"))
@@ -97,7 +110,10 @@ private extension BackupFileSyncSession {
         case waitAndRetry(until: Int)
     }
 
-    func runAttempt(overwritingVault: Bool) async throws(BackupSyncError) -> Bool {
+    func runAttempt(
+        overwritingVault: Bool,
+        allowingAnyDeviceId: Bool
+    ) async throws(BackupSyncError) -> Bool {
         let currentSyncDate = Date()
 
         guard let vaultID = context.vaultID,
@@ -124,7 +140,7 @@ private extension BackupFileSyncSession {
             try checkCancellation()
             if let remoteVault = try await fetchRemoteVault(vaultID: vaultID) {
                 try checkCancellation()
-                madeLocalChanges = try await mergeRemoteVault(remoteVault)
+                madeLocalChanges = try await mergeRemoteVault(remoteVault, allowingAnyDeviceId: allowingAnyDeviceId)
             }
         }
 
@@ -283,7 +299,10 @@ private extension BackupFileSyncSession {
         }
     }
 
-    func mergeRemoteVault(_ remoteVault: ExchangeVaultVersioned) async throws(BackupSyncError) -> Bool {
+    func mergeRemoteVault(
+        _ remoteVault: ExchangeVaultVersioned,
+        allowingAnyDeviceId: Bool
+    ) async throws(BackupSyncError) -> Bool {
         let remoteItemsCount = switch remoteVault {
         case .v1(let vault): vault.itemsCount
         case .v2(let vault): vault.itemsCount
@@ -293,7 +312,7 @@ private extension BackupFileSyncSession {
         do {
             return try await localMerger.applyRemoteChanges(
                 remoteVault,
-                allowingAnyDeviceId: context.allowsMultiDeviceSync
+                allowingAnyDeviceId: allowingAnyDeviceId || context.allowsMultiDeviceSync
             )
         } catch let error {
             throw BackupSyncError.from(merge: error)

@@ -45,7 +45,8 @@ final class UserDefaultsDataSourceImpl {
         case debugSubscriptionPlanExpireDate
         case lastKnownSubscriptionPlan
         case lastKnownSubscriptionPlanExpireDate
-        case webDAVAwaitsVaultOverrideAfterPasswordChange
+        case vaultOverrideAwaitingConfigIDs
+        case deviceRegistrationAwaitingConfigIDs
         case lastKnownAppVersion
         case shouldShowQuickSetup
         case lastAppUpdatePromptDate
@@ -448,12 +449,27 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         }
     }
     
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool {
-        userDefaults.bool(forKey: Keys.webDAVAwaitsVaultOverrideAfterPasswordChange.rawValue)
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+        let stored = userDefaults.array(forKey: Keys.vaultOverrideAwaitingConfigIDs.rawValue) as? [String] ?? []
+        return Set(stored.compactMap(UUID.init(uuidString:)))
     }
-    
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool) {
-        userDefaults.set(value, forKey: Keys.webDAVAwaitsVaultOverrideAfterPasswordChange.rawValue)
+
+    func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<UUID>) {
+        // UserDefaults stores `[String]` natively; sorting yields a stable on-disk shape that
+        // also makes diffs in tests / debug dumps easier to read.
+        let strings = ids.map(\.uuidString).sorted()
+        userDefaults.set(strings, forKey: Keys.vaultOverrideAwaitingConfigIDs.rawValue)
+        userDefaults.synchronize()
+    }
+
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+        let stored = userDefaults.array(forKey: Keys.deviceRegistrationAwaitingConfigIDs.rawValue) as? [String] ?? []
+        return Set(stored.compactMap(UUID.init(uuidString:)))
+    }
+
+    func saveDeviceRegistrationAwaitingConfigIDs(_ ids: Set<UUID>) {
+        let strings = ids.map(\.uuidString).sorted()
+        userDefaults.set(strings, forKey: Keys.deviceRegistrationAwaitingConfigIDs.rawValue)
         userDefaults.synchronize()
     }
     
