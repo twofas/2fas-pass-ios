@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Backup
 import Data
 import Common
 
@@ -29,6 +30,10 @@ final class MainModuleInteractor {
     private let notificationCenter: NotificationCenter
 
     private var syncErroredLately = false
+    /// Tracks the long-lived `progressEvents()` consumer that drives badge updates on
+    /// session start/finish. `var ...?` per the Swift two-phase init exception (CLAUDE.md):
+    /// the Task captures `[weak self]` and so cannot be assigned during phase-one init.
+    private var activitySubscription: Task<Void, Never>?
 
     init(
         cloudSyncInteractor: CloudSyncInteracting,
@@ -64,15 +69,22 @@ final class MainModuleInteractor {
             name: .cloudStateChanged,
             object: nil
         )
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(backupSyncActivityChanged),
-            name: .backupSyncActivityChanged,
-            object: nil
-        )
+
+        activitySubscription = Task { [weak self] in
+            guard let stream = self?.syncTriggerInteractor.progressEvents() else { return }
+            for await event in stream {
+                switch event {
+                case .sessionStarted, .sessionFinished:
+                    self?.updateBadgeAction()
+                case .started, .finished:
+                    break
+                }
+            }
+        }
     }
 
     deinit {
+        activitySubscription?.cancel()
         notificationCenter.removeObserver(self)
     }
 }
@@ -127,14 +139,6 @@ private extension MainModuleInteractor {
     @objc
     func presentPaymentScreen() {
         paymentScreen?()
-    }
-
-    /// Re-evaluate the badge whenever a backup sync starts or finishes. The password-change
-    /// retry that used to live here moved into `ChangePasswordInteractor.changeMasterPassword`
-    /// — co-located with the cause now, no longer Main's concern.
-    @objc
-    func backupSyncActivityChanged() {
-        updateBadgeAction()
     }
 
     func sync() {

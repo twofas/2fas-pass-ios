@@ -15,10 +15,10 @@ import os
         let service = FakeSynchronizer(kind: .webDAV, workDuration: .milliseconds(150))
         let container = BackupSyncContainer(servicesProvider: { [service] in [service] })
 
-        let notifications = Task { () -> [BackupSyncActivity] in
+        let observed = Task { () -> [BackupSyncActivity] in
             var activities: [BackupSyncActivity] = []
             var sawRunning = false
-            for await _ in NotificationCenter.default.notifications(named: .backupSyncActivityChanged) {
+            for await _ in container.progressEvents() {
                 let activity = container.currentActivity
                 activities.append(activity)
                 sawRunning = sawRunning || activity.isRunning
@@ -29,9 +29,14 @@ import os
             return activities
         }
 
+        // Mirrors `progressEventsBroadcastsToMultipleSubscribers`: give the for-await loop a
+        // window to register its continuation before the session begins emitting, otherwise
+        // the subscriber races the run and may miss the initial `.sessionStarted` event.
+        try await Task.sleep(for: .milliseconds(50))
+
         let runTask = Task { await container.syncAll() }
         let results = await runTask.value
-        let activities = await notifications.value
+        let activities = await observed.value
 
         #expect(results.count == 1)
         #expect(activities.contains { $0.isRunning && $0.activeConfigIDs == Set([service.id]) })

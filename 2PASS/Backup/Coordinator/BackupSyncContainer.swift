@@ -239,7 +239,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// automatically removed via `onTermination`.
     ///
     /// The fan-out runs alongside the container's internal bookkeeping handler, so
-    /// `currentActivity` and `.backupSyncActivityChanged` notifications remain accurate.
+    /// `currentActivity` reads remain consistent with the events seen here.
     ///
     /// **Ordering caveat:** subscribers consume events asynchronously off the session's thread,
     /// so handlers that mutate persistent state in response to a `.finished` event no longer
@@ -353,42 +353,33 @@ public final class BackupSyncContainer: @unchecked Sendable {
     // MARK: - Internals
 
     private func reserveSyncSlot() -> Bool {
-        let shouldNotify = state.withLock { state in
+        let reserved = state.withLock { state in
             guard !state.isSyncing else { return false }
             state.isSyncing = true
             return true
         }
-        if shouldNotify {
+        if reserved {
             broadcast(.sessionStarted)
-            postActivityChanged()
         }
-        return shouldNotify
+        return reserved
     }
 
     private func installCancellationHandler(
         _ cancelCurrentSync: @escaping @Sendable () -> Void
     ) {
-        let shouldNotify = state.withLock { state in
-            let previous = state.activity
-            state.cancelCurrentSync = cancelCurrentSync
-            return state.activity != previous
-        }
-        if shouldNotify {
-            postActivityChanged()
-        }
+        state.withLock { $0.cancelCurrentSync = cancelCurrentSync }
     }
 
     private func clearSyncSlot() {
-        let shouldNotify = state.withLock { state in
-            let previous = state.activity
+        let cleared = state.withLock { state in
+            guard state.isSyncing else { return false }
             state.isSyncing = false
             state.activeConfigIDs.removeAll()
             state.cancelCurrentSync = nil
-            return state.activity != previous
+            return true
         }
-        if shouldNotify {
+        if cleared {
             broadcast(.sessionFinished)
-            postActivityChanged()
         }
     }
 
@@ -421,8 +412,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     }
 
     private func handle(_ event: BackupSyncSession.ProgressEvent) {
-        let shouldNotify = state.withLock { state in
-            let previous = state.activity
+        state.withLock { state in
             switch event {
             case .started(let id, _):
                 state.activeConfigIDs.insert(id)
@@ -433,15 +423,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
                 // this session-handler path. Listed for exhaustiveness only.
                 break
             }
-            return state.activity != previous
         }
-        if shouldNotify {
-            postActivityChanged()
-        }
-    }
-
-    private func postActivityChanged() {
-        NotificationCenter.default.post(name: .backupSyncActivityChanged, object: nil)
     }
 
     private static func makeServicesProvider(
