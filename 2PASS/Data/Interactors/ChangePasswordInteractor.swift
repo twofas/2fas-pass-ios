@@ -92,20 +92,18 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         // condition is now an async loop bound to this task's local frame. Captures only
         // `syncTriggerInteractor` (app-lifetime) — no `self` retention, no instance state.
         Task { @MainActor [syncTriggerInteractor] in
-            guard syncTriggerInteractor.currentActivity.isRunning else {
-                syncTriggerInteractor.syncAll()
-                return
+            if syncTriggerInteractor.currentActivity.isRunning {
+                // Cancel the in-flight sync — it captured pre-password-change providers and is
+                // pushing stale-encryption data we need to overwrite. Cancellation throws
+                // inside `BackupFileSyncSession.performSync` before its success branch calls
+                // `dateStore.setLastSyncDate(...)`, so the override flag we just marked
+                // survives. Then await the activity transition to idle before retrying.
+                syncTriggerInteractor.cancelCurrentSync()
+                for await _ in NotificationCenter.default.notifications(named: .backupSyncActivityChanged) {
+                    if !syncTriggerInteractor.currentActivity.isRunning { break }
+                }
             }
-            // Cancel the in-flight sync — it captured pre-password-change providers and is
-            // pushing stale-encryption data we need to overwrite. Cancellation throws
-            // inside `BackupFileSyncSession.performSync` before its success branch calls
-            // `dateStore.setLastSyncDate(...)`, so the override flag we just marked
-            // survives. Then await the activity transition to idle before retrying.
-            syncTriggerInteractor.cancelCurrentSync()
-            for await _ in NotificationCenter.default.notifications(named: .backupSyncActivityChanged) {
-                if !syncTriggerInteractor.currentActivity.isRunning { break }
-            }
-            syncTriggerInteractor.syncAll()
+            await syncTriggerInteractor.syncAll()
         }
     }
 }

@@ -15,21 +15,26 @@ protocol BackupConfigsModuleInteracting: AnyObject {
     var cloudState: CloudState { get }
     var currentActivity: BackupSyncActivity { get }
     var cloudStateChanged: Callback? { get set }
-    var backupSyncActivityChanged: Callback? { get set }
 
     func lastSyncDate(for id: UUID) -> Date?
     @discardableResult func addiCloud() -> UUID?
     func remove(id: UUID, kind: SyncServiceKind)
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?)
-    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async
+    /// Fire-and-forget at background `.utility` priority — for non-user-driven sync
+    /// (post-mutation propagation, refresh on appearance). Internally detached.
+    func syncAll()
+    /// Awaitable — for user-initiated "Sync Now" taps where the calling `Task` inherits the
+    /// user-facing priority (`.userInitiated` from the MainActor button handler). The work
+    /// still runs off MainActor because the underlying container method is non-isolated.
+    func syncAll() async
+    func sync(id: UUID) async
     func cancelCurrentSync()
+    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent>
 }
 
 @MainActor
 final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     var cloudStateChanged: Callback?
-    var backupSyncActivityChanged: Callback?
 
     private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
@@ -49,12 +54,6 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
             self,
             selector: #selector(handleCloudStateChanged),
             name: .cloudStateChanged,
-            object: nil
-        )
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(handleBackupSyncActivityChanged),
-            name: .backupSyncActivityChanged,
             object: nil
         )
     }
@@ -95,25 +94,28 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         }
     }
 
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) {
-        syncTriggerInteractor.syncAll(onEvent: onEvent)
+    func syncAll() {
+        syncTriggerInteractor.syncAll()
     }
 
-    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
-        await syncTriggerInteractor.sync(id: id, onEvent: onEvent)
+    func syncAll() async {
+        await syncTriggerInteractor.syncAll()
+    }
+
+    func sync(id: UUID) async {
+        await syncTriggerInteractor.sync(id: id)
     }
 
     func cancelCurrentSync() {
         syncTriggerInteractor.cancelCurrentSync()
     }
 
-    @objc
-    private func handleCloudStateChanged() {
-        cloudStateChanged?()
+    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent> {
+        syncTriggerInteractor.progressEvents()
     }
 
     @objc
-    private func handleBackupSyncActivityChanged() {
-        backupSyncActivityChanged?()
+    private func handleCloudStateChanged() {
+        cloudStateChanged?()
     }
 }

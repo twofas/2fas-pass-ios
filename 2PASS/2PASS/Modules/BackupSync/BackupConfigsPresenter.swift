@@ -44,26 +44,86 @@ final class BackupConfigsPresenter {
 
     var destination: BackupConfigsDestination?
     private(set) var rows: [BackupConfigRowItem] = []
+    /// Call-level "is a sync in flight overall?" — driven by `.sessionStarted` /
+    /// `.sessionFinished` from the container, which span the orchestration window
+    /// (services-list construction, inter-service gaps, post-results notification). Distinct
+    /// from `activeConfigIDs.isEmpty`, which only reflects per-service activity and goes
+    /// briefly empty between services even while the call hasn't returned.
     private(set) var isSyncing: Bool = false
 
     var isEmpty: Bool { rows.isEmpty }
     var canAddiCloud: Bool { !rows.contains { $0.kind == .iCloud } }
 
     private let interactor: BackupConfigsModuleInteracting
+    /// Local mirror of which configs are currently mid-service. Seeded once at init from
+    /// `interactor.currentActivity.activeConfigIDs` (covers "presenter opened mid-sync"),
+    /// then maintained by consuming `progressEvents()`. Drives per-row spinner state via
+    /// `isSyncing(for:)`.
+    private var activeConfigIDs: Set<UUID> = []
+    /// `@ObservationIgnored` — the task handle isn't observable UI state, so `@Observable`
+    /// shouldn't synthesize tracking storage for it (the synth storage trips the
+    /// "`nonisolated` cannot be applied to mutable stored properties" rule).
+    /// `nonisolated(unsafe)` because `deinit` is implicitly nonisolated on `@MainActor`
+    /// classes; the handle is written once at the end of `init`, read only by `deinit` to
+    /// cancel — no concurrent mutation, so the `unsafe` opt-out is sound.
+    @ObservationIgnored
+    nonisolated(unsafe) private var progressTask: Task<Void, Never>?
 
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
-        reload()
         interactor.cloudStateChanged = { [weak self] in
             Task { @MainActor in self?.reload() }
         }
-        interactor.backupSyncActivityChanged = { [weak self] in
-            Task { @MainActor in self?.reload() }
+        // Both initial state seeding (`snapshotActivity`) and the `progressEvents`
+        // subscription happen in `onAppear` — keeps all data work tied to view visibility
+        // and avoids processing events for a hidden screen. See `onDisappear` for teardown.
+    }
+
+    deinit {
+        // Safety net: `onDisappear` should cancel first under normal lifecycle, but if the
+        // presenter is torn down without the view ever firing onDisappear (rare but possible),
+        // the AsyncStream continuation would otherwise leak.
+        progressTask?.cancel()
+    }
+
+    private func snapshotActivity() {
+        let snapshot = interactor.currentActivity
+        activeConfigIDs = snapshot.activeConfigIDs
+        isSyncing = snapshot.isRunning
+        reload()
+    }
+
+    private func subscribeToProgress() {
+        progressTask?.cancel()
+        progressTask = Task { [weak self, interactor] in
+            for await event in interactor.progressEvents() {
+                self?.handle(event)
+            }
         }
     }
 
-    func onAppear() {
+    private func handle(_ event: BackupSyncSession.ProgressEvent) {
+        switch event {
+        case .sessionStarted:
+            isSyncing = true
+        case .sessionFinished:
+            isSyncing = false
+        case .started(let id, _):
+            activeConfigIDs.insert(id)
+        case .finished(let id, _, _):
+            activeConfigIDs.remove(id)
+        }
         reload()
+    }
+
+    func onAppear() {
+        snapshotActivity()
+        subscribeToProgress()
+    }
+
+    func onDisappear() {
+        progressTask?.cancel()
+        progressTask = nil
     }
 
     func onChooseProvider(_ kind: SyncServiceKind) {
@@ -89,19 +149,22 @@ final class BackupConfigsPresenter {
         })
     }
 
-    func onSyncNow() {
-        guard !isSyncing else { return }
-        interactor.syncAll(onEvent: nil)
+    func onSyncAllNow() {
+        // User-initiated tap — wrap in `Task` (not `Task.detached`) so the work inherits
+        // MainActor's `.userInitiated` priority. Background post-mutation syncs use the
+        // sync-overload fire-and-forget path; this one wants the user-facing priority.
+        Task { [interactor] in
+            await interactor.syncAll()
+        }
     }
 
-    func onCancelSyncAll() {
+    func onCancelSync() {
         interactor.cancelCurrentSync()
     }
 
     func onSyncRow(_ row: BackupConfigRowItem) {
-        guard !isSyncing else { return }
-        Task { [weak self] in
-            await self?.interactor.sync(id: row.id, onEvent: nil)
+        Task { [interactor] in
+            await interactor.sync(id: row.id)
         }
     }
 
@@ -118,7 +181,6 @@ final class BackupConfigsPresenter {
     }
 
     private func reload() {
-        isSyncing = interactor.currentActivity.isRunning
         rows = interactor.allConfigs.map { config in
             BackupConfigRowItem(
                 id: config.id,
@@ -133,7 +195,6 @@ final class BackupConfigsPresenter {
     }
 
     private func isSyncing(for config: BackupConfig) -> Bool {
-        let activeConfigIDs = interactor.currentActivity.activeConfigIDs
         switch config.kind {
         case .iCloud:
             return interactor.cloudState.isSyncing || activeConfigIDs.contains(config.id)
@@ -164,7 +225,6 @@ private extension BackupConfigsPresenter {
     }
 
     func statusText(for config: BackupConfig) -> String {
-        let activeConfigIDs = interactor.currentActivity.activeConfigIDs
         switch config.kind {
         case .iCloud:
             return interactor.cloudState.shortDescription

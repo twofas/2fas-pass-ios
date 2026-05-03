@@ -47,15 +47,24 @@ public final class BackupSyncSession: Sendable {
 
     public typealias SyncResult = (id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
-    /// Per-service lifecycle event emitted during the run. Lets callers reflect actual serial
-    /// progress in the UI instead of a global "everything syncing" flag.
+    /// Lifecycle events emitted during a sync. Two granularities, both delivered through the
+    /// same `BackupSyncContainer.progressEvents()` stream so a single subscriber can drive both
+    /// global "is anything happening?" UI and per-row spinner state.
     ///
-    /// `started` fires before each `performSync` invocation; `finished` fires after, with the
-    /// per-call outcome. A single service may emit multiple `started`/`finished` pairs across
-    /// the convergence loop's passes — that's by design (it really is running again), and
-    /// consumers can simply track currently-running ids by inserting on `started` and
-    /// removing on `finished`.
+    /// **Session-level** (`sessionStarted` / `sessionFinished`) are emitted by the *container*
+    /// when its in-progress slot transitions. They cover the whole orchestration window —
+    /// services-list construction, convergence passes, post-results notification, and the
+    /// inter-service gaps where `activeConfigIDs` is briefly empty but the call hasn't
+    /// returned. Use these to drive the call-level "isSyncing" flag.
+    ///
+    /// **Service-level** (`started` / `finished`) are emitted by the session before/after each
+    /// `performSync` invocation. A single service may emit multiple `started`/`finished` pairs
+    /// across the convergence loop's passes — that's by design (it really is running again).
+    /// Use these to drive per-service UI by inserting on `started` and removing on `finished`.
+    /// `finished` carries the per-call outcome.
     public enum ProgressEvent: Sendable {
+        case sessionStarted
+        case sessionFinished
         case started(id: UUID, kind: SyncServiceKind)
         case finished(id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
     }

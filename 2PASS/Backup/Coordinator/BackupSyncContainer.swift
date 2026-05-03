@@ -41,6 +41,16 @@ public enum BackupVaultFetchError: Error, Sendable {
 /// cost is dominated by the configStore's decrypt+decode, which happens at most once per
 /// orchestration call.
 ///
+/// **API shape.** Both `syncAll(...)` and `sync(_:)` are `async` and return their results
+/// when the underlying session completes. They share three cancellation paths, all of which
+/// route to the same internal `Task.cancel()`:
+///   1. The caller's parent task is cancelled — propagates via `withTaskCancellationHandler`.
+///   2. Any code calls `cancelCurrentSync()` — fires the closure stashed by
+///      `installCancellationHandler` for whatever sync is in flight.
+///   3. The session itself short-circuits between services on `Task.isCancelled`.
+/// Live progress is exposed via `progressEvents()` (multi-subscriber `AsyncStream`); there is
+/// no per-call event handler argument.
+///
 /// **In-progress guard.** `syncAll` and `sync(_:)` debounce overlapping triggers via an unfair
 /// lock — while a sync is in flight, additional invocations return immediately (`syncAll` → `[]`,
 /// `sync(_:)` → `.failure(.cancelled)`) instead of chaining behind the in-flight work. This stops
@@ -170,19 +180,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         return try await fetchAndDecodeIndex(session: session)
     }
 
-    private func fetchAndDecodeIndex(session: some BackupFileServiceSession) async throws(BackupIndexFetchError) -> BackupIndex {
-        let data: Data
-        do {
-            data = try await session.fetchIndex()
-        } catch {
-            throw .transport(error)
-        }
-        guard let index = try? JSONDecoder().decode(BackupIndex.self, from: data) else {
-            throw .indexIsDamaged
-        }
-        return index
-    }
-
     /// Fetches the encrypted vault blob for `vaultID` from a file-based backend and decodes
     /// it as an `ExchangeVaultVersioned`. Same independence rationale as `fetchIndex(config:)`:
     /// recovery flows hit this *before* registering the config, so there's no orchestrated
@@ -204,22 +201,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
     public func fetchVault(vaultID: UUID, config: S3ServiceConfig) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned {
         let session = BackupS3ServiceSession(config: config)
         return try await fetchAndDecodeVault(vaultID: vaultID, session: session)
-    }
-
-    private func fetchAndDecodeVault(vaultID: UUID, session: some BackupFileServiceSession) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned {
-        let data: Data
-        do {
-            data = try await session.fetchVault(vaultID: vaultID)
-        } catch {
-            throw .transport(error)
-        }
-        do {
-            return try JSONDecoder().decode(ExchangeVaultVersioned.self, from: data)
-        } catch ExchangeDecodeError.schemaNotSupported(let version) {
-            throw .schemaNotSupported(version)
-        } catch {
-            throw .vaultIsDamaged
-        }
     }
 
     /// Connection probe used by the config-creation UI to validate credentials before
@@ -259,7 +240,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
     ///
     /// The fan-out runs alongside the container's internal bookkeeping handler, so
     /// `currentActivity` and `.backupSyncActivityChanged` notifications remain accurate.
-    /// Per-call `onEvent:` handlers passed to `syncAll` / `sync(_:)` still fire independently.
     ///
     /// **Ordering caveat:** subscribers consume events asynchronously off the session's thread,
     /// so handlers that mutate persistent state in response to a `.finished` event no longer
@@ -277,23 +257,35 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
+    /// Fire-and-forget overload. Triggers a sync at background (`.utility`) priority and
+    /// returns immediately — use this from any non-async site that just wants "propagate to
+    /// backups when convenient" without managing a `Task` itself. Spawns a detached task
+    /// internally: no caller actor isolation, no priority inheritance, no task-local
+    /// inheritance — sync work stays explicitly off the caller's executor.
+    ///
+    /// Use the `async` overload below when you need to track completion, read per-service
+    /// results, or have caller-task cancellation propagate. Cross-client cancellation works
+    /// for both forms via `cancelCurrentSync()`.
     public func syncAll(
         overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        onEvent: BackupSyncSession.ProgressHandler? = nil
+        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false }
     ) {
-        _ = syncAllTask(overwritingVault: overwritingVault, allowingAnyDeviceId: allowingAnyDeviceId, onEvent: onEvent)
+        Task.detached(priority: .utility) { [weak self] in
+            await self?.syncAll(
+                overwritingVault: overwritingVault,
+                allowingAnyDeviceId: allowingAnyDeviceId
+            )
+        }
     }
 
     @discardableResult
-    func syncAllTask(
+    public func syncAll(
         overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        onEvent: BackupSyncSession.ProgressHandler? = nil
-    ) -> Task<[BackupSyncSession.SyncResult], Never>? {
+        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false }
+    ) async -> [BackupSyncSession.SyncResult] {
         guard reserveSyncSlot() else {
             Log("BackupSyncContainer - syncAll ignored: sync already in progress", module: .backup)
-            return nil
+            return []
         }
         // Snapshot providers once per call so an in-flight `setup(...)` can't tear the read.
         let snapshot = providers.withLock { $0 }
@@ -302,7 +294,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             overwritingVault: overwritingVault,
             allowingAnyDeviceId: allowingAnyDeviceId,
             lastSyncDate: snapshot.lastSyncDateProvider,
-            onEvent: makeProgressHandler(adding: onEvent)
+            onEvent: makeProgressHandler()
         )
         let task = Task { [self] in
             defer { self.clearSyncSlot() }
@@ -313,15 +305,18 @@ public final class BackupSyncContainer: @unchecked Sendable {
         installCancellationHandler {
             task.cancel()
         }
-        return task
+        return await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
     }
 
     @discardableResult
     public func sync(
         _ id: UUID,
         overwritingVault: Bool = false,
-        allowingAnyDeviceId: Bool = false,
-        onEvent: BackupSyncSession.ProgressHandler? = nil
+        allowingAnyDeviceId: Bool = false
     ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
         let snapshot = providers.withLock { $0 }
         guard let service = snapshot.servicesProvider().first(where: { $0.id == id }) else { return nil }
@@ -337,7 +332,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             overwritingVault: { _ in overwritingVault },
             allowingAnyDeviceId: { _ in allowingAnyDeviceId },
             lastSyncDate: snapshot.lastSyncDateProvider,
-            onEvent: makeProgressHandler(adding: onEvent)
+            onEvent: makeProgressHandler()
         )
         let task = Task { [self] in
             let results = await session.run()
@@ -364,6 +359,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             return true
         }
         if shouldNotify {
+            broadcast(.sessionStarted)
             postActivityChanged()
         }
         return shouldNotify
@@ -391,24 +387,27 @@ public final class BackupSyncContainer: @unchecked Sendable {
             return state.activity != previous
         }
         if shouldNotify {
+            broadcast(.sessionFinished)
             postActivityChanged()
         }
     }
 
-    private func makeProgressHandler(
-        adding downstream: BackupSyncSession.ProgressHandler?
-    ) -> BackupSyncSession.ProgressHandler {
+    private func makeProgressHandler() -> BackupSyncSession.ProgressHandler {
         { [weak self] event in
             self?.handle(event)
-            // Fan out to every active `progressEvents()` subscriber. `yield` is non-blocking —
-            // each subscriber's continuation has its own buffer (default unbounded) so a slow
-            // consumer doesn't back-pressure the session.
-            self?.progressContinuations.withLock { dict in
-                for continuation in dict.values {
-                    continuation.yield(event)
-                }
+            self?.broadcast(event)
+        }
+    }
+
+    /// Fan-out helper for events the *container* (not the session) emits — currently
+    /// `.sessionStarted` / `.sessionFinished`. Also reused by the session-event path through
+    /// `makeProgressHandler`. `yield` is non-blocking — each subscriber's continuation has its
+    /// own buffer (default unbounded) so a slow consumer doesn't back-pressure emitters.
+    private func broadcast(_ event: BackupSyncSession.ProgressEvent) {
+        progressContinuations.withLock { dict in
+            for continuation in dict.values {
+                continuation.yield(event)
             }
-            downstream?(event)
         }
     }
 
@@ -429,6 +428,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
                 state.activeConfigIDs.insert(id)
             case .finished(let id, _, _):
                 state.activeConfigIDs.remove(id)
+            case .sessionStarted, .sessionFinished:
+                // Container emits these directly via `broadcast(_:)` — they never flow through
+                // this session-handler path. Listed for exhaustiveness only.
+                break
             }
             return state.activity != previous
         }
@@ -497,5 +500,34 @@ public final class BackupSyncContainer: @unchecked Sendable {
             localMerger: localMerger,
             dateStore: dateStore
         )
+    }
+    
+    private func fetchAndDecodeIndex(session: some BackupFileServiceSession) async throws(BackupIndexFetchError) -> BackupIndex {
+        let data: Data
+        do {
+            data = try await session.fetchIndex()
+        } catch {
+            throw .transport(error)
+        }
+        guard let index = try? JSONDecoder().decode(BackupIndex.self, from: data) else {
+            throw .indexIsDamaged
+        }
+        return index
+    }
+    
+    private func fetchAndDecodeVault(vaultID: UUID, session: some BackupFileServiceSession) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned {
+        let data: Data
+        do {
+            data = try await session.fetchVault(vaultID: vaultID)
+        } catch {
+            throw .transport(error)
+        }
+        do {
+            return try JSONDecoder().decode(ExchangeVaultVersioned.self, from: data)
+        } catch ExchangeDecodeError.schemaNotSupported(let version) {
+            throw .schemaNotSupported(version)
+        } catch {
+            throw .vaultIsDamaged
+        }
     }
 }

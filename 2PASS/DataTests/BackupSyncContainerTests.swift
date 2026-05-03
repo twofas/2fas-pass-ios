@@ -29,8 +29,8 @@ import os
             return activities
         }
 
-        let task = try #require(container.syncAllTask())
-        let results = await task.value
+        let runTask = Task { await container.syncAll() }
+        let results = await runTask.value
         let activities = await notifications.value
 
         #expect(results.count == 1)
@@ -40,28 +40,28 @@ import os
     }
 
     /// `progressEvents()` returns a fresh stream per call; multiple subscribers each see every
-    /// event the session emits. Pins the broadcast contract that the AsyncStream-based
+    /// event the container emits. Pins the broadcast contract that the AsyncStream-based
     /// observer API replaced the old single-observer `setGlobalProgressObserver` to provide.
     @Test func progressEventsBroadcastsToMultipleSubscribers() async throws {
         let service = FakeSynchronizer(kind: .webDAV)
         let container = BackupSyncContainer(servicesProvider: { [service] in [service] })
 
-        // Each subscriber expects one `.started` and one `.finished` for the single service.
-        async let firstSubscriberCount = collectFirstTwoEvents(from: container.progressEvents())
-        async let secondSubscriberCount = collectFirstTwoEvents(from: container.progressEvents())
+        // Each subscriber expects four events for one service through one syncAll:
+        // .sessionStarted (container) → .started + .finished (session) → .sessionFinished (container).
+        async let firstSubscriberCount = collectEvents(count: 4, from: container.progressEvents())
+        async let secondSubscriberCount = collectEvents(count: 4, from: container.progressEvents())
 
         // Yield once so both for-await loops have actually subscribed before the session
         // starts emitting. Without this the subscribers race the session and may miss the
-        // initial `.started` event.
+        // initial `.sessionStarted` event.
         try await Task.sleep(for: .milliseconds(50))
 
-        let task = try #require(container.syncAllTask())
-        _ = await task.value
+        await container.syncAll()
 
         let firstCount = await firstSubscriberCount
         let secondCount = await secondSubscriberCount
-        #expect(firstCount == 2)
-        #expect(secondCount == 2)
+        #expect(firstCount == 4)
+        #expect(secondCount == 4)
     }
 
     @Test func cancelCurrentSyncCancelsActiveRunAndClearsActivity() async throws {
@@ -69,7 +69,7 @@ import os
         let next = FakeSynchronizer(kind: .s3)
         let container = BackupSyncContainer(servicesProvider: { [slow, next] in [slow, next] })
 
-        let runTask = try #require(container.syncAllTask())
+        let runTask = Task { await container.syncAll() }
 
         try await waitUntil {
             container.currentActivity.activeConfigIDs.contains(slow.id)
@@ -93,13 +93,14 @@ import os
     }
 }
 
-private func collectFirstTwoEvents(
+private func collectEvents(
+    count target: Int,
     from stream: AsyncStream<BackupSyncSession.ProgressEvent>
 ) async -> Int {
     var count = 0
     for await _ in stream {
         count += 1
-        if count == 2 { break }
+        if count == target { break }
     }
     return count
 }

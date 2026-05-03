@@ -205,8 +205,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             let result = await syncTriggerInteractor.sync(
                 id: webDAVID,
                 overwritingVault: false,
-                allowingAnyDeviceId: true,
-                onEvent: nil
+                allowingAnyDeviceId: true
             )
             // `nil` happens when no service matched (shouldn't, since we just resolved an id)
             // or the container hasn't been installed yet — treat both as a soft success so

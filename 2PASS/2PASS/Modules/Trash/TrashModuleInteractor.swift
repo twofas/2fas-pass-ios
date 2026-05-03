@@ -71,7 +71,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         itemsInteractor.saveStorage()
         syncTriggerInteractor.syncAll()
     }
-    
+
     func restoreAll() {
         Log("TrashModuleInteractor: Restore all", module: .moduleInteractor)
         list().forEach { item in

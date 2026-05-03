@@ -44,18 +44,23 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
     func markDeviceRegistrationAwaiting(configIDs: Set<UUID>)
 
-    /// Runs every registered backend through the convergence loop. No-op if no container.
+    /// Fire-and-forget: triggers a sync at background priority and returns immediately. Use
+    /// this from non-async post-mutation sites ("user changed something, propagate to
+    /// backups when convenient") — internally spawns a detached `.utility`-priority task in
+    /// the container. Cancellation is via `cancelCurrentSync()`.
+    func syncAll()
+
+    /// Awaitable variant — runs every registered backend through the convergence loop and
+    /// returns the per-service `SyncResult`s when the session completes (or `[]` if a sync
+    /// was already in flight, debounced). Use this from sites that need to chain work after
+    /// the sync finishes (e.g. password-change re-encryption push) or that need caller-task
+    /// cancellation to propagate. No-op if no container is installed.
     ///
-    /// Reads `vaultOverrideAwaitingConfigIDs` and forwards a per-service `overwritingVault`
-    /// resolver to the container, so callers don't manage the flag themselves — they call
-    /// `syncAll(...)` and the interactor decides per-config whether the run overwrites or
-    /// merges.
-    ///
-    /// `onEvent` (optional) receives per-service `started`/`finished` lifecycle events so the UI
-    /// can reflect the coordinator's serial execution row-by-row instead of a global flag.
-    /// Events fire from the coordinator actor; consumers running on the main actor must hop
-    /// themselves (e.g. via `Task { @MainActor in ... }`).
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?)
+    /// Both overloads read `vaultOverrideAwaitingConfigIDs` and forward a per-service
+    /// `overwritingVault` resolver to the container, so callers don't manage the flag
+    /// themselves — the interactor decides per-config whether the run overwrites or merges.
+    @discardableResult
+    func syncAll() async -> [BackupSyncSession.SyncResult]
 
     /// Runs only the backend with the given id through the coordinator. No-op if no entry
     /// matches or the container hasn't been installed yet.
@@ -63,11 +68,11 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// `allowingAnyDeviceId` is the recovery override — pass `true` when driving the recovery
     /// flow, which needs to merge a vault belonging to a different device id even without the
     /// multi-device entitlement. Routine syncs always pass `false`.
+    @discardableResult
     func sync(
         id: UUID,
         overwritingVault: Bool,
-        allowingAnyDeviceId: Bool,
-        onEvent: BackupSyncSession.ProgressHandler?
+        allowingAnyDeviceId: Bool
     ) async -> Result<BackupSyncOutcome, BackupSyncError>?
 
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
@@ -76,13 +81,18 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
 
     /// Cancels the currently running backup sync session, if any.
     func cancelCurrentSync()
+
+    /// Live stream of per-service `.started` / `.finished` events from every sync the underlying
+    /// container runs. Each call returns a fresh stream — multiple subscribers can listen
+    /// concurrently. Use this when a consumer wants to react to sync lifecycle as it happens
+    /// (e.g. driving per-row UI) instead of polling `currentActivity` on a notification trigger.
+    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent>
 }
 
 public extension BackupSyncTriggerInteracting {
-    func syncAll() { syncAll(onEvent: nil) }
-    func sync(id: UUID) async { _ = await sync(id: id, overwritingVault: false, allowingAnyDeviceId: false, onEvent: nil) }
-    func sync(id: UUID, onEvent: BackupSyncSession.ProgressHandler?) async {
-        _ = await sync(id: id, overwritingVault: false, allowingAnyDeviceId: false, onEvent: onEvent)
+    @discardableResult
+    func sync(id: UUID) async -> Result<BackupSyncOutcome, BackupSyncError>? {
+        await sync(id: id, overwritingVault: false, allowingAnyDeviceId: false)
     }
 }
 
@@ -117,25 +127,32 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         mainRepository.markDeviceRegistrationAwaiting(configIDs: configIDs)
     }
 
-    func syncAll(onEvent: BackupSyncSession.ProgressHandler?) {
-        // Snapshot both awaiting sets once and capture them in per-service resolvers — that
-        // way the closures stay Sendable and a clear-while-running sequence (entries removed
-        // by `BackupSyncAdapter.setLastSyncDate` as services finish) doesn't make a
-        // still-running peer suddenly lose its flag mid-pass.
+    func syncAll() {
+        // Same snapshot dance as the async overload — closures captured before the detached
+        // task runs so a clear-while-running sequence (entries removed by
+        // `BackupSyncAdapter.setLastSyncDate` as services finish) doesn't make a still-running
+        // peer suddenly lose its flag mid-pass.
         let overrideAwaiting = vaultOverrideAwaitingConfigIDs
         let registrationAwaiting = deviceRegistrationAwaitingConfigIDs
         mainRepository.backupSyncContainer.syncAll(
             overwritingVault: { configID in overrideAwaiting.contains(configID) },
-            allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) },
-            onEvent: onEvent
+            allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) }
+        )
+    }
+
+    func syncAll() async -> [BackupSyncSession.SyncResult] {
+        let overrideAwaiting = vaultOverrideAwaitingConfigIDs
+        let registrationAwaiting = deviceRegistrationAwaitingConfigIDs
+        return await mainRepository.backupSyncContainer.syncAll(
+            overwritingVault: { configID in overrideAwaiting.contains(configID) },
+            allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) }
         )
     }
 
     func sync(
         id: UUID,
         overwritingVault: Bool,
-        allowingAnyDeviceId: Bool,
-        onEvent: BackupSyncSession.ProgressHandler?
+        allowingAnyDeviceId: Bool
     ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
         // OR the caller's parameter with the persistent flag — recovery flows still pass
         // `true` directly for the immediate post-import sync; subsequent retries (where the
@@ -145,8 +162,7 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         return await mainRepository.backupSyncContainer.sync(
             id,
             overwritingVault: overwritingVault,
-            allowingAnyDeviceId: allowingAnyDeviceId || needsRegistration,
-            onEvent: onEvent
+            allowingAnyDeviceId: allowingAnyDeviceId || needsRegistration
         )
     }
 
@@ -156,5 +172,9 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
 
     func cancelCurrentSync() {
         mainRepository.backupSyncContainer.cancelCurrentSync()
+    }
+
+    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent> {
+        mainRepository.backupSyncContainer.progressEvents()
     }
 }

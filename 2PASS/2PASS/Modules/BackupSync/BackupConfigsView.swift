@@ -21,9 +21,9 @@ struct BackupConfigsView: View {
                 Section {
                     Button(role: presenter.isSyncing ? .cancel : nil) {
                         if presenter.isSyncing {
-                            presenter.onCancelSyncAll()
+                            presenter.onCancelSync()
                         } else {
-                            presenter.onSyncNow()
+                            presenter.onSyncAllNow()
                         }
                     } label: {
                         HStack(spacing: Spacing.xs) {
@@ -81,6 +81,9 @@ struct BackupConfigsView: View {
         .animation(.default, value: presenter.rows)
         .onAppear {
             presenter.onAppear()
+        }
+        .onDisappear {
+            presenter.onDisappear()
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
