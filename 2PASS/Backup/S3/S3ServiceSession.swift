@@ -116,9 +116,23 @@ public final class S3ServiceSession: Sendable {
 
 private extension S3ServiceSession {
     func buildURLRequest(from request: S3URLRequest) -> URLRequest {
-        let url = config.endpoint
-            .appendingPathComponent(config.bucket, isDirectory: false)
-            .appendingPathComponent(request.objectKey, isDirectory: false)
+        // Hetzner Object Storage (and any S3-compatible backend that publishes per-bucket
+        // hostnames) uses virtual-hosted addressing: the bucket is the leftmost subdomain
+        // of the endpoint host. If we then also append `config.bucket` to the path, the
+        // bucket appears twice — the server reads it from the host and treats the path
+        // (including the literal "misctest/" prefix) as part of the object key. Detect
+        // this case and skip the path-style bucket prefix.
+        let endpointHost = config.endpoint.host() ?? ""
+        let isVirtualHosted = endpointHost == config.bucket
+            || endpointHost.hasPrefix("\(config.bucket).")
+        let url: URL
+        if isVirtualHosted {
+            url = config.endpoint.appendingPathComponent(request.objectKey, isDirectory: false)
+        } else {
+            url = config.endpoint
+                .appendingPathComponent(config.bucket, isDirectory: false)
+                .appendingPathComponent(request.objectKey, isDirectory: false)
+        }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.httpMethod.rawValue
         urlRequest.httpBody = request.httpBody
