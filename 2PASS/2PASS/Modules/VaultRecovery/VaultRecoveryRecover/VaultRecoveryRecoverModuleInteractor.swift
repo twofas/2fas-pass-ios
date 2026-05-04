@@ -202,18 +202,19 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             return
         }
         Task { [syncTriggerInteractor] in
-            let result = await syncTriggerInteractor.sync(
-                id: webDAVID,
-                overwritingVault: false,
-                allowingAnyDeviceId: true
-            )
-            // `nil` happens when no service matched (shouldn't, since we just resolved an id)
-            // or the container hasn't been installed yet — treat both as a soft success so
-            // recovery doesn't get stuck. `.cancelled` and other failures map to `false`.
-            switch result {
-            case .none, .success:
+            do {
+                try await syncTriggerInteractor.sync(
+                    id: webDAVID,
+                    overwritingVault: false,
+                    allowingAnyDeviceId: true
+                )
+                // Returns silently on success OR when no service matched / container not set
+                // up — both treated as a soft success so recovery doesn't get stuck on edge
+                // cases (the no-service path "shouldn't happen" since we just resolved an id).
                 completion(true)
-            case .failure:
+            } catch {
+                // Sync failure or debounce (.cancelled) — recovery treats both as needing
+                // user attention.
                 completion(false)
             }
         }

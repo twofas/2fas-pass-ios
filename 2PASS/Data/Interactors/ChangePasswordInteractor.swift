@@ -103,7 +103,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
                     if !syncTriggerInteractor.currentActivity.isRunning { break }
                 }
             }
-            await syncTriggerInteractor.syncAll()
+            try? await syncTriggerInteractor.syncAll()
         }
     }
 }

@@ -99,11 +99,11 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
     }
 
     func syncAll() async {
-        await syncTriggerInteractor.syncAll()
+        try? await syncTriggerInteractor.syncAll()
     }
 
     func sync(id: UUID) async {
-        await syncTriggerInteractor.sync(id: id)
+        try? await syncTriggerInteractor.sync(id: id)
     }
 
     func cancelCurrentSync() {

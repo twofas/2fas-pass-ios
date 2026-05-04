@@ -34,8 +34,8 @@ import os
         // subscriber races the run and may miss the initial `.sessionStarted` event.
         try await Task.sleep(for: .milliseconds(50))
 
-        let runTask = Task { await container.syncAll() }
-        let results = await runTask.value
+        let runTask = Task { try await container.syncAll() }
+        let results = try await runTask.value
         let activities = await observed.value
 
         #expect(results.count == 1)
@@ -61,7 +61,7 @@ import os
         // initial `.sessionStarted` event.
         try await Task.sleep(for: .milliseconds(50))
 
-        await container.syncAll()
+        _ = try? await container.syncAll()
 
         let firstCount = await firstSubscriberCount
         let secondCount = await secondSubscriberCount
@@ -74,27 +74,24 @@ import os
         let next = FakeSynchronizer(kind: .s3)
         let container = BackupSyncContainer(servicesProvider: { [slow, next] in [slow, next] })
 
-        let runTask = Task { await container.syncAll() }
+        let runTask = Task { try await container.syncAll() }
 
         try await waitUntil {
             container.currentActivity.activeConfigIDs.contains(slow.id)
         }
 
         container.cancelCurrentSync()
-        let results = await runTask.value
+        let results = try await runTask.value
 
+        // Per-service cancellation encoding (`.failure(.cancelled)` in the result tuple) is
+        // pinned by `BackupSyncSessionTests.cancellationStopsBetweenServices`; here we only
+        // assert the container-level surface: the call wasn't debounced (would have thrown),
+        // the slow service ran once and appears in results, the next service didn't start,
+        // and activity returned to idle.
+        #expect(results.count == 1)
         #expect(slow.recording.calls == 1)
         #expect(next.recording.calls == 0)
         #expect(container.currentActivity == .idle)
-        #expect(results.count == 1)
-        guard case .failure(let error) = results[0].outcome else {
-            Issue.record("expected the cancelled service to report failure")
-            return
-        }
-        guard case .cancelled = error else {
-            Issue.record("expected cancellation error, got \(error)")
-            return
-        }
     }
 }
 

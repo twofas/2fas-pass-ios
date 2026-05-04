@@ -52,9 +52,9 @@ public enum BackupVaultFetchError: Error, Sendable {
 /// no per-call event handler argument.
 ///
 /// **In-progress guard.** `syncAll` and `sync(_:)` debounce overlapping triggers via an unfair
-/// lock — while a sync is in flight, additional invocations return immediately (`syncAll` → `[]`,
-/// `sync(_:)` → `.failure(.cancelled)`) instead of chaining behind the in-flight work. This stops
-/// e.g. a periodic refresh from queueing up behind a user-initiated `Sync Now`. Cross-trigger
+/// lock — while a sync is in flight, additional invocations short-circuit immediately by
+/// throwing `.cancelled` instead of chaining behind the in-flight work. This stops e.g. a
+/// periodic refresh from queueing up behind a user-initiated `Sync Now`. Cross-trigger
 /// serialization is *only* this debounce — the session itself is single-use, with no internal
 /// task chain.
 public final class BackupSyncContainer: @unchecked Sendable {
@@ -264,28 +264,32 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// inheritance — sync work stays explicitly off the caller's executor.
     ///
     /// Use the `async` overload below when you need to track completion, read per-service
-    /// results, or have caller-task cancellation propagate. Cross-client cancellation works
+    /// outcomes, or have caller-task cancellation propagate. Cross-client cancellation works
     /// for both forms via `cancelCurrentSync()`.
     public func syncAll(
         overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
         allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false }
     ) {
         Task.detached(priority: .utility) { [weak self] in
-            await self?.syncAll(
+            try? await self?.syncAll(
                 overwritingVault: overwritingVault,
                 allowingAnyDeviceId: allowingAnyDeviceId
             )
         }
     }
 
+    /// Awaitable overload. Returns each service's final `BackupSyncSession.SyncResult` from
+    /// the convergence loop. Returns an empty array when no services are configured. Throws
+    /// `.cancelled` when the call was suppressed because another sync was already in flight
+    /// (debounced).
     @discardableResult
     public func syncAll(
         overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
         allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false }
-    ) async -> [BackupSyncSession.SyncResult] {
+    ) async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
         guard reserveSyncSlot() else {
             Log("BackupSyncContainer - syncAll ignored: sync already in progress", module: .backup)
-            return []
+            throw .cancelled
         }
         // Snapshot providers once per call so an in-flight `setup(...)` can't tear the read.
         let snapshot = providers.withLock { $0 }
@@ -310,17 +314,20 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    @discardableResult
+    /// Runs only the backend with the given id through a single-service `BackupSyncSession`.
+    /// Returns silently when no service matches the id (defensive — caller should have just
+    /// resolved this id from the configs) or when the run succeeds. Throws on actual failure
+    /// or when debounced because another sync is in flight.
     public func sync(
         _ id: UUID,
         overwritingVault: Bool = false,
         allowingAnyDeviceId: Bool = false
-    ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
+    ) async throws(BackupSyncError) {
         let snapshot = providers.withLock { $0 }
-        guard let service = snapshot.servicesProvider().first(where: { $0.id == id }) else { return nil }
+        guard let service = snapshot.servicesProvider().first(where: { $0.id == id }) else { return }
         guard reserveSyncSlot() else {
             Log("BackupSyncContainer - sync ignored: sync already in progress", module: .backup)
-            return .failure(.cancelled)
+            throw .cancelled
         }
         let session = BackupSyncSession(
             services: [service],
@@ -332,7 +339,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             lastSyncDate: snapshot.lastSyncDateProvider,
             onEvent: makeSyncEventHandler()
         )
-        let task = Task { [self] in
+        let task = Task {
             let results = await session.run()
             return results.first?.outcome
         }
@@ -340,11 +347,12 @@ public final class BackupSyncContainer: @unchecked Sendable {
             task.cancel()
         }
         defer { clearSyncSlot() }
-        return await withTaskCancellationHandler {
+        let outcome = await withTaskCancellationHandler {
             await task.value
         } onCancel: {
             task.cancel()
         }
+        if case .failure(let error) = outcome { throw error }
     }
 
     // MARK: - Internals

@@ -51,29 +51,32 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     func syncAll()
 
     /// Awaitable variant — runs every registered backend through the convergence loop and
-    /// returns the per-service `SyncResult`s when the session completes (or `[]` if a sync
-    /// was already in flight, debounced). Use this from sites that need to chain work after
-    /// the sync finishes (e.g. password-change re-encryption push) or that need caller-task
-    /// cancellation to propagate. No-op if no container is installed.
+    /// returns each service's `BackupSyncSession.SyncResult` from the final pass. Returns
+    /// an empty array when no services are configured. Throws `.cancelled` when the call
+    /// was suppressed because another sync was already in flight (debounced). Use this
+    /// from sites that need to chain work after the sync finishes (e.g. password-change
+    /// re-encryption push), inspect per-service outcomes, or have caller-task cancellation
+    /// propagate.
     ///
     /// Both overloads read `vaultOverrideAwaitingConfigIDs` and forward a per-service
     /// `overwritingVault` resolver to the container, so callers don't manage the flag
     /// themselves — the interactor decides per-config whether the run overwrites or merges.
     @discardableResult
-    func syncAll() async -> [BackupSyncSession.SyncResult]
+    func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult]
 
-    /// Runs only the backend with the given id through the coordinator. No-op if no entry
-    /// matches or the container hasn't been installed yet.
+    /// Runs only the backend with the given id through the coordinator. Returns silently on
+    /// success or no-op (no entry matches the id, or the container hasn't been installed yet).
+    /// Throws `BackupSyncError` on actual sync failure or when debounced because another sync
+    /// is in flight (`.cancelled`).
     ///
     /// `allowingAnyDeviceId` is the recovery override — pass `true` when driving the recovery
     /// flow, which needs to merge a vault belonging to a different device id even without the
     /// multi-device entitlement. Routine syncs always pass `false`.
-    @discardableResult
     func sync(
         id: UUID,
         overwritingVault: Bool,
         allowingAnyDeviceId: Bool
-    ) async -> Result<BackupSyncOutcome, BackupSyncError>?
+    ) async throws(BackupSyncError)
 
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
@@ -102,9 +105,8 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
 }
 
 public extension BackupSyncTriggerInteracting {
-    @discardableResult
-    func sync(id: UUID) async -> Result<BackupSyncOutcome, BackupSyncError>? {
-        await sync(id: id, overwritingVault: false, allowingAnyDeviceId: false)
+    func sync(id: UUID) async throws(BackupSyncError) {
+        try await sync(id: id, overwritingVault: false, allowingAnyDeviceId: false)
     }
 }
 
@@ -152,10 +154,10 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         )
     }
 
-    func syncAll() async -> [BackupSyncSession.SyncResult] {
+    func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
         let overrideAwaiting = vaultOverrideAwaitingConfigIDs
         let registrationAwaiting = deviceRegistrationAwaitingConfigIDs
-        return await mainRepository.backupSyncContainer.syncAll(
+        return try await mainRepository.backupSyncContainer.syncAll(
             overwritingVault: { configID in overrideAwaiting.contains(configID) },
             allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) }
         )
@@ -165,13 +167,13 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         id: UUID,
         overwritingVault: Bool,
         allowingAnyDeviceId: Bool
-    ) async -> Result<BackupSyncOutcome, BackupSyncError>? {
+    ) async throws(BackupSyncError) {
         // OR the caller's parameter with the persistent flag — recovery flows still pass
         // `true` directly for the immediate post-import sync; subsequent retries (where the
         // caller passes `false`) auto-pick up the flag-driven override until that config's
         // first successful sync clears it via `BackupSyncAdapter.setLastSyncDate`.
         let needsRegistration = mainRepository.deviceRegistrationAwaitingConfigIDs.contains(id)
-        return await mainRepository.backupSyncContainer.sync(
+        try await mainRepository.backupSyncContainer.sync(
             id,
             overwritingVault: overwritingVault,
             allowingAnyDeviceId: allowingAnyDeviceId || needsRegistration
