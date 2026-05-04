@@ -108,6 +108,19 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// continuation without touching the others. Each session's events fan out to every
     /// entry here on every yield.
     private let syncEventContinuations = OSAllocatedUnfairLock<[UUID: AsyncStream<BackupSyncSession.Event>.Continuation]>(initialState: [:])
+    /// Most recent failure per config id, observed off the session's `.finished` events. In-memory
+    /// only — does not survive an app restart. Cleared per-id on the next successful `.finished`
+    /// for that id; `.cancelled` outcomes are skipped (user-initiated cancel is not an error).
+    /// Distinct lock from `state` because the two have no shared invariants and writes happen on
+    /// the same event-handler thread, so two short critical sections beat one wider one.
+    ///
+    /// Stores `BackupSyncError` directly. UI consumers render the user-facing message via the
+    /// type's `LocalizedError.errorDescription`, which resolves through the Backup module's own
+    /// `Localizable.xcstrings`. Holding the structured error (rather than a kind+detail mirror)
+    /// is fine because the container has process-scope lifetime — there's no persistence path
+    /// that needs `Codable`, and the underlying `Error & Sendable` payload on `.network` /
+    /// `.server` is freed on the next success or app close.
+    private let lastErrors = OSAllocatedUnfairLock<[UUID: BackupSyncError]>(initialState: [:])
 
     /// Creates an inert container. Until `setup(...)` runs the container has zero services
     /// and `syncAll` / `sync(_:)` no-op gracefully — that's the point: callers (specifically
@@ -286,6 +299,22 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     public var currentActivity: BackupSyncActivity {
         state.withLock { $0.activity }
+    }
+
+    /// Most recent failure recorded for `id` during the running app process, or `nil` if the
+    /// last sync for that id succeeded (or no sync has run for it yet). The container observes
+    /// `.finished` events and records on `.failure` / clears on `.success` synchronously inside
+    /// its session-event handler — by the time `currentActivity` reports the run as no longer
+    /// active for `id`, this accessor reflects the just-completed outcome.
+    ///
+    /// **Process-scoped.** Not persisted. A force-quit-and-relaunch starts every config back at
+    /// `nil` here. That's deliberate: the next sync trigger either replaces or clears the entry
+    /// within minutes, so cross-launch persistence isn't worth the complexity.
+    ///
+    /// `.cancelled` outcomes never appear here — they're skipped at recording time, leaving any
+    /// prior error in place (see `handle(_:)`).
+    public func lastSyncError(for id: UUID) -> BackupSyncError? {
+        lastErrors.withLock { $0[id] }
     }
 
     public func cancelCurrentSync() {
@@ -484,6 +513,22 @@ public final class BackupSyncContainer: @unchecked Sendable {
                 // Container emits these directly via `broadcast(_:)` — they never flow through
                 // this session-handler path. Listed for exhaustiveness only.
                 break
+            }
+        }
+        // Error tracking: separate critical section from `state` because the two have no
+        // shared invariants. The session emits exactly one `.finished` per service per pass,
+        // so writes are naturally serialized — no need to widen the `state` lock.
+        if case .finished(let id, _, let outcome) = event {
+            switch outcome {
+            case .success:
+                lastErrors.withLock { $0[id] = nil }
+            case .failure(.cancelled):
+                // User-initiated cancel: not an error worth surfacing. Leave any prior recorded
+                // error in place — the cancel didn't change whether the underlying problem
+                // (network down, bad credentials, …) is still present.
+                break
+            case .failure(let error):
+                lastErrors.withLock { $0[id] = error }
             }
         }
     }

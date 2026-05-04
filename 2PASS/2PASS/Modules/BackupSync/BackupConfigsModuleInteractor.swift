@@ -17,6 +17,7 @@ protocol BackupConfigsModuleInteracting: AnyObject {
     var cloudStateChanged: Callback? { get set }
 
     func lastSyncDate(for id: UUID) -> Date?
+    func lastSyncError(for id: UUID) -> BackupSyncError?
     @discardableResult func addiCloud() -> UUID?
     func remove(id: UUID, kind: SyncServiceKind)
     /// Fire-and-forget at background `.utility` priority — for non-user-driven sync
@@ -76,6 +77,10 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     func lastSyncDate(for id: UUID) -> Date? {
         syncTriggerInteractor.lastSyncDate(for: id)
+    }
+
+    func lastSyncError(for id: UUID) -> BackupSyncError? {
+        syncTriggerInteractor.lastSyncError(for: id)
     }
 
     @discardableResult

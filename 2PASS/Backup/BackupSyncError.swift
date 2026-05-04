@@ -85,3 +85,49 @@ extension BackupSyncError {
         }
     }
 }
+
+extension BackupSyncError: LocalizedError {
+    /// User-facing localized message for each failure case. Resolves through the Backup module's
+    /// own `Localizable.xcstrings` (auto-generated `LocalizedStringResource` symbols carry the
+    /// bundle reference, so callers don't pass `bundle:` explicitly).
+    ///
+    /// Returns `nil` for `.cancelled` so a user-initiated cancel never surfaces as an error
+    /// message — the standard `LocalizedError` contract for "not really an error worth showing."
+    /// `.network` / `.server` deliberately collapse the underlying NSError into a static
+    /// localized message; the underlying error's `localizedDescription` would be a system-locale
+    /// English NSURLError string that doesn't respect the user's app language.
+    public var errorDescription: String? {
+        switch self {
+        case .unauthorized:
+            return String(localized: .backupSyncErrorUnauthorized)
+        case .forbidden:
+            return String(localized: .backupSyncErrorForbidden)
+        case .notConfigured:
+            return String(localized: .backupSyncErrorNotConfigured)
+        case .methodNotAllowed:
+            return String(localized: .backupSyncErrorMethodNotAllowed)
+        case .schemaNotSupported(let version):
+            return String(localized: .backupSyncErrorSchemaNotSupported(version))
+        case .limitDevicesReached:
+            return String(localized: .backupSyncErrorLimitDevicesReached)
+        case .passwordChanged:
+            return String(localized: .backupSyncErrorPasswordChanged)
+        case .cancelled:
+            return nil
+        case .network:
+            return String(localized: .backupSyncErrorNetwork)
+        case .server:
+            return String(localized: .backupSyncErrorServer)
+        case .ssl:
+            return String(localized: .backupSyncErrorSsl)
+        case .export:
+            return String(localized: .backupSyncErrorExport)
+        case .invalidResponse:
+            return String(localized: .backupSyncErrorInvalidResponse)
+        case .unexpected(let message):
+            return String(localized: .backupSyncErrorUnexpected(message))
+        case .iCloudUnavailable:
+            return String(localized: .backupSyncErrorIcloudUnavailable)
+        }
+    }
+}

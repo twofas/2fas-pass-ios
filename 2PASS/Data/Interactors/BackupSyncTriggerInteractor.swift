@@ -69,6 +69,12 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
     func lastSyncDate(for id: UUID) -> Date?
 
+    /// Most recent failure for `id` observed by the running container, or `nil` if the last
+    /// attempt succeeded (or no attempt has run in this app process). Cleared automatically on
+    /// the next success for that id. **Process-scoped** — does not survive an app restart.
+    /// Intended for UI display via `BackupSyncError.errorDescription` (LocalizedError).
+    func lastSyncError(for id: UUID) -> BackupSyncError?
+
     /// Cancels the currently running backup sync session, if any.
     func cancelCurrentSync()
 
@@ -125,6 +131,13 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
 
     func lastSyncDate(for id: UUID) -> Date? {
         mainRepository.loadLastSyncDates()[id]
+    }
+
+    func lastSyncError(for id: UUID) -> BackupSyncError? {
+        // Reads through to the container's in-memory store rather than `MainRepository` —
+        // unlike `lastSyncDate(for:)`, there is no persistence layer behind this. Same shape
+        // as `currentActivity` (which also reads container state directly).
+        mainRepository.backupSyncContainer.lastSyncError(for: id)
     }
 
     func cancelCurrentSync() {

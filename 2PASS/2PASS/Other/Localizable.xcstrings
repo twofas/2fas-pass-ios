@@ -19326,6 +19326,13 @@
         "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak konfiguracji kopii zapasowej. Dodaj jedną, aby rozpocząć synchronizację skarbca." } }
       }
     },
+    "backup_configs_last_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Last error: %@" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ostatni błąd: %@" } }
+      }
+    },
     "backup_configs_last_synced" : {
       "extractionState" : "manual",
       "localizations" : {

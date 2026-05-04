@@ -35,6 +35,10 @@ struct BackupConfigRowItem: Identifiable, Equatable {
     let title: String
     let subtitle: String?
     let statusText: String
+    /// Localized "Last error: … (date)" string for the most recent in-process failure on this
+    /// config, or `nil` if the last attempt succeeded / no attempt has run / a sync is currently
+    /// in flight (active syncs suppress the stale error to avoid mixing past and present state).
+    let errorText: String?
     let isSyncing: Bool
     let icon: SettingsIcon
 }
@@ -188,6 +192,7 @@ final class BackupConfigsPresenter {
                 title: title(for: config),
                 subtitle: subtitle(for: config),
                 statusText: statusText(for: config),
+                errorText: errorText(for: config),
                 isSyncing: isSyncing(for: config),
                 icon: icon(for: config.kind)
             )
@@ -247,6 +252,23 @@ private extension BackupConfigsPresenter {
         case .webDAV: .webDAV
         case .s3: .s3
         }
+    }
+
+    /// "Last error: <localized error message>" for the most recent recorded failure, or `nil`.
+    /// Suppressed while a sync is currently in flight for this config — showing a stale error
+    /// next to a live progress spinner would mix past and present state; the in-flight attempt
+    /// is the one that matters now, and it'll either replace or clear the record on finish.
+    ///
+    /// The localized text comes from `BackupSyncError.errorDescription` (LocalizedError
+    /// conformance) which resolves through the Backup module's own `Localizable.xcstrings`.
+    /// Render-time localization, not write-time — a system-language switch re-localizes the
+    /// cached error on the next presenter reload.
+    func errorText(for config: BackupConfig) -> String? {
+        if isSyncing(for: config) { return nil }
+        guard let error = interactor.lastSyncError(for: config.id),
+              let message = error.errorDescription
+        else { return nil }
+        return String(localized: .backupConfigsLastError(message))
     }
 }
 

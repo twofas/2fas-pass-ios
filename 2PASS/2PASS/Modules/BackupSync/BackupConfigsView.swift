@@ -56,12 +56,18 @@ struct BackupConfigsView: View {
                         in: transitionNamespace
                     )
                 } footer: {
-                    HStack(spacing: 6) {
-                        if row.isSyncing {
-                            ProgressView()
-                                .controlSize(.mini)
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let errorText = row.errorText {
+                            Text(errorText)
+                                .foregroundStyle(.danger500)
                         }
-                        Text(row.statusText)
+                        HStack(spacing: 6) {
+                            if row.isSyncing {
+                                ProgressView()
+                                    .controlSize(.mini)
+                            }
+                            Text(row.statusText)
+                        }
                     }
                     .settingsFooter()
                 }
