@@ -49,8 +49,8 @@ final class ManageTagsPresenter {
                     await self?.reload()
                 }
             }
-            group.addTask { [weak self] in
-                for await _ in NotificationCenter.default.notifications(named: .backupSyncDidApplyRemoteChanges) {
+            group.addTask { [weak self, interactor] in
+                for await _ in interactor.syncDidApplyRemoteChanges() {
                     await self?.reload()
                 }
             }

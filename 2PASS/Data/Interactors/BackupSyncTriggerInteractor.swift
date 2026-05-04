@@ -88,6 +88,17 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// when a consumer wants to react to sync lifecycle as it happens (e.g. driving per-row
     /// UI) instead of polling `currentActivity` on a notification trigger.
     func syncEvents() -> AsyncStream<BackupSyncSession.Event>
+
+    /// Convenience stream that yields once for each per-service sync that merged remote content
+    /// into the local database. Filters `syncEvents()` for `.finished(_, _, .success(let outcome))`
+    /// where `outcome.appliedRemoteChanges == true`. View-layer presenters use this to refresh
+    /// their displayed data without seeing Backup-module event types.
+    ///
+    /// **Multi-emit per `syncAll`:** the convergence loop can apply remote changes from more
+    /// than one service across passes, so a single `syncAll` call may yield multiple times.
+    /// Each yield is a real moment of local-state mutation; subscribers whose reload work is
+    /// expensive should add their own throttle.
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 public extension BackupSyncTriggerInteracting {
@@ -177,5 +188,20 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
 
     func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
         mainRepository.backupSyncContainer.syncEvents()
+    }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        let upstream = mainRepository.backupSyncContainer.syncEvents()
+        return AsyncStream { continuation in
+            let task = Task {
+                for await event in upstream {
+                    if case .finished(_, _, .success(let outcome)) = event, outcome.appliedRemoteChanges {
+                        continuation.yield()
+                    }
+                }
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
     }
 }

@@ -30,7 +30,13 @@ final class ItemDetailPresenter {
     private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private let autoFillEnvironment: AutoFillEnvironment?
-    
+    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `onAppear`, cancelled
+    /// in `onDisappear`, so the subscription is alive only while the view is on screen.
+    /// `@ObservationIgnored` because the handle is internal lifecycle plumbing, not observable
+    /// UI state.
+    @ObservationIgnored
+    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+
     enum Form {
         case login(LoginDetailFormPresenter)
         case secureNote(SecureNoteFormPresenter)
@@ -54,7 +60,7 @@ final class ItemDetailPresenter {
             return nil
         }
     }
-    
+
     init(
         itemID: ItemID,
         flowController: ItemDetailFlowControlling,
@@ -67,12 +73,13 @@ final class ItemDetailPresenter {
         self.notificationCenter = .default
         self.toastPresenter = .shared
         self.autoFillEnvironment = autoFillEnvironment
-        
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
+
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
-    
+
     deinit {
+        // Safety net for the rare case where `onDisappear` doesn't fire.
+        syncDidApplyRemoteChangesTask?.cancel()
         notificationCenter.removeObserver(self)
     }
 }
@@ -84,14 +91,14 @@ extension ItemDetailPresenter {
             flowController.close()
             return
         }
-        
+
         let configuration = ItemDetailFormConfiguration(
             flowController: flowController,
             interactor: interactor,
             toastPresenter: toastPresenter,
             autoFillEnvironment: autoFillEnvironment
         )
-        
+
         switch item {
         case .login(let item):
             form = .login(
@@ -112,6 +119,19 @@ extension ItemDetailPresenter {
         case .raw:
             fatalError("Unsupported content type")
         }
+
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = Task { [weak self] in
+            guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
+            for await _ in stream {
+                self?.refreshState()
+            }
+        }
+    }
+
+    func onDisappear() {
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = nil
     }
 
     func onEdit() {
@@ -124,17 +144,12 @@ extension ItemDetailPresenter {
 }
 
 private extension ItemDetailPresenter {
-    
-    @objc
-    func syncFinished() {
-        refreshState()
-    }
-    
+
     @objc
     func iCloudSyncFinished() {
         refreshState()
     }
-    
+
     func refreshState() {
         Task { @MainActor in
             formPresenter?.reload()

@@ -298,9 +298,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
         )
         let task = Task { [self] in
             defer { self.clearSyncSlot() }
-            let results = await session.run()
-            self.postAppliedRemoteChangesIfNeeded(results)
-            return results
+            return await session.run()
         }
         installCancellationHandler {
             task.cancel()
@@ -336,7 +334,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         )
         let task = Task { [self] in
             let results = await session.run()
-            self.postAppliedRemoteChangesIfNeeded(results)
             return results.first?.outcome
         }
         installCancellationHandler {
@@ -400,15 +397,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
                 continuation.yield(event)
             }
         }
-    }
-
-    private func postAppliedRemoteChangesIfNeeded(_ results: [BackupSyncSession.SyncResult]) {
-        let applied = results.contains { result in
-            if case .success(let outcome) = result.outcome { return outcome.appliedRemoteChanges }
-            return false
-        }
-        guard applied else { return }
-        NotificationCenter.default.post(name: .backupSyncDidApplyRemoteChanges, object: nil)
     }
 
     private func handle(_ event: BackupSyncSession.Event) {

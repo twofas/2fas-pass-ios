@@ -96,6 +96,7 @@ final class PasswordsViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        presenter.viewWillDisappear()
         stopSafeAreaKeyboardAdjustment()
     }
 

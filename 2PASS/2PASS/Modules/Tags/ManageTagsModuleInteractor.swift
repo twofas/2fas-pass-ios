@@ -6,6 +6,8 @@ protocol ManageTagsModuleInteracting {
     func listAllTags() -> [ItemTagData]
     func deleteTag(tagID: ItemTagID)
     func getItemCountForTag(tagID: ItemTagID) -> Int
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
@@ -36,6 +38,10 @@ final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     
     func getItemCountForTag(tagID: ItemTagID) -> Int {
         itemsInteractor.getItemCountForTag(tagID: tagID, contentType: nil)
+    }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        syncTriggerInteractor.syncDidApplyRemoteChanges()
     }
 }
 

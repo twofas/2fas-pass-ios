@@ -67,7 +67,7 @@ final class BackupConfigsPresenter {
     /// classes; the handle is written once at the end of `init`, read only by `deinit` to
     /// cancel — no concurrent mutation, so the `unsafe` opt-out is sound.
     @ObservationIgnored
-    nonisolated(unsafe) private var syncEventTask: Task<Void, Never>?
+    private var syncEventTask: Task<Void, Never>?
 
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
@@ -79,7 +79,7 @@ final class BackupConfigsPresenter {
         // processing events for a hidden screen. See `onDisappear` for teardown.
     }
 
-    deinit {
+    isolated deinit {
         // Safety net: `onDisappear` should cancel first under normal lifecycle, but if the
         // presenter is torn down without the view ever firing onDisappear (rare but possible),
         // the AsyncStream continuation would otherwise leak.

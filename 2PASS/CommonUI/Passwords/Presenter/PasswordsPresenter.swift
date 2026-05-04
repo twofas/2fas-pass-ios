@@ -80,10 +80,14 @@ final class PasswordsPresenter {
     private var listData: [Int: [ItemData]] = [:]
     private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
     private var isViewReady: Bool = false
+    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `viewWillAppear`,
+    /// cancelled in `viewWillDisappear`, so the subscription is alive only while the view is
+    /// on screen.
+    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
     private var canLoadData: Bool {
         isViewReady && interactor.isUserLoggedIn
     }
-    
+
     init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
         self.autoFillEnvironment = autoFillEnvironment
         self.flowController = flowController
@@ -92,17 +96,18 @@ final class PasswordsPresenter {
         self.toastPresenter = .shared
         self.iconsDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
 
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
         notificationCenter.addObserver(self, selector: #selector(userLoggedIn), name: .userLoggedIn, object: nil)
         notificationCenter.addObserver(self, selector: #selector(didImportItems), name: .didImportItems, object: nil)
-        
+
         notificationCenter.addObserver(forName: .connectPullReqestDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
             self?.reload()
         }
     }
-    
+
     deinit {
+        // Safety net for the rare case where `viewWillDisappear` doesn't fire.
+        syncDidApplyRemoteChangesTask?.cancel()
         notificationCenter.removeObserver(self)
     }
 }
@@ -113,6 +118,19 @@ extension PasswordsPresenter {
         isViewReady = true
         refreshSelectedFilterTag()
         reload()
+
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = Task { [weak self] in
+            guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
+            for await _ in stream {
+                await MainActor.run { [weak self] in self?.reload() }
+            }
+        }
+    }
+
+    func viewWillDisappear() {
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = nil
     }
 
     private func refreshSelectedFilterTag() {
@@ -602,13 +620,6 @@ private extension PasswordsPresenter {
         return results
     }
 
-    @objc
-    func syncFinished() {
-        DispatchQueue.main.async {
-            self.reload()
-        }
-    }
-    
     @objc
     func iCloudSyncFinished() {
         DispatchQueue.main.async {

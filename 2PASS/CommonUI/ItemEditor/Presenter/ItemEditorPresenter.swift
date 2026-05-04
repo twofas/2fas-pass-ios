@@ -80,7 +80,12 @@ final class ItemEditorPresenter {
     private let flowController: ItemEditorFlowControlling
     private let interactor: ItemEditorModuleInteracting
     private let notificationCenter: NotificationCenter
-    
+    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — only spawned in edit mode
+    /// (`isEdit`), spawned in `onAppear`, cancelled in `onDisappear`. `@ObservationIgnored`
+    /// because the handle is internal lifecycle plumbing, not observable UI state.
+    @ObservationIgnored
+    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+
     private var firstAppear = true
     
     private var currentPresenter: ItemEditorFormPresenter {
@@ -159,7 +164,6 @@ final class ItemEditorPresenter {
         }
         
         if initalData != nil {
-            notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
             notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
         }
         
@@ -185,15 +189,26 @@ final class ItemEditorPresenter {
     }
     
     func onAppear() {
-        guard firstAppear else {
-            return
+        if firstAppear {
+            updateSaveState()
+            firstAppear = false
         }
-        updateSaveState()
-        firstAppear = false
+
+        if isEdit {
+            syncDidApplyRemoteChangesTask?.cancel()
+            syncDidApplyRemoteChangesTask = Task { [weak self] in
+                guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
+                for await _ in stream {
+                    self?.checkCurrentPasswordState()
+                }
+            }
+        }
     }
-    
+
     func onDisappear() {
         loginFormPresenter?.cancelFetchIcon()
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = nil
     }
     
     func onSave() {
@@ -219,6 +234,8 @@ final class ItemEditorPresenter {
     }
     
     deinit {
+        // Safety net for the rare case where `onDisappear` doesn't fire.
+        syncDidApplyRemoteChangesTask?.cancel()
         notificationCenter.removeObserver(self)
     }
 }
@@ -295,11 +312,6 @@ private extension ItemEditorPresenter {
         saveEnabled?(currentPresenter.canSave)
     }
 
-    @objc
-    func syncFinished() {
-        checkCurrentPasswordState()
-    }
-    
     @objc
     func iCloudSyncFinished() {
         checkCurrentPasswordState()

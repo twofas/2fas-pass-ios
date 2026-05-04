@@ -79,7 +79,8 @@ public final class ModuleInteractorFactory {
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             tagInteractor: InteractorFactory.shared.tagInteractor(),
             paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
-            wifiQRCodeInteractor: InteractorFactory.shared.wifiQRCodeInteractor()
+            wifiQRCodeInteractor: InteractorFactory.shared.wifiQRCodeInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
     

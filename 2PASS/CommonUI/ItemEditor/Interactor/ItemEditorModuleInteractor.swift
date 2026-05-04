@@ -105,6 +105,8 @@ protocol ItemEditorModuleInteracting: AnyObject {
     func fetchIconImage(from url: URL) async throws -> Data
     func checkCurrentPasswordState() -> ItemEditorModuleInteractorCheckState
     func moveToTrash() -> ItemID?
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 final class ItemEditorModuleInteractor {
@@ -559,5 +561,9 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
     private func didSaveItem() {
         itemsInteractor.saveStorage()
         syncTriggerInteractor.syncAll()
+    }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        syncTriggerInteractor.syncDidApplyRemoteChanges()
     }
 }

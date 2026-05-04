@@ -50,19 +50,26 @@ final class TrashPresenter {
     
     private let interactor: TrashModuleInteracting
     private let notificationCenter: NotificationCenter
-    
+    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `onAppear`, cancelled
+    /// in `onDisappear`, so the subscription is alive only while the view is on screen.
+    /// `@ObservationIgnored` because the handle is internal lifecycle plumbing, not observable
+    /// UI state.
+    @ObservationIgnored
+    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+
     var destination: TrashDestination?
-    
+
     init(interactor: TrashModuleInteracting) {
         self.interactor = interactor
         self.iconDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
         self.notificationCenter = .default
-        
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .backupSyncDidApplyRemoteChanges, object: nil)
+
         notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
-    
+
     deinit {
+        // Safety net for the rare case where `onDisappear` doesn't fire.
+        syncDidApplyRemoteChangesTask?.cancel()
         notificationCenter.removeObserver(self)
     }
 }
@@ -76,10 +83,24 @@ extension TrashPresenter {
                 self?.icons[item.id] = .icon(image)
             }
         }
-        
+
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = Task { [weak self] in
+            guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
+            for await _ in stream {
+                await MainActor.run { [weak self] in self?.reload() }
+            }
+        }
+
         reload()
     }
-    
+
+    @MainActor
+    func onDisappear() {
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = nil
+    }
+
     @MainActor
     func onAppear(for item: TrashItemData) {
         switch item.icon {
@@ -204,13 +225,6 @@ private extension TrashPresenter {
                     }
                 }
             })
-    }
-    
-    @objc
-    func syncFinished() {
-        DispatchQueue.main.async {
-            self.reload()
-        }
     }
     
     @objc
