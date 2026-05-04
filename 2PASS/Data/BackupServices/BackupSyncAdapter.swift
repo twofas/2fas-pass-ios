@@ -9,8 +9,9 @@ import Backup
 import Common
 
 /// **Hexagonal-architecture adapter** that fulfills the backup-sync collaborator ports —
-/// `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging`, plus the persisted
-/// `BackupSyncConfigStore` / `BackupSyncDateStore` — over the app's existing `MainRepository` +
+/// `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging`, the persisted
+/// `BackupSyncConfigStore` / `BackupSyncDateStore`, plus the awaiting-flag store
+/// (`BackupAwaitingFlagsStoring`) — over the app's existing `MainRepository` +
 /// callback-based interactor stack. A single instance is constructed by
 /// `BackupSyncSetupInteractor.initialize()` and registered with the long-lived
 /// `BackupSyncContainer`, which in turn passes it through to each per-call `BackupSyncSession`.
@@ -64,7 +65,7 @@ import Common
 /// Both are preconditions, not guarantees. If a future change introduces mutable cross-call
 /// state into one of the held interactors, or removes the container's debounce, the
 /// `@unchecked Sendable` here becomes unsafe and must be re-audited.
-final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLocalMerging, BackupSyncConfigStore, BackupSyncDateStore, @unchecked Sendable {
+final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLocalMerging, BackupSyncConfigStore, BackupSyncDateStore, BackupAwaitingFlagsStoring, @unchecked Sendable {
 
     private let mainRepository: MainRepository
     private let exportInteractor: ExportInteracting
@@ -314,15 +315,40 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         // just-completed sync actually honored the flag. The unconditional version had a
         // race — a routine sync that finished *after* a password change marked the flag
         // (but didn't itself overwrite, since it captured the pre-change snapshot via the
-        // trigger interactor's per-id closure) would wipe a flag whose work hadn't been
-        // performed. With `consumed`, the cancel-and-retry flow's pre-change sync exits
-        // here with `consumed.overwritingVault == false` and leaves the freshly-set flag
-        // alone for the retry to consume.
+        // container's per-id closure) would wipe a flag whose work hadn't been performed.
+        // With `consumed`, the cancel-and-retry flow's pre-change sync exits here with
+        // `consumed.overwritingVault == false` and leaves the freshly-set flag alone for
+        // the retry to consume.
         if consumed.overwritingVault {
             mainRepository.clearVaultOverrideAwaiting(configID: id)
         }
         if consumed.allowingAnyDeviceId {
             mainRepository.clearDeviceRegistrationAwaiting(configID: id)
         }
+    }
+
+    // MARK: - BackupAwaitingFlagsStoring
+    //
+    // Pure forwarders to `MainRepository`'s persistent awaiting-flag storage (UserDefaults-
+    // backed). The container reads these via the snapshot taken inside `syncAll()` /
+    // `sync(_:)`; mutations come from password-change and recovery flows through the
+    // container's public `markX` surface, which routes here. Clearing happens just above
+    // in `setLastSyncDate(_:for:consumed:)` and goes directly through `MainRepository`,
+    // bypassing this protocol — both paths land in the same UserDefaults keys.
+
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+        mainRepository.vaultOverrideAwaitingConfigIDs
+    }
+
+    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
+        mainRepository.markVaultOverrideAwaiting(configIDs: configIDs)
+    }
+
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+        mainRepository.deviceRegistrationAwaitingConfigIDs
+    }
+
+    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+        mainRepository.markDeviceRegistrationAwaiting(configIDs: configIDs)
     }
 }

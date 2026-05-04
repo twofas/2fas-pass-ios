@@ -19,20 +19,17 @@ final class ChangePasswordInteractor {
     private let biometryInteractor: BiometryInteracting
     private let itemsInteractor: ItemsInteracting
     private let protectionInteractor: ProtectionInteracting
-    private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
 
     init(
         biometryInteractor: BiometryInteracting,
         itemsInteractor: ItemsInteracting,
         protectionInteractor: ProtectionInteracting,
-        configsInteractor: BackupSyncConfigsInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting
     ) {
         self.biometryInteractor = biometryInteractor
         self.itemsInteractor = itemsInteractor
         self.protectionInteractor = protectionInteractor
-        self.configsInteractor = configsInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
     }
 }
@@ -70,22 +67,15 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         }
     }
 
-    /// Marks every file-based backend for vault overwrite on its next sync, then either
+    /// Marks every registered backend for vault overwrite on its next sync, then either
     /// triggers a fresh `syncAll` (no in-flight sync) or cancels the in-flight one and
-    /// retries once it idles. iCloud is intentionally excluded — its re-encryption flows
-    /// through `CloudHandler` via the `.passwordWasChanged` observer above.
-    ///
-    /// Per-id (rather than a single Bool) is what guarantees that with multiple file-based
-    /// backends, *every* one re-pushes the freshly re-encrypted vault — not just whichever
-    /// one syncs first.
+    /// retries once it idles. The container resolves "all configs" itself, so this method
+    /// has no opinion on the registered set — it just signals "next sync should overwrite,
+    /// across the board." Each backend's `performSync` decides per-kind whether to honor
+    /// the flag, and `BackupSyncAdapter` clears each id only when the matching sync
+    /// reported `consumed.overwritingVault`.
     private func scheduleBackupSyncAfterPasswordChange() {
-        let fileServiceIDs: Set<UUID> = Set(
-            configsInteractor.allConfigs
-                .filter { $0.kind == .webDAV || $0.kind == .s3 }
-                .map(\.id)
-        )
-        guard !fileServiceIDs.isEmpty else { return }
-        syncTriggerInteractor.markVaultOverrideAwaiting(configIDs: fileServiceIDs)
+        syncTriggerInteractor.markAllServicesAwaitingVaultOverride()
 
         // Fire-and-forget cancel/wait/retry. The Bool that used to live on
         // `MainModuleInteractor` as `awaitsSyncRetryAfterPasswordChange` is gone; the wait

@@ -185,17 +185,18 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             // Closes the regression where a transient post-recovery sync failure left
             // routine syncs permanently broken on the multi-device-id gate.
             let id = configsInteractor.addWebDAVConfig(config)
-            syncTriggerInteractor.markDeviceRegistrationAwaiting(configIDs: [id])
+            syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
         case .localFile:
             break
         }
     }
 
-    /// If a WebDAV backend is configured, kick off a recovery sync against it through the new
-    /// `BackupSyncContainer`. `allowingAnyDeviceId: true` lets the merge tolerate a vault that
-    /// was created on a different device id even on a non-multi-device entitlement —
-    /// recovery's whole point is "this vault used to live somewhere else." If no WebDAV
-    /// backend is configured, recovery completes immediately.
+    /// If a WebDAV backend is configured, kick off a recovery sync against it through the
+    /// `BackupSyncContainer`. The `allowingAnyDeviceId: true` behavior — needed because
+    /// recovery's whole point is "this vault used to live somewhere else" — comes for free
+    /// from the `markAwaitingDeviceRegistration(configID:)` mark issued in
+    /// `persistRecoverySource`; the container ORs it into the per-id closure inside
+    /// `sync(_:)`. If no WebDAV backend is configured, recovery completes immediately.
     private func runWebDAVRecoverySync(completion: @escaping (Bool) -> Void) {
         guard let webDAVID = configsInteractor.allConfigs.first(where: { $0.kind == .webDAV })?.id else {
             completion(true)
@@ -203,11 +204,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         }
         Task { [syncTriggerInteractor] in
             do {
-                try await syncTriggerInteractor.sync(
-                    id: webDAVID,
-                    overwritingVault: false,
-                    allowingAnyDeviceId: true
-                )
+                try await syncTriggerInteractor.sync(id: webDAVID)
                 // Returns silently on success OR when no service matched / container not set
                 // up — both treated as a soft success so recovery doesn't get stuck on edge
                 // cases (the no-service path "shouldn't happen" since we just resolved an id).

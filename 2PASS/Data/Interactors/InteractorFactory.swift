@@ -206,7 +206,6 @@ public final class InteractorFactory {
             biometryInteractor: biometryInteractor(),
             itemsInteractor: itemsInteractor(),
             protectionInteractor: protectionInteractor(),
-            configsInteractor: backupSyncConfigsInteractor(),
             syncTriggerInteractor: backupSyncTriggerInteractor()
         )
     }

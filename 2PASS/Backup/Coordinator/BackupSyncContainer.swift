@@ -68,20 +68,38 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    /// Two closures the container needs to run sessions: one to materialize the current set of
-    /// services, one to look up per-config last-sync timestamps. They start empty so that a
-    /// freshly-`init()`-ed container is inert (zero services, no dates) and become real once
-    /// `setup(...)` runs at app start. Stored together in a single lock so `setup`'s update
-    /// is atomic — no torn read where `servicesProvider` has been swapped but
-    /// `lastSyncDateProvider` hasn't yet.
+    /// Collaborators the container needs to run sessions: one to materialize the current set of
+    /// services, one to look up per-config last-sync timestamps, one for the per-config
+    /// "next sync needs special handling" awaiting flags. They start empty/no-op so that a
+    /// freshly-`init()`-ed container is inert (zero services, no dates, no awaiting flags) and
+    /// become real once `setup(...)` runs at app start. Stored together in a single lock so
+    /// `setup`'s update is atomic — no torn read where one slot has been swapped but the others
+    /// haven't yet.
     private struct Providers {
         var servicesProvider: @Sendable () -> [any BackupSynchronizing]
         var lastSyncDateProvider: @Sendable (UUID) -> Date?
+        var awaitingFlags: BackupAwaitingFlagsStoring
+        /// Cheap "what config ids exist right now" probe. Distinct from `servicesProvider`
+        /// (which materializes full `BackupSynchronizing` sessions) so `markAllConfigsAwaitingVaultOverride`
+        /// doesn't pay for session construction just to enumerate ids.
+        var configIDsProvider: @Sendable () -> Set<UUID>
 
         static let empty = Providers(
             servicesProvider: { [] },
-            lastSyncDateProvider: { _ in nil }
+            lastSyncDateProvider: { _ in nil },
+            awaitingFlags: EmptyAwaitingFlagsStore(),
+            configIDsProvider: { [] }
         )
+    }
+
+    /// Inert default for the awaiting-flags slot before `setup(...)` runs. Reads as empty,
+    /// marks no-op. Production wiring replaces it with the Data-layer adapter that persists
+    /// to UserDefaults via `MainRepository`.
+    private struct EmptyAwaitingFlagsStore: BackupAwaitingFlagsStoring {
+        var vaultOverrideAwaitingConfigIDs: Set<UUID> { [] }
+        func markVaultOverrideAwaiting(configIDs: Set<UUID>) {}
+        var deviceRegistrationAwaitingConfigIDs: Set<UUID> { [] }
+        func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {}
     }
 
     private let providers = OSAllocatedUnfairLock<Providers>(initialState: .empty)
@@ -109,7 +127,8 @@ public final class BackupSyncContainer: @unchecked Sendable {
         context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,
         localMerger: BackupLocalMerging,
-        cloudSync: CloudSync
+        cloudSync: CloudSync,
+        awaitingFlags: BackupAwaitingFlagsStoring
     ) {
         let newProviders = Providers(
             servicesProvider: Self.makeServicesProvider(
@@ -122,6 +141,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
             ),
             lastSyncDateProvider: { [dateStore] id in
                 dateStore.lastSyncDate(for: id)
+            },
+            awaitingFlags: awaitingFlags,
+            configIDsProvider: { [configStore] in
+                Set(configStore.loadConfigs().map(\.id))
             }
         )
         providers.withLock { $0 = newProviders }
@@ -129,14 +152,21 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     /// Test-only initializer. Seeds the same lock-backed `Providers` storage `setup(...)`
     /// writes into — keeps existing tests that inject fake services/dates working without
-    /// having to also stub `BackupSyncConfigStore` / `BackupVaultExporting` / etc.
+    /// having to also stub `BackupSyncConfigStore` / `BackupVaultExporting` / etc. The
+    /// awaiting-flags slot defaults to an empty store; tests that drive the per-config
+    /// override / device-registration paths inject a fake conforming to
+    /// `BackupAwaitingFlagsStoring`.
     init(
         servicesProvider: @escaping @Sendable () -> [any BackupSynchronizing],
-        lastSyncDateProvider: @escaping @Sendable (UUID) -> Date? = { _ in nil }
+        lastSyncDateProvider: @escaping @Sendable (UUID) -> Date? = { _ in nil },
+        awaitingFlagsStore: BackupAwaitingFlagsStoring = EmptyAwaitingFlagsStore(),
+        configIDsProvider: @escaping @Sendable () -> Set<UUID> = { [] }
     ) {
         providers.withLock { providers in
             providers.servicesProvider = servicesProvider
             providers.lastSyncDateProvider = lastSyncDateProvider
+            providers.awaitingFlags = awaitingFlagsStore
+            providers.configIDsProvider = configIDsProvider
         }
     }
 
@@ -221,6 +251,58 @@ public final class BackupSyncContainer: @unchecked Sendable {
         try await session.testConnection()
     }
 
+    // MARK: - Awaiting flags (per-config "next sync needs special handling")
+    //
+    // Read + mark surface for the two persistent flag sets. Reads and marks both go through
+    // the store snapshot under the providers lock so a concurrent `setup(...)` can't tear
+    // them. Clearing happens elsewhere — `BackupSyncAdapter.setLastSyncDate(_:for:consumed:)`
+    // observes session success and clears the matching id directly through `MainRepository`.
+
+    /// Set of backup-config IDs that should overwrite their remote on the next sync. Populated
+    /// per-config (not as a single global Bool) so that with multiple registered backends —
+    /// e.g. two WebDAV servers, an S3 bucket, and iCloud — every one re-pushes the freshly
+    /// re-encrypted vault after a master-password change, not just whichever one syncs first.
+    /// Each entry is removed independently when its specific config syncs successfully (with
+    /// `consumed.overwritingVault == true` on the `.finished` event).
+    public var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+        providers.withLock { $0.awaitingFlags.vaultOverrideAwaitingConfigIDs }
+    }
+
+    /// Marks every currently-registered backend config for vault overwrite on its next sync.
+    /// The container resolves the id set itself via its config store, so callers (the
+    /// password-change flow) don't enumerate configs themselves and don't need a separate
+    /// `BackupSyncConfigsInteracting` dependency just for this. No-op when no configs are
+    /// registered. Safe to call regardless of backend kind: each `performSync` decides
+    /// per-kind whether to honor the flag, and `BackupSyncAdapter.setLastSyncDate(_:for:consumed:)`
+    /// only clears ids whose sync reported `consumed.overwritingVault == true`.
+    public func markAllConfigsAwaitingVaultOverride() {
+        let snapshot = providers.withLock { $0 }
+        let configIDs = snapshot.configIDsProvider()
+        guard !configIDs.isEmpty else { return }
+        snapshot.awaitingFlags.markVaultOverrideAwaiting(configIDs: configIDs)
+    }
+
+    /// Set of backup-config IDs that need `allowingAnyDeviceId: true` on their next sync.
+    /// Mirrors `vaultOverrideAwaitingConfigIDs` but addresses a different problem: after
+    /// recovery, the local device hasn't yet written its `deviceID` into the remote index.
+    /// Until that first sync succeeds, routine syncs would trip the multi-device-id gate.
+    /// `syncAll()` and `sync(_:)` both read this set when building each session's per-id
+    /// `allowingAnyDeviceId` resolver, so a failed first attempt auto-retries with the
+    /// override on every subsequent sync until success.
+    public var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+        providers.withLock { $0.awaitingFlags.deviceRegistrationAwaitingConfigIDs }
+    }
+
+    /// Marks the supplied config id for `allowingAnyDeviceId: true` on its next sync. Used
+    /// by the recovery flow on the specific config it just added — the flag drives every
+    /// subsequent sync (immediate post-recovery push and any retry — routine, per-row, etc.)
+    /// until the first successful sync clears it via
+    /// `BackupSyncAdapter.setLastSyncDate(_:for:consumed:)`.
+    public func markAwaitingDeviceRegistration(configID: UUID) {
+        let store = providers.withLock { $0.awaitingFlags }
+        store.markDeviceRegistrationAwaiting(configIDs: [configID])
+    }
+
     // MARK: - Sync (each call builds a fresh BackupSyncSession)
 
     public var currentActivity: BackupSyncActivity {
@@ -266,15 +348,9 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// Use the `async` overload below when you need to track completion, read per-service
     /// outcomes, or have caller-task cancellation propagate. Cross-client cancellation works
     /// for both forms via `cancelCurrentSync()`.
-    public func syncAll(
-        overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false }
-    ) {
+    public func syncAll() {
         Task.detached(priority: .utility) { [weak self] in
-            try? await self?.syncAll(
-                overwritingVault: overwritingVault,
-                allowingAnyDeviceId: allowingAnyDeviceId
-            )
+            try? await self?.syncAll()
         }
     }
 
@@ -282,21 +358,29 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// the convergence loop. Returns an empty array when no services are configured. Throws
     /// `.cancelled` when the call was suppressed because another sync was already in flight
     /// (debounced).
+    ///
+    /// Reads the awaiting-flag sets (`vaultOverrideAwaitingConfigIDs`,
+    /// `deviceRegistrationAwaitingConfigIDs`) once at the top of the call and forwards
+    /// per-service `overwritingVault` / `allowingAnyDeviceId` resolvers built from those
+    /// snapshots, so callers don't manage the flags themselves — the container decides
+    /// per-config whether the run overwrites/registers or merges.
     @discardableResult
-    public func syncAll(
-        overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false }
-    ) async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
+    public func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
         guard reserveSyncSlot() else {
             Log("BackupSyncContainer - syncAll ignored: sync already in progress", module: .backup)
             throw .cancelled
         }
-        // Snapshot providers once per call so an in-flight `setup(...)` can't tear the read.
+        // Snapshot providers (and the awaiting flags off the same store) once per call so an
+        // in-flight `setup(...)` can't tear the read, and so a clear-while-running sequence
+        // (entries removed by the adapter as services finish) doesn't make a still-running
+        // peer suddenly lose its flag mid-pass.
         let snapshot = providers.withLock { $0 }
+        let overrideAwaiting = snapshot.awaitingFlags.vaultOverrideAwaitingConfigIDs
+        let registrationAwaiting = snapshot.awaitingFlags.deviceRegistrationAwaitingConfigIDs
         let session = BackupSyncSession(
             services: snapshot.servicesProvider(),
-            overwritingVault: overwritingVault,
-            allowingAnyDeviceId: allowingAnyDeviceId,
+            overwritingVault: { configID in overrideAwaiting.contains(configID) },
+            allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) },
             lastSyncDate: snapshot.lastSyncDateProvider,
             onEvent: makeSyncEventHandler()
         )
@@ -318,24 +402,27 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// Returns silently when no service matches the id (defensive — caller should have just
     /// resolved this id from the configs) or when the run succeeds. Throws on actual failure
     /// or when debounced because another sync is in flight.
-    public func sync(
-        _ id: UUID,
-        overwritingVault: Bool = false,
-        allowingAnyDeviceId: Bool = false
-    ) async throws(BackupSyncError) {
+    ///
+    /// Mirrors `syncAll()` for the per-service flag handling: reads both awaiting-flag sets
+    /// from the store and forwards `overwritingVault` / `allowingAnyDeviceId` derived from
+    /// whether `id` is present. Callers (recovery flow, per-row "Sync now" buttons) don't
+    /// pass flag arguments — they mark via `markAllConfigsAwaitingVaultOverride()` /
+    /// `markAwaitingDeviceRegistration(configID:)` and the container does the rest. A failed
+    /// attempt's flags persist for any subsequent sync (routine, per-row, or `syncAll`)
+    /// until the first success clears them per-id via `BackupSyncAdapter.setLastSyncDate`.
+    public func sync(_ id: UUID) async throws(BackupSyncError) {
         let snapshot = providers.withLock { $0 }
         guard let service = snapshot.servicesProvider().first(where: { $0.id == id }) else { return }
         guard reserveSyncSlot() else {
             Log("BackupSyncContainer - sync ignored: sync already in progress", module: .backup)
             throw .cancelled
         }
+        let needsOverride = snapshot.awaitingFlags.vaultOverrideAwaitingConfigIDs.contains(id)
+        let needsRegistration = snapshot.awaitingFlags.deviceRegistrationAwaitingConfigIDs.contains(id)
         let session = BackupSyncSession(
             services: [service],
-            // Single-service path: the per-service closure trivially returns the caller's
-            // Bool for this id. Keeps `sync(_:)`'s public signature ergonomic for callers
-            // (recovery flow, per-row "Sync now" buttons) that don't deal in id sets.
-            overwritingVault: { _ in overwritingVault },
-            allowingAnyDeviceId: { _ in allowingAnyDeviceId },
+            overwritingVault: { _ in needsOverride },
+            allowingAnyDeviceId: { _ in needsRegistration },
             lastSyncDate: snapshot.lastSyncDateProvider,
             onEvent: makeSyncEventHandler()
         )

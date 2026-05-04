@@ -25,24 +25,19 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Live app-wide backup sync activity snapshot.
     var currentActivity: BackupSyncActivity { get }
 
-    /// Set of backup-config IDs that should overwrite their remote on the next sync. Populated
-    /// per-config (not as a single global Bool) so that with multiple file-based backends —
-    /// e.g. two WebDAV servers and an S3 bucket — every one re-pushes the freshly re-encrypted
-    /// vault after a master-password change, not just whichever one syncs first. Each entry is
-    /// removed independently when its specific config syncs successfully.
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> { get }
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>)
-    func clearVaultOverrideAwaiting(configID: UUID)
+    /// Marks every currently-registered backend for vault overwrite on its next sync. Used
+    /// by the password-change flow. The container resolves the id set internally — callers
+    /// don't enumerate configs. Each backend's `performSync` decides per-kind whether to
+    /// honor the flag, and `BackupSyncAdapter` clears each id only when the matching sync
+    /// reported `consumed.overwritingVault`, so flagging a kind that ignores the override
+    /// is harmless.
+    func markAllServicesAwaitingVaultOverride()
 
-    /// Set of backup-config IDs that need `allowingAnyDeviceId: true` on their next sync.
-    /// Mirrors the `vaultOverrideAwaitingConfigIDs` shape but addresses a different problem:
-    /// after recovery, the local device hasn't yet written its `deviceID` into the WebDAV
-    /// index. Until that first sync succeeds, routine syncs (which pass `false` for
-    /// `allowingAnyDeviceId`) would trip the multi-device-id gate. The trigger interactor's
-    /// sync paths OR the caller's parameter with this set, so a failed first attempt
-    /// auto-retries with the override on every subsequent sync until success.
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>)
+    /// Marks the supplied config id for `allowingAnyDeviceId: true` on its next sync.
+    /// Used by the recovery flow on the specific config it just added. The first
+    /// successful sync clears the entry; any failed-and-retried sync in between still
+    /// honors the flag because it persists across attempts.
+    func markAwaitingDeviceRegistration(configID: UUID)
 
     /// Fire-and-forget: triggers a sync at background priority and returns immediately. Use
     /// this from non-async post-mutation sites ("user changed something, propagate to
@@ -57,10 +52,6 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// from sites that need to chain work after the sync finishes (e.g. password-change
     /// re-encryption push), inspect per-service outcomes, or have caller-task cancellation
     /// propagate.
-    ///
-    /// Both overloads read `vaultOverrideAwaitingConfigIDs` and forward a per-service
-    /// `overwritingVault` resolver to the container, so callers don't manage the flag
-    /// themselves — the interactor decides per-config whether the run overwrites or merges.
     @discardableResult
     func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult]
 
@@ -69,14 +60,10 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Throws `BackupSyncError` on actual sync failure or when debounced because another sync
     /// is in flight (`.cancelled`).
     ///
-    /// `allowingAnyDeviceId` is the recovery override — pass `true` when driving the recovery
-    /// flow, which needs to merge a vault belonging to a different device id even without the
-    /// multi-device entitlement. Routine syncs always pass `false`.
-    func sync(
-        id: UUID,
-        overwritingVault: Bool,
-        allowingAnyDeviceId: Bool
-    ) async throws(BackupSyncError)
+    /// Per-config `overwritingVault` / `allowingAnyDeviceId` come from the awaiting-flag
+    /// sets — callers don't pass them. Mark via `markAllServicesAwaitingVaultOverride()` /
+    /// `markAwaitingDeviceRegistration(configID:)` before triggering.
+    func sync(id: UUID) async throws(BackupSyncError)
 
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
@@ -104,12 +91,6 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
-public extension BackupSyncTriggerInteracting {
-    func sync(id: UUID) async throws(BackupSyncError) {
-        try await sync(id: id, overwritingVault: false, allowingAnyDeviceId: false)
-    }
-}
-
 final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
     private let mainRepository: MainRepository
 
@@ -121,63 +102,25 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         mainRepository.backupSyncContainer.currentActivity
     }
 
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
-        mainRepository.vaultOverrideAwaitingConfigIDs
+    func markAllServicesAwaitingVaultOverride() {
+        mainRepository.backupSyncContainer.markAllConfigsAwaitingVaultOverride()
     }
 
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
-        mainRepository.markVaultOverrideAwaiting(configIDs: configIDs)
-    }
-
-    func clearVaultOverrideAwaiting(configID: UUID) {
-        mainRepository.clearVaultOverrideAwaiting(configID: configID)
-    }
-
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
-        mainRepository.deviceRegistrationAwaitingConfigIDs
-    }
-
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
-        mainRepository.markDeviceRegistrationAwaiting(configIDs: configIDs)
+    func markAwaitingDeviceRegistration(configID: UUID) {
+        mainRepository.backupSyncContainer.markAwaitingDeviceRegistration(configID: configID)
     }
 
     func syncAll() {
-        // Same snapshot dance as the async overload — closures captured before the detached
-        // task runs so a clear-while-running sequence (entries removed by
-        // `BackupSyncAdapter.setLastSyncDate` as services finish) doesn't make a still-running
-        // peer suddenly lose its flag mid-pass.
-        let overrideAwaiting = vaultOverrideAwaitingConfigIDs
-        let registrationAwaiting = deviceRegistrationAwaitingConfigIDs
-        mainRepository.backupSyncContainer.syncAll(
-            overwritingVault: { configID in overrideAwaiting.contains(configID) },
-            allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) }
-        )
+        mainRepository.backupSyncContainer.syncAll()
     }
 
+    @discardableResult
     func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
-        let overrideAwaiting = vaultOverrideAwaitingConfigIDs
-        let registrationAwaiting = deviceRegistrationAwaitingConfigIDs
-        return try await mainRepository.backupSyncContainer.syncAll(
-            overwritingVault: { configID in overrideAwaiting.contains(configID) },
-            allowingAnyDeviceId: { configID in registrationAwaiting.contains(configID) }
-        )
+        try await mainRepository.backupSyncContainer.syncAll()
     }
 
-    func sync(
-        id: UUID,
-        overwritingVault: Bool,
-        allowingAnyDeviceId: Bool
-    ) async throws(BackupSyncError) {
-        // OR the caller's parameter with the persistent flag — recovery flows still pass
-        // `true` directly for the immediate post-import sync; subsequent retries (where the
-        // caller passes `false`) auto-pick up the flag-driven override until that config's
-        // first successful sync clears it via `BackupSyncAdapter.setLastSyncDate`.
-        let needsRegistration = mainRepository.deviceRegistrationAwaitingConfigIDs.contains(id)
-        try await mainRepository.backupSyncContainer.sync(
-            id,
-            overwritingVault: overwritingVault,
-            allowingAnyDeviceId: allowingAnyDeviceId || needsRegistration
-        )
+    func sync(id: UUID) async throws(BackupSyncError) {
+        try await mainRepository.backupSyncContainer.sync(id)
     }
 
     func lastSyncDate(for id: UUID) -> Date? {
