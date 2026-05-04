@@ -258,16 +258,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
     // them. Clearing happens elsewhere — `BackupSyncAdapter.setLastSyncDate(_:for:consumed:)`
     // observes session success and clears the matching id directly through `MainRepository`.
 
-    /// Set of backup-config IDs that should overwrite their remote on the next sync. Populated
-    /// per-config (not as a single global Bool) so that with multiple registered backends —
-    /// e.g. two WebDAV servers, an S3 bucket, and iCloud — every one re-pushes the freshly
-    /// re-encrypted vault after a master-password change, not just whichever one syncs first.
-    /// Each entry is removed independently when its specific config syncs successfully (with
-    /// `consumed.overwritingVault == true` on the `.finished` event).
-    public var vaultOverrideAwaitingConfigIDs: Set<UUID> {
-        providers.withLock { $0.awaitingFlags.vaultOverrideAwaitingConfigIDs }
-    }
-
     /// Marks every currently-registered backend config for vault overwrite on its next sync.
     /// The container resolves the id set itself via its config store, so callers (the
     /// password-change flow) don't enumerate configs themselves and don't need a separate
@@ -280,17 +270,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         let configIDs = snapshot.configIDsProvider()
         guard !configIDs.isEmpty else { return }
         snapshot.awaitingFlags.markVaultOverrideAwaiting(configIDs: configIDs)
-    }
-
-    /// Set of backup-config IDs that need `allowingAnyDeviceId: true` on their next sync.
-    /// Mirrors `vaultOverrideAwaitingConfigIDs` but addresses a different problem: after
-    /// recovery, the local device hasn't yet written its `deviceID` into the remote index.
-    /// Until that first sync succeeds, routine syncs would trip the multi-device-id gate.
-    /// `syncAll()` and `sync(_:)` both read this set when building each session's per-id
-    /// `allowingAnyDeviceId` resolver, so a failed first attempt auto-retries with the
-    /// override on every subsequent sync until success.
-    public var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
-        providers.withLock { $0.awaitingFlags.deviceRegistrationAwaitingConfigIDs }
     }
 
     /// Marks the supplied config id for `allowingAnyDeviceId: true` on its next sync. Used
