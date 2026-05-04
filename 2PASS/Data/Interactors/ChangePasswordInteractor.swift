@@ -99,7 +99,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
                 // `dateStore.setLastSyncDate(...)`, so the override flag we just marked
                 // survives. Then await the activity transition to idle before retrying.
                 syncTriggerInteractor.cancelCurrentSync()
-                for await _ in syncTriggerInteractor.progressEvents() {
+                for await _ in syncTriggerInteractor.syncEvents() {
                     if !syncTriggerInteractor.currentActivity.isRunning { break }
                 }
             }

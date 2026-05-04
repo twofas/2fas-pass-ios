@@ -30,9 +30,9 @@ final class MainModuleInteractor {
     private let notificationCenter: NotificationCenter
 
     private var syncErroredLately = false
-    /// Tracks the long-lived `progressEvents()` consumer that drives badge updates on
-    /// session start/finish. `var ...?` per the Swift two-phase init exception (CLAUDE.md):
-    /// the Task captures `[weak self]` and so cannot be assigned during phase-one init.
+    /// Tracks the long-lived `syncEvents()` consumer that drives badge updates on session
+    /// start/finish. `var ...?` per the Swift two-phase init exception (CLAUDE.md): the Task
+    /// captures `[weak self]` and so cannot be assigned during phase-one init.
     private var activitySubscription: Task<Void, Never>?
 
     init(
@@ -71,7 +71,7 @@ final class MainModuleInteractor {
         )
 
         activitySubscription = Task { [weak self] in
-            guard let stream = self?.syncTriggerInteractor.progressEvents() else { return }
+            guard let stream = self?.syncTriggerInteractor.syncEvents() else { return }
             for await event in stream {
                 switch event {
                 case .sessionStarted, .sessionFinished:
@@ -114,9 +114,10 @@ private extension MainModuleInteractor {
     @objc
     func updateBadgeAction() {
         // Backup-sync error state is no longer persisted — the new `BackupSyncContainer` reports
-        // errors per-run via the `ProgressHandler`, not as a recoverable property. The badge now
-        // reflects only iCloud's terminal state (still persisted via `CloudSyncInteractor`) plus
-        // a "currently syncing" indicator that includes every backend wired into the container.
+        // errors per-run via the session's `EventHandler`, not as a recoverable property. The
+        // badge now reflects only iCloud's terminal state (still persisted via
+        // `CloudSyncInteractor`) plus a "currently syncing" indicator that includes every backend
+        // wired into the container.
         let cloudHasSynced = cloudSyncInteractor.currentState.isSynced
         if cloudHasSynced {
             syncErroredLately = false

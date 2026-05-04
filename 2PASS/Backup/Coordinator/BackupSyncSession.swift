@@ -48,7 +48,7 @@ public final class BackupSyncSession: Sendable {
     public typealias SyncResult = (id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
     /// Lifecycle events emitted during a sync. Two granularities, both delivered through the
-    /// same `BackupSyncContainer.progressEvents()` stream so a single subscriber can drive both
+    /// same `BackupSyncContainer.syncEvents()` stream so a single subscriber can drive both
     /// global "is anything happening?" UI and per-row spinner state.
     ///
     /// **Session-level** (`sessionStarted` / `sessionFinished`) are emitted by the *container*
@@ -62,14 +62,14 @@ public final class BackupSyncSession: Sendable {
     /// across the convergence loop's passes — that's by design (it really is running again).
     /// Use these to drive per-service UI by inserting on `started` and removing on `finished`.
     /// `finished` carries the per-call outcome.
-    public enum ProgressEvent: Sendable {
+    public enum Event: Sendable {
         case sessionStarted
         case sessionFinished
         case started(id: UUID, kind: SyncServiceKind)
         case finished(id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
     }
 
-    public typealias ProgressHandler = @Sendable (ProgressEvent) -> Void
+    public typealias EventHandler = @Sendable (Event) -> Void
 
     private let services: [any BackupSynchronizing]
     /// Per-service overwriting decision. Resolved at runtime per `runService` call so the
@@ -85,14 +85,14 @@ public final class BackupSyncSession: Sendable {
     /// `{ _ in false }`.
     private let allowingAnyDeviceId: @Sendable (UUID) -> Bool
     private let lastSyncDate: @Sendable (UUID) -> Date?
-    private let onEvent: ProgressHandler?
+    private let onEvent: EventHandler?
 
     public init(
         services: [any BackupSynchronizing],
         overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
         allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false },
         lastSyncDate: @Sendable @escaping (UUID) -> Date? = { _ in nil },
-        onEvent: ProgressHandler? = nil
+        onEvent: EventHandler? = nil
     ) {
         self.services = services
         self.overwritingVault = overwritingVault

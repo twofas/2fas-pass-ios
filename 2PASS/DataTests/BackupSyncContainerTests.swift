@@ -18,7 +18,7 @@ import os
         let observed = Task { () -> [BackupSyncActivity] in
             var activities: [BackupSyncActivity] = []
             var sawRunning = false
-            for await _ in container.progressEvents() {
+            for await _ in container.syncEvents() {
                 let activity = container.currentActivity
                 activities.append(activity)
                 sawRunning = sawRunning || activity.isRunning
@@ -29,9 +29,9 @@ import os
             return activities
         }
 
-        // Mirrors `progressEventsBroadcastsToMultipleSubscribers`: give the for-await loop a
-        // window to register its continuation before the session begins emitting, otherwise
-        // the subscriber races the run and may miss the initial `.sessionStarted` event.
+        // Mirrors `syncEventsBroadcastsToMultipleSubscribers`: give the for-await loop a window
+        // to register its continuation before the session begins emitting, otherwise the
+        // subscriber races the run and may miss the initial `.sessionStarted` event.
         try await Task.sleep(for: .milliseconds(50))
 
         let runTask = Task { await container.syncAll() }
@@ -44,17 +44,17 @@ import os
         #expect(container.currentActivity == .idle)
     }
 
-    /// `progressEvents()` returns a fresh stream per call; multiple subscribers each see every
-    /// event the container emits. Pins the broadcast contract that the AsyncStream-based
-    /// observer API replaced the old single-observer `setGlobalProgressObserver` to provide.
-    @Test func progressEventsBroadcastsToMultipleSubscribers() async throws {
+    /// `syncEvents()` returns a fresh stream per call; multiple subscribers each see every event
+    /// the container emits. Pins the broadcast contract that the AsyncStream-based observer
+    /// API replaced the old single-observer `setGlobalProgressObserver` to provide.
+    @Test func syncEventsBroadcastsToMultipleSubscribers() async throws {
         let service = FakeSynchronizer(kind: .webDAV)
         let container = BackupSyncContainer(servicesProvider: { [service] in [service] })
 
         // Each subscriber expects four events for one service through one syncAll:
         // .sessionStarted (container) → .started + .finished (session) → .sessionFinished (container).
-        async let firstSubscriberCount = collectEvents(count: 4, from: container.progressEvents())
-        async let secondSubscriberCount = collectEvents(count: 4, from: container.progressEvents())
+        async let firstSubscriberCount = collectEvents(count: 4, from: container.syncEvents())
+        async let secondSubscriberCount = collectEvents(count: 4, from: container.syncEvents())
 
         // Yield once so both for-await loops have actually subscribed before the session
         // starts emitting. Without this the subscribers race the session and may miss the
@@ -100,7 +100,7 @@ import os
 
 private func collectEvents(
     count target: Int,
-    from stream: AsyncStream<BackupSyncSession.ProgressEvent>
+    from stream: AsyncStream<BackupSyncSession.Event>
 ) async -> Int {
     var count = 0
     for await _ in stream {

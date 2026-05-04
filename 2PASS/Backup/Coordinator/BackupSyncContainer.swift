@@ -48,7 +48,7 @@ public enum BackupVaultFetchError: Error, Sendable {
 ///   2. Any code calls `cancelCurrentSync()` — fires the closure stashed by
 ///      `installCancellationHandler` for whatever sync is in flight.
 ///   3. The session itself short-circuits between services on `Task.isCancelled`.
-/// Live progress is exposed via `progressEvents()` (multi-subscriber `AsyncStream`); there is
+/// Live activity is exposed via `syncEvents()` (multi-subscriber `AsyncStream`); there is
 /// no per-call event handler argument.
 ///
 /// **In-progress guard.** `syncAll` and `sync(_:)` debounce overlapping triggers via an unfair
@@ -86,10 +86,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     private let providers = OSAllocatedUnfairLock<Providers>(initialState: .empty)
     private let state = OSAllocatedUnfairLock(initialState: State())
-    /// Active `progressEvents()` subscribers. UUID-keyed so `onTermination` can remove a
-    /// specific continuation without touching the others. Each session's progress events
-    /// fan out to every entry here on every yield.
-    private let progressContinuations = OSAllocatedUnfairLock<[UUID: AsyncStream<BackupSyncSession.ProgressEvent>.Continuation]>(initialState: [:])
+    /// Active `syncEvents()` subscribers. UUID-keyed so `onTermination` can remove a specific
+    /// continuation without touching the others. Each session's events fan out to every
+    /// entry here on every yield.
+    private let syncEventContinuations = OSAllocatedUnfairLock<[UUID: AsyncStream<BackupSyncSession.Event>.Continuation]>(initialState: [:])
 
     /// Creates an inert container. Until `setup(...)` runs the container has zero services
     /// and `syncAll` / `sync(_:)` no-op gracefully — that's the point: callers (specifically
@@ -141,10 +141,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
     }
 
     deinit {
-        // Finish every outstanding `progressEvents()` subscriber so their for-await loops
-        // exit cleanly. Without this, an abandoned subscriber whose Task isn't cancelled
-        // would block forever waiting for the next yield.
-        progressContinuations.withLock { dict in
+        // Finish every outstanding `syncEvents()` subscriber so their for-await loops exit
+        // cleanly. Without this, an abandoned subscriber whose Task isn't cancelled would
+        // block forever waiting for the next yield.
+        syncEventContinuations.withLock { dict in
             for continuation in dict.values {
                 continuation.finish()
             }
@@ -247,12 +247,12 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// caller's thread. For the in-tree usage (post-password-change override-flag clearing)
     /// this is benign — the race window is microsecond-scale and the worst case is one extra
     /// sync cycle.
-    public func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent> {
+    public func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
         let subscriberID = UUID()
         return AsyncStream(bufferingPolicy: .unbounded) { [weak self] continuation in
-            self?.progressContinuations.withLock { $0[subscriberID] = continuation }
+            self?.syncEventContinuations.withLock { $0[subscriberID] = continuation }
             continuation.onTermination = { [weak self] _ in
-                self?.progressContinuations.withLock { $0.removeValue(forKey: subscriberID) }
+                self?.syncEventContinuations.withLock { $0.removeValue(forKey: subscriberID) }
             }
         }
     }
@@ -294,7 +294,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             overwritingVault: overwritingVault,
             allowingAnyDeviceId: allowingAnyDeviceId,
             lastSyncDate: snapshot.lastSyncDateProvider,
-            onEvent: makeProgressHandler()
+            onEvent: makeSyncEventHandler()
         )
         let task = Task { [self] in
             defer { self.clearSyncSlot() }
@@ -332,7 +332,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             overwritingVault: { _ in overwritingVault },
             allowingAnyDeviceId: { _ in allowingAnyDeviceId },
             lastSyncDate: snapshot.lastSyncDateProvider,
-            onEvent: makeProgressHandler()
+            onEvent: makeSyncEventHandler()
         )
         let task = Task { [self] in
             let results = await session.run()
@@ -383,7 +383,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    private func makeProgressHandler() -> BackupSyncSession.ProgressHandler {
+    private func makeSyncEventHandler() -> BackupSyncSession.EventHandler {
         { [weak self] event in
             self?.handle(event)
             self?.broadcast(event)
@@ -392,10 +392,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     /// Fan-out helper for events the *container* (not the session) emits — currently
     /// `.sessionStarted` / `.sessionFinished`. Also reused by the session-event path through
-    /// `makeProgressHandler`. `yield` is non-blocking — each subscriber's continuation has its
+    /// `makeSyncEventHandler`. `yield` is non-blocking — each subscriber's continuation has its
     /// own buffer (default unbounded) so a slow consumer doesn't back-pressure emitters.
-    private func broadcast(_ event: BackupSyncSession.ProgressEvent) {
-        progressContinuations.withLock { dict in
+    private func broadcast(_ event: BackupSyncSession.Event) {
+        syncEventContinuations.withLock { dict in
             for continuation in dict.values {
                 continuation.yield(event)
             }
@@ -411,7 +411,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
         NotificationCenter.default.post(name: .backupSyncDidApplyRemoteChanges, object: nil)
     }
 
-    private func handle(_ event: BackupSyncSession.ProgressEvent) {
+    private func handle(_ event: BackupSyncSession.Event) {
         state.withLock { state in
             switch event {
             case .started(let id, _):

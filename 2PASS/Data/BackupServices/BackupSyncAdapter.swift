@@ -298,7 +298,7 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     // below). The sync engine (`BackupFileSyncSession.performSync`, `CloudSyncAdapter.performSync`)
     // calls this method exactly once per successful sync, so it's the synchronous pivot
     // point for "this config no longer needs X next time" — closer to the success signal
-    // than an external `progressEvents()` observer would be, with no async race window
+    // than an external `syncEvents()` observer would be, with no async race window
     // between sync completion and a concurrent flag-set call (e.g. `passwordWasChanged`
     // marking mid-sync).
 

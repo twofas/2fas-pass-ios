@@ -82,11 +82,12 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Cancels the currently running backup sync session, if any.
     func cancelCurrentSync()
 
-    /// Live stream of per-service `.started` / `.finished` events from every sync the underlying
-    /// container runs. Each call returns a fresh stream — multiple subscribers can listen
-    /// concurrently. Use this when a consumer wants to react to sync lifecycle as it happens
-    /// (e.g. driving per-row UI) instead of polling `currentActivity` on a notification trigger.
-    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent>
+    /// Live stream of session-level (`.sessionStarted` / `.sessionFinished`) and per-service
+    /// (`.started` / `.finished`) events from every sync the underlying container runs. Each
+    /// call returns a fresh stream — multiple subscribers can listen concurrently. Use this
+    /// when a consumer wants to react to sync lifecycle as it happens (e.g. driving per-row
+    /// UI) instead of polling `currentActivity` on a notification trigger.
+    func syncEvents() -> AsyncStream<BackupSyncSession.Event>
 }
 
 public extension BackupSyncTriggerInteracting {
@@ -174,7 +175,7 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         mainRepository.backupSyncContainer.cancelCurrentSync()
     }
 
-    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent> {
-        mainRepository.backupSyncContainer.progressEvents()
+    func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
+        mainRepository.backupSyncContainer.syncEvents()
     }
 }

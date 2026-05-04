@@ -22,7 +22,7 @@ public extension Notification.Name {
     static let screenCaptureAllowanceDidChange = Notification.Name("screenCaptureAllowanceDidChange")
     /// Posted by `MainModuleInteractor` whenever the sync error badge state changes, so the
     /// Settings screen's "Sync" row can refresh its trailing icon. Distinct from per-run
-    /// lifecycle (which is observable via `BackupSyncContainer.progressEvents()`) — this fires
+    /// lifecycle (which is observable via `BackupSyncContainer.syncEvents()`) — this fires
     /// only on the composite "is there an error to surface right now" verdict.
     static let settingsSyncStateChanged = Notification.Name("settingsSyncStateChanged")
 }

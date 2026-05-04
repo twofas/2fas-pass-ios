@@ -33,7 +33,7 @@ final class UpdateAppPromptInteractor: UpdateAppPromptInteracting {
     private let notificationCenter: NotificationCenter
     private let promptInterval: TimeInterval = 60 * 60 * 24
 
-    private var progressTask: Task<Void, Never>?
+    private var syncEventTask: Task<Void, Never>?
     private var cloudStateTask: Task<Void, Never>?
 
     init(mainRepository: MainRepository, systemInteractor: SystemInteracting, cloudSyncInteractor: CloudSyncInteracting) {
@@ -71,15 +71,15 @@ private extension UpdateAppPromptInteractor {
     func startMonitoring() {
         // Two schema-not-supported sources, one cooldown gate: iCloud surfaces them via
         // `.cloudStateChanged` (its own state machine); file backends (WebDAV / S3) surface
-        // them via `BackupSyncContainer.progressEvents()`. Both observers register here.
+        // them via `BackupSyncContainer.syncEvents()`. Both observers register here.
         //
         // Subscribing to the stream before `BackupSyncSetupInteractor.initialize()` runs is
-        // safe — `progressEvents()` registers the continuation immediately; sessions only
-        // yield once `setup(...)` has wired the providers later in app boot.
-        let progressStream = mainRepository.backupSyncContainer.progressEvents()
-        progressTask = Task.detached { [weak self] in
-            for await event in progressStream {
-                self?.handleBackupSyncProgressEvent(event)
+        // safe — `syncEvents()` registers the continuation immediately; sessions only yield
+        // once `setup(...)` has wired the providers later in app boot.
+        let syncEventStream = mainRepository.backupSyncContainer.syncEvents()
+        syncEventTask = Task.detached { [weak self] in
+            for await event in syncEventStream {
+                self?.handleBackupSyncEvent(event)
             }
         }
         let cloudStateStream = notificationCenter.notifications(named: .cloudStateChanged)
@@ -92,7 +92,7 @@ private extension UpdateAppPromptInteractor {
     }
 
     func stopMonitoring() {
-        progressTask?.cancel()
+        syncEventTask?.cancel()
         cloudStateTask?.cancel()
         Log("UpdateAppPromptInteractor - Stopped monitoring iCloud and backup-sync state changes", module: .interactor)
     }
@@ -142,7 +142,7 @@ private extension UpdateAppPromptInteractor {
         }
     }
 
-    func handleBackupSyncProgressEvent(_ event: BackupSyncSession.ProgressEvent) {
+    func handleBackupSyncEvent(_ event: BackupSyncSession.Event) {
         guard case .finished(_, _, .failure(.schemaNotSupported(let version))) = event else {
             return
         }

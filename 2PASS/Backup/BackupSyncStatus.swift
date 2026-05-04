@@ -30,6 +30,6 @@ public extension Notification.Name {
     /// `BackupSyncOutcome.appliedRemoteChanges == true`. Fires only when remote content was
     /// actually merged into the local database, making it the right edge for view layers that
     /// want to refresh their data. For lifecycle observation (start / finish, per-config
-    /// progress) consume `BackupSyncContainer.progressEvents()` instead.
+    /// progress) consume `BackupSyncContainer.syncEvents()` instead.
     static let backupSyncDidApplyRemoteChanges = Notification.Name("backupSyncDidApplyRemoteChanges")
 }

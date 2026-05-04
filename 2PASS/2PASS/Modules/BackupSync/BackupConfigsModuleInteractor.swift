@@ -28,7 +28,7 @@ protocol BackupConfigsModuleInteracting: AnyObject {
     func syncAll() async
     func sync(id: UUID) async
     func cancelCurrentSync()
-    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent>
+    func syncEvents() -> AsyncStream<BackupSyncSession.Event>
 }
 
 @MainActor
@@ -110,8 +110,8 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         syncTriggerInteractor.cancelCurrentSync()
     }
 
-    func progressEvents() -> AsyncStream<BackupSyncSession.ProgressEvent> {
-        syncTriggerInteractor.progressEvents()
+    func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
+        syncTriggerInteractor.syncEvents()
     }
 
     @objc

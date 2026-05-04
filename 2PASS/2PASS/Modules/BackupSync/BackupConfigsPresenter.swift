@@ -57,7 +57,7 @@ final class BackupConfigsPresenter {
     private let interactor: BackupConfigsModuleInteracting
     /// Local mirror of which configs are currently mid-service. Seeded once at init from
     /// `interactor.currentActivity.activeConfigIDs` (covers "presenter opened mid-sync"),
-    /// then maintained by consuming `progressEvents()`. Drives per-row spinner state via
+    /// then maintained by consuming `syncEvents()`. Drives per-row spinner state via
     /// `isSyncing(for:)`.
     private var activeConfigIDs: Set<UUID> = []
     /// `@ObservationIgnored` — the task handle isn't observable UI state, so `@Observable`
@@ -67,23 +67,23 @@ final class BackupConfigsPresenter {
     /// classes; the handle is written once at the end of `init`, read only by `deinit` to
     /// cancel — no concurrent mutation, so the `unsafe` opt-out is sound.
     @ObservationIgnored
-    nonisolated(unsafe) private var progressTask: Task<Void, Never>?
+    nonisolated(unsafe) private var syncEventTask: Task<Void, Never>?
 
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
         interactor.cloudStateChanged = { [weak self] in
             Task { @MainActor in self?.reload() }
         }
-        // Both initial state seeding (`snapshotActivity`) and the `progressEvents`
-        // subscription happen in `onAppear` — keeps all data work tied to view visibility
-        // and avoids processing events for a hidden screen. See `onDisappear` for teardown.
+        // Both initial state seeding (`snapshotActivity`) and the `syncEvents()` subscription
+        // happen in `onAppear` — keeps all data work tied to view visibility and avoids
+        // processing events for a hidden screen. See `onDisappear` for teardown.
     }
 
     deinit {
         // Safety net: `onDisappear` should cancel first under normal lifecycle, but if the
         // presenter is torn down without the view ever firing onDisappear (rare but possible),
         // the AsyncStream continuation would otherwise leak.
-        progressTask?.cancel()
+        syncEventTask?.cancel()
     }
 
     private func snapshotActivity() {
@@ -93,16 +93,16 @@ final class BackupConfigsPresenter {
         reload()
     }
 
-    private func subscribeToProgress() {
-        progressTask?.cancel()
-        progressTask = Task { [weak self, interactor] in
-            for await event in interactor.progressEvents() {
+    private func subscribeToSyncEvents() {
+        syncEventTask?.cancel()
+        syncEventTask = Task { [weak self, interactor] in
+            for await event in interactor.syncEvents() {
                 self?.handle(event)
             }
         }
     }
 
-    private func handle(_ event: BackupSyncSession.ProgressEvent) {
+    private func handle(_ event: BackupSyncSession.Event) {
         switch event {
         case .sessionStarted:
             isSyncing = true
@@ -118,12 +118,12 @@ final class BackupConfigsPresenter {
 
     func onAppear() {
         snapshotActivity()
-        subscribeToProgress()
+        subscribeToSyncEvents()
     }
 
     func onDisappear() {
-        progressTask?.cancel()
-        progressTask = nil
+        syncEventTask?.cancel()
+        syncEventTask = nil
     }
 
     func onChooseProvider(_ kind: SyncServiceKind) {
