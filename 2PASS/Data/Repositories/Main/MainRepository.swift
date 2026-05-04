@@ -789,7 +789,7 @@ protocol MainRepository: AnyObject {
     /// recovery flow needs to write *this* device's `deviceID` into the WebDAV index so
     /// subsequent routine syncs (which use `allowingAnyDeviceId: false`) don't trip the
     /// multi-device-id gate when merging a vault that originated on another device. The
-    /// post-import `runWebDAVRecoverySync` is the first attempt, but it can fail (network,
+    /// post-import `performRecoverySync` is the first attempt, but it can fail (network,
     /// lock contention, server hiccup); the flag persists through those failures so the next
     /// sync attempt — routine, manual, or otherwise — automatically retries with
     /// `allowingAnyDeviceId: true`. Each entry is cleared by `BackupSyncAdapter.setLastSyncDate`
