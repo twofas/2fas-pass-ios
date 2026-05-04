@@ -113,18 +113,17 @@ private extension MainModuleInteractor {
     
     @objc
     func updateBadgeAction() {
-        // Backup-sync error state is no longer persisted — the new `BackupSyncContainer` reports
-        // errors per-run via the session's `EventHandler`, not as a recoverable property. The
-        // badge now reflects only iCloud's terminal state (still persisted via
-        // `CloudSyncInteractor`) plus a "currently syncing" indicator that includes every backend
-        // wired into the container.
-        let cloudHasSynced = cloudSyncInteractor.currentState.isSynced
-        if cloudHasSynced {
-            syncErroredLately = false
-            postBadgeChange(false)
-            return
-        }
-
+        // The badge reflects two error sources OR'd together:
+        //   1. iCloud's terminal `CloudState.hasError` — covers persistent conditions
+        //      (account signed out, container unavailable) that don't always coincide with
+        //      a recent failed sync run.
+        //   2. `BackupSyncContainer.hasAnySyncError` — covers any per-run failure recorded
+        //      for any config (iCloud, WebDAV, S3) by the session's `.finished(.failure)`
+        //      events. Process-scoped, in-memory, cleared on next success per-config.
+        // While anything is currently syncing we hold the previous flag — avoids flickering
+        // between "running, no error yet" and "running, prior error" mid-session. The session
+        // emits `.sessionFinished` after every per-service `.finished` has written its outcome,
+        // so this method picks up the post-run state on that final event.
         let backupIsRunning = syncTriggerInteractor.currentActivity.isRunning
         let cloudIsSyncing = cloudSyncInteractor.currentState.isSyncing
         if backupIsRunning || cloudIsSyncing {
@@ -133,6 +132,7 @@ private extension MainModuleInteractor {
         }
 
         let showErrorBadge = cloudSyncInteractor.currentState.hasError
+            || syncTriggerInteractor.hasAnySyncError
         syncErroredLately = showErrorBadge
         postBadgeChange(showErrorBadge)
     }

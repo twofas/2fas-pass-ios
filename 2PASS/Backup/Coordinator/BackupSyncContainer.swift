@@ -317,6 +317,19 @@ public final class BackupSyncContainer: @unchecked Sendable {
         lastErrors.withLock { $0[id] }
     }
 
+    /// `true` when at least one backup config has a recorded last-sync error in the running app
+    /// process. Drives the global "any backup is broken" badge on the tab bar and the Cloud
+    /// Sync row in Settings — both consumers want a single bit, not a per-config breakdown,
+    /// so the rollup belongs here rather than reconstructed from N `lastSyncError(for:)` reads.
+    ///
+    /// Same in-memory lock as `lastSyncError(for:)`, so a write that was just observed by
+    /// `handle(_:)` is visible to this accessor on the next read — no separate consistency
+    /// model. Returns `false` when the dictionary is empty (no errors ever recorded, or every
+    /// recorded entry has been cleared by a subsequent successful sync).
+    public var hasAnySyncError: Bool {
+        lastErrors.withLock { !$0.isEmpty }
+    }
+
     public func cancelCurrentSync() {
         let cancel = state.withLock { $0.cancelCurrentSync }
         cancel?()

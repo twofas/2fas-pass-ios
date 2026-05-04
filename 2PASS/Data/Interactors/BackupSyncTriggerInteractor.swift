@@ -75,6 +75,11 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Intended for UI display via `BackupSyncError.errorDescription` (LocalizedError).
     func lastSyncError(for id: UUID) -> BackupSyncError?
 
+    /// `true` when any registered config has a recorded last-sync error in this app process.
+    /// Single-bit rollup over all per-config `lastSyncError(for:)` reads — drives the global
+    /// "backups need attention" badge on the tab bar and the Cloud Sync settings row.
+    var hasAnySyncError: Bool { get }
+
     /// Cancels the currently running backup sync session, if any.
     func cancelCurrentSync()
 
@@ -138,6 +143,10 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         // unlike `lastSyncDate(for:)`, there is no persistence layer behind this. Same shape
         // as `currentActivity` (which also reads container state directly).
         mainRepository.backupSyncContainer.lastSyncError(for: id)
+    }
+
+    var hasAnySyncError: Bool {
+        mainRepository.backupSyncContainer.hasAnySyncError
     }
 
     func cancelCurrentSync() {
