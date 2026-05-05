@@ -161,6 +161,16 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// three integration points above.
     private let cloudSync = CloudSync()
 
+    /// The container's owned `CloudRecovery` reader. Same eager-ownership rationale as
+    /// `cloudSync`: one CloudKit container per build, and recovery listing/deletion is part of
+    /// the iCloud surface so it lives next to the sync engine. Drives the public
+    /// `listICloudVaultsToRecover()` / `deleteICloudVault(id:)` entry points used by the
+    /// recovery UI before any iCloud config is registered (the user is choosing which vault
+    /// to restore, so `setup(...)` hasn't applied a vault id yet — the operations don't
+    /// depend on the orchestration-level `setup` having run, mirroring `fetchIndex(config:)`
+    /// for the file-based backends).
+    private let cloudRecovery: CloudRecovering = CloudRecovery()
+
     /// Creates an inert container. Until `setup(...)` runs the container has zero services
     /// and `syncAll` / `sync(_:)` no-op gracefully — that's the point: callers (specifically
     /// `MainRepositoryImpl`) can store this as a non-optional `let` from their own init,
@@ -319,7 +329,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// to different UX states.
     ///
     /// Two overloads — one per file-based backend kind. iCloud is intentionally excluded:
-    /// it has no file-based index (CloudKit records, separate state machine).
+    /// it has no file-based index (CloudKit records, separate state machine). The iCloud
+    /// recovery surface lives in its own block below — `listICloudVaultsToRecover()` returns
+    /// `[VaultRawData]` (CKQuery results) instead of `BackupIndex`, and there is no `Config`
+    /// value to pass since iCloud auth is identity-based.
     ///
     /// The orchestrated sync path (`BackupFileSyncSession.fetchIndex()`) decodes the same
     /// type with **different policy**: it folds decode failure into "no index" (overwrite
@@ -375,6 +388,30 @@ public final class BackupSyncContainer: @unchecked Sendable {
     public func testConnection(config: S3ServiceConfig) async throws(BackupFileServiceError) {
         let session = BackupS3ServiceSession(config: config)
         try await session.testConnection()
+    }
+
+    // MARK: - iCloud recovery (no `Config`, no `BackupIndex` — see the block above)
+    //
+    // Ad-hoc CloudKit reads/writes used by the vault-recovery UI when the user is restoring
+    // after reinstall. Independent of `setup(...)` like the file-based ad-hoc reads above:
+    // the user hasn't selected a vault yet, so there's no orchestrated session to attach to.
+    // The shape diverges from `fetchIndex(config:)` because iCloud is identity-based (no
+    // `BackupICloudConfig` to pass) and CloudKit's recovery query returns `[VaultRawData]`
+    // directly rather than a single `BackupIndex` blob.
+
+    /// Fetches the list of vaults the signed-in iCloud account has previously backed up.
+    /// Used by the recovery UI to populate the "choose a vault to restore" picker before
+    /// any iCloud config has been registered. Throws on CloudKit transport failure; an
+    /// empty array means the account exists but has no backed-up vaults.
+    public func listICloudVaultsToRecover() async throws -> [VaultRawData] {
+        try await cloudRecovery.listVaultsToRecover()
+    }
+
+    /// Deletes the CloudKit zone backing the vault with `id`. Used by the recovery UI's
+    /// swipe-to-delete affordance for stale or unwanted iCloud vaults. No file-based
+    /// equivalent — WebDAV/S3 don't expose deletion from the recovery flow.
+    public func deleteICloudVault(id: VaultID) async throws {
+        try await cloudRecovery.deleteVault(id: id)
     }
 
     // MARK: - Awaiting flags (per-config "next sync needs special handling")

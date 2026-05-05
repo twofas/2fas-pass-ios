@@ -584,10 +584,6 @@ protocol MainRepository: AnyObject {
     func checkForPermission() -> CameraPermissionState
     func requestPermission(result: @escaping (CameraPermissionState) -> Void)
     
-    // MARK: - Cloud
-    func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
-    func cloudDeleteVault(id: VaultID) async throws
-    
     // MARK: - Cloud Cache
     func cloudCacheCreateItem(
         itemID: ItemID,

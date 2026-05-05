@@ -61,7 +61,6 @@ final class MainRepositoryImpl: MainRepository {
     let network: NetworkDataSource
     let logDataSource: LogStorageDataSource
     let cloudCache: CloudCacheStorageDataSource
-    let cloudRecovery: CloudRecovering
     let autoFillStatusDataSource: AutoFillStatusDataSourcing
     let pushNotificationsPermissionsDataSource: PushNotificationsPermissionsDataSourcing
     let twoFASWebServiceSession: TwoFASWebServiceSession
@@ -93,7 +92,6 @@ final class MainRepositoryImpl: MainRepository {
         logDataSource: LogStorageDataSource = LogStorageDataSourceImpl(),
         backupSyncContainer: BackupSyncContainer = .init(),
         cloudCache: CloudCacheStorageDataSource = CloudCacheStorageDataSourceImpl(),
-        cloudRecovery: CloudRecovering = CloudRecovery(),
         autoFillStatusDataSource: AutoFillStatusDataSourcing = AutoFillStatusDataSource(),
         pushNotificationsPermissionsDataSource: PushNotificationsPermissionsDataSourcing = PushNotificationsPermissionsDataSource(),
         twoFASWebServiceSession: TwoFASWebServiceSession = .init(baseURL: Config.twoFASBaseURL),
@@ -110,7 +108,6 @@ final class MainRepositoryImpl: MainRepository {
         self.logDataSource = logDataSource
         self.backupSyncContainer = backupSyncContainer
         self.cloudCache = cloudCache
-        self.cloudRecovery = cloudRecovery
         self.autoFillStatusDataSource = autoFillStatusDataSource
         self.pushNotificationsPermissionsDataSource = pushNotificationsPermissionsDataSource
         self.twoFASWebServiceSession = twoFASWebServiceSession

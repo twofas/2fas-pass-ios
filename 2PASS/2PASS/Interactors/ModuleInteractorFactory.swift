@@ -254,7 +254,7 @@ extension ModuleInteractorFactory {
     
     func vaultRecoveryiCloudVaultSelectionModuleInteractor() -> VaultRecoveryiCloudVaultSelectionModuleInteracting {
         VaultRecoveryiCloudVaultSelectionModuleInteractor(
-            cloudRecoveryInteractor: InteractorFactory.shared.cloudRecoveryInteracting()
+            recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor()
         )
     }
     

@@ -2185,32 +2185,6 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    // MARK: Cloud
-
-    private var stubbedCloudListVaultsToRecover: (@escaping (Result<[VaultRawData], Error>) -> Void) -> Void = { $0(.success([])) }
-    func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {
-        recordCall()
-        stubbedCloudListVaultsToRecover(completion)
-    }
-
-    @discardableResult
-    func withCloudListVaultsToRecover(_ handler: @escaping (@escaping (Result<[VaultRawData], Error>) -> Void) -> Void) -> Self {
-        stubbedCloudListVaultsToRecover = handler
-        return self
-    }
-
-    private var stubbedCloudDeleteVault: (VaultID) async throws -> Void = { _ in }
-    func cloudDeleteVault(id: VaultID) async throws {
-        recordCall()
-        try await stubbedCloudDeleteVault(id)
-    }
-
-    @discardableResult
-    func withCloudDeleteVault(_ handler: @escaping (VaultID) async throws -> Void) -> Self {
-        stubbedCloudDeleteVault = handler
-        return self
-    }
-
 
     // MARK: Cloud Cache
 

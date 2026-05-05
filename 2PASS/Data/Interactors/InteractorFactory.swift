@@ -246,10 +246,6 @@ public final class InteractorFactory {
         OnboardingInteractor(mainRepository: MainRepositoryImpl.shared)
     }
     
-    public func cloudRecoveryInteracting() -> CloudRecoveryInteracting {
-        CloudRecoveryInteractor(mainRepository: MainRepositoryImpl.shared)
-    }
-    
     public func autoFillCredentialsInteractor() -> AutoFillCredentialsInteracting {
         AutoFillCredentialsInteractor(mainRepository: MainRepositoryImpl.shared, uriInteractor: uriInteractor())
     }
