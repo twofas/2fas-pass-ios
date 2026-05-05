@@ -127,9 +127,7 @@ protocol MainRepository: AnyObject {
     
     var jsonEncoder: JSONEncoder { get }
     var jsonDecoder: JSONDecoder { get }
-    
-    var cloudSync: CloudSync { get }
-    
+
     var deviceName: String { get }
     func setDeviceName(_ name: String)
     var deviceModelName: String { get }
@@ -587,17 +585,8 @@ protocol MainRepository: AnyObject {
     func requestPermission(result: @escaping (CameraPermissionState) -> Void)
     
     // MARK: - Cloud
-    var isCloudBackupConnected: Bool { get }
-    var cloudCurrentState: CloudState { get }
-    func enableCloudBackup()
-    func disableCloudBackup()
-    func clearBackup()
-    func synchronizeBackup(fromPush: Bool)
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
     func cloudDeleteVault(id: VaultID) async throws
-    var lastSuccessCloudSyncDate: Date? { get }
-    func setLastSuccessCloudSyncDate(_ date: Date)
-    func clearLastSuccessCloudSyncDate()
     
     // MARK: - Cloud Cache
     func cloudCacheCreateItem(

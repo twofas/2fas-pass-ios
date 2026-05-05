@@ -12,20 +12,12 @@ import Common
 @MainActor
 protocol BackupConfigsModuleInteracting: AnyObject {
     var allConfigs: [BackupConfig] { get }
-    var cloudState: CloudState { get }
     var currentActivity: BackupSyncActivity { get }
-    var cloudStateChanged: Callback? { get set }
 
     func lastSyncDate(for id: UUID) -> Date?
     func lastSyncError(for id: UUID) -> BackupSyncError?
     @discardableResult func addiCloud() -> UUID?
-    func remove(id: UUID, kind: SyncServiceKind)
-    /// Fire-and-forget at background `.utility` priority — for non-user-driven sync
-    /// (post-mutation propagation, refresh on appearance). Internally detached.
-    func syncAll()
-    /// Awaitable — for user-initiated "Sync Now" taps where the calling `Task` inherits the
-    /// user-facing priority (`.userInitiated` from the MainActor button handler). The work
-    /// still runs off MainActor because the underlying container method is non-isolated.
+    func remove(id: UUID)
     func syncAll() async
     func sync(id: UUID) async
     func cancelCurrentSync()
@@ -35,40 +27,19 @@ protocol BackupConfigsModuleInteracting: AnyObject {
 @MainActor
 final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
-    var cloudStateChanged: Callback?
-
     private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
-    private let cloudSyncInteractor: CloudSyncInteracting
-    private let notificationCenter: NotificationCenter
 
     init(
         configsInteractor: BackupSyncConfigsInteracting,
-        syncTriggerInteractor: BackupSyncTriggerInteracting,
-        cloudSyncInteractor: CloudSyncInteracting
+        syncTriggerInteractor: BackupSyncTriggerInteracting
     ) {
         self.configsInteractor = configsInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
-        self.cloudSyncInteractor = cloudSyncInteractor
-        self.notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(handleCloudStateChanged),
-            name: .cloudStateChanged,
-            object: nil
-        )
-    }
-
-    deinit {
-        notificationCenter.removeObserver(self)
     }
 
     var allConfigs: [BackupConfig] {
         configsInteractor.allConfigs
-    }
-
-    var cloudState: CloudState {
-        cloudSyncInteractor.currentState
     }
 
     var currentActivity: BackupSyncActivity {
@@ -85,18 +56,17 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     @discardableResult
     func addiCloud() -> UUID? {
-        let id = configsInteractor.addiCloudConfig()
-        if id != nil, case .disabled = cloudSyncInteractor.currentState {
-            cloudSyncInteractor.enable()
-        }
-        return id
+        // Pure CRUD: persisting the iCloud config is the enable signal. The container's
+        // `saveConfigs(_:)` proxy detects the iCloud-added diff and calls `cloudSync.enable()`
+        // internally — module-layer code never touches CloudSync directly.
+        configsInteractor.addiCloudConfig()
     }
 
-    func remove(id: UUID, kind: SyncServiceKind) {
+    func remove(id: UUID) {
+        // Mirror of `addiCloud()`: removing an iCloud entry triggers the container's
+        // disable side effect. The container's `saveConfigs(_:)` diff resolves the iCloud
+        // teardown path, so this is uniform across kinds.
         configsInteractor.removeConfig(id: id)
-        if kind == .iCloud {
-            cloudSyncInteractor.disable()
-        }
     }
 
     func syncAll() {
@@ -117,10 +87,5 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
         syncTriggerInteractor.syncEvents()
-    }
-
-    @objc
-    private func handleCloudStateChanged() {
-        cloudStateChanged?()
     }
 }

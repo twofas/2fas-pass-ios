@@ -15,7 +15,10 @@ public final class InteractorFactory {
             mainRepository: MainRepositoryImpl.shared,
             exportInteractor: exportInteractor(),
             backupImportInteractor: backupImportInteractor(),
-            syncInteractor: syncInteractor()
+            syncInteractor: syncInteractor(),
+            itemsInteractor: itemsInteractor(),
+            deletedItemsInteractor: deletedItemsInteractor(),
+            tagInteractor: tagInteractor()
         )
     }
 
@@ -243,25 +246,6 @@ public final class InteractorFactory {
         OnboardingInteractor(mainRepository: MainRepositoryImpl.shared)
     }
     
-    public func cloudSyncInteractor() -> CloudSyncInteracting {
-        CloudSyncInteractor(
-            cloudCacheStorage: CloudCacheStorageImpl(mainRepository: MainRepositoryImpl.shared),
-            encryptionHandler: EncryptionHandlerImpl(
-                mainRepository: MainRepositoryImpl.shared,
-                itemsInteractor: itemsInteractor(),
-                tagInteractor: tagInteractor()
-            ),
-            localStorage: LocalStorageImpl(
-                itemsInteractor: itemsInteractor(),
-                deletedItemsInteractor: deletedItemsInteractor(),
-                tagInteractor: tagInteractor(),
-                mainRepository: MainRepositoryImpl.shared
-            ),
-            mainRepository: MainRepositoryImpl.shared,
-            paymentStatusInteractor: paymentStatusInteractor()
-        )
-    }
-    
     public func cloudRecoveryInteracting() -> CloudRecoveryInteracting {
         CloudRecoveryInteractor(mainRepository: MainRepositoryImpl.shared)
     }
@@ -405,7 +389,7 @@ public final class InteractorFactory {
         UpdateAppPromptInteractor(
             mainRepository: MainRepositoryImpl.shared,
             systemInteractor: systemInteractor(),
-            cloudSyncInteractor: cloudSyncInteractor()
+            syncTriggerInteractor: backupSyncTriggerInteractor()
         )
     }
 }

@@ -16,7 +16,7 @@ extension ModuleInteractorFactory {
             rootInteractor: InteractorFactory.shared.rootInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             securityInteractor: InteractorFactory.shared.securityInteractor(),
-            syncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             appNotificationsInteractor: InteractorFactory.shared.appNotificationsInteractor(),
             timeVerificationInteractor: InteractorFactory.shared.timeVerificationInteractor(),
             paymentHandlingInteractor: InteractorFactory.shared.paymentHandlingInteractor(),
@@ -46,7 +46,6 @@ extension ModuleInteractorFactory {
         SettingsModuleInteractor(
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
-            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
             pushNotificationsInteractor: InteractorFactory.shared.pushNotificationsPermissionInteractor(),
@@ -164,8 +163,7 @@ extension ModuleInteractorFactory {
     func backupConfigsModuleInteractor() -> BackupConfigsModuleInteracting {
         BackupConfigsModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
-            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
-            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor()
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
 
@@ -188,7 +186,6 @@ extension ModuleInteractorFactory {
     
     func mainModuleInteracting() -> MainModuleInteracting {
         MainModuleInteractor(
-            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
@@ -209,7 +206,6 @@ extension ModuleInteractorFactory {
             itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
-            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor()
@@ -414,7 +410,8 @@ extension ModuleInteractorFactory {
     func quickSetupModuleInteractor() -> QuickSetupModuleInteracting {
         QuickSetupModuleInteractor(
             autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
-            cloudSyncInteractor: InteractorFactory.shared.cloudSyncInteractor(),
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
         )

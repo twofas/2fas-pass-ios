@@ -62,7 +62,7 @@ final class RootModuleInteractor {
     private let rootInteractor: RootInteracting
     private let startupInteractor: StartupInteracting
     private let securityInteractor: SecurityInteracting
-    private let syncInteractor: CloudSyncInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let appNotificationsInteractor: AppNotificationsInteracting
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
@@ -78,7 +78,7 @@ final class RootModuleInteractor {
         rootInteractor: RootInteracting,
         startupInteractor: StartupInteracting,
         securityInteractor: SecurityInteracting,
-        syncInteractor: CloudSyncInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         timeVerificationInteractor: TimeVerificationInteracting,
         paymentHandlingInteractor: PaymentHandlingInteracting,
@@ -92,7 +92,7 @@ final class RootModuleInteractor {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
         self.securityInteractor = securityInteractor
-        self.syncInteractor = syncInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.timeVerificationInteractor = timeVerificationInteractor
         self.paymentHandlingInteractor = paymentHandlingInteractor
@@ -178,7 +178,12 @@ extension RootModuleInteractor: RootModuleInteracting {
         guard securityInteractor.isUserLoggedIn && isUserSetUp else {
             return
         }
-        syncInteractor.synchronize(fromPush: true)
+        // Routes through the dedicated push path so `cloudSync.synchronize(fromPush: true)`
+        // can mark `needsResync` if a sync is already in flight past its fetch phase. Going
+        // through `syncTriggerInteractor.syncAll()` here would let the container's in-flight
+        // debounce drop the trigger, leaving the remote change announced by the push to wait
+        // until the next user-driven sync.
+        syncTriggerInteractor.handlePushNotification()
     }
     
     func fetchAppNotifications() async throws -> [AppNotification] {

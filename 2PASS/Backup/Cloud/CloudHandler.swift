@@ -11,15 +11,14 @@ protocol CloudHandlerType: AnyObject {
     var userToggledState: UserToggledState? { get set }
     var currentState: CloudCurrentState { get }
     var isConnected: Bool { get }
-    
-    func setVaultID(vaultID: VaultID)
+
     func checkState()
     func synchronize(fromPush: Bool)
     func enable()
     func disable(notify: Bool)
     func clearBackup()
     func resetStateBeforeSync()
-    
+
     func resetBeforeMigration()
 }
 
@@ -29,9 +28,12 @@ final class CloudHandler: CloudHandlerType {
     private let clearHandler: ClearHandler
     private let mergeHandler: MergeHandler
     private let cacheHandler: CacheHandler
-    
-    private var vaultID: VaultID?
-    
+    /// Pull-based vault id source. Read once per `sync()` to derive the CloudKit zone id.
+    /// Replaces the previous push-based cached `vaultID` field — vault changes propagate
+    /// through `BackupSyncContext.vaultID → MainRepository.selectedVault?.vaultID` without
+    /// needing a `setVaultID(_:)` call or re-init.
+    private let context: BackupSyncContext
+
     private var isClearing = false
     
     private var shouldResetState = false
@@ -59,12 +61,14 @@ final class CloudHandler: CloudHandlerType {
         cloudAvailability: CloudAvailability,
         syncHandler: SyncHandler,
         mergeHandler: MergeHandler,
-        cacheHandler: CacheHandler
+        cacheHandler: CacheHandler,
+        context: BackupSyncContext
     ) {
         self.cloudAvailability = cloudAvailability
         self.syncHandler = syncHandler
         self.mergeHandler = mergeHandler
         self.cacheHandler = cacheHandler
+        self.context = context
         clearHandler = ClearHandler()
 
         mergeHandler.schemaNotSupported = { [weak self] schemaVersion in
@@ -95,11 +99,6 @@ final class CloudHandler: CloudHandlerType {
             name: .passwordWasChanged,
             object: nil
         )
-    }
-    
-    func setVaultID(vaultID: VaultID) {
-        Log("Cloud Handler - setting VaultID", module: .cloudSync)
-        self.vaultID = vaultID
     }
     
     func checkState() {
@@ -236,7 +235,7 @@ final class CloudHandler: CloudHandlerType {
     
     private func sync(fromPush: Bool = false) {
         Log("Cloud Handler - Sync", module: .cloudSync)
-        guard let vaultID else {
+        guard let vaultID = context.vaultID else {
             Log("Cloud Handler - VaultID not set!", module: .cloudSync, severity: .error)
             return
         }

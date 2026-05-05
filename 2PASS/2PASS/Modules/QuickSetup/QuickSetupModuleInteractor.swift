@@ -6,6 +6,7 @@
 
 import Data
 import Common
+import Backup
 
 protocol QuickSetupModuleInteracting: AnyObject {
     
@@ -23,12 +24,10 @@ protocol QuickSetupModuleInteracting: AnyObject {
     // MARK: iCloud
     
     var isCloudEnabled: Bool { get }
-    var cloudState: CloudState { get }
 
     func turnOnCloud()
     func turnOffCloud()
     
-    var didCloudStatusChanged: NotificationCenter.Notifications { get }
     var syncPremiumNeededScreen: NotificationCenter.Notifications { get }
     
     // MARK: Security Tier
@@ -37,65 +36,65 @@ protocol QuickSetupModuleInteracting: AnyObject {
 }
 
 final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
-    
+
     private let autoFillStatusInteractor: AutoFillStatusInteracting
-    private let cloudSyncInteractor: CloudSyncInteracting
+    private let configsInteractor: BackupSyncConfigsInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let configInteractor: ConfigInteracting
     private let quickSetupInteractor: QuickSetupInteracting
 
-    init(autoFillStatusInteractor: AutoFillStatusInteracting, cloudSyncInteractor: CloudSyncInteracting, configInteractor: ConfigInteracting, quickSetupInteractor: QuickSetupInteracting) {
+    init(
+        autoFillStatusInteractor: AutoFillStatusInteracting,
+        configsInteractor: BackupSyncConfigsInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
+        configInteractor: ConfigInteracting,
+        quickSetupInteractor: QuickSetupInteracting
+    ) {
         self.autoFillStatusInteractor = autoFillStatusInteractor
-        self.cloudSyncInteractor = cloudSyncInteractor
+        self.configsInteractor = configsInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.configInteractor = configInteractor
         self.quickSetupInteractor = quickSetupInteractor
     }
-    
+
     var isAutoFillEnabled: Bool {
         autoFillStatusInteractor.isEnabled
     }
-    
+
     var didAutoFillStatusChanged: NotificationCenter.Notifications {
         autoFillStatusInteractor.didStatusChanged
     }
-    
+
     func turnOnAutoFill() {
         autoFillStatusInteractor.turnOn()
     }
-    
+
     func turnOffAutoFill() {
         autoFillStatusInteractor.turnOff()
     }
-    
+
     var isCloudEnabled: Bool {
-        if case .enabled = cloudState {
-            return true
-        } else if case .enabledNotAvailable = cloudState {
-            return true
-        } else {
-            return false
-        }
+        configsInteractor.allConfigs.hasICloud
     }
-    
-    var cloudState: CloudState {
-        cloudSyncInteractor.currentState
-    }
-    
+
     func turnOnCloud() {
-        switch cloudSyncInteractor.currentState {
-        case .disabled: cloudSyncInteractor.enable()
-        default: break
-        }
+        // Persisting the iCloud config is the enable signal — the container's
+        // `saveConfigs(_:)` diff detects the iCloud-added transition and runs
+        // `cloudSync.enable()` internally. After enable, kick off an initial sync so any
+        // existing local vault state is pushed up to iCloud immediately rather than waiting
+        // for the next post-mutation `syncAll`.
+        guard !configsInteractor.allConfigs.hasICloud else { return }
+        guard let id = configsInteractor.addiCloudConfig() else { return }
+        Task { try? await syncTriggerInteractor.sync(id: id) }
     }
-    
+
     func turnOffCloud() {
-        switch cloudSyncInteractor.currentState {
-        case .enabled, .enabledNotAvailable: cloudSyncInteractor.disable()
-        default: break
+        // Mirror of `turnOnCloud()`: removing the iCloud entry triggers the disable side
+        // effect inside the container.
+        if let id = configsInteractor.allConfigs.iCloudEntry?.id {
+            syncTriggerInteractor.cancelSync(id: id)
+            configsInteractor.removeConfig(id: id)
         }
-    }
-    
-    var didCloudStatusChanged: NotificationCenter.Notifications {
-        NotificationCenter.default.notifications(named: .cloudStateChanged, object: nil)
     }
     
     var syncPremiumNeededScreen: NotificationCenter.Notifications {

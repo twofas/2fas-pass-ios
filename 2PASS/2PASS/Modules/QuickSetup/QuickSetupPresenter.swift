@@ -7,6 +7,8 @@
 import SwiftUI
 import Common
 import CommonUI
+import Data
+import Backup
 
 enum QuickSetupDestination: RouterDestination {
     case defaultSecurityTier
@@ -28,7 +30,7 @@ enum QuickSetupDestination: RouterDestination {
     }
 }
 
-@Observable
+@MainActor @Observable
 final class QuickSetupPresenter {
  
     var destination: QuickSetupDestination?
@@ -77,6 +79,10 @@ final class QuickSetupPresenter {
     
     func onAppear() async {
         defaultSecurityTier = interactor.defaultSecurityTier
+        // Re-seed iCloud-toggle state once on appear in case a config was added/removed while
+        // this screen was off-stack — covers the gap between init-time seeding and the
+        // `BackupConfigsDidChange` subscription starting below.
+        _iCloudSyncEnabled = interactor.isCloudEnabled
 
         await withTaskGroup() { group in
             group.addTask {
@@ -86,7 +92,7 @@ final class QuickSetupPresenter {
                 await self.observeAutoFillStatusChanged()
             }
             group.addTask {
-                await self.observeCloudStatusChanged()
+                await self.observeConfigsChanged()
             }
         }
     }
@@ -122,18 +128,13 @@ final class QuickSetupPresenter {
             destination = .syncNotAllowed
         }
     }
-    
-    private func observeCloudStatusChanged() async {
-        for await _ in interactor.didCloudStatusChanged {
-            switch interactor.cloudState {
-            case .enabledNotAvailable(.syncNotAllowed):
-                destination = .syncNotAllowed
-            case .enabledNotAvailable:
-                showVaultSyncFailure = true
-            default:
-                break
-            }
 
+    /// Refreshes the iCloud-toggle mirror whenever `BackupSyncConfigsInteractor` posts a
+    /// successful add / update / remove. Covers cross-screen changes (e.g. iCloud added via
+    /// vault recovery or removed via the BackupConfigs screen) that don't pass through this
+    /// presenter's own `turnOnCloud` / `turnOffCloud` setters.
+    private func observeConfigsChanged() async {
+        for await _ in NotificationCenter.default.messages(of: BackupConfigsDidChange.self) {
             _iCloudSyncEnabled = interactor.isCloudEnabled
         }
     }

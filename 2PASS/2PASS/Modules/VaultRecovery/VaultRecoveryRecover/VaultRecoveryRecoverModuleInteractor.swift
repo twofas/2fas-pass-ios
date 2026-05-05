@@ -8,6 +8,7 @@ import Foundation
 import os
 import Data
 import Common
+import Backup
 
 protocol VaultRecoveryRecoverModuleInteracting: AnyObject {
     var kind: VaultRecoveryRecoverKind { get }
@@ -20,22 +21,17 @@ final class VaultRecoveryRecoverModuleInteractor {
     private let itemsImportInteractor: ItemsImportInteracting
     private let startupInteractor: StartupInteracting
     private let importInteractor: ImportInteracting
-    private let cloudSyncInteractor: CloudSyncInteracting
     private let onboardingInteractor: OnboardingInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let configsInteractor: BackupSyncConfigsInteracting
-    private let notificationCenter: NotificationCenter
 
     private let syncAwaitSeconds = 60
-
-    private var syncCompletion: ((Bool) -> Void)?
 
     init(
         kind: VaultRecoveryRecoverKind,
         itemsImportInteractor: ItemsImportInteracting,
         startupInteractor: StartupInteracting,
         importInteractor: ImportInteracting,
-        cloudSyncInteractor: CloudSyncInteracting,
         onboardingInteractor: OnboardingInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
         configsInteractor: BackupSyncConfigsInteracting
@@ -44,17 +40,9 @@ final class VaultRecoveryRecoverModuleInteractor {
         self.itemsImportInteractor = itemsImportInteractor
         self.startupInteractor = startupInteractor
         self.importInteractor = importInteractor
-        self.cloudSyncInteractor = cloudSyncInteractor
         self.onboardingInteractor = onboardingInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
         self.configsInteractor = configsInteractor
-        notificationCenter = .default
-        notificationCenter.addObserver(self, selector: #selector(stateChanged), name: .cloudStateChanged, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(didSync), name: .cloudDidSync, object: nil)
-    }
-
-    deinit {
-        notificationCenter.removeObserver(self)
     }
 }
 
@@ -129,29 +117,13 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                     return false
                 }
             case .cloud:
-                return await awaitCloudSync()
+                return await performRecoveryCloudSync()
             case .localVault:
                 fatalError()
             }
         }
     }
     
-    @objc
-    func stateChanged() {
-        if cloudSyncInteractor.currentState == .disabled {
-            cloudSyncInteractor.enable()
-            cloudSyncInteractor.synchronize()
-        }
-    }
-    
-    @objc
-    func didSync() {
-        guard let syncCompletion else { return }
-        syncCompletion(true)
-        self.syncCompletion = nil
-        return
-    }
-
     /// Persists the recovery's source-of-truth config (e.g. the WebDAV credentials the user
     /// entered to fetch this vault). Called *only* after a successful item import — the
     /// guarantee being: a config record exists in `MainRepository.loadBackupConfigs` only
@@ -221,34 +193,55 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         }
     }
 
-    /// Wait for the cloud sync triggered by `cloudSyncInteractor.setup(takeoverVault:)`
-    /// to finish — or for the timeout to fire. Two paths can resume the continuation:
-    /// the `@objc didSync` notification handler invokes `syncCompletion(true)`, and the
-    /// timeout Task calls `resumeOnce(true)` directly. The lock is the single-fire gate
-    /// (`didSync`'s own `guard let syncCompletion` only protects the notification path
-    /// once the direct timeout path bypasses self).
-    private func awaitCloudSync() async -> Bool {
-        let timeoutSeconds = syncAwaitSeconds
-        return await withCheckedContinuation { continuation in
-            let resumed = OSAllocatedUnfairLock(initialState: false)
-            let resumeOnce: @Sendable (Bool) -> Void = { result in
-                let shouldResume = resumed.withLock { fired in
-                    guard !fired else { return false }
-                    fired = true
-                    return true
-                }
-                if shouldResume {
-                    continuation.resume(returning: result)
-                }
-            }
-            syncCompletion = { result in resumeOnce(result) }
-            cloudSyncInteractor.setup(takeoverVault: true)
-            // timeout for awaiting the start of synchronization
-            Task {
-                try? await Task.sleep(for: .seconds(timeoutSeconds))
-                resumeOnce(true)
-            }
+    /// Wait for the post-recovery iCloud sync to finish — or for the timeout to fire.
+    ///
+    /// Three steps: (1) ensure an iCloud config exists — adds it (driving `cloudSync.enable()`
+    /// via the container's `saveConfigs(_:)` diff) if missing, or reuses the existing entry.
+    /// (2) Mark every config as awaiting vault override — the unified per-config "next sync
+    /// overwrites remote vault data" flag, honored by `CloudSyncAdapter.performSync` via
+    /// `cloudSync.syncOnce(overwritingVault:)`. (3) Race a timer Task against the actual
+    /// `sync(id:)`: whichever completes first unblocks the await. **Sync is never cancelled**
+    /// — it runs in a `Task.detached` that deliberately outlives this function, so when the
+    /// timer elapses naturally we let recovery proceed to the main screen while iCloud keeps
+    /// running in the background. When sync finishes first, it calls `timer.cancel()`, which
+    /// throws inside `Task.sleep` and unblocks `await timer.value` immediately;
+    /// `timer.isCancelled` then distinguishes the success path from the timeout path.
+    ///
+    /// No explicit `BackupSyncSetupInteractor.initialize()` re-run is needed. The vault id
+    /// is read pull-style from `BackupSyncContext.vaultID` inside `CloudHandler.sync()` —
+    /// `createVault → selectVault` (which ran before `performRecoveryCloudSync()` is called) updated
+    /// `MainRepository.selectedVault`, so the `sync(id:)` call below picks up the recovered
+    /// vault id automatically.
+    private func performRecoveryCloudSync() async -> Bool {
+        syncTriggerInteractor.markAllServicesAwaitingVaultOverride()
+
+        guard let iCloudID = resolveiCloudConfigID() else { return true }
+
+        let timer = Task {
+            try? await Task.sleep(for: .seconds(syncAwaitSeconds))
         }
+
+        Task.detached { [syncTriggerInteractor, timer] in
+            do {
+                try await syncTriggerInteractor.sync(id: iCloudID)
+            } catch {
+                Log("VaultRecoveryRecoverModuleInteractor - iCloud sync failed: \(error)", module: .moduleInteractor)
+            }
+            timer.cancel()
+        }
+
+        await timer.value
+
+        if !timer.isCancelled {
+            Log("VaultRecoveryRecoverModuleInteractor - iCloud sync timed out; continuing recovery", module: .moduleInteractor)
+        }
+        return true
+    }
+
+    private func resolveiCloudConfigID() -> UUID? {
+        let iCloudID = configsInteractor.addiCloudConfig() ?? configsInteractor.allConfigs.iCloudEntry?.id
+        guard let iCloudID else { return nil }
+        return iCloudID
     }
 
     func finish() {

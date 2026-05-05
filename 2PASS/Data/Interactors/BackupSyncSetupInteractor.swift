@@ -10,9 +10,18 @@ import Common
 
 public protocol BackupSyncInstalling: AnyObject {
     /// Wires the existing `MainRepository.backupSyncContainer` (constructed inert by
-    /// `MainRepositoryImpl.init`) with its production collaborators via
-    /// `BackupSyncContainer.setup(...)`. Idempotent: calling more than once re-runs
-    /// `setup`, which atomically replaces the providers.
+    /// `MainRepositoryImpl.init`) with its production collaborators and per-vault
+    /// `CloudSync` configuration via `BackupSyncContainer.setup(...)`. Idempotent: calling
+    /// more than once re-runs `setup`, which atomically replaces the providers and
+    /// re-applies the CloudSync chain — the supported re-apply path used by vault recovery
+    /// after the recovered vault becomes the selected one.
+    ///
+    /// The "vault data is authoritative" signal that vault recovery used to carry via a
+    /// `takingOverVault:` argument is now expressed through
+    /// `BackupSyncContainer.markAllConfigsAwaitingVaultOverride()` — a unified per-config
+    /// flag the next sync honors via `CloudSyncAdapter.performSync(overwritingVault:)`. The
+    /// recovery flow marks that flag separately, then triggers the sync; `initialize()`
+    /// stays a single no-arg entry point.
     func initialize()
 }
 
@@ -20,7 +29,9 @@ public protocol BackupSyncInstalling: AnyObject {
 ///
 /// `MainRepositoryImpl` owns the container as a `let` stored property and creates it inert
 /// via `BackupSyncContainer()` in its own init. This interactor — which has access to the
-/// `Export` / `BackupImport` / `Sync` interactors needed to build the adapter — finishes
+/// `Export` / `BackupImport` / `Sync` interactors needed to build the adapter, plus the
+/// `Items` / `DeletedItems` / `Tag` interactors needed to construct the `LocalStorage` /
+/// `CloudCacheStorage` / `EncryptionHandler` for `CloudSync`'s per-vault setup — finishes
 /// the job by calling `BackupSyncContainer.setup(...)` on the existing instance. Two-phase
 /// init resolves the cycle: the data layer holds the container without needing its
 /// dependencies, and this upper layer supplies the dependencies without owning the
@@ -29,23 +40,35 @@ public protocol BackupSyncInstalling: AnyObject {
 /// `BackupSyncAdapter` is the single bridge from the new sync stack into the existing data
 /// layer — it conforms to `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging`,
 /// AND `BackupSyncConfigStore`. The container takes the same adapter instance for every
-/// collaborator slot.
+/// collaborator slot. The runtime values CloudSync's setup chain needs (deviceID, vaultID,
+/// multi-device-sync entitlement) are read by the container from the `BackupSyncContext`
+/// the adapter exposes — the adapter forwards each to `MainRepository`, so this interactor
+/// doesn't plumb them as separate arguments.
 final class BackupSyncSetupInteractor: BackupSyncInstalling {
     private let mainRepository: MainRepository
     private let exportInteractor: ExportInteracting
     private let backupImportInteractor: BackupImportInteracting
     private let syncInteractor: SyncInteracting
+    private let itemsInteractor: ItemsInteracting
+    private let deletedItemsInteractor: DeletedItemsInteracting
+    private let tagInteractor: TagInteracting
 
     init(
         mainRepository: MainRepository,
         exportInteractor: ExportInteracting,
         backupImportInteractor: BackupImportInteracting,
-        syncInteractor: SyncInteracting
+        syncInteractor: SyncInteracting,
+        itemsInteractor: ItemsInteracting,
+        deletedItemsInteractor: DeletedItemsInteracting,
+        tagInteractor: TagInteracting
     ) {
         self.mainRepository = mainRepository
         self.exportInteractor = exportInteractor
         self.backupImportInteractor = backupImportInteractor
         self.syncInteractor = syncInteractor
+        self.itemsInteractor = itemsInteractor
+        self.deletedItemsInteractor = deletedItemsInteractor
+        self.tagInteractor = tagInteractor
     }
 
     func initialize() {
@@ -55,18 +78,38 @@ final class BackupSyncSetupInteractor: BackupSyncInstalling {
             backupImportInteractor: backupImportInteractor,
             syncInteractor: syncInteractor
         )
+        // CloudSync's per-vault setup deps are constructed here — the container takes them
+        // through `setup(...)` and applies them inline. Same allocations the deleted
+        // `CloudSyncInteractor` factory used to make; just relocated to live alongside the
+        // rest of the container wiring.
+        let cloudCacheStorage = CloudCacheStorageImpl(mainRepository: mainRepository)
+        let encryptionHandler = EncryptionHandlerImpl(
+            mainRepository: mainRepository,
+            itemsInteractor: itemsInteractor,
+            tagInteractor: tagInteractor
+        )
+        let localStorage = LocalStorageImpl(
+            itemsInteractor: itemsInteractor,
+            deletedItemsInteractor: deletedItemsInteractor,
+            tagInteractor: tagInteractor,
+            mainRepository: mainRepository
+        )
         // The adapter satisfies every collaborator protocol the container needs — sync
         // services, dates, context, export, merge, AND awaiting-flags storage — so a single
-        // instance fills every slot. `cloudSync` comes straight from `MainRepository` — the
-        // container materializes `CloudSyncAdapter` over it for any registered iCloud entry.
+        // instance fills every slot. The container owns its own `CloudSync` engine and reads
+        // deviceID / vaultID / multi-device-sync from `context` (the adapter), so no separate
+        // runtime values are plumbed here.
         mainRepository.backupSyncContainer.setup(
             configStore: adapter,
             dateStore: adapter,
             context: adapter,
             vaultExporter: adapter,
             localMerger: adapter,
-            cloudSync: mainRepository.cloudSync,
-            awaitingFlags: adapter
+            awaitingFlags: adapter,
+            localStorage: localStorage,
+            cloudCacheStorage: cloudCacheStorage,
+            encryptionHandler: encryptionHandler,
+            currentDate: mainRepository.currentDate
         )
     }
 }

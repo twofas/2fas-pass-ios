@@ -88,4 +88,11 @@ public extension Array where Element == BackupConfig {
         for case .iCloud(let entry) in self { return entry }
         return nil
     }
+
+    /// `true` when an iCloud backend is registered. Convenience for call sites that only need
+    /// the presence bit (e.g. `if configs.hasICloud { ... }`) — equivalent to
+    /// `iCloudEntry != nil` but reads more naturally at the use site.
+    var hasICloud: Bool {
+        iCloudEntry != nil
+    }
 }

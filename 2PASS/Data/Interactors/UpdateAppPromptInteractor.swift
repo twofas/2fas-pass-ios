@@ -29,17 +29,20 @@ final class UpdateAppPromptInteractor: UpdateAppPromptInteracting {
 
     private let mainRepository: MainRepository
     private let systemInteractor: SystemInteracting
-    private let cloudSyncInteractor: CloudSyncInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let notificationCenter: NotificationCenter
     private let promptInterval: TimeInterval = 60 * 60 * 24
 
     private var syncEventTask: Task<Void, Never>?
-    private var cloudStateTask: Task<Void, Never>?
 
-    init(mainRepository: MainRepository, systemInteractor: SystemInteracting, cloudSyncInteractor: CloudSyncInteracting) {
+    init(
+        mainRepository: MainRepository,
+        systemInteractor: SystemInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting
+    ) {
         self.mainRepository = mainRepository
         self.systemInteractor = systemInteractor
-        self.cloudSyncInteractor = cloudSyncInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.notificationCenter = NotificationCenter.default
 
         startMonitoring()
@@ -69,32 +72,28 @@ final class UpdateAppPromptInteractor: UpdateAppPromptInteracting {
 private extension UpdateAppPromptInteractor {
 
     func startMonitoring() {
-        // Two schema-not-supported sources, one cooldown gate: iCloud surfaces them via
-        // `.cloudStateChanged` (its own state machine); file backends (WebDAV / S3) surface
-        // them via `BackupSyncContainer.syncEvents()`. Both observers register here.
+        // After the CloudSync refactor, iCloud schema-not-supported errors flow through the
+        // unified `syncEvents()` stream alongside WebDAV / S3 — `CloudSyncAdapter.performSync`
+        // surfaces them as `BackupSyncError.schemaNotSupported(version)` on `.finished` just
+        // like the file-based adapters. The pre-refactor `.cloudStateChanged` observer path
+        // (which polled `cloudSync.currentState` for the granular reason) is gone; the only
+        // signal is now "we attempted a sync and got back a schema-not-supported error."
         //
         // Subscribing to the stream before `BackupSyncSetupInteractor.initialize()` runs is
         // safe — `syncEvents()` registers the continuation immediately; sessions only yield
         // once `setup(...)` has wired the providers later in app boot.
-        let syncEventStream = mainRepository.backupSyncContainer.syncEvents()
+        let syncEventStream = syncTriggerInteractor.syncEvents()
         syncEventTask = Task.detached { [weak self] in
             for await event in syncEventStream {
                 self?.handleBackupSyncEvent(event)
             }
         }
-        let cloudStateStream = notificationCenter.notifications(named: .cloudStateChanged)
-        cloudStateTask = Task.detached { [weak self] in
-            for await _ in cloudStateStream {
-                self?.handleCloudStateChange()
-            }
-        }
-        Log("UpdateAppPromptInteractor - Started monitoring iCloud and backup-sync state changes", module: .interactor)
+        Log("UpdateAppPromptInteractor - Started monitoring backup-sync schema state", module: .interactor)
     }
 
     func stopMonitoring() {
         syncEventTask?.cancel()
-        cloudStateTask?.cancel()
-        Log("UpdateAppPromptInteractor - Stopped monitoring iCloud and backup-sync state changes", module: .interactor)
+        Log("UpdateAppPromptInteractor - Stopped monitoring backup-sync schema state", module: .interactor)
     }
 
     func shouldShowPrompt() -> Bool {
@@ -125,31 +124,17 @@ private extension UpdateAppPromptInteractor {
         return false
     }
 
-    func handleCloudStateChange() {
-        let cloudState = cloudSyncInteractor.currentState
-
-        if shouldShowPrompt() {
-            switch cloudState {
-            case .enabledNotAvailable(reason: .schemaNotSupported(let schemaVersion)):
-                Log("UpdateAppPromptInteractor - iCloud schema not supported detected (v\(schemaVersion)), showing update prompt", module: .interactor)
-
-                Task { @MainActor in
-                    self.postUpdatePromptNotification(.iCloudSchemeNotSupported(schemaVersion: schemaVersion))
-                }
-            default:
-                break
-            }
-        }
-    }
-
     func handleBackupSyncEvent(_ event: BackupSyncSession.Event) {
-        guard case .finished(_, _, .failure(.schemaNotSupported(let version))) = event else {
+        guard case .finished(_, let kind, .failure(.schemaNotSupported(let version))) = event else {
             return
         }
         guard shouldShowPrompt() else { return }
-        Log("UpdateAppPromptInteractor - File backend schema not supported (v\(version)), showing update prompt", module: .interactor)
+        let reason: UpdateAppPromptRequestReason = (kind == .iCloud)
+            ? .iCloudSchemeNotSupported(schemaVersion: version)
+            : .webDAVSchemeNotSupported(schemaVersion: version)
+        Log("UpdateAppPromptInteractor - \(String(describing: kind)) schema not supported (v\(version)), showing update prompt", module: .interactor)
         Task { @MainActor in
-            self.postUpdatePromptNotification(.webDAVSchemeNotSupported(schemaVersion: version))
+            self.postUpdatePromptNotification(reason)
         }
     }
 

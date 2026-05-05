@@ -101,10 +101,6 @@ protocol UserDefaultsDataSource: AnyObject {
     var defaultURIMatchRule: PasswordURI.Match { get }
     func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
     
-    var lastSuccessCloudSyncDate: Date? { get }
-    func setLastSuccessCloudSyncDate(_ date: Date)
-    func clearLastSuccessCloudSyncDate()
-    
     var webDAVWriteDecryptedCopy: Bool { get }
     func webDAVSetWriteDecryptedCopy(_ writeDecryptedCopy: Bool)
 

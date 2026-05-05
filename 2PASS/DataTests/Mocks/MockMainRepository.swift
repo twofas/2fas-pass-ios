@@ -593,15 +593,6 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    private var stubbedCloudSync: CloudSync = CloudSync()
-    var cloudSync: CloudSync { stubbedCloudSync }
-
-    @discardableResult
-    func withCloudSync(_ value: CloudSync) -> Self {
-        stubbedCloudSync = value
-        return self
-    }
-
     private var stubbedDeviceName: String = "Mock Device"
     var deviceName: String { stubbedDeviceName }
 
@@ -2196,40 +2187,6 @@ final class MockMainRepository: MainRepository {
 
     // MARK: Cloud
 
-    private var stubbedIsCloudBackupConnected: Bool = false
-    var isCloudBackupConnected: Bool { stubbedIsCloudBackupConnected }
-
-    @discardableResult
-    func withIsCloudBackupConnected(_ value: Bool) -> Self {
-        stubbedIsCloudBackupConnected = value
-        return self
-    }
-
-    private var stubbedCloudCurrentState: CloudState = .unknown
-    var cloudCurrentState: CloudState { stubbedCloudCurrentState }
-
-    @discardableResult
-    func withCloudCurrentState(_ value: CloudState) -> Self {
-        stubbedCloudCurrentState = value
-        return self
-    }
-
-    func enableCloudBackup() {
-        recordCall()
-    }
-
-    func disableCloudBackup() {
-        recordCall()
-    }
-
-    func clearBackup() {
-        recordCall()
-    }
-
-    func synchronizeBackup(fromPush: Bool) {
-        recordCall()
-    }
-
     private var stubbedCloudListVaultsToRecover: (@escaping (Result<[VaultRawData], Error>) -> Void) -> Void = { $0(.success([])) }
     func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {
         recordCall()
@@ -2254,24 +2211,6 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    private var stubbedLastSuccessCloudSyncDate: Date?
-    var lastSuccessCloudSyncDate: Date? { stubbedLastSuccessCloudSyncDate }
-
-    @discardableResult
-    func withLastSuccessCloudSyncDate(_ value: Date?) -> Self {
-        stubbedLastSuccessCloudSyncDate = value
-        return self
-    }
-
-    private(set) var capturedLastSuccessCloudSyncDate: Date?
-    func setLastSuccessCloudSyncDate(_ date: Date) {
-        recordCall()
-        capturedLastSuccessCloudSyncDate = date
-    }
-
-    func clearLastSuccessCloudSyncDate() {
-        recordCall()
-    }
 
     // MARK: Cloud Cache
 

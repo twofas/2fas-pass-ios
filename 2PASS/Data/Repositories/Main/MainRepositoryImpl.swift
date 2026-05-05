@@ -60,7 +60,6 @@ final class MainRepositoryImpl: MainRepository {
     let feedbackGenerator: UINotificationFeedbackGenerator
     let network: NetworkDataSource
     let logDataSource: LogStorageDataSource
-    let cloudSync: CloudSync
     let cloudCache: CloudCacheStorageDataSource
     let cloudRecovery: CloudRecovering
     let autoFillStatusDataSource: AutoFillStatusDataSourcing
@@ -93,7 +92,6 @@ final class MainRepositoryImpl: MainRepository {
         network: NetworkDataSource = NetworkDataSourceImpl(),
         logDataSource: LogStorageDataSource = LogStorageDataSourceImpl(),
         backupSyncContainer: BackupSyncContainer = .init(),
-        cloudSync: CloudSync = CloudSync(),
         cloudCache: CloudCacheStorageDataSource = CloudCacheStorageDataSourceImpl(),
         cloudRecovery: CloudRecovering = CloudRecovery(),
         autoFillStatusDataSource: AutoFillStatusDataSourcing = AutoFillStatusDataSource(),
@@ -111,7 +109,6 @@ final class MainRepositoryImpl: MainRepository {
         self.network = network
         self.logDataSource = logDataSource
         self.backupSyncContainer = backupSyncContainer
-        self.cloudSync = cloudSync
         self.cloudCache = cloudCache
         self.cloudRecovery = cloudRecovery
         self.autoFillStatusDataSource = autoFillStatusDataSource
@@ -132,13 +129,5 @@ final class MainRepositoryImpl: MainRepository {
         }
         
         cloudCache.warmUp()
-        
-        updateTimeOffsetListeners()
-    }
-}
-
-extension MainRepositoryImpl {
-    func updateTimeOffsetListeners() {
-        cloudSync.setCurrentDate(currentDate)
     }
 }

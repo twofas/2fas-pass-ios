@@ -22,7 +22,6 @@ final class MainModuleInteractor {
     var updateBadge: ((Bool) -> Void)?
     var paymentScreen: Callback?
 
-    private let cloudSyncInteractor: CloudSyncInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let systemInteractor: SystemInteracting
     private let quickSetupInteractor: QuickSetupInteracting
@@ -36,20 +35,16 @@ final class MainModuleInteractor {
     private var activitySubscription: Task<Void, Never>?
 
     init(
-        cloudSyncInteractor: CloudSyncInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
         systemInteractor: SystemInteracting,
         quickSetupInteractor: QuickSetupInteracting,
         loginInteractor: LoginInteracting
     ) {
-        self.cloudSyncInteractor = cloudSyncInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
         self.systemInteractor = systemInteractor
         self.quickSetupInteractor = quickSetupInteractor
         self.loginInteractor = loginInteractor
         self.notificationCenter = NotificationCenter.default
-
-        cloudSyncInteractor.setup(takeoverVault: false)
 
         notificationCenter.addObserver(
             self,
@@ -63,12 +58,6 @@ final class MainModuleInteractor {
                 name: .presentPaymentScreen,
                 object: nil
             )
-        notificationCenter.addObserver(
-            self,
-            selector: #selector(updateBadgeAction),
-            name: .cloudStateChanged,
-            object: nil
-        )
 
         activitySubscription = Task { [weak self] in
             guard let stream = self?.syncTriggerInteractor.syncEvents() else { return }
@@ -113,26 +102,20 @@ private extension MainModuleInteractor {
     
     @objc
     func updateBadgeAction() {
-        // The badge reflects two error sources OR'd together:
-        //   1. iCloud's terminal `CloudState.hasError` — covers persistent conditions
-        //      (account signed out, container unavailable) that don't always coincide with
-        //      a recent failed sync run.
-        //   2. `BackupSyncContainer.hasAnySyncError` — covers any per-run failure recorded
-        //      for any config (iCloud, WebDAV, S3) by the session's `.finished(.failure)`
-        //      events. Process-scoped, in-memory, cleared on next success per-config.
-        // While anything is currently syncing we hold the previous flag — avoids flickering
-        // between "running, no error yet" and "running, prior error" mid-session. The session
-        // emits `.sessionFinished` after every per-service `.finished` has written its outcome,
-        // so this method picks up the post-run state on that final event.
-        let backupIsRunning = syncTriggerInteractor.currentActivity.isRunning
-        let cloudIsSyncing = cloudSyncInteractor.currentState.isSyncing
-        if backupIsRunning || cloudIsSyncing {
+        // While any sync is in flight, hold the previous flag — avoids flickering between
+        // "running, no error yet" and "running, prior error" mid-session. The session emits
+        // `.sessionFinished` after every per-service `.finished` has written its outcome, so
+        // this method picks up the post-run state on that final event. After the refactor,
+        // `currentActivity.isRunning` already covers iCloud (CloudSyncAdapter sync runs go
+        // through the same session) and `hasAnySyncError` already collects iCloud-side
+        // failures alongside WebDAV/S3, so the previous OR with `cloudSyncInteractor.currentState`
+        // collapses to the unified backup-sync surface.
+        if syncTriggerInteractor.currentActivity.isRunning {
             postBadgeChange(syncErroredLately)
             return
         }
 
-        let showErrorBadge = cloudSyncInteractor.currentState.hasError
-            || syncTriggerInteractor.hasAnySyncError
+        let showErrorBadge = syncTriggerInteractor.hasAnySyncError
         syncErroredLately = showErrorBadge
         postBadgeChange(showErrorBadge)
     }

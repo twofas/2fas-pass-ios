@@ -33,10 +33,14 @@ public final class CloudSync {
         localStorage: LocalStorage,
         cloudCacheStorage: CloudCacheStorage,
         encryptionHandler: EncryptionHandler,
-        deviceID: DeviceID,
         jsonDecoder: JSONDecoder,
-        jsonEncoder: JSONEncoder
+        jsonEncoder: JSONEncoder,
+        context: BackupSyncContext
     ) {
+        guard let deviceID = context.deviceID else {
+            Log("CloudSync - skipping setup: no device ID", module: .backup)
+            return
+        }
         guard cloudHandler == nil else { return }
         let cacheHandler = CacheHandler(cloudCacheStorage: cloudCacheStorage, jsonDecoder: jsonDecoder)
         let mergeHandler = MergeHandler(
@@ -62,19 +66,16 @@ public final class CloudSync {
             cloudAvailability: cloudAvailability,
             syncHandler: syncHandler,
             mergeHandler: mergeHandler,
-            cacheHandler: cacheHandler
+            cacheHandler: cacheHandler,
+            context: context
         )
         checkForMigration(cloudCacheStorage: cloudCacheStorage)
     }
-    
+
     public func setMultiDeviceSyncEnabled(_ enabled: Bool, takingOver: Bool = false) {
         mergeHandler?.setMultiDeviceSyncEnabled(enabled, takingOver: takingOver)
     }
-    
-    public func setVaultID(_ vaultID: VaultID) {
-        cloudHandler?.setVaultID(vaultID: vaultID)
-    }
-    
+
     public func synchronize(fromPush: Bool = false) {
         cloudHandler?.synchronize(fromPush: fromPush)
     }

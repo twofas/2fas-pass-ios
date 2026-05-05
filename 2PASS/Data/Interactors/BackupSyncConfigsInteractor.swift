@@ -6,6 +6,7 @@
 
 import Foundation
 import Backup
+import Common
 
 /// CRUD-style access to the backup-sync configs, plus a connection probe used to validate a
 /// config before persisting it. Persistence reads/writes go straight to `MainRepository` —
@@ -69,7 +70,7 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         let id = UUID()
         var configs = mainRepository.loadBackupConfigs()
         configs.append(.webDAV(BackupConfigEntry(id: id, createdAt: Date(), config: config)))
-        mainRepository.saveBackupConfigs(configs)
+        mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
     }
 
@@ -78,17 +79,17 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         let id = UUID()
         var configs = mainRepository.loadBackupConfigs()
         configs.append(.s3(BackupConfigEntry(id: id, createdAt: Date(), config: config)))
-        mainRepository.saveBackupConfigs(configs)
+        mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
     }
 
     @discardableResult
     func addiCloudConfig() -> UUID? {
         var configs = mainRepository.loadBackupConfigs()
-        guard configs.iCloudEntry == nil else { return nil }
+        guard !configs.hasICloud else { return nil }
         let id = UUID()
         configs.append(.iCloud(BackupConfigEntry(id: id, createdAt: Date(), config: BackupiCloudConfig())))
-        mainRepository.saveBackupConfigs(configs)
+        mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
     }
 
@@ -97,7 +98,7 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         guard let idx = configs.firstIndex(where: { $0.id == id }),
               case .webDAV(let existing) = configs[idx] else { return }
         configs[idx] = .webDAV(BackupConfigEntry(id: id, createdAt: existing.createdAt, config: config))
-        mainRepository.saveBackupConfigs(configs)
+        mainRepository.backupSyncContainer.saveConfigs(configs)
     }
 
     func updateS3Config(id: UUID, with config: S3ServiceConfig) {
@@ -105,14 +106,14 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         guard let idx = configs.firstIndex(where: { $0.id == id }),
               case .s3(let existing) = configs[idx] else { return }
         configs[idx] = .s3(BackupConfigEntry(id: id, createdAt: existing.createdAt, config: config))
-        mainRepository.saveBackupConfigs(configs)
+        mainRepository.backupSyncContainer.saveConfigs(configs)
     }
 
     func removeConfig(id: UUID) {
         var configs = mainRepository.loadBackupConfigs()
         guard configs.contains(where: { $0.id == id }) else { return }
         configs.removeAll { $0.id == id }
-        mainRepository.saveBackupConfigs(configs)
+        mainRepository.backupSyncContainer.saveConfigs(configs)
     }
 
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError) {

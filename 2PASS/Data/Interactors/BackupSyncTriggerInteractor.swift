@@ -83,6 +83,19 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Cancels the currently running backup sync session, if any.
     func cancelCurrentSync()
 
+    /// Forwards an incoming CloudKit silent push so iCloud's sync engine can mark
+    /// `needsResync` if a sync is already in flight past its fetch phase. Bypasses the
+    /// container's in-flight debounce specifically for push-driven triggers — see
+    /// `BackupSyncContainer.handlePush()` for the load-bearing semantics. iCloud-only by
+    /// nature: only CloudKit produces push-driven sync triggers in this app.
+    func handlePushNotification()
+
+    /// Per-id counterpart to `cancelCurrentSync()`. Cancels the running sync only if `id` is
+    /// among the currently active config ids — backs per-row "Cancel" buttons so a tap on
+    /// one row doesn't tear down a sync running for a different config. No-op when `id`
+    /// isn't active.
+    func cancelSync(id: UUID)
+
     /// Live stream of session-level (`.sessionStarted` / `.sessionFinished`) and per-service
     /// (`.started` / `.finished`) events from every sync the underlying container runs. Each
     /// call returns a fresh stream — multiple subscribers can listen concurrently. Use this
@@ -151,6 +164,14 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
 
     func cancelCurrentSync() {
         mainRepository.backupSyncContainer.cancelCurrentSync()
+    }
+
+    func cancelSync(id: UUID) {
+        mainRepository.backupSyncContainer.cancelSync(id: id)
+    }
+
+    func handlePushNotification() {
+        mainRepository.backupSyncContainer.handlePush()
     }
 
     func syncEvents() -> AsyncStream<BackupSyncSession.Event> {

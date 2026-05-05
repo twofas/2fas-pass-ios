@@ -28,6 +28,27 @@ public enum BackupVaultFetchError: Error, Sendable {
     case vaultIsDamaged
 }
 
+/// Posted by `BackupSyncContainer.saveConfigs(_:)` exactly once after each successful
+/// persistence of the config list. Payload-less by design: consumers re-read
+/// `MainRepository.loadBackupConfigs()` (or whichever derived value they care about) in
+/// response. Subject is unused — config state is global, not scoped to a particular
+/// instance, so posters and observers both pass `subject: nil` (the default).
+///
+/// **Single-writer guarantee.** The container is the only writer of persisted configs in
+/// the codebase: `BackupSyncConfigsInteractor`'s mutating methods all route through
+/// `saveConfigs(_:)` here, and this message is posted once per successful call (gated on
+/// the container being initialized — uninitialized saves no-op without firing the message,
+/// since no actual persistence happened).
+///
+/// Built on the project's `Notifications.AsyncMessage` backport (in
+/// `Common/Extensions/Notifications+TypedMessage.swift`), which mirrors iOS 26's
+/// `NotificationCenter.AsyncMessage`. Migration when the deployment-target floor rises:
+/// delete the backport and rename `Notifications.AsyncMessage` → `NotificationCenter.AsyncMessage`.
+public struct BackupConfigsDidChange: Notifications.AsyncMessage {
+    public typealias Subject = NSObject
+    public init() {}
+}
+
 /// Runs registered backup-sync backends through the convergence loop.
 ///
 /// Holds the three shared collaborators (`context`, `vaultExporter`, `localMerger`) plus the
@@ -70,11 +91,13 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     /// Collaborators the container needs to run sessions: one to materialize the current set of
     /// services, one to look up per-config last-sync timestamps, one for the per-config
-    /// "next sync needs special handling" awaiting flags. They start empty/no-op so that a
-    /// freshly-`init()`-ed container is inert (zero services, no dates, no awaiting flags) and
-    /// become real once `setup(...)` runs at app start. Stored together in a single lock so
-    /// `setup`'s update is atomic — no torn read where one slot has been swapped but the others
-    /// haven't yet.
+    /// "next sync needs special handling" awaiting flags, and a direct reference to the config
+    /// store so the public `saveConfigs(_:)` entry point can route external CRUD through one
+    /// place (the only place where iCloud lifecycle is reconciled with config presence). They
+    /// start empty/no-op so that a freshly-`init()`-ed container is inert (zero services, no
+    /// dates, no awaiting flags, no store) and become real once `setup(...)` runs at app start.
+    /// Stored together in a single lock so `setup`'s update is atomic — no torn read where one
+    /// slot has been swapped but the others haven't yet.
     private struct Providers {
         var servicesProvider: @Sendable () -> [any BackupSynchronizing]
         var lastSyncDateProvider: @Sendable (UUID) -> Date?
@@ -83,12 +106,18 @@ public final class BackupSyncContainer: @unchecked Sendable {
         /// (which materializes full `BackupSynchronizing` sessions) so `markAllConfigsAwaitingVaultOverride`
         /// doesn't pay for session construction just to enumerate ids.
         var configIDsProvider: @Sendable () -> Set<UUID>
+        /// Direct reference to the config store. Used by `saveConfigs(_:)` to read the
+        /// pre-write snapshot, persist the new list, and reconcile iCloud lifecycle with the
+        /// before/after diff. `nil` until `setup(...)` runs — `saveConfigs(_:)` no-ops in that
+        /// state, matching the rest of the inert-container behavior.
+        var configStore: BackupSyncConfigStore?
 
         static let empty = Providers(
             servicesProvider: { [] },
             lastSyncDateProvider: { _ in nil },
             awaitingFlags: EmptyAwaitingFlagsStore(),
-            configIDsProvider: { [] }
+            configIDsProvider: { [] },
+            configStore: nil
         )
     }
 
@@ -122,26 +151,57 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// `.server` is freed on the next success or app close.
     private let lastErrors = OSAllocatedUnfairLock<[UUID: BackupSyncError]>(initialState: [:])
 
+    /// The container's owned `CloudSync` engine. Constructed eagerly in init so that
+    /// `MainRepositoryImpl` doesn't have to know it exists — there is exactly one CloudKit
+    /// container per build, mirrored by exactly one `CloudSync` here. Configured per-vault by
+    /// `setup(...)` (see the static deps + per-vault context parameters); driven by
+    /// `CloudSyncAdapter` materialized for any persisted `BackupConfig.iCloud(...)` entry; and
+    /// enabled/disabled as a side effect of `saveConfigs(_:)` detecting the iCloud entry being
+    /// added or removed. There is no public accessor — every caller goes through one of the
+    /// three integration points above.
+    private let cloudSync = CloudSync()
+
     /// Creates an inert container. Until `setup(...)` runs the container has zero services
     /// and `syncAll` / `sync(_:)` no-op gracefully — that's the point: callers (specifically
     /// `MainRepositoryImpl`) can store this as a non-optional `let` from their own init,
     /// then have an upper-layer interactor wire it up post-init via `setup(...)`.
     public init() {}
 
-    /// Wires the container's collaborators after construction. Required before any sync
-    /// produces useful work — calls before `setup` no-op gracefully (zero services →
-    /// `syncAll` returns empty results, `currentActivity` reads `.idle`). Idempotent: a
-    /// second call atomically replaces the providers, which is the supported way to swap
-    /// collaborators (e.g. test re-wiring) since the container itself is single-instance
-    /// for the app lifetime.
+    /// Wires the container's collaborators after construction and applies the per-vault
+    /// `CloudSync` configuration. Required before any sync produces useful work — calls before
+    /// `setup` no-op gracefully (zero services → `syncAll` returns empty results,
+    /// `currentActivity` reads `.idle`, `saveConfigs(_:)` no-ops). Idempotent: a second call
+    /// atomically replaces the providers and re-applies the CloudSync chain. This is the
+    /// supported re-apply path used by vault recovery, which calls `setup(...)` again with the
+    /// new selected `vaultID` once the recovered vault is the selected one. The "this vault's
+    /// data is authoritative" signal during recovery is conveyed via
+    /// `markAllConfigsAwaitingVaultOverride()` — a unified per-config flag the next sync
+    /// honors via `CloudSyncAdapter.performSync(overwritingVault:)` — so `setup(...)` itself
+    /// stays free of recovery-specific arguments.
+    ///
+    /// **CloudSync chain.** After writing the new providers, `setup(...)` runs:
+    /// `setCurrentDate → setup → setMultiDeviceSyncEnabled → checkState`. The underlying
+    /// `CloudSync.setup(...)` is itself idempotent (guards on internal `cloudHandler == nil`);
+    /// the rest of the chain re-applies fresh values on every call. Vault id is **not**
+    /// pushed here — `CloudHandler.sync()` reads `context.vaultID` lazily at sync time, so
+    /// vault changes propagate without any re-init. Bails only on `nil` `context.deviceID`
+    /// (still required at construction time for `MergeHandler`); the caller
+    /// (`BackupSyncSetupInteractor`) is responsible for re-running once deviceID becomes
+    /// available. Reading deviceID / vaultID / multi-device-sync from the `context`
+    /// collaborator (rather than separate parameters) keeps the source of truth single —
+    /// `BackupSyncAdapter` forwards each to `MainRepository`, so callers don't need to plumb
+    /// three runtime values that the adapter already exposes.
     public func setup(
         configStore: BackupSyncConfigStore,
         dateStore: BackupSyncDateStore,
         context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,
         localMerger: BackupLocalMerging,
-        cloudSync: CloudSync,
-        awaitingFlags: BackupAwaitingFlagsStoring
+        awaitingFlags: BackupAwaitingFlagsStoring,
+        localStorage: LocalStorage,
+        cloudCacheStorage: CloudCacheStorage,
+        encryptionHandler: EncryptionHandler,
+        currentDate: Date
     ) {
         let newProviders = Providers(
             servicesProvider: Self.makeServicesProvider(
@@ -158,9 +218,27 @@ public final class BackupSyncContainer: @unchecked Sendable {
             awaitingFlags: awaitingFlags,
             configIDsProvider: { [configStore] in
                 Set(configStore.loadConfigs().map(\.id))
-            }
+            },
+            configStore: configStore
         )
         providers.withLock { $0 = newProviders }
+
+        cloudSync.setCurrentDate(currentDate)
+        
+        cloudSync.setup(
+            localStorage: localStorage,
+            cloudCacheStorage: cloudCacheStorage,
+            encryptionHandler: encryptionHandler,
+            jsonDecoder: JSONDecoder(),
+            jsonEncoder: JSONEncoder(),
+            context: context
+        )
+        // Vault id is no longer pushed via `setVaultID(_:)` — `CloudHandler.sync()` reads
+        // `context.vaultID` lazily on each sync, so vault changes propagate without a
+        // re-init. The previous `guard let vaultID = context.vaultID` bail is gone too;
+        // setup proceeds even when no vault is selected at launch.
+        cloudSync.setMultiDeviceSyncEnabled(context.allowsMultiDeviceSync)
+        cloudSync.checkState()
     }
 
     /// Test-only initializer. Seeds the same lock-backed `Providers` storage `setup(...)`
@@ -192,6 +270,41 @@ public final class BackupSyncContainer: @unchecked Sendable {
                 continuation.finish()
             }
             dict.removeAll()
+        }
+    }
+
+    // MARK: - Config CRUD
+
+    /// External entry point for persisting the full `[BackupConfig]` list. The single
+    /// integration seam where the iCloud lifecycle (`cloudSync.enable()` / `disable(notify:)`)
+    /// is reconciled with the presence of a `BackupConfig.iCloud(...)` entry in the store.
+    /// All callers (`BackupSyncConfigsInteractor.add*Config` / `update*Config` / `removeConfig`)
+    /// route their saves here instead of writing the persistent store directly, so the diff
+    /// is observed in exactly one place.
+    ///
+    /// **Order matters.** Reads `old` *before* writing `new` — `loadConfigs()` and the upcoming
+    /// `saveConfigs(_:)` go through the same persistent store, so flipping the order would
+    /// silently observe `old == new` after the write and the diff would never fire. Saves to
+    /// file-based configs (WebDAV / S3) are no-ops here: the diff only checks the iCloud
+    /// presence bit, and the next `syncAll` / `sync(_:)` rebuilds services from the new shape.
+    ///
+    /// No-ops gracefully when called before `setup(...)` runs (no `configStore` yet).
+    public func saveConfigs(_ configs: [BackupConfig]) {
+        let store = providers.withLock { $0.configStore }
+        guard let store else { return }
+        let old = store.loadConfigs()
+        store.saveConfigs(configs)
+        reconcileICloudLifecycle(old: old, new: configs)
+        NotificationCenter.default.post(BackupConfigsDidChange())
+    }
+
+    private func reconcileICloudLifecycle(old: [BackupConfig], new: [BackupConfig]) {
+        let oldHasICloud = old.contains { if case .iCloud = $0 { true } else { false } }
+        let newHasICloud = new.contains { if case .iCloud = $0 { true } else { false } }
+        if !oldHasICloud && newHasICloud {
+            cloudSync.enable()
+        } else if oldHasICloud && !newHasICloud {
+            cloudSync.disable(notify: true)
         }
     }
 
@@ -332,6 +445,46 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     public func cancelCurrentSync() {
         let cancel = state.withLock { $0.cancelCurrentSync }
+        cancel?()
+    }
+
+    /// Handles a CloudKit silent push by routing directly to `cloudSync.synchronize(fromPush: true)`,
+    /// bypassing the container's in-flight debounce. The `fromPush: true` flag has load-bearing
+    /// semantics inside `SyncHandler.synchronize`: when a sync is already in progress AND its
+    /// fetch phase has started, the flag triggers `needsResync = true` so the in-flight sync
+    /// queues a follow-up pass on completion — without it, the push is silently dropped and
+    /// the remote changes the push announced wait until the next user-driven trigger.
+    ///
+    /// Routing through `syncAll()` would not preserve this: the container's `reserveSyncSlot()`
+    /// drops the trigger before it ever reaches `cloudSync`, and `CloudSyncAdapter.performSync`
+    /// internally calls `synchronize(fromPush: false)`, so the flag is unreachable from the
+    /// orchestrated path.
+    ///
+    /// CloudKit pushes are inherently iCloud-only (no equivalent for WebDAV / S3), so the
+    /// method is named for the trigger (`handlePush`) rather than the backend. No-op when
+    /// `setup(...)` hasn't run yet, or when `cloudSync.setup(...)` early-returned because
+    /// deviceID was nil at launch — `cloudSync.synchronize` itself optional-chains through
+    /// an unconfigured `cloudHandler`.
+    public func handlePush() {
+        cloudSync.synchronize(fromPush: true)
+    }
+
+    /// Cancels the running sync only if `id` is currently among `activeConfigIDs` — the per-id
+    /// counterpart to `cancelCurrentSync()`. Backs the per-row "Cancel" button so a tap on one
+    /// row doesn't tear down a sync that's already moved past it (or one that's running for a
+    /// different config altogether).
+    ///
+    /// **Cancellation granularity.** The session runs services sequentially through a single
+    /// `Task`, so cancelling at all means cancelling the whole session — there is no
+    /// per-service interruption hook. In practice that matches the UI: per-row triggers go
+    /// through `sync(_:)` (single-id session, so the only active id is the one we're
+    /// cancelling), and `syncAll` runs at most one id active at a time. No-op when `id` isn't
+    /// active — the running sync is for some other config and shouldn't be torn down by this
+    /// caller's intent.
+    public func cancelSync(id: UUID) {
+        let cancel = state.withLock { state in
+            state.activeConfigIDs.contains(id) ? state.cancelCurrentSync : nil
+        }
         cancel?()
     }
 

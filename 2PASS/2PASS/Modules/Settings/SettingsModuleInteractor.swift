@@ -26,7 +26,6 @@ final class SettingsModuleInteractor {
 
     private let systemInteractor: SystemInteracting
     private let configInteractor: ConfigInteracting
-    private let cloudSyncInteractor: CloudSyncInteracting
     private let configsInteractor: BackupSyncConfigsInteracting
     private let autoFillStatusInteractor: AutoFillStatusInteracting
     private let pushNotificationsInteractor: PushNotificationsPermissionInteracting
@@ -36,14 +35,12 @@ final class SettingsModuleInteractor {
 
     init(systemInteractor: SystemInteracting,
          configInteractor: ConfigInteracting,
-         cloudSyncInteractor: CloudSyncInteracting,
          configsInteractor: BackupSyncConfigsInteracting,
          autoFillStatusInteractor: AutoFillStatusInteracting,
          pushNotificationsInteractor: PushNotificationsPermissionInteracting,
          paymentStatusInteractor: PaymentStatusInteracting) {
         self.systemInteractor = systemInteractor
         self.configInteractor = configInteractor
-        self.cloudSyncInteractor = cloudSyncInteractor
         self.configsInteractor = configsInteractor
         self.autoFillStatusInteractor = autoFillStatusInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
@@ -72,23 +69,11 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
     }
     
     var isSyncEnabled: Bool {
-        switch cloudSyncInteractor.currentState {
-        case .enabled, .enabledNotAvailable:
-            return true
-        default:
-            break
-        }
-        // "WebDAV is enabled" used to mean `webDAVIsConnected` (a derived flag set after a
-        // successful sync). With multi-config BackupSync the equivalent is "the user has at
-        // least one non-iCloud backend configured" — file-based backends (WebDAV, S3) only get
-        // configs persisted when the user finishes setup.
-        let hasFileBackend = configsInteractor.allConfigs.contains { config in
-            switch config.kind {
-            case .webDAV, .s3: return true
-            case .iCloud: return false
-            }
-        }
-        return hasFileBackend
+        // "Any sync backend is configured" — iCloud presence is a config-store fact now (the
+        // old `cloudSyncInteractor.currentState` derivation collapsed into the same check
+        // that already covers WebDAV / S3). True when the user has at least one persisted
+        // backup config of any kind.
+        !configsInteractor.allConfigs.isEmpty
     }
     
     var syncHasError: Bool {

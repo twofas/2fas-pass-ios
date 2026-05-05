@@ -93,6 +93,21 @@ import os
         #expect(next.recording.calls == 0)
         #expect(container.currentActivity == .idle)
     }
+
+    @Test func markAllConfigsAwaitingVaultOverrideStillMarksEveryConfigID() {
+        let first = UUID()
+        let second = UUID()
+        let flags = RecordingAwaitingFlagsStore()
+        let container = BackupSyncContainer(
+            servicesProvider: { [] },
+            awaitingFlagsStore: flags,
+            configIDsProvider: { [first, second] }
+        )
+
+        container.markAllConfigsAwaitingVaultOverride()
+
+        #expect(flags.vaultOverrideAwaitingConfigIDs == [first, second])
+    }
 }
 
 private func collectEvents(
@@ -123,6 +138,31 @@ private func waitUntil(
 }
 
 private struct WaitUntilTimedOut: Error {}
+
+private final class RecordingAwaitingFlagsStore: BackupAwaitingFlagsStoring, @unchecked Sendable {
+    private struct State {
+        var vaultOverrideAwaitingConfigIDs: Set<UUID> = []
+        var deviceRegistrationAwaitingConfigIDs: Set<UUID> = []
+    }
+
+    private let state = OSAllocatedUnfairLock(initialState: State())
+
+    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+        state.withLock { $0.vaultOverrideAwaitingConfigIDs }
+    }
+
+    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
+        state.withLock { $0.vaultOverrideAwaitingConfigIDs.formUnion(configIDs) }
+    }
+
+    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+        state.withLock { $0.deviceRegistrationAwaitingConfigIDs }
+    }
+
+    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+        state.withLock { $0.deviceRegistrationAwaitingConfigIDs.formUnion(configIDs) }
+    }
+}
 
 private final class FakeSynchronizer: BackupSynchronizing, @unchecked Sendable {
     struct Recording {

@@ -72,12 +72,16 @@ final class BackupConfigsPresenter {
     /// cancel — no concurrent mutation, so the `unsafe` opt-out is sound.
     @ObservationIgnored
     private var syncEventTask: Task<Void, Never>?
+    /// RAII observer for `BackupConfigsDidChange` posted by `BackupSyncContainer.saveConfigs(_:)`
+    /// after every successful persistence (add / update / remove). Drives `reload()` so newly
+    /// added/removed config rows animate in even when triggered from another screen (e.g.
+    /// iCloud toggled via QuickSetup while BackupConfigs is off-stack). The token auto-removes
+    /// the underlying NotificationCenter observer on `cancel()` or `deinit`, whichever fires first.
+    @ObservationIgnored
+    private var configsChangeToken: Notifications.ObservationToken?
 
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
-        interactor.cloudStateChanged = { [weak self] in
-            Task { @MainActor in self?.reload() }
-        }
         // Both initial state seeding (`snapshotActivity`) and the `syncEvents()` subscription
         // happen in `onAppear` — keeps all data work tied to view visibility and avoids
         // processing events for a hidden screen. See `onDisappear` for teardown.
@@ -86,8 +90,11 @@ final class BackupConfigsPresenter {
     isolated deinit {
         // Safety net: `onDisappear` should cancel first under normal lifecycle, but if the
         // presenter is torn down without the view ever firing onDisappear (rare but possible),
-        // the AsyncStream continuation would otherwise leak.
+        // the AsyncStream continuation would otherwise leak. The `configsChangeToken`'s own
+        // `deinit` would clean up its observer too — explicit cancel here for symmetry with
+        // the sync-event task.
         syncEventTask?.cancel()
+        configsChangeToken?.cancel()
     }
 
     private func snapshotActivity() {
@@ -102,6 +109,21 @@ final class BackupConfigsPresenter {
         syncEventTask = Task { [weak self, interactor] in
             for await event in interactor.syncEvents() {
                 self?.handle(event)
+            }
+        }
+    }
+
+    private func subscribeToConfigsChanges() {
+        configsChangeToken?.cancel()
+        configsChangeToken = NotificationCenter.default.addObserver(
+            of: BackupConfigsDidChange.self
+        ) { [weak self] _ in
+            // Posters call `NotificationCenter.default.post(...)` from whichever thread the
+            // mutating method ran on; hop to MainActor for the UI rebuild. `withAnimation`
+            // matches the `addiCloud` / `onDelete` paths' local-mutation animation.
+            Task { @MainActor in
+                guard let self else { return }
+                withAnimation { self.reload() }
             }
         }
     }
@@ -123,11 +145,14 @@ final class BackupConfigsPresenter {
     func onAppear() {
         snapshotActivity()
         subscribeToSyncEvents()
+        subscribeToConfigsChanges()
     }
 
     func onDisappear() {
         syncEventTask?.cancel()
         syncEventTask = nil
+        configsChangeToken?.cancel()
+        configsChangeToken = nil
     }
 
     func onChooseProvider(_ kind: SyncServiceKind) {
@@ -148,7 +173,7 @@ final class BackupConfigsPresenter {
     func onDelete(_ row: BackupConfigRowItem) {
         destination = .removeConfirmation(name: row.title, onConfirm: { [weak self] in
             guard let self else { return }
-            self.interactor.remove(id: row.id, kind: row.kind)
+            self.interactor.remove(id: row.id)
             withAnimation { self.reload() }
         })
     }
@@ -200,12 +225,11 @@ final class BackupConfigsPresenter {
     }
 
     private func isSyncing(for config: BackupConfig) -> Bool {
-        switch config.kind {
-        case .iCloud:
-            return interactor.cloudState.isSyncing || activeConfigIDs.contains(config.id)
-        case .webDAV, .s3:
-            return activeConfigIDs.contains(config.id)
-        }
+        // Unified across kinds — `CloudSyncAdapter` runs go through the same session events
+        // as WebDAV/S3, so `activeConfigIDs` already covers iCloud's "currently syncing"
+        // window. The pre-refactor extra `cloudState.isSyncing` term was a relic of the
+        // separate CloudKit state machine and is redundant here.
+        activeConfigIDs.contains(config.id)
     }
 }
 
@@ -230,19 +254,18 @@ private extension BackupConfigsPresenter {
     }
 
     func statusText(for config: BackupConfig) -> String {
-        switch config.kind {
-        case .iCloud:
-            return interactor.cloudState.shortDescription
-        case .webDAV, .s3:
-            if activeConfigIDs.contains(config.id) {
-                return String(localized: .syncSyncing)
-            } else if let date = interactor.lastSyncDate(for: config.id) {
-                return String(localized: .backupConfigsLastSynced(
-                    date.formatted(date: .abbreviated, time: .shortened)
-                ))
-            } else {
-                return String(localized: .backupConfigsNeverSynced)
-            }
+        // Unified across kinds. Pre-refactor iCloud branched into `cloudState.shortDescription`
+        // (which translated CloudKit's state machine into a localized string); after the
+        // refactor iCloud uses the same per-config surface as WebDAV/S3 since `CloudSyncAdapter`
+        // writes its `lastSyncDate` and surfaces failures through the unified session events.
+        if activeConfigIDs.contains(config.id) {
+            return String(localized: .syncSyncing)
+        } else if let date = interactor.lastSyncDate(for: config.id) {
+            return String(localized: .backupConfigsLastSynced(
+                date.formatted(date: .abbreviated, time: .shortened)
+            ))
+        } else {
+            return String(localized: .backupConfigsNeverSynced)
         }
     }
 
@@ -272,14 +295,3 @@ private extension BackupConfigsPresenter {
     }
 }
 
-private extension CloudState {
-    var shortDescription: String {
-        switch self {
-        case .unknown: String(localized: .syncChecking)
-        case .disabled: String(localized: .syncDisabled)
-        case .enabled(.synced): String(localized: .syncSynced)
-        case .enabled(.syncing): String(localized: .syncSyncing)
-        case .enabledNotAvailable: String(localized: .syncNotAvailable)
-        }
-    }
-}

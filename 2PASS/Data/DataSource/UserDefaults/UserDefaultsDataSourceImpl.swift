@@ -33,7 +33,6 @@ final class UserDefaultsDataSourceImpl {
         case webDAVState
         case webDAVLastSync
         case webDAVHasLocalChanges
-        case cloudLastSuccessSync
         case onboardingCompleted
         case connectOnboardingCompleted
         case defaultPasswordListAction
@@ -392,20 +391,6 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.synchronize()
     }
 
-    var lastSuccessCloudSyncDate: Date? {
-        userDefaults.object(forKey: Keys.cloudLastSuccessSync.rawValue) as? Date
-    }
-    
-    func setLastSuccessCloudSyncDate(_ date: Date) {
-        userDefaults.set(date, forKey: Keys.cloudLastSuccessSync.rawValue)
-        userDefaults.synchronize()
-    }
-    
-    func clearLastSuccessCloudSyncDate() {
-        userDefaults.set(nil, forKey: Keys.cloudLastSuccessSync.rawValue)
-        userDefaults.synchronize()
-    }
-    
     var webDAVWriteDecryptedCopy: Bool {
         userDefaults.bool(forKey: Keys.webDAVWriteDecryptedCopy.rawValue)
     }
