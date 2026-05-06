@@ -89,7 +89,6 @@ extension MainModuleInteractor: MainModuleInteracting {
     
     func viewIsVisible() {
         Log("MainModuleInteractor - Main is visible", module: .moduleInteractor)
-        sync()
     }
 }
 
