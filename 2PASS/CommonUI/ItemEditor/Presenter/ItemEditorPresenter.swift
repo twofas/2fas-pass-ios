@@ -79,7 +79,6 @@ final class ItemEditorPresenter {
 
     private let flowController: ItemEditorFlowControlling
     private let interactor: ItemEditorModuleInteracting
-    private let notificationCenter: NotificationCenter
     /// Consumer of `interactor.syncDidApplyRemoteChanges()` — only spawned in edit mode
     /// (`isEdit`), spawned in `onAppear`, cancelled in `onDisappear`. `@ObservationIgnored`
     /// because the handle is internal lifecycle plumbing, not observable UI state.
@@ -104,8 +103,7 @@ final class ItemEditorPresenter {
     init(flowController: ItemEditorFlowControlling, interactor: ItemEditorModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
-        self.notificationCenter = .default
-        
+
         let initalData = interactor.getEditItem()
         let changeRequest = interactor.changeRequest
         
@@ -161,10 +159,6 @@ final class ItemEditorPresenter {
 
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")
-        }
-        
-        if initalData != nil {
-            notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
         }
         
         observeCurrentPresenterChanges()
@@ -236,7 +230,6 @@ final class ItemEditorPresenter {
     deinit {
         // Safety net for the rare case where `onDisappear` doesn't fire.
         syncDidApplyRemoteChangesTask?.cancel()
-        notificationCenter.removeObserver(self)
     }
 }
 
@@ -312,11 +305,6 @@ private extension ItemEditorPresenter {
         saveEnabled?(currentPresenter.canSave)
     }
 
-    @objc
-    func iCloudSyncFinished() {
-        checkCurrentPasswordState()
-    }
-    
     func checkCurrentPasswordState() {
         DispatchQueue.main.async {
             switch self.interactor.checkCurrentPasswordState() {

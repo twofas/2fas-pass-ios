@@ -44,18 +44,32 @@ final class CloudHandler: CloudHandlerType {
         didSet {
             guard oldValue != currentState else { return }
             guard !isClearing else { return }
-            
+
             switch currentState {
             case .enabled(sync: .syncing): break
             default: isEnabling = false
             }
-            
+
             Log("Cloud Handler - state change \(currentState)", module: .cloudSync)
-            NotificationCenter.default.post(name: .cloudStateChanged, object: nil)
+            for handler in stateChangedHandlers.values { handler(currentState) }
         }
     }
-    
+
     var userToggledState: UserToggledState?
+
+    /// Per-id state-change handlers. The Backup module's `Bridge` (per `syncOnce` call)
+    /// installs one to catch terminal states (`.disabled` / `.enabledNotAvailable`) that
+    /// `syncOnce` should resolve to a failure. Multi-slot so future intra-module observers
+    /// can coexist; in practice only `Bridge` registers and there is at most one in flight
+    /// at a time because `BackupSyncContainer.reserveSyncSlot` debounces overlapping syncs.
+    private var stateChangedHandlers: [UUID: (CloudCurrentState) -> Void] = [:]
+    /// Per-id sync-completion handlers. Receives the `appliedRemoteChanges` flag from
+    /// `MergeHandler.applyChanges()` for every completed sync, regardless of which entry
+    /// point initiated it (`syncOnce` via the adapter, or `synchronize(fromPush: true)`
+    /// from `BackupSyncContainer.handlePush`). Multi-slot because two consumers can be
+    /// active concurrently — `Bridge` for `syncOnce` and the container's ambient hook
+    /// that fans push-driven completions back into `syncEvents()`.
+    private var finishedSyncHandlers: [UUID: (Bool) -> Void] = [:]
     
     init(
         cloudAvailability: CloudAvailability,
@@ -87,10 +101,7 @@ final class CloudHandler: CloudHandlerType {
         syncHandler.quotaExceeded = { [weak self] in self?.quotaError() }
         syncHandler.userDisabledCloud = { [weak self] in self?.disabledByUser() }
         syncHandler.useriCloudProblem = { [weak self] in self?.useriCloudProblem() }
-        syncHandler.refreshLocalData = {
-            NotificationCenter.default.post(name: .cloudRefreshLocalData, object: nil)
-        }
-        
+
         clearHandler.didClear = { [weak self] in self?.didClear() }
         
         NotificationCenter.default.addObserver(
@@ -297,15 +308,33 @@ final class CloudHandler: CloudHandlerType {
         Log("Cloud Handler - Finished Sync (appliedRemoteChanges=\(appliedRemoteChanges))", module: .cloudSync)
         currentState = .enabled(sync: .synced)
         ConstStorage.passwordWasChanged = false
-        NotificationCenter.default.post(
-            name: .cloudDidSync,
-            object: nil,
-            userInfo: [CloudSync.appliedRemoteChangesKey: appliedRemoteChanges]
-        )
+        for handler in finishedSyncHandlers.values { handler(appliedRemoteChanges) }
 
         if isClearing {
             clearBackup()
         }
+    }
+
+    @discardableResult
+    func addStateChangedHandler(_ handler: @escaping (CloudCurrentState) -> Void) -> UUID {
+        let id = UUID()
+        stateChangedHandlers[id] = handler
+        return id
+    }
+
+    func removeStateChangedHandler(_ id: UUID) {
+        stateChangedHandlers.removeValue(forKey: id)
+    }
+
+    @discardableResult
+    func addFinishedSyncHandler(_ handler: @escaping (Bool) -> Void) -> UUID {
+        let id = UUID()
+        finishedSyncHandlers[id] = handler
+        return id
+    }
+
+    func removeFinishedSyncHandler(_ id: UUID) {
+        finishedSyncHandlers.removeValue(forKey: id)
     }
     
     private func quotaError() {

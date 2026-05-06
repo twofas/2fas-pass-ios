@@ -49,7 +49,6 @@ final class TrashPresenter {
     private let iconDataSource: RemoteImageCollectionDataSource<TrashItemData>
     
     private let interactor: TrashModuleInteracting
-    private let notificationCenter: NotificationCenter
     /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `onAppear`, cancelled
     /// in `onDisappear`, so the subscription is alive only while the view is on screen.
     /// `@ObservationIgnored` because the handle is internal lifecycle plumbing, not observable
@@ -62,15 +61,11 @@ final class TrashPresenter {
     init(interactor: TrashModuleInteracting) {
         self.interactor = interactor
         self.iconDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
-        self.notificationCenter = .default
-
-        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
 
     deinit {
         // Safety net for the rare case where `onDisappear` doesn't fire.
         syncDidApplyRemoteChangesTask?.cancel()
-        notificationCenter.removeObserver(self)
     }
 }
 
@@ -225,12 +220,5 @@ private extension TrashPresenter {
                     }
                 }
             })
-    }
-    
-    @objc
-    func iCloudSyncFinished() {
-        DispatchQueue.main.async {
-            self.reload()
-        }
     }
 }

@@ -28,7 +28,6 @@ final class SyncHandler {
 
     var startedSync: Callback?
     var finishedSync: FinishedSync?
-    var refreshLocalData: Callback?
     var otherError: OtherError?
     var quotaExceeded: Callback?
     var userDisabledCloud: Callback?
@@ -222,9 +221,6 @@ final class SyncHandler {
         let shouldRefreshLocalData = mergeHandler.applyChanges()
 
         finishedSync?(shouldRefreshLocalData)
-        if shouldRefreshLocalData {
-            refreshLocalData?()
-        }
 
         if needsResync, let zoneID = lastZoneID {
             Log("SyncHandler - Re-syncing due to push received during previous sync", module: .cloudSync)

@@ -96,7 +96,6 @@ final class PasswordsPresenter {
         self.toastPresenter = .shared
         self.iconsDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
 
-        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
         notificationCenter.addObserver(self, selector: #selector(userLoggedIn), name: .userLoggedIn, object: nil)
         notificationCenter.addObserver(self, selector: #selector(didImportItems), name: .didImportItems, object: nil)
 
@@ -620,13 +619,6 @@ private extension PasswordsPresenter {
         return results
     }
 
-    @objc
-    func iCloudSyncFinished() {
-        DispatchQueue.main.async {
-            self.reload()
-        }
-    }
-    
     @objc
     func userLoggedIn() {
         reload()

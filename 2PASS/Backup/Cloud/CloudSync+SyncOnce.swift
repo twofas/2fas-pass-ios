@@ -10,21 +10,22 @@ extension CloudSync {
 
     /// Performs a single CloudKit sync pass, awaitable.
     ///
-    /// Bridges `CloudSync`'s event-driven flow (`synchronize()` is fire-and-forget; result is
-    /// observed via `.cloudDidSync` / `.cloudStateChanged` notifications) into the imperative
-    /// `BackupSynchronizing.performSync(...)` shape required by `BackupSyncSession`.
+    /// Bridges `CloudSync`'s event-driven flow (`synchronize()` is fire-and-forget; result
+    /// is delivered via the in-module `addFinishedSyncHandler` / `addStateChangedHandler`
+    /// callback hooks on `CloudHandler`) into the imperative `BackupSynchronizing.performSync(...)`
+    /// shape required by `BackupSyncSession`.
     ///
     /// **Coexistence with legacy callers.** Legacy paths (push handlers, app foregrounding,
     /// vault edits) call `synchronize(fromPush:)` directly without awaiting. They share the
     /// same instance and `SyncHandler.isSyncing` gate. If a legacy sync is in flight when
     /// `syncOnce` is called, the inner `synchronize()` becomes a no-op and the awaiter
-    /// adopts the legacy sync's outcome via `.cloudDidSync`. This is the documented
-    /// behaviour — convergence picks up any divergence on the next pass.
+    /// adopts the legacy sync's outcome through the same `finishedSync` handler. This is
+    /// the documented behaviour — convergence picks up any divergence on the next pass.
     ///
-    /// **State pre-check.** Subscribing to `.cloudStateChanged` only catches transitions; if
-    /// the current state is already terminal (`.disabled` or `.enabledNotAvailable`) when
-    /// entering, no notification fires. The first thing this method does after subscribing
-    /// is evaluate `currentState` and resume immediately if terminal.
+    /// **State pre-check.** A state-change handler only catches transitions; if the current
+    /// state is already terminal (`.disabled` or `.enabledNotAvailable`) when entering, no
+    /// transition fires. The first thing this method does after registering its handlers is
+    /// evaluate `currentState` and resume immediately if terminal.
     ///
     /// **Cancellation.** Cooperative — resumes the continuation with `.cancelled` if the
     /// task is cancelled. The underlying CloudKit operation continues in the background;
@@ -62,8 +63,8 @@ extension CloudSync {
 private final class Bridge: @unchecked Sendable {
     private let continuation: CheckedContinuation<BackupSyncOutcome, Error>
     private weak var cloudSync: CloudSync?
-    private var didSyncToken: NSObjectProtocol?
-    private var stateToken: NSObjectProtocol?
+    private var finishedSyncToken: UUID?
+    private var stateToken: UUID?
     private var resumed = false
     private let lock = NSLock()
 
@@ -87,27 +88,25 @@ private final class Bridge: @unchecked Sendable {
             return
         }
 
-        let nc = NotificationCenter.default
-
-        didSyncToken = nc.addObserver(
-            forName: .cloudDidSync,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            let applied = (notification.userInfo?[CloudSync.appliedRemoteChangesKey] as? Bool) ?? false
-            self?.resume(.success(BackupSyncOutcome(appliedRemoteChanges: applied)))
+        // Strong `self` is intentional. The `Bridge` instance is created locally in
+        // `Bridge.bridge(...)` and has no other strong owner once that factory returns —
+        // so a `[weak self]` capture would let `Bridge` deallocate before CloudKit's
+        // async callback fires, leaving `self?.resume(...)` a no-op and the awaiting
+        // `syncOnce` hanging forever (and the session's `.finished` event never broadcast,
+        // surfacing as stuck "Syncing…" UI on every iCloud row). The closures stored on
+        // `CloudHandler` keep `Bridge` alive exactly until `resume(...)` removes them via
+        // the saved tokens — at which point ARC reclaims it normally. The reverse direction
+        // is already weak (`private weak var cloudSync: CloudSync?`), so this does not form
+        // a retain cycle through the engine.
+        finishedSyncToken = cloudSync.addFinishedSyncHandler { applied in
+            self.resume(.success(BackupSyncOutcome(appliedRemoteChanges: applied)))
         }
 
-        stateToken = nc.addObserver(
-            forName: .cloudStateChanged,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self, let cloud = self.cloudSync else { return }
-            self.evaluateTerminalState(cloud.currentState)
+        stateToken = cloudSync.addStateChangedHandler { state in
+            self.evaluateTerminalState(state)
         }
 
-        // Pre-check: if already in a terminal state, resume now — `.cloudStateChanged`
+        // Pre-check: if already in a terminal state, resume now — the state-change handler
         // won't fire because the state isn't changing.
         evaluateTerminalState(cloudSync.currentState)
         if isResumed { return }
@@ -148,15 +147,14 @@ private final class Bridge: @unchecked Sendable {
             return
         }
         resumed = true
-        let didSyncToken = self.didSyncToken
+        let finishedSyncToken = self.finishedSyncToken
         let stateToken = self.stateToken
-        self.didSyncToken = nil
+        self.finishedSyncToken = nil
         self.stateToken = nil
         lock.unlock()
 
-        let nc = NotificationCenter.default
-        if let didSyncToken { nc.removeObserver(didSyncToken) }
-        if let stateToken { nc.removeObserver(stateToken) }
+        if let finishedSyncToken { cloudSync?.removeFinishedSyncHandler(finishedSyncToken) }
+        if let stateToken { cloudSync?.removeStateChangedHandler(stateToken) }
         continuation.resume(with: result)
     }
 

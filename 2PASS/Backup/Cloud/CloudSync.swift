@@ -8,10 +8,6 @@ import UIKit
 import Common
 
 public final class CloudSync {
-    /// Notification userInfo key carrying the `Bool` "did this sync apply remote changes to
-    /// local state?" on `.cloudDidSync`. Read by `syncOnce` to populate `BackupSyncOutcome`.
-    public static let appliedRemoteChangesKey = "CloudSync.appliedRemoteChangesKey"
-
     private var cloudHandler: CloudHandler?
     private var syncHandler: SyncHandler?
     private var mergeHandler: MergeHandler?
@@ -98,6 +94,33 @@ public final class CloudSync {
     
     public func setCurrentDate(_ date: Date) {
         syncHandler?.setCurrentDate(date)
+    }
+
+    /// Internal — the Backup module's `Bridge` (per `syncOnce` call) registers here to
+    /// detect terminal states. Returns `nil` if `setup(...)` hasn't run yet (no underlying
+    /// `cloudHandler`); callers should treat that as "no observation possible" and rely on
+    /// the pre-check on `currentState` (`.unknown` for an unconfigured engine — non-terminal,
+    /// so `syncOnce` would proceed to `synchronize` which itself no-ops).
+    @discardableResult
+    func addStateChangedHandler(_ handler: @escaping (CloudCurrentState) -> Void) -> UUID? {
+        cloudHandler?.addStateChangedHandler(handler)
+    }
+
+    func removeStateChangedHandler(_ id: UUID) {
+        cloudHandler?.removeStateChangedHandler(id)
+    }
+
+    /// Internal — fan-out for sync-completion handlers. Forwards each call's
+    /// `appliedRemoteChanges` flag from `MergeHandler.applyChanges()` to every registered
+    /// handler. See `CloudHandler.finishedSyncHandlers` for the load-bearing semantics
+    /// (Bridge + container hook coexisting).
+    @discardableResult
+    func addFinishedSyncHandler(_ handler: @escaping (Bool) -> Void) -> UUID? {
+        cloudHandler?.addFinishedSyncHandler(handler)
+    }
+
+    func removeFinishedSyncHandler(_ id: UUID) {
+        cloudHandler?.removeFinishedSyncHandler(id)
     }
 }
 

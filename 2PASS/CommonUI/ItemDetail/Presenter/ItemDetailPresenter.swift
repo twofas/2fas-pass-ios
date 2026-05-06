@@ -27,7 +27,6 @@ final class ItemDetailPresenter {
     private let itemID: ItemID
     private let flowController: ItemDetailFlowControlling
     private let interactor: ItemDetailModuleInteracting
-    private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private let autoFillEnvironment: AutoFillEnvironment?
     /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `onAppear`, cancelled
@@ -70,17 +69,13 @@ final class ItemDetailPresenter {
         self.itemID = itemID
         self.flowController = flowController
         self.interactor = interactor
-        self.notificationCenter = .default
         self.toastPresenter = .shared
         self.autoFillEnvironment = autoFillEnvironment
-
-        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
 
     deinit {
         // Safety net for the rare case where `onDisappear` doesn't fire.
         syncDidApplyRemoteChangesTask?.cancel()
-        notificationCenter.removeObserver(self)
     }
 }
 
@@ -144,11 +139,6 @@ extension ItemDetailPresenter {
 }
 
 private extension ItemDetailPresenter {
-
-    @objc
-    func iCloudSyncFinished() {
-        refreshState()
-    }
 
     func refreshState() {
         Task { @MainActor in

@@ -151,6 +151,19 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// `.server` is freed on the next success or app close.
     private let lastErrors = OSAllocatedUnfairLock<[UUID: BackupSyncError]>(initialState: [:])
 
+    /// Token for the in-module finished-sync handler the container installs on `cloudSync`
+    /// in `setup(...)`. The handler synthesizes a `BackupSyncSession.Event.finished(.success)`
+    /// for completions that happened **outside** an active session — i.e. push-driven runs
+    /// dispatched via `handlePush()` that bypass `reserveSyncSlot()` to preserve the
+    /// `fromPush: true → SyncHandler.needsResync` semantics. Without this bridge, push-driven
+    /// remote-change application would silently update local data with no UI refresh on the
+    /// `syncEvents()` stream. Adapter-driven syncs are already covered by the session's own
+    /// `.finished` emission, so the handler self-suppresses while `state.isSyncing` is true to
+    /// avoid double-firing. Single-slot — `setup(...)` is the only registration site and is
+    /// idempotent (re-setup leaves the existing handler in place because `cloudSync.setup`
+    /// keeps the same `cloudHandler`).
+    private let cloudSyncPushBridgeToken = OSAllocatedUnfairLock<UUID?>(initialState: nil)
+
     /// The container's owned `CloudSync` engine. Constructed eagerly in init so that
     /// `MainRepositoryImpl` doesn't have to know it exists — there is exactly one CloudKit
     /// container per build, mirrored by exactly one `CloudSync` here. Configured per-vault by
@@ -248,7 +261,53 @@ public final class BackupSyncContainer: @unchecked Sendable {
         // re-init. The previous `guard let vaultID = context.vaultID` bail is gone too;
         // setup proceeds even when no vault is selected at launch.
         cloudSync.setMultiDeviceSyncEnabled(context.allowsMultiDeviceSync)
+        installCloudSyncPushBridgeIfNeeded()
         cloudSync.checkState()
+    }
+
+    /// Installs the in-module finished-sync handler on `cloudSync` exactly once, the first
+    /// time `setup(...)` runs after `cloudSync.setup(...)` has materialized the underlying
+    /// `cloudHandler`. Subsequent `setup(...)` calls (vault recovery) are no-ops here —
+    /// `cloudSync.setup(...)` itself guards on `cloudHandler == nil`, so the registered
+    /// handler is still attached and a re-registration would just create a duplicate.
+    ///
+    /// The handler is the bridge for push-driven completions: see
+    /// `cloudSyncPushBridgeToken` for the rationale on why this bridge exists and how it
+    /// avoids double-firing for adapter-driven syncs.
+    private func installCloudSyncPushBridgeIfNeeded() {
+        let alreadyInstalled = cloudSyncPushBridgeToken.withLock { $0 != nil }
+        guard !alreadyInstalled else { return }
+        let token = cloudSync.addFinishedSyncHandler { [weak self] applied in
+            self?.handleICloudFinishedOutsideSession(applied: applied)
+        }
+        cloudSyncPushBridgeToken.withLock { $0 = token }
+    }
+
+    /// Bridges a `cloudSync` completion that did **not** come through the session machinery
+    /// (i.e. `handlePush()` invoked `synchronize(fromPush: true)` directly) into a synthetic
+    /// `.finished(.success)` event on `syncEvents()`. Suppressed when a session is already in
+    /// flight: in that case `CloudSyncAdapter.performSync` is awaiting the same completion and
+    /// the session's own `.finished` emission carries the outcome. Suppressed when no iCloud
+    /// service is currently registered, since there is no `id` / `kind` to attribute the event
+    /// to — push reception with no iCloud config would be a logic bug elsewhere, but this stays
+    /// defensive.
+    private func handleICloudFinishedOutsideSession(applied: Bool) {
+        let inSession = state.withLock { $0.isSyncing }
+        guard !inSession else { return }
+        let snapshot = providers.withLock { $0 }
+        guard let iCloudService = snapshot.servicesProvider().first(where: { $0.kind == .iCloud }) else { return }
+        let outcome = BackupSyncOutcome(appliedRemoteChanges: applied)
+        let event = BackupSyncSession.Event.finished(
+            id: iCloudService.id,
+            kind: .iCloud,
+            outcome: .success(outcome)
+        )
+        // Same `handle → broadcast` order the session path uses (see `makeSyncEventHandler`).
+        // Routing through `handle(_:)` keeps `lastErrors[id]` cleared on success, matching the
+        // session-driven cleanup; `activeConfigIDs.remove` is a no-op because we never emitted
+        // a paired `.started`.
+        handle(event)
+        broadcast(event)
     }
 
     /// Test-only initializer. Seeds the same lock-backed `Providers` storage `setup(...)`
