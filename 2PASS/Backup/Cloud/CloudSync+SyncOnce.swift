@@ -43,18 +43,56 @@ extension CloudSync {
     private func syncOncePass(overwritingVault: Bool) async throws -> BackupSyncOutcome {
         try Task.checkCancellation()
 
+        let holder = BridgeHolder()
+
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
-                Bridge.bridge(
-                    cloudSync: self,
-                    overwritingVault: overwritingVault,
-                    continuation: continuation
-                )
+                let bridge = Bridge(cloudSync: self, continuation: continuation)
+                holder.set(bridge)
+                bridge.start(overwritingVault: overwritingVault)
             }
         } onCancel: {
-            // Best-effort: the underlying CloudKit op continues in the background. Our
-            // continuation is resumed with .cancelled by the bridge if it was still pending.
+            // Resume the awaiting continuation with `.cancelled` so the cancel button has an
+            // observable effect. The underlying CloudKit op keeps running to completion in the
+            // background — CloudKit doesn't surface a cancellation primitive at this layer —
+            // but the session's `.finished` event fires immediately, `clearSyncSlot()` runs,
+            // and the UI's `isSyncing` flag flips off without waiting for CloudKit to settle.
+            holder.cancel()
         }
+    }
+}
+
+/// Carries the per-call `Bridge` instance across the `withTaskCancellationHandler` boundary so
+/// `onCancel` can reach it. The bridge is created inside the continuation closure (it needs the
+/// continuation to construct), but `onCancel` runs in a separate scope and would otherwise have
+/// no way to signal it.
+///
+/// Race-safe in both directions: if `cancel()` lands before `set(_:)` (task cancelled while the
+/// continuation closure is still running), the `cancelled` flag is sticky and the just-set
+/// bridge is cancelled immediately.
+private final class BridgeHolder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var bridge: Bridge?
+    private var cancelled = false
+
+    func set(_ bridge: Bridge) {
+        lock.lock()
+        let alreadyCancelled = cancelled
+        if !alreadyCancelled {
+            self.bridge = bridge
+        }
+        lock.unlock()
+        if alreadyCancelled {
+            bridge.cancel()
+        }
+    }
+
+    func cancel() {
+        lock.lock()
+        let bridge = self.bridge
+        cancelled = true
+        lock.unlock()
+        bridge?.cancel()
     }
 }
 
@@ -68,21 +106,19 @@ private final class Bridge: @unchecked Sendable {
     private var resumed = false
     private let lock = NSLock()
 
-    static func bridge(
-        cloudSync: CloudSync,
-        overwritingVault: Bool,
-        continuation: CheckedContinuation<BackupSyncOutcome, Error>
-    ) {
-        let bridge = Bridge(cloudSync: cloudSync, continuation: continuation)
-        bridge.start(overwritingVault: overwritingVault)
-    }
-
-    private init(cloudSync: CloudSync, continuation: CheckedContinuation<BackupSyncOutcome, Error>) {
+    init(cloudSync: CloudSync, continuation: CheckedContinuation<BackupSyncOutcome, Error>) {
         self.cloudSync = cloudSync
         self.continuation = continuation
     }
 
-    private func start(overwritingVault: Bool) {
+    /// Resumes the awaiting continuation with `.cancelled`. Idempotent and safe to race with
+    /// the natural completion path — `resume(_:)` no-ops on second call. The underlying
+    /// CloudKit operation keeps running in the background; this only releases the awaiter.
+    func cancel() {
+        resume(.failure(BackupSyncError.cancelled))
+    }
+
+    func start(overwritingVault: Bool) {
         guard let cloudSync else {
             resume(.failure(BackupSyncError.iCloudUnavailable))
             return
