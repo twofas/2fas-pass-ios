@@ -19,46 +19,46 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
     public func fetchIndex() async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .index)
         let (data, response) = try await perform(request)
-        try validateStatus(response, expected: [200])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
         return data
     }
 
     public func fetchLock() async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .indexLock)
         let (data, response) = try await perform(request)
-        try validateStatus(response, expected: [200])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
         return data
     }
 
     public func fetchVault(vaultID: UUID) async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .vault(vaultID: vaultID))
         let (data, response) = try await perform(request)
-        try validateStatus(response, expected: [200])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
         return data
     }
 
     public func writeIndex(_ data: Data) async throws(BackupFileServiceError) {
         let request = Self.putRequest(for: .index, body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func writeLock(_ data: Data) async throws(BackupFileServiceError) {
         let request = Self.putRequest(for: .indexLock, body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func writeVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError) {
         let request = Self.putRequest(for: .vaultTemp(vaultID: vaultID), body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func writeDecryptedVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError) {
         let request = Self.putRequest(for: .vaultDecrypted(vaultID: vaultID), body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func finalizeVault(vaultID: UUID) async throws(BackupFileServiceError) {
@@ -68,17 +68,17 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
         var copyRequest = Self.request(.put, for: finalResource)
         copyRequest.setValue("/\(config.bucket)/\(tempResource.filename)", forHTTPHeaderField: "x-amz-copy-source")
         let (_, copyResponse) = try await perform(copyRequest)
-        try validateStatus(copyResponse, expected: [200])
+        try validateStatus(copyResponse, expected: BackupFileServiceExpectedStatus.read)
 
         let deleteRequest = Self.request(.delete, for: tempResource)
         let (_, deleteResponse) = try await perform(deleteRequest)
-        try validateStatus(deleteResponse, expected: [200, 204])
+        try validateStatus(deleteResponse, expected: BackupFileServiceExpectedStatus.deleted)
     }
 
     public func deleteLock() async throws(BackupFileServiceError) {
         let request = Self.request(.delete, for: .indexLock)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.deleted)
     }
 }
 
@@ -115,18 +115,6 @@ private extension BackupS3ServiceSession {
             return (data, response)
         } catch {
             throw Self.mapServiceError(error)
-        }
-    }
-
-    func validateStatus(_ response: HTTPURLResponse, expected: Set<Int>) throws(BackupFileServiceError) {
-        if expected.contains(response.statusCode) { return }
-        Log("BackupS3ServiceSession: unexpected status \(response.statusCode)", module: .backup)
-        switch response.statusCode {
-        case 401: throw .unauthorized
-        case 403: throw .forbidden
-        case 404: throw .notFound
-        case 405: throw .methodNotAllowed
-        default: throw .unexpectedStatus(code: response.statusCode)
         }
     }
 

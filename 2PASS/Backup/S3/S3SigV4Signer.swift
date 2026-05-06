@@ -5,11 +5,14 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Common
 import CryptoKit
 
 struct S3SigV4Signer {
+    static let emptyBodySHA256Hex = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
     static func sha256Hex(_ data: Data) -> String {
-        SHA256.hash(data: data).hex()
+        Data(SHA256.hash(data: data)).hexEncodedString()
     }
 
     static func sign(
@@ -54,7 +57,7 @@ struct S3SigV4Signer {
         let kRegion = Self.hmac(key: kDate, message: config.region)
         let kService = Self.hmac(key: kRegion, message: service)
         let kSigning = Self.hmac(key: kService, message: "aws4_request")
-        let signature = Self.hmac(key: kSigning, message: stringToSign).hex()
+        let signature = Self.hmac(key: kSigning, message: stringToSign).hexEncodedString()
 
         let authorization = "AWS4-HMAC-SHA256 "
             + "Credential=\(config.accessKeyId)/\(credentialScope),"
@@ -65,12 +68,16 @@ struct S3SigV4Signer {
 }
 
 private extension S3SigV4Signer {
-    static func amzDate(_ date: Date) -> String {
+    static let amzDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
         formatter.timeZone = TimeZone(identifier: "UTC")
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    static func amzDate(_ date: Date) -> String {
+        amzDateFormatter.string(from: date)
     }
 
     static func canonicalURI(from url: URL) -> String {
@@ -132,18 +139,6 @@ private extension S3SigV4Signer {
             using: SymmetricKey(data: key)
         )
         return Data(code)
-    }
-}
-
-private extension SHA256.Digest {
-    func hex() -> String {
-        map { String(format: "%02x", $0) }.joined()
-    }
-}
-
-private extension Data {
-    func hex() -> String {
-        map { String(format: "%02x", $0) }.joined()
     }
 }
 

@@ -115,9 +115,6 @@ public final class BackupSyncSession: Sendable {
             return lhs.offset < rhs.offset
         }.map(\.element)
         let allIDs = ordered.map(\.id)
-        let kindByID: [UUID: SyncServiceKind] = Dictionary(
-            uniqueKeysWithValues: ordered.map { ($0.id, $0.kind) }
-        )
         var needsSync = Set(allIDs)
         var aggregate: [UUID: Result<BackupSyncOutcome, BackupSyncError>] = [:]
         var pass = 0
@@ -152,9 +149,9 @@ public final class BackupSyncSession: Sendable {
             pass += 1
         }
 
-        return allIDs.compactMap { id in
-            guard let outcome = aggregate[id], let kind = kindByID[id] else { return nil }
-            return (id: id, kind: kind, outcome: outcome)
+        return ordered.compactMap { service in
+            guard let outcome = aggregate[service.id] else { return nil }
+            return (id: service.id, kind: service.kind, outcome: outcome)
         }
     }
 

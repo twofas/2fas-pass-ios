@@ -78,10 +78,6 @@ final class BackupSyncSetupInteractor: BackupSyncInstalling {
             backupImportInteractor: backupImportInteractor,
             syncInteractor: syncInteractor
         )
-        // CloudSync's per-vault setup deps are constructed here — the container takes them
-        // through `setup(...)` and applies them inline. Same allocations the deleted
-        // `CloudSyncInteractor` factory used to make; just relocated to live alongside the
-        // rest of the container wiring.
         let cloudCacheStorage = CloudCacheStorageImpl(mainRepository: mainRepository)
         let encryptionHandler = EncryptionHandlerImpl(
             mainRepository: mainRepository,
@@ -94,11 +90,6 @@ final class BackupSyncSetupInteractor: BackupSyncInstalling {
             tagInteractor: tagInteractor,
             mainRepository: mainRepository
         )
-        // The adapter satisfies every collaborator protocol the container needs — sync
-        // services, dates, context, export, merge, AND awaiting-flags storage — so a single
-        // instance fills every slot. The container owns its own `CloudSync` engine and reads
-        // deviceID / vaultID / multi-device-sync from `context` (the adapter), so no separate
-        // runtime values are plumbed here.
         mainRepository.backupSyncContainer.setup(
             configStore: adapter,
             dateStore: adapter,

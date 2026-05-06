@@ -23,6 +23,8 @@ public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
     private let maxRetries: Int
     private let networkRetryDelay: Duration
     private let serverRetryDelay: Duration
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
 
     public init(
         id: UUID,
@@ -174,7 +176,7 @@ private extension BackupFileSyncSession {
         Log("BackupFileSyncSession - fetching index", module: .backup)
         do {
             let data = try await service.fetchIndex()
-            if let decoded = try? JSONDecoder().decode(BackupIndex.self, from: data) {
+            if let decoded = try? decoder.decode(BackupIndex.self, from: data) {
                 return decoded
             }
             Log("BackupFileSyncSession - index damaged, will overwrite", module: .backup)
@@ -290,7 +292,7 @@ private extension BackupFileSyncSession {
         }
 
         do {
-            return try JSONDecoder().decode(ExchangeVaultVersioned.self, from: vaultData)
+            return try decoder.decode(ExchangeVaultVersioned.self, from: vaultData)
         } catch let error as ExchangeDecodeError {
             throw BackupSyncError.from(decode: error)
         } catch {
@@ -337,7 +339,7 @@ private extension BackupFileSyncSession {
         )
         
         do {
-            return try JSONEncoder().encode(vault)
+            return try encoder.encode(vault)
         } catch {
             throw BackupSyncError.unexpected("encode vault: \(error)")
         }
@@ -355,10 +357,10 @@ private extension BackupFileSyncSession {
 #if DEBUG
     func writeDecryptedCopyIfNeeded(vaultID: UUID) {
         guard context.shouldWriteDecryptedCopy else { return }
-        Task.detached { [vaultExporter, service] in
+        Task.detached { [vaultExporter, service, encoder] in
             do {
                 let vault = try await vaultExporter.prepareDecryptedExport(vaultID: vaultID, includeDeleted: true)
-                let plaintext = try JSONEncoder().encode(vault)
+                let plaintext = try encoder.encode(vault)
                 try await service.writeDecryptedVault(plaintext, vaultID: vaultID)
             } catch {
                 Log("BackupFileSyncSession - decrypted copy failed: \(error)", module: .backup, severity: .warning)
@@ -381,7 +383,7 @@ private extension BackupFileSyncSession {
         )
         let data: Data
         do {
-            data = try JSONEncoder().encode(index)
+            data = try encoder.encode(index)
         } catch {
             throw BackupSyncError.unexpected("encode index: \(error)")
         }
@@ -442,22 +444,18 @@ private extension BackupFileSyncSession {
         return BackupIndex(backups: entries)
     }
 
+    struct LockPayload: Codable {
+        let timestamp: Int
+        let deviceId: UUID
+    }
+
     func encodeLock(timestamp: Int, deviceId: UUID) -> Data {
-        struct Payload: Encodable {
-            let timestamp: Int
-            let deviceId: UUID
-        }
-        return (try? JSONEncoder().encode(Payload(timestamp: timestamp, deviceId: deviceId))) ?? Data()
+        try! encoder.encode(LockPayload(timestamp: timestamp, deviceId: deviceId))
     }
 
     func decodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)? {
-        guard
-            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let timestamp = object["timestamp"] as? Int,
-            let deviceIdString = object["deviceId"] as? String,
-            let deviceId = UUID(uuidString: deviceIdString)
-        else { return nil }
-        return (timestamp, deviceId)
+        guard let payload = try? decoder.decode(LockPayload.self, from: data) else { return nil }
+        return (payload.timestamp, payload.deviceId)
     }
 
     func retryDelay(for error: BackupSyncError) -> Duration {

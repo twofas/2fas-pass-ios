@@ -256,10 +256,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
             jsonEncoder: JSONEncoder(),
             context: context
         )
-        // Vault id is no longer pushed via `setVaultID(_:)` — `CloudHandler.sync()` reads
-        // `context.vaultID` lazily on each sync, so vault changes propagate without a
-        // re-init. The previous `guard let vaultID = context.vaultID` bail is gone too;
-        // setup proceeds even when no vault is selected at launch.
         cloudSync.setMultiDeviceSyncEnabled(context.allowsMultiDeviceSync)
         installCloudSyncPushBridgeIfNeeded()
         cloudSync.checkState()

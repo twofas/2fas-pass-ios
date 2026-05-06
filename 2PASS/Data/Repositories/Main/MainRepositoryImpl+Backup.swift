@@ -71,18 +71,11 @@ extension MainRepositoryImpl {
 
     // MARK: - Backup Sync Container
     //
-    // The container is a `let` stored property on `MainRepositoryImpl` itself (declared in
-    // `MainRepositoryImpl.swift`) — single instance for the process lifetime, present from
-    // birth, non-optional. This file used to host a getter+setter pair for an Optional that
-    // was pushed in by `BackupSyncSetupInteractor.initialize()`; that flow is gone now.
-    // Two-phase init handles the dependency cycle: `init()` builds an inert container,
-    // `setup(...)` wires its collaborators afterwards from the interactor layer.
-    //
-    // The cycle `MainRepository → container → adapter → MainRepository` is unchanged — the
-    // adapter still retains `MainRepository` strongly. Today this is benign because
-    // `MainRepository` is the `static var _shared` singleton; if that ever becomes per-session
-    // the cycle becomes a real leak and must be broken (move container ownership out of
-    // `MainRepository`, or weak-ref `MainRepository` from the adapter).
+    // Known retain cycle: `MainRepository → container → adapter → MainRepository`. The adapter
+    // retains `MainRepository` strongly. Benign today because `MainRepository` is the
+    // `static var _shared` singleton; if that ever becomes per-session the cycle becomes a
+    // real leak and must be broken (move container ownership out of `MainRepository`, or
+    // weak-ref `MainRepository` from the adapter).
 
     // MARK: - Backup Sync config persistence
     //

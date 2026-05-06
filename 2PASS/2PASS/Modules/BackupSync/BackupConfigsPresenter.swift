@@ -225,10 +225,6 @@ final class BackupConfigsPresenter {
     }
 
     private func isSyncing(for config: BackupConfig) -> Bool {
-        // Unified across kinds — `CloudSyncAdapter` runs go through the same session events
-        // as WebDAV/S3, so `activeConfigIDs` already covers iCloud's "currently syncing"
-        // window. The pre-refactor extra `cloudState.isSyncing` term was a relic of the
-        // separate CloudKit state machine and is redundant here.
         activeConfigIDs.contains(config.id)
     }
 }
@@ -254,10 +250,6 @@ private extension BackupConfigsPresenter {
     }
 
     func statusText(for config: BackupConfig) -> String {
-        // Unified across kinds. Pre-refactor iCloud branched into `cloudState.shortDescription`
-        // (which translated CloudKit's state machine into a localized string); after the
-        // refactor iCloud uses the same per-config surface as WebDAV/S3 since `CloudSyncAdapter`
-        // writes its `lastSyncDate` and surfaces failures through the unified session events.
         if activeConfigIDs.contains(config.id) {
             return String(localized: .syncSyncing)
         } else if let date = interactor.lastSyncDate(for: config.id) {

@@ -39,46 +39,46 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
     public func fetchIndex() async throws(BackupFileServiceError) -> Data {
         let request = buildRequest(method: .get, for: .index)
         let (data, response) = try await perform(request)
-        try validateStatus(response, expected: [200])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
         return data
     }
 
     public func fetchLock() async throws(BackupFileServiceError) -> Data {
         let request = buildRequest(method: .get, for: .indexLock)
         let (data, response) = try await perform(request)
-        try validateStatus(response, expected: [200])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
         return data
     }
 
     public func fetchVault(vaultID: UUID) async throws(BackupFileServiceError) -> Data {
         let request = buildRequest(method: .get, for: .vault(vaultID: vaultID))
         let (data, response) = try await perform(request)
-        try validateStatus(response, expected: [200])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
         return data
     }
 
     public func writeIndex(_ data: Data) async throws(BackupFileServiceError) {
         let request = buildPutRequest(for: .index, body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func writeLock(_ data: Data) async throws(BackupFileServiceError) {
         let request = buildPutRequest(for: .indexLock, body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func writeVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError) {
         let request = buildPutRequest(for: .vaultTemp(vaultID: vaultID), body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func writeDecryptedVault(_ data: Data, vaultID: UUID) async throws(BackupFileServiceError) {
         let request = buildPutRequest(for: .vaultDecrypted(vaultID: vaultID), body: data)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func finalizeVault(vaultID: UUID) async throws(BackupFileServiceError) {
@@ -94,13 +94,13 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
         request.setValue("T", forHTTPHeaderField: "Overwrite")
 
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 201, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.written)
     }
 
     public func deleteLock() async throws(BackupFileServiceError) {
         let request = buildRequest(method: .delete, for: .indexLock)
         let (_, response) = try await perform(request)
-        try validateStatus(response, expected: [200, 204])
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.deleted)
     }
 }
 
@@ -164,18 +164,6 @@ private extension BackupWebDAVServiceSession {
         } catch {
             Log("BackupWebDAVServiceSession: transport error \(error)", module: .backup)
             throw Self.mapTransportError(error)
-        }
-    }
-
-    func validateStatus(_ response: HTTPURLResponse, expected: Set<Int>) throws(BackupFileServiceError) {
-        if expected.contains(response.statusCode) { return }
-        Log("BackupWebDAVServiceSession: unexpected status \(response.statusCode)", module: .backup)
-        switch response.statusCode {
-        case 401: throw .unauthorized
-        case 403: throw .forbidden
-        case 404: throw .notFound
-        case 405: throw .methodNotAllowed
-        default: throw .unexpectedStatus(code: response.statusCode)
         }
     }
 

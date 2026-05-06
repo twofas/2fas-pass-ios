@@ -142,7 +142,12 @@ private extension S3ServiceSession {
         for (name, value) in request.allHTTPHeaderFields {
             urlRequest.setValue(value, forHTTPHeaderField: name)
         }
-        let bodyHash = S3SigV4Signer.sha256Hex(request.httpBody ?? Data())
+        let bodyHash: String
+        if let body = request.httpBody, !body.isEmpty {
+            bodyHash = S3SigV4Signer.sha256Hex(body)
+        } else {
+            bodyHash = S3SigV4Signer.emptyBodySHA256Hex
+        }
         S3SigV4Signer.sign(
             request: &urlRequest,
             bodySHA256Hex: bodyHash,

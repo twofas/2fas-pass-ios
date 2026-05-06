@@ -94,44 +94,9 @@ final class BackupWebDAVConfigPresenter {
                 onClose()
             } catch {
                 guard let self else { return }
-                connectionError = Self.errorMessage(for: error)
+                connectionError = BackupFileServiceError.connectionTestMessage(for: error)
                 isTesting = false
             }
-        }
-    }
-}
-
-private extension BackupWebDAVConfigPresenter {
-    /// Maps probe failures to localized strings. The Task closure erases typed throws to
-    /// `any Error`, so we accept that and downcast — falling back to a generic error string
-    /// if a non-`BackupFileServiceError` somehow leaks through. `.notFound` is folded into
-    /// the success path inside `BackupFileServiceSession.testConnection` so it shouldn't
-    /// reach here, but the case is handled defensively.
-    static func errorMessage(for error: any Error) -> String {
-        guard let error = error as? BackupFileServiceError else {
-            return String(localized: .commonError)
-        }
-        switch error {
-        case .unauthorized:
-            return String(localized: .connectionTestErrorUnauthorized)
-        case .forbidden:
-            return String(localized: .connectionTestErrorForbidden)
-        case .notFound:
-            return String(localized: .connectionTestErrorNotFound)
-        case .methodNotAllowed:
-            return String(localized: .connectionTestErrorMethodNotAllowed)
-        case .unexpectedStatus(let code):
-            return String(localized: .connectionTestErrorUnexpectedStatus(code))
-        case .ssl:
-            return String(localized: .connectionTestErrorSsl)
-        case .network:
-            return String(localized: .connectionTestErrorNetwork)
-        case .server:
-            return String(localized: .connectionTestErrorServer)
-        case .url:
-            return String(localized: .connectionTestErrorUrl)
-        case .invalidResponse:
-            return String(localized: .connectionTestErrorInvalidResponse)
         }
     }
 }

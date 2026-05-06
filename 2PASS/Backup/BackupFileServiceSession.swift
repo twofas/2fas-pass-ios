@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Common
 
 public enum BackupFileServiceError: Error, Sendable {
     case unauthorized
@@ -47,4 +48,22 @@ public extension BackupFileServiceSession {
             return
         }
     }
+
+    func validateStatus(_ response: HTTPURLResponse, expected: Set<Int>) throws(BackupFileServiceError) {
+        if expected.contains(response.statusCode) { return }
+        Log("\(String(describing: type(of: self))): unexpected status \(response.statusCode)", module: .backup)
+        switch response.statusCode {
+        case 401: throw .unauthorized
+        case 403: throw .forbidden
+        case 404: throw .notFound
+        case 405: throw .methodNotAllowed
+        default: throw .unexpectedStatus(code: response.statusCode)
+        }
+    }
+}
+
+enum BackupFileServiceExpectedStatus {
+    static let read: Set<Int> = [200]
+    static let written: Set<Int> = [200, 201, 204]
+    static let deleted: Set<Int> = [200, 204]
 }
