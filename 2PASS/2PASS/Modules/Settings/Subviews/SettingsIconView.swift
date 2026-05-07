@@ -59,9 +59,6 @@ enum SettingsIcon {
     case enpass
     case keeper
     case nordPass
-    case iCloud
-    case webDAV
-    case s3
 }
 
 enum SettingIconStyle {
@@ -82,7 +79,7 @@ struct SettingsIconView: View {
     @Environment(\.settingsIconStyle) private var settingsIconStyle
     
     private var iconColor: Color?
-    
+
     var body: some View {
         content
             .foregroundStyle(.secondary)
@@ -107,7 +104,7 @@ struct SettingsIconView: View {
         instance.iconColor = color
         return instance
     }
-    
+
     private var fontSize: CGFloat {
         switch controlSize {
         case .small, .mini, .regular: 14
@@ -115,7 +112,7 @@ struct SettingsIconView: View {
         default: 14
         }
     }
-    
+
     private var cornerRadius: CGFloat {
         switch controlSize {
         case .small, .mini, .regular: 8
@@ -123,7 +120,7 @@ struct SettingsIconView: View {
         default: 8
         }
     }
-    
+
     private var size: CGFloat {
         switch controlSize {
         case .small, .mini, .regular: 28
@@ -242,12 +239,6 @@ struct SettingsIconView: View {
             Image(.keeperIcon)
         case .nordPass:
             Image(.nordpassIcon)
-        case .iCloud:
-            Image(systemName: "icloud.fill")
-        case .webDAV:
-            Image(systemName: "server.rack")
-        case .s3:
-            Image(systemName: "externaldrive.fill.badge.icloud")
         }
     }
     

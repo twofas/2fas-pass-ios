@@ -40,7 +40,6 @@ struct BackupConfigRowItem: Identifiable, Equatable {
     /// in flight (active syncs suppress the stale error to avoid mixing past and present state).
     let errorText: String?
     let isSyncing: Bool
-    let icon: SettingsIcon
 }
 
 @Observable @MainActor
@@ -79,12 +78,12 @@ final class BackupConfigsPresenter {
     /// the underlying NotificationCenter observer on `cancel()` or `deinit`, whichever fires first.
     @ObservationIgnored
     private var configsChangeToken: Notifications.ObservationToken?
+    /// Skips snapshot on first onAppear (init seeded); re-appearances catch up after off-screen.
 
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
-        // Both initial state seeding (`snapshotActivity`) and the `syncEvents()` subscription
-        // happen in `onAppear` — keeps all data work tied to view visibility and avoids
-        // processing events for a hidden screen. See `onDisappear` for teardown.
+        // Seed rows for first body pass; without this, onAppear's later reload causes an empty-state flash.
+        snapshotActivity()
     }
 
     isolated deinit {
@@ -218,8 +217,7 @@ final class BackupConfigsPresenter {
                 subtitle: subtitle(for: config),
                 statusText: statusText(for: config),
                 errorText: errorText(for: config),
-                isSyncing: isSyncing(for: config),
-                icon: icon(for: config.kind)
+                isSyncing: isSyncing(for: config)
             )
         }
     }
@@ -261,14 +259,6 @@ private extension BackupConfigsPresenter {
         }
     }
 
-    func icon(for kind: SyncServiceKind) -> SettingsIcon {
-        switch kind {
-        case .iCloud: .iCloud
-        case .webDAV: .webDAV
-        case .s3: .s3
-        }
-    }
-
     /// "Last error: <localized error message>" for the most recent recorded failure, or `nil`.
     /// Suppressed while a sync is currently in flight for this config — showing a stale error
     /// next to a live progress spinner would mix past and present state; the in-flight attempt
@@ -286,4 +276,5 @@ private extension BackupConfigsPresenter {
         return String(localized: .backupConfigsLastError(message))
     }
 }
+
 

@@ -14,6 +14,7 @@ struct BackupConfigsView: View {
     var presenter: BackupConfigsPresenter
 
     @Namespace private var transitionNamespace
+    @State private var isProviderPickerPresented = false
 
     var body: some View {
         SettingsDetailsForm(.settingsEntryCloudSync) {
@@ -27,19 +28,19 @@ struct BackupConfigsView: View {
                         }
                     } label: {
                         HStack(spacing: Spacing.xs) {
-                            Image(systemName: presenter.isSyncing ? "xmark" : "arrow.clockwise")
                             Text(presenter.isSyncing
                                  ? .backupConfigsCancelSyncButton
                                  : .backupConfigsSyncAllNowButton)
                                 .font(.body)
-                            Spacer()
-                            if presenter.isSyncing {
-                                ProgressView()
-                            }
+//                            Spacer()
+//                            if presenter.isSyncing {
+//                                ProgressView()
+//                            }
                         }
                         .contentShape(Rectangle())
                     }
                 }
+                .animation(.default, value: presenter.isSyncing)
             }
 
             ForEach(presenter.rows) { row in
@@ -94,10 +95,13 @@ struct BackupConfigsView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if #available(iOS 26, *) {
-                    addMenu
-                        .buttonStyle(.borderedProminent)
+                    addButton
+                        .buttonStyle(.glassProminent)
+                        .labelStyle(.titleOnly)
+                        .tint(.accent)
+                        .foregroundStyle(.white)
                 } else {
-                    addMenu
+                    addButton
                 }
             }
         }
@@ -115,31 +119,53 @@ struct BackupConfigsView: View {
         }
     }
 
-    private var addMenu: some View {
-        Menu {
-            if presenter.canAddiCloud {
-                Button {
-                    presenter.onChooseProvider(.iCloud)
-                } label: {
-                    Label(.backupConfigsProviderIcloud, systemImage: "icloud.fill")
-                }
-            }
-            Button {
-                presenter.onChooseProvider(.webDAV)
-            } label: {
-                Label(.backupConfigsProviderWebdav, systemImage: "server.rack")
-            }
-            Button {
-                presenter.onChooseProvider(.s3)
-            } label: {
-                Label(.backupConfigsProviderS3, systemImage: "externaldrive.fill.badge.icloud")
-            }
+    private var addButton: some View {
+        Button {
+            isProviderPickerPresented = true
         } label: {
             Image(systemName: "plus")
                 .accessibilityLabel(Text(.backupConfigsAddButton))
+                .foregroundStyle(.white)
+        }
+        .popover(isPresented: $isProviderPickerPresented) {
+            providerPicker
+                .presentationCompactAdaptation(.popover)
         }
         .matchedZoomSource(id: BackupConfigsRouter.addWebDAVSourceID, in: transitionNamespace)
         .matchedZoomSource(id: BackupConfigsRouter.addS3SourceID, in: transitionNamespace)
+    }
+
+    private var providerPicker: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if presenter.canAddiCloud {
+                providerPickerButton(.iCloud, title: .backupConfigsProviderIcloud)
+            }
+            providerPickerButton(.webDAV, title: .backupConfigsProviderWebdav)
+            providerPickerButton(.s3, title: .backupConfigsProviderS3)
+        }
+        .padding(Spacing.m)
+        .frame(minWidth: 200)
+    }
+
+    private func providerPickerButton(
+        _ kind: SyncServiceKind,
+        title: LocalizedStringResource
+    ) -> some View {
+        Button {
+            isProviderPickerPresented = false
+            presenter.onChooseProvider(kind)
+        } label: {
+            HStack(spacing: 12) {
+                BackupConfigIcon(kind: kind)
+                Text(title)
+                    .foregroundStyle(.neutral950)
+                    .font(.body)
+            }
+            .padding(Spacing.s)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -163,8 +189,7 @@ private struct BackupConfigRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            SettingsIconView(icon: row.icon)
-                .controlSize(.small)
+            BackupConfigIcon(kind: row.kind)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.title)
@@ -217,6 +242,58 @@ private struct BackupConfigRowView: View {
                     .frame(width: 40, height: 40, alignment: .trailing)
             }
             .tint(nil)
+        }
+    }
+}
+
+private struct BackupConfigIcon: View {
+    let kind: SyncServiceKind
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    private let size: CGFloat = 40
+    private var cornerRadius: CGFloat { size * 0.25 }
+
+    var body: some View {
+        content
+            .frame(width: size, height: size)
+            .background(background)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch kind {
+        case .iCloud:
+            Image(.icloudIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size * 0.7, height: size * 0.7)
+        case .webDAV:
+            Image(systemName: "externaldrive.badge.icloud")
+                .renderingMode(.template)
+                .font(.system(size: size * 0.5))
+                .foregroundStyle(colorScheme == .dark ? Color.neutral950 : .neutral50)
+        case .s3:
+            // AWS asset is a self-contained green tile — clip to the same corner radius.
+            Image(.s3Icon)
+                .resizable()
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        }
+    }
+
+    @ViewBuilder
+    private var background: some View {
+        switch kind {
+        case .iCloud:
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .stroke(colorScheme == .dark ? .neutral800 : .neutral200, lineWidth: 0.5)
+                .fill(colorScheme == .dark ? .baseStatic0 : .clear)
+        case .webDAV:
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(.primary)
+        case .s3:
+            Color.clear
         }
     }
 }
