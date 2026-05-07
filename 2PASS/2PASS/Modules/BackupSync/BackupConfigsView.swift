@@ -15,6 +15,7 @@ struct BackupConfigsView: View {
 
     @Namespace private var transitionNamespace
     @State private var isProviderPickerPresented = false
+    @State private var pendingProviderChoice: SyncServiceKind?
 
     var body: some View {
         SettingsDetailsForm(.settingsEntryCloudSync) {
@@ -80,6 +81,7 @@ struct BackupConfigsView: View {
                 description: Text(.settingsCloudSyncDescription)
             )
         }
+        .contentMargins(.bottom, Spacing.l, for: .scrollContent)
         .overlay {
             if presenter.isEmpty {
                 EmptyListView(.backupConfigsEmptyDescription)
@@ -130,9 +132,18 @@ struct BackupConfigsView: View {
         .popover(isPresented: $isProviderPickerPresented) {
             providerPicker
                 .presentationCompactAdaptation(.popover)
+                .onDisappear(perform: handlePendingProviderChoice)
         }
         .matchedZoomSource(id: BackupConfigsRouter.addWebDAVSourceID, in: transitionNamespace)
         .matchedZoomSource(id: BackupConfigsRouter.addS3SourceID, in: transitionNamespace)
+    }
+
+    private func handlePendingProviderChoice() {
+        // Run after popover dismissal so the next sheet presentation finds an empty
+        // UIKit presentedViewController slot — otherwise we hit "already presenting".
+        guard let kind = pendingProviderChoice else { return }
+        pendingProviderChoice = nil
+        presenter.onChooseProvider(kind)
     }
 
     private var providerPicker: some View {
@@ -152,8 +163,8 @@ struct BackupConfigsView: View {
         title: LocalizedStringResource
     ) -> some View {
         Button {
+            pendingProviderChoice = kind
             isProviderPickerPresented = false
-            presenter.onChooseProvider(kind)
         } label: {
             HStack(spacing: 12) {
                 BackupConfigIcon(kind: kind)
@@ -269,7 +280,7 @@ private struct BackupConfigIcon: View {
                 .scaledToFit()
                 .frame(width: size * 0.7, height: size * 0.7)
         case .webDAV:
-            Image(systemName: "externaldrive.badge.icloud")
+            Image(systemName: "externaldrive")
                 .renderingMode(.template)
                 .font(.system(size: size * 0.5))
                 .foregroundStyle(colorScheme == .dark ? Color.neutral950 : .neutral50)
@@ -291,7 +302,7 @@ private struct BackupConfigIcon: View {
                 .fill(colorScheme == .dark ? .baseStatic0 : .clear)
         case .webDAV:
             RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(.primary)
+                .fill(.accent)
         case .s3:
             Color.clear
         }

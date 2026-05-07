@@ -22,6 +22,7 @@ protocol BackupConfigsModuleInteracting: AnyObject {
     func sync(id: UUID) async
     func cancelCurrentSync()
     func syncEvents() -> AsyncStream<BackupSyncSession.Event>
+    func displayDomain(from host: String) -> String
 }
 
 @MainActor
@@ -29,13 +30,16 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
+    private let uriInteractor: URIInteracting
 
     init(
         configsInteractor: BackupSyncConfigsInteracting,
-        syncTriggerInteractor: BackupSyncTriggerInteracting
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
+        uriInteractor: URIInteracting
     ) {
         self.configsInteractor = configsInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
+        self.uriInteractor = uriInteractor
     }
 
     var allConfigs: [BackupConfig] {
@@ -87,5 +91,9 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
         syncTriggerInteractor.syncEvents()
+    }
+
+    func displayDomain(from host: String) -> String {
+        uriInteractor.displayDomain(from: host)
     }
 }

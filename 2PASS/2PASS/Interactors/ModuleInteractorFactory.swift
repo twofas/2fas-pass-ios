@@ -163,7 +163,8 @@ extension ModuleInteractorFactory {
     func backupConfigsModuleInteractor() -> BackupConfigsModuleInteracting {
         BackupConfigsModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
-            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
+            uriInteractor: InteractorFactory.shared.uriInteractor()
         )
     }
 

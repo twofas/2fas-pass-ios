@@ -13,6 +13,7 @@ public protocol URIInteracting: AnyObject {
     func normalizeURL(_ str: String) -> URL?
     func normalizeURL(_ str: String, options: URINormalizeOptions) -> URL?
     func extractDomain(from str: String) -> String?
+    func displayDomain(from host: String) -> String
     func isMatch(_ str: String, to uri: String, rule: PasswordURI.Match) -> Bool
 }
 
@@ -48,8 +49,27 @@ extension URIInteractor: URIInteracting {
         guard str.isEmpty == false, let normalized = normalize(str) else {
             return nil
         }
-        
+
         return URLComponents(string: normalized)?.host
+    }
+
+    /// Heuristic domain trimmer for human display: drops subdomains while preserving
+    /// multi-label public suffixes like `co.uk` / `com.au` / `gov.uk`. Detects the
+    /// multi-label case by checking whether *both* the last and second-to-last labels
+    /// appear in `tldList` — if so, takes 3 components; otherwise 2. IPv4 literals,
+    /// single-label hosts, and empty input pass through unchanged. Not strictly
+    /// PSL-correct (over-extends for `tv.com`/`it.com`-style coincidences), but accurate
+    /// for the common ccTLD second-level public suffixes.
+    func displayDomain(from host: String) -> String {
+        let parts = host.split(separator: ".")
+        guard !parts.isEmpty else { return host }
+        if parts.allSatisfy({ Int($0) != nil }) { return host }
+        if parts.count <= 2 { return host }
+
+        let last = parts[parts.count - 1].uppercased()
+        let secondLast = parts[parts.count - 2].uppercased()
+        let labelCount = (tldList.contains(last) && tldList.contains(secondLast)) ? 3 : 2
+        return parts.suffix(labelCount).joined(separator: ".")
     }
     
     // MARK: Normalize

@@ -229,10 +229,16 @@ final class BackupConfigsPresenter {
 
 private extension BackupConfigsPresenter {
     func title(for config: BackupConfig) -> String {
-        switch config.kind {
-        case .iCloud: String(localized: .backupConfigsRowIcloudTitle)
-        case .webDAV: String(localized: .backupConfigsRowWebdavTitle)
-        case .s3: String(localized: .backupConfigsRowS3Title)
+        switch config {
+        case .iCloud:
+            return String(localized: .backupConfigsRowIcloudTitle)
+        case .webDAV(let entry):
+            let host = entry.config.normalizedURL.host ?? entry.config.baseURL
+            let domain = interactor.displayDomain(from: host)
+            return domain.isEmpty ? String(localized: .backupConfigsRowWebdavTitle) : domain
+        case .s3(let entry):
+            let domain = interactor.displayDomain(from: entry.config.endpoint.host() ?? "")
+            return domain.isEmpty ? String(localized: .backupConfigsRowS3Title) : domain
         }
     }
 
@@ -241,7 +247,8 @@ private extension BackupConfigsPresenter {
         case .iCloud:
             return nil
         case .webDAV(let entry):
-            return entry.config.normalizedURL.host ?? entry.config.baseURL
+            let trimmed = String(entry.config.normalizedURL.path.trimmingPrefix("/"))
+            return trimmed.isEmpty ? nil : trimmed
         case .s3(let entry):
             return entry.config.bucket
         }
