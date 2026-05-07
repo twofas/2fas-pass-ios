@@ -56,6 +56,7 @@ final class BackupConfigsPresenter {
 
     var isEmpty: Bool { rows.isEmpty }
     var canAddiCloud: Bool { !rows.contains { $0.kind == .iCloud } }
+    var errorCount: Int { rows.filter { $0.errorText != nil }.count }
 
     private let interactor: BackupConfigsModuleInteracting
     /// Local mirror of which configs are currently mid-service. Seeded once at init from

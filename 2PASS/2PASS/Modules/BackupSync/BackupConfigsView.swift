@@ -33,6 +33,12 @@ struct BackupConfigsView: View {
                                  ? .backupConfigsCancelSyncButton
                                  : .backupConfigsSyncAllNowButton)
                                 .font(.body)
+                            
+                            Spacer()
+                            
+                            if !presenter.isSyncing && presenter.errorCount > 0 {
+                                BadgeView(value: presenter.errorCount)
+                            }
                         }
                         .contentShape(Rectangle())
                     }
