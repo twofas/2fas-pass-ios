@@ -43,6 +43,22 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
         return data
     }
 
+    public func testConnection() async throws(BackupFileServiceError) {
+        // PROPFIND/Depth:0 on the collection — bad paths return 404; fresh setups still return 207.
+        let (_, response) = try await perform(buildPropfindRequest())
+
+        switch response.statusCode {
+        case 200, 207:
+            return
+        case 405, 501:
+            // PROPFIND blocked by server/proxy — fall back to OPTIONS to at least confirm reachability.
+            let (_, optionsResponse) = try await perform(buildOptionsRequest())
+            try validateStatus(optionsResponse, expected: [200, 204])
+        default:
+            try validateStatus(response, expected: [200, 207])
+        }
+    }
+
     public func fetchLock() async throws(BackupFileServiceError) -> Data {
         let request = buildRequest(method: .get, for: .indexLock)
         let (data, response) = try await perform(request)
@@ -110,7 +126,14 @@ private extension BackupWebDAVServiceSession {
         case put = "PUT"
         case delete = "DELETE"
         case move = "MOVE"
+        case propfind = "PROPFIND"
+        case options = "OPTIONS"
     }
+
+    static let propfindBody = Data(#"""
+    <?xml version="1.0" encoding="utf-8"?>
+    <propfind xmlns="DAV:"><prop><resourcetype/></prop></propfind>
+    """#.utf8)
 
     func url(for resource: BackupFileResource) -> URL? {
         URL(string: resource.filename, relativeTo: config.normalizedURL)
@@ -125,7 +148,7 @@ private extension BackupWebDAVServiceSession {
         case .get:
             request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
             request.setValue("gzip, deflate", forHTTPHeaderField: "Accept-Encoding")
-        case .put, .delete, .move:
+        case .put, .delete, .move, .propfind, .options:
             break
         }
 
@@ -138,6 +161,23 @@ private extension BackupWebDAVServiceSession {
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.setValue("gzip, deflate", forHTTPHeaderField: "Accept-Encoding")
         request.httpBody = body
+        return request
+    }
+
+    func buildPropfindRequest() -> URLRequest {
+        var request = URLRequest(url: config.normalizedURL)
+        request.httpMethod = HTTPMethod.propfind.rawValue
+        request.setValue("0", forHTTPHeaderField: "Depth")
+        request.setValue("application/xml; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        request.httpBody = Self.propfindBody
+        authorize(&request)
+        return request
+    }
+
+    func buildOptionsRequest() -> URLRequest {
+        var request = URLRequest(url: config.normalizedURL)
+        request.httpMethod = HTTPMethod.options.rawValue
+        authorize(&request)
         return request
     }
 
