@@ -23,6 +23,26 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
         return data
     }
 
+    public func testConnection() async throws(BackupFileServiceError) {
+        let request = Self.request(for: .index)
+        let (data, response) = try await perform(request)
+
+        if response.statusCode == 200 { return }
+
+        if response.statusCode == 404 {
+            // S3 returns the same 404 for "bucket missing" (`NoSuchBucket`) and
+            // "index file missing in an existing bucket" (`NoSuchKey`); only the
+            // response body distinguishes them. Treat the fresh-setup case as
+            // success; treat a missing bucket — or any ambiguous body — as a
+            // real failure so misconfigured bucket names don't silently pass.
+            let body = String(data: data, encoding: .utf8) ?? ""
+            if body.contains("NoSuchKey") { return }
+            throw .notFound
+        }
+
+        try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
+    }
+
     public func fetchLock() async throws(BackupFileServiceError) -> Data {
         let request = Self.request(for: .indexLock)
         let (data, response) = try await perform(request)
