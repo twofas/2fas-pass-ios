@@ -33,10 +33,6 @@ struct BackupConfigsView: View {
                                  ? .backupConfigsCancelSyncButton
                                  : .backupConfigsSyncAllNowButton)
                                 .font(.body)
-//                            Spacer()
-//                            if presenter.isSyncing {
-//                                ProgressView()
-//                            }
                         }
                         .contentShape(Rectangle())
                     }
@@ -48,7 +44,7 @@ struct BackupConfigsView: View {
                 Section {
                     BackupConfigRowView(
                         row: row,
-                        isSyncActionEnabled: !presenter.isSyncing,
+                        isMenuEnabled: !presenter.isSyncing,
                         onSyncNow: { presenter.onSyncRow(row) },
                         onEdit: { presenter.onSelect(row) },
                         onRemove: { presenter.onDelete(row) }
@@ -134,6 +130,7 @@ struct BackupConfigsView: View {
                 .presentationCompactAdaptation(.popover)
                 .onDisappear(perform: handlePendingProviderChoice)
         }
+        .disabled(presenter.isSyncing)
         .matchedZoomSource(id: BackupConfigsRouter.addWebDAVSourceID, in: transitionNamespace)
         .matchedZoomSource(id: BackupConfigsRouter.addS3SourceID, in: transitionNamespace)
     }
@@ -193,7 +190,7 @@ private extension View {
 
 private struct BackupConfigRowView: View {
     let row: BackupConfigRowItem
-    let isSyncActionEnabled: Bool
+    let isMenuEnabled: Bool
     let onSyncNow: () -> Void
     let onEdit: () -> Void
     let onRemove: () -> Void
@@ -226,7 +223,6 @@ private struct BackupConfigRowView: View {
                         Text(.backupConfigsSyncNowButton)
                     }
                 }
-                .disabled(!isSyncActionEnabled)
 
                 if row.kind != .iCloud {
                     Button {
@@ -248,10 +244,9 @@ private struct BackupConfigRowView: View {
                     }
                 }
             } label: {
-                Image(systemName: "ellipsis")
-                    .foregroundStyle(.neutral500)
-                    .frame(width: 40, height: 40, alignment: .trailing)
+                MenuEllipsisLabel()
             }
+            .disabled(!isMenuEnabled)
             .tint(nil)
         }
     }
