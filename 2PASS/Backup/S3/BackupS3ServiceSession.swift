@@ -24,22 +24,14 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
     }
 
     public func testConnection() async throws(BackupFileServiceError) {
-        let request = Self.request(for: .index)
-        let (data, response) = try await perform(request)
-
-        if response.statusCode == 200 { return }
-
-        if response.statusCode == 404 {
-            // S3 returns the same 404 for "bucket missing" (`NoSuchBucket`) and
-            // "index file missing in an existing bucket" (`NoSuchKey`); only the
-            // response body distinguishes them. Treat the fresh-setup case as
-            // success; treat a missing bucket — or any ambiguous body — as a
-            // real failure so misconfigured bucket names don't silently pass.
-            let body = String(data: data, encoding: .utf8) ?? ""
-            if body.contains("NoSuchKey") { return }
-            throw .notFound
-        }
-
+        // HEAD against the bucket root (no object key) is the canonical S3 "HeadBucket"
+        // probe. A key-level GET can't reliably distinguish "bucket missing" from
+        // "index file missing in an existing bucket": Ceph-backed services (e.g. Hetzner
+        // Object Storage) report `NoSuchKey` for a missing bucket too, so a body-based
+        // heuristic on the GET silently accepts misconfigured bucket names. With no key
+        // in the request URL, a 404 unambiguously means the bucket is missing.
+        let request = S3URLRequest(objectKey: "", httpMethod: .head)
+        let (_, response) = try await perform(request)
         try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
     }
 
