@@ -7,8 +7,8 @@
 import SwiftUI
 
 extension View {
-    
-    func formFieldChanged(_ changed: Bool) -> some View {
+
+    public func formFieldChanged(_ changed: Bool) -> some View {
         listRowBackground(changed ? Color.brand50 : nil)
     }
 }

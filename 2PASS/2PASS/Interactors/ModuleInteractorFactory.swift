@@ -181,6 +181,7 @@ extension ModuleInteractorFactory {
     func backupS3ConfigModuleInteractor(configID: UUID?) -> BackupS3ConfigModuleInteracting {
         BackupS3ConfigModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
             configID: configID
         )
     }

@@ -15,7 +15,12 @@ struct BackupS3ConfigRouter: Router {
     }
 
     func routingType(for destination: BackupS3ConfigDestination?) -> RoutingType? {
-        nil
+        switch destination {
+        case .connectionError(let message):
+            .alert(title: String(localized: .commonError), message: message)
+        case .dismiss, .none:
+            nil
+        }
     }
 
     @ViewBuilder

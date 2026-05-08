@@ -2697,6 +2697,23 @@
         }
       }
     },
+    "common_discard_changes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard Changes"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odrzuć zmiany"
+          }
+        }
+      }
+    },
     "common_done" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -13200,6 +13217,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tajny klucz dostępu"
+          }
+        }
+      }
+    },
+    "s3_security" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezpieczeństwo"
           }
         }
       }

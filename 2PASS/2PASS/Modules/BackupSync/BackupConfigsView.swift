@@ -209,7 +209,7 @@ private struct BackupConfigRowView: View {
                 Text(row.title)
                     .foregroundStyle(.neutral950)
                     .font(.body)
-                if let subtitle = row.subtitle {
+                if let subtitle = row.subtitle, subtitle.isEmpty == false {
                     Text(subtitle)
                         .foregroundStyle(.neutral500)
                         .font(.footnote)
