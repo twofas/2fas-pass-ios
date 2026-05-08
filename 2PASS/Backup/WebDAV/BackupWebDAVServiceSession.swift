@@ -10,30 +10,51 @@ import Common
 final class BackupWebDAVServiceSession: BackupFileServiceSession {
     public let config: BackupWebDAVConfig
     private let session: URLSession
-    private let sessionDelegate: TLSBypassDelegate?
+
+    public enum Mode {
+        case `default`
+        case probe
+    }
 
     public init(config: BackupWebDAVConfig) {
         self.config = config
-
-        let sessionConfiguration = URLSessionConfiguration.default
-        sessionConfiguration.timeoutIntervalForRequest = 30
-        sessionConfiguration.timeoutIntervalForResource = 120
-        sessionConfiguration.requestCachePolicy = .reloadRevalidatingCacheData
-        sessionConfiguration.networkServiceType = .responsiveData
-        sessionConfiguration.waitsForConnectivity = true
-
-        if config.allowTLSOff {
-            let delegate = TLSBypassDelegate()
-            self.sessionDelegate = delegate
-            self.session = URLSession(configuration: sessionConfiguration, delegate: delegate, delegateQueue: nil)
-        } else {
-            self.sessionDelegate = nil
-            self.session = URLSession(configuration: sessionConfiguration)
-        }
+        self.session = Self.buildSession(config: config, mode: .default)
     }
 
     deinit {
         session.invalidateAndCancel()
+    }
+
+    /// Builds a fresh `URLSession` with timing/connectivity tuned per mode.
+    /// `.default` — vault traffic: 30s/120s, conditional revalidation, waits-for-connectivity.
+    /// `.probe` — connection test: 15s/20s, ephemeral, fails immediately on no connectivity
+    /// so wrong endpoints surface within seconds rather than hanging on retries.
+    private static func buildSession(config: BackupWebDAVConfig, mode: Mode) -> URLSession {
+        let sessionConfiguration: URLSessionConfiguration
+        switch mode {
+        case .default:
+            sessionConfiguration = URLSessionConfiguration.default
+            sessionConfiguration.timeoutIntervalForRequest = 30
+            sessionConfiguration.timeoutIntervalForResource = 120
+            sessionConfiguration.requestCachePolicy = .reloadRevalidatingCacheData
+            sessionConfiguration.networkServiceType = .responsiveData
+            sessionConfiguration.waitsForConnectivity = true
+        case .probe:
+            sessionConfiguration = URLSessionConfiguration.ephemeral
+            sessionConfiguration.timeoutIntervalForRequest = 15
+            sessionConfiguration.timeoutIntervalForResource = 20
+            sessionConfiguration.waitsForConnectivity = false
+        }
+
+        if config.allowTLSOff {
+            return URLSession(
+                configuration: sessionConfiguration,
+                delegate: TLSBypassDelegate(),
+                delegateQueue: nil
+            )
+        } else {
+            return URLSession(configuration: sessionConfiguration)
+        }
     }
 
     public func fetchIndex() async throws(BackupFileServiceError) -> Data {
@@ -45,14 +66,21 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
 
     public func testConnection() async throws(BackupFileServiceError) {
         // PROPFIND/Depth:0 on the collection — bad paths return 404; fresh setups still return 207.
-        let (_, response) = try await perform(buildPropfindRequest())
+        //
+        // Transient probe-config session: tight timeouts and `waitsForConnectivity = false`
+        // so a wrong endpoint surfaces in seconds. Lives only for this call;
+        // `invalidateAndCancel` runs at function exit via defer.
+        let probeSession = Self.buildSession(config: config, mode: .probe)
+        defer { probeSession.invalidateAndCancel() }
+
+        let (_, response) = try await perform(buildPropfindRequest(), on: probeSession)
 
         switch response.statusCode {
         case 200, 207:
             return
         case 405, 501:
             // PROPFIND blocked by server/proxy — fall back to OPTIONS to at least confirm reachability.
-            let (_, optionsResponse) = try await perform(buildOptionsRequest())
+            let (_, optionsResponse) = try await perform(buildOptionsRequest(), on: probeSession)
             try validateStatus(optionsResponse, expected: [200, 204])
         default:
             try validateStatus(response, expected: [200, 207])
@@ -192,9 +220,13 @@ private extension BackupWebDAVServiceSession {
         request.setValue("Basic \(data.base64EncodedString())", forHTTPHeaderField: "Authorization")
     }
 
-    func perform(_ request: URLRequest) async throws(BackupFileServiceError) -> (Data, HTTPURLResponse) {
+    func perform(
+        _ request: URLRequest,
+        on session: URLSession? = nil
+    ) async throws(BackupFileServiceError) -> (Data, HTTPURLResponse) {
+        let activeSession = session ?? self.session
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await activeSession.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 throw BackupFileServiceError.invalidResponse
             }

@@ -77,19 +77,48 @@ public final class S3ServiceSession: Sendable {
     public let config: S3ServiceConfig
     private let session: URLSession
 
-    public init(config: S3ServiceConfig) {
+    public enum Mode {
+        case `default`
+        case probe
+    }
+    
+    public init(config: S3ServiceConfig, mode: Mode = .default) {
         self.config = config
-        let sessionConfiguration = URLSessionConfiguration.default
-        sessionConfiguration.timeoutIntervalForRequest = 30
-        sessionConfiguration.timeoutIntervalForResource = 120
-        // GET requests benefit from conditional revalidation (304 saves the body on unchanged
-        // vaults). Non-GET methods opt out of cache lookups per-request in `buildURLRequest`,
-        // because some S3-compatible backends respond `501 NotImplemented` when conditional
-        // headers ride along with writes/deletes.
-        sessionConfiguration.requestCachePolicy = .reloadRevalidatingCacheData
-        sessionConfiguration.networkServiceType = .responsiveData
-        sessionConfiguration.waitsForConnectivity = true
-        self.session = URLSession(configuration: sessionConfiguration)
+        
+        switch mode {
+        case .default:
+            self.session = URLSession(configuration: Self.defaultConfiguration)
+        case .probe:
+            self.session = URLSession(configuration: Self.probeConfiguration)
+        }
+    }
+
+    /// Standard config for vault traffic: 30s/120s timeouts, conditional revalidation cache
+    /// (304 saves bytes on unchanged vault GETs), waits-for-connectivity so flaky links don't
+    /// spuriously fail mid-upload.
+    private static var defaultConfiguration: URLSessionConfiguration {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 120
+        // GET requests benefit from conditional revalidation. Non-GET methods opt out of cache
+        // lookups per-request in `buildURLRequest`, because some S3-compatible backends respond
+        // `501 NotImplemented` when conditional headers ride along with writes/deletes.
+        config.requestCachePolicy = .reloadRevalidatingCacheData
+        config.networkServiceType = .responsiveData
+        config.waitsForConnectivity = true
+        return config
+    }
+
+    /// Probe config for the user-facing connection test: tight timeouts and
+    /// `waitsForConnectivity = false` so wrong-host / wrong-creds surface within ~15s rather
+    /// than hanging on connectivity-wait retries. Ephemeral so the one-off probe never
+    /// poisons the on-disk cache.
+    private static var probeConfiguration: URLSessionConfiguration {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 20
+        config.waitsForConnectivity = false
+        return config
     }
 
     deinit {

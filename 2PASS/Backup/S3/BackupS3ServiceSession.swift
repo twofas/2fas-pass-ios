@@ -30,8 +30,13 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
         // Object Storage) report `NoSuchKey` for a missing bucket too, so a body-based
         // heuristic on the GET silently accepts misconfigured bucket names. With no key
         // in the request URL, a 404 unambiguously means the bucket is missing.
+        //
+        // Transient probe-config session: tight timeouts and `waitsForConnectivity = false`
+        // so a wrong endpoint surfaces in seconds. Lives only for this call; deinit's
+        // `invalidateAndCancel` runs at function exit.
+        let probeSession = S3ServiceSession(config: config, mode: .probe)
         let request = S3URLRequest(objectKey: "", httpMethod: .head)
-        let (_, response) = try await perform(request)
+        let (_, response) = try await perform(request, on: probeSession)
         try validateStatus(response, expected: BackupFileServiceExpectedStatus.read)
     }
 
@@ -106,13 +111,17 @@ private extension BackupS3ServiceSession {
         return request
     }
 
-    func perform(_ request: S3URLRequest) async throws(BackupFileServiceError) -> (Data, HTTPURLResponse) {
+    func perform(
+        _ request: S3URLRequest,
+        on session: S3ServiceSession? = nil
+    ) async throws(BackupFileServiceError) -> (Data, HTTPURLResponse) {
+        let activeSession = session ?? self.session
         Log(
             "BackupS3ServiceSession: request \(request.httpMethod.rawValue) \(request.objectKey) (body \(request.httpBody?.count ?? 0) B)",
             module: .backup
         )
         do {
-            let (data, response) = try await session.data(for: request)
+            let (data, response) = try await activeSession.data(for: request)
             if response.statusCode >= 400, let body = String(data: data, encoding: .utf8) {
                 Log(
                     "BackupS3ServiceSession: response \(response.statusCode) \(request.objectKey) (body \(data.count) B): \(body)",
