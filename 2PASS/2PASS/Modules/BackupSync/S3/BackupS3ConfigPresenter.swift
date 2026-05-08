@@ -12,12 +12,14 @@ import CommonUI
 
 enum BackupS3ConfigDestination: RouterDestination {
     case dismiss
-    case connectionError(message: String)
+    case errorAlert(message: String)
+    case loadFromCSV(onClose: (FileImportResult) -> Void)
 
     var id: String {
         switch self {
         case .dismiss: "dismiss"
-        case .connectionError: "connectionError"
+        case .errorAlert: "errorAlert"
+        case .loadFromCSV: "loadFromCSV"
         }
     }
 }
@@ -34,7 +36,6 @@ final class BackupS3ConfigPresenter {
     var secretAccessKey: String = ""
     var allowTLSOff = false
 
-    var validationError: String?
     /// `true` while the probe is in flight. Drives the button's spinner and disabled state.
     private(set) var isTesting: Bool = false
     /// Drives the toolbar Save/Done button's enabled state. Endpoint, access key, and secret
@@ -61,8 +62,6 @@ final class BackupS3ConfigPresenter {
         }
         return true
     }
-    /// Surfaces the connection-test failure as an alert via the router; cleared automatically
-    /// when the user dismisses the alert.
     var destination: BackupS3ConfigDestination?
 
     let isEditMode: Bool
@@ -129,19 +128,27 @@ final class BackupS3ConfigPresenter {
         return allowTLSOff != original.allowTLSOff
     }
     var hasUnsavedChanges: Bool {
-        endpointChanged
-            || regionChanged
-            || bucketChanged
-            || accessKeyIdChanged
-            || secretAccessKeyChanged
-            || allowTLSOffChanged
+        if isEditMode {
+            return endpointChanged
+                || regionChanged
+                || bucketChanged
+                || accessKeyIdChanged
+                || secretAccessKeyChanged
+                || allowTLSOffChanged
+        }
+        return !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !region.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !bucket.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !accessKeyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !secretAccessKey.isEmpty
+            || allowTLSOff
     }
 
     func onSave() {
         guard !isTesting else { return }
 
         guard let endpointURL = interactor.normalize(endpoint: endpoint) else {
-            validationError = String(localized: .syncStatusErrorIncorrectUrl)
+            destination = .errorAlert(message: String(localized: .syncStatusErrorIncorrectUrl))
             return
         }
 
@@ -158,7 +165,6 @@ final class BackupS3ConfigPresenter {
             allowTLSOff: allowTLSOff
         )
 
-        validationError = nil
         isTesting = true
 
         testTask = Task { [weak self] in
@@ -178,7 +184,7 @@ final class BackupS3ConfigPresenter {
                 isTesting = false
                 testTask = nil
                 if Task.isCancelled { return }
-                destination = .connectionError(
+                destination = .errorAlert(
                     message: BackupFileServiceError.connectionTestMessage(for: error)
                 )
             }
@@ -187,6 +193,29 @@ final class BackupS3ConfigPresenter {
 
     func cancelTest() {
         testTask?.cancel()
+    }
+
+    func onLoadFromCSV() {
+        destination = .loadFromCSV(onClose: { [weak self] result in
+            self?.handleCSVImport(result)
+        })
+    }
+
+    private func handleCSVImport(_ result: FileImportResult) {
+        switch result {
+        case .fileOpen(let url):
+            do {
+                let parsed = try interactor.parseAccessKeysCSV(at: url)
+                accessKeyId = parsed.accessKeyId
+                secretAccessKey = parsed.secretAccessKey
+            } catch {
+                destination = .errorAlert(message: String(localized: .s3CsvLoadFailed))
+            }
+        case .cantReadFile:
+            destination = .errorAlert(message: String(localized: .s3CsvLoadFailed))
+        case .cancelled:
+            break
+        }
     }
 
     /// Calls the interactor's pattern matcher and fills region/bucket from the URL when:

@@ -13153,6 +13153,23 @@
         }
       }
     },
+    "s3_csv_load_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read access keys from this file."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się odczytać kluczy dostępu z tego pliku."
+          }
+        }
+      }
+    },
     "s3_endpoint" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -13166,6 +13183,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adres URL endpointu"
+          }
+        }
+      }
+    },
+    "s3_load_from_csv_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load from CSV"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wczytaj z CSV"
           }
         }
       }

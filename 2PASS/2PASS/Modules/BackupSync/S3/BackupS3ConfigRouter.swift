@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import UniformTypeIdentifiers
 import CommonUI
 
 struct BackupS3ConfigRouter: Router {
@@ -16,8 +17,10 @@ struct BackupS3ConfigRouter: Router {
 
     func routingType(for destination: BackupS3ConfigDestination?) -> RoutingType? {
         switch destination {
-        case .connectionError(let message):
+        case .errorAlert(let message):
             .alert(title: String(localized: .commonError), message: message)
+        case .loadFromCSV(let onClose):
+            .fileImporter(contentTypes: [.commaSeparatedText], onClose: onClose)
         case .dismiss, .none:
             nil
         }

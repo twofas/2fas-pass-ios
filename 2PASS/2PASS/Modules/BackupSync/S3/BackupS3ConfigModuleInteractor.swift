@@ -21,6 +21,11 @@ protocol BackupS3ConfigModuleInteracting: AnyObject {
     func saveUpdate(id: UUID, with config: S3ServiceConfig)
     func detect(endpoint: String) -> S3EndpointDetection?
     func normalize(endpoint: String) -> URL?
+    func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
+}
+
+private enum CSVParseError: Error {
+    case malformed
 }
 
 @MainActor
@@ -119,5 +124,50 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
         }
 
         return S3EndpointDetection(region: region, bucket: bucket)
+    }
+
+    /// Parses an AWS-exported access keys CSV (header row: `Access key ID,Secret access key`).
+    /// Tolerates BOM, CRLF/LF line endings, surrounding double-quotes, and case differences in
+    /// header names. URL is security-scoped (returned by `fileImporter`), so access is bracketed.
+    func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String) {
+        let didStart = url.startAccessingSecurityScopedResource()
+        defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+
+        var contents = try String(contentsOf: url, encoding: .utf8)
+        if contents.first == "\u{FEFF}" {
+            contents.removeFirst()
+        }
+
+        let nonEmptyLines = contents
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard nonEmptyLines.count >= 2 else { throw CSVParseError.malformed }
+
+        let parseRow: (String) -> [String] = { line in
+            line.split(separator: ",", omittingEmptySubsequences: false).map { cell in
+                var value = cell.trimmingCharacters(in: .whitespaces)
+                if value.hasPrefix("\""), value.hasSuffix("\""), value.count >= 2 {
+                    value = String(value.dropFirst().dropLast())
+                }
+                return value
+            }
+        }
+
+        let headers = parseRow(nonEmptyLines[0]).map { $0.lowercased() }
+        let values = parseRow(nonEmptyLines[1])
+
+        guard
+            let accessKeyIndex = headers.firstIndex(of: "access key id"),
+            let secretKeyIndex = headers.firstIndex(of: "secret access key"),
+            accessKeyIndex < values.count,
+            secretKeyIndex < values.count
+        else { throw CSVParseError.malformed }
+
+        let accessKey = values[accessKeyIndex].trimmingCharacters(in: .whitespaces)
+        let secretKey = values[secretKeyIndex].trimmingCharacters(in: .whitespaces)
+        guard !accessKey.isEmpty, !secretKey.isEmpty else { throw CSVParseError.malformed }
+
+        return (accessKey, secretKey)
     }
 }

@@ -43,7 +43,7 @@ struct BackupS3ConfigView: View {
                     .formFieldChanged(presenter.bucketChanged)
                 }
 
-                Section(.s3Credentials) {
+                Section {
                     TextField(String(localized: .s3AccessKeyId), text: $presenter.accessKeyId)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
@@ -51,6 +51,15 @@ struct BackupS3ConfigView: View {
 
                     SecureInput(label: .s3SecretAccessKey, value: $presenter.secretAccessKey)
                         .formFieldChanged(presenter.secretAccessKeyChanged)
+                } header: {
+                    HStack {
+                        Text(.s3Credentials)
+                        Spacer()
+                        Button(String(localized: .s3LoadFromCsvButton)) {
+                            presenter.onLoadFromCSV()
+                        }
+                        .font(.calloutEmphasized)
+                    }
                 }
 
                 Section(.s3Security) {
@@ -60,19 +69,6 @@ struct BackupS3ConfigView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
-
-            if let validationError = presenter.validationError {
-                HStack {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.destructiveAction)
-                    Text(validationError)
-                        .font(.caption)
-                        .foregroundStyle(.mainText)
-                }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.vertical, Spacing.xl)
-                .background(Color(UIColor.systemGroupedBackground))
-            }
         }
         .disabled(presenter.isTesting)
         .router(router: BackupS3ConfigRouter(), destination: $presenter.destination)
