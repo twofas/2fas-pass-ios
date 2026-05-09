@@ -14,7 +14,13 @@ struct BackupS3ConfigView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var fieldLabelWidth: CGFloat?
+    /// Drives the edit-mode discard dialog. Anchored to the toolbar Cancel button so the
+    /// confirmation popover originates from it on iPad.
     @State private var isDiscardConfirmationPresented = false
+    /// Drives the add-mode discard alert. Add mode has no Cancel button to anchor a
+    /// confirmation dialog to, so a centered alert is used instead and fired only by the
+    /// swipe-dismiss catcher.
+    @State private var isAddModeDiscardAlertPresented = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -130,9 +136,27 @@ struct BackupS3ConfigView: View {
         }
         .background(
             DragDismissAttemptCatcher(isEnabled: presenter.hasUnsavedChanges) {
-                isDiscardConfirmationPresented = true
+                if presenter.isEditMode {
+                    isDiscardConfirmationPresented = true
+                } else {
+                    isAddModeDiscardAlertPresented = true
+                }
             }
         )
+        .alert(
+            Text(.loginUnsavedChangesDialogTitle),
+            isPresented: $isAddModeDiscardAlertPresented
+        ) {
+            Button(role: .destructive) {
+                hideKeyboard()
+                presenter.cancelAndClose()
+            } label: {
+                Text(.commonDiscardChanges)
+            }
+            Button(.commonCancel, role: .cancel) {}
+        } message: {
+            Text(.loginUnsavedChangesDialogDescription)
+        }
         .onAppear {
             presenter.onAppear()
         }

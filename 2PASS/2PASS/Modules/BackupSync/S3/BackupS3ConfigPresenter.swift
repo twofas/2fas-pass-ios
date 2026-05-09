@@ -160,6 +160,14 @@ final class BackupS3ConfigPresenter {
             || allowTLSOff
     }
 
+    /// Programmatic close without saving. Used by the add-mode discard flow where the form
+    /// is pushed inside the picker's `NavigationStack` — `@Environment(\.dismiss)` would
+    /// only pop back to the picker, while routing through `onClose` reaches the captured
+    /// sheet-root dismiss and tears down the entire sheet.
+    func cancelAndClose() {
+        onClose(nil)
+    }
+
     func onSave() {
         guard !isTesting else { return }
 
