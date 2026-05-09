@@ -77,37 +77,35 @@ struct BackupS3ConfigView: View {
         .toolbar {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: Spacing.s) {
-                    Image(.s3Icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 32, height: 32)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    BackupConfigIcon(kind: .s3, size: 32)
                     Text(.backupConfigsRowS3Title)
                         .font(.headline)
                 }
             }
-            ToolbarItem(placement: .cancellationAction) {
-                ToolbarCancelButton {
-                    hideKeyboard()
-                    if presenter.hasUnsavedChanges {
-                        isDiscardConfirmationPresented = true
-                    } else {
-                        dismiss()
-                    }
-                }
-                .confirmationDialog(
-                    Text(.loginUnsavedChangesDialogTitle),
-                    isPresented: $isDiscardConfirmationPresented,
-                    titleVisibility: .visible
-                ) {
-                    Button(role: .destructive) {
+            if presenter.isEditMode {
+                ToolbarItem(placement: .cancellationAction) {
+                    ToolbarCancelButton {
                         hideKeyboard()
-                        dismiss()
-                    } label: {
-                        Text(.commonDiscardChanges)
+                        if presenter.hasUnsavedChanges {
+                            isDiscardConfirmationPresented = true
+                        } else {
+                            dismiss()
+                        }
                     }
-                } message: {
-                    Text(.loginUnsavedChangesDialogDescription)
+                    .confirmationDialog(
+                        Text(.loginUnsavedChangesDialogTitle),
+                        isPresented: $isDiscardConfirmationPresented,
+                        titleVisibility: .visible
+                    ) {
+                        Button(role: .destructive) {
+                            hideKeyboard()
+                            dismiss()
+                        } label: {
+                            Text(.commonDiscardChanges)
+                        }
+                    } message: {
+                        Text(.loginUnsavedChangesDialogDescription)
+                    }
                 }
             }
             ToolbarItem(placement: .confirmationAction) {

@@ -38,14 +38,12 @@ private struct BackupS3ConfigContainerView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            BackupS3ConfigView(
-                presenter: .init(
-                    interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: configID),
-                    configID: configID,
-                    onClose: { dismiss() }
-                )
+        BackupS3ConfigView(
+            presenter: .init(
+                interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: configID),
+                configID: configID,
+                onClose: { dismiss() }
             )
-        }
+        )
     }
 }

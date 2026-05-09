@@ -12,16 +12,12 @@ import CommonUI
 import Data
 
 enum BackupConfigsDestination: RouterDestination {
-    case addWebDAV
-    case addS3
     case editWebDAV(configID: UUID)
     case editS3(configID: UUID)
     case removeConfirmation(name: String, onConfirm: Callback)
 
     var id: String {
         switch self {
-        case .addWebDAV: "addWebDAV"
-        case .addS3: "addS3"
         case .editWebDAV(let configID): "editWebDAV-\(configID)"
         case .editS3(let configID): "editS3-\(configID)"
         case .removeConfirmation(let name, _): "removeConfirmation-\(name)"
@@ -155,8 +151,9 @@ final class BackupConfigsPresenter {
         configsChangeToken = nil
     }
 
-    func onChooseProvider(_ kind: SyncServiceKind) {
-        handleAddChoice(kind)
+    func addiCloud() {
+        interactor.addiCloud()
+        withAnimation { reload() }
     }
 
     func onSelect(_ row: BackupConfigRowItem) {
@@ -194,18 +191,6 @@ final class BackupConfigsPresenter {
     func onSyncRow(_ row: BackupConfigRowItem) {
         Task { [interactor] in
             await interactor.sync(id: row.id)
-        }
-    }
-
-    private func handleAddChoice(_ kind: SyncServiceKind) {
-        switch kind {
-        case .iCloud:
-            interactor.addiCloud()
-            withAnimation { reload() }
-        case .webDAV:
-            destination = .addWebDAV
-        case .s3:
-            destination = .addS3
         }
     }
 

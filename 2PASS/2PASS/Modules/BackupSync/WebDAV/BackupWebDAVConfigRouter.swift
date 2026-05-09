@@ -30,14 +30,12 @@ private struct BackupWebDAVConfigContainerView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            BackupWebDAVConfigView(
-                presenter: .init(
-                    interactor: ModuleInteractorFactory.shared.backupWebDAVConfigModuleInteractor(configID: configID),
-                    configID: configID,
-                    onClose: { dismiss() }
-                )
+        BackupWebDAVConfigView(
+            presenter: .init(
+                interactor: ModuleInteractorFactory.shared.backupWebDAVConfigModuleInteractor(configID: configID),
+                configID: configID,
+                onClose: { dismiss() }
             )
-        }
+        )
     }
 }

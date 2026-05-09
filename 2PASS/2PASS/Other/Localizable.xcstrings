@@ -1014,6 +1014,40 @@
         }
       }
     },
+    "backup_configs_provider_icloud_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync via your iCloud account."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizacja przez konto iCloud."
+          }
+        }
+      }
+    },
+    "backup_configs_provider_picker_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose where 2FAS Pass will sync your encrypted vault."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz, gdzie 2FAS Pass zsynchronizuje Twój zaszyfrowany skarbiec."
+          }
+        }
+      }
+    },
     "backup_configs_provider_picker_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1048,6 +1082,23 @@
         }
       }
     },
+    "backup_configs_provider_s3_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use any S3-compatible object storage."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj dowolnej pamięci zgodnej z S3."
+          }
+        }
+      }
+    },
     "backup_configs_provider_webdav" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1061,6 +1112,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "WebDAV"
+          }
+        }
+      }
+    },
+    "backup_configs_provider_webdav_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect a WebDAV server you control."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Połącz się z serwerem WebDAV, którym zarządzasz."
           }
         }
       }
