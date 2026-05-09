@@ -45,23 +45,30 @@ final class BackupS3ConfigPresenter {
     /// Bumped once each time the probe fails (other than user cancellation); drives the
     /// error haptic. Same counter rationale as `successFeedbackTrigger`.
     private(set) var failureFeedbackTrigger: Int = 0
-    /// Drives the toolbar Save/Done button's enabled state. Endpoint, access key, and secret
-    /// must all be filled in before tapping is allowed. Bucket is *additionally* required
-    /// when the endpoint targets AWS S3 (`*.amazonaws.com`) — AWS signed requests need an
-    /// explicit bucket; non-AWS S3-compatible providers may infer it from the URL or
-    /// accept empty, so we surface a regular inline validation error there instead.
+    /// Drives the toolbar Save/Done button's enabled state. Endpoint, bucket, access key,
+    /// and secret must all be filled in before tapping is allowed. Bucket is required even
+    /// for non-AWS S3-compatible endpoints: server-side `CopyObject` (used in `finalizeVault`)
+    /// needs an explicit bucket name in the `x-amz-copy-source` header, and a virtual-hosted
+    /// host like `bucket.example.com` does not satisfy that — the bucket has to be a string
+    /// we can read back, not just whatever the user happened to encode in the URL.
+    /// Region is *additionally* required when the endpoint targets AWS S3
+    /// (`*.amazonaws.com`) — SigV4 hashes the region into the credential scope, so a wrong
+    /// or empty region against AWS surfaces only as opaque `SignatureDoesNotMatch`. Non-AWS
+    /// S3-compatible providers vary on whether they validate the region header, so we don't
+    /// gate Save on it there.
     /// In edit mode the button additionally requires at least one field to differ from the
     /// loaded values — re-saving an unchanged config would just trigger a redundant probe.
-    var canSave: Bool {        
+    var canSave: Bool {
         guard
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            !bucket.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !accessKeyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !secretAccessKey.isEmpty
         else {
             return false
         }
         let isAWSEndpoint = interactor.detect(endpoint: endpoint) != nil
-        if isAWSEndpoint, bucket.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if isAWSEndpoint, region.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return false
         }
         if isEditMode, !hasUnsavedChanges {
