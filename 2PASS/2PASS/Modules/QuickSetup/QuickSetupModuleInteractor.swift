@@ -27,7 +27,9 @@ protocol QuickSetupModuleInteracting: AnyObject {
 
     func turnOnCloud()
     func turnOffCloud()
-    
+
+    var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
+
     var syncPremiumNeededScreen: NotificationCenter.Notifications { get }
     
     // MARK: Security Tier
@@ -96,7 +98,11 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
             configsInteractor.removeConfig(id: id)
         }
     }
-    
+
+    var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> {
+        configsInteractor.configsDidChange
+    }
+
     var syncPremiumNeededScreen: NotificationCenter.Notifications {
         NotificationCenter.default.notifications(named: .presentSyncPremiumNeededScreen)
     }

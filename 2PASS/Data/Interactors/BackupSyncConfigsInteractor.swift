@@ -45,6 +45,12 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     /// Removes the entry with `id` regardless of kind. No-op if no entry matches.
     func removeConfig(id: UUID)
 
+    /// Typed sequence that emits one element every time configs are persisted via this
+    /// interactor (add / update / remove). Mirrors `BackupSyncContainer.configsDidChange` —
+    /// surfaced at the interactor seam so consumers don't reach into `NotificationCenter`.
+    /// Zero-cost passthrough; each access yields a fresh subscription.
+    var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
+
     /// Read probe: routes through `BackupSyncContainer.testConnection(config:)`, which builds
     /// a transient `BackupFileServiceSession` for the supplied config and runs auth +
     /// index-read in one call. Throws on auth failure, network error, or read denial. Returns
@@ -114,6 +120,10 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         guard configs.contains(where: { $0.id == id }) else { return }
         configs.removeAll { $0.id == id }
         mainRepository.backupSyncContainer.saveConfigs(configs)
+    }
+
+    var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> {
+        mainRepository.backupSyncContainer.configsDidChange
     }
 
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError) {

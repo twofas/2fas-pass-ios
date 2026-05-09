@@ -57,6 +57,13 @@ public enum Notifications {
         static var name: Notification.Name { get }
     }
 
+    /// Element-typed concrete return type of `NotificationCenter.messages(of:)` — same
+    /// shape for both the `AsyncMessage` and `MainActorMessage` overloads. Spell properties
+    /// and parameters as `Notifications.MessageSequence<M>` instead of repeating
+    /// `AsyncCompactMapSequence<NotificationCenter.Notifications, M>` at every call site.
+    /// Same iOS-15 floor as the underlying `notifications(named:object:)`.
+    public typealias MessageSequence<M> = AsyncCompactMapSequence<NotificationCenter.Notifications, M>
+
     /// RAII handle returned by `addObserver(of:from:using:)`. Backport of iOS 26's
     /// auto-cleanup-on-token-release semantics: the underlying `NotificationCenter` observer
     /// is removed on `deinit` or explicit `cancel()`, whichever comes first. Cancellation

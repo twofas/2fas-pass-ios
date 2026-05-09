@@ -68,13 +68,14 @@ final class BackupConfigsPresenter {
     /// cancel — no concurrent mutation, so the `unsafe` opt-out is sound.
     @ObservationIgnored
     private var syncEventTask: Task<Void, Never>?
-    /// RAII observer for `BackupConfigsDidChange` posted by `BackupSyncContainer.saveConfigs(_:)`
-    /// after every successful persistence (add / update / remove). Drives `reload()` so newly
-    /// added/removed config rows animate in even when triggered from another screen (e.g.
-    /// iCloud toggled via QuickSetup while BackupConfigs is off-stack). The token auto-removes
-    /// the underlying NotificationCenter observer on `cancel()` or `deinit`, whichever fires first.
+    /// Long-lived `for await` consumer of `interactor.configsDidChange` — fires once per
+    /// successful add / update / remove from `BackupSyncContainer.saveConfigs(_:)`. Drives
+    /// `reload()` so newly added/removed config rows animate in even when triggered from
+    /// another screen (e.g. iCloud toggled via QuickSetup while BackupConfigs is off-stack).
+    /// Cancelled in `onDisappear`, with `deinit` as a safety net — same lifecycle as
+    /// `syncEventTask` above.
     @ObservationIgnored
-    private var configsChangeToken: Notifications.ObservationToken?
+    private var configsChangeTask: Task<Void, Never>?
     /// Skips snapshot on first onAppear (init seeded); re-appearances catch up after off-screen.
 
     init(interactor: BackupConfigsModuleInteracting) {
@@ -86,11 +87,9 @@ final class BackupConfigsPresenter {
     isolated deinit {
         // Safety net: `onDisappear` should cancel first under normal lifecycle, but if the
         // presenter is torn down without the view ever firing onDisappear (rare but possible),
-        // the AsyncStream continuation would otherwise leak. The `configsChangeToken`'s own
-        // `deinit` would clean up its observer too — explicit cancel here for symmetry with
-        // the sync-event task.
+        // the AsyncStream continuations would otherwise leak.
         syncEventTask?.cancel()
-        configsChangeToken?.cancel()
+        configsChangeTask?.cancel()
     }
 
     private func snapshotActivity() {
@@ -110,15 +109,13 @@ final class BackupConfigsPresenter {
     }
 
     private func subscribeToConfigsChanges() {
-        configsChangeToken?.cancel()
-        configsChangeToken = NotificationCenter.default.addObserver(
-            of: BackupConfigsDidChange.self
-        ) { [weak self] _ in
-            // Posters call `NotificationCenter.default.post(...)` from whichever thread the
-            // mutating method ran on; hop to MainActor for the UI rebuild. `withAnimation`
-            // matches the `addiCloud` / `onDelete` paths' local-mutation animation.
-            Task { @MainActor in
+        configsChangeTask?.cancel()
+        configsChangeTask = Task { [weak self, interactor] in
+            for await _ in interactor.configsDidChange {
                 guard let self else { return }
+                // `withAnimation` matches the `addiCloud` / `onDelete` paths' local-mutation
+                // animation — same shape regardless of whether the change came from this
+                // screen or another (e.g. iCloud toggled via QuickSetup while off-stack).
                 withAnimation { self.reload() }
             }
         }
@@ -147,8 +144,8 @@ final class BackupConfigsPresenter {
     func onDisappear() {
         syncEventTask?.cancel()
         syncEventTask = nil
-        configsChangeToken?.cancel()
-        configsChangeToken = nil
+        configsChangeTask?.cancel()
+        configsChangeTask = nil
     }
 
     @discardableResult

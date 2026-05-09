@@ -139,7 +139,9 @@ public final class BackupSyncContainer: @unchecked Sendable {
     private let syncEventContinuations = OSAllocatedUnfairLock<[UUID: AsyncStream<BackupSyncSession.Event>.Continuation]>(initialState: [:])
     /// Most recent failure per config id, observed off the session's `.finished` events. In-memory
     /// only — does not survive an app restart. Cleared per-id on the next successful `.finished`
-    /// for that id; `.cancelled` outcomes are skipped (user-initiated cancel is not an error).
+    /// for that id, or when the config itself is removed via `saveConfigs(_:)` (so a deleted
+    /// config can't keep the global error rollup stuck on `true`); `.cancelled` outcomes are
+    /// skipped (user-initiated cancel is not an error).
     /// Distinct lock from `state` because the two have no shared invariants and writes happen on
     /// the same event-handler thread, so two short critical sections beat one wider one.
     ///
@@ -360,6 +362,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
         let old = store.loadConfigs()
         store.saveConfigs(configs)
         reconcileICloudLifecycle(old: old, new: configs)
+        reconcileLastErrors(old: old, new: configs)
         NotificationCenter.default.post(BackupConfigsDidChange())
     }
 
@@ -371,6 +374,37 @@ public final class BackupSyncContainer: @unchecked Sendable {
         } else if oldHasICloud && !newHasICloud {
             cloudSync.disable(notify: true)
         }
+    }
+
+    /// Drops `lastErrors[id]` for every config id present in `old` but not in `new`, so a
+    /// removed config can't keep `hasAnySyncError` (and the global "any backup is broken"
+    /// badge it drives) stuck on `true` for the rest of the process. Adds and updates leave
+    /// the id set unchanged, so this is a no-op for non-removal saves.
+    private func reconcileLastErrors(old: [BackupConfig], new: [BackupConfig]) {
+        let newIDs = Set(new.map(\.id))
+        let removed = old.compactMap { newIDs.contains($0.id) ? nil : $0.id }
+        guard !removed.isEmpty else { return }
+        lastErrors.withLock { dict in
+            for id in removed { dict[id] = nil }
+        }
+    }
+
+    /// Typed sequence of `BackupConfigsDidChange` postings — one element per call to
+    /// `saveConfigs(_:)` (i.e. every successful add / update / remove). Routes through
+    /// `NotificationCenter.default.messages(of:)` so the container is the single seam for
+    /// both posting and subscribing — consumers don't reach into `NotificationCenter`
+    /// directly. Each access yields a fresh subscription; multiple consumers iterate
+    /// independently, with `NotificationCenter`'s built-in observer auto-removal when each
+    /// `for await` loop exits.
+    ///
+    /// Returns the upstream `messages(of:)` sequence directly — zero-cost passthrough, no
+    /// Task/continuation hop. `Notifications.MessageSequence<M>` is just the typealias for
+    /// the underlying `AsyncCompactMapSequence<NotificationCenter.Notifications, M>` and
+    /// is available on iOS 15+; the iOS-18-only piece is the `AsyncSequence<Element,
+    /// Failure>` opaque syntax, which we don't need here because we're returning the
+    /// concrete type.
+    public var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> {
+        NotificationCenter.default.messages(of: BackupConfigsDidChange.self)
     }
 
     // MARK: - Ad-hoc transport reads (no session, no setup required)

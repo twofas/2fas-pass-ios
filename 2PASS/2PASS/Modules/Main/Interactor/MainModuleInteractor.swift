@@ -23,6 +23,7 @@ final class MainModuleInteractor {
     var paymentScreen: Callback?
 
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
+    private let configsInteractor: BackupSyncConfigsInteracting
     private let systemInteractor: SystemInteracting
     private let quickSetupInteractor: QuickSetupInteracting
     private let loginInteractor: LoginInteracting
@@ -33,14 +34,23 @@ final class MainModuleInteractor {
     /// start/finish. `var ...?` per the Swift two-phase init exception (CLAUDE.md): the Task
     /// captures `[weak self]` and so cannot be assigned during phase-one init.
     private var activitySubscription: Task<Void, Never>?
+    /// Tracks the long-lived `BackupConfigsDidChange` consumer that drives a badge refresh on
+    /// config CRUD. `BackupSyncContainer.saveConfigs(_:)` clears `lastErrors[id]` for any
+    /// removed config, so `hasAnySyncError` can flip to `false` without a sync session firing
+    /// — without this subscription the badge would stay stuck on the prior error state until
+    /// the next `.sessionStarted`/`.sessionFinished` event. Same `var ...?` two-phase-init
+    /// reasoning as `activitySubscription`.
+    private var configsChangeSubscription: Task<Void, Never>?
 
     init(
         syncTriggerInteractor: BackupSyncTriggerInteracting,
+        configsInteractor: BackupSyncConfigsInteracting,
         systemInteractor: SystemInteracting,
         quickSetupInteractor: QuickSetupInteracting,
         loginInteractor: LoginInteracting
     ) {
         self.syncTriggerInteractor = syncTriggerInteractor
+        self.configsInteractor = configsInteractor
         self.systemInteractor = systemInteractor
         self.quickSetupInteractor = quickSetupInteractor
         self.loginInteractor = loginInteractor
@@ -70,10 +80,18 @@ final class MainModuleInteractor {
                 }
             }
         }
+
+        configsChangeSubscription = Task { [weak self] in
+            guard let messages = self?.configsInteractor.configsDidChange else { return }
+            for await _ in messages {
+                self?.updateBadgeAction()
+            }
+        }
     }
 
     deinit {
         activitySubscription?.cancel()
+        configsChangeSubscription?.cancel()
         notificationCenter.removeObserver(self)
     }
 }

@@ -134,7 +134,7 @@ final class QuickSetupPresenter {
     /// vault recovery or removed via the BackupConfigs screen) that don't pass through this
     /// presenter's own `turnOnCloud` / `turnOffCloud` setters.
     private func observeConfigsChanged() async {
-        for await _ in NotificationCenter.default.messages(of: BackupConfigsDidChange.self) {
+        for await _ in interactor.configsDidChange {
             _iCloudSyncEnabled = interactor.isCloudEnabled
         }
     }

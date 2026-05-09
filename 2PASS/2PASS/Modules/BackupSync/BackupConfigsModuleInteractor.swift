@@ -13,6 +13,7 @@ import Common
 protocol BackupConfigsModuleInteracting: AnyObject {
     var allConfigs: [BackupConfig] { get }
     var currentActivity: BackupSyncActivity { get }
+    var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
     func lastSyncDate(for id: UUID) -> Date?
     func lastSyncError(for id: UUID) -> BackupSyncError?
@@ -48,6 +49,10 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     var currentActivity: BackupSyncActivity {
         syncTriggerInteractor.currentActivity
+    }
+
+    var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> {
+        configsInteractor.configsDidChange
     }
 
     func lastSyncDate(for id: UUID) -> Date? {

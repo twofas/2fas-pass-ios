@@ -191,6 +191,7 @@ extension ModuleInteractorFactory {
     func mainModuleInteracting() -> MainModuleInteracting {
         MainModuleInteractor(
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
             loginInteractor: InteractorFactory.shared.loginInteractor()
