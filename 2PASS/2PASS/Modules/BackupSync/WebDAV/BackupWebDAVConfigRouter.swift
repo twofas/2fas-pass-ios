@@ -34,7 +34,7 @@ private struct BackupWebDAVConfigContainerView: View {
             presenter: .init(
                 interactor: ModuleInteractorFactory.shared.backupWebDAVConfigModuleInteractor(configID: configID),
                 configID: configID,
-                onClose: { dismiss() }
+                onClose: { _ in dismiss() }
             )
         )
     }

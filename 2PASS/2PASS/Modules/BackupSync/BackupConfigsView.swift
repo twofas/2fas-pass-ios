@@ -15,8 +15,21 @@ struct BackupConfigsView: View {
 
     @Namespace private var transitionNamespace
     @State private var isProviderPickerPresented = false
+    /// Set by the picker when its inner form saves successfully — the saved config's UUID.
+    /// Drives the sheet's matched-zoom destination to point at the new row instead of the
+    /// `+` button so the dismiss animates the sheet down INTO the freshly-added row.
+    /// Reset on sheet dismissal so the next picker open starts fresh (zoom back to button
+    /// for cancel/iCloud paths).
+    @State private var savedConfigIDFromPicker: UUID?
 
     private static let providerPickerSourceID = "backupConfigs.add.picker"
+
+    private var pickerZoomDestinationID: String {
+        if let savedConfigIDFromPicker {
+            return BackupConfigsRouter.editSourceID(for: savedConfigIDFromPicker)
+        }
+        return Self.providerPickerSourceID
+    }
 
     var body: some View {
         SettingsDetailsForm(.settingsEntryCloudSync) {
@@ -126,13 +139,18 @@ struct BackupConfigsView: View {
         // Sheet attached at the body level (not inside `addButton`) so its content's
         // environment isn't polluted by the toolbar's `.tint(.accent)` / `.foregroundStyle(.white)`
         // — those cascade into sheets attached inside their styling chain.
-        .sheet(isPresented: $isProviderPickerPresented) {
+        .sheet(isPresented: $isProviderPickerPresented, onDismiss: {
+            // Reset so the next picker open starts back at the `+`-button zoom destination —
+            // otherwise a stale ID from the previous save would target the wrong row.
+            savedConfigIDFromPicker = nil
+        }) {
             BackupProviderPickerView(
                 canAddiCloud: presenter.canAddiCloud,
-                onAddiCloud: { presenter.addiCloud() }
+                onAddiCloud: { presenter.addiCloud() },
+                savedConfigID: $savedConfigIDFromPicker
             )
             .presentationDetents([.large])
-            .matchedZoomDestination(id: Self.providerPickerSourceID, in: transitionNamespace)
+            .matchedZoomDestination(id: pickerZoomDestinationID, in: transitionNamespace)
         }
     }
 

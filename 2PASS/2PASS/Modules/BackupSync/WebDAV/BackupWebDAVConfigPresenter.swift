@@ -37,9 +37,11 @@ final class BackupWebDAVConfigPresenter {
 
     private let interactor: BackupWebDAVConfigModuleInteracting
     private let configID: UUID?
-    private let onClose: Callback
+    /// Called on save (with the saved config's UUID) or programmatic close (with `nil`).
+    /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
+    private let onClose: (UUID?) -> Void
 
-    init(interactor: BackupWebDAVConfigModuleInteracting, configID: UUID?, onClose: @escaping Callback) {
+    init(interactor: BackupWebDAVConfigModuleInteracting, configID: UUID?, onClose: @escaping (UUID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose
@@ -85,13 +87,15 @@ final class BackupWebDAVConfigPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
+                let savedID: UUID
                 if let configID {
                     interactor.saveUpdate(id: configID, with: config)
+                    savedID = configID
                 } else {
-                    interactor.saveAdd(config)
+                    savedID = interactor.saveAdd(config)
                 }
                 isTesting = false
-                onClose()
+                onClose(savedID)
             } catch {
                 guard let self else { return }
                 connectionError = BackupFileServiceError.connectionTestMessage(for: error)

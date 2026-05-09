@@ -82,7 +82,9 @@ final class BackupS3ConfigPresenter {
 
     private let interactor: BackupS3ConfigModuleInteracting
     private let configID: UUID?
-    private let onClose: Callback
+    /// Called on save (with the saved config's UUID) or programmatic close (with `nil`).
+    /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
+    private let onClose: (UUID?) -> Void
     /// Held so the in-flight probe can be torn down on dismissal — without this the network
     /// request continues until the server responds even after the user taps Cancel.
     @ObservationIgnored
@@ -99,7 +101,7 @@ final class BackupS3ConfigPresenter {
     @ObservationIgnored
     private var originalSnapshot: S3ServiceConfig?
 
-    init(interactor: BackupS3ConfigModuleInteracting, configID: UUID?, onClose: @escaping Callback) {
+    init(interactor: BackupS3ConfigModuleInteracting, configID: UUID?, onClose: @escaping (UUID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose
@@ -185,14 +187,16 @@ final class BackupS3ConfigPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
+                let savedID: UUID
                 if let configID {
                     interactor.saveUpdate(id: configID, with: config)
+                    savedID = configID
                 } else {
-                    interactor.saveAdd(config)
+                    savedID = interactor.saveAdd(config)
                 }
                 isTesting = false
                 testTask = nil
-                onClose()
+                onClose(savedID)
                 // Brief delay so the success haptic punctuates the dismissal
                 // animation instead of firing alongside it.
                 try? await Task.sleep(for: .milliseconds(200))

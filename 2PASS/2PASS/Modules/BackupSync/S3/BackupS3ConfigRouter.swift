@@ -42,7 +42,7 @@ private struct BackupS3ConfigContainerView: View {
             presenter: .init(
                 interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: configID),
                 configID: configID,
-                onClose: { dismiss() }
+                onClose: { _ in dismiss() }
             )
         )
     }

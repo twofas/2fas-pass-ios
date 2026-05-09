@@ -151,9 +151,11 @@ final class BackupConfigsPresenter {
         configsChangeToken = nil
     }
 
-    func addiCloud() {
-        interactor.addiCloud()
+    @discardableResult
+    func addiCloud() -> UUID? {
+        let id = interactor.addiCloud()
         withAnimation { reload() }
+        return id
     }
 
     func onSelect(_ row: BackupConfigRowItem) {
@@ -195,7 +197,11 @@ final class BackupConfigsPresenter {
     }
 
     private func reload() {
-        rows = interactor.allConfigs.map { config in
+        // Newest config first so a freshly-added row appears at the top of the visible list
+        // — required for the picker's matched-zoom-back animation, which can only target a
+        // source view that's actually mounted on-screen. Off-screen rows (below the fold)
+        // wouldn't have a registered `.matchedZoomSource(...)` for iOS to find.
+        rows = interactor.allConfigs.reversed().map { config in
             BackupConfigRowItem(
                 id: config.id,
                 kind: config.kind,

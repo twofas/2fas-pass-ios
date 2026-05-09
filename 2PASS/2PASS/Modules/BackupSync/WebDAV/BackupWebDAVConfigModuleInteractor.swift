@@ -14,7 +14,8 @@ protocol BackupWebDAVConfigModuleInteracting: AnyObject {
     func isSecureURL(_ url: URL) -> Bool
     func normalizeURL(_ str: String) -> URL?
     func testConnection(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
-    func saveAdd(_ config: BackupWebDAVConfig)
+    @discardableResult
+    func saveAdd(_ config: BackupWebDAVConfig) -> UUID
     func saveUpdate(id: UUID, with config: BackupWebDAVConfig)
 }
 
@@ -58,11 +59,12 @@ final class BackupWebDAVConfigModuleInteractor: BackupWebDAVConfigModuleInteract
         try await configsInteractor.test(config)
     }
 
-    func saveAdd(_ config: BackupWebDAVConfig) {
+    func saveAdd(_ config: BackupWebDAVConfig) -> UUID {
         let id = configsInteractor.addWebDAVConfig(config)
         // Initial sync so the row immediately reflects "Syncing…" → "Last synced …"
         // instead of waiting for the next post-mutation `syncAll`.
         Task { try? await syncTriggerInteractor.sync(id: id) }
+        return id
     }
 
     func saveUpdate(id: UUID, with config: BackupWebDAVConfig) {

@@ -17,7 +17,8 @@ struct S3EndpointDetection: Equatable {
 protocol BackupS3ConfigModuleInteracting: AnyObject {
     var existingConfig: S3ServiceConfig? { get }
     func testConnection(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
-    func saveAdd(_ config: S3ServiceConfig)
+    @discardableResult
+    func saveAdd(_ config: S3ServiceConfig) -> UUID
     func saveUpdate(id: UUID, with config: S3ServiceConfig)
     func detect(endpoint: String) -> S3EndpointDetection?
     func normalize(endpoint: String) -> URL?
@@ -60,11 +61,12 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
         try await configsInteractor.test(config)
     }
 
-    func saveAdd(_ config: S3ServiceConfig) {
+    func saveAdd(_ config: S3ServiceConfig) -> UUID {
         let id = configsInteractor.addS3Config(config)
         // Initial sync so the row immediately reflects "Syncing…" → "Last synced …"
         // instead of waiting for the next post-mutation `syncAll`.
         Task { try? await syncTriggerInteractor.sync(id: id) }
+        return id
     }
 
     func saveUpdate(id: UUID, with config: S3ServiceConfig) {

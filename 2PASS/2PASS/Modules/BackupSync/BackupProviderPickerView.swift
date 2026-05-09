@@ -9,8 +9,22 @@ import Backup
 import CommonUI
 
 struct BackupProviderPickerView: View {
-    let canAddiCloud: Bool
-    let onAddiCloud: () -> Void
+    /// Returns the new iCloud config's UUID if one was created (parent calls
+    /// `presenter.addiCloud()` which forwards the interactor's returned UUID). The picker
+    /// uses it to drive the same matched-zoom-back-to-new-row animation as the form path.
+    let onAddiCloud: () -> UUID?
+    /// Written when the form completes successfully so the parent's matched-zoom
+    /// destination can switch from the `+` button source to the new row's source ID
+    /// before the sheet dismisses.
+    @Binding var savedConfigID: UUID?
+
+    /// Frozen at picker open time so the iCloud row doesn't vanish from the picker
+    /// mid-dismiss. Without this, the moment `presenter.addiCloud()` runs the parent's
+    /// `canAddiCloud` flips to `false`, SwiftUI re-renders the picker, and the iCloud row
+    /// disappears just as the sheet is animating away — visible glitch. State.initialValue
+    /// is only used on first mount; subsequent re-creations of the struct preserve the
+    /// captured value. When the sheet closes & reopens, a new mount captures fresh.
+    @State private var canAddiCloud: Bool
 
     // Captured at the picker root (sheet root), so calling it dismisses the entire sheet
     // — even when the form is currently pushed on top of the picker. The form's own
@@ -18,6 +32,12 @@ struct BackupProviderPickerView: View {
     @Environment(\.dismiss) private var dismissSheet
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedForm: ProviderForm?
+
+    init(canAddiCloud: Bool, onAddiCloud: @escaping () -> UUID?, savedConfigID: Binding<UUID?>) {
+        self._canAddiCloud = State(initialValue: canAddiCloud)
+        self.onAddiCloud = onAddiCloud
+        self._savedConfigID = savedConfigID
+    }
 
     private enum ProviderForm: Hashable, Identifiable {
         case webDAV
@@ -79,7 +99,7 @@ struct BackupProviderPickerView: View {
                         presenter: .init(
                             interactor: ModuleInteractorFactory.shared.backupWebDAVConfigModuleInteractor(configID: nil),
                             configID: nil,
-                            onClose: { dismissSheet() }
+                            onClose: handleFormClose
                         )
                     )
                 case .s3:
@@ -87,7 +107,7 @@ struct BackupProviderPickerView: View {
                         presenter: .init(
                             interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: nil),
                             configID: nil,
-                            onClose: { dismissSheet() }
+                            onClose: handleFormClose
                         )
                     )
                 }
@@ -96,8 +116,28 @@ struct BackupProviderPickerView: View {
     }
 
     private func handleiCloudTap() {
-        dismissSheet()
-        onAddiCloud()
+        // Add the iCloud config FIRST (synchronous via parent's `presenter.addiCloud()` →
+        // interactor → `withAnimation { reload() }`), capture its UUID, set `savedConfigID`
+        // to swap the parent's matched-zoom destination to the new row's source ID, THEN
+        // dismiss. Mirrors the form-save flow so iCloud also zooms into its new row.
+        if let newID = onAddiCloud() {
+            savedConfigID = newID
+        }
+        
+        Task { @MainActor in
+            dismissSheet()
+        }
+    }
+
+    private func handleFormClose(_ configID: UUID?) {
+        // Set BEFORE dismiss so SwiftUI re-evaluates the parent's `.matchedZoomDestination`
+        // ID with the new row's source ID before the sheet starts animating away.
+        if let configID {
+            savedConfigID = configID
+        }
+        Task { @MainActor in
+            dismissSheet()
+        }
     }
 
     private var background: Color {
@@ -151,7 +191,8 @@ private struct BackupProviderPickerRow: View {
         .sheet(isPresented: .constant(true)) {
             BackupProviderPickerView(
                 canAddiCloud: true,
-                onAddiCloud: {}
+                onAddiCloud: { nil },
+                savedConfigID: .constant(nil)
             )
             .presentationDetents([.large])
         }
