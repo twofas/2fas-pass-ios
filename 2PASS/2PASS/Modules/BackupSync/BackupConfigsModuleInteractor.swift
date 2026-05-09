@@ -60,10 +60,14 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
 
     @discardableResult
     func addiCloud() -> UUID? {
-        // Pure CRUD: persisting the iCloud config is the enable signal. The container's
-        // `saveConfigs(_:)` proxy detects the iCloud-added diff and calls `cloudSync.enable()`
-        // internally — module-layer code never touches CloudSync directly.
-        configsInteractor.addiCloudConfig()
+        // Persisting the iCloud config is the enable signal — the container's
+        // `saveConfigs(_:)` diff calls `cloudSync.enable()` internally. After enable, kick
+        // an initial sync so any existing local vault state is pushed up to iCloud
+        // immediately rather than waiting for the next post-mutation `syncAll`. Mirrors
+        // `QuickSetupModuleInteractor.turnOnCloud()`.
+        guard let id = configsInteractor.addiCloudConfig() else { return nil }
+        Task { try? await syncTriggerInteractor.sync(id: id) }
+        return id
     }
 
     func remove(id: UUID) {

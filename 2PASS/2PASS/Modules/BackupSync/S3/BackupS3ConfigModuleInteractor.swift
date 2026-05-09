@@ -32,15 +32,18 @@ private enum CSVParseError: Error {
 final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
 
     private let configsInteractor: BackupSyncConfigsInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let uriInteractor: URIInteracting
     private let configID: UUID?
 
     init(
         configsInteractor: BackupSyncConfigsInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         uriInteractor: URIInteracting,
         configID: UUID?
     ) {
         self.configsInteractor = configsInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.uriInteractor = uriInteractor
         self.configID = configID
     }
@@ -58,7 +61,10 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
     }
 
     func saveAdd(_ config: S3ServiceConfig) {
-        configsInteractor.addS3Config(config)
+        let id = configsInteractor.addS3Config(config)
+        // Initial sync so the row immediately reflects "Syncing…" → "Last synced …"
+        // instead of waiting for the next post-mutation `syncAll`.
+        Task { try? await syncTriggerInteractor.sync(id: id) }
     }
 
     func saveUpdate(id: UUID, with config: S3ServiceConfig) {
