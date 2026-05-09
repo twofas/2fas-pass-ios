@@ -69,6 +69,8 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
 
     func saveUpdate(id: UUID, with config: S3ServiceConfig) {
         configsInteractor.updateS3Config(id: id, with: config)
+        
+        Task { try? await syncTriggerInteractor.sync(id: id) }
     }
 
     /// Canonicalizes the endpoint string the same way URIInteractor does for the rest of the app:

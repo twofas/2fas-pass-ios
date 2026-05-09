@@ -67,5 +67,7 @@ final class BackupWebDAVConfigModuleInteractor: BackupWebDAVConfigModuleInteract
 
     func saveUpdate(id: UUID, with config: BackupWebDAVConfig) {
         configsInteractor.updateWebDAVConfig(id: id, with: config)
+        
+        Task { try? await syncTriggerInteractor.sync(id: id) }
     }
 }
