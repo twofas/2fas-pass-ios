@@ -21,6 +21,8 @@ struct BackupConfigsView: View {
     /// Reset on sheet dismissal so the next picker open starts fresh (zoom back to button
     /// for cancel/iCloud paths).
     @State private var savedConfigIDFromPicker: UUID?
+    @State private var headerBottomY: CGFloat = 0
+    @State private var formSize: CGSize = .zero
 
     private static let providerPickerSourceID = "backupConfigs.add.picker"
 
@@ -90,18 +92,35 @@ struct BackupConfigsView: View {
                     .settingsFooter()
                 }
             }
-            
-            if presenter.isEmpty {
-                EmptyListView(.backupConfigsEmptyDescription)
-                    .listRowBackground(Color.clear)
-                    .padding(.top, 32)
-            }
         } header: {
             SettingsHeaderView(
                 icon: .sync,
                 title: Text(.settingsCloudSyncTitle),
                 description: Text(.settingsCloudSyncDescription)
             )
+            .onGeometryChange(for: CGFloat.self, of: { proxy in
+                proxy.frame(in: .global).maxY
+            }, action: {
+                headerBottomY = $0
+            })
+        }
+        .onGeometryChange(for: CGSize.self, of: { proxy in
+            let size = proxy.size
+            return CGSize(
+                width: size.width,
+                height: size.height + proxy.safeAreaInsets.top
+            )
+            
+        }, action: {
+            formSize = $0
+        })
+        .overlay(alignment: .top) {
+            if presenter.isEmpty {
+                EmptyListView(.backupConfigsEmptyDescription)
+                    .listRowBackground(Color.clear)
+                    .position(x: formSize.width / 2, y: headerBottomY + (formSize.height - headerBottomY) / 2)
+                    .ignoresSafeArea()
+            }
         }
         .contentMargins(.bottom, Spacing.l, for: .scrollContent)
         .animation(.default, value: presenter.rows)
