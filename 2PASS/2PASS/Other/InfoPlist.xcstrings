@@ -34,6 +34,12 @@
     "NSCameraUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Kamera wird genutzt, um QR-Codes zu scannen, wenn du versuchst, die Browser-Erweiterung zu verbinden oder den Tresor zu entschlüsseln."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -51,6 +57,12 @@
     "NSFaceIDUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Biometriedaten werden für die Authentifikation genutzt."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -68,6 +80,12 @@
     "NSLocalNetworkUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zugriff auf das lokale Netzwerk wird genutzt, um auf den WebDAV-Backupspeicherort zuzugreifen."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
