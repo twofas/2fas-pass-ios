@@ -90,6 +90,12 @@ struct BackupConfigsView: View {
                     .settingsFooter()
                 }
             }
+            
+            if presenter.isEmpty {
+                EmptyListView(.backupConfigsEmptyDescription)
+                    .listRowBackground(Color.clear)
+                    .padding(.top, 32)
+            }
         } header: {
             SettingsHeaderView(
                 icon: .sync,
@@ -98,11 +104,6 @@ struct BackupConfigsView: View {
             )
         }
         .contentMargins(.bottom, Spacing.l, for: .scrollContent)
-        .overlay {
-            if presenter.isEmpty {
-                EmptyListView(.backupConfigsEmptyDescription)
-            }
-        }
         .animation(.default, value: presenter.rows)
         .onAppear {
             presenter.onAppear()
