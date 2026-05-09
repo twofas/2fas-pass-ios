@@ -38,6 +38,13 @@ final class BackupS3ConfigPresenter {
 
     /// `true` while the probe is in flight. Drives the button's spinner and disabled state.
     private(set) var isTesting: Bool = false
+    /// Bumped once each time the probe + save succeeds; the view observes this to fire a
+    /// success haptic. Counter (not Bool) so two consecutive successes still register as
+    /// distinct value changes and re-fire `.sensoryFeedback`.
+    private(set) var successFeedbackTrigger: Int = 0
+    /// Bumped once each time the probe fails (other than user cancellation); drives the
+    /// error haptic. Same counter rationale as `successFeedbackTrigger`.
+    private(set) var failureFeedbackTrigger: Int = 0
     /// Drives the toolbar Save/Done button's enabled state. Endpoint, access key, and secret
     /// must all be filled in before tapping is allowed. Bucket is *additionally* required
     /// when the endpoint targets AWS S3 (`*.amazonaws.com`) — AWS signed requests need an
@@ -45,7 +52,7 @@ final class BackupS3ConfigPresenter {
     /// accept empty, so we surface a regular inline validation error there instead.
     /// In edit mode the button additionally requires at least one field to differ from the
     /// loaded values — re-saving an unchanged config would just trigger a redundant probe.
-    var canSave: Bool {
+    var canSave: Bool {        
         guard
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !accessKeyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -179,6 +186,11 @@ final class BackupS3ConfigPresenter {
                 isTesting = false
                 testTask = nil
                 onClose()
+                // Brief delay so the success haptic punctuates the dismissal
+                // animation instead of firing alongside it.
+                try? await Task.sleep(for: .milliseconds(200))
+                if Task.isCancelled { return }
+                successFeedbackTrigger &+= 1
             } catch {
                 guard let self else { return }
                 isTesting = false
@@ -187,6 +199,11 @@ final class BackupS3ConfigPresenter {
                 destination = .errorAlert(
                     message: BackupFileServiceError.connectionTestMessage(for: error)
                 )
+                // Brief delay so the error haptic punctuates the alert's presentation
+                // animation instead of firing alongside it.
+                try? await Task.sleep(for: .milliseconds(100))
+                if Task.isCancelled { return }
+                failureFeedbackTrigger &+= 1
             }
         }
     }

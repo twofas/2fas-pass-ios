@@ -71,6 +71,8 @@ struct BackupS3ConfigView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .disabled(presenter.isTesting)
+        .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
+        .sensoryFeedback(.error, trigger: presenter.failureFeedbackTrigger)
         .router(router: BackupS3ConfigRouter(), destination: $presenter.destination)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -111,7 +113,6 @@ struct BackupS3ConfigView: View {
             ToolbarItem(placement: .confirmationAction) {
                 if presenter.isTesting {
                     ProgressView()
-                        .controlSize(.small)
                 } else if #available(iOS 26, *) {
                     Button(role: .confirm) {
                         hideKeyboard()
