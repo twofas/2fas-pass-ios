@@ -9,6 +9,12 @@ import Common
 import CommonUI
 
 struct VaultRecoveryRouter: Router {
+
+    var transitionNamespace: Namespace.ID?
+
+    static let iCloudSourceID = "vaultRecovery.source.iCloud"
+    static let webDAVSourceID = "vaultRecovery.source.webDAV"
+
     @ViewBuilder
     static func buildView()
     -> some View {
@@ -17,7 +23,7 @@ struct VaultRecoveryRouter: Router {
         )
         VaultRecoveryView(presenter: presenter)
     }
-    
+
     @ViewBuilder
     func view(for destination: VaultRecoveryDestination) -> some View {
         switch destination {
@@ -25,8 +31,10 @@ struct VaultRecoveryRouter: Router {
             VaultRecoveryURLLoadingRouter.buildView(url: url, onClose: onClose)
         case .restoreFromWebDAV:
             VaultRecoveryWebDAVRouter.buildView()
+                .matchedZoomDestination(id: Self.webDAVSourceID, in: transitionNamespace)
         case .selectiCloudVault(let onSelect):
             VaultRecoveryiCloudVaultSelectionRouter.buildView(onSelect: onSelect)
+                .matchedZoomDestination(id: Self.iCloudSourceID, in: transitionNamespace)
         case .restore(let recoveryData, let onClose):
             VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: recoveryData)
         case .selectFile:
@@ -42,7 +50,7 @@ struct VaultRecoveryRouter: Router {
         case .selectFile(let onClose): .fileImporter(contentTypes: .vaultFiles, onClose: onClose)
         case .restoreFromFile: .push
         case .selectiCloudVault: .sheet
-        case .restoreFromWebDAV: .push
+        case .restoreFromWebDAV: .sheet
         case .errorReadingFile: .alert(title: String(localized: .vaultRecoveryErrorOpenFile), message: String(localized: .vaultRecoveryErrorOpenFileAccessExplain))
         case nil: nil
         }

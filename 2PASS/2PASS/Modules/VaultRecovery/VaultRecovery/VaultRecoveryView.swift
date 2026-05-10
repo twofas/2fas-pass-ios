@@ -8,10 +8,12 @@ import SwiftUI
 import CommonUI
 
 struct VaultRecoveryView: View {
-    
+
     @State
     var presenter: VaultRecoveryPresenter
-    
+
+    @Namespace private var transitionNamespace
+
     var body: some View {
         VStack(spacing: 0) {
             HeaderContentView(
@@ -34,7 +36,8 @@ struct VaultRecoveryView: View {
                     )
                 }
                 .buttonStyle(.option)
-                
+                .matchedZoomSource(id: VaultRecoveryRouter.iCloudSourceID, in: transitionNamespace)
+
                 Button {
                     presenter.onRestoreFromFile()
                 } label: {
@@ -48,7 +51,7 @@ struct VaultRecoveryView: View {
                     )
                 }
                 .buttonStyle(.option)
-                
+
                 Button {
                     presenter.onRestoreFromWebDAV()
                 } label: {
@@ -62,13 +65,17 @@ struct VaultRecoveryView: View {
                     )
                 }
                 .buttonStyle(.option)
+                .matchedZoomSource(id: VaultRecoveryRouter.webDAVSourceID, in: transitionNamespace)
             }
             .padding(.vertical, Spacing.xll)
             
             Spacer()
         }
         .padding(.horizontal, Spacing.xl)
-        .router(router: VaultRecoveryRouter(), destination: $presenter.destination)
+        .router(
+            router: VaultRecoveryRouter(transitionNamespace: transitionNamespace),
+            destination: $presenter.destination
+        )
         .background(.mainBackground)
         .readableContentMargins()
     }
