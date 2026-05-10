@@ -912,6 +912,23 @@
         }
       }
     },
+    "backup_configs_allow_untrusted_certificates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Untrusted Certificates"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwalaj na niezaufane certyfikaty"
+          }
+        }
+      }
+    },
     "backup_configs_cancel_sync_button" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1214,6 +1231,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "WebDAV"
+          }
+        }
+      }
+    },
+    "backup_configs_security" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezpieczeństwo"
           }
         }
       }
@@ -13187,23 +13221,6 @@
         }
       }
     },
-    "s3_allow_untrusted_certificates" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow Untrusted Certificates"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zezwalaj na niezaufane certyfikaty"
-          }
-        }
-      }
-    },
     "s3_bucket" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -13353,23 +13370,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tajny klucz dostępu"
-          }
-        }
-      }
-    },
-    "s3_security" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Security"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bezpieczeństwo"
           }
         }
       }

@@ -31,16 +31,12 @@ struct BackupWebDAVConfigView: View {
                 }
             }
         ) {
-            Section(.webdavServerUrl) {
-                TextField("https://host:port/path/" as String, text: $presenter.url)
+            Section {
+                TextField("https://webdav.example.com" as String, text: $presenter.url)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .textContentType(.URL)
                     .formFieldChanged(presenter.urlChanged)
-
-                Toggle(.webdavAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
-                    .tint(.accentColor)
-                    .formFieldChanged(presenter.allowTLSOffChanged)
             }
 
             Section(.webdavCredentials) {
@@ -52,6 +48,12 @@ struct BackupWebDAVConfigView: View {
 
                 SecureInput(label: .webdavPassword, value: $presenter.password)
                     .formFieldChanged(presenter.passwordChanged)
+            }
+            
+            Section(.backupConfigsSecurity) {
+                Toggle(.backupConfigsAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
+                    .tint(.accent)
+                    .formFieldChanged(presenter.allowTLSOffChanged)
             }
         }
         .editMode(presenter.isEditMode)

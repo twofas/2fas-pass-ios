@@ -34,6 +34,7 @@ struct BackupProviderPickerView: View {
     @State private var selectedForm: ProviderForm?
     @Namespace private var transitionNamespace
 
+    private static let webDAVSourceID = "backupConfigs.providerPicker.webDAV"
     private static let s3SourceID = "backupConfigs.providerPicker.s3"
 
     init(canAddiCloud: Bool, onAddiCloud: @escaping () -> UUID?, savedConfigID: Binding<UUID?>) {
@@ -76,6 +77,7 @@ struct BackupProviderPickerView: View {
                         subtitle: .backupConfigsProviderWebdavDescription,
                         action: { selectedForm = .webDAV }
                     )
+                    .matchedZoomSource(id: Self.webDAVSourceID, in: transitionNamespace)
                     BackupProviderPickerRow(
                         kind: .s3,
                         title: .backupConfigsProviderS3,
@@ -106,6 +108,7 @@ struct BackupProviderPickerView: View {
                             onClose: handleFormClose
                         )
                     )
+                    .matchedZoomDestination(id: Self.webDAVSourceID, in: transitionNamespace)
                 case .s3:
                     BackupS3ConfigView(
                         presenter: .init(

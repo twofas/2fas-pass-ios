@@ -75,9 +75,9 @@ struct BackupS3ConfigView: View {
                 }
             }
 
-            Section(.s3Security) {
-                Toggle(.s3AllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
-                    .tint(.accentColor)
+            Section(.backupConfigsSecurity) {
+                Toggle(.backupConfigsAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
+                    .tint(.accent)
                     .formFieldChanged(presenter.allowTLSOffChanged)
             }
         }
