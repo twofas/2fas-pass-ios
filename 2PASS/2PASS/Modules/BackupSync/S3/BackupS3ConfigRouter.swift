@@ -10,9 +10,15 @@ import CommonUI
 
 struct BackupS3ConfigRouter: Router {
 
+    /// Constructs the form. When `onClose` is provided the caller takes full ownership of
+    /// the close path (including dismissal); when omitted the container falls back to
+    /// dismissing via `\.dismiss`, matching the edit-from-row behavior.
     @MainActor
-    static func buildView(configID: UUID?) -> some View {
-        BackupS3ConfigContainerView(configID: configID)
+    static func buildView(
+        configID: UUID?,
+        onClose: ((UUID?) -> Void)? = nil
+    ) -> some View {
+        BackupS3ConfigContainerView(configID: configID, onClose: onClose)
     }
 
     func routingType(for destination: BackupS3ConfigDestination?) -> RoutingType? {
@@ -21,7 +27,7 @@ struct BackupS3ConfigRouter: Router {
             .alert(title: String(localized: .commonError), message: message)
         case .loadFromCSV(let onClose):
             .fileImporter(contentTypes: [.commaSeparatedText], onClose: onClose)
-        case .dismiss, .none:
+        case nil:
             nil
         }
     }
@@ -34,6 +40,7 @@ struct BackupS3ConfigRouter: Router {
 
 private struct BackupS3ConfigContainerView: View {
     let configID: UUID?
+    let onClose: ((UUID?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -42,7 +49,7 @@ private struct BackupS3ConfigContainerView: View {
             presenter: .init(
                 interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: configID),
                 configID: configID,
-                onClose: { _ in dismiss() }
+                onClose: onClose ?? { _ in dismiss() }
             )
         )
     }

@@ -12,7 +12,6 @@ struct BackupS3ConfigView: View {
     @State
     var presenter: BackupS3ConfigPresenter
 
-    @Environment(\.dismiss) private var dismiss
     @State private var fieldLabelWidth: CGFloat?
 
     var body: some View {
@@ -25,11 +24,7 @@ struct BackupS3ConfigView: View {
             },
             onClose: {
                 hideKeyboard()
-                if presenter.isEditMode {
-                    dismiss()
-                } else {
-                    presenter.cancelAndClose()
-                }
+                presenter.close()
             }
         ) {
             Section {
@@ -93,7 +88,7 @@ struct BackupS3ConfigView: View {
             presenter.onAppear()
         }
         .onDisappear {
-            presenter.cancelTest()
+            presenter.onDisappear()
         }
     }
 

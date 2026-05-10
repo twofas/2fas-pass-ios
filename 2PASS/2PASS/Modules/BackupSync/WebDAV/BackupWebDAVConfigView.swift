@@ -12,8 +12,6 @@ struct BackupWebDAVConfigView: View {
     @State
     var presenter: BackupWebDAVConfigPresenter
 
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
         BackupSyncSettingsDetailsForm(
             kind: .webDAV,
@@ -24,11 +22,7 @@ struct BackupWebDAVConfigView: View {
             },
             onClose: {
                 hideKeyboard()
-                if presenter.isEditMode {
-                    dismiss()
-                } else {
-                    presenter.cancelAndClose()
-                }
+                presenter.close()
             }
         ) {
             Section {
@@ -68,7 +62,7 @@ struct BackupWebDAVConfigView: View {
             presenter.onAppear()
         }
         .onDisappear {
-            presenter.cancelTest()
+            presenter.onDisappear()
         }
     }
 

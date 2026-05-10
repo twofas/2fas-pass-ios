@@ -11,13 +11,11 @@ import Common
 import CommonUI
 
 enum BackupS3ConfigDestination: RouterDestination {
-    case dismiss
     case errorAlert(message: String)
     case loadFromCSV(onClose: (FileImportResult) -> Void)
 
     var id: String {
         switch self {
-        case .dismiss: "dismiss"
         case .errorAlert: "errorAlert"
         case .loadFromCSV: "loadFromCSV"
         }
@@ -160,11 +158,12 @@ final class BackupS3ConfigPresenter {
             || allowTLSOff
     }
 
-    /// Programmatic close without saving. Used by the add-mode discard flow where the form
-    /// is pushed inside the picker's `NavigationStack` — `@Environment(\.dismiss)` would
-    /// only pop back to the picker, while routing through `onClose` reaches the captured
-    /// sheet-root dismiss and tears down the entire sheet.
-    func cancelAndClose() {
+    /// Programmatic close without saving. Routes through `onClose` so the close request
+    /// reaches whoever owns the form's host presentation — required in add mode (where
+    /// the form is pushed inside the picker's `NavigationStack`, so a form-local
+    /// `@Environment(\.dismiss)` would only pop back to the picker), and consistent with
+    /// edit mode (where `onClose` is wired to a closure that dismisses the sheet).
+    func close() {
         onClose(nil)
     }
 
@@ -227,7 +226,7 @@ final class BackupS3ConfigPresenter {
         }
     }
 
-    func cancelTest() {
+    func onDisappear() {
         testTask?.cancel()
     }
 

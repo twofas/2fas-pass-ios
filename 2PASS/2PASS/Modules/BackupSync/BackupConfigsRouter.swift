@@ -49,20 +49,16 @@ struct BackupConfigsRouter: Router {
             // The zoom modifier wraps the NavigationStack (the sheet's outermost content) so it
             // animates the sheet's presentation from the source row. Applied inside the stack it
             // would act as a push transition — wrong, since the form is the stack's root.
-            zoomable(
-                NavigationStack {
-                    BackupWebDAVConfigRouter.buildView(configID: configID)
-                },
-                sourceID: Self.editSourceID(for: configID)
-            )
+            NavigationStack {
+                BackupWebDAVConfigRouter.buildView(configID: configID)
+            }
+            .matchedZoomDestination(id: Self.editSourceID(for: configID), in: transitionNamespace)
 
         case .editS3(let configID):
-            zoomable(
-                NavigationStack {
-                    BackupS3ConfigRouter.buildView(configID: configID)
-                },
-                sourceID: Self.editSourceID(for: configID)
-            )
+            NavigationStack {
+                BackupS3ConfigRouter.buildView(configID: configID)
+            }
+            .matchedZoomDestination(id: Self.editSourceID(for: configID), in: transitionNamespace)
 
         case .removeConfirmation(_, let onConfirm):
             Button(.commonDelete, role: .destructive, action: onConfirm)
@@ -86,32 +82,12 @@ struct BackupConfigsRouter: Router {
             return Self.pickerSourceID
         }()
 
-        zoomDestination(
-            BackupConfigsAddView(
-                canAddiCloud: presenter.canAddiCloud,
-                onAddiCloud: { presenter.addiCloud() },
-                savedConfigID: bindable.savedConfigIDFromPicker
-            )
-            .presentationDetents([.large]),
-            destinationID: zoomDestinationID
+        BackupConfigsAddView(
+            canAddiCloud: presenter.canAddiCloud,
+            onAddiCloud: { presenter.addiCloud() },
+            savedConfigID: bindable.savedConfigIDFromPicker
         )
-    }
-
-    @ViewBuilder
-    private func zoomable<V: View>(_ view: V, sourceID: String) -> some View {
-        if #available(iOS 26.0, *), let transitionNamespace {
-            view.navigationTransition(.zoom(sourceID: sourceID, in: transitionNamespace))
-        } else {
-            view
-        }
-    }
-
-    @ViewBuilder
-    private func zoomDestination<V: View>(_ view: V, destinationID: String) -> some View {
-        if let transitionNamespace {
-            view.matchedZoomDestination(id: destinationID, in: transitionNamespace)
-        } else {
-            view
-        }
+        .presentationDetents([.large])
+        .matchedZoomDestination(id: zoomDestinationID, in: transitionNamespace)
     }
 }

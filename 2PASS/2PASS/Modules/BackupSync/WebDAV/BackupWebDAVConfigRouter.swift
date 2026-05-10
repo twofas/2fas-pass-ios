@@ -9,16 +9,22 @@ import CommonUI
 
 struct BackupWebDAVConfigRouter: Router {
 
+    /// Constructs the form. When `onClose` is provided the caller takes full ownership of
+    /// the close path (including dismissal); when omitted the container falls back to
+    /// dismissing via `\.dismiss`, matching the edit-from-row behavior.
     @MainActor
-    static func buildView(configID: UUID?) -> some View {
-        BackupWebDAVConfigContainerView(configID: configID)
+    static func buildView(
+        configID: UUID?,
+        onClose: ((UUID?) -> Void)? = nil
+    ) -> some View {
+        BackupWebDAVConfigContainerView(configID: configID, onClose: onClose)
     }
 
     func routingType(for destination: BackupWebDAVConfigDestination?) -> RoutingType? {
         switch destination {
         case .errorAlert(let message):
             .alert(title: String(localized: .commonError), message: message)
-        case .dismiss, .none:
+        case nil:
             nil
         }
     }
@@ -31,6 +37,7 @@ struct BackupWebDAVConfigRouter: Router {
 
 private struct BackupWebDAVConfigContainerView: View {
     let configID: UUID?
+    let onClose: ((UUID?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -39,7 +46,7 @@ private struct BackupWebDAVConfigContainerView: View {
             presenter: .init(
                 interactor: ModuleInteractorFactory.shared.backupWebDAVConfigModuleInteractor(configID: configID),
                 configID: configID,
-                onClose: { _ in dismiss() }
+                onClose: onClose ?? { _ in dismiss() }
             )
         )
     }

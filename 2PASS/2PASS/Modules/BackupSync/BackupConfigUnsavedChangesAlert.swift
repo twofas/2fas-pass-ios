@@ -17,7 +17,7 @@ extension View {
     /// ```
     /// .backupConfigUnsavedChangesAlert(isPresented: $isPresented) {
     ///     hideKeyboard()
-    ///     presenter.cancelAndClose()
+    ///     presenter.close()
     /// }
     /// ```
     func backupConfigUnsavedChangesAlert(

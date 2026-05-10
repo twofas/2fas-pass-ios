@@ -32,4 +32,28 @@ public extension View {
         self
         #endif
     }
+
+    /// Optional-namespace overload. Applies the zoom source when `namespace` is non-nil,
+    /// passes through unchanged otherwise. Useful where the namespace is held as an
+    /// optional (e.g. on Router structs that may be constructed without one).
+    @ViewBuilder
+    func matchedZoomSource(id: String, in namespace: Namespace.ID?) -> some View {
+        if let namespace {
+            matchedZoomSource(id: id, in: namespace)
+        } else {
+            self
+        }
+    }
+
+    /// Optional-namespace overload. Applies the zoom destination when `namespace` is
+    /// non-nil, passes through unchanged otherwise. Useful where the namespace is held
+    /// as an optional (e.g. on Router structs that may be constructed without one).
+    @ViewBuilder
+    func matchedZoomDestination(id: String, in namespace: Namespace.ID?) -> some View {
+        if let namespace {
+            matchedZoomDestination(id: id, in: namespace)
+        } else {
+            self
+        }
+    }
 }

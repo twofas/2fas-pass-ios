@@ -8,6 +8,26 @@ import SwiftUI
 import Backup
 import CommonUI
 
+enum BackupConfigsAddDestination: RouterDestination {
+    /// `onClose` receives the new config's UUID on a successful save (the View writes it
+    /// into `savedConfigID` so the parent's matched-zoom destination flips to the new
+    /// row before the sheet animates away), or `nil` on plain cancel/dismiss. The
+    /// closure itself is responsible for dismissing the sheet — the form view doesn't
+    /// know it's hosted in one.
+    case webDAV(onClose: (UUID?) -> Void)
+    case s3(onClose: (UUID?) -> Void)
+
+    /// Explicit `String` id (not `Self`) because the associated `onClose` closures
+    /// aren't `Hashable`. Cases without payloads are still distinct — switch ignores
+    /// associated values.
+    var id: String {
+        switch self {
+        case .webDAV: "webDAV"
+        case .s3: "s3"
+        }
+    }
+}
+
 struct BackupConfigsAddView: View {
     /// Returns the new iCloud config's UUID if one was created (parent calls
     /// `presenter.addiCloud()` which forwards the interactor's returned UUID). The picker
@@ -31,22 +51,13 @@ struct BackupConfigsAddView: View {
     // `\.dismiss` (a pop action inside the nav stack) is intentionally separate from this.
     @Environment(\.dismiss) private var dismissSheet
     @Environment(\.colorScheme) private var colorScheme
-    @State private var selectedForm: ProviderForm?
+    @State private var destination: BackupConfigsAddDestination?
     @Namespace private var transitionNamespace
-
-    private static let webDAVSourceID = "backupConfigs.add.webDAV"
-    private static let s3SourceID = "backupConfigs.add.s3"
 
     init(canAddiCloud: Bool, onAddiCloud: @escaping () -> UUID?, savedConfigID: Binding<UUID?>) {
         self._canAddiCloud = State(initialValue: canAddiCloud)
         self.onAddiCloud = onAddiCloud
         self._savedConfigID = savedConfigID
-    }
-
-    private enum ProviderForm: Hashable, Identifiable {
-        case webDAV
-        case s3
-        var id: Self { self }
     }
 
     var body: some View {
@@ -75,16 +86,16 @@ struct BackupConfigsAddView: View {
                         kind: .webDAV,
                         title: .backupConfigsProviderWebdav,
                         subtitle: .backupConfigsProviderWebdavDescription,
-                        action: { selectedForm = .webDAV }
+                        action: { destination = .webDAV(onClose: handleFormClose) }
                     )
-                    .matchedZoomSource(id: Self.webDAVSourceID, in: transitionNamespace)
+                    .matchedZoomSource(id: BackupConfigsAddRouter.webDAVSourceID, in: transitionNamespace)
                     BackupConfigsAddProviderRow(
                         kind: .s3,
                         title: .backupConfigsProviderS3,
                         subtitle: .backupConfigsProviderS3Description,
-                        action: { selectedForm = .s3 }
+                        action: { destination = .s3(onClose: handleFormClose) }
                     )
-                    .matchedZoomSource(id: Self.s3SourceID, in: transitionNamespace)
+                    .matchedZoomSource(id: BackupConfigsAddRouter.s3SourceID, in: transitionNamespace)
                 }
                 .padding(.vertical, Spacing.xll)
 
@@ -98,28 +109,10 @@ struct BackupConfigsAddView: View {
                     ToolbarCancelButton { dismissSheet() }
                 }
             }
-            .navigationDestination(item: $selectedForm) { form in
-                switch form {
-                case .webDAV:
-                    BackupWebDAVConfigView(
-                        presenter: .init(
-                            interactor: ModuleInteractorFactory.shared.backupWebDAVConfigModuleInteractor(configID: nil),
-                            configID: nil,
-                            onClose: handleFormClose
-                        )
-                    )
-                    .matchedZoomDestination(id: Self.webDAVSourceID, in: transitionNamespace)
-                case .s3:
-                    BackupS3ConfigView(
-                        presenter: .init(
-                            interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: nil),
-                            configID: nil,
-                            onClose: handleFormClose
-                        )
-                    )
-                    .matchedZoomDestination(id: Self.s3SourceID, in: transitionNamespace)
-                }
-            }
+            .router(
+                router: BackupConfigsAddRouter(transitionNamespace: transitionNamespace),
+                destination: $destination
+            )
         }
     }
 

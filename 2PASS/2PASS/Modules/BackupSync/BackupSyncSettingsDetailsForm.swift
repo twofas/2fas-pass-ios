@@ -15,9 +15,10 @@ import Backup
 /// - The centered "Unsaved changes" alert used as the add-mode fallback (no anchor available)
 ///
 /// `onClose` is invoked for every "user is leaving" path: edit-mode cancel-tap with no
-/// unsaved changes, edit-mode discard-confirm, and add-mode swipe-then-discard. The consumer
-/// branches on edit mode internally to choose between `dismiss()` and
-/// `presenter.cancelAndClose()` — a sheet-vs-stack context decision the wrapper can't know.
+/// unsaved changes, edit-mode discard-confirm, and add-mode swipe-then-discard. The
+/// consumer routes through `presenter.close()` so the close request reaches the host
+/// presentation's dismiss — works in both sheet-root (edit) and pushed-into-stack (add)
+/// hosting contexts via the presenter's `onClose` wiring.
 ///
 /// ```
 /// BackupSyncSettingsDetailsForm(
