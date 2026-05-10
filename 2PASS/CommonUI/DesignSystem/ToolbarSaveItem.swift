@@ -26,6 +26,7 @@ public struct ToolbarSaveItem: ToolbarContent {
 
     private var isLoading = false
     private var isDisabled = false
+    private var customLabel: Text?
 
     public init(action: @escaping () -> Void) {
         self.action = action
@@ -37,18 +38,26 @@ public struct ToolbarSaveItem: ToolbarContent {
         }
     }
 
+    private var resolvedLabel: Text {
+        customLabel ?? Text(.commonSave)
+    }
+
     @ViewBuilder
     private var saveControl: some View {
         if isLoading {
             ProgressView()
+                .tint(nil)
         } else if #available(iOS 26, *) {
-            Button(role: .confirm, action: action)
-                .disabled(isDisabled)
-        } else {
-            Button(action: action) {
-                Text(.commonSave)
+            if let customLabel {
+                Button(role: .confirm, action: action) { customLabel }
+                    .disabled(isDisabled)
+            } else {
+                Button(role: .confirm, action: action)
+                    .disabled(isDisabled)
             }
-            .disabled(isDisabled)
+        } else {
+            Button(action: action) { resolvedLabel }
+                .disabled(isDisabled)
         }
     }
 
@@ -62,5 +71,21 @@ public struct ToolbarSaveItem: ToolbarContent {
         var instance = self
         instance.isDisabled = disabled
         return instance
+    }
+
+    /// Overrides the default "Save" / system-confirm label. When set, the explicit
+    /// label is used on every iOS version (iOS 26+ keeps the `.confirm` button role
+    /// for the system styling — only its label is replaced).
+    public func label(_ label: Text) -> Self {
+        var instance = self
+        instance.customLabel = label
+        return instance
+    }
+}
+
+extension ToolbarSaveItem {
+
+    public func label(_ label: LocalizedStringResource) -> Self {
+        self.label(Text(label))
     }
 }

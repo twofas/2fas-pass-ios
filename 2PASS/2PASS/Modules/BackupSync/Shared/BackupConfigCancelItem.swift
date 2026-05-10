@@ -55,7 +55,7 @@ struct BackupConfigCancelItem: ToolbarContent {
             .confirmationDialog(
                 Text(.backupConfigsUnsavedChangesDialogTitle),
                 isPresented: $isConfirmationPresented,
-                titleVisibility: .visible
+                titleVisibility: .hidden
             ) {
                 Button(role: .destructive, action: onDismiss) {
                     Text(.commonDiscardChanges)

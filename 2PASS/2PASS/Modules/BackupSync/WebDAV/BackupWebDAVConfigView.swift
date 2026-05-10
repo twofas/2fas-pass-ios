@@ -25,30 +25,16 @@ struct BackupWebDAVConfigView: View {
                 presenter.close()
             }
         ) {
-            Section {
-                TextField("https://webdav.example.com" as String, text: $presenter.url)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .textContentType(.URL)
-                    .formFieldChanged(presenter.urlChanged)
-            }
-
-            Section(.webdavCredentials) {
-                TextField(String(localized: .webdavUsername), text: $presenter.username)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .textContentType(.username)
-                    .formFieldChanged(presenter.usernameChanged)
-
-                SecureInput(label: .webdavPassword, value: $presenter.password)
-                    .formFieldChanged(presenter.passwordChanged)
-            }
-            
-            Section(.backupConfigsSecurity) {
-                Toggle(.backupConfigsAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
-                    .tint(.accent)
-                    .formFieldChanged(presenter.allowTLSOffChanged)
-            }
+            WebDAVFormFields(
+                url: $presenter.url,
+                username: $presenter.username,
+                password: $presenter.password,
+                allowTLSOff: $presenter.allowTLSOff
+            )
+            .formFieldChanged(url: presenter.urlChanged)
+            .formFieldChanged(username: presenter.usernameChanged)
+            .formFieldChanged(password: presenter.passwordChanged)
+            .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
         }
         .editMode(presenter.isEditMode)
         .unsavedChanges(presenter.hasUnsavedChanges)

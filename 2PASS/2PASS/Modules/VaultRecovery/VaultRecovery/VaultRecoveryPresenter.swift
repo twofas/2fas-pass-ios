@@ -23,7 +23,7 @@ enum VaultRecoveryDestination: Identifiable {
     case selectFile(onClose: (FileImportResult) -> Void)
     case restoreFromFile(url: URL, onClose: Callback)
     case selectiCloudVault(onSelect: (VaultRecoveryData) -> Void)
-    case restoreFromWebDAV
+    case restoreFromWebDAV(onSelect: (VaultRecoveryData) -> Void)
     case restore(VaultRecoveryData, onClose: Callback)
     case errorReadingFile
 }
@@ -56,7 +56,18 @@ extension VaultRecoveryPresenter {
     }
     
     func onRestoreFromWebDAV() {
-        destination = .restoreFromWebDAV
+        destination = .restoreFromWebDAV(onSelect: { [weak self] selected in
+            self?.destination = nil
+
+            Task { @MainActor in
+                try await Task.sleep(for: .milliseconds(900))
+
+                guard let self else { return }
+                self.destination = .restore(selected, onClose: { [weak self] in
+                    self?.destination = nil
+                })
+            }
+        })
     }
     
     func onRestoreFromCloud() {

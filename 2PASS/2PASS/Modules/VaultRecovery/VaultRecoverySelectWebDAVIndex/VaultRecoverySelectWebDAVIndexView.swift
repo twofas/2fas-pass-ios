@@ -9,13 +9,10 @@ import Common
 import CommonUI
 
 struct VaultRecoverySelectWebDAVIndexView: View {
-    
+
     @State
     var presenter: VaultRecoverySelectWebDAVIndexPresenter
-        
-    @Environment(\.dismiss)
-    private var dismiss
-    
+
     var body: some View {
         VStack {
             if presenter.isLoading {
@@ -45,13 +42,6 @@ struct VaultRecoverySelectWebDAVIndexView: View {
                     }
                 }
                 .listSectionSpacing(Spacing.s)
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                ToolbarCancelButton {
-                    dismiss()
-                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)

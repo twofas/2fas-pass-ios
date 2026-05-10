@@ -31,10 +31,9 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
             password: password,
             onSelect: onSelect
         )
-        
-        NavigationStack {
-            VaultRecoverySelectWebDAVIndexView(presenter: presenter)
-        }
+
+        // No NavigationStack here: this view is pushed inside the WebDAV form's stack.
+        VaultRecoverySelectWebDAVIndexView(presenter: presenter)
     }
     
     @ViewBuilder

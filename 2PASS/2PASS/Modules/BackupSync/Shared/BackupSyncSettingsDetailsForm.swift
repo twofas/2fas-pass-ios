@@ -46,6 +46,8 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
     private var hasUnsavedChanges = false
     private var isSaving = false
     private var canSave = true
+    private var confirmLabel: Text?
+    private var isCancellable = false
 
     @State private var isDiscardConfirmationPresented = false
     @State private var isAddModeDiscardAlertPresented = false
@@ -71,20 +73,20 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
             BackupConfigToolbarTitle(kind: kind, title: title)
-            if isEditMode {
+            if isEditMode || isCancellable {
                 BackupConfigCancelItem(
                     hasUnsavedChanges: hasUnsavedChanges,
                     isConfirmationPresented: $isDiscardConfirmationPresented,
                     onDismiss: onClose
                 )
             }
-            ToolbarSaveItem(action: onSave)
-                .loading(isSaving)
-                .disabled(!canSave)
+            saveItem
         }
         .background(
             DragDismissAttemptCatcher(isEnabled: hasUnsavedChanges) {
-                if isEditMode {
+                // The dialog anchors to the cancel button; the centered alert is the
+                // fallback when no anchor is available (add-mode without cancellable).
+                if isEditMode || isCancellable {
                     isDiscardConfirmationPresented = true
                 } else {
                     isAddModeDiscardAlertPresented = true
@@ -95,6 +97,20 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
             isPresented: $isAddModeDiscardAlertPresented,
             onDiscard: onClose
         )
+    }
+
+    @ToolbarContentBuilder
+    private var saveItem: some ToolbarContent {
+        if let confirmLabel {
+            ToolbarSaveItem(action: onSave)
+                .label(confirmLabel)
+                .loading(isSaving)
+                .disabled(!canSave)
+        } else {
+            ToolbarSaveItem(action: onSave)
+                .loading(isSaving)
+                .disabled(!canSave)
+        }
     }
 
     func editMode(_ enabled: Bool = true) -> Self {
@@ -120,6 +136,22 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
         instance.canSave = flag
         return instance
     }
+
+    /// Overrides the confirmation toolbar item's label (defaults to system "Save"/"Done").
+    func confirmLabel(_ label: Text) -> Self {
+        var instance = self
+        instance.confirmLabel = label
+        return instance
+    }
+
+    /// Forces the leading cancel toolbar item to render even outside edit mode. Useful
+    /// when the form is the root of its presentation (e.g. a sheet) and there's no
+    /// system back chevron to fall back on.
+    func cancellable(_ flag: Bool = true) -> Self {
+        var instance = self
+        instance.isCancellable = flag
+        return instance
+    }
 }
 
 extension BackupSyncSettingsDetailsForm {
@@ -138,5 +170,9 @@ extension BackupSyncSettingsDetailsForm {
             onClose: onClose,
             content: content
         )
+    }
+
+    func confirmLabel(_ label: LocalizedStringResource) -> Self {
+        confirmLabel(Text(label))
     }
 }

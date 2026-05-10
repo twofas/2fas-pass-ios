@@ -29,8 +29,8 @@ struct VaultRecoveryRouter: Router {
         switch destination {
         case .restoreFromFile(let url, let onClose):
             VaultRecoveryURLLoadingRouter.buildView(url: url, onClose: onClose)
-        case .restoreFromWebDAV:
-            VaultRecoveryWebDAVRouter.buildView()
+        case .restoreFromWebDAV(let onSelect):
+            VaultRecoveryWebDAVRouter.buildView(onSelect: onSelect)
                 .matchedZoomDestination(id: Self.webDAVSourceID, in: transitionNamespace)
         case .selectiCloudVault(let onSelect):
             VaultRecoveryiCloudVaultSelectionRouter.buildView(onSelect: onSelect)
