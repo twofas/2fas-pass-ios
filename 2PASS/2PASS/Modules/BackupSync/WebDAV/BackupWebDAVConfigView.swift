@@ -15,91 +15,62 @@ struct BackupWebDAVConfigView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            SettingsDetailsForm(.settingsCloudSyncWebdavLabel) {
-                Section(.webdavServerUrl) {
-                    TextField("https://host:port/path/" as String, text: $presenter.url)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.URL)
-                        .frame(maxWidth: .infinity)
-
-                    Toggle(.webdavAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
-                        .frame(maxWidth: .infinity)
-                        .tint(.accentColor)
-                }
-
-                Section(.webdavCredentials) {
-                    TextField(String(localized: .webdavUsername), text: $presenter.username)
-                        .autocorrectionDisabled(true)
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.username)
-
-                    SecureInput(label: .webdavPassword, value: $presenter.password)
-                }
-            } header: {
-                HStack {
-                    Spacer()
-                    Text(.settingsCloudSyncWebdavLabel)
-                        .font(.title1Emphasized)
-                        .foregroundStyle(Color.neutral950)
-                        .padding(.bottom, Spacing.xll3)
-                    Spacer()
-                }
-                .listRowBackground(Color.clear)
-                .settingsFormNavigationBarTitleHidden(true)
-            }
-
-            VStack(spacing: Spacing.l) {
-                if let uriError = presenter.uriError {
-                    HStack {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.destructiveAction)
-                        Text(uriError)
-                            .font(.caption)
-                            .foregroundStyle(.mainText)
-                    }
-                }
-
-                if let connectionError = presenter.connectionError {
-                    HStack {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.destructiveAction)
-                        Text(connectionError)
-                            .font(.caption)
-                            .foregroundStyle(.mainText)
-                    }
-                }
-
-                Button {
-                    presenter.onSave()
-                } label: {
-                    HStack(spacing: Spacing.xs) {
-                        if presenter.isTesting {
-                            ProgressView()
-                                .controlSize(.small)
-                                .tint(.white)
-                        }
-                        Text(presenter.isEditMode ? .commonSave : .webdavConnect)
-                    }
-                }
-                .buttonStyle(.filled)
-                .disabled(presenter.isTesting)
-            }
-            .controlSize(.large)
-            .padding(.horizontal, Spacing.xl)
-            .padding(.vertical, Spacing.xl)
-            .background(Color(UIColor.systemGroupedBackground))
-        }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                ToolbarCancelButton {
+        BackupSyncSettingsDetailsForm(
+            kind: .webDAV,
+            title: .backupConfigsRowWebdavTitle,
+            onSave: {
+                hideKeyboard()
+                presenter.onSave()
+            },
+            onClose: {
+                hideKeyboard()
+                if presenter.isEditMode {
                     dismiss()
+                } else {
+                    presenter.cancelAndClose()
                 }
             }
+        ) {
+            Section(.webdavServerUrl) {
+                TextField("https://host:port/path/" as String, text: $presenter.url)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .textContentType(.URL)
+                    .formFieldChanged(presenter.urlChanged)
+
+                Toggle(.webdavAllowUntrustedCertificates, isOn: $presenter.allowTLSOff)
+                    .tint(.accentColor)
+                    .formFieldChanged(presenter.allowTLSOffChanged)
+            }
+
+            Section(.webdavCredentials) {
+                TextField(String(localized: .webdavUsername), text: $presenter.username)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .textContentType(.username)
+                    .formFieldChanged(presenter.usernameChanged)
+
+                SecureInput(label: .webdavPassword, value: $presenter.password)
+                    .formFieldChanged(presenter.passwordChanged)
+            }
         }
+        .editMode(presenter.isEditMode)
+        .unsavedChanges(presenter.hasUnsavedChanges)
+        .saving(presenter.isTesting)
+        .canSave(presenter.canSave)
+        .disabled(presenter.isTesting)
+        .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
+        .sensoryFeedback(.error, trigger: presenter.failureFeedbackTrigger)
+        .router(router: BackupWebDAVConfigRouter(), destination: $presenter.destination)
         .onAppear {
             presenter.onAppear()
         }
+        .onDisappear {
+            presenter.cancelTest()
+        }
+    }
+
+    private func hideKeyboard() {
+        UIApplication.shared.hideKeyboard()
     }
 }

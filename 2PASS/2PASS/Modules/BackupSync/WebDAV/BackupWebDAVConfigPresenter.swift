@@ -12,8 +12,14 @@ import CommonUI
 
 enum BackupWebDAVConfigDestination: RouterDestination {
     case dismiss
+    case errorAlert(message: String)
 
-    var id: String { "dismiss" }
+    var id: String {
+        switch self {
+        case .dismiss: "dismiss"
+        case .errorAlert: "errorAlert"
+        }
+    }
 }
 
 @Observable @MainActor
@@ -24,13 +30,34 @@ final class BackupWebDAVConfigPresenter {
     var username: String = ""
     var password: String = ""
 
-    var uriError: String?
-    /// Set to a localized error string when the connection probe fails. Cleared on every new
-    /// `onSave()` attempt. Distinct from `uriError`, which is for synchronous field validation;
-    /// `connectionError` is for asynchronous probe failures from the Backup framework.
-    var connectionError: String?
-    /// `true` while the probe is in flight. Drives the button's disabled state and spinner.
+    /// `true` while the probe is in flight. Drives the button's spinner and disabled state.
     private(set) var isTesting: Bool = false
+    /// Bumped once each time the probe + save succeeds; the view observes this to fire a
+    /// success haptic. Counter (not Bool) so two consecutive successes still register as
+    /// distinct value changes and re-fire `.sensoryFeedback`.
+    private(set) var successFeedbackTrigger: Int = 0
+    /// Bumped once each time the probe fails (other than user cancellation); drives the
+    /// error haptic. Same counter rationale as `successFeedbackTrigger`.
+    private(set) var failureFeedbackTrigger: Int = 0
+    /// Drives the toolbar Save/Done button's enabled state. URL must parse to a normalized
+    /// secure URL before tapping is allowed; in edit mode the button additionally requires
+    /// at least one field to differ from the loaded values — re-saving an unchanged config
+    /// would just trigger a redundant probe.
+    var canSave: Bool {
+        guard !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        guard let normalized = interactor.normalizeURL(url) else {
+            return false
+        }
+        guard interactor.isSecureURL(normalized) else {
+            return false
+        }
+        if isEditMode, !hasUnsavedChanges {
+            return false
+        }
+        return true
+    }
     var destination: BackupWebDAVConfigDestination?
 
     let isEditMode: Bool
@@ -40,6 +67,14 @@ final class BackupWebDAVConfigPresenter {
     /// Called on save (with the saved config's UUID) or programmatic close (with `nil`).
     /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
     private let onClose: (UUID?) -> Void
+    /// Held so the in-flight probe can be torn down on dismissal — without this the network
+    /// request continues until the server responds even after the user taps Cancel.
+    @ObservationIgnored
+    private var testTask: Task<Void, Never>?
+    /// Snapshot of the config as it was when the form opened. Drives the per-field "changed"
+    /// indicators that highlight modified rows in edit mode. Stays nil in add mode.
+    @ObservationIgnored
+    private var originalSnapshot: BackupWebDAVConfig?
 
     init(interactor: BackupWebDAVConfigModuleInteracting, configID: UUID?, onClose: @escaping (UUID?) -> Void) {
         self.interactor = interactor
@@ -50,24 +85,59 @@ final class BackupWebDAVConfigPresenter {
 
     func onAppear() {
         guard let existing = interactor.existingConfig else { return }
+        originalSnapshot = existing
         url = existing.baseURL
         allowTLSOff = existing.allowTLSOff
         username = existing.login ?? ""
         password = existing.password ?? ""
     }
 
+    var urlChanged: Bool {
+        guard let original = originalSnapshot else { return false }
+        return url != original.baseURL
+    }
+    var allowTLSOffChanged: Bool {
+        guard let original = originalSnapshot else { return false }
+        return allowTLSOff != original.allowTLSOff
+    }
+    var usernameChanged: Bool {
+        guard let original = originalSnapshot else { return false }
+        return username != (original.login ?? "")
+    }
+    var passwordChanged: Bool {
+        guard let original = originalSnapshot else { return false }
+        return password != (original.password ?? "")
+    }
+    var hasUnsavedChanges: Bool {
+        if isEditMode {
+            return urlChanged
+                || allowTLSOffChanged
+                || usernameChanged
+                || passwordChanged
+        }
+        return !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || allowTLSOff
+            || !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !password.isEmpty
+    }
+
+    /// Programmatic close without saving. Used by the add-mode discard flow where the form
+    /// is pushed inside the picker's `NavigationStack` — `@Environment(\.dismiss)` would
+    /// only pop back to the picker, while routing through `onClose` reaches the captured
+    /// sheet-root dismiss and tears down the entire sheet.
+    func cancelAndClose() {
+        onClose(nil)
+    }
+
     func onSave() {
         guard !isTesting else { return }
 
         guard let normalizedURL = interactor.normalizeURL(url) else {
-            uriError = String(localized: .syncStatusErrorWrongDirectoryUrl)
-            connectionError = nil
+            destination = .errorAlert(message: String(localized: .syncStatusErrorWrongDirectoryUrl))
             return
         }
-
         guard interactor.isSecureURL(normalizedURL) else {
-            uriError = String(localized: .syncStatusErrorIncorrectUrl)
-            connectionError = nil
+            destination = .errorAlert(message: String(localized: .syncStatusErrorIncorrectUrl))
             return
         }
 
@@ -79,11 +149,9 @@ final class BackupWebDAVConfigPresenter {
             password: password.isEmpty ? nil : password
         )
 
-        uriError = nil
-        connectionError = nil
         isTesting = true
 
-        Task { [weak self] in
+        testTask = Task { [weak self] in
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
@@ -95,12 +163,31 @@ final class BackupWebDAVConfigPresenter {
                     savedID = interactor.saveAdd(config)
                 }
                 isTesting = false
+                testTask = nil
                 onClose(savedID)
+                // Brief delay so the success haptic punctuates the dismissal
+                // animation instead of firing alongside it.
+                try? await Task.sleep(for: .milliseconds(200))
+                if Task.isCancelled { return }
+                successFeedbackTrigger &+= 1
             } catch {
                 guard let self else { return }
-                connectionError = BackupFileServiceError.connectionTestMessage(for: error)
                 isTesting = false
+                testTask = nil
+                if Task.isCancelled { return }
+                destination = .errorAlert(
+                    message: BackupFileServiceError.connectionTestMessage(for: error)
+                )
+                // Brief delay so the error haptic punctuates the alert's presentation
+                // animation instead of firing alongside it.
+                try? await Task.sleep(for: .milliseconds(100))
+                if Task.isCancelled { return }
+                failureFeedbackTrigger &+= 1
             }
         }
+    }
+
+    func cancelTest() {
+        testTask?.cancel()
     }
 }

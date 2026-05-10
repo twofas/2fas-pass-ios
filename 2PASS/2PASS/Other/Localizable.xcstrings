@@ -1252,6 +1252,40 @@
         }
       }
     },
+    "backup_configs_unsaved_changes_dialog_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you want to discard your changes?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy chcesz odrzucić wprowadzone zmiany?"
+          }
+        }
+      }
+    },
+    "backup_configs_unsaved_changes_dialog_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unsaved changes"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niezapisane zmiany"
+          }
+        }
+      }
+    },
     "backup_export_cta" : {
       "extractionState" : "manual",
       "localizations" : {
