@@ -19,7 +19,7 @@ struct BackupConfigIcon: View {
         self.size = size
     }
 
-    private var cornerRadius: CGFloat { size * 0.25 }
+    private var cornerRadius: CGFloat { 12 }
 
     var body: some View {
         content
