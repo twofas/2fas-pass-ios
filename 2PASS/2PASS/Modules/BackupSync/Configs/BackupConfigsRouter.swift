@@ -82,9 +82,9 @@ struct BackupConfigsRouter: Router {
             return Self.pickerSourceID
         }()
 
-        BackupConfigsAddView(
+        BackupConfigsAddRouter.buildView(
             canAddiCloud: presenter.canAddiCloud,
-            onAddiCloud: { presenter.addiCloud() },
+            addiCloud: { presenter.addiCloud() },
             savedConfigID: bindable.savedConfigIDFromPicker
         )
         .presentationDetents([.large])

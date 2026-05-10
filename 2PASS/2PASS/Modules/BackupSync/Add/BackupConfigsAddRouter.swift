@@ -14,6 +14,21 @@ struct BackupConfigsAddRouter: Router {
     static let webDAVSourceID = "backupConfigs.add.webDAV"
     static let s3SourceID = "backupConfigs.add.s3"
 
+    @MainActor
+    static func buildView(
+        canAddiCloud: Bool,
+        addiCloud: @escaping () -> UUID?,
+        savedConfigID: Binding<UUID?>
+    ) -> some View {
+        BackupConfigsAddView(
+            presenter: BackupConfigsAddPresenter(
+                canAddiCloud: canAddiCloud,
+                addiCloud: addiCloud
+            ),
+            savedConfigID: savedConfigID
+        )
+    }
+
     func routingType(for destination: BackupConfigsAddDestination?) -> RoutingType? {
         switch destination {
         case .webDAV, .s3:
