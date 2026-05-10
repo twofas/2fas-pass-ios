@@ -8,7 +8,7 @@ import SwiftUI
 import Backup
 import CommonUI
 
-struct BackupProviderPickerView: View {
+struct BackupConfigsAddView: View {
     /// Returns the new iCloud config's UUID if one was created (parent calls
     /// `presenter.addiCloud()` which forwards the interactor's returned UUID). The picker
     /// uses it to drive the same matched-zoom-back-to-new-row animation as the form path.
@@ -34,8 +34,8 @@ struct BackupProviderPickerView: View {
     @State private var selectedForm: ProviderForm?
     @Namespace private var transitionNamespace
 
-    private static let webDAVSourceID = "backupConfigs.providerPicker.webDAV"
-    private static let s3SourceID = "backupConfigs.providerPicker.s3"
+    private static let webDAVSourceID = "backupConfigs.add.webDAV"
+    private static let s3SourceID = "backupConfigs.add.s3"
 
     init(canAddiCloud: Bool, onAddiCloud: @escaping () -> UUID?, savedConfigID: Binding<UUID?>) {
         self._canAddiCloud = State(initialValue: canAddiCloud)
@@ -63,7 +63,7 @@ struct BackupProviderPickerView: View {
 
                 VStack(spacing: Spacing.m) {
                     if canAddiCloud {
-                        BackupProviderPickerRow(
+                        BackupConfigsAddProviderRow(
                             kind: .iCloud,
                             title: .backupConfigsProviderIcloud,
                             subtitle: .backupConfigsProviderIcloudDescription,
@@ -71,14 +71,14 @@ struct BackupProviderPickerView: View {
                         )
                         .hideChevron()
                     }
-                    BackupProviderPickerRow(
+                    BackupConfigsAddProviderRow(
                         kind: .webDAV,
                         title: .backupConfigsProviderWebdav,
                         subtitle: .backupConfigsProviderWebdavDescription,
                         action: { selectedForm = .webDAV }
                     )
                     .matchedZoomSource(id: Self.webDAVSourceID, in: transitionNamespace)
-                    BackupProviderPickerRow(
+                    BackupConfigsAddProviderRow(
                         kind: .s3,
                         title: .backupConfigsProviderS3,
                         subtitle: .backupConfigsProviderS3Description,
@@ -155,7 +155,7 @@ struct BackupProviderPickerView: View {
     }
 }
 
-private struct BackupProviderPickerRow: View {
+private struct BackupConfigsAddProviderRow: View {
     let kind: SyncServiceKind
     let title: LocalizedStringResource
     let subtitle: LocalizedStringResource
@@ -197,7 +197,7 @@ private struct BackupProviderPickerRow: View {
 #Preview {
     Color.clear
         .sheet(isPresented: .constant(true)) {
-            BackupProviderPickerView(
+            BackupConfigsAddView(
                 canAddiCloud: true,
                 onAddiCloud: { nil },
                 savedConfigID: .constant(nil)

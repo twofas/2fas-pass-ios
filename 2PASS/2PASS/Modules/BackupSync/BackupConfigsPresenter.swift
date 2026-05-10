@@ -12,12 +12,14 @@ import CommonUI
 import Data
 
 enum BackupConfigsDestination: RouterDestination {
+    case add
     case editWebDAV(configID: UUID)
     case editS3(configID: UUID)
     case removeConfirmation(name: String, onConfirm: Callback)
 
     var id: String {
         switch self {
+        case .add: "add"
         case .editWebDAV(let configID): "editWebDAV-\(configID)"
         case .editS3(let configID): "editS3-\(configID)"
         case .removeConfirmation(let name, _): "removeConfirmation-\(name)"
@@ -42,6 +44,13 @@ struct BackupConfigRowItem: Identifiable, Equatable {
 final class BackupConfigsPresenter {
 
     var destination: BackupConfigsDestination?
+    /// Set by the add sheet (via `BackupConfigsAddView.savedConfigID` binding) when its
+    /// inner form saves successfully — the new config's UUID. Drives the add sheet's
+    /// matched-zoom destination to point at the freshly-added row instead of the `+`
+    /// button, so the dismiss animates the sheet down INTO the new row. Cleared by
+    /// `onAddPressed()` before each new open so cancel/iCloud paths zoom back to the
+    /// `+` button.
+    var savedConfigIDFromPicker: UUID?
     private(set) var rows: [BackupConfigRowItem] = []
     /// Call-level "is a sync in flight overall?" — driven by `.sessionStarted` /
     /// `.sessionFinished` from the container, which span the orchestration window
@@ -146,6 +155,14 @@ final class BackupConfigsPresenter {
         syncEventTask = nil
         configsChangeTask?.cancel()
         configsChangeTask = nil
+    }
+
+    func onAddPressed() {
+        // Clear before showing so each fresh picker open zooms from the `+` button. The
+        // picker writes back into `savedConfigIDFromPicker` only after a successful save,
+        // at which point the matched-zoom destination flips to the new row.
+        savedConfigIDFromPicker = nil
+        destination = .add
     }
 
     @discardableResult

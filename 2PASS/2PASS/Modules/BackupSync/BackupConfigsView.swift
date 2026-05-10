@@ -14,24 +14,8 @@ struct BackupConfigsView: View {
     var presenter: BackupConfigsPresenter
 
     @Namespace private var transitionNamespace
-    @State private var isProviderPickerPresented = false
-    /// Set by the picker when its inner form saves successfully — the saved config's UUID.
-    /// Drives the sheet's matched-zoom destination to point at the new row instead of the
-    /// `+` button so the dismiss animates the sheet down INTO the freshly-added row.
-    /// Reset on sheet dismissal so the next picker open starts fresh (zoom back to button
-    /// for cancel/iCloud paths).
-    @State private var savedConfigIDFromPicker: UUID?
     @State private var headerBottomY: CGFloat = 0
     @State private var formSize: CGSize = .zero
-
-    private static let providerPickerSourceID = "backupConfigs.add.picker"
-
-    private var pickerZoomDestinationID: String {
-        if let savedConfigIDFromPicker {
-            return BackupConfigsRouter.editSourceID(for: savedConfigIDFromPicker)
-        }
-        return Self.providerPickerSourceID
-    }
 
     var body: some View {
         SettingsDetailsForm(.settingsEntryCloudSync) {
@@ -144,7 +128,10 @@ struct BackupConfigsView: View {
             }
         }
         .router(
-            router: BackupConfigsRouter(transitionNamespace: transitionNamespace),
+            router: BackupConfigsRouter(
+                transitionNamespace: transitionNamespace,
+                presenter: presenter
+            ),
             destination: $presenter.destination
         )
         // Edit screens are presented as `.sheet`, which doesn't unmount this view, so
@@ -156,34 +143,18 @@ struct BackupConfigsView: View {
                 presenter.onAppear()
             }
         }
-        // Sheet attached at the body level (not inside `addButton`) so its content's
-        // environment isn't polluted by the toolbar's `.tint(.accent)` / `.foregroundStyle(.white)`
-        // — those cascade into sheets attached inside their styling chain.
-        .sheet(isPresented: $isProviderPickerPresented, onDismiss: {
-            // Reset so the next picker open starts back at the `+`-button zoom destination —
-            // otherwise a stale ID from the previous save would target the wrong row.
-            savedConfigIDFromPicker = nil
-        }) {
-            BackupProviderPickerView(
-                canAddiCloud: presenter.canAddiCloud,
-                onAddiCloud: { presenter.addiCloud() },
-                savedConfigID: $savedConfigIDFromPicker
-            )
-            .presentationDetents([.large])
-            .matchedZoomDestination(id: pickerZoomDestinationID, in: transitionNamespace)
-        }
     }
 
     private var addButton: some View {
         Button {
-            isProviderPickerPresented = true
+            presenter.onAddPressed()
         } label: {
             Image(systemName: "plus")
                 .accessibilityLabel(Text(.backupConfigsAddButton))
                 .foregroundStyle(.white)
         }
         .disabled(presenter.isSyncing)
-        .matchedZoomSource(id: Self.providerPickerSourceID, in: transitionNamespace)
+        .matchedZoomSource(id: BackupConfigsRouter.pickerSourceID, in: transitionNamespace)
     }
 }
 
