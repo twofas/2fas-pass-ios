@@ -118,7 +118,7 @@ struct BackupConfigsView: View {
             if presenter.isEmpty {
                 EmptyListView(.backupConfigsEmptyDescription)
                     .listRowBackground(Color.clear)
-                    .position(x: formSize.width / 2, y: headerBottomY + (formSize.height - headerBottomY) / 2)
+                    .position(x: formSize.width / 2, y: headerBottomY + (formSize.height - headerBottomY) / 2.1)
                     .ignoresSafeArea()
             }
         }
