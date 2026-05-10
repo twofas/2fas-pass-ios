@@ -14,6 +14,7 @@ struct VaultRecoveryRouter: Router {
 
     static let iCloudSourceID = "vaultRecovery.source.iCloud"
     static let webDAVSourceID = "vaultRecovery.source.webDAV"
+    static let s3SourceID = "vaultRecovery.source.s3"
 
     @ViewBuilder
     static func buildView()
@@ -32,6 +33,9 @@ struct VaultRecoveryRouter: Router {
         case .restoreFromWebDAV(let onSelect):
             VaultRecoveryWebDAVRouter.buildView(onSelect: onSelect)
                 .matchedZoomDestination(id: Self.webDAVSourceID, in: transitionNamespace)
+        case .restoreFromS3(let onSelect):
+            VaultRecoveryS3Router.buildView(onSelect: onSelect)
+                .matchedZoomDestination(id: Self.s3SourceID, in: transitionNamespace)
         case .selectiCloudVault(let onSelect):
             VaultRecoveryiCloudVaultSelectionRouter.buildView(onSelect: onSelect)
                 .matchedZoomDestination(id: Self.iCloudSourceID, in: transitionNamespace)
@@ -51,6 +55,7 @@ struct VaultRecoveryRouter: Router {
         case .restoreFromFile: .push
         case .selectiCloudVault: .sheet
         case .restoreFromWebDAV: .sheet
+        case .restoreFromS3: .sheet
         case .errorReadingFile: .alert(title: String(localized: .vaultRecoveryErrorOpenFile), message: String(localized: .vaultRecoveryErrorOpenFileAccessExplain))
         case nil: nil
         }

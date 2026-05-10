@@ -13068,6 +13068,40 @@
         }
       }
     },
+    "restore_vault_source_option_s3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3-compatible Storage"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magazyn S3"
+          }
+        }
+      }
+    },
+    "restore_vault_source_option_s3_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recover your vault from an S3 or S3-compatible bucket"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzyskaj swój sejf z bucketu S3 lub kompatybilnego z S3"
+          }
+        }
+      }
+    },
     "restore_vault_source_option_webdav" : {
       "extractionState" : "manual",
       "localizations" : {

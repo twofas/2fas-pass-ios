@@ -142,6 +142,13 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             let id = configsInteractor.addWebDAVConfig(config)
             syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
             return id
+        case .s3(let config):
+            // Same registration shape as WebDAV — file-based backends share the
+            // post-recovery `awaitingDeviceRegistration` handshake. The first successful
+            // sync clears the flag via `BackupSyncAdapter.setLastSyncDate`.
+            let id = configsInteractor.addS3Config(config)
+            syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
+            return id
         case .localFile:
             return nil
         }

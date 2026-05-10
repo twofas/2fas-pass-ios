@@ -14,11 +14,11 @@ import Backup
 /// — but only after items are actually committed to local storage.
 ///
 /// `.localFile` is an explicit "no remote credentials to persist" marker (file picker, local
-/// backup import). Modeled as a case rather than an optional so that adding a future
-/// transport (e.g. S3) forces every call site to acknowledge what kind of source produced
-/// its vault.
+/// backup import). Modeled as a case rather than an optional so that adding a new transport
+/// forces every call site to acknowledge what kind of source produced its vault.
 enum VaultRecoveryFileSource: Sendable {
     case webDAV(BackupWebDAVConfig)
+    case s3(S3ServiceConfig)
     case localFile
 }
 

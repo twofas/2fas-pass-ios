@@ -250,6 +250,20 @@ extension ModuleInteractorFactory {
             recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor()
         )
     }
+
+    @MainActor
+    func vaultRecoveryS3ModuleInteractor() -> VaultRecoveryS3ModuleInteracting {
+        VaultRecoveryS3ModuleInteractor(
+            recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor(),
+            uriInteractor: InteractorFactory.shared.uriInteractor()
+        )
+    }
+
+    func vaultRecoverySelectS3IndexModuleInteractor() -> VaultRecoverySelectS3IndexModuleInteracting {
+        VaultRecoverySelectS3IndexModuleInteractor(
+            recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor()
+        )
+    }
     
     func generateSecretKeyModuleInteractor() -> GenerateSecretKeyModuleInteracting {
         GenerateSecretKeyModuleInteractor(

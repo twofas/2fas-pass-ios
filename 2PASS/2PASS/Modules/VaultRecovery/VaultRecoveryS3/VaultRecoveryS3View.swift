@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: BUSL-1.1
 //
-// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Copyright © 2026 Two Factor Authentication Service, Inc.
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
 import SwiftUI
 import CommonUI
 
-struct BackupS3ConfigView: View {
+struct VaultRecoveryS3View: View {
 
     @State
-    var presenter: BackupS3ConfigPresenter
+    var presenter: VaultRecoveryS3Presenter
+
+    @Environment(\.dismiss)
+    private var dismiss
 
     var body: some View {
         BackupSyncSettingsDetailsForm(
@@ -22,7 +25,7 @@ struct BackupS3ConfigView: View {
             },
             onClose: {
                 hideKeyboard()
-                presenter.close()
+                dismiss()
             }
         ) {
             S3FormFields(
@@ -34,24 +37,14 @@ struct BackupS3ConfigView: View {
                 allowTLSOff: $presenter.allowTLSOff,
                 onLoadFromCSV: { presenter.onLoadFromCSV() }
             )
-            .formFieldChanged(endpoint: presenter.endpointChanged)
-            .formFieldChanged(region: presenter.regionChanged)
-            .formFieldChanged(bucket: presenter.bucketChanged)
-            .formFieldChanged(accessKeyId: presenter.accessKeyIdChanged)
-            .formFieldChanged(secretAccessKey: presenter.secretAccessKeyChanged)
-            .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
         }
-        .editMode(presenter.isEditMode)
+        .confirmLabel(.s3Connect)
+        .cancellable()
         .unsavedChanges(presenter.hasUnsavedChanges)
-        .saving(presenter.isTesting)
+        .saving(presenter.isFetching)
         .canSave(presenter.canSave)
-        .disabled(presenter.isTesting)
-        .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
-        .sensoryFeedback(.error, trigger: presenter.failureFeedbackTrigger)
-        .router(router: BackupS3ConfigRouter(), destination: $presenter.destination)
-        .onAppear {
-            presenter.onAppear()
-        }
+        .disabled(presenter.isFetching)
+        .router(router: VaultRecoveryS3Router(), destination: $presenter.destination)
         .onDisappear {
             presenter.onDisappear()
         }
@@ -60,8 +53,4 @@ struct BackupS3ConfigView: View {
     private func hideKeyboard() {
         UIApplication.shared.hideKeyboard()
     }
-}
-
-#Preview {
-    BackupS3ConfigRouter.buildView(configID: nil)
 }

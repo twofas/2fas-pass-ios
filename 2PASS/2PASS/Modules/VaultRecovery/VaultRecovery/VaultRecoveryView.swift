@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import SwiftUI
+import Backup
 import CommonUI
 
 struct VaultRecoveryView: View {
@@ -15,7 +16,7 @@ struct VaultRecoveryView: View {
     @Namespace private var transitionNamespace
 
     var body: some View {
-        VStack(spacing: 0) {
+        ScrollView {
             HeaderContentView(
                 title: Text(.restoreVaultSourceTitle),
                 subtitle: Text(.restoreVaultSourceDescription),
@@ -30,9 +31,7 @@ struct VaultRecoveryView: View {
                     OptionButtonLabel(
                         title: Text(.restoreVaultSourceOptionIcloud),
                         subtitle: Text(.restoreVaultSourceOptionIcloudDescription),
-                        icon: {
-                            Image(.iCloudLogo)
-                        }
+                        icon: { BackupConfigIcon(kind: .iCloud, size: 64) }
                     )
                 }
                 .buttonStyle(.option)
@@ -58,20 +57,28 @@ struct VaultRecoveryView: View {
                     OptionButtonLabel(
                         title: Text(.restoreVaultSourceOptionWebdav),
                         subtitle: Text(.restoreVaultSourceOptionWebdavDescription),
-                        icon: {
-                            Image(systemName: "cloud.fill")
-                                .font(.system(size: 33))
-                        }
+                        icon: { BackupConfigIcon(kind: .webDAV, size: 64) }
                     )
                 }
                 .buttonStyle(.option)
                 .matchedZoomSource(id: VaultRecoveryRouter.webDAVSourceID, in: transitionNamespace)
+
+                Button {
+                    presenter.onRestoreFromS3()
+                } label: {
+                    OptionButtonLabel(
+                        title: Text(.restoreVaultSourceOptionS3),
+                        subtitle: Text(.restoreVaultSourceOptionS3Description),
+                        icon: { BackupConfigIcon(kind: .s3, size: 64) }
+                    )
+                }
+                .buttonStyle(.option)
+                .matchedZoomSource(id: VaultRecoveryRouter.s3SourceID, in: transitionNamespace)
             }
             .padding(.vertical, Spacing.xll)
-            
-            Spacer()
         }
-        .padding(.horizontal, Spacing.xl)
+        .contentMargins(.horizontal, Spacing.xl)
+        .scrollBounceBehavior(.basedOnSize)
         .router(
             router: VaultRecoveryRouter(transitionNamespace: transitionNamespace),
             destination: $presenter.destination
