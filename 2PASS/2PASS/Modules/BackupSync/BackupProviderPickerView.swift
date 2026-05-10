@@ -32,6 +32,9 @@ struct BackupProviderPickerView: View {
     @Environment(\.dismiss) private var dismissSheet
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedForm: ProviderForm?
+    @Namespace private var transitionNamespace
+
+    private static let s3SourceID = "backupConfigs.providerPicker.s3"
 
     init(canAddiCloud: Bool, onAddiCloud: @escaping () -> UUID?, savedConfigID: Binding<UUID?>) {
         self._canAddiCloud = State(initialValue: canAddiCloud)
@@ -79,6 +82,7 @@ struct BackupProviderPickerView: View {
                         subtitle: .backupConfigsProviderS3Description,
                         action: { selectedForm = .s3 }
                     )
+                    .matchedZoomSource(id: Self.s3SourceID, in: transitionNamespace)
                 }
                 .padding(.vertical, Spacing.xll)
 
@@ -110,6 +114,7 @@ struct BackupProviderPickerView: View {
                             onClose: handleFormClose
                         )
                     )
+                    .matchedZoomDestination(id: Self.s3SourceID, in: transitionNamespace)
                 }
             }
         }

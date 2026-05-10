@@ -187,26 +187,6 @@ struct BackupConfigsView: View {
     }
 }
 
-private extension View {
-    @ViewBuilder
-    func matchedZoomSource(id: String, in namespace: Namespace.ID) -> some View {
-        if #available(iOS 26.0, *) {
-            self.matchedTransitionSource(id: id, in: namespace)
-        } else {
-            self
-        }
-    }
-
-    @ViewBuilder
-    func matchedZoomDestination(id: String, in namespace: Namespace.ID) -> some View {
-        if #available(iOS 26.0, *) {
-            self.navigationTransition(.zoom(sourceID: id, in: namespace))
-        } else {
-            self
-        }
-    }
-}
-
 private struct BackupConfigRowView: View {
     let row: BackupConfigRowItem
     let isMenuEnabled: Bool
