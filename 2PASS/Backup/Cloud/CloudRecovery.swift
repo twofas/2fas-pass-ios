@@ -78,8 +78,11 @@ private final class ListSession {
         operation.resultsLimit = resultLimit
         operation.queuePriority = .veryHigh
 
-        operation.recordMatchedBlock = { [weak self] _, result in
-            guard let self else { return }
+        // Strong self capture is intentional: the session owns its own lifetime until it
+        // resumes the continuation. With `[weak self]` the local `session` in the
+        // continuation body is the only strong reference, so the session would deallocate
+        // before CloudKit fires its callbacks — leaking the continuation.
+        operation.recordMatchedBlock = { _, result in
             switch result {
             case .success(let record):
                 if record.recordType == RecordType.vault.rawValue,
@@ -91,8 +94,7 @@ private final class ListSession {
             }
         }
 
-        operation.queryResultBlock = { [weak self] result in
-            guard let self else { return }
+        operation.queryResultBlock = { result in
             switch result {
             case .success(let cursor):
                 if let cursor {
