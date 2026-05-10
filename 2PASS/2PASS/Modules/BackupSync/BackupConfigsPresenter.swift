@@ -269,7 +269,7 @@ private extension BackupConfigsPresenter {
         guard let error = interactor.lastSyncError(for: config.id),
               let message = error.errorDescription
         else { return nil }
-        return String(localized: .backupConfigsLastError(message))
+        return message
     }
 }
 
