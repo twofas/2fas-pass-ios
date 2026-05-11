@@ -56,7 +56,6 @@ struct VaultRecoveryCell: View {
             if isLoading {
                 ProgressView()
                     .progressViewStyle(.circular)
-                    .controlSize(.small)
                     .tint(.secondary)
                     .frame(width: 20, height: 20)
             } else {
