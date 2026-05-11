@@ -141,4 +141,61 @@ extension MainRepositoryImpl {
     func clearLegacyWebDAVSavedConfig() {
         userDefaultsDataSource.clearLegacyWebDAVSavedConfig()
     }
+
+    // MARK: - Recovery form cache (in-memory)
+    //
+    // Owns the full encode-and-encrypt pipeline for the user's last-validated S3 / WebDAV
+    // recovery config — identical shape to `saveBackupConfigs` / `loadBackupConfigs` above,
+    // minus the UserDefaults read/write. Callers exchange the strongly-typed configs;
+    // storage holds AES-GCM ciphertext under the Secure-Enclave appKey of the JSON-encoded
+    // config. Cleared by `persistRecoverySource` on disk save and by both
+    // `OnboardingInteractor.finishVault*` calls; otherwise dies with the process.
+    //
+    // The strongly-typed configs cross the API boundary only at the call site that just
+    // produced one (`VaultRecoveryS3Presenter.onSave` / `WebDAVPresenter.onSave`) or the
+    // call site that immediately consumes one
+    // (`VaultRecoveryRecoverModuleInteractor.persistRecoverySource`).
+    // Returns `nil` on any failure (no cache, no appKey, decrypt error, decode error) —
+    // callers tolerate nil exactly like `loadBackupConfigs` does.
+
+    var cachedS3RecoveryConfig: S3ServiceConfig? {
+        guard let blob = _cachedS3RecoveryConfig,
+              let appKey,
+              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let plaintext = decrypt(blob, key: symmetricKey)
+        else { return nil }
+        return try? jsonDecoder.decode(S3ServiceConfig.self, from: plaintext)
+    }
+
+    var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? {
+        guard let blob = _cachedWebDAVRecoveryConfig,
+              let appKey,
+              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let plaintext = decrypt(blob, key: symmetricKey)
+        else { return nil }
+        return try? jsonDecoder.decode(BackupWebDAVConfig.self, from: plaintext)
+    }
+
+    func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig) {
+        guard let plaintext = try? jsonEncoder.encode(config),
+              let appKey,
+              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let encrypted = encrypt(plaintext, key: symmetricKey)
+        else { return }
+        _cachedS3RecoveryConfig = encrypted
+    }
+
+    func saveCachedWebDAVRecoveryConfig(_ config: BackupWebDAVConfig) {
+        guard let plaintext = try? jsonEncoder.encode(config),
+              let appKey,
+              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let encrypted = encrypt(plaintext, key: symmetricKey)
+        else { return }
+        _cachedWebDAVRecoveryConfig = encrypted
+    }
+
+    func clearCachedRecoveryConfigs() {
+        _cachedS3RecoveryConfig = nil
+        _cachedWebDAVRecoveryConfig = nil
+    }
 }

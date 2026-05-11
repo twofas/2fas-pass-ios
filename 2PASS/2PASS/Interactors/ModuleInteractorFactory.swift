@@ -213,7 +213,8 @@ extension ModuleInteractorFactory {
             importInteractor: InteractorFactory.shared.importInteractor(),
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
-            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor()
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            cacheInteractor: InteractorFactory.shared.vaultRecoveryCacheInteractor()
         )
     }
     
@@ -241,7 +242,8 @@ extension ModuleInteractorFactory {
     func vaultRecoveryWebDAVModuleInteractor() -> VaultRecoveryWebDAVModuleInteracting {
         VaultRecoveryWebDAVModuleInteractor(
             recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor(),
-            uriInteractor: InteractorFactory.shared.uriInteractor()
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
+            cacheInteractor: InteractorFactory.shared.vaultRecoveryCacheInteractor()
         )
     }
 
@@ -255,7 +257,8 @@ extension ModuleInteractorFactory {
     func vaultRecoveryS3ModuleInteractor() -> VaultRecoveryS3ModuleInteracting {
         VaultRecoveryS3ModuleInteractor(
             recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor(),
-            uriInteractor: InteractorFactory.shared.uriInteractor()
+            uriInteractor: InteractorFactory.shared.uriInteractor(),
+            cacheInteractor: InteractorFactory.shared.vaultRecoveryCacheInteractor()
         )
     }
 

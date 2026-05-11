@@ -14,23 +14,36 @@ public protocol OnboardingInteracting: AnyObject {
 final class OnboardingInteractor {
 
     let mainrepository: MainRepository
-    
-    init(mainRepository: MainRepository) {
+    private let cacheInteractor: VaultRecoveryCacheInteracting
+
+    init(
+        mainRepository: MainRepository,
+        cacheInteractor: VaultRecoveryCacheInteracting
+    ) {
         self.mainrepository = mainRepository
+        self.cacheInteractor = cacheInteractor
     }
 }
 
 extension OnboardingInteractor: OnboardingInteracting {
-    
+
     var isOnboardingCompleted: Bool {
         mainrepository.isOnboardingCompleted
     }
-    
+
     func finishVaultRecovery() {
+        // Belt-and-suspenders: `VaultRecoveryRecoverModuleInteractor.persistRecoverySource`
+        // already clears on disk-save success; this guards against future code paths that
+        // reach `finishVaultRecovery` via a route that bypasses `persistRecoverySource`.
+        cacheInteractor.clearCachedConfigs()
         mainrepository.finishOnboarding()
     }
-    
+
     func finishVaultCreation() {
+        // Defensive: the recovery flow and the create-new-vault flow are mutually exclusive
+        // branches of the onboarding nav stack, so this call is a no-op in normal flow. Kept
+        // for forward-safety if a future refactor enables cross-branch state.
+        cacheInteractor.clearCachedConfigs()
         mainrepository.setShouldShowQuickSetup(true)
         mainrepository.finishOnboarding()
     }

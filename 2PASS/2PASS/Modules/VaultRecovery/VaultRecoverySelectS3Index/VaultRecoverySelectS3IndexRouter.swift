@@ -16,7 +16,7 @@ struct VaultRecoverySelectS3IndexRouter: Router {
     static func buildView(
         index: BackupIndex,
         config: S3ServiceConfig,
-        onSelect: @escaping (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void
+        onSelect: @escaping (ExchangeVaultVersioned) -> Void
     )
     -> some View {
         let presenter = VaultRecoverySelectS3IndexPresenter(

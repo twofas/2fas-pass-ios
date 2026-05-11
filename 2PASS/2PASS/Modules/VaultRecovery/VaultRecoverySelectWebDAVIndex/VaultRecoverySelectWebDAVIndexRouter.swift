@@ -19,7 +19,7 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        onSelect: @escaping (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void,
+        onSelect: @escaping (ExchangeVaultVersioned) -> Void,
     )
     -> some View {
         let presenter = VaultRecoverySelectWebDAVIndexPresenter(

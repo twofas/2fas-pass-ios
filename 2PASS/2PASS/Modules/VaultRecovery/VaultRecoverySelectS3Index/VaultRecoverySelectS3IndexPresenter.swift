@@ -35,13 +35,13 @@ final class VaultRecoverySelectS3IndexPresenter {
 
     private let interactor: VaultRecoverySelectS3IndexModuleInteracting
     private let config: S3ServiceConfig
-    private let onSelect: (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void
+    private let onSelect: (ExchangeVaultVersioned) -> Void
 
     init(
         interactor: VaultRecoverySelectS3IndexModuleInteracting,
         index: BackupIndex,
         config: S3ServiceConfig,
-        onSelect: @escaping (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void
+        onSelect: @escaping (ExchangeVaultVersioned) -> Void
     ) {
         self.interactor = interactor
         self.index = index
@@ -70,11 +70,9 @@ extension VaultRecoverySelectS3IndexPresenter {
                     vaultID: uuid,
                     schemeVersion: vault.schemaVersion
                 )
-                // Build the source-config now (we have all the credentials and the picked
-                // vault id), but DON'T persist yet — `VaultRecoveryRecoverModuleInteractor`
-                // will save it only after items are actually committed to local storage.
-                let source = VaultRecoveryFileSource.s3(config)
-                onSelect(exchangeVault, source)
+                // The encrypted source is wrapped by `VaultRecoveryS3Presenter` (which owns
+                // the encryption seam); this presenter just hands the picked vault upward.
+                onSelect(exchangeVault)
             } catch let error as VaultRecoveryS3Error {
                 self.showStatus(error)
             } catch {

@@ -2595,6 +2595,40 @@ final class MockMainRepository: MainRepository {
         stubbedLegacyWebDAVSavedConfig = nil
     }
 
+    var stubbedCachedS3RecoveryConfig: S3ServiceConfig?
+    var cachedS3RecoveryConfig: S3ServiceConfig? {
+        recordCall()
+        return stubbedCachedS3RecoveryConfig
+    }
+
+    var stubbedCachedWebDAVRecoveryConfig: BackupWebDAVConfig?
+    var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? {
+        recordCall()
+        return stubbedCachedWebDAVRecoveryConfig
+    }
+
+    var capturedSaveCachedS3RecoveryConfig: S3ServiceConfig?
+    func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig) {
+        recordCall()
+        capturedSaveCachedS3RecoveryConfig = config
+        stubbedCachedS3RecoveryConfig = config
+    }
+
+    var capturedSaveCachedWebDAVRecoveryConfig: BackupWebDAVConfig?
+    func saveCachedWebDAVRecoveryConfig(_ config: BackupWebDAVConfig) {
+        recordCall()
+        capturedSaveCachedWebDAVRecoveryConfig = config
+        stubbedCachedWebDAVRecoveryConfig = config
+    }
+
+    var didClearCachedRecoveryConfigs: Bool = false
+    func clearCachedRecoveryConfigs() {
+        recordCall()
+        didClearCachedRecoveryConfigs = true
+        stubbedCachedS3RecoveryConfig = nil
+        stubbedCachedWebDAVRecoveryConfig = nil
+    }
+
     var stubbedWebDAVSeedHash: String?
     var webDAVSeedHash: String? { stubbedWebDAVSeedHash }
 

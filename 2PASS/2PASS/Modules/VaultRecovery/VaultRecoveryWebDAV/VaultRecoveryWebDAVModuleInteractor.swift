@@ -20,22 +20,39 @@ protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
         login: String?,
         password: String?
     ) async throws(VaultRecoveryWebDAVError) -> BackupIndex
+
+    /// Strongly-typed recovery-config cache. JSON encoding and AES-GCM encryption-at-rest
+    /// are both handled inside MainRepository (`MainRepositoryImpl+Backup.swift`'s
+    /// recovery-cache pipeline, mirroring `saveBackupConfigs` on this type).
+    var cachedConfig: BackupWebDAVConfig? { get }
+    func cacheConfig(_ config: BackupWebDAVConfig)
 }
 
 final class VaultRecoveryWebDAVModuleInteractor {
     private let recoveryInteractor: BackupSyncRecoveryInteracting
     private let uriInteractor: URIInteracting
+    private let cacheInteractor: VaultRecoveryCacheInteracting
 
     init(
         recoveryInteractor: BackupSyncRecoveryInteracting,
-        uriInteractor: URIInteracting
+        uriInteractor: URIInteracting,
+        cacheInteractor: VaultRecoveryCacheInteracting
     ) {
         self.recoveryInteractor = recoveryInteractor
         self.uriInteractor = uriInteractor
+        self.cacheInteractor = cacheInteractor
     }
 }
 
 extension VaultRecoveryWebDAVModuleInteractor: VaultRecoveryWebDAVModuleInteracting {
+
+    var cachedConfig: BackupWebDAVConfig? {
+        cacheInteractor.cachedWebDAVConfig
+    }
+
+    func cacheConfig(_ config: BackupWebDAVConfig) {
+        cacheInteractor.cacheWebDAVConfig(config)
+    }
 
     func isSecureURL(_ url: URL) -> Bool {
         uriInteractor.isSecureURL(url)

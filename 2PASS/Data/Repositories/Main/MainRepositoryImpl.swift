@@ -38,7 +38,14 @@ final class MainRepositoryImpl: MainRepository {
     var _subscriptionPlan: SubscriptionPlan = .free
     var _cloudCacheInitilizingNewStore = false
     var _minimalAppVersionSupported: String?
-    
+
+    // In-memory recovery cache (Phase 2). Encrypted ciphertext blobs of the user's last
+    // successfully-validated S3 / WebDAV recovery-form config under the Secure-Enclave appKey
+    // (same pipeline as `saveBackupConfigs`). Cleared by `persistRecoverySource` on disk save
+    // and by `OnboardingInteractor.finishVault*`. Never written to disk.
+    var _cachedS3RecoveryConfig: Data?
+    var _cachedWebDAVRecoveryConfig: Data?
+
     // Cached values for higher pefrormance
     var cachedSortType: SortType?
     var cachedSortTypeInitialized = false

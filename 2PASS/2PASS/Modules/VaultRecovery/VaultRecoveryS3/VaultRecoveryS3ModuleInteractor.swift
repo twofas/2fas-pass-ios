@@ -23,6 +23,12 @@ protocol VaultRecoveryS3ModuleInteracting: AnyObject {
     func detect(endpoint: String) -> S3EndpointDetection?
     func normalize(endpoint: String) -> URL?
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
+
+    /// Strongly-typed recovery-config cache. JSON encoding and AES-GCM encryption-at-rest
+    /// are both handled inside MainRepository (`MainRepositoryImpl+Backup.swift`'s
+    /// recovery-cache pipeline, mirroring `saveBackupConfigs` on this type).
+    var cachedConfig: S3ServiceConfig? { get }
+    func cacheConfig(_ config: S3ServiceConfig)
 }
 
 @MainActor
@@ -30,10 +36,24 @@ final class VaultRecoveryS3ModuleInteractor: VaultRecoveryS3ModuleInteracting {
 
     private let recoveryInteractor: BackupSyncRecoveryInteracting
     private let uriInteractor: URIInteracting
+    private let cacheInteractor: VaultRecoveryCacheInteracting
 
-    init(recoveryInteractor: BackupSyncRecoveryInteracting, uriInteractor: URIInteracting) {
+    init(
+        recoveryInteractor: BackupSyncRecoveryInteracting,
+        uriInteractor: URIInteracting,
+        cacheInteractor: VaultRecoveryCacheInteracting
+    ) {
         self.recoveryInteractor = recoveryInteractor
         self.uriInteractor = uriInteractor
+        self.cacheInteractor = cacheInteractor
+    }
+
+    var cachedConfig: S3ServiceConfig? {
+        cacheInteractor.cachedS3Config
+    }
+
+    func cacheConfig(_ config: S3ServiceConfig) {
+        cacheInteractor.cacheS3Config(config)
     }
 
     func recover(_ config: S3ServiceConfig) async throws(VaultRecoveryS3Error) -> BackupIndex {

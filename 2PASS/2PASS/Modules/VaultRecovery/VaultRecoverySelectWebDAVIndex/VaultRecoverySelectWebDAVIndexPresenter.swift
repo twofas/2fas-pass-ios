@@ -38,7 +38,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
     private let allowTLSOff: Bool
     private let login: String?
     private let password: String?
-    private let onSelect: (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void
+    private let onSelect: (ExchangeVaultVersioned) -> Void
 
     init(
         interactor: VaultRecoverySelectWebDAVIndexModuleInteracting,
@@ -47,7 +47,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
         allowTLSOff: Bool,
         login: String?,
         password: String?,
-        onSelect: @escaping (ExchangeVaultVersioned, VaultRecoveryFileSource) -> Void,
+        onSelect: @escaping (ExchangeVaultVersioned) -> Void,
     ) {
         self.interactor = interactor
         self.index = index
@@ -82,22 +82,9 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
                     login: login,
                     password: password
                 )
-                // Build the source-config now (we have all the credentials and the picked
-                // vault id), but DON'T persist yet — `VaultRecoveryRecoverModuleInteractor`
-                // will save it only after items are actually committed to local storage,
-                // closing the regression where credentials persisted on `fetchVault` success
-                // and leaked through every subsequent flow abort.
-                let source = VaultRecoveryFileSource.webDAV(
-                    BackupWebDAVConfig(
-                        baseURL: baseURL.absoluteString,
-                        normalizedURL: baseURL,
-                        lockTime: Config.webDAVLockFileTime,
-                        allowTLSOff: allowTLSOff,
-                        login: login,
-                        password: password
-                    )
-                )
-                onSelect(exchangeVault, source)
+                // The encrypted source is wrapped by `VaultRecoveryWebDAVPresenter` (which
+                // owns the encryption seam); this presenter just hands the picked vault upward.
+                onSelect(exchangeVault)
             } catch let error as VaultRecoveryWebDAVError {
                 self.showStatus(error)
             } catch {

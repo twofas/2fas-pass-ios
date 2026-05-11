@@ -52,6 +52,10 @@ public final class InteractorFactory {
             storageInteractor: storageInteractor()
         )
     }
+
+    public func vaultRecoveryCacheInteractor() -> VaultRecoveryCacheInteracting {
+        VaultRecoveryCacheInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
     
     public func securityInteractor() -> SecurityInteracting {
         SecurityInteractor(
@@ -243,7 +247,10 @@ public final class InteractorFactory {
     }
     
     public func onboardingInteractor() -> OnboardingInteracting {
-        OnboardingInteractor(mainRepository: MainRepositoryImpl.shared)
+        OnboardingInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            cacheInteractor: vaultRecoveryCacheInteractor()
+        )
     }
     
     public func autoFillCredentialsInteractor() -> AutoFillCredentialsInteracting {

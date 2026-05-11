@@ -24,6 +24,7 @@ final class VaultRecoveryRecoverModuleInteractor {
     private let onboardingInteractor: OnboardingInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let configsInteractor: BackupSyncConfigsInteracting
+    private let cacheInteractor: VaultRecoveryCacheInteracting
 
     private let syncAwaitSeconds = 60
 
@@ -34,7 +35,8 @@ final class VaultRecoveryRecoverModuleInteractor {
         importInteractor: ImportInteracting,
         onboardingInteractor: OnboardingInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
-        configsInteractor: BackupSyncConfigsInteracting
+        configsInteractor: BackupSyncConfigsInteracting,
+        cacheInteractor: VaultRecoveryCacheInteracting
     ) {
         self.kind = kind
         self.itemsImportInteractor = itemsImportInteractor
@@ -43,6 +45,7 @@ final class VaultRecoveryRecoverModuleInteractor {
         self.onboardingInteractor = onboardingInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
         self.configsInteractor = configsInteractor
+        self.cacheInteractor = cacheInteractor
     }
 }
 
@@ -132,7 +135,15 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     /// re-querying; `nil` means "nothing further to sync" (e.g. local-file recovery).
     private func persistRecoverySource(_ source: VaultRecoveryFileSource) -> UUID? {
         switch source {
-        case .webDAV(let config):
+        case .webDAV:
+            // The source enum is tag-only: it tells us which recovery cache slot to read.
+            // The cache interactor owns the JSON + encrypt-at-rest pipeline internally
+            // (same shape as `saveBackupConfigs`), so `cachedWebDAVConfig` returns the
+            // typed `BackupWebDAVConfig?` directly. `nil` means the cache was wiped between
+            // vault-pick and persist — shouldn't happen in practice; treat as
+            // `.localFile` and skip post-recovery sync.
+            guard let config = cacheInteractor.cachedWebDAVConfig
+            else { return nil }
             // Persist the config and mark it as needing first-sync device-id registration.
             // The flag drives `allowingAnyDeviceId: true` on every sync (this immediate
             // `performRecoverySync` AND any future retry — routine, per-row, etc.) until
@@ -141,13 +152,21 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             // routine syncs permanently broken on the multi-device-id gate.
             let id = configsInteractor.addWebDAVConfig(config)
             syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
+            // Config is now on disk (encrypted under saveBackupConfigs) — the in-memory
+            // recovery cache is redundant. Wipe both source slots; the user may have explored
+            // both S3 and WebDAV in the same session, and once any recovery commits to disk
+            // the other slot is stale too.
+            cacheInteractor.clearCachedConfigs()
             return id
-        case .s3(let config):
+        case .s3:
+            guard let config = cacheInteractor.cachedS3Config
+            else { return nil }
             // Same registration shape as WebDAV — file-based backends share the
             // post-recovery `awaitingDeviceRegistration` handshake. The first successful
             // sync clears the flag via `BackupSyncAdapter.setLastSyncDate`.
             let id = configsInteractor.addS3Config(config)
             syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
+            cacheInteractor.clearCachedConfigs()
             return id
         case .localFile:
             return nil

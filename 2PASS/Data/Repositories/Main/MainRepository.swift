@@ -754,6 +754,21 @@ protocol MainRepository: AnyObject {
     var legacyWebDAVSavedConfig: BackupWebDAVConfig? { get }
     func clearLegacyWebDAVSavedConfig()
 
+    /// In-memory cache of the last-validated S3 / WebDAV recovery-form config. The cache
+    /// owns the full encode-and-encrypt-at-rest pipeline (JSON + AES-GCM under the
+    /// Secure-Enclave appKey — identical shape to `saveBackupConfigs` /
+    /// `loadBackupConfigs` next door, minus the UserDefaults read/write). Callers
+    /// exchange the strongly-typed config values; the impl handles JSON encoding and
+    /// encryption. Set by the recovery presenters after a successful index fetch;
+    /// cleared by `persistRecoverySource` on disk save and by the onboarding
+    /// `finishVault*` calls. Lives only in process memory and dies with the process.
+    /// Returns `nil` on any failure (no cache, no appKey, decrypt error, decode error).
+    var cachedS3RecoveryConfig: S3ServiceConfig? { get }
+    var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? { get }
+    func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig)
+    func saveCachedWebDAVRecoveryConfig(_ config: BackupWebDAVConfig)
+    func clearCachedRecoveryConfigs()
+
     var webDAVSeedHash: String? { get }
     var webDAVCurrentVaultID: VaultID? { get }
 
