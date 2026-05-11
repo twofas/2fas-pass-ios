@@ -62,7 +62,7 @@ extension VaultRecoveryPresenter {
             self?.destination = nil
 
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(900))
+                try await Task.sleep(for: .milliseconds(1000))
 
                 guard let self else { return }
                 self.destination = .restore(selected, onClose: { [weak self] in
@@ -77,7 +77,7 @@ extension VaultRecoveryPresenter {
             self?.destination = nil
 
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(900))
+                try await Task.sleep(for: .milliseconds(1000))
 
                 guard let self else { return }
                 self.destination = .restore(selected, onClose: { [weak self] in
@@ -92,7 +92,7 @@ extension VaultRecoveryPresenter {
             self?.destination = nil
             
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(900))
+                try await Task.sleep(for: .milliseconds(1000))
                 
                 guard let self else { return }
                 self.destination = .restore(selected, onClose: { [weak self] in
