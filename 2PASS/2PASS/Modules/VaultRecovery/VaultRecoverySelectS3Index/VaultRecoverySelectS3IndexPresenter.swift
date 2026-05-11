@@ -29,7 +29,7 @@ final class VaultRecoverySelectS3IndexPresenter {
     let backups: [BackupIndexEntry]
     private let index: BackupIndex
 
-    var isLoading = false
+    var selectedVaultID: String?
 
     var destination: VaultRecoverySelectS3IndexDestination?
 
@@ -53,11 +53,12 @@ final class VaultRecoverySelectS3IndexPresenter {
 
 extension VaultRecoverySelectS3IndexPresenter {
     func onSelectVault(_ vault: BackupIndexEntry) {
-        isLoading = true
+        guard selectedVaultID == nil else { return }
+        selectedVaultID = vault.vaultId
 
         guard let uuid = UUID(uuidString: vault.vaultId) else {
             Log("VaultRecoverySelectS3IndexPresenter - incorrect UUID", severity: .error)
-            isLoading = false
+            selectedVaultID = nil
             return
         }
 
@@ -83,7 +84,7 @@ extension VaultRecoverySelectS3IndexPresenter {
     }
 
     private func showStatus(_ status: VaultRecoveryS3Error) {
-        isLoading = false
+        selectedVaultID = nil
 
         switch status {
         case .schemaNotSupported(let schemaVersion):

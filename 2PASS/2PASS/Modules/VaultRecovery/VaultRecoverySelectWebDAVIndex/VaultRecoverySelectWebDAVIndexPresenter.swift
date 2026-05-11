@@ -29,7 +29,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
     let backups: [BackupIndexEntry]
     private let index: BackupIndex
 
-    var isLoading = false
+    var selectedVaultID: String?
 
     var destination: VaultRecoverySelectWebDAVIndexDestination?
 
@@ -62,11 +62,12 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
 
 extension VaultRecoverySelectWebDAVIndexPresenter {
     func onSelectVault(_ vault: BackupIndexEntry) {
-        isLoading = true
+        guard selectedVaultID == nil else { return }
+        selectedVaultID = vault.vaultId
 
         guard let uuid = UUID(uuidString: vault.vaultId) else {
             Log("VaultRecoverySelectWebDAVIndexPresenter - incorrect UUID", severity: .error)
-            isLoading = false
+            selectedVaultID = nil
             return
         }
 
@@ -106,7 +107,7 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
     }
 
     private func showStatus(_ status: VaultRecoveryWebDAVError) {
-        isLoading = false
+        selectedVaultID = nil
 
         switch status {
         case .schemaNotSupported(let schemaVersion):
