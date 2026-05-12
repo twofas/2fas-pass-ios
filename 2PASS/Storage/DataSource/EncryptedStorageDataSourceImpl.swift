@@ -10,20 +10,27 @@ import CoreData
 
 public final class EncryptedStorageDataSourceImpl {
     private let coreDataStack: CoreDataStack
-    
+    private let migrator: CoreDataMigrator<EncryptedStorageModelVersion>
+
     public var storageError: ((String) -> Void)?
-    
+
     var context: NSManagedObjectContext {
         coreDataStack.context
     }
-    
+
     public init() {
+        let migrator = CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [
+            EncryptedStorageModelVersion("ColdStorage"),
+            EncryptedStorageModelVersion("ColdStorage2", requiresReencryption: true),
+            EncryptedStorageModelVersion("ColdStorage3")
+        ])
+        self.migrator = migrator
         self.coreDataStack = CoreDataStack(
             readOnly: false,
             name: "ColdStorage",
             bundle: Bundle(for: EncryptedStorageDataSourceImpl.self),
             storeInGroup: true,
-            migrator: CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [.init(rawValue: "ColdStorage"), .init(rawValue: "ColdStorage2"), .init(rawValue: "ColdStorage3")]),
+            migrator: migrator,
             isPersistent: true
         )
         coreDataStack.logError = { Log($0, module: .storage) }
@@ -32,9 +39,11 @@ public final class EncryptedStorageDataSourceImpl {
 }
 
 extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
-    
-    public var migrationRequired: Bool {
-        coreDataStack.migrationRequired
+
+    public var requiresReencryptionMigration: Bool {
+        guard let storeURL = coreDataStack.storeURL else { return false }
+        return migrator.pendingDestinationVersions(at: storeURL)
+            .contains { $0.requiresReencryption }
     }
     
     public func loadStore(completion: @escaping LoadStoreCallback) {

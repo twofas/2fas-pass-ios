@@ -10,7 +10,7 @@ import Common
 
 public protocol EncryptedStorageDataSource: AnyObject {
     func loadStore(completion: @escaping LoadStoreCallback)
-    var migrationRequired: Bool { get }
+    var requiresReencryptionMigration: Bool { get }
     
     var storageError: ((String) -> Void)? { get set }
     

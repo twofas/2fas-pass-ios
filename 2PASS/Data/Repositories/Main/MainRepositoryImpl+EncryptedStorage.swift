@@ -169,7 +169,7 @@ extension MainRepositoryImpl {
     }
     
     func requiresReencryptionMigration() -> Bool {
-        hasEncryptionReference && encryptedStorage.migrationRequired
+        hasEncryptionReference && encryptedStorage.requiresReencryptionMigration
     }
     
     func loadEncryptedStore(completion: @escaping Callback) {
