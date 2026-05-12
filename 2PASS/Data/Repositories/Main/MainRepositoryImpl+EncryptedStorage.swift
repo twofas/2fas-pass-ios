@@ -140,10 +140,6 @@ extension MainRepositoryImpl {
         )
     }
 
-    func markVaultContentModified(vaultID: VaultID, at date: Date) {
-        encryptedStorage.markVaultContentModified(vaultID: vaultID, at: date)
-    }
-
     func deleteAllVaults() {
         listEncryptedVaults().forEach { vault in
             deleteEncryptedVault(vault.vaultID)

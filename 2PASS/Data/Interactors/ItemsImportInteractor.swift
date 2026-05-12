@@ -47,9 +47,6 @@ extension ItemsImportInteractor: ItemsImportInteracting {
         guard !deleted.isEmpty else { return }
         deletedItemsInteractor.createDeletedItems(deleted)
         Log("ItemsImportInteractor - deleted items to import: \(deleted.count)", module: .interactor)
-        if let vault = mainRepository.selectedVault {
-            mainRepository.markVaultContentModified(vaultID: vault.vaultID, at: mainRepository.currentDate)
-        }
         itemsInteractor.saveStorage()
     }
 }
@@ -62,7 +59,6 @@ private extension ItemsImportInteractor {
         var exists = 0
         var new = 0
         var failure = 0
-        var didModify = false
 
         let localTags = tagInteractor.listAllTags()
         let localItems = itemsInteractor.listAllItems()
@@ -104,7 +100,6 @@ private extension ItemsImportInteractor {
             } else {
                 tagInteractor.createTag(data: tag)
             }
-            didModify = true
         }
         
         for item in items {
@@ -134,9 +129,7 @@ private extension ItemsImportInteractor {
                     imported += 1
                     switch current.trashedStatus {
                     case .no: break
-                    case .yes:
-                        itemsInteractor.markAsNotTrashed(for: current.id)
-                        didModify = true
+                    case .yes: itemsInteractor.markAsNotTrashed(for: current.id)
                     }
                 } else {
                     do {
@@ -145,7 +138,6 @@ private extension ItemsImportInteractor {
                             modificationDate: adjustDateIfNeeded(item.modificationDate)
                         ))
                         imported += 1
-                        didModify = true
                     } catch {
                         failure += 1
                     }
@@ -157,7 +149,6 @@ private extension ItemsImportInteractor {
                         modificationDate: adjustDateIfNeeded(item.modificationDate)
                     ))
                     imported += 1; new += 1
-                    didModify = true
                 } catch {
                     failure += 1
                 }
@@ -165,9 +156,6 @@ private extension ItemsImportInteractor {
             Log("ItemsImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         }
         Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
-        if didModify, let vault = mainRepository.selectedVault {
-            mainRepository.markVaultContentModified(vaultID: vault.vaultID, at: mainRepository.currentDate)
-        }
         itemsInteractor.saveStorage()
         syncTriggerInteractor.syncAll()
 

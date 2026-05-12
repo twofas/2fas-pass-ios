@@ -116,12 +116,7 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     func latestContentModification(for vaultID: UUID) async -> Date? {
         await MainActor.run {
             let vault = mainRepository.getEncryptedVault(for: vaultID)
-            let vaultUpdatedAt = vault?.updatedAt
-            let contentModificationDate = vault?.contentModificationDate
-            let itemMax = mainRepository.listEncryptedItems(in: vaultID).lazy.map(\.modificationDate).max()
-            let tagMax = mainRepository.listEncryptedTags(in: vaultID).lazy.map(\.modificationDate).max()
-            let deletedMax = mainRepository.listDeletedItems(in: vaultID, limit: nil).lazy.map(\.deletedAt).max()
-            return [vaultUpdatedAt, contentModificationDate, itemMax, tagMax, deletedMax].compactMap { $0 }.max()
+            return [vault?.updatedAt, vault?.contentModificationDate].compactMap { $0 }.max()
         }
     }
 
