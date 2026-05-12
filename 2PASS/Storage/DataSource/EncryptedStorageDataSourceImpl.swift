@@ -23,7 +23,7 @@ public final class EncryptedStorageDataSourceImpl {
             name: "ColdStorage",
             bundle: Bundle(for: EncryptedStorageDataSourceImpl.self),
             storeInGroup: true,
-            migrator: CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [.init(rawValue: "ColdStorage"), .init(rawValue: "ColdStorage2")]),
+            migrator: CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [.init(rawValue: "ColdStorage"), .init(rawValue: "ColdStorage2"), .init(rawValue: "ColdStorage3")]),
             isPersistent: true
         )
         coreDataStack.logError = { Log($0, module: .storage) }
@@ -219,7 +219,11 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             updatedAt: updatedAt
         )
     }
-    
+
+    public func markVaultContentModified(vaultID: VaultID, at date: Date) {
+        VaultEncryptedEntity.setContentModificationDate(on: context, vaultID: vaultID, date: date)
+    }
+
     public func deleteEncryptedVault(_ vaultID: VaultID) {
         guard let entity = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID) else { return }
         VaultEncryptedEntity.delete(on: context, entity: entity)
