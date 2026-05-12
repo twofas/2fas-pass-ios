@@ -30,11 +30,14 @@ public final class CloudSyncAdapter: BackupSynchronizing, @unchecked Sendable {
         overwritingVault: Bool,
         allowingAnyDeviceId: Bool
     ) async throws(BackupSyncError) -> BackupSyncOutcome {
-        let outcome = try await cloudSync.syncOnce(overwritingVault: overwritingVault)
-        // iCloud doesn't participate in the device-id registration flag (recovery only marks
-        // file-based backends), so `allowingAnyDeviceId` is always false here in practice —
-        // we still thread it through truthfully so the adapter's conditional clears stay
-        // correct if that ever changes.
+        // Only `allowingAnyDeviceId` reaches `syncOnce`: it's what `Bridge.start` uses to
+        // arm `setTakingOverVault(true)`, which in turn bypasses `MergeHandler`'s deviceID
+        // mismatch check — exactly the iCloud counterpart of the file-based path's
+        // `allowingAnyDeviceId || context.allowsMultiDeviceSync` gate. `overwritingVault`
+        // has no iCloud-layer effect (CloudKit syncs always go through merge); it's only
+        // used below to stamp the flag-clearing record so the awaiting-set bookkeeping
+        // matches the caller's stated intent.
+        let outcome = try await cloudSync.syncOnce(allowingAnyDeviceId: allowingAnyDeviceId)
         dateStore.setLastSyncDate(
             Date(),
             for: id,

@@ -205,17 +205,19 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// stays free of recovery-specific arguments.
     ///
     /// **CloudSync chain.** After writing the new providers, `setup(...)` runs:
-    /// `setCurrentDate → setup → setMultiDeviceSyncEnabled → checkState`. The underlying
-    /// `CloudSync.setup(...)` is itself idempotent (guards on internal `cloudHandler == nil`);
-    /// the rest of the chain re-applies fresh values on every call. Vault id is **not**
-    /// pushed here — `CloudHandler.sync()` reads `context.vaultID` lazily at sync time, so
-    /// vault changes propagate without any re-init. Bails only on `nil` `context.deviceID`
-    /// (still required at construction time for `MergeHandler`); the caller
-    /// (`BackupSyncSetupInteractor`) is responsible for re-running once deviceID becomes
-    /// available. Reading deviceID / vaultID / multi-device-sync from the `context`
-    /// collaborator (rather than separate parameters) keeps the source of truth single —
-    /// `BackupSyncAdapter` forwards each to `MainRepository`, so callers don't need to plumb
-    /// three runtime values that the adapter already exposes.
+    /// `setCurrentDate → setup → checkState`. The underlying `CloudSync.setup(...)` is itself
+    /// idempotent (guards on internal `cloudHandler == nil`); the rest of the chain re-applies
+    /// fresh values on every call. Vault id is **not** pushed here — `CloudHandler.sync()`
+    /// reads `context.vaultID` lazily at sync time, so vault changes propagate without any
+    /// re-init. Same lazy-read pattern carries the multi-device-sync entitlement: `MergeHandler`
+    /// holds `context` directly and reads `allowsMultiDeviceSync` on demand, so a subscription
+    /// flip during the app's lifetime takes effect on the very next sync without re-`setup`.
+    /// Bails only on `nil` `context.deviceID` (still required at construction time for
+    /// `MergeHandler`); the caller (`BackupSyncSetupInteractor`) is responsible for re-running
+    /// once deviceID becomes available. Reading deviceID / vaultID / multi-device-sync from
+    /// the `context` collaborator (rather than separate parameters) keeps the source of truth
+    /// single — `BackupSyncAdapter` forwards each to `MainRepository`, so callers don't need
+    /// to plumb three runtime values that the adapter already exposes.
     public func setup(
         configStore: BackupSyncConfigStore,
         dateStore: BackupSyncDateStore,
@@ -258,7 +260,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
             jsonEncoder: JSONEncoder(),
             context: context
         )
-        cloudSync.setMultiDeviceSyncEnabled(context.allowsMultiDeviceSync)
         installCloudSyncPushBridgeIfNeeded()
         cloudSync.checkState()
     }

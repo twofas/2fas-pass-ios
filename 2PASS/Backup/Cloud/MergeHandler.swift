@@ -25,11 +25,17 @@ final class MergeHandler {
     private let localStorage: LocalStorage
     private let cloudCacheStorage: CloudCacheStorage
     private let encryptionHandler: EncryptionHandler
-    private let deviceID: DeviceID
+    private let context: BackupSyncContext
     private let jsonDecoder: JSONDecoder
     private let jsonEncoder: JSONEncoder
-    
-    private var isMultiDeviceSyncEnabled: Bool = false
+
+    /// Read live from `context` so the cached-snapshot trap (the same one that produced the
+    /// stale `isMultiDeviceSyncEnabled` bug) can't reappear here. Force-unwrap is safe by
+    /// construction: `CloudSync.setup(...)` guards `context.deviceID != nil` before
+    /// instantiating `MergeHandler`, and the device ID is keychain-backed write-once — once
+    /// non-nil, it stays non-nil for the lifetime of the install.
+    private var deviceID: DeviceID { context.deviceID! }
+    private var isMultiDeviceSyncEnabled: Bool { context.allowsMultiDeviceSync }
     private var isTakingOverVault: Bool = false
     
     private var deleted: [DeletedItemID: Deleted] = [:]
@@ -74,22 +80,21 @@ final class MergeHandler {
         localStorage: LocalStorage,
         cloudCacheStorage: CloudCacheStorage,
         encryptionHandler: EncryptionHandler,
-        deviceID: DeviceID,
+        context: BackupSyncContext,
         jsonDecoder: JSONDecoder,
         jsonEncoder: JSONEncoder
     ) {
         self.localStorage = localStorage
         self.cloudCacheStorage = cloudCacheStorage
         self.encryptionHandler = encryptionHandler
-        self.deviceID = deviceID
+        self.context = context
         self.jsonDecoder = jsonDecoder
         self.jsonEncoder = jsonEncoder
     }
 }
 
 extension MergeHandler {
-    func setMultiDeviceSyncEnabled(_ enabled: Bool, takingOver: Bool = false) {
-        isMultiDeviceSyncEnabled = enabled
+    func setTakingOverVault(_ takingOver: Bool) {
         isTakingOverVault = takingOver
     }
     

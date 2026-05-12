@@ -225,9 +225,11 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     ///
     /// Three steps: (1) ensure an iCloud config exists — adds it (driving `cloudSync.enable()`
     /// via the container's `saveConfigs(_:)` diff) if missing, or reuses the existing entry.
-    /// (2) Mark every config as awaiting vault override — the unified per-config "next sync
-    /// overwrites remote vault data" flag, honored by `CloudSyncAdapter.performSync` via
-    /// `cloudSync.syncOnce(overwritingVault:)`. (3) Race a timer Task against the actual
+    /// (2) Mark the iCloud config as awaiting device registration — the per-config "next sync
+    /// is allowed to register a new deviceID against this vault" flag, honored by
+    /// `CloudSyncAdapter.performSync` via `cloudSync.syncOnce(allowingAnyDeviceId:)` which
+    /// arms `setTakingOverVault(true)` and bypasses `MergeHandler`'s deviceID mismatch gate.
+    /// (3) Race a timer Task against the actual
     /// `sync(id:)`: whichever completes first unblocks the await. **Sync is never cancelled**
     /// — it runs in a `Task.detached` that deliberately outlives this function, so when the
     /// timer elapses naturally we let recovery proceed to the main screen while iCloud keeps
@@ -241,10 +243,11 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     /// `MainRepository.selectedVault`, so the `sync(id:)` call below picks up the recovered
     /// vault id automatically.
     private func performRecoveryCloudSync() async -> Bool {
-        syncTriggerInteractor.markAllServicesAwaitingVaultOverride()
-
         guard let iCloudID = resolveiCloudConfigID() else { return true }
-
+        
+        cacheInteractor.clearCachedConfigs()
+        syncTriggerInteractor.markAwaitingDeviceRegistration(configID: iCloudID)
+        
         let timer = Task {
             try? await Task.sleep(for: .seconds(syncAwaitSeconds))
         }

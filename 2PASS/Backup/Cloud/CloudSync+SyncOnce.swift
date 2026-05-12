@@ -30,9 +30,9 @@ extension CloudSync {
     /// **Cancellation.** Cooperative — resumes the continuation with `.cancelled` if the
     /// task is cancelled. The underlying CloudKit operation continues in the background;
     /// CloudKit does not surface a cancellation primitive at this layer.
-    public func syncOnce(overwritingVault: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
+    public func syncOnce(allowingAnyDeviceId: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
         do {
-            return try await syncOncePass(overwritingVault: overwritingVault)
+            return try await syncOncePass(allowingAnyDeviceId: allowingAnyDeviceId)
         } catch let err as BackupSyncError {
             throw err
         } catch {
@@ -40,7 +40,7 @@ extension CloudSync {
         }
     }
 
-    private func syncOncePass(overwritingVault: Bool) async throws -> BackupSyncOutcome {
+    private func syncOncePass(allowingAnyDeviceId: Bool) async throws -> BackupSyncOutcome {
         try Task.checkCancellation()
 
         let holder = BridgeHolder()
@@ -49,7 +49,7 @@ extension CloudSync {
             try await withCheckedThrowingContinuation { continuation in
                 let bridge = Bridge(cloudSync: self, continuation: continuation)
                 holder.set(bridge)
-                bridge.start(overwritingVault: overwritingVault)
+                bridge.start(allowingAnyDeviceId: allowingAnyDeviceId)
             }
         } onCancel: {
             // Resume the awaiting continuation with `.cancelled` so the cancel button has an
@@ -118,7 +118,7 @@ private final class Bridge: @unchecked Sendable {
         resume(.failure(BackupSyncError.cancelled))
     }
 
-    func start(overwritingVault: Bool) {
+    func start(allowingAnyDeviceId: Bool) {
         guard let cloudSync else {
             resume(.failure(BackupSyncError.iCloudUnavailable))
             return
@@ -147,12 +147,15 @@ private final class Bridge: @unchecked Sendable {
         evaluateTerminalState(cloudSync.currentState)
         if isResumed { return }
 
-        if overwritingVault {
-            // CloudKit's analogue to "ignore remote, push local": flag the merge handler so
-            // a deviceID conflict resolves in favour of this device. Note this also flips
-            // multi-device-sync to enabled — acceptable here because `overwritingVault` is
-            // an explicit "take over" intent from the caller.
-            cloudSync.setMultiDeviceSyncEnabled(true, takingOver: true)
+        if allowingAnyDeviceId {
+            // CloudKit analogue of the file-based path's `allowingAnyDeviceId || context.allowsMultiDeviceSync`
+            // gate: flag the merge handler so a deviceID conflict resolves in favour of this
+            // device. `isTakingOverVault` short-circuits the multi-device-sync entitlement check
+            // at the use-site (`MergeHandler.applyChanges`'s `isMultiDeviceSyncEnabled || isTakingOverVault`),
+            // so a Free-tier user can still complete an explicit "take over" intent
+            // (post-recovery, the recovery flow marks `awaitingDeviceRegistration` for the
+            // iCloud config, which lands here as `allowingAnyDeviceId: true`).
+            cloudSync.setTakingOverVault(true)
         }
 
         cloudSync.synchronize(fromPush: false)
