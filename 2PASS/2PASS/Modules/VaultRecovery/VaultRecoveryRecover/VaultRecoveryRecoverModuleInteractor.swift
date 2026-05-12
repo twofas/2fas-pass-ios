@@ -10,12 +10,14 @@ import Data
 import Common
 import Backup
 
+@MainActor
 protocol VaultRecoveryRecoverModuleInteracting: AnyObject {
     var kind: VaultRecoveryRecoverKind { get }
     func recover() async -> Bool
     func finish()
 }
 
+@MainActor
 final class VaultRecoveryRecoverModuleInteractor {
     let kind: VaultRecoveryRecoverKind
     private let itemsImportInteractor: ItemsImportInteracting

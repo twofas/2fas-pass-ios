@@ -205,6 +205,7 @@ extension ModuleInteractorFactory {
         )
     }
     
+    @MainActor
     func vaultRecoveryRecoverModuleInteractor(kind: VaultRecoveryRecoverKind) -> VaultRecoveryRecoverModuleInteracting {
         VaultRecoveryRecoverModuleInteractor(
             kind: kind,
