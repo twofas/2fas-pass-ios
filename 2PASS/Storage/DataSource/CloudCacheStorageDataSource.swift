@@ -135,7 +135,7 @@ public protocol CloudCacheStorageDataSource: AnyObject {
     func cloudCacheDeleteAllDeletedItems()
     
     // MARK: Storage
-    
-    func warmUp()
+
+    func loadStore(completion: @escaping Callback)
     func save()
 }

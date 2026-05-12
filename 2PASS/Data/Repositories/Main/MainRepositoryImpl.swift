@@ -132,6 +132,6 @@ final class MainRepositoryImpl: MainRepository {
             LogStorage.setStorage(logDataSource)
         }
         
-        cloudCache.warmUp()
+        cloudCache.loadStore { }
     }
 }
