@@ -9,7 +9,7 @@ import Common
 
 public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
 
-    public let id: UUID
+    public let id: BackupConfig.ID
     public let kind: SyncServiceKind
     public let status: AsyncStream<BackupSyncStatus>
 
@@ -27,7 +27,7 @@ public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
     private let decoder = JSONDecoder()
 
     public init(
-        id: UUID,
+        id: BackupConfig.ID,
         kind: SyncServiceKind,
         service: BackupFileServiceSession,
         context: BackupSyncContext,

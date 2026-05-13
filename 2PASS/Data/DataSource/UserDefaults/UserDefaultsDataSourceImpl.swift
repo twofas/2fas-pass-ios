@@ -434,26 +434,26 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         }
     }
     
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> {
         let stored = userDefaults.array(forKey: Keys.vaultOverrideAwaitingConfigIDs.rawValue) as? [String] ?? []
-        return Set(stored.compactMap(UUID.init(uuidString:)))
+        return Set(stored.compactMap(BackupConfig.ID.init))
     }
 
-    func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<UUID>) {
+    func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<BackupConfig.ID>) {
         // UserDefaults stores `[String]` natively; sorting yields a stable on-disk shape that
         // also makes diffs in tests / debug dumps easier to read.
-        let strings = ids.map(\.uuidString).sorted()
+        let strings = ids.map(String.init(describing:)).sorted()
         userDefaults.set(strings, forKey: Keys.vaultOverrideAwaitingConfigIDs.rawValue)
         userDefaults.synchronize()
     }
 
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> {
         let stored = userDefaults.array(forKey: Keys.deviceRegistrationAwaitingConfigIDs.rawValue) as? [String] ?? []
-        return Set(stored.compactMap(UUID.init(uuidString:)))
+        return Set(stored.compactMap(BackupConfig.ID.init))
     }
 
-    func saveDeviceRegistrationAwaitingConfigIDs(_ ids: Set<UUID>) {
-        let strings = ids.map(\.uuidString).sorted()
+    func saveDeviceRegistrationAwaitingConfigIDs(_ ids: Set<BackupConfig.ID>) {
+        let strings = ids.map(String.init(describing:)).sorted()
         userDefaults.set(strings, forKey: Keys.deviceRegistrationAwaitingConfigIDs.rawValue)
         userDefaults.synchronize()
     }

@@ -14,8 +14,8 @@ struct BackupWebDAVConfigRouter: Router {
     /// dismissing via `\.dismiss`, matching the edit-from-row behavior.
     @MainActor
     static func buildView(
-        configID: UUID?,
-        onClose: ((UUID?) -> Void)? = nil
+        configID: BackupConfig.ID?,
+        onClose: ((BackupConfig.ID?) -> Void)? = nil
     ) -> some View {
         BackupWebDAVConfigContainerView(configID: configID, onClose: onClose)
     }
@@ -36,8 +36,8 @@ struct BackupWebDAVConfigRouter: Router {
 }
 
 private struct BackupWebDAVConfigContainerView: View {
-    let configID: UUID?
-    let onClose: ((UUID?) -> Void)?
+    let configID: BackupConfig.ID?
+    let onClose: ((BackupConfig.ID?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 

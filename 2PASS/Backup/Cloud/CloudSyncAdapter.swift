@@ -14,13 +14,13 @@ import Foundation
 /// participates in the same "last successful sync" record as the file-based backends, which
 /// the coordinator uses to order services on each `syncAll`.
 public final class CloudSyncAdapter: BackupSynchronizing, @unchecked Sendable {
-    public let id: UUID
+    public let id: BackupConfig.ID
     public let kind: SyncServiceKind = .iCloud
 
     private let cloudSync: CloudSync
     private let dateStore: BackupSyncDateStore
 
-    public init(id: UUID, cloudSync: CloudSync, dateStore: BackupSyncDateStore) {
+    public init(id: BackupConfig.ID, cloudSync: CloudSync, dateStore: BackupSyncDateStore) {
         self.id = id
         self.cloudSync = cloudSync
         self.dateStore = dateStore

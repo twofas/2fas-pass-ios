@@ -32,11 +32,11 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.webDAVSetWriteDecryptedCopy(writeDecryptedCopy)
     }
 
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> {
         userDefaultsDataSource.vaultOverrideAwaitingConfigIDs
     }
 
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>) {
         // Additive merge: a second password-change-then-add-config sequence shouldn't drop
         // ids the first one already marked. The global progress observer is responsible for
         // removing entries; callers only ever insert.
@@ -44,17 +44,17 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.saveVaultOverrideAwaitingConfigIDs(merged)
     }
 
-    func clearVaultOverrideAwaiting(configID: UUID) {
+    func clearVaultOverrideAwaiting(configID: BackupConfig.ID) {
         var current = userDefaultsDataSource.vaultOverrideAwaitingConfigIDs
         guard current.remove(configID) != nil else { return }
         userDefaultsDataSource.saveVaultOverrideAwaitingConfigIDs(current)
     }
 
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> {
         userDefaultsDataSource.deviceRegistrationAwaitingConfigIDs
     }
 
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>) {
         // Additive merge — same shape as `markVaultOverrideAwaiting`. Concurrent recovery
         // flows for different configs are vanishingly rare, but the merge keeps the rule
         // "callers only ever insert; the success path removes" symmetrical with the sister
@@ -63,7 +63,7 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.saveDeviceRegistrationAwaitingConfigIDs(merged)
     }
 
-    func clearDeviceRegistrationAwaiting(configID: UUID) {
+    func clearDeviceRegistrationAwaiting(configID: BackupConfig.ID) {
         var current = userDefaultsDataSource.deviceRegistrationAwaitingConfigIDs
         guard current.remove(configID) != nil else { return }
         userDefaultsDataSource.saveDeviceRegistrationAwaitingConfigIDs(current)
@@ -113,12 +113,12 @@ extension MainRepositoryImpl {
     // means reads succeed regardless of auth state. Returns an empty map on any failure
     // (no blob, decode mismatch).
 
-    func loadLastSyncDates() -> [UUID: Date] {
+    func loadLastSyncDates() -> [BackupConfig.ID: Date] {
         guard let data = userDefaultsDataSource.lastSyncDatesBlob else { return [:] }
-        return (try? jsonDecoder.decode([UUID: Date].self, from: data)) ?? [:]
+        return (try? jsonDecoder.decode([BackupConfig.ID: Date].self, from: data)) ?? [:]
     }
 
-    func saveLastSyncDates(_ dates: [UUID: Date]) {
+    func saveLastSyncDates(_ dates: [BackupConfig.ID: Date]) {
         guard let data = try? jsonEncoder.encode(dates) else { return }
         userDefaultsDataSource.saveLastSyncDatesBlob(data)
     }

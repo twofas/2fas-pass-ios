@@ -21,29 +21,29 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
 
     /// Adds a new WebDAV backend; returns the assigned id.
     @discardableResult
-    func addWebDAVConfig(_ config: BackupWebDAVConfig) -> UUID
+    func addWebDAVConfig(_ config: BackupWebDAVConfig) -> BackupConfig.ID
 
     /// Adds a new S3 backend; returns the assigned id.
     @discardableResult
-    func addS3Config(_ config: S3ServiceConfig) -> UUID
+    func addS3Config(_ config: S3ServiceConfig) -> BackupConfig.ID
 
     /// Adds the iCloud backend; returns the assigned id, or `nil` if an iCloud entry already
     /// exists. Single-instance: there is exactly one CloudKit container per build, so a
     /// second iCloud config would point at the same data and create a phantom duplicate in
     /// the convergence loop.
     @discardableResult
-    func addiCloudConfig() -> UUID?
+    func addiCloudConfig() -> BackupConfig.ID?
 
     /// Replaces the WebDAV config bound to `id`, preserving id and `createdAt`. No-op if the
     /// id either doesn't exist or maps to an entry of another kind.
-    func updateWebDAVConfig(id: UUID, with config: BackupWebDAVConfig)
+    func updateWebDAVConfig(id: BackupConfig.ID, with config: BackupWebDAVConfig)
 
     /// Replaces the S3 config bound to `id`, preserving id and `createdAt`. No-op if the id
     /// either doesn't exist or maps to an entry of another kind.
-    func updateS3Config(id: UUID, with config: S3ServiceConfig)
+    func updateS3Config(id: BackupConfig.ID, with config: S3ServiceConfig)
 
     /// Removes the entry with `id` regardless of kind. No-op if no entry matches.
-    func removeConfig(id: UUID)
+    func removeConfig(id: BackupConfig.ID)
 
     /// Typed sequence that emits one element every time configs are persisted via this
     /// interactor (add / update / remove). Mirrors `BackupSyncContainer.configsDidChange` —
@@ -62,9 +62,11 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
 
 final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
     private let mainRepository: MainRepository
+    private let currentDateInteractor: CurrentDateInteracting
 
-    init(mainRepository: MainRepository) {
+    init(mainRepository: MainRepository, currentDateInteractor: CurrentDateInteracting) {
         self.mainRepository = mainRepository
+        self.currentDateInteractor = currentDateInteractor
     }
 
     var allConfigs: [BackupConfig] {
@@ -72,34 +74,34 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
     }
 
     @discardableResult
-    func addWebDAVConfig(_ config: BackupWebDAVConfig) -> UUID {
-        let id = UUID()
+    func addWebDAVConfig(_ config: BackupWebDAVConfig) -> BackupConfig.ID {
+        let id = BackupConfig.ID()
         var configs = mainRepository.loadBackupConfigs()
-        configs.append(.webDAV(BackupConfigEntry(id: id, createdAt: Date(), config: config)))
+        configs.append(.webDAV(BackupConfigEntry(id: id, createdAt: currentDateInteractor.currentDate, config: config)))
         mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
     }
 
     @discardableResult
-    func addS3Config(_ config: S3ServiceConfig) -> UUID {
-        let id = UUID()
+    func addS3Config(_ config: S3ServiceConfig) -> BackupConfig.ID {
+        let id = BackupConfig.ID()
         var configs = mainRepository.loadBackupConfigs()
-        configs.append(.s3(BackupConfigEntry(id: id, createdAt: Date(), config: config)))
+        configs.append(.s3(BackupConfigEntry(id: id, createdAt: currentDateInteractor.currentDate, config: config)))
         mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
     }
 
     @discardableResult
-    func addiCloudConfig() -> UUID? {
+    func addiCloudConfig() -> BackupConfig.ID? {
         var configs = mainRepository.loadBackupConfigs()
         guard !configs.hasICloud else { return nil }
-        let id = UUID()
-        configs.append(.iCloud(BackupConfigEntry(id: id, createdAt: Date(), config: BackupiCloudConfig())))
+        let id = BackupConfig.ID()
+        configs.append(.iCloud(BackupConfigEntry(id: id, createdAt: currentDateInteractor.currentDate, config: BackupiCloudConfig())))
         mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
     }
 
-    func updateWebDAVConfig(id: UUID, with config: BackupWebDAVConfig) {
+    func updateWebDAVConfig(id: BackupConfig.ID, with config: BackupWebDAVConfig) {
         var configs = mainRepository.loadBackupConfigs()
         guard let idx = configs.firstIndex(where: { $0.id == id }),
               case .webDAV(let existing) = configs[idx] else { return }
@@ -107,7 +109,7 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         mainRepository.backupSyncContainer.saveConfigs(configs)
     }
 
-    func updateS3Config(id: UUID, with config: S3ServiceConfig) {
+    func updateS3Config(id: BackupConfig.ID, with config: S3ServiceConfig) {
         var configs = mainRepository.loadBackupConfigs()
         guard let idx = configs.firstIndex(where: { $0.id == id }),
               case .s3(let existing) = configs[idx] else { return }
@@ -115,7 +117,7 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         mainRepository.backupSyncContainer.saveConfigs(configs)
     }
 
-    func removeConfig(id: UUID) {
+    func removeConfig(id: BackupConfig.ID) {
         var configs = mainRepository.loadBackupConfigs()
         guard configs.contains(where: { $0.id == id }) else { return }
         configs.removeAll { $0.id == id }

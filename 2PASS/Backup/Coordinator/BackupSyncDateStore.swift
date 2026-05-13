@@ -38,11 +38,11 @@ public struct BackupSyncFlags: Sendable {
 public protocol BackupSyncDateStore: Sendable {
     /// The most recent successful sync timestamp for `id`, or `nil` if no successful sync has
     /// ever been recorded.
-    func lastSyncDate(for id: UUID) -> Date?
+    func lastSyncDate(for id: BackupConfig.ID) -> Date?
 
     /// Records that a sync for `id` succeeded at `date`. Overwrites any previous value.
     /// `consumed` reports which "next sync needs X" flags this success path actually honored,
     /// so the adapter can clear only the flags whose work was actually performed (instead of
     /// unconditionally clearing on every success — which would lose flags marked mid-sync).
-    func setLastSyncDate(_ date: Date, for id: UUID, consumed: BackupSyncFlags)
+    func setLastSyncDate(_ date: Date, for id: BackupConfig.ID, consumed: BackupSyncFlags)
 }

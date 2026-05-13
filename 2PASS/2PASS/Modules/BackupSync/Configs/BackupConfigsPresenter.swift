@@ -13,8 +13,8 @@ import Data
 
 enum BackupConfigsDestination: RouterDestination {
     case add
-    case editWebDAV(configID: UUID)
-    case editS3(configID: UUID)
+    case editWebDAV(configID: BackupConfig.ID)
+    case editS3(configID: BackupConfig.ID)
     case removeConfirmation(name: String, onConfirm: Callback)
 
     var id: String {
@@ -28,7 +28,7 @@ enum BackupConfigsDestination: RouterDestination {
 }
 
 struct BackupConfigRowItem: Identifiable, Equatable {
-    let id: UUID
+    let id: BackupConfig.ID
     let kind: SyncServiceKind
     let title: String
     let subtitle: String?
@@ -50,7 +50,7 @@ final class BackupConfigsPresenter {
     /// button, so the dismiss animates the sheet down INTO the new row. Cleared by
     /// `onAddPressed()` before each new open so cancel/iCloud paths zoom back to the
     /// `+` button.
-    var savedConfigIDFromPicker: UUID?
+    var savedConfigIDFromPicker: BackupConfig.ID?
     private(set) var rows: [BackupConfigRowItem] = []
     /// Call-level "is a sync in flight overall?" — driven by `.sessionStarted` /
     /// `.sessionFinished` from the container, which span the orchestration window
@@ -67,7 +67,7 @@ final class BackupConfigsPresenter {
     /// `interactor.currentActivity.activeConfigIDs` (covers "presenter opened mid-sync"),
     /// then maintained by consuming `syncEvents()`. Drives per-row spinner state via
     /// `isSyncing(for:)`.
-    private var activeConfigIDs: Set<UUID> = []
+    private var activeConfigIDs: Set<BackupConfig.ID> = []
     /// `@ObservationIgnored` — the task handle isn't observable UI state, so `@Observable`
     /// shouldn't synthesize tracking storage for it (the synth storage trips the
     /// "`nonisolated` cannot be applied to mutable stored properties" rule).

@@ -15,9 +15,9 @@ public enum BackupSyncStatus: Sendable {
 
 public struct BackupSyncActivity: Sendable, Equatable {
     public let isRunning: Bool
-    public let activeConfigIDs: Set<UUID>
+    public let activeConfigIDs: Set<BackupConfig.ID>
 
-    public init(isRunning: Bool, activeConfigIDs: Set<UUID>) {
+    public init(isRunning: Bool, activeConfigIDs: Set<BackupConfig.ID>) {
         self.isRunning = isRunning
         self.activeConfigIDs = activeConfigIDs
     }

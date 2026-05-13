@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Common
 
 /// Pairs a registered backup-sync config with its persistent instance id.
 ///
@@ -20,7 +21,7 @@ import Foundation
 /// `id` is just the `UUID` minted at registration time; consumers that need the discriminator
 /// read it from `BackupSynchronizing.kind` on the materialized service.
 public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
-    public let id: UUID
+    public let id: BackupConfig.ID
     /// Wall-clock time the entry was first registered. Set at registration; preserved by
     /// `BackupSyncContainer.update(_:)`. Lets callers sort entries by add-order across kinds —
     /// the per-kind storage lists already preserve order *within* a kind, but a global ordering
@@ -28,7 +29,7 @@ public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
     public let createdAt: Date
     public let config: Config
 
-    public init(id: UUID, createdAt: Date, config: Config) {
+    public init(id: BackupConfig.ID, createdAt: Date, config: Config) {
         self.id = id
         self.createdAt = createdAt
         self.config = config
@@ -43,11 +44,13 @@ public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
 /// `Identifiable` via the inner entry's `id`, so SwiftUI's `ForEach` / `List` work out of the
 /// box: `ForEach(interactor.allConfigs) { ... }`.
 public enum BackupConfig: Sendable, Identifiable, Codable {
+    public typealias ID = UUID
+    
     case webDAV(BackupConfigEntry<BackupWebDAVConfig>)
     case s3(BackupConfigEntry<S3ServiceConfig>)
     case iCloud(BackupConfigEntry<BackupiCloudConfig>)
 
-    public var id: UUID {
+    public var id: ID {
         switch self {
         case .webDAV(let entry): return entry.id
         case .s3(let entry): return entry.id

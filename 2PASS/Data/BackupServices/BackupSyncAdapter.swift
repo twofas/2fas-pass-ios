@@ -300,11 +300,11 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     // between sync completion and a concurrent flag-set call (e.g. `passwordWasChanged`
     // marking mid-sync).
 
-    func lastSyncDate(for id: UUID) -> Date? {
+    func lastSyncDate(for id: BackupConfig.ID) -> Date? {
         mainRepository.loadLastSyncDates()[id]
     }
 
-    func setLastSyncDate(_ date: Date, for id: UUID, consumed: BackupSyncFlags) {
+    func setLastSyncDate(_ date: Date, for id: BackupConfig.ID, consumed: BackupSyncFlags) {
         var dates = mainRepository.loadLastSyncDates()
         dates[id] = date
         mainRepository.saveLastSyncDates(dates)
@@ -333,19 +333,19 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     // in `setLastSyncDate(_:for:consumed:)` and goes directly through `MainRepository`,
     // bypassing this protocol — both paths land in the same UserDefaults keys.
 
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> {
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> {
         mainRepository.vaultOverrideAwaitingConfigIDs
     }
 
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>) {
         mainRepository.markVaultOverrideAwaiting(configIDs: configIDs)
     }
 
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> {
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> {
         mainRepository.deviceRegistrationAwaitingConfigIDs
     }
 
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>) {
         mainRepository.markDeviceRegistrationAwaiting(configIDs: configIDs)
     }
 }

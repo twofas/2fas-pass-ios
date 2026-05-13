@@ -7,7 +7,7 @@
 import Foundation
 
 /// Persistence port for the per-config "next sync needs special handling" flags. Two
-/// independent `Set<UUID>` slots, both populated externally and consumed by
+/// independent `Set<BackupConfig.ID>` slots, both populated externally and consumed by
 /// `BackupSyncContainer` to decorate the next sync with `overwritingVault` /
 /// `allowingAnyDeviceId` for the matching ids.
 ///
@@ -19,9 +19,9 @@ import Foundation
 /// session success) and reads the same backing store, so this port intentionally exposes
 /// only read + mark.
 public protocol BackupAwaitingFlagsStoring: Sendable {
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> { get }
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>)
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>)
 
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>)
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>)
 }

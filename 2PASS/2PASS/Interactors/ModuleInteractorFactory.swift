@@ -177,7 +177,7 @@ extension ModuleInteractorFactory {
     }
 
     @MainActor
-    func backupWebDAVConfigModuleInteractor(configID: UUID?) -> BackupWebDAVConfigModuleInteracting {
+    func backupWebDAVConfigModuleInteractor(configID: BackupConfig.ID?) -> BackupWebDAVConfigModuleInteracting {
         BackupWebDAVConfigModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
@@ -187,7 +187,7 @@ extension ModuleInteractorFactory {
     }
 
     @MainActor
-    func backupS3ConfigModuleInteractor(configID: UUID?) -> BackupS3ConfigModuleInteracting {
+    func backupS3ConfigModuleInteractor(configID: BackupConfig.ID?) -> BackupS3ConfigModuleInteracting {
         BackupS3ConfigModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),

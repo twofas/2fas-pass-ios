@@ -110,11 +110,11 @@ protocol UserDefaultsDataSource: AnyObject {
     var requestedForBiometryToLogin: Bool { get }
     func setRequestedForBiometryToLogin(_ requested: Bool)
     
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> { get }
-    func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<UUID>)
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<BackupConfig.ID>)
 
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
-    func saveDeviceRegistrationAwaitingConfigIDs(_ ids: Set<UUID>)
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func saveDeviceRegistrationAwaitingConfigIDs(_ ids: Set<BackupConfig.ID>)
     
     var debugSubscriptionPlan: SubscriptionPlan? { get }
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan)

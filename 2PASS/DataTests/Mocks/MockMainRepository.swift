@@ -2570,15 +2570,15 @@ final class MockMainRepository: MainRepository {
         stubbedBackupConfigs = configs
     }
 
-    var stubbedLastSyncDates: [UUID: Date] = [:]
+    var stubbedLastSyncDates: [BackupConfig.ID: Date] = [:]
 
-    func loadLastSyncDates() -> [UUID: Date] {
+    func loadLastSyncDates() -> [BackupConfig.ID: Date] {
         recordCall()
         return stubbedLastSyncDates
     }
 
-    var capturedSaveLastSyncDates: [UUID: Date]?
-    func saveLastSyncDates(_ dates: [UUID: Date]) {
+    var capturedSaveLastSyncDates: [BackupConfig.ID: Date]?
+    func saveLastSyncDates(_ dates: [BackupConfig.ID: Date]) {
         recordCall()
         capturedSaveLastSyncDates = dates
         stubbedLastSyncDates = dates
@@ -2644,35 +2644,35 @@ final class MockMainRepository: MainRepository {
         capturedWebDAVWriteDecryptedCopy = writeDecryptedCopy
     }
 
-    var stubbedVaultOverrideAwaitingConfigIDs: Set<UUID> = []
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> { stubbedVaultOverrideAwaitingConfigIDs }
+    var stubbedVaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> = []
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { stubbedVaultOverrideAwaitingConfigIDs }
 
-    var capturedMarkVaultOverrideAwaiting: Set<UUID>?
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>) {
+    var capturedMarkVaultOverrideAwaiting: Set<BackupConfig.ID>?
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>) {
         recordCall()
         capturedMarkVaultOverrideAwaiting = configIDs
         stubbedVaultOverrideAwaitingConfigIDs.formUnion(configIDs)
     }
 
-    var capturedClearVaultOverrideAwaiting: UUID?
-    func clearVaultOverrideAwaiting(configID: UUID) {
+    var capturedClearVaultOverrideAwaiting: BackupConfig.ID?
+    func clearVaultOverrideAwaiting(configID: BackupConfig.ID) {
         recordCall()
         capturedClearVaultOverrideAwaiting = configID
         stubbedVaultOverrideAwaitingConfigIDs.remove(configID)
     }
 
-    var stubbedDeviceRegistrationAwaitingConfigIDs: Set<UUID> = []
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { stubbedDeviceRegistrationAwaitingConfigIDs }
+    var stubbedDeviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> = []
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { stubbedDeviceRegistrationAwaitingConfigIDs }
 
-    var capturedMarkDeviceRegistrationAwaiting: Set<UUID>?
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {
+    var capturedMarkDeviceRegistrationAwaiting: Set<BackupConfig.ID>?
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>) {
         recordCall()
         capturedMarkDeviceRegistrationAwaiting = configIDs
         stubbedDeviceRegistrationAwaitingConfigIDs.formUnion(configIDs)
     }
 
-    var capturedClearDeviceRegistrationAwaiting: UUID?
-    func clearDeviceRegistrationAwaiting(configID: UUID) {
+    var capturedClearDeviceRegistrationAwaiting: BackupConfig.ID?
+    func clearDeviceRegistrationAwaiting(configID: BackupConfig.ID) {
         recordCall()
         capturedClearDeviceRegistrationAwaiting = configID
         stubbedDeviceRegistrationAwaitingConfigIDs.remove(configID)

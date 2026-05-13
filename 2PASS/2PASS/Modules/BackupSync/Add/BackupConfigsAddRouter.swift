@@ -15,7 +15,7 @@ struct BackupConfigsAddRouter: Router {
     static let s3SourceID = "backupConfigs.add.s3"
 
     @MainActor
-    static func buildView(savedConfigID: Binding<UUID?>) -> some View {
+    static func buildView(savedConfigID: Binding<BackupConfig.ID?>) -> some View {
         BackupConfigsAddView(
             presenter: BackupConfigsAddPresenter(
                 interactor: ModuleInteractorFactory.shared.backupConfigsAddModuleInteractor()

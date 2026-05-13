@@ -16,7 +16,7 @@ struct BackupConfigsAddView: View {
     /// Written when the form completes successfully so the parent's matched-zoom
     /// destination can switch from the `+` button source to the new row's source ID
     /// before the sheet dismisses.
-    @Binding var savedConfigID: UUID?
+    @Binding var savedConfigID: BackupConfig.ID?
 
     // Captured at the picker root (sheet root), so calling it dismisses the entire sheet
     // — even when the form is currently pushed on top of the picker. The form's own
@@ -25,7 +25,7 @@ struct BackupConfigsAddView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Namespace private var transitionNamespace
 
-    init(presenter: BackupConfigsAddPresenter, savedConfigID: Binding<UUID?>) {
+    init(presenter: BackupConfigsAddPresenter, savedConfigID: Binding<BackupConfig.ID?>) {
         self._presenter = State(wrappedValue: presenter)
         self._savedConfigID = savedConfigID
     }
@@ -101,7 +101,7 @@ struct BackupConfigsAddView: View {
         }
     }
 
-    private func handleFormClose(_ configID: UUID?) {
+    private func handleFormClose(_ configID: BackupConfig.ID?) {
         // Set BEFORE dismiss so SwiftUI re-evaluates the parent's `.matchedZoomDestination`
         // ID with the new row's source ID before the sheet starts animating away.
         if let configID {
@@ -172,5 +172,5 @@ private struct BackupConfigsAddProviderRow: View {
 @MainActor
 private final class PreviewModuleInteractor: BackupConfigsAddModuleInteracting {
     let canAddiCloud = true
-    func addiCloud() -> UUID? { nil }
+    func addiCloud() -> BackupConfig.ID? { nil }
 }

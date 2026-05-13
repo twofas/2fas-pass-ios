@@ -744,8 +744,8 @@ protocol MainRepository: AnyObject {
     /// Per-config "last successful sync" timestamps. Plaintext storage — timestamps are not
     /// sensitive, and skipping encryption removes the `appKey` dependency so reads work in any
     /// auth state. Returns an empty map if nothing has been written or decoding fails.
-    func loadLastSyncDates() -> [UUID: Date]
-    func saveLastSyncDates(_ dates: [UUID: Date])
+    func loadLastSyncDates() -> [BackupConfig.ID: Date]
+    func saveLastSyncDates(_ dates: [BackupConfig.ID: Date])
 
     /// Legacy single-config accessor, retained for one-shot migration into the new
     /// `loadBackupConfigs` list. Decrypts and decodes the pre-multi-config blob if present.
@@ -781,9 +781,9 @@ protocol MainRepository: AnyObject {
     /// specific config syncs successfully. Per-id (rather than a single Bool) so a multi-config
     /// user with N WebDAV / S3 backends gets all of them re-pushed after a master-password
     /// change, not just whichever one finishes first.
-    var vaultOverrideAwaitingConfigIDs: Set<UUID> { get }
-    func markVaultOverrideAwaiting(configIDs: Set<UUID>)
-    func clearVaultOverrideAwaiting(configID: UUID)
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>)
+    func clearVaultOverrideAwaiting(configID: BackupConfig.ID)
 
     /// Set of backup-config IDs awaiting their first successful sync after recovery. The
     /// recovery flow needs to write *this* device's `deviceID` into the WebDAV index so
@@ -796,9 +796,9 @@ protocol MainRepository: AnyObject {
     /// the first time a sync that *consumed* this flag (`consumed.allowingAnyDeviceId == true`)
     /// completes successfully — conditional clear, so a routine sync that happened to finish
     /// while the flag was set doesn't wipe it without honoring it.
-    var deviceRegistrationAwaitingConfigIDs: Set<UUID> { get }
-    func markDeviceRegistrationAwaiting(configIDs: Set<UUID>)
-    func clearDeviceRegistrationAwaiting(configID: UUID)
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>)
+    func clearDeviceRegistrationAwaiting(configID: BackupConfig.ID)
 
     // MARK: 2FAS Web Service
     func appNotifications() async throws -> AppNotifications

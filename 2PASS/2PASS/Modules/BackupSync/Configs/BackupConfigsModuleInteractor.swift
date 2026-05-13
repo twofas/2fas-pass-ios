@@ -15,11 +15,11 @@ protocol BackupConfigsModuleInteracting: AnyObject {
     var currentActivity: BackupSyncActivity { get }
     var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
-    func lastSyncDate(for id: UUID) -> Date?
-    func lastSyncError(for id: UUID) -> BackupSyncError?
-    func remove(id: UUID)
+    func lastSyncDate(for id: BackupConfig.ID) -> Date?
+    func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError?
+    func remove(id: BackupConfig.ID)
     func syncAll() async
-    func sync(id: UUID) async
+    func sync(id: BackupConfig.ID) async
     func cancelCurrentSync()
     func syncEvents() -> AsyncStream<BackupSyncSession.Event>
     func displayDomain(from host: String) -> String
@@ -54,15 +54,15 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         configsInteractor.configsDidChange
     }
 
-    func lastSyncDate(for id: UUID) -> Date? {
+    func lastSyncDate(for id: BackupConfig.ID) -> Date? {
         syncTriggerInteractor.lastSyncDate(for: id)
     }
 
-    func lastSyncError(for id: UUID) -> BackupSyncError? {
+    func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError? {
         syncTriggerInteractor.lastSyncError(for: id)
     }
 
-    func remove(id: UUID) {
+    func remove(id: BackupConfig.ID) {
         // Removing an iCloud entry triggers the container's disable side effect. The
         // container's `saveConfigs(_:)` diff resolves the iCloud teardown path, so this
         // is uniform across kinds.
@@ -77,7 +77,7 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         try? await syncTriggerInteractor.syncAll()
     }
 
-    func sync(id: UUID) async {
+    func sync(id: BackupConfig.ID) async {
         try? await syncTriggerInteractor.sync(id: id)
     }
 

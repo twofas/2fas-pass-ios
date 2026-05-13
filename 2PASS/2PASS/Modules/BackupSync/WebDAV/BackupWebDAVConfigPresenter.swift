@@ -61,10 +61,10 @@ final class BackupWebDAVConfigPresenter {
     let isEditMode: Bool
 
     private let interactor: BackupWebDAVConfigModuleInteracting
-    private let configID: UUID?
-    /// Called on save (with the saved config's UUID) or programmatic close (with `nil`).
+    private let configID: BackupConfig.ID?
+    /// Called on save (with the saved config's id) or programmatic close (with `nil`).
     /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
-    private let onClose: (UUID?) -> Void
+    private let onClose: (BackupConfig.ID?) -> Void
     /// Held so the in-flight probe can be torn down on dismissal — without this the network
     /// request continues until the server responds even after the user taps Cancel.
     @ObservationIgnored
@@ -74,7 +74,7 @@ final class BackupWebDAVConfigPresenter {
     @ObservationIgnored
     private var originalSnapshot: BackupWebDAVConfig?
 
-    init(interactor: BackupWebDAVConfigModuleInteracting, configID: UUID?, onClose: @escaping (UUID?) -> Void) {
+    init(interactor: BackupWebDAVConfigModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose
@@ -154,7 +154,7 @@ final class BackupWebDAVConfigPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
-                let savedID: UUID
+                let savedID: BackupConfig.ID
                 if let configID {
                     interactor.saveUpdate(id: configID, with: config)
                     savedID = configID

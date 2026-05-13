@@ -15,8 +15,8 @@ protocol BackupWebDAVConfigModuleInteracting: AnyObject {
     func normalizeURL(_ str: String) -> URL?
     func testConnection(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
     @discardableResult
-    func saveAdd(_ config: BackupWebDAVConfig) -> UUID
-    func saveUpdate(id: UUID, with config: BackupWebDAVConfig)
+    func saveAdd(_ config: BackupWebDAVConfig) -> BackupConfig.ID
+    func saveUpdate(id: BackupConfig.ID, with config: BackupWebDAVConfig)
 }
 
 @MainActor
@@ -25,13 +25,13 @@ final class BackupWebDAVConfigModuleInteractor: BackupWebDAVConfigModuleInteract
     private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let uriInteractor: URIInteracting
-    private let configID: UUID?
+    private let configID: BackupConfig.ID?
 
     init(
         configsInteractor: BackupSyncConfigsInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
         uriInteractor: URIInteracting,
-        configID: UUID?
+        configID: BackupConfig.ID?
     ) {
         self.configsInteractor = configsInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
@@ -59,7 +59,7 @@ final class BackupWebDAVConfigModuleInteractor: BackupWebDAVConfigModuleInteract
         try await configsInteractor.test(config)
     }
 
-    func saveAdd(_ config: BackupWebDAVConfig) -> UUID {
+    func saveAdd(_ config: BackupWebDAVConfig) -> BackupConfig.ID {
         let id = configsInteractor.addWebDAVConfig(config)
         // Initial sync so the row immediately reflects "Syncing…" → "Last synced …"
         // instead of waiting for the next post-mutation `syncAll`.
@@ -67,7 +67,7 @@ final class BackupWebDAVConfigModuleInteractor: BackupWebDAVConfigModuleInteract
         return id
     }
 
-    func saveUpdate(id: UUID, with config: BackupWebDAVConfig) {
+    func saveUpdate(id: BackupConfig.ID, with config: BackupWebDAVConfig) {
         configsInteractor.updateWebDAVConfig(id: id, with: config)
         
         Task { try? await syncTriggerInteractor.sync(id: id) }

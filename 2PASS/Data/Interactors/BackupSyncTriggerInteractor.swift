@@ -37,7 +37,7 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Used by the recovery flow on the specific config it just added. The first
     /// successful sync clears the entry; any failed-and-retried sync in between still
     /// honors the flag because it persists across attempts.
-    func markAwaitingDeviceRegistration(configID: UUID)
+    func markAwaitingDeviceRegistration(configID: BackupConfig.ID)
 
     /// Fire-and-forget: triggers a sync at background priority and returns immediately. Use
     /// this from non-async post-mutation sites ("user changed something, propagate to
@@ -63,17 +63,17 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Per-config `overwritingVault` / `allowingAnyDeviceId` come from the awaiting-flag
     /// sets — callers don't pass them. Mark via `markAllServicesAwaitingVaultOverride()` /
     /// `markAwaitingDeviceRegistration(configID:)` before triggering.
-    func sync(id: UUID) async throws(BackupSyncError)
+    func sync(id: BackupConfig.ID) async throws(BackupSyncError)
 
     /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
     /// Reads through to the persistent date store; intended for UI display ("Last synced …").
-    func lastSyncDate(for id: UUID) -> Date?
+    func lastSyncDate(for id: BackupConfig.ID) -> Date?
 
     /// Most recent failure for `id` observed by the running container, or `nil` if the last
     /// attempt succeeded (or no attempt has run in this app process). Cleared automatically on
     /// the next success for that id. **Process-scoped** — does not survive an app restart.
     /// Intended for UI display via `BackupSyncError.errorDescription` (LocalizedError).
-    func lastSyncError(for id: UUID) -> BackupSyncError?
+    func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError?
 
     /// `true` when any registered config has a recorded last-sync error in this app process.
     /// Single-bit rollup over all per-config `lastSyncError(for:)` reads — drives the global
@@ -94,7 +94,7 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// among the currently active config ids — backs per-row "Cancel" buttons so a tap on
     /// one row doesn't tear down a sync running for a different config. No-op when `id`
     /// isn't active.
-    func cancelSync(id: UUID)
+    func cancelSync(id: BackupConfig.ID)
 
     /// Live stream of session-level (`.sessionStarted` / `.sessionFinished`) and per-service
     /// (`.started` / `.finished`) events from every sync the underlying container runs. Each
@@ -130,7 +130,7 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         mainRepository.backupSyncContainer.markAllConfigsAwaitingVaultOverride()
     }
 
-    func markAwaitingDeviceRegistration(configID: UUID) {
+    func markAwaitingDeviceRegistration(configID: BackupConfig.ID) {
         mainRepository.backupSyncContainer.markAwaitingDeviceRegistration(configID: configID)
     }
 
@@ -143,15 +143,15 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         try await mainRepository.backupSyncContainer.syncAll()
     }
 
-    func sync(id: UUID) async throws(BackupSyncError) {
+    func sync(id: BackupConfig.ID) async throws(BackupSyncError) {
         try await mainRepository.backupSyncContainer.sync(id)
     }
 
-    func lastSyncDate(for id: UUID) -> Date? {
+    func lastSyncDate(for id: BackupConfig.ID) -> Date? {
         mainRepository.loadLastSyncDates()[id]
     }
 
-    func lastSyncError(for id: UUID) -> BackupSyncError? {
+    func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError? {
         // Reads through to the container's in-memory store rather than `MainRepository` —
         // unlike `lastSyncDate(for:)`, there is no persistence layer behind this. Same shape
         // as `currentActivity` (which also reads container state directly).
@@ -166,7 +166,7 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         mainRepository.backupSyncContainer.cancelCurrentSync()
     }
 
-    func cancelSync(id: UUID) {
+    func cancelSync(id: BackupConfig.ID) {
         mainRepository.backupSyncContainer.cancelSync(id: id)
     }
 

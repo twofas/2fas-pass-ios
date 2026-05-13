@@ -81,7 +81,7 @@ public struct BackupConfigsDidChange: Notifications.AsyncMessage {
 public final class BackupSyncContainer: @unchecked Sendable {
     private struct State {
         var isSyncing = false
-        var activeConfigIDs: Set<UUID> = []
+        var activeConfigIDs: Set<BackupConfig.ID> = []
         var cancelCurrentSync: (@Sendable () -> Void)?
 
         var activity: BackupSyncActivity {
@@ -100,12 +100,12 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// slot has been swapped but the others haven't yet.
     private struct Providers {
         var servicesProvider: @Sendable () -> [any BackupSynchronizing]
-        var lastSyncDateProvider: @Sendable (UUID) -> Date?
+        var lastSyncDateProvider: @Sendable (BackupConfig.ID) -> Date?
         var awaitingFlags: BackupAwaitingFlagsStoring
         /// Cheap "what config ids exist right now" probe. Distinct from `servicesProvider`
         /// (which materializes full `BackupSynchronizing` sessions) so `markAllConfigsAwaitingVaultOverride`
         /// doesn't pay for session construction just to enumerate ids.
-        var configIDsProvider: @Sendable () -> Set<UUID>
+        var configIDsProvider: @Sendable () -> Set<BackupConfig.ID>
         /// Direct reference to the config store. Used by `saveConfigs(_:)` to read the
         /// pre-write snapshot, persist the new list, and reconcile iCloud lifecycle with the
         /// before/after diff. `nil` until `setup(...)` runs — `saveConfigs(_:)` no-ops in that
@@ -125,10 +125,10 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// marks no-op. Production wiring replaces it with the Data-layer adapter that persists
     /// to UserDefaults via `MainRepository`.
     private struct EmptyAwaitingFlagsStore: BackupAwaitingFlagsStoring {
-        var vaultOverrideAwaitingConfigIDs: Set<UUID> { [] }
-        func markVaultOverrideAwaiting(configIDs: Set<UUID>) {}
-        var deviceRegistrationAwaitingConfigIDs: Set<UUID> { [] }
-        func markDeviceRegistrationAwaiting(configIDs: Set<UUID>) {}
+        var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { [] }
+        func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>) {}
+        var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { [] }
+        func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>) {}
     }
 
     private let providers = OSAllocatedUnfairLock<Providers>(initialState: .empty)
@@ -151,7 +151,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// is fine because the container has process-scope lifetime — there's no persistence path
     /// that needs `Codable`, and the underlying `Error & Sendable` payload on `.network` /
     /// `.server` is freed on the next success or app close.
-    private let lastErrors = OSAllocatedUnfairLock<[UUID: BackupSyncError]>(initialState: [:])
+    private let lastErrors = OSAllocatedUnfairLock<[BackupConfig.ID: BackupSyncError]>(initialState: [:])
 
     /// Token for the in-module finished-sync handler the container installs on `cloudSync`
     /// in `setup(...)`. The handler synthesizes a `BackupSyncSession.Event.finished(.success)`
@@ -317,9 +317,9 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// `BackupAwaitingFlagsStoring`.
     init(
         servicesProvider: @escaping @Sendable () -> [any BackupSynchronizing],
-        lastSyncDateProvider: @escaping @Sendable (UUID) -> Date? = { _ in nil },
+        lastSyncDateProvider: @escaping @Sendable (BackupConfig.ID) -> Date? = { _ in nil },
         awaitingFlagsStore: BackupAwaitingFlagsStoring = EmptyAwaitingFlagsStore(),
-        configIDsProvider: @escaping @Sendable () -> Set<UUID> = { [] }
+        configIDsProvider: @escaping @Sendable () -> Set<BackupConfig.ID> = { [] }
     ) {
         providers.withLock { providers in
             providers.servicesProvider = servicesProvider
@@ -530,7 +530,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// subsequent sync (immediate post-recovery push and any retry — routine, per-row, etc.)
     /// until the first successful sync clears it via
     /// `BackupSyncAdapter.setLastSyncDate(_:for:consumed:)`.
-    public func markAwaitingDeviceRegistration(configID: UUID) {
+    public func markAwaitingDeviceRegistration(configID: BackupConfig.ID) {
         let store = providers.withLock { $0.awaitingFlags }
         store.markDeviceRegistrationAwaiting(configIDs: [configID])
     }
@@ -553,7 +553,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     ///
     /// `.cancelled` outcomes never appear here — they're skipped at recording time, leaving any
     /// prior error in place (see `handle(_:)`).
-    public func lastSyncError(for id: UUID) -> BackupSyncError? {
+    public func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError? {
         lastErrors.withLock { $0[id] }
     }
 
@@ -608,7 +608,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// cancelling), and `syncAll` runs at most one id active at a time. No-op when `id` isn't
     /// active — the running sync is for some other config and shouldn't be torn down by this
     /// caller's intent.
-    public func cancelSync(id: UUID) {
+    public func cancelSync(id: BackupConfig.ID) {
         let cancel = state.withLock { state in
             state.activeConfigIDs.contains(id) ? state.cancelCurrentSync : nil
         }
@@ -711,7 +711,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     /// `markAwaitingDeviceRegistration(configID:)` and the container does the rest. A failed
     /// attempt's flags persist for any subsequent sync (routine, per-row, or `syncAll`)
     /// until the first success clears them per-id via `BackupSyncAdapter.setLastSyncDate`.
-    public func sync(_ id: UUID) async throws(BackupSyncError) {
+    public func sync(_ id: BackupConfig.ID) async throws(BackupSyncError) {
         let snapshot = providers.withLock { $0 }
         guard let service = snapshot.servicesProvider().first(where: { $0.id == id }) else { return }
         guard reserveSyncSlot() else {
@@ -865,7 +865,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
     }
 
     private static func makeService(
-        id: UUID,
+        id: BackupConfig.ID,
         kind: SyncServiceKind,
         session: BackupFileServiceSession,
         context: BackupSyncContext,

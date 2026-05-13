@@ -8,13 +8,13 @@ import SwiftUI
 import CommonUI
 
 enum BackupConfigsAddDestination: RouterDestination {
-    /// `onClose` receives the new config's UUID on a successful save (the View writes it
+    /// `onClose` receives the new config's id on a successful save (the View writes it
     /// into `savedConfigID` so the parent's matched-zoom destination flips to the new
     /// row before the sheet animates away), or `nil` on plain cancel/dismiss. The
     /// closure itself is responsible for dismissing the sheet — the form view doesn't
     /// know it's hosted in one.
-    case webDAV(onClose: (UUID?) -> Void)
-    case s3(onClose: (UUID?) -> Void)
+    case webDAV(onClose: (BackupConfig.ID?) -> Void)
+    case s3(onClose: (BackupConfig.ID?) -> Void)
 
     /// Explicit `String` id (not `Self`) because the associated `onClose` closures
     /// aren't `Hashable`. Cases without payloads are still distinct — switch ignores
@@ -41,18 +41,18 @@ final class BackupConfigsAddPresenter {
         self.canAddiCloud = interactor.canAddiCloud
     }
     
-    func selectWebDAV(onClose: @escaping (UUID?) -> Void) {
+    func selectWebDAV(onClose: @escaping (BackupConfig.ID?) -> Void) {
         destination = .webDAV(onClose: onClose)
     }
 
-    func selectS3(onClose: @escaping (UUID?) -> Void) {
+    func selectS3(onClose: @escaping (BackupConfig.ID?) -> Void) {
         destination = .s3(onClose: onClose)
     }
 
-    /// Adds an iCloud config. Returns the new config's UUID on success (so the View can
+    /// Adds an iCloud config. Returns the new config's id on success (so the View can
     /// write it into `savedConfigID` for the matched-zoom destination flip and dismiss
     /// the sheet), or `nil` if iCloud was unavailable.
-    func performIcloudAdd() -> UUID? {
+    func performIcloudAdd() -> BackupConfig.ID? {
         interactor.addiCloud()
     }
 }

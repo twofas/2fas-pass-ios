@@ -5,13 +5,12 @@
 // See LICENSE file for full terms
 
 import Foundation
-import Backup
 import Data
 
 @MainActor
 protocol BackupConfigsAddModuleInteracting: AnyObject {
     var canAddiCloud: Bool { get }
-    @discardableResult func addiCloud() -> UUID?
+    @discardableResult func addiCloud() -> BackupConfig.ID?
 }
 
 @MainActor
@@ -29,11 +28,11 @@ final class BackupConfigsAddModuleInteractor: BackupConfigsAddModuleInteracting 
     }
     
     var canAddiCloud: Bool {
-        !configsInteractor.allConfigs.contains { $0.kind == .iCloud }
+        configsInteractor.allConfigs.contains { $0.kind == .iCloud } == false
     }
 
     @discardableResult
-    func addiCloud() -> UUID? {
+    func addiCloud() -> BackupConfig.ID? {
         // Persisting the iCloud config is the enable signal — the container's
         // `saveConfigs(_:)` diff calls `cloudSync.enable()` internally. After enable, kick
         // an initial sync so any existing local vault state is pushed up to iCloud

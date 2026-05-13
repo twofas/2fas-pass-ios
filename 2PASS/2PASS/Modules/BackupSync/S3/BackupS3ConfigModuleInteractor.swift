@@ -18,8 +18,8 @@ protocol BackupS3ConfigModuleInteracting: AnyObject {
     var existingConfig: S3ServiceConfig? { get }
     func testConnection(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
     @discardableResult
-    func saveAdd(_ config: S3ServiceConfig) -> UUID
-    func saveUpdate(id: UUID, with config: S3ServiceConfig)
+    func saveAdd(_ config: S3ServiceConfig) -> BackupConfig.ID
+    func saveUpdate(id: BackupConfig.ID, with config: S3ServiceConfig)
     func detect(endpoint: String) -> S3EndpointDetection?
     func normalize(endpoint: String) -> URL?
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
@@ -35,13 +35,13 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
     private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let uriInteractor: URIInteracting
-    private let configID: UUID?
+    private let configID: BackupConfig.ID?
 
     init(
         configsInteractor: BackupSyncConfigsInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
         uriInteractor: URIInteracting,
-        configID: UUID?
+        configID: BackupConfig.ID?
     ) {
         self.configsInteractor = configsInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
@@ -61,7 +61,7 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
         try await configsInteractor.test(config)
     }
 
-    func saveAdd(_ config: S3ServiceConfig) -> UUID {
+    func saveAdd(_ config: S3ServiceConfig) -> BackupConfig.ID {
         let id = configsInteractor.addS3Config(config)
         // Initial sync so the row immediately reflects "Syncing…" → "Last synced …"
         // instead of waiting for the next post-mutation `syncAll`.
@@ -69,7 +69,7 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
         return id
     }
 
-    func saveUpdate(id: UUID, with config: S3ServiceConfig) {
+    func saveUpdate(id: BackupConfig.ID, with config: S3ServiceConfig) {
         configsInteractor.updateS3Config(id: id, with: config)
         
         Task { try? await syncTriggerInteractor.sync(id: id) }

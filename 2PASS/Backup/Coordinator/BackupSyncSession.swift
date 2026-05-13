@@ -45,7 +45,7 @@ import Common
 /// — is the *container's* concern (`BackupSyncContainer.acquireSyncSlot`), not this type's.
 public final class BackupSyncSession: Sendable {
 
-    public typealias SyncResult = (id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
+    public typealias SyncResult = (id: BackupConfig.ID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
     /// Lifecycle events emitted during a sync. Two granularities, both delivered through the
     /// same `BackupSyncContainer.syncEvents()` stream so a single subscriber can drive both
@@ -65,8 +65,8 @@ public final class BackupSyncSession: Sendable {
     public enum Event: Sendable {
         case sessionStarted
         case sessionFinished
-        case started(id: UUID, kind: SyncServiceKind)
-        case finished(id: UUID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
+        case started(id: BackupConfig.ID, kind: SyncServiceKind)
+        case finished(id: BackupConfig.ID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
     }
 
     public typealias EventHandler = @Sendable (Event) -> Void
@@ -77,21 +77,21 @@ public final class BackupSyncSession: Sendable {
     /// (e.g. `MainRepository.vaultOverrideAwaitingConfigIDs`). A static "true for everyone"
     /// run is just `{ _ in true }`; the default value `{ _ in false }` keeps existing call
     /// sites and tests that don't care about overwriting compiling unchanged.
-    private let overwritingVault: @Sendable (UUID) -> Bool
+    private let overwritingVault: @Sendable (BackupConfig.ID) -> Bool
     /// Per-service multi-device-id override. Same per-id closure shape as `overwritingVault`
     /// so the caller can consult `MainRepository.deviceRegistrationAwaitingConfigIDs` (set
     /// after recovery, cleared on first successful sync) and selectively bypass the gate
     /// only for configs awaiting their first post-recovery sync. Routine syncs default to
     /// `{ _ in false }`.
-    private let allowingAnyDeviceId: @Sendable (UUID) -> Bool
-    private let lastSyncDate: @Sendable (UUID) -> Date?
+    private let allowingAnyDeviceId: @Sendable (BackupConfig.ID) -> Bool
+    private let lastSyncDate: @Sendable (BackupConfig.ID) -> Date?
     private let onEvent: EventHandler?
 
     public init(
         services: [any BackupSynchronizing],
-        overwritingVault: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        allowingAnyDeviceId: @Sendable @escaping (UUID) -> Bool = { _ in false },
-        lastSyncDate: @Sendable @escaping (UUID) -> Date? = { _ in nil },
+        overwritingVault: @Sendable @escaping (BackupConfig.ID) -> Bool = { _ in false },
+        allowingAnyDeviceId: @Sendable @escaping (BackupConfig.ID) -> Bool = { _ in false },
+        lastSyncDate: @Sendable @escaping (BackupConfig.ID) -> Date? = { _ in nil },
         onEvent: EventHandler? = nil
     ) {
         self.services = services
@@ -116,7 +116,7 @@ public final class BackupSyncSession: Sendable {
         }.map(\.element)
         let allIDs = ordered.map(\.id)
         var needsSync = Set(allIDs)
-        var aggregate: [UUID: Result<BackupSyncOutcome, BackupSyncError>] = [:]
+        var aggregate: [BackupConfig.ID: Result<BackupSyncOutcome, BackupSyncError>] = [:]
         var pass = 0
 
         while !needsSync.isEmpty {
@@ -162,8 +162,8 @@ public final class BackupSyncSession: Sendable {
     /// pulled new content for this service.
     private static func merge(
         _ outcome: Result<BackupSyncOutcome, BackupSyncError>,
-        for id: UUID,
-        into aggregate: inout [UUID: Result<BackupSyncOutcome, BackupSyncError>]
+        for id: BackupConfig.ID,
+        into aggregate: inout [BackupConfig.ID: Result<BackupSyncOutcome, BackupSyncError>]
     ) {
         switch (aggregate[id], outcome) {
         case (.success(let prior)?, .success(let curr)):

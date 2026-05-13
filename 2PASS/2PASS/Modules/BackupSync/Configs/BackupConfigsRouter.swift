@@ -68,7 +68,7 @@ struct BackupConfigsRouter: Router {
 
     static let pickerSourceID = "backupConfigs.add.picker"
 
-    static func editSourceID(for configID: UUID) -> String {
+    static func editSourceID(for configID: BackupConfig.ID) -> String {
         "backupConfigs.edit.\(configID)"
     }
 

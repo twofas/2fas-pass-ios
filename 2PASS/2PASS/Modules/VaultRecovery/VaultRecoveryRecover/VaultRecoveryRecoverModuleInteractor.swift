@@ -135,7 +135,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     /// for backends whose vaults are actually decrypted and stored locally. Returns the
     /// new config's id so the caller can drive the immediate post-recovery sync without
     /// re-querying; `nil` means "nothing further to sync" (e.g. local-file recovery).
-    private func persistRecoverySource(_ source: VaultRecoveryFileSource) -> UUID? {
+    private func persistRecoverySource(_ source: VaultRecoveryFileSource) -> BackupConfig.ID? {
         switch source {
         case .webDAV:
             // The source enum is tag-only: it tells us which recovery cache slot to read.
@@ -181,7 +181,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
     /// from the `markAwaitingDeviceRegistration(configID:)` mark issued in
     /// `persistRecoverySource`; the container ORs it into the per-id closure inside
     /// `sync(_:)`.
-    private func performRecoverySync(configID: UUID) async -> Bool {
+    private func performRecoverySync(configID: BackupConfig.ID) async -> Bool {
         do {
             try await syncTriggerInteractor.sync(id: configID)
             // Returns silently on success OR when no service matched / container not set
@@ -269,7 +269,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         return true
     }
 
-    private func resolveiCloudConfigID() -> UUID? {
+    private func resolveiCloudConfigID() -> BackupConfig.ID? {
         let iCloudID = configsInteractor.addiCloudConfig() ?? configsInteractor.allConfigs.iCloudEntry?.id
         guard let iCloudID else { return nil }
         return iCloudID

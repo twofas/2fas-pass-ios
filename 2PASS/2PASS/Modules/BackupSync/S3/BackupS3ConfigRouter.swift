@@ -15,8 +15,8 @@ struct BackupS3ConfigRouter: Router {
     /// dismissing via `\.dismiss`, matching the edit-from-row behavior.
     @MainActor
     static func buildView(
-        configID: UUID?,
-        onClose: ((UUID?) -> Void)? = nil
+        configID: BackupConfig.ID?,
+        onClose: ((BackupConfig.ID?) -> Void)? = nil
     ) -> some View {
         BackupS3ConfigContainerView(configID: configID, onClose: onClose)
     }
@@ -39,8 +39,8 @@ struct BackupS3ConfigRouter: Router {
 }
 
 private struct BackupS3ConfigContainerView: View {
-    let configID: UUID?
-    let onClose: ((UUID?) -> Void)?
+    let configID: BackupConfig.ID?
+    let onClose: ((BackupConfig.ID?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
