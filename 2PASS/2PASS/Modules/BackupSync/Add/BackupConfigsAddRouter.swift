@@ -15,15 +15,10 @@ struct BackupConfigsAddRouter: Router {
     static let s3SourceID = "backupConfigs.add.s3"
 
     @MainActor
-    static func buildView(
-        canAddiCloud: Bool,
-        addiCloud: @escaping () -> UUID?,
-        savedConfigID: Binding<UUID?>
-    ) -> some View {
+    static func buildView(savedConfigID: Binding<UUID?>) -> some View {
         BackupConfigsAddView(
             presenter: BackupConfigsAddPresenter(
-                canAddiCloud: canAddiCloud,
-                addiCloud: addiCloud
+                interactor: ModuleInteractorFactory.shared.backupConfigsAddModuleInteractor()
             ),
             savedConfigID: savedConfigID
         )

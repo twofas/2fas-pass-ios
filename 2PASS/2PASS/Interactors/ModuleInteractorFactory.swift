@@ -169,6 +169,14 @@ extension ModuleInteractorFactory {
     }
 
     @MainActor
+    func backupConfigsAddModuleInteractor() -> BackupConfigsAddModuleInteracting {
+        BackupConfigsAddModuleInteractor(
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
+        )
+    }
+
+    @MainActor
     func backupWebDAVConfigModuleInteractor(configID: UUID?) -> BackupWebDAVConfigModuleInteracting {
         BackupWebDAVConfigModuleInteractor(
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),

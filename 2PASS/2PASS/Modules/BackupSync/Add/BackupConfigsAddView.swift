@@ -161,11 +161,16 @@ private struct BackupConfigsAddProviderRow: View {
 #Preview {
     Color.clear
         .sheet(isPresented: .constant(true)) {
-            BackupConfigsAddRouter.buildView(
-                canAddiCloud: true,
-                addiCloud: { nil },
+            BackupConfigsAddView(
+                presenter: BackupConfigsAddPresenter(interactor: PreviewModuleInteractor()),
                 savedConfigID: .constant(nil)
             )
             .presentationDetents([.large])
         }
+}
+
+@MainActor
+private final class PreviewModuleInteractor: BackupConfigsAddModuleInteracting {
+    let canAddiCloud = true
+    func addiCloud() -> UUID? { nil }
 }

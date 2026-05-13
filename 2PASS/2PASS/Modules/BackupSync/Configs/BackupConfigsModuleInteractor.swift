@@ -17,7 +17,6 @@ protocol BackupConfigsModuleInteracting: AnyObject {
 
     func lastSyncDate(for id: UUID) -> Date?
     func lastSyncError(for id: UUID) -> BackupSyncError?
-    @discardableResult func addiCloud() -> UUID?
     func remove(id: UUID)
     func syncAll() async
     func sync(id: UUID) async
@@ -63,22 +62,10 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
         syncTriggerInteractor.lastSyncError(for: id)
     }
 
-    @discardableResult
-    func addiCloud() -> UUID? {
-        // Persisting the iCloud config is the enable signal — the container's
-        // `saveConfigs(_:)` diff calls `cloudSync.enable()` internally. After enable, kick
-        // an initial sync so any existing local vault state is pushed up to iCloud
-        // immediately rather than waiting for the next post-mutation `syncAll`. Mirrors
-        // `QuickSetupModuleInteractor.turnOnCloud()`.
-        guard let id = configsInteractor.addiCloudConfig() else { return nil }
-        Task { try? await syncTriggerInteractor.sync(id: id) }
-        return id
-    }
-
     func remove(id: UUID) {
-        // Mirror of `addiCloud()`: removing an iCloud entry triggers the container's
-        // disable side effect. The container's `saveConfigs(_:)` diff resolves the iCloud
-        // teardown path, so this is uniform across kinds.
+        // Removing an iCloud entry triggers the container's disable side effect. The
+        // container's `saveConfigs(_:)` diff resolves the iCloud teardown path, so this
+        // is uniform across kinds.
         configsInteractor.removeConfig(id: id)
     }
 

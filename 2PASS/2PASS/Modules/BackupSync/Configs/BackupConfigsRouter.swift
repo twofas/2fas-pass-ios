@@ -82,12 +82,8 @@ struct BackupConfigsRouter: Router {
             return Self.pickerSourceID
         }()
 
-        BackupConfigsAddRouter.buildView(
-            canAddiCloud: presenter.canAddiCloud,
-            addiCloud: { presenter.addiCloud() },
-            savedConfigID: bindable.savedConfigIDFromPicker
-        )
-        .presentationDetents([.large])
-        .matchedZoomDestination(id: zoomDestinationID, in: transitionNamespace)
+        BackupConfigsAddRouter.buildView(savedConfigID: bindable.savedConfigIDFromPicker)
+            .presentationDetents([.large])
+            .matchedZoomDestination(id: zoomDestinationID, in: transitionNamespace)
     }
 }

@@ -60,7 +60,6 @@ final class BackupConfigsPresenter {
     private(set) var isSyncing: Bool = false
 
     var isEmpty: Bool { rows.isEmpty }
-    var canAddiCloud: Bool { !rows.contains { $0.kind == .iCloud } }
     var errorCount: Int { rows.filter { $0.errorText != nil }.count }
 
     private let interactor: BackupConfigsModuleInteracting
@@ -122,9 +121,9 @@ final class BackupConfigsPresenter {
         configsChangeTask = Task { [weak self, interactor] in
             for await _ in interactor.configsDidChange {
                 guard let self else { return }
-                // `withAnimation` matches the `addiCloud` / `onDelete` paths' local-mutation
-                // animation — same shape regardless of whether the change came from this
-                // screen or another (e.g. iCloud toggled via QuickSetup while off-stack).
+                // Animate so row additions/removals slide in regardless of whether the
+                // change came from this screen or another (e.g. iCloud toggled via
+                // QuickSetup while off-stack, or added via the picker sheet).
                 withAnimation { self.reload() }
             }
         }
@@ -163,13 +162,6 @@ final class BackupConfigsPresenter {
         // at which point the matched-zoom destination flips to the new row.
         savedConfigIDFromPicker = nil
         destination = .add
-    }
-
-    @discardableResult
-    func addiCloud() -> UUID? {
-        let id = interactor.addiCloud()
-        withAnimation { reload() }
-        return id
     }
 
     func onSelect(_ row: BackupConfigRowItem) {

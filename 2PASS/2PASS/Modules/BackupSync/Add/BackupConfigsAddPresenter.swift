@@ -30,20 +30,17 @@ enum BackupConfigsAddDestination: RouterDestination {
 @Observable @MainActor
 final class BackupConfigsAddPresenter {
 
-    var destination: BackupConfigsAddDestination?
-    /// Frozen at picker open time so the iCloud row doesn't vanish from the picker
-    /// mid-dismiss. Without freezing, the moment iCloud is added the parent's
-    /// `canAddiCloud` flips to `false`, the picker re-renders, and the iCloud row
-    /// disappears just as the sheet is animating away — visible glitch.
     let canAddiCloud: Bool
+    
+    var destination: BackupConfigsAddDestination?
 
-    private let addiCloud: () -> UUID?
+    private let interactor: BackupConfigsAddModuleInteracting
 
-    init(canAddiCloud: Bool, addiCloud: @escaping () -> UUID?) {
-        self.canAddiCloud = canAddiCloud
-        self.addiCloud = addiCloud
+    init(interactor: BackupConfigsAddModuleInteracting) {
+        self.interactor = interactor
+        self.canAddiCloud = interactor.canAddiCloud
     }
-
+    
     func selectWebDAV(onClose: @escaping (UUID?) -> Void) {
         destination = .webDAV(onClose: onClose)
     }
@@ -52,10 +49,10 @@ final class BackupConfigsAddPresenter {
         destination = .s3(onClose: onClose)
     }
 
-    /// Invokes the parent's iCloud-add action. Returns the new config's UUID on success
-    /// (so the View can write it into `savedConfigID` for the matched-zoom destination
-    /// flip and dismiss the sheet), or `nil` if iCloud was unavailable.
+    /// Adds an iCloud config. Returns the new config's UUID on success (so the View can
+    /// write it into `savedConfigID` for the matched-zoom destination flip and dismiss
+    /// the sheet), or `nil` if iCloud was unavailable.
     func performIcloudAdd() -> UUID? {
-        addiCloud()
+        interactor.addiCloud()
     }
 }
