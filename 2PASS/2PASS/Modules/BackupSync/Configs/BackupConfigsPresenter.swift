@@ -16,7 +16,16 @@ enum BackupConfigsDestination: RouterDestination {
     /// re-targets the new row before the sheet animates away), or `nil` on plain
     /// cancel/dismiss. The closure is also responsible for clearing `destination`
     /// — the picker view doesn't know it's hosted in a sheet.
-    case add(onClose: (BackupConfig.ID?) -> Void)
+    ///
+    /// `savedConfigID` is a reactive resolver — read inside `MatchedZoomDestinationModifier`'s
+    /// body via `matchedZoomDestination(id: savedConfigID()..., in:)`'s autoclosure,
+    /// so observation on `savedConfigIDFromPicker` re-fires the zoom-target update
+    /// mid-dismiss. Carrying the resolver here keeps the Router stateless: no
+    /// presenter ref.
+    case add(
+        onClose: (BackupConfig.ID?) -> Void,
+        savedConfigID: @MainActor () -> BackupConfig.ID?
+    )
     case editWebDAV(configID: BackupConfig.ID)
     case editS3(configID: BackupConfig.ID)
     case removeConfirmation(name: String, onConfirm: Callback)
@@ -51,12 +60,11 @@ struct BackupConfigRowItem: Identifiable, Equatable {
 final class BackupConfigsPresenter {
 
     var destination: BackupConfigsDestination?
-    /// Set by the add sheet (via `BackupConfigsAddView.savedConfigID` binding) when its
-    /// inner form saves successfully — the new config's UUID. Drives the add sheet's
-    /// matched-zoom destination to point at the freshly-added row instead of the `+`
-    /// button, so the dismiss animates the sheet down INTO the new row. Cleared by
-    /// `onAddPressed()` before each new open so cancel/iCloud paths zoom back to the
-    /// `+` button.
+    /// Set by the picker's `onClose` when its inner form saves successfully — the new
+    /// config's UUID. Drives the add sheet's matched-zoom destination to point at the
+    /// freshly-added row instead of the `+` button, so the dismiss animates the sheet
+    /// down INTO the new row. Cleared by `onAddPressed()` before each new open so
+    /// cancel/iCloud paths zoom back to the `+` button.
     var savedConfigIDFromPicker: BackupConfig.ID?
     private(set) var rows: [BackupConfigRowItem] = []
     /// Call-level "is a sync in flight overall?" — driven by `.sessionStarted` /
@@ -164,23 +172,28 @@ final class BackupConfigsPresenter {
     }
 
     func onAddPressed() {
-        // Clear before showing so each fresh picker open zooms from the `+` button. The
-        // picker's `onClose` writes back into `savedConfigIDFromPicker` only on a successful
-        // save, at which point the matched-zoom destination flips to the new row.
+        // Clear before showing so each fresh picker open zooms from the `+` button.
+        // The picker's `onClose` writes back into `savedConfigIDFromPicker` only on
+        // a successful save, at which point the matched-zoom destination flips to
+        // the new row.
         savedConfigIDFromPicker = nil
-        destination = .add(onClose: { [weak self] configID in
-            guard let self else { return }
-            if let configID {
-                // Set BEFORE clearing `destination` so SwiftUI re-evaluates the sheet's
-                // `.matchedZoomDestination` with the new row's source ID before the sheet
-                // starts animating away. The `Task` defers the destination clear by one
-                // run-loop hop, giving observation a chance to propagate first.
-                self.savedConfigIDFromPicker = configID
-            }
-            Task { @MainActor [weak self] in
-                self?.destination = nil
-            }
-        })
+        destination = .add(
+            onClose: { [weak self] configID in
+                guard let self else { return }
+                if let configID {
+                    // Set BEFORE clearing `destination` so SwiftUI re-evaluates the
+                    // reactive matched-zoom modifier with the new row's source ID
+                    // before the sheet starts animating away. `Task` defers the
+                    // destination clear one run-loop hop so observation propagates
+                    // first.
+                    self.savedConfigIDFromPicker = configID
+                }
+                Task { @MainActor [weak self] in
+                    self?.destination = nil
+                }
+            },
+            savedConfigID: { [weak self] in self?.savedConfigIDFromPicker }
+        )
     }
 
     func onSelect(_ row: BackupConfigRowItem) {
