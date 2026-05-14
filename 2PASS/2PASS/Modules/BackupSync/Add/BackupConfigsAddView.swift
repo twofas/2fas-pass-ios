@@ -13,22 +13,8 @@ struct BackupConfigsAddView: View {
     @State
     var presenter: BackupConfigsAddPresenter
 
-    /// Written when the form completes successfully so the parent's matched-zoom
-    /// destination can switch from the `+` button source to the new row's source ID
-    /// before the sheet dismisses.
-    @Binding var savedConfigID: BackupConfig.ID?
-
-    // Captured at the picker root (sheet root), so calling it dismisses the entire sheet
-    // — even when the form is currently pushed on top of the picker. The form's own
-    // `\.dismiss` (a pop action inside the nav stack) is intentionally separate from this.
-    @Environment(\.dismiss) private var dismissSheet
     @Environment(\.colorScheme) private var colorScheme
     @Namespace private var transitionNamespace
-
-    init(presenter: BackupConfigsAddPresenter, savedConfigID: Binding<BackupConfig.ID?>) {
-        self._presenter = State(wrappedValue: presenter)
-        self._savedConfigID = savedConfigID
-    }
 
     var body: some View {
         NavigationStack {
@@ -44,26 +30,28 @@ struct BackupConfigsAddView: View {
 
                 VStack(spacing: Spacing.m) {
                     if presenter.canAddiCloud {
-                        BackupConfigsAddProviderRow(
+                        BackupConfigsAddProviderCell(
                             kind: .iCloud,
                             title: .backupConfigsProviderIcloud,
                             subtitle: .backupConfigsProviderIcloudDescription,
-                            action: handleiCloudTap
+                            action: { presenter.performIcloudAdd() }
                         )
                         .hideChevron()
                     }
-                    BackupConfigsAddProviderRow(
+                    
+                    BackupConfigsAddProviderCell(
                         kind: .webDAV,
                         title: .backupConfigsProviderWebdav,
                         subtitle: .backupConfigsProviderWebdavDescription,
-                        action: { presenter.selectWebDAV(onClose: handleFormClose) }
+                        action: { presenter.selectWebDAV() }
                     )
                     .matchedZoomSource(id: BackupConfigsAddRouter.webDAVSourceID, in: transitionNamespace)
-                    BackupConfigsAddProviderRow(
+                    
+                    BackupConfigsAddProviderCell(
                         kind: .s3,
                         title: .backupConfigsProviderS3,
                         subtitle: .backupConfigsProviderS3Description,
-                        action: { presenter.selectS3(onClose: handleFormClose) }
+                        action: { presenter.selectS3() }
                     )
                     .matchedZoomSource(id: BackupConfigsAddRouter.s3SourceID, in: transitionNamespace)
                 }
@@ -76,39 +64,13 @@ struct BackupConfigsAddView: View {
             .readableContentMargins()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    ToolbarCancelButton { dismissSheet() }
+                    ToolbarCancelButton { presenter.cancel() }
                 }
             }
             .router(
                 router: BackupConfigsAddRouter(transitionNamespace: transitionNamespace),
                 destination: $presenter.destination
             )
-        }
-    }
-
-    private func handleiCloudTap() {
-        // Add the iCloud config FIRST (synchronous via the presenter → parent's
-        // `addiCloud` callback → interactor → `withAnimation { reload() }`), capture its
-        // UUID, set `savedConfigID` to swap the parent's matched-zoom destination to the
-        // new row's source ID, THEN dismiss. Mirrors the form-save flow so iCloud also
-        // zooms into its new row.
-        if let newID = presenter.performIcloudAdd() {
-            savedConfigID = newID
-        }
-
-        Task { @MainActor in
-            dismissSheet()
-        }
-    }
-
-    private func handleFormClose(_ configID: BackupConfig.ID?) {
-        // Set BEFORE dismiss so SwiftUI re-evaluates the parent's `.matchedZoomDestination`
-        // ID with the new row's source ID before the sheet starts animating away.
-        if let configID {
-            savedConfigID = configID
-        }
-        Task { @MainActor in
-            dismissSheet()
         }
     }
 
@@ -119,7 +81,7 @@ struct BackupConfigsAddView: View {
     }
 }
 
-private struct BackupConfigsAddProviderRow: View {
+private struct BackupConfigsAddProviderCell: View {
     let kind: SyncServiceKind
     let title: LocalizedStringResource
     let subtitle: LocalizedStringResource
@@ -139,22 +101,22 @@ private struct BackupConfigsAddProviderRow: View {
         self.action = action
     }
 
-    func hideChevron(_ hide: Bool = true) -> Self {
-        var instance = self
-        instance.showsChevron = !hide
-        return instance
-    }
-
     var body: some View {
         Button(action: action) {
             OptionButtonLabel(
                 title: Text(title),
                 subtitle: Text(subtitle),
-                icon: { BackupConfigIcon(kind: kind, size: 64) }
+                icon: { BackupServiceIcon(kind: kind).controlSize(.large) }
             )
             .hideChevron(!showsChevron)
         }
         .buttonStyle(.option)
+    }
+    
+    func hideChevron(_ hide: Bool = true) -> Self {
+        var instance = self
+        instance.showsChevron = !hide
+        return instance
     }
 }
 
@@ -162,8 +124,10 @@ private struct BackupConfigsAddProviderRow: View {
     Color.clear
         .sheet(isPresented: .constant(true)) {
             BackupConfigsAddView(
-                presenter: BackupConfigsAddPresenter(interactor: PreviewModuleInteractor()),
-                savedConfigID: .constant(nil)
+                presenter: BackupConfigsAddPresenter(
+                    interactor: PreviewModuleInteractor(),
+                    onClose: { _ in }
+                )
             )
             .presentationDetents([.large])
         }

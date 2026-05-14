@@ -15,7 +15,8 @@ struct BackupConfigToolbarTitle: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItem(placement: .principal) {
             HStack(spacing: Spacing.s) {
-                BackupConfigIcon(kind: kind, size: 32)
+                BackupServiceIcon(kind: kind)
+                    .controlSize(.small)
                 title
                     .font(.headline)
             }

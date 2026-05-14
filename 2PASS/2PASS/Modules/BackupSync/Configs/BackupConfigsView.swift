@@ -167,7 +167,7 @@ private struct BackupConfigRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            BackupConfigIcon(kind: row.kind)
+            BackupServiceIcon(kind: row.kind)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.title)

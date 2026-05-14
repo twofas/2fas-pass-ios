@@ -74,16 +74,43 @@ struct BackupConfigsRouter: Router {
 
     @MainActor @ViewBuilder
     private func pickerView(presenter: BackupConfigsPresenter) -> some View {
-        let bindable = Bindable(presenter)
+        PickerSheet(presenter: presenter, transitionNamespace: transitionNamespace)
+    }
+}
+
+/// Wraps the picker sheet content so `@Environment(\.dismiss)` is captured at the sheet
+/// root and the close closure (write the saved id → dismiss) can be composed once and
+/// injected into `BackupConfigsAddRouter.buildView(onClose:)`. The presenter is read
+/// here to reactively recompute the matched-zoom destination ID when
+/// `savedConfigIDFromPicker` changes mid-dismiss.
+private struct PickerSheet: View {
+
+    let presenter: BackupConfigsPresenter
+    let transitionNamespace: Namespace.ID?
+
+    @Environment(\.dismiss) private var dismissSheet
+
+    var body: some View {
         let zoomDestinationID: String = {
             if let saved = presenter.savedConfigIDFromPicker {
-                return Self.editSourceID(for: saved)
+                return BackupConfigsRouter.editSourceID(for: saved)
             }
-            return Self.pickerSourceID
+            return BackupConfigsRouter.pickerSourceID
         }()
 
-        BackupConfigsAddRouter.buildView(savedConfigID: bindable.savedConfigIDFromPicker)
+        BackupConfigsAddRouter.buildView(onClose: handleClose)
             .presentationDetents([.large])
             .matchedZoomDestination(id: zoomDestinationID, in: transitionNamespace)
+    }
+
+    private func handleClose(_ configID: BackupConfig.ID?) {
+        // Set BEFORE dismiss so SwiftUI re-evaluates `.matchedZoomDestination` with the
+        // new row's source ID before the sheet starts animating away.
+        if let configID {
+            presenter.savedConfigIDFromPicker = configID
+        }
+        Task { @MainActor in
+            dismissSheet()
+        }
     }
 }

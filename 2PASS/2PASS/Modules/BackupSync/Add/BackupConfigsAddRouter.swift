@@ -9,18 +9,18 @@ import CommonUI
 
 struct BackupConfigsAddRouter: Router {
 
-    var transitionNamespace: Namespace.ID?
+    let transitionNamespace: Namespace.ID?
 
     static let webDAVSourceID = "backupConfigs.add.webDAV"
     static let s3SourceID = "backupConfigs.add.s3"
 
     @MainActor
-    static func buildView(savedConfigID: Binding<BackupConfig.ID?>) -> some View {
+    static func buildView(onClose: @escaping (BackupConfig.ID?) -> Void) -> some View {
         BackupConfigsAddView(
             presenter: BackupConfigsAddPresenter(
-                interactor: ModuleInteractorFactory.shared.backupConfigsAddModuleInteractor()
-            ),
-            savedConfigID: savedConfigID
+                interactor: ModuleInteractorFactory.shared.backupConfigsAddModuleInteractor(),
+                onClose: onClose
+            )
         )
     }
 

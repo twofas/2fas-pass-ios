@@ -31,28 +31,38 @@ enum BackupConfigsAddDestination: RouterDestination {
 final class BackupConfigsAddPresenter {
 
     let canAddiCloud: Bool
-    
+
     var destination: BackupConfigsAddDestination?
 
     private let interactor: BackupConfigsAddModuleInteracting
+    /// Injected at construction so the View doesn't need `@Environment(\.dismiss)` or a
+    /// `savedConfigID` binding. Called with the new config's id on success (so the parent
+    /// can flip its matched-zoom destination to the new row before the sheet animates
+    /// away) or `nil` on plain cancel.
+    private let onClose: (BackupConfig.ID?) -> Void
 
-    init(interactor: BackupConfigsAddModuleInteracting) {
+    init(
+        interactor: BackupConfigsAddModuleInteracting,
+        onClose: @escaping (BackupConfig.ID?) -> Void
+    ) {
         self.interactor = interactor
         self.canAddiCloud = interactor.canAddiCloud
+        self.onClose = onClose
     }
-    
-    func selectWebDAV(onClose: @escaping (BackupConfig.ID?) -> Void) {
+
+    func selectWebDAV() {
         destination = .webDAV(onClose: onClose)
     }
 
-    func selectS3(onClose: @escaping (BackupConfig.ID?) -> Void) {
+    func selectS3() {
         destination = .s3(onClose: onClose)
     }
 
-    /// Adds an iCloud config. Returns the new config's id on success (so the View can
-    /// write it into `savedConfigID` for the matched-zoom destination flip and dismiss
-    /// the sheet), or `nil` if iCloud was unavailable.
-    func performIcloudAdd() -> BackupConfig.ID? {
-        interactor.addiCloud()
+    func performIcloudAdd() {
+        onClose(interactor.addiCloud())
+    }
+
+    func cancel() {
+        onClose(nil)
     }
 }

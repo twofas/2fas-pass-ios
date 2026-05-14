@@ -8,18 +8,33 @@ import SwiftUI
 import Backup
 import CommonUI
 
-struct BackupConfigIcon: View {
+struct BackupServiceIcon: View {
     let kind: SyncServiceKind
-    let size: CGFloat
 
+    @Environment(\.controlSize) private var controlSize
     @Environment(\.colorScheme) private var colorScheme
 
-    init(kind: SyncServiceKind, size: CGFloat = 40) {
+    init(kind: SyncServiceKind) {
         self.kind = kind
-        self.size = size
     }
 
-    private var cornerRadius: CGFloat { 12 }
+    private var size: CGFloat {
+        switch controlSize {
+        case .mini, .small: 32
+        case .regular: 40
+        case .large, .extraLarge: 64
+        @unknown default: 40
+        }
+    }
+
+    private var cornerRadius: CGFloat {
+        switch controlSize {
+        case .mini, .small: 6
+        case .regular: 8
+        case .large, .extraLarge: 12
+        @unknown default: 8
+        }
+    }
 
     var body: some View {
         content
@@ -37,21 +52,14 @@ struct BackupConfigIcon: View {
                 .scaledToFit()
                 .frame(width: size * 0.7, height: size * 0.7)
         case .webDAV:
-//            Image(systemName: "cloud.fill")
-//                .font(.system(size: 33))
             Image(systemName: "externaldrive.fill")
                 .renderingMode(.template)
                 .font(.system(size: size * 0.5))
-//                .foregroundStyle(colorScheme == .dark ? Color.neutral950 : .neutral50)
         case .s3:
-            // AWS asset is a self-contained green tile — clip to the same corner radius.
             Image(.s3Icon)
                 .renderingMode(.template)
                 .resizable()
                 .frame(width: size * 0.5, height: size * 0.5)
-
-//                .scaledToFit()
-//                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
@@ -60,16 +68,5 @@ struct BackupConfigIcon: View {
         RoundedRectangle(cornerRadius: cornerRadius)
             .stroke(colorScheme == .dark ? .neutral800 : .neutral200, lineWidth: 0.5)
             .fill(.white)
-//        switch kind {
-//        case .iCloud:
-//            Color.white
-////                .fill(colorScheme == .dark ? .baseStatic0 : .clear)
-//        case .webDAV:
-//            Color.white
-////            RoundedRectangle(cornerRadius: cornerRadius)
-////                .fill(.accent)
-//        case .s3:
-//            Color.white
-//        }
     }
 }

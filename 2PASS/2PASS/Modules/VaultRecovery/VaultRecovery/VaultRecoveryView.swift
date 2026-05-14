@@ -31,7 +31,7 @@ struct VaultRecoveryView: View {
                     OptionButtonLabel(
                         title: Text(.restoreVaultSourceOptionIcloud),
                         subtitle: Text(.restoreVaultSourceOptionIcloudDescription),
-                        icon: { BackupConfigIcon(kind: .iCloud, size: 64) }
+                        icon: { BackupServiceIcon(kind: .iCloud).controlSize(.large) }
                     )
                 }
                 .buttonStyle(.option)
@@ -57,7 +57,7 @@ struct VaultRecoveryView: View {
                     OptionButtonLabel(
                         title: Text(.restoreVaultSourceOptionWebdav),
                         subtitle: Text(.restoreVaultSourceOptionWebdavDescription),
-                        icon: { BackupConfigIcon(kind: .webDAV, size: 64) }
+                        icon: { BackupServiceIcon(kind: .webDAV).controlSize(.large) }
                     )
                 }
                 .buttonStyle(.option)
@@ -69,7 +69,7 @@ struct VaultRecoveryView: View {
                     OptionButtonLabel(
                         title: Text(.restoreVaultSourceOptionS3),
                         subtitle: Text(.restoreVaultSourceOptionS3Description),
-                        icon: { BackupConfigIcon(kind: .s3, size: 64) }
+                        icon: { BackupServiceIcon(kind: .s3).controlSize(.large) }
                     )
                 }
                 .buttonStyle(.option)
