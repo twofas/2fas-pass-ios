@@ -316,7 +316,7 @@ private final class FakeSynchronizer: BackupSynchronizing, @unchecked Sendable {
     }
 
     let id: UUID
-    let kind: SyncServiceKind
+    let kind: BackupSyncService
     private let fallbackOutcome: BackupSyncOutcome
     private let error: BackupSyncError?
     private let workDuration: Duration
@@ -326,7 +326,7 @@ private final class FakeSynchronizer: BackupSynchronizing, @unchecked Sendable {
     /// Use `outcomes` to model "first call applies remote changes, subsequent calls are quiescent"
     /// scenarios that exercise the convergence loop.
     init(
-        kind: SyncServiceKind,
+        kind: BackupSyncService,
         outcome: BackupSyncOutcome = BackupSyncOutcome(appliedRemoteChanges: false),
         outcomes: [BackupSyncOutcome] = [],
         error: BackupSyncError? = nil,

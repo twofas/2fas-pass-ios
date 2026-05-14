@@ -36,7 +36,7 @@ import Backup
 /// ```
 struct BackupSyncSettingsDetailsForm<Content: View>: View {
 
-    private let kind: SyncServiceKind
+    private let kind: BackupSyncService
     private let title: Text
     private let onSave: () -> Void
     private let onClose: () -> Void
@@ -53,7 +53,7 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
     @State private var isAddModeDiscardAlertPresented = false
 
     init(
-        kind: SyncServiceKind,
+        kind: BackupSyncService,
         title: Text,
         onSave: @escaping () -> Void,
         onClose: @escaping () -> Void,
@@ -157,7 +157,7 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
 extension BackupSyncSettingsDetailsForm {
 
     init(
-        kind: SyncServiceKind,
+        kind: BackupSyncService,
         title: LocalizedStringResource,
         onSave: @escaping () -> Void,
         onClose: @escaping () -> Void,

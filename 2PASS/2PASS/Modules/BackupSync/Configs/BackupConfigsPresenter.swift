@@ -9,14 +9,21 @@ import SwiftUI
 import Backup
 import Common
 import CommonUI
-import Data
 
 enum BackupConfigsDestination: RouterDestination {
-    case add
+    /// `onClose` receives the new config's id on a successful save (so the presenter
+    /// can flip `savedConfigIDFromPicker` and the parent's matched-zoom destination
+    /// re-targets the new row before the sheet animates away), or `nil` on plain
+    /// cancel/dismiss. The closure is also responsible for clearing `destination`
+    /// — the picker view doesn't know it's hosted in a sheet.
+    case add(onClose: (BackupConfig.ID?) -> Void)
     case editWebDAV(configID: BackupConfig.ID)
     case editS3(configID: BackupConfig.ID)
     case removeConfirmation(name: String, onConfirm: Callback)
 
+    /// Explicit `String` id (not `Self`) because the `.add` and `.removeConfirmation`
+    /// payloads carry closures that aren't `Hashable`. Switch ignores associated
+    /// values, so cases stay distinct.
     var id: String {
         switch self {
         case .add: "add"
@@ -29,7 +36,7 @@ enum BackupConfigsDestination: RouterDestination {
 
 struct BackupConfigRowItem: Identifiable, Equatable {
     let id: BackupConfig.ID
-    let kind: SyncServiceKind
+    let kind: BackupConfig.Service
     let title: String
     let subtitle: String?
     let statusText: String
@@ -158,10 +165,22 @@ final class BackupConfigsPresenter {
 
     func onAddPressed() {
         // Clear before showing so each fresh picker open zooms from the `+` button. The
-        // picker writes back into `savedConfigIDFromPicker` only after a successful save,
-        // at which point the matched-zoom destination flips to the new row.
+        // picker's `onClose` writes back into `savedConfigIDFromPicker` only on a successful
+        // save, at which point the matched-zoom destination flips to the new row.
         savedConfigIDFromPicker = nil
-        destination = .add
+        destination = .add(onClose: { [weak self] configID in
+            guard let self else { return }
+            if let configID {
+                // Set BEFORE clearing `destination` so SwiftUI re-evaluates the sheet's
+                // `.matchedZoomDestination` with the new row's source ID before the sheet
+                // starts animating away. The `Task` defers the destination clear by one
+                // run-loop hop, giving observation a chance to propagate first.
+                self.savedConfigIDFromPicker = configID
+            }
+            Task { @MainActor [weak self] in
+                self?.destination = nil
+            }
+        })
     }
 
     func onSelect(_ row: BackupConfigRowItem) {
@@ -210,7 +229,7 @@ final class BackupConfigsPresenter {
         rows = interactor.allConfigs.reversed().map { config in
             BackupConfigRowItem(
                 id: config.id,
-                kind: config.kind,
+                kind: config.service,
                 title: title(for: config),
                 subtitle: subtitle(for: config),
                 statusText: statusText(for: config),

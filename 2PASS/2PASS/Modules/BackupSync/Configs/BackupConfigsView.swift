@@ -48,7 +48,7 @@ struct BackupConfigsView: View {
 
             ForEach(presenter.rows) { row in
                 Section {
-                    BackupConfigRowView(
+                    BackupConfigCell(
                         row: row,
                         isMenuEnabled: !presenter.isSyncing,
                         onSyncNow: { presenter.onSyncRow(row) },
@@ -128,10 +128,7 @@ struct BackupConfigsView: View {
             }
         }
         .router(
-            router: BackupConfigsRouter(
-                transitionNamespace: transitionNamespace,
-                presenter: presenter
-            ),
+            router: BackupConfigsRouter(transitionNamespace: transitionNamespace),
             destination: $presenter.destination
         )
         // Edit screens are presented as `.sheet`, which doesn't unmount this view, so
@@ -158,7 +155,7 @@ struct BackupConfigsView: View {
     }
 }
 
-private struct BackupConfigRowView: View {
+private struct BackupConfigCell: View {
     let row: BackupConfigRowItem
     let isMenuEnabled: Bool
     let onSyncNow: () -> Void
@@ -166,13 +163,15 @@ private struct BackupConfigRowView: View {
     let onRemove: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.m) {
             BackupServiceIcon(kind: row.kind)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(row.title)
+                    .lineLimit(1)
                     .foregroundStyle(.neutral950)
                     .font(.body)
+                
                 if let subtitle = row.subtitle, subtitle.isEmpty == false {
                     Text(subtitle)
                         .foregroundStyle(.neutral500)

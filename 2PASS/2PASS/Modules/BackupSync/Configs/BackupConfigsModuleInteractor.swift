@@ -5,8 +5,8 @@
 // See LICENSE file for full terms
 
 import Foundation
-import Backup
 import Data
+import Backup
 import Common
 
 @MainActor
@@ -63,18 +63,13 @@ final class BackupConfigsModuleInteractor: BackupConfigsModuleInteracting {
     }
 
     func remove(id: BackupConfig.ID) {
-        // Removing an iCloud entry triggers the container's disable side effect. The
-        // container's `saveConfigs(_:)` diff resolves the iCloud teardown path, so this
-        // is uniform across kinds.
         configsInteractor.removeConfig(id: id)
     }
 
-    func syncAll() {
-        syncTriggerInteractor.syncAll()
-    }
-
     func syncAll() async {
-        try? await syncTriggerInteractor.syncAll()
+        do {
+            try await syncTriggerInteractor.syncAll()
+        } catch {}
     }
 
     func sync(id: BackupConfig.ID) async {

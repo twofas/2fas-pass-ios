@@ -170,12 +170,12 @@ private final class FakeSynchronizer: BackupSynchronizing, @unchecked Sendable {
     }
 
     let id = UUID()
-    let kind: SyncServiceKind
+    let kind: BackupSyncService
 
     private let workDuration: Duration
     private let state = OSAllocatedUnfairLock(initialState: Recording())
 
-    init(kind: SyncServiceKind, workDuration: Duration = .zero) {
+    init(kind: BackupSyncService, workDuration: Duration = .zero) {
         self.kind = kind
         self.workDuration = workDuration
     }

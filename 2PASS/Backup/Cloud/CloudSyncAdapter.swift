@@ -15,7 +15,7 @@ import Foundation
 /// the coordinator uses to order services on each `syncAll`.
 public final class CloudSyncAdapter: BackupSynchronizing, @unchecked Sendable {
     public let id: BackupConfig.ID
-    public let kind: SyncServiceKind = .iCloud
+    public let kind: BackupSyncService = .iCloud
 
     private let cloudSync: CloudSync
     private let dateStore: BackupSyncDateStore

@@ -82,7 +82,7 @@ struct BackupConfigsAddView: View {
 }
 
 private struct BackupConfigsAddProviderCell: View {
-    let kind: SyncServiceKind
+    let kind: BackupSyncService
     let title: LocalizedStringResource
     let subtitle: LocalizedStringResource
     let action: () -> Void
@@ -90,7 +90,7 @@ private struct BackupConfigsAddProviderCell: View {
     private var showsChevron: Bool = true
 
     init(
-        kind: SyncServiceKind,
+        kind: BackupSyncService,
         title: LocalizedStringResource,
         subtitle: LocalizedStringResource,
         action: @escaping () -> Void

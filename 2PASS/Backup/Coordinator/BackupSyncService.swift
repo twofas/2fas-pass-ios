@@ -6,10 +6,10 @@
 
 import Foundation
 
-/// Discriminator for backup-sync backend kinds. Each registered backend pairs this with a
+/// Discriminator for backup-sync backend services. Each registered backend pairs this with a
 /// `UUID` instance id (see `BackupSynchronizing.id` / `BackupConfigEntry.id`); together they
 /// uniquely identify a service across launches.
-public enum SyncServiceKind: String, Hashable, Sendable, Codable {
+public enum BackupSyncService: String, Hashable, Sendable, Codable {
     case webDAV
     case s3
     case iCloud

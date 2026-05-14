@@ -45,7 +45,7 @@ import Common
 /// — is the *container's* concern (`BackupSyncContainer.acquireSyncSlot`), not this type's.
 public final class BackupSyncSession: Sendable {
 
-    public typealias SyncResult = (id: BackupConfig.ID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
+    public typealias SyncResult = (id: BackupConfig.ID, kind: BackupSyncService, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
     /// Lifecycle events emitted during a sync. Two granularities, both delivered through the
     /// same `BackupSyncContainer.syncEvents()` stream so a single subscriber can drive both
@@ -65,8 +65,8 @@ public final class BackupSyncSession: Sendable {
     public enum Event: Sendable {
         case sessionStarted
         case sessionFinished
-        case started(id: BackupConfig.ID, kind: SyncServiceKind)
-        case finished(id: BackupConfig.ID, kind: SyncServiceKind, outcome: Result<BackupSyncOutcome, BackupSyncError>)
+        case started(id: BackupConfig.ID, kind: BackupSyncService)
+        case finished(id: BackupConfig.ID, kind: BackupSyncService, outcome: Result<BackupSyncOutcome, BackupSyncError>)
     }
 
     public typealias EventHandler = @Sendable (Event) -> Void

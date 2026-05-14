@@ -17,11 +17,5 @@ public struct BackupSyncActivity: Sendable, Equatable {
     public let isRunning: Bool
     public let activeConfigIDs: Set<BackupConfig.ID>
 
-    public init(isRunning: Bool, activeConfigIDs: Set<BackupConfig.ID>) {
-        self.isRunning = isRunning
-        self.activeConfigIDs = activeConfigIDs
-    }
-
-    public static let idle = BackupSyncActivity(isRunning: false, activeConfigIDs: [])
+    static let idle = BackupSyncActivity(isRunning: false, activeConfigIDs: [])
 }
-

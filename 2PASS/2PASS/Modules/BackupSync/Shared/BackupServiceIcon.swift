@@ -9,12 +9,12 @@ import Backup
 import CommonUI
 
 struct BackupServiceIcon: View {
-    let kind: SyncServiceKind
+    let kind: BackupSyncService
 
     @Environment(\.controlSize) private var controlSize
     @Environment(\.colorScheme) private var colorScheme
 
-    init(kind: SyncServiceKind) {
+    init(kind: BackupSyncService) {
         self.kind = kind
     }
 

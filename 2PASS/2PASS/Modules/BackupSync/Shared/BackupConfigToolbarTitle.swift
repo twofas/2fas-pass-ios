@@ -9,7 +9,7 @@ import Backup
 import CommonUI
 
 struct BackupConfigToolbarTitle: ToolbarContent {
-    let kind: SyncServiceKind
+    let kind: BackupSyncService
     let title: Text
 
     var body: some ToolbarContent {
@@ -26,7 +26,7 @@ struct BackupConfigToolbarTitle: ToolbarContent {
 
 extension BackupConfigToolbarTitle {
 
-    init(kind: SyncServiceKind, title: LocalizedStringResource) {
+    init(kind: BackupSyncService, title: LocalizedStringResource) {
         self.init(kind: kind, title: Text(title))
     }
 }

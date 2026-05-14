@@ -866,7 +866,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     private static func makeService(
         id: BackupConfig.ID,
-        kind: SyncServiceKind,
+        kind: BackupSyncService,
         session: BackupFileServiceSession,
         context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,

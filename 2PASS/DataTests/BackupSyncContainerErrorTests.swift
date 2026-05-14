@@ -129,11 +129,11 @@ import os
 /// invocations within one test (failure → success transition).
 private final class ProgrammableSynchronizer: BackupSynchronizing, @unchecked Sendable {
     let id = UUID()
-    let kind: SyncServiceKind
+    let kind: BackupSyncService
 
     private let state: OSAllocatedUnfairLock<BackupSyncError?>
 
-    init(kind: SyncServiceKind, error: BackupSyncError? = nil) {
+    init(kind: BackupSyncService, error: BackupSyncError? = nil) {
         self.kind = kind
         self.state = OSAllocatedUnfairLock(initialState: error)
     }

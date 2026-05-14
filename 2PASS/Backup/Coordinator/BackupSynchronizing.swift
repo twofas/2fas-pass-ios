@@ -11,7 +11,7 @@ public protocol BackupSynchronizing: Sendable {
     var id: BackupConfig.ID { get }
     /// Backend discriminator; redundant with the entry's `Config` type parameter on disk, but
     /// needed at runtime since the coordinator works with `[any BackupSynchronizing]`.
-    var kind: SyncServiceKind { get }
+    var kind: BackupSyncService { get }
     /// `allowingAnyDeviceId` is the recovery override — when true, the local merge tolerates a
     /// vault belonging to a different device id even without the multi-device entitlement. Only
     /// recovery flows pass `true`; routine syncs always pass `false`.

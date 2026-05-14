@@ -28,7 +28,7 @@ final class BackupConfigsAddModuleInteractor: BackupConfigsAddModuleInteracting 
     }
     
     var canAddiCloud: Bool {
-        configsInteractor.allConfigs.contains { $0.kind == .iCloud } == false
+        configsInteractor.allConfigs.contains { $0.service == .iCloud } == false
     }
 
     @discardableResult

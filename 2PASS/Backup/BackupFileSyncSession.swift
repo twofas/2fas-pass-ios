@@ -10,7 +10,7 @@ import Common
 public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
 
     public let id: BackupConfig.ID
-    public let kind: SyncServiceKind
+    public let kind: BackupSyncService
     public let status: AsyncStream<BackupSyncStatus>
 
     private let statusContinuation: AsyncStream<BackupSyncStatus>.Continuation
@@ -28,7 +28,7 @@ public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
 
     public init(
         id: BackupConfig.ID,
-        kind: SyncServiceKind,
+        kind: BackupSyncService,
         service: BackupFileServiceSession,
         context: BackupSyncContext,
         vaultExporter: BackupVaultExporting,

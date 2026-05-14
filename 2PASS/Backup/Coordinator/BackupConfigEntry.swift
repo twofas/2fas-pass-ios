@@ -45,7 +45,8 @@ public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
 /// box: `ForEach(interactor.allConfigs) { ... }`.
 public enum BackupConfig: Sendable, Identifiable, Codable {
     public typealias ID = UUID
-    
+    public typealias Service = BackupSyncService
+
     case webDAV(BackupConfigEntry<BackupWebDAVConfig>)
     case s3(BackupConfigEntry<S3ServiceConfig>)
     case iCloud(BackupConfigEntry<BackupiCloudConfig>)
@@ -58,7 +59,7 @@ public enum BackupConfig: Sendable, Identifiable, Codable {
         }
     }
 
-    public var kind: SyncServiceKind {
+    public var service: Service {
         switch self {
         case .webDAV: return .webDAV
         case .s3: return .s3
