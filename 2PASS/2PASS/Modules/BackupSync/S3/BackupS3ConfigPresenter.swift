@@ -194,13 +194,7 @@ final class BackupS3ConfigPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
-                let savedID: BackupConfig.ID
-                if let configID {
-                    interactor.saveUpdate(id: configID, with: config)
-                    savedID = configID
-                } else {
-                    savedID = interactor.saveAdd(config)
-                }
+                let savedID = interactor.save(config)
                 isTesting = false
                 testTask = nil
                 onClose(savedID)

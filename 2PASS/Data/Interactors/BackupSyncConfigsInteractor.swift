@@ -8,6 +8,16 @@ import Foundation
 import Backup
 import Common
 
+public struct S3EndpointDetection: Equatable {
+    public let region: String?
+    public let bucket: String?
+
+    public init(region: String?, bucket: String?) {
+        self.region = region
+        self.bucket = bucket
+    }
+}
+
 /// CRUD-style access to the backup-sync configs, plus a connection probe used to validate a
 /// config before persisting it. Persistence reads/writes go straight to `MainRepository` —
 /// orchestrated sync lives in `BackupSyncTriggerInteracting`. The probe is included here
@@ -58,15 +68,27 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     /// folded into success).
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
+
+    /// Best-effort parse of standard AWS S3 endpoint shapes. Returns `nil` for non-AWS hosts
+    /// since S3-compatible providers (MinIO, Backblaze, R2) use ad-hoc URL shapes that aren't
+    /// reliable to auto-parse. Input is normalized first (whitespace trim, scheme add, host
+    /// lowercase) so the detection accepts permissive user typing.
+    func detectS3Endpoint(_ endpoint: String) -> S3EndpointDetection?
 }
 
 final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
     private let mainRepository: MainRepository
     private let currentDateInteractor: CurrentDateInteracting
+    private let uriInteractor: URIInteracting
 
-    init(mainRepository: MainRepository, currentDateInteractor: CurrentDateInteracting) {
+    init(
+        mainRepository: MainRepository,
+        currentDateInteractor: CurrentDateInteracting,
+        uriInteractor: URIInteracting
+    ) {
         self.mainRepository = mainRepository
         self.currentDateInteractor = currentDateInteractor
+        self.uriInteractor = uriInteractor
     }
 
     var allConfigs: [BackupConfig] {
@@ -134,5 +156,54 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
 
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError) {
         try await mainRepository.backupSyncContainer.testConnection(config: config)
+    }
+
+    func detectS3Endpoint(_ endpoint: String) -> S3EndpointDetection? {
+        guard let url = uriInteractor.normalizeURL(endpoint),
+              let host = url.host()
+        else { return nil }
+
+        let labels = host.split(separator: ".")
+        guard labels.count >= 2,
+              labels.suffix(2).joined(separator: ".") == "amazonaws.com"
+        else { return nil }
+
+        let core = Array(labels.dropLast(2))
+        var region: String?
+        var bucket: String?
+
+        switch core {
+        case ["s3"]:
+            // s3.amazonaws.com — legacy global, defaults to us-east-1
+            region = "us-east-1"
+        case let labels where labels.first == "s3" && labels.count >= 2:
+            // s3.<region>.amazonaws.com
+            region = String(labels[1])
+        case let labels where labels.count == 1 && labels[0].hasPrefix("s3-"):
+            // s3-<region>.amazonaws.com (legacy hyphen)
+            region = String(labels[0].dropFirst(3))
+        case let labels where labels.count >= 2 && labels[1] == "s3":
+            // <bucket>.s3[.<region>].amazonaws.com
+            bucket = String(labels[0])
+            region = labels.count >= 3 ? String(labels[2]) : "us-east-1"
+        case let labels where labels.count == 2 && labels[1].hasPrefix("s3-"):
+            // <bucket>.s3-<region>.amazonaws.com (legacy hyphen + bucket)
+            bucket = String(labels[0])
+            region = String(labels[1].dropFirst(3))
+        default:
+            break
+        }
+
+        // Path-style endpoints carry the bucket as the first path segment.
+        if bucket == nil {
+            let firstPathSegment = url.path()
+                .split(separator: "/")
+                .first { !$0.isEmpty }
+            if let firstPathSegment {
+                bucket = String(firstPathSegment)
+            }
+        }
+
+        return S3EndpointDetection(region: region, bucket: bucket)
     }
 }

@@ -8,18 +8,11 @@ import Foundation
 import Backup
 import Data
 
-struct S3EndpointDetection: Equatable {
-    let region: String?
-    let bucket: String?
-}
-
 @MainActor
 protocol BackupS3ConfigModuleInteracting: AnyObject {
     var existingConfig: S3ServiceConfig? { get }
     func testConnection(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
-    @discardableResult
-    func saveAdd(_ config: S3ServiceConfig) -> BackupConfig.ID
-    func saveUpdate(id: BackupConfig.ID, with config: S3ServiceConfig)
+    @discardableResult func save(_ config: S3ServiceConfig) -> BackupConfig.ID
     func detect(endpoint: String) -> S3EndpointDetection?
     func normalize(endpoint: String) -> URL?
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
@@ -61,18 +54,18 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
         try await configsInteractor.test(config)
     }
 
-    func saveAdd(_ config: S3ServiceConfig) -> BackupConfig.ID {
-        let id = configsInteractor.addS3Config(config)
+    func save(_ config: S3ServiceConfig) -> BackupConfig.ID {
+        let id: BackupConfig.ID
+        if let configID {
+            configsInteractor.updateS3Config(id: configID, with: config)
+            id = configID
+        } else {
+            id = configsInteractor.addS3Config(config)
+        }
         // Initial sync so the row immediately reflects "Syncing…" → "Last synced …"
         // instead of waiting for the next post-mutation `syncAll`.
         Task { try? await syncTriggerInteractor.sync(id: id) }
         return id
-    }
-
-    func saveUpdate(id: BackupConfig.ID, with config: S3ServiceConfig) {
-        configsInteractor.updateS3Config(id: id, with: config)
-        
-        Task { try? await syncTriggerInteractor.sync(id: id) }
     }
 
     /// Canonicalizes the endpoint string the same way URIInteractor does for the rest of the app:
@@ -83,57 +76,8 @@ final class BackupS3ConfigModuleInteractor: BackupS3ConfigModuleInteracting {
         uriInteractor.normalizeURL(endpoint)
     }
 
-    /// Best-effort parse of standard AWS S3 endpoint shapes. Returns `nil` for non-AWS hosts
-    /// since S3-compatible providers (MinIO, Backblaze, R2) use ad-hoc URL shapes that aren't
-    /// reliable to auto-parse. Input is normalized first (whitespace trim, scheme add, host
-    /// lowercase) so the detection accepts permissive user typing.
     func detect(endpoint: String) -> S3EndpointDetection? {
-        guard let url = uriInteractor.normalizeURL(endpoint),
-              let host = url.host()
-        else { return nil }
-
-        let labels = host.split(separator: ".")
-        guard labels.count >= 2,
-              labels.suffix(2).joined(separator: ".") == "amazonaws.com"
-        else { return nil }
-
-        let core = Array(labels.dropLast(2))
-        var region: String?
-        var bucket: String?
-
-        switch core {
-        case ["s3"]:
-            // s3.amazonaws.com — legacy global, defaults to us-east-1
-            region = "us-east-1"
-        case let labels where labels.first == "s3" && labels.count >= 2:
-            // s3.<region>.amazonaws.com
-            region = String(labels[1])
-        case let labels where labels.count == 1 && labels[0].hasPrefix("s3-"):
-            // s3-<region>.amazonaws.com (legacy hyphen)
-            region = String(labels[0].dropFirst(3))
-        case let labels where labels.count >= 2 && labels[1] == "s3":
-            // <bucket>.s3[.<region>].amazonaws.com
-            bucket = String(labels[0])
-            region = labels.count >= 3 ? String(labels[2]) : "us-east-1"
-        case let labels where labels.count == 2 && labels[1].hasPrefix("s3-"):
-            // <bucket>.s3-<region>.amazonaws.com (legacy hyphen + bucket)
-            bucket = String(labels[0])
-            region = String(labels[1].dropFirst(3))
-        default:
-            break
-        }
-
-        // Path-style endpoints carry the bucket as the first path segment.
-        if bucket == nil {
-            let firstPathSegment = url.path()
-                .split(separator: "/")
-                .first { !$0.isEmpty }
-            if let firstPathSegment {
-                bucket = String(firstPathSegment)
-            }
-        }
-
-        return S3EndpointDetection(region: region, bucket: bucket)
+        configsInteractor.detectS3Endpoint(endpoint)
     }
 
     /// Parses an AWS-exported access keys CSV (header row: `Access key ID,Secret access key`).
