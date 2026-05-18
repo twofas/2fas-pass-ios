@@ -142,9 +142,6 @@ private final class Bridge: @unchecked Sendable {
             self.evaluateTerminalState(state)
         }
 
-        // Pre-check: if already in a terminal state, resume now — the state-change handler
-        // won't fire because the state isn't changing.
-        evaluateTerminalState(cloudSync.currentState)
         if isResumed { return }
 
         if allowingAnyDeviceId {
