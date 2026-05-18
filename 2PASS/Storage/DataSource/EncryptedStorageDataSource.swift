@@ -75,7 +75,8 @@ public protocol EncryptedStorageDataSource: AnyObject {
         updatedAt: Date
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
-    
+    func markVaultContentModified(_ vaultID: VaultID)
+
     // MARK: Deleted Items
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)

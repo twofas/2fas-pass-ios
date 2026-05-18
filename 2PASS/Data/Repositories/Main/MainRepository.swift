@@ -543,6 +543,7 @@ protocol MainRepository: AnyObject {
         updatedAt: Date
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
+    func markVaultContentModified(vaultID: VaultID)
     func selectVault(_ vaultID: VaultID)
     func clearVault()
     func deleteAllVaults()

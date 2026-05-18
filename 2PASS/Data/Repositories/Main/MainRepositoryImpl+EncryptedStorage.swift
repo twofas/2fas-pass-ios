@@ -150,7 +150,11 @@ extension MainRepositoryImpl {
     func deleteEncryptedVault(_ vaultID: VaultID) {
         encryptedStorage.deleteEncryptedVault(vaultID)
     }
-    
+
+    func markVaultContentModified(vaultID: VaultID) {
+        encryptedStorage.markVaultContentModified(vaultID)
+    }
+
     func saveEncryptedStorage() {
         Log("Save Encrypted Storage", module: .mainRepository)
         encryptedStorage.save()

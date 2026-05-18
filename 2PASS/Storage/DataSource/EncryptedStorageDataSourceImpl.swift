@@ -391,7 +391,7 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         coreDataStack.save()
     }
 
-    private func markVaultContentModified(_ vaultID: VaultID) {
+    public func markVaultContentModified(_ vaultID: VaultID) {
         VaultEncryptedEntity.setContentModificationDate(on: context, vaultID: vaultID, date: Date())
     }
 }

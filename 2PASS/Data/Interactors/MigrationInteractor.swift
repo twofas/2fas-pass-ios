@@ -74,7 +74,13 @@ final class MigrationInteractor: MigrationInteracting {
         if lastKnownAppVersion?.compare("1.8.0", options: .numeric) == .orderedAscending {
             mainRepository.removeDuplicatedDeletedItems()
         }
-        
+
+        if lastKnownAppVersion?.compare("1.9.0", options: .numeric) == .orderedAscending {
+            for vault in mainRepository.listEncryptedVaults() {
+                mainRepository.markVaultContentModified(vaultID: vault.vaultID)
+            }
+        }
+
         mainRepository.saveEncryptedStorage()
 
         mainRepository.setLastKnownAppVersion(appVersion)
