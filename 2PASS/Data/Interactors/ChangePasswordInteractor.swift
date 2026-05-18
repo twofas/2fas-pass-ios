@@ -75,25 +75,25 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
     /// the flag, and `BackupSyncAdapter` clears each id only when the matching sync
     /// reported `consumed.overwritingVault`.
     private func scheduleBackupSyncAfterPasswordChange() {
-        syncTriggerInteractor.markAllServicesAwaitingVaultOverride()
-
-        // Fire-and-forget cancel/wait/retry. The Bool that used to live on
-        // `MainModuleInteractor` as `awaitsSyncRetryAfterPasswordChange` is gone; the wait
-        // condition is now an async loop bound to this task's local frame. Captures only
-        // `syncTriggerInteractor` (app-lifetime) — no `self` retention, no instance state.
+        // Fire-and-forget cancel/wait/mark/retry. Captures only `syncTriggerInteractor`
+        // (app-lifetime) — no `self` retention, no instance state.
         Task { @MainActor [syncTriggerInteractor] in
             if syncTriggerInteractor.currentActivity.isRunning {
                 // Cancel the in-flight sync — it captured pre-password-change providers and is
-                // pushing stale-encryption data we need to overwrite. Cancellation throws
-                // inside `BackupFileSyncSession.performSync` before its success branch calls
-                // `dateStore.setLastSyncDate(...)`, so the override flag we just marked
-                // survives. Then await the activity transition to idle before retrying.
+                // pushing stale-encryption data we need to overwrite. Then await the activity
+                // transition to idle before marking and retrying.
                 syncTriggerInteractor.cancelCurrentSync()
                 for await _ in syncTriggerInteractor.syncEvents() {
                     if !syncTriggerInteractor.currentActivity.isRunning { break }
                 }
             }
-            try? await syncTriggerInteractor.syncAll()
+            // Mark AFTER the prior sync (if any) has finished/cancelled. If we marked
+            // synchronously before spawning the Task, a sync from a previous password
+            // change could complete successfully and consume the shared flag before our
+            // syncAll() runs — leaving our sync without the overwrite flag set and
+            // causing a merge attempt against a vault encrypted under the old key.
+            syncTriggerInteractor.markAllServicesAwaitingVaultOverride()
+            _ = try? await syncTriggerInteractor.syncAll()
         }
     }
 }
