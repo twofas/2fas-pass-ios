@@ -70,6 +70,14 @@ protocol UserDefaultsDataSource: AnyObject {
     /// WebDAV config into the new `backupConfigsBlob` list and then clear this slot.
     var legacyWebDAVSavedConfig: Data? { get }
     func clearLegacyWebDAVSavedConfig()
+
+    /// Legacy iCloud-enabled flag, retained read-only so migration code can detect a
+    /// pre-multi-config user who had iCloud sync turned on. Backed by the same UserDefaults
+    /// key the Backup module's `ConstStorage.cloudEnabled` writes to
+    /// (`Backup/Cloud/ConstStorage.swift`, key `"KeyCloudEnabled"`). No clear pair: the
+    /// runtime `CloudHandler` in 1.9.0 still uses the same key as its enabled-state, so
+    /// migration reads it but never mutates it.
+    var legacyCloudEnabled: Bool { get }
     
     var webDAVIsConnected: Bool { get }
     func webDAVSetIsConnected(_ isConnected: Bool)

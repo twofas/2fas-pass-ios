@@ -52,6 +52,7 @@ final class UserDefaultsDataSourceImpl {
         case screenCaptureAllowedUntil
         case shareLinkConfig
         case deviceName
+        case legacyCloudEnabled = "KeyCloudEnabled"
     }
     
     private let userDefaults = UserDefaults()
@@ -262,6 +263,13 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     func clearBackupConfigsBlob() {
         userDefaults.setValue(nil, forKey: Keys.backupConfigsBlob.rawValue)
         userDefaults.synchronize()
+    }
+
+    var legacyCloudEnabled: Bool {
+        // Raw string key, not a `Keys` enum case: the value is owned by the Backup module's
+        // `ConstStorage` (internal scope, key `"KeyCloudEnabled"`). Duplicating the literal
+        // here avoids widening Backup's public surface just for a one-shot migration read.
+        userDefaults.bool(forKey: Keys.legacyCloudEnabled.rawValue)
     }
 
     var legacyWebDAVSavedConfig: Data? {

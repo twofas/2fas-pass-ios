@@ -748,12 +748,19 @@ protocol MainRepository: AnyObject {
     func loadLastSyncDates() -> [BackupConfig.ID: Date]
     func saveLastSyncDates(_ dates: [BackupConfig.ID: Date])
 
-    /// Legacy single-config accessor, retained for one-shot migration into the new
-    /// `loadBackupConfigs` list. Decrypts and decodes the pre-multi-config blob if present.
-    /// Returns `nil` once `clearLegacyWebDAVSavedConfig()` has been called or no legacy blob
-    /// was ever stored.
-    var legacyWebDAVSavedConfig: BackupWebDAVConfig? { get }
-    func clearLegacyWebDAVSavedConfig()
+    /// One-shot upgrade hook that lifts the pre-multi-config single-config state (WebDAV blob
+    /// and/or iCloud-enabled flag) into the new `[BackupConfig]` list. Called once from
+    /// `MigrationInteractor` on the 1.9.0 upgrade path. Single load + single save: both
+    /// kinds are read, merged, and written in one round-trip through the encrypted
+    /// persistence pipeline.
+    ///
+    /// Idempotency:
+    /// - WebDAV side: clearing `legacyWebDAVSavedConfig` after migration makes subsequent
+    ///   reads return `nil`, so the WebDAV branch short-circuits on re-runs.
+    /// - iCloud side: the legacy `cloudEnabled` flag is **not** cleared (CloudHandler in
+    ///   1.9.0 still reads it as its runtime enabled-state). Re-runs rely on the
+    ///   per-version gate plus a defensive `configs.hasICloud` dedupe.
+    func migrateLegacyBackupConfigs()
 
     /// In-memory cache of the last-validated S3 / WebDAV recovery-form config. The cache
     /// owns the full encode-and-encrypt-at-rest pipeline (JSON + AES-GCM under the

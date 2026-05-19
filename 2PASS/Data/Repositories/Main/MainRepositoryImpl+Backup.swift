@@ -142,6 +142,39 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.clearLegacyWebDAVSavedConfig()
     }
 
+    func migrateLegacyBackupConfigs() {
+        let legacyWebDAV = legacyWebDAVSavedConfig
+        let legacyiCloudEnabled = userDefaultsDataSource.legacyCloudEnabled
+
+        // Short-circuit when there's nothing to migrate. Avoids a `loadBackupConfigs`
+        // decrypt round-trip on the common post-migration / fresh-install paths.
+        guard legacyWebDAV != nil || legacyiCloudEnabled else { return }
+
+        var configs = loadBackupConfigs()
+        var dirty = false
+
+        if let legacyWebDAV, configs.webDAVEntries.isEmpty {
+            configs.append(.webDAV(BackupConfigEntry(id: BackupConfig.ID(), createdAt: Date(), config: legacyWebDAV)))
+            dirty = true
+        }
+
+        if legacyiCloudEnabled, !configs.hasICloud {
+            configs.append(.iCloud(BackupConfigEntry(id: BackupConfig.ID(), createdAt: Date(), config: BackupiCloudConfig())))
+            dirty = true
+        }
+
+        if dirty {
+            saveBackupConfigs(configs)
+        }
+
+        // Always clear the WebDAV blob if it was present, even when dedupe skipped the
+        // append — clearing is the WebDAV migration's idempotency mechanism for future runs.
+        // The iCloud flag stays put on purpose: `CloudHandler.isEnabled` still reads it.
+        if legacyWebDAV != nil {
+            clearLegacyWebDAVSavedConfig()
+        }
+    }
+
     // MARK: - Recovery form cache (in-memory)
     //
     // Owns the full encode-and-encrypt pipeline for the user's last-validated S3 / WebDAV

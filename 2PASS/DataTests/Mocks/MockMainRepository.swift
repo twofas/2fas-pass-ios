@@ -2595,6 +2595,12 @@ final class MockMainRepository: MainRepository {
         stubbedLegacyWebDAVSavedConfig = nil
     }
 
+    var migrateLegacyBackupConfigsCallCount = 0
+    func migrateLegacyBackupConfigs() {
+        recordCall()
+        migrateLegacyBackupConfigsCallCount += 1
+    }
+
     var stubbedCachedS3RecoveryConfig: S3ServiceConfig?
     var cachedS3RecoveryConfig: S3ServiceConfig? {
         recordCall()
