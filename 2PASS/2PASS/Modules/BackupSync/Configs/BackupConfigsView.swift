@@ -76,6 +76,7 @@ struct BackupConfigsView: View {
                                 ProgressView()
                                     .controlSize(.mini)
                             }
+                            
                             Text(item.statusText)
                         }
                     }

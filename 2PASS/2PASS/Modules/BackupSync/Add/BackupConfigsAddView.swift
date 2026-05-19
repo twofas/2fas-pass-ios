@@ -22,9 +22,7 @@ struct BackupConfigsAddView: View {
                 HeaderContentView(
                     title: Text(.backupConfigsProviderPickerTitle),
                     subtitle: Text(.backupConfigsProviderPickerSubtitle),
-                    icon: {
-                        Image(systemName: "externaldrive.fill.badge.timemachine")
-                    }
+                    icon: Image(systemName: "externaldrive.fill.badge.timemachine")
                 )
                 .padding(.vertical, Spacing.l)
 
@@ -34,7 +32,7 @@ struct BackupConfigsAddView: View {
                             kind: .iCloud,
                             title: .backupConfigsProviderIcloud,
                             subtitle: .backupConfigsProviderIcloudDescription,
-                            action: { presenter.selectIcloud() }
+                            action: presenter.selectIcloud
                         )
                         .hideChevron()
                     }
@@ -43,7 +41,7 @@ struct BackupConfigsAddView: View {
                         kind: .webDAV,
                         title: .backupConfigsProviderWebdav,
                         subtitle: .backupConfigsProviderWebdavDescription,
-                        action: { presenter.selectWebDAV() }
+                        action: presenter.selectWebDAV
                     )
                     .matchedZoomSource(id: BackupConfigsAddRouter.webDAVSourceID, in: transitionNamespace)
                     
@@ -51,7 +49,7 @@ struct BackupConfigsAddView: View {
                         kind: .s3,
                         title: .backupConfigsProviderS3,
                         subtitle: .backupConfigsProviderS3Description,
-                        action: { presenter.selectS3() }
+                        action: presenter.selectS3
                     )
                     .matchedZoomSource(id: BackupConfigsAddRouter.s3SourceID, in: transitionNamespace)
                 }
@@ -60,11 +58,11 @@ struct BackupConfigsAddView: View {
                 Spacer()
             }
             .padding(.horizontal, Spacing.xl)
-            .background(background)
             .readableContentMargins()
+            .background(background)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    ToolbarCancelButton { presenter.cancel() }
+                    ToolbarCancelButton(action: presenter.cancel)
                 }
             }
             .router(
