@@ -10,7 +10,7 @@ import CommonUI
 
 struct VaultRecoveryRouter: Router {
 
-    var transitionNamespace: Namespace.ID?
+    let transitionNamespace: Namespace.ID?
 
     static let iCloudSourceID = "vaultRecovery.source.iCloud"
     static let webDAVSourceID = "vaultRecovery.source.webDAV"
