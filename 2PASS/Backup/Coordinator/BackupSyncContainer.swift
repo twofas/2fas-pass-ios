@@ -699,6 +699,21 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
+    /// Fire-and-forget overload. Triggers a single-config sync at background (`.utility`)
+    /// priority and returns immediately — use this from any non-async site that just wants
+    /// "propagate this one backend when convenient" without managing a `Task` itself. Spawns
+    /// a detached task internally: no caller actor isolation, no priority inheritance, no
+    /// task-local inheritance — sync work stays explicitly off the caller's executor.
+    ///
+    /// Use the `async` overload below when you need to observe the outcome or have caller-task
+    /// cancellation propagate. Cross-client cancellation works for both forms via
+    /// `cancelSync(id:)` / `cancelCurrentSync()`.
+    public func sync(_ id: BackupConfig.ID) {
+        Task.detached(priority: .utility) { [weak self] in
+            try? await self?.sync(id)
+        }
+    }
+
     /// Runs only the backend with the given id through a single-service `BackupSyncSession`.
     /// Returns silently when no service matches the id (defensive — caller should have just
     /// resolved this id from the configs) or when the run succeeds. Throws on actual failure

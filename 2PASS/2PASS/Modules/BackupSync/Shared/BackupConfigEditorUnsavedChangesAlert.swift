@@ -15,12 +15,12 @@ extension View {
     /// the Cancel button dismisses the alert.
     ///
     /// ```
-    /// .backupConfigUnsavedChangesAlert(isPresented: $isPresented) {
+    /// .backupConfigEditorUnsavedChangesAlert(isPresented: $isPresented) {
     ///     hideKeyboard()
     ///     presenter.close()
     /// }
     /// ```
-    func backupConfigUnsavedChangesAlert(
+    func backupConfigEditorUnsavedChangesAlert(
         isPresented: Binding<Bool>,
         onDiscard: @escaping () -> Void
     ) -> some View {

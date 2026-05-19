@@ -7,15 +7,15 @@
 import SwiftUI
 import CommonUI
 
-struct BackupS3ConfigView: View {
+struct BackupWebDAVConfigEditorView: View {
 
     @State
-    var presenter: BackupS3ConfigPresenter
+    var presenter: BackupWebDAVConfigEditorPresenter
 
     var body: some View {
-        BackupSyncSettingsDetailsForm(
-            kind: .s3,
-            title: .backupConfigsRowS3Title,
+        BackupConfigEditorForm(
+            kind: .webDAV,
+            title: .backupConfigsRowWebdavTitle,
             onSave: {
                 hideKeyboard()
                 presenter.onSave()
@@ -25,20 +25,15 @@ struct BackupS3ConfigView: View {
                 presenter.close()
             }
         ) {
-            S3FormFields(
-                endpoint: $presenter.endpoint,
-                region: $presenter.region,
-                bucket: $presenter.bucket,
-                accessKeyId: $presenter.accessKeyId,
-                secretAccessKey: $presenter.secretAccessKey,
-                allowTLSOff: $presenter.allowTLSOff,
-                onLoadFromCSV: { presenter.onLoadFromCSV() }
+            WebDAVFormFields(
+                url: $presenter.url,
+                username: $presenter.username,
+                password: $presenter.password,
+                allowTLSOff: $presenter.allowTLSOff
             )
-            .formFieldChanged(endpoint: presenter.endpointChanged)
-            .formFieldChanged(region: presenter.regionChanged)
-            .formFieldChanged(bucket: presenter.bucketChanged)
-            .formFieldChanged(accessKeyId: presenter.accessKeyIdChanged)
-            .formFieldChanged(secretAccessKey: presenter.secretAccessKeyChanged)
+            .formFieldChanged(url: presenter.urlChanged)
+            .formFieldChanged(username: presenter.usernameChanged)
+            .formFieldChanged(password: presenter.passwordChanged)
             .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
         }
         .editMode(presenter.isEditMode)
@@ -48,7 +43,7 @@ struct BackupS3ConfigView: View {
         .disabled(presenter.isTesting)
         .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
         .sensoryFeedback(.error, trigger: presenter.failureFeedbackTrigger)
-        .router(router: BackupS3ConfigRouter(), destination: $presenter.destination)
+        .router(router: BackupWebDAVConfigEditorRouter(), destination: $presenter.destination)
         .onAppear {
             presenter.onAppear()
         }
@@ -60,8 +55,4 @@ struct BackupS3ConfigView: View {
     private func hideKeyboard() {
         UIApplication.shared.hideKeyboard()
     }
-}
-
-#Preview {
-    BackupS3ConfigRouter.buildView(configID: nil)
 }

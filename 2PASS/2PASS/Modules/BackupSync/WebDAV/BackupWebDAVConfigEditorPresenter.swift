@@ -10,7 +10,7 @@ import Backup
 import Common
 import CommonUI
 
-enum BackupWebDAVConfigDestination: RouterDestination {
+enum BackupWebDAVConfigEditorDestination: RouterDestination {
     case errorAlert(message: String)
 
     var id: String {
@@ -21,7 +21,7 @@ enum BackupWebDAVConfigDestination: RouterDestination {
 }
 
 @Observable @MainActor
-final class BackupWebDAVConfigPresenter {
+final class BackupWebDAVConfigEditorPresenter {
 
     var url: String = ""
     var allowTLSOff = false
@@ -56,11 +56,11 @@ final class BackupWebDAVConfigPresenter {
         }
         return true
     }
-    var destination: BackupWebDAVConfigDestination?
+    var destination: BackupWebDAVConfigEditorDestination?
 
     let isEditMode: Bool
 
-    private let interactor: BackupWebDAVConfigModuleInteracting
+    private let interactor: BackupWebDAVConfigEditorModuleInteracting
     private let configID: BackupConfig.ID?
     /// Called on save (with the saved config's id) or programmatic close (with `nil`).
     /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
@@ -74,7 +74,7 @@ final class BackupWebDAVConfigPresenter {
     @ObservationIgnored
     private var originalSnapshot: BackupWebDAVConfig?
 
-    init(interactor: BackupWebDAVConfigModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
+    init(interactor: BackupWebDAVConfigEditorModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose
@@ -154,13 +154,7 @@ final class BackupWebDAVConfigPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
-                let savedID: BackupConfig.ID
-                if let configID {
-                    interactor.saveUpdate(id: configID, with: config)
-                    savedID = configID
-                } else {
-                    savedID = interactor.saveAdd(config)
-                }
+                let savedID = interactor.save(config)
                 isTesting = false
                 testTask = nil
                 onClose(savedID)

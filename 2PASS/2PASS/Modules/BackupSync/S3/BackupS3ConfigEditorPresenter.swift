@@ -10,20 +10,20 @@ import Backup
 import Common
 import CommonUI
 
-enum BackupS3ConfigDestination: RouterDestination {
+enum BackupS3ConfigEditorDestination: RouterDestination {
     case errorAlert(message: String)
-    case loadFromCSV(onClose: (FileImportResult) -> Void)
+    case loadSecretsFromCSV(onClose: (FileImportResult) -> Void)
 
     var id: String {
         switch self {
         case .errorAlert: "errorAlert"
-        case .loadFromCSV: "loadFromCSV"
+        case .loadSecretsFromCSV: "loadSecretsFromCSV"
         }
     }
 }
 
 @Observable @MainActor
-final class BackupS3ConfigPresenter {
+final class BackupS3ConfigEditorPresenter {
 
     var endpoint: String = "" {
         didSet { autofillFromAWSEndpoint() }
@@ -74,11 +74,11 @@ final class BackupS3ConfigPresenter {
         }
         return true
     }
-    var destination: BackupS3ConfigDestination?
+    var destination: BackupS3ConfigEditorDestination?
 
     let isEditMode: Bool
 
-    private let interactor: BackupS3ConfigModuleInteracting
+    private let interactor: BackupS3ConfigEditorModuleInteracting
     private let configID: BackupConfig.ID?
     /// Called on save (with the saved config's id) or programmatic close (with `nil`).
     /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
@@ -99,7 +99,7 @@ final class BackupS3ConfigPresenter {
     @ObservationIgnored
     private var originalSnapshot: S3ServiceConfig?
 
-    init(interactor: BackupS3ConfigModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
+    init(interactor: BackupS3ConfigEditorModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose
@@ -225,7 +225,7 @@ final class BackupS3ConfigPresenter {
     }
 
     func onLoadFromCSV() {
-        destination = .loadFromCSV(onClose: { [weak self] result in
+        destination = .loadSecretsFromCSV(onClose: { [weak self] result in
             self?.handleCSVImport(result)
         })
     }

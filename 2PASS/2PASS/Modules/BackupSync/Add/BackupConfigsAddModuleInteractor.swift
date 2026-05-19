@@ -28,17 +28,17 @@ final class BackupConfigsAddModuleInteractor: BackupConfigsAddModuleInteracting 
     }
     
     var canAddiCloud: Bool {
-        configsInteractor.allConfigs.contains { $0.service == .iCloud } == false
+        configsInteractor.canAddiCloud
     }
 
     @discardableResult
     func addiCloud() -> BackupConfig.ID? {
-        // Persisting the iCloud config is the enable signal — the container's
-        // `saveConfigs(_:)` diff calls `cloudSync.enable()` internally. After enable, kick
-        // an initial sync so any existing local vault state is pushed up to iCloud
-        // immediately rather than waiting for the next post-mutation `syncAll`.
         guard let id = configsInteractor.addiCloudConfig() else { return nil }
-        Task { try? await syncTriggerInteractor.sync(id: id) }
+        
+        Task {
+            try await syncTriggerInteractor.sync(id: id)
+        }
+        
         return id
     }
 }

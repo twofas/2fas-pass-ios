@@ -8,12 +8,17 @@ import SwiftUI
 import Backup
 import CommonUI
 
+private struct Constants {
+    static let emptyStateOffsetDivisor: CGFloat = 2.1
+}
+
 struct BackupConfigsView: View {
 
     @State
     var presenter: BackupConfigsPresenter
 
     @Namespace private var transitionNamespace
+    
     @State private var headerBottomY: CGFloat = 0
     @State private var formSize: CGSize = .zero
 
@@ -46,31 +51,32 @@ struct BackupConfigsView: View {
                 .animation(.default, value: presenter.isSyncing)
             }
 
-            ForEach(presenter.rows) { row in
+            ForEach(presenter.configs) { item in
                 Section {
                     BackupConfigCell(
-                        row: row,
+                        item: item,
                         isMenuEnabled: !presenter.isSyncing,
-                        onSyncNow: { presenter.onSyncRow(row) },
-                        onEdit: { presenter.onSelect(row) },
-                        onRemove: { presenter.onDelete(row) }
+                        onSyncNow: { presenter.onSyncRow(item) },
+                        onEdit: { presenter.onSelect(item) },
+                        onRemove: { presenter.onDelete(item) }
                     )
                     .matchedZoomSource(
-                        id: BackupConfigsRouter.editSourceID(for: row.id),
+                        id: BackupConfigsRouter.editSourceID(for: item.id),
                         in: transitionNamespace
                     )
                 } footer: {
-                    VStack(alignment: .leading, spacing: 4) {
-                        if let errorText = row.errorText {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        if let errorText = item.errorText {
                             Text(errorText)
                                 .foregroundStyle(.danger500)
                         }
-                        HStack(spacing: 6) {
-                            if row.isSyncing {
+                        
+                        HStack(spacing: Spacing.s) {
+                            if item.isSyncing {
                                 ProgressView()
                                     .controlSize(.mini)
                             }
-                            Text(row.statusText)
+                            Text(item.statusText)
                         }
                     }
                     .settingsFooter()
@@ -102,12 +108,12 @@ struct BackupConfigsView: View {
             if presenter.isEmpty {
                 EmptyListView(.backupConfigsEmptyDescription)
                     .listRowBackground(Color.clear)
-                    .position(x: formSize.width / 2, y: headerBottomY + (formSize.height - headerBottomY) / 2.1)
+                    .position(x: formSize.width / 2, y: headerBottomY + (formSize.height - headerBottomY) / Constants.emptyStateOffsetDivisor)
                     .ignoresSafeArea()
             }
         }
         .contentMargins(.bottom, Spacing.l, for: .scrollContent)
-        .animation(.default, value: presenter.rows)
+        .animation(.default, value: presenter.configs)
         .onAppear {
             presenter.onAppear()
         }
@@ -131,15 +137,6 @@ struct BackupConfigsView: View {
             router: BackupConfigsRouter(transitionNamespace: transitionNamespace),
             destination: $presenter.destination
         )
-        // Edit screens are presented as `.sheet`, which doesn't unmount this view, so
-        // `.onAppear` doesn't fire on dismissal. Refresh the rows when the destination
-        // clears so edited configs become visible. (Add flows are handled inside the picker
-        // sheet and trigger reload via `BackupConfigsDidChange` notification instead.)
-        .onChange(of: presenter.destination?.id) { _, newValue in
-            if newValue == nil {
-                presenter.onAppear()
-            }
-        }
     }
 
     private var addButton: some View {
@@ -156,7 +153,7 @@ struct BackupConfigsView: View {
 }
 
 private struct BackupConfigCell: View {
-    let row: BackupConfigRowItem
+    let item: BackupConfigCellItem
     let isMenuEnabled: Bool
     let onSyncNow: () -> Void
     let onEdit: () -> Void
@@ -164,15 +161,15 @@ private struct BackupConfigCell: View {
 
     var body: some View {
         HStack(spacing: Spacing.m) {
-            BackupServiceIcon(kind: row.kind)
+            BackupServiceIcon(kind: item.kind)
 
             VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text(row.title)
+                Text(item.title)
                     .lineLimit(1)
                     .foregroundStyle(.neutral950)
                     .font(.body)
                 
-                if let subtitle = row.subtitle, subtitle.isEmpty == false {
+                if let subtitle = item.subtitle, subtitle.isEmpty == false {
                     Text(subtitle)
                         .foregroundStyle(.neutral500)
                         .font(.footnote)
@@ -193,7 +190,7 @@ private struct BackupConfigCell: View {
                     }
                 }
 
-                if row.kind != .iCloud {
+                if item.kind != .iCloud {
                     Button {
                         onEdit()
                     } label: {

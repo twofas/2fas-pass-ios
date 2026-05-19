@@ -19,7 +19,7 @@ import CommonUI
 /// iPad popover stays anchored to the toolbar cancel button.
 ///
 /// ```
-/// BackupConfigCancelItem(
+/// BackupConfigEditorCancelItem(
 ///     hasUnsavedChanges: presenter.hasUnsavedChanges,
 ///     isConfirmationPresented: $isDiscardConfirmationPresented
 /// ) {
@@ -27,7 +27,7 @@ import CommonUI
 ///     dismiss()
 /// }
 /// ```
-struct BackupConfigCancelItem: ToolbarContent {
+struct BackupConfigEditorCancelItem: ToolbarContent {
 
     private let hasUnsavedChanges: Bool
     @Binding private var isConfirmationPresented: Bool

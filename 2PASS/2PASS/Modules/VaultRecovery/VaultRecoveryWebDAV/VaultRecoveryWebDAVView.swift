@@ -16,7 +16,7 @@ struct VaultRecoveryWebDAVView: View {
     private var dismiss
 
     var body: some View {
-        BackupSyncSettingsDetailsForm(
+        BackupConfigEditorForm(
             kind: .webDAV,
             title: .backupConfigsRowWebdavTitle,
             onSave: {

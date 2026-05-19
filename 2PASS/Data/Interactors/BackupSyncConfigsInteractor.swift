@@ -44,6 +44,13 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     @discardableResult
     func addiCloudConfig() -> BackupConfig.ID?
 
+    /// UI-affordance signal: `true` when no iCloud entry exists yet, so a subsequent
+    /// `addiCloudConfig()` would succeed. Drives "add iCloud" button enable-state and pre-call
+    /// guards in flows that want to short-circuit without invoking the mutation path. The
+    /// authoritative check lives inside `addiCloudConfig()` itself — this property is a read
+    /// for UX, not a replacement for the atomic dedupe at the mutation site.
+    var canAddiCloud: Bool { get }
+
     /// Replaces the WebDAV config bound to `id`, preserving id and `createdAt`. No-op if the
     /// id either doesn't exist or maps to an entry of another kind.
     func updateWebDAVConfig(id: BackupConfig.ID, with config: BackupWebDAVConfig)
@@ -74,6 +81,15 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     /// reliable to auto-parse. Input is normalized first (whitespace trim, scheme add, host
     /// lowercase) so the detection accepts permissive user typing.
     func detectS3Endpoint(_ endpoint: String) -> S3EndpointDetection?
+
+    /// Parses an AWS-exported access keys CSV (header row: `Access key ID,Secret access key`).
+    /// Tolerates BOM, CRLF/LF line endings, surrounding double-quotes, and case differences in
+    /// header names. URL is security-scoped (returned by `fileImporter`), so access is bracketed.
+    func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
+}
+
+private enum CSVParseError: Error {
+    case malformed
 }
 
 final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
@@ -111,6 +127,10 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         configs.append(.s3(BackupConfigEntry(id: id, createdAt: currentDateInteractor.currentDate, config: config)))
         mainRepository.backupSyncContainer.saveConfigs(configs)
         return id
+    }
+
+    var canAddiCloud: Bool {
+        !allConfigs.hasICloud
     }
 
     @discardableResult
@@ -205,5 +225,47 @@ final class BackupSyncConfigsInteractor: BackupSyncConfigsInteracting {
         }
 
         return S3EndpointDetection(region: region, bucket: bucket)
+    }
+
+    func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String) {
+        let didStart = url.startAccessingSecurityScopedResource()
+        defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+
+        var contents = try String(contentsOf: url, encoding: .utf8)
+        if contents.first == "\u{FEFF}" {
+            contents.removeFirst()
+        }
+
+        let nonEmptyLines = contents
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard nonEmptyLines.count >= 2 else { throw CSVParseError.malformed }
+
+        let parseRow: (String) -> [String] = { line in
+            line.split(separator: ",", omittingEmptySubsequences: false).map { cell in
+                var value = cell.trimmingCharacters(in: .whitespaces)
+                if value.hasPrefix("\""), value.hasSuffix("\""), value.count >= 2 {
+                    value = String(value.dropFirst().dropLast())
+                }
+                return value
+            }
+        }
+
+        let headers = parseRow(nonEmptyLines[0]).map { $0.lowercased() }
+        let values = parseRow(nonEmptyLines[1])
+
+        guard
+            let accessKeyIndex = headers.firstIndex(of: "access key id"),
+            let secretKeyIndex = headers.firstIndex(of: "secret access key"),
+            accessKeyIndex < values.count,
+            secretKeyIndex < values.count
+        else { throw CSVParseError.malformed }
+
+        let accessKey = values[accessKeyIndex].trimmingCharacters(in: .whitespaces)
+        let secretKey = values[secretKeyIndex].trimmingCharacters(in: .whitespaces)
+        guard !accessKey.isEmpty, !secretKey.isEmpty else { throw CSVParseError.malformed }
+
+        return (accessKey, secretKey)
     }
 }

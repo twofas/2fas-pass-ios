@@ -47,7 +47,6 @@ struct BackupConfigsRouter: Router {
             // the zoom target mid-dismiss. The sheet animates from "+" on open
             // and zooms into the new row after save.
             BackupConfigsAddRouter.buildView(onClose: onClose)
-                .presentationDetents([.large])
                 .matchedZoomDestination(
                     id: savedConfigID().map(Self.editSourceID(for:)) ?? Self.pickerSourceID,
                     in: transitionNamespace
@@ -58,13 +57,13 @@ struct BackupConfigsRouter: Router {
             // animates the sheet's presentation from the source row. Applied inside the stack it
             // would act as a push transition — wrong, since the form is the stack's root.
             NavigationStack {
-                BackupWebDAVConfigRouter.buildView(configID: configID)
+                BackupWebDAVConfigEditorRouter.buildView(configID: configID)
             }
             .matchedZoomDestination(id: Self.editSourceID(for: configID), in: transitionNamespace)
 
         case .editS3(let configID):
             NavigationStack {
-                BackupS3ConfigRouter.buildView(configID: configID)
+                BackupS3ConfigEditorRouter.buildView(configID: configID)
             }
             .matchedZoomDestination(id: Self.editSourceID(for: configID), in: transitionNamespace)
 

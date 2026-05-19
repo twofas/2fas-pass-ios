@@ -8,7 +8,7 @@ import Foundation
 import Data
 import Backup
 
-/// Same surface as `BackupS3ConfigModuleInteracting` minus the "save"-side methods (recovery
+/// Same surface as `BackupS3ConfigEditorModuleInteracting` minus the "save"-side methods (recovery
 /// only reads). Endpoint detection, normalization, and CSV import live here too — recovery
 /// reuses the same UX affordances as the settings form (pasted AWS URL → autofill region/
 /// bucket; CSV import → fill access keys).

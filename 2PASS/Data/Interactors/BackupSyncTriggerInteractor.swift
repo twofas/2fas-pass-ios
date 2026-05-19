@@ -55,10 +55,17 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     @discardableResult
     func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult]
 
-    /// Runs only the backend with the given id through the coordinator. Returns silently on
-    /// success or no-op (no entry matches the id, or the container hasn't been installed yet).
-    /// Throws `BackupSyncError` on actual sync failure or when debounced because another sync
-    /// is in flight (`.cancelled`).
+    /// Fire-and-forget: triggers a sync of the backend with `id` at background priority and
+    /// returns immediately. Use this from non-async post-mutation sites that only need
+    /// "propagate this one backend when convenient" — the container spawns a detached
+    /// `.utility`-priority task internally. Cancellation is via `cancelSync(id:)` /
+    /// `cancelCurrentSync()`.
+    func sync(id: BackupConfig.ID)
+
+    /// Awaitable variant — runs only the backend with the given id through the coordinator.
+    /// Returns silently on success or no-op (no entry matches the id, or the container hasn't
+    /// been installed yet). Throws `BackupSyncError` on actual sync failure or when debounced
+    /// because another sync is in flight (`.cancelled`).
     ///
     /// Per-config `overwritingVault` / `allowingAnyDeviceId` come from the awaiting-flag
     /// sets — callers don't pass them. Mark via `markAllServicesAwaitingVaultOverride()` /
@@ -141,6 +148,10 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
     @discardableResult
     func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
         try await mainRepository.backupSyncContainer.syncAll()
+    }
+
+    func sync(id: BackupConfig.ID) {
+        mainRepository.backupSyncContainer.sync(id)
     }
 
     func sync(id: BackupConfig.ID) async throws(BackupSyncError) {

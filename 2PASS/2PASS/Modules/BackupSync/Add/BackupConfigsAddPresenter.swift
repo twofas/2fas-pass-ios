@@ -58,8 +58,9 @@ final class BackupConfigsAddPresenter {
         destination = .s3(onClose: onClose)
     }
 
-    func performIcloudAdd() {
-        onClose(interactor.addiCloud())
+    func selectIcloud() {
+        let id = interactor.addiCloud()
+        onClose(id)
     }
 
     func cancel() {

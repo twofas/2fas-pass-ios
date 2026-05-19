@@ -6,6 +6,19 @@
 
 import SwiftUI
 
+extension View {
+
+    /// Fires `onAttempt` when the user tries to swipe-dismiss the enclosing sheet while
+    /// `isEnabled` is `true`. While enabled, the sheet's `isModalInPresentation` is set so
+    /// the pull-down gesture is intercepted instead of dismissing — typical use is to
+    /// present a discard-changes confirmation when there are unsaved edits, then either
+    /// confirm and dismiss programmatically, or stay.
+    func dragDismissAttempt(isEnabled: Bool, onAttempt: @escaping () -> Void) -> some View {
+        background(DragDismissAttemptCatcher(isEnabled: isEnabled, onAttempt: onAttempt))
+    }
+}
+
+
 /// UIKit bridge that fires `onAttempt` when the user tries to swipe-dismiss a sheet whose
 /// content has unsaved changes. Sets `isModalInPresentation = true` on the sheet's
 /// presentation VC (precondition for `presentationControllerDidAttemptToDismiss` callbacks)

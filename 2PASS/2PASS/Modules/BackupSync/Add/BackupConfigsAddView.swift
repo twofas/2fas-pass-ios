@@ -34,7 +34,7 @@ struct BackupConfigsAddView: View {
                             kind: .iCloud,
                             title: .backupConfigsProviderIcloud,
                             subtitle: .backupConfigsProviderIcloudDescription,
-                            action: { presenter.performIcloudAdd() }
+                            action: { presenter.selectIcloud() }
                         )
                         .hideChevron()
                     }

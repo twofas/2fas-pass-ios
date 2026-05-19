@@ -85,9 +85,9 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
         // `cloudSync.enable()` internally. After enable, kick off an initial sync so any
         // existing local vault state is pushed up to iCloud immediately rather than waiting
         // for the next post-mutation `syncAll`.
-        guard !configsInteractor.allConfigs.hasICloud else { return }
+        guard configsInteractor.canAddiCloud else { return }
         guard let id = configsInteractor.addiCloudConfig() else { return }
-        Task { try? await syncTriggerInteractor.sync(id: id) }
+        syncTriggerInteractor.sync(id: id)
     }
 
     func turnOffCloud() {

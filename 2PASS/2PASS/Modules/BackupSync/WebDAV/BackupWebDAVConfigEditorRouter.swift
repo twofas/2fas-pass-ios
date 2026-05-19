@@ -5,10 +5,9 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import UniformTypeIdentifiers
 import CommonUI
 
-struct BackupS3ConfigRouter: Router {
+struct BackupWebDAVConfigEditorRouter: Router {
 
     /// Constructs the form. When `onClose` is provided the caller takes full ownership of
     /// the close path (including dismissal); when omitted the container falls back to
@@ -18,36 +17,34 @@ struct BackupS3ConfigRouter: Router {
         configID: BackupConfig.ID?,
         onClose: ((BackupConfig.ID?) -> Void)? = nil
     ) -> some View {
-        BackupS3ConfigContainerView(configID: configID, onClose: onClose)
+        BackupWebDAVConfigEditorContainerView(configID: configID, onClose: onClose)
     }
 
-    func routingType(for destination: BackupS3ConfigDestination?) -> RoutingType? {
+    func routingType(for destination: BackupWebDAVConfigEditorDestination?) -> RoutingType? {
         switch destination {
         case .errorAlert(let message):
             .alert(title: String(localized: .commonError), message: message)
-        case .loadFromCSV(let onClose):
-            .fileImporter(contentTypes: [.commaSeparatedText], onClose: onClose)
         case nil:
             nil
         }
     }
 
     @ViewBuilder
-    func view(for destination: BackupS3ConfigDestination) -> some View {
+    func view(for destination: BackupWebDAVConfigEditorDestination) -> some View {
         EmptyView()
     }
 }
 
-private struct BackupS3ConfigContainerView: View {
+private struct BackupWebDAVConfigEditorContainerView: View {
     let configID: BackupConfig.ID?
     let onClose: ((BackupConfig.ID?) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        BackupS3ConfigView(
+        BackupWebDAVConfigEditorView(
             presenter: .init(
-                interactor: ModuleInteractorFactory.shared.backupS3ConfigModuleInteractor(configID: configID),
+                interactor: ModuleInteractorFactory.shared.backupWebDAVConfigEditorModuleInteractor(configID: configID),
                 configID: configID,
                 onClose: onClose ?? { _ in dismiss() }
             )

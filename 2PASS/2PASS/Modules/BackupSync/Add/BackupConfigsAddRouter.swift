@@ -37,11 +37,11 @@ struct BackupConfigsAddRouter: Router {
     func view(for destination: BackupConfigsAddDestination) -> some View {
         switch destination {
         case .webDAV(let onClose):
-            BackupWebDAVConfigRouter.buildView(configID: nil, onClose: onClose)
+            BackupWebDAVConfigEditorRouter.buildView(configID: nil, onClose: onClose)
                 .matchedZoomDestination(id: Self.webDAVSourceID, in: transitionNamespace)
 
         case .s3(let onClose):
-            BackupS3ConfigRouter.buildView(configID: nil, onClose: onClose)
+            BackupS3ConfigEditorRouter.buildView(configID: nil, onClose: onClose)
                 .matchedZoomDestination(id: Self.s3SourceID, in: transitionNamespace)
         }
     }

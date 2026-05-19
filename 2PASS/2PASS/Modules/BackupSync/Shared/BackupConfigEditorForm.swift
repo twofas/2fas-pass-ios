@@ -21,7 +21,7 @@ import Backup
 /// hosting contexts via the presenter's `onClose` wiring.
 ///
 /// ```
-/// BackupSyncSettingsDetailsForm(
+/// BackupConfigEditorForm(
 ///     kind: .s3,
 ///     title: .backupConfigsRowS3Title,
 ///     onSave: { … },
@@ -34,7 +34,7 @@ import Backup
 /// .saving(presenter.isTesting)
 /// .canSave(presenter.canSave)
 /// ```
-struct BackupSyncSettingsDetailsForm<Content: View>: View {
+struct BackupConfigEditorForm<Content: View>: View {
 
     private let kind: BackupSyncService
     private let title: Text
@@ -72,28 +72,28 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
-            BackupConfigToolbarTitle(kind: kind, title: title)
+            BackupConfigEditorToolbarTitle(kind: kind, title: title)
+            
             if isEditMode || isCancellable {
-                BackupConfigCancelItem(
+                BackupConfigEditorCancelItem(
                     hasUnsavedChanges: hasUnsavedChanges,
                     isConfirmationPresented: $isDiscardConfirmationPresented,
                     onDismiss: onClose
                 )
             }
+            
             saveItem
         }
-        .background(
-            DragDismissAttemptCatcher(isEnabled: hasUnsavedChanges) {
-                // The dialog anchors to the cancel button; the centered alert is the
-                // fallback when no anchor is available (add-mode without cancellable).
-                if isEditMode || isCancellable {
-                    isDiscardConfirmationPresented = true
-                } else {
-                    isAddModeDiscardAlertPresented = true
-                }
+        .dragDismissAttempt(isEnabled: hasUnsavedChanges) {
+            // The dialog anchors to the cancel button; the centered alert is the
+            // fallback when no anchor is available (add-mode without cancellable).
+            if isEditMode || isCancellable {
+                isDiscardConfirmationPresented = true
+            } else {
+                isAddModeDiscardAlertPresented = true
             }
-        )
-        .backupConfigUnsavedChangesAlert(
+        }
+        .backupConfigEditorUnsavedChangesAlert(
             isPresented: $isAddModeDiscardAlertPresented,
             onDiscard: onClose
         )
@@ -154,7 +154,7 @@ struct BackupSyncSettingsDetailsForm<Content: View>: View {
     }
 }
 
-extension BackupSyncSettingsDetailsForm {
+extension BackupConfigEditorForm {
 
     init(
         kind: BackupSyncService,

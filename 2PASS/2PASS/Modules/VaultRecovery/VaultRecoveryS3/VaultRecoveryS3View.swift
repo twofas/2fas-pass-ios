@@ -16,7 +16,7 @@ struct VaultRecoveryS3View: View {
     private var dismiss
 
     var body: some View {
-        BackupSyncSettingsDetailsForm(
+        BackupConfigEditorForm(
             kind: .s3,
             title: .backupConfigsRowS3Title,
             onSave: {
