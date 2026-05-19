@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-extension View {
+public extension View {
 
     /// Fires `onAttempt` when the user tries to swipe-dismiss the enclosing sheet while
     /// `isEnabled` is `true`. While enabled, the sheet's `isModalInPresentation` is set so
@@ -18,13 +18,12 @@ extension View {
     }
 }
 
-
 /// UIKit bridge that fires `onAttempt` when the user tries to swipe-dismiss a sheet whose
 /// content has unsaved changes. Sets `isModalInPresentation = true` on the sheet's
 /// presentation VC (precondition for `presentationControllerDidAttemptToDismiss` callbacks)
 /// and chains its delegate slot to SwiftUI's original delegate so sheet dismiss tracking,
 /// detent updates, etc. continue to work.
-struct DragDismissAttemptCatcher: UIViewControllerRepresentable {
+private struct DragDismissAttemptCatcher: UIViewControllerRepresentable {
     let isEnabled: Bool
     let onAttempt: () -> Void
 
