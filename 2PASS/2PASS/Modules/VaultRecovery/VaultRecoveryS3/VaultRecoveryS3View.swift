@@ -19,6 +19,9 @@ struct VaultRecoveryS3View: View {
         BackupConfigEditorForm(
             kind: .s3,
             title: .backupConfigsRowS3Title,
+            hasUnsavedChanges: presenter.hasUnsavedChanges,
+            isSaving: presenter.isFetching,
+            canSave: presenter.canSave,
             onSave: {
                 hideKeyboard()
                 presenter.onSave()
@@ -40,9 +43,6 @@ struct VaultRecoveryS3View: View {
         }
         .confirmLabel(.s3Connect)
         .cancellable()
-        .unsavedChanges(presenter.hasUnsavedChanges)
-        .isSaving(presenter.isFetching)
-        .canSave(presenter.canSave)
         .disabled(presenter.isFetching)
         .router(router: VaultRecoveryS3Router(), destination: $presenter.destination)
         .onDisappear {

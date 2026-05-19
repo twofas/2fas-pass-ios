@@ -19,6 +19,9 @@ struct VaultRecoveryWebDAVView: View {
         BackupConfigEditorForm(
             kind: .webDAV,
             title: .backupConfigsRowWebdavTitle,
+            hasUnsavedChanges: presenter.hasUnsavedChanges,
+            isSaving: presenter.isFetching,
+            canSave: presenter.canSave,
             onSave: {
                 hideKeyboard()
                 presenter.onSave()
@@ -37,9 +40,6 @@ struct VaultRecoveryWebDAVView: View {
         }
         .confirmLabel(.webdavConnect)
         .cancellable()
-        .unsavedChanges(presenter.hasUnsavedChanges)
-        .isSaving(presenter.isFetching)
-        .canSave(presenter.canSave)
         .disabled(presenter.isFetching)
         .router(router: VaultRecoveryWebDAVRouter(), destination: $presenter.destination)
         .onDisappear {

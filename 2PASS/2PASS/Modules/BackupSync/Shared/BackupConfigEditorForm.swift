@@ -24,15 +24,15 @@ import Backup
 /// BackupConfigEditorForm(
 ///     kind: .s3,
 ///     title: .backupConfigsRowS3Title,
+///     hasUnsavedChanges: presenter.hasUnsavedChanges,
+///     isSaving: presenter.isTesting,
+///     canSave: presenter.canSave,
 ///     onSave: { … },
 ///     onClose: { … }
 /// ) {
 ///     Section { … }
 /// }
 /// .editMode(presenter.isEditMode)
-/// .unsavedChanges(presenter.hasUnsavedChanges)
-/// .saving(presenter.isTesting)
-/// .canSave(presenter.canSave)
 /// ```
 struct BackupConfigEditorForm<Content: View>: View {
 
@@ -42,10 +42,11 @@ struct BackupConfigEditorForm<Content: View>: View {
     private let onClose: () -> Void
     private let content: () -> Content
 
+    private let hasUnsavedChanges: Bool
+    private let isSaving: Bool
+    private let canSave: Bool
+
     private var isEditMode = false
-    private var hasUnsavedChanges = false
-    private var isSaving = false
-    private var canSave = true
     private var confirmLabel: Text?
     private var isCancellable = false
 
@@ -55,12 +56,18 @@ struct BackupConfigEditorForm<Content: View>: View {
     init(
         kind: BackupSyncService,
         title: Text,
+        hasUnsavedChanges: Bool,
+        isSaving: Bool,
+        canSave: Bool,
         onSave: @escaping () -> Void,
         onClose: @escaping () -> Void,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.kind = kind
         self.title = title
+        self.hasUnsavedChanges = hasUnsavedChanges
+        self.isSaving = isSaving
+        self.canSave = canSave
         self.onSave = onSave
         self.onClose = onClose
         self.content = content
@@ -119,24 +126,6 @@ struct BackupConfigEditorForm<Content: View>: View {
         return instance
     }
 
-    func unsavedChanges(_ flag: Bool = true) -> Self {
-        var instance = self
-        instance.hasUnsavedChanges = flag
-        return instance
-    }
-
-    func isSaving(_ flag: Bool = true) -> Self {
-        var instance = self
-        instance.isSaving = flag
-        return instance
-    }
-
-    func canSave(_ flag: Bool) -> Self {
-        var instance = self
-        instance.canSave = flag
-        return instance
-    }
-
     /// Overrides the confirmation toolbar item's label (defaults to system "Save"/"Done").
     func confirmLabel(_ label: Text) -> Self {
         var instance = self
@@ -159,6 +148,9 @@ extension BackupConfigEditorForm {
     init(
         kind: BackupSyncService,
         title: LocalizedStringResource,
+        hasUnsavedChanges: Bool,
+        isSaving: Bool,
+        canSave: Bool,
         onSave: @escaping () -> Void,
         onClose: @escaping () -> Void,
         @ViewBuilder content: @escaping () -> Content
@@ -166,6 +158,9 @@ extension BackupConfigEditorForm {
         self.init(
             kind: kind,
             title: Text(title),
+            hasUnsavedChanges: hasUnsavedChanges,
+            isSaving: isSaving,
+            canSave: canSave,
             onSave: onSave,
             onClose: onClose,
             content: content

@@ -16,6 +16,9 @@ struct BackupS3ConfigEditorView: View {
         BackupConfigEditorForm(
             kind: .s3,
             title: .backupConfigsRowS3Title,
+            hasUnsavedChanges: presenter.hasUnsavedChanges,
+            isSaving: presenter.isTesting,
+            canSave: presenter.canSave,
             onSave: {
                 hideKeyboard()
                 presenter.onSave()
@@ -42,9 +45,6 @@ struct BackupS3ConfigEditorView: View {
             .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
         }
         .editMode(presenter.isEditMode)
-        .unsavedChanges(presenter.hasUnsavedChanges)
-        .isSaving(presenter.isTesting)
-        .canSave(presenter.canSave)
         .disabled(presenter.isTesting)
         .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
         .sensoryFeedback(.error, trigger: presenter.failureFeedbackTrigger)

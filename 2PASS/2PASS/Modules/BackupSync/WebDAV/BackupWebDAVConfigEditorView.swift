@@ -16,6 +16,9 @@ struct BackupWebDAVConfigEditorView: View {
         BackupConfigEditorForm(
             kind: .webDAV,
             title: .backupConfigsRowWebdavTitle,
+            hasUnsavedChanges: presenter.hasUnsavedChanges,
+            isSaving: presenter.isTesting,
+            canSave: presenter.canSave,
             onSave: {
                 hideKeyboard()
                 presenter.onSave()
@@ -37,9 +40,6 @@ struct BackupWebDAVConfigEditorView: View {
             .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
         }
         .editMode(presenter.isEditMode)
-        .unsavedChanges(presenter.hasUnsavedChanges)
-        .isSaving(presenter.isTesting)
-        .canSave(presenter.canSave)
         .disabled(presenter.isTesting)
         .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
         .sensoryFeedback(.error, trigger: presenter.failureFeedbackTrigger)
