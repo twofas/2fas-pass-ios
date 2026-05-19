@@ -38,7 +38,7 @@ struct VaultRecoveryWebDAVView: View {
         .confirmLabel(.webdavConnect)
         .cancellable()
         .unsavedChanges(presenter.hasUnsavedChanges)
-        .saving(presenter.isFetching)
+        .isSaving(presenter.isFetching)
         .canSave(presenter.canSave)
         .disabled(presenter.isFetching)
         .router(router: VaultRecoveryWebDAVRouter(), destination: $presenter.destination)

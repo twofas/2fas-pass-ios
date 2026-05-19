@@ -125,7 +125,7 @@ struct BackupConfigEditorForm<Content: View>: View {
         return instance
     }
 
-    func saving(_ flag: Bool = true) -> Self {
+    func isSaving(_ flag: Bool = true) -> Self {
         var instance = self
         instance.isSaving = flag
         return instance

@@ -41,7 +41,7 @@ struct VaultRecoveryS3View: View {
         .confirmLabel(.s3Connect)
         .cancellable()
         .unsavedChanges(presenter.hasUnsavedChanges)
-        .saving(presenter.isFetching)
+        .isSaving(presenter.isFetching)
         .canSave(presenter.canSave)
         .disabled(presenter.isFetching)
         .router(router: VaultRecoveryS3Router(), destination: $presenter.destination)

@@ -38,7 +38,7 @@ struct BackupWebDAVConfigEditorView: View {
         }
         .editMode(presenter.isEditMode)
         .unsavedChanges(presenter.hasUnsavedChanges)
-        .saving(presenter.isTesting)
+        .isSaving(presenter.isTesting)
         .canSave(presenter.canSave)
         .disabled(presenter.isTesting)
         .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
