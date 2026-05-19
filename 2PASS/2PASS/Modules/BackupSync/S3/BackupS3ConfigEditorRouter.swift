@@ -10,15 +10,21 @@ import CommonUI
 
 struct BackupS3ConfigEditorRouter: Router {
 
-    /// Constructs the form. When `onClose` is provided the caller takes full ownership of
-    /// the close path (including dismissal); when omitted the container falls back to
-    /// dismissing via `\.dismiss`, matching the edit-from-row behavior.
+    /// `onClose` is required — the caller owns the close path (dismissal, list refresh,
+    /// matched-zoom retargeting, etc.). The id passed back is the saved config's id on
+    /// successful save, or `nil` on cancel/close.
     @MainActor
     static func buildView(
         configID: BackupConfig.ID?,
-        onClose: ((BackupConfig.ID?) -> Void)? = nil
+        onClose: @escaping @MainActor (BackupConfig.ID?) -> Void
     ) -> some View {
-        BackupS3ConfigEditorContainerView(configID: configID, onClose: onClose)
+        BackupS3ConfigEditorView(
+            presenter: .init(
+                interactor: ModuleInteractorFactory.shared.backupS3ConfigEditorModuleInteractor(configID: configID),
+                configID: configID,
+                onClose: onClose
+            )
+        )
     }
 
     func routingType(for destination: BackupS3ConfigEditorDestination?) -> RoutingType? {
@@ -35,22 +41,5 @@ struct BackupS3ConfigEditorRouter: Router {
     @ViewBuilder
     func view(for destination: BackupS3ConfigEditorDestination) -> some View {
         EmptyView()
-    }
-}
-
-private struct BackupS3ConfigEditorContainerView: View {
-    let configID: BackupConfig.ID?
-    let onClose: ((BackupConfig.ID?) -> Void)?
-
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        BackupS3ConfigEditorView(
-            presenter: .init(
-                interactor: ModuleInteractorFactory.shared.backupS3ConfigEditorModuleInteractor(configID: configID),
-                configID: configID,
-                onClose: onClose ?? { _ in dismiss() }
-            )
-        )
     }
 }

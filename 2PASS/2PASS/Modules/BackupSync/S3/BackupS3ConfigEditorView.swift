@@ -43,7 +43,7 @@ struct BackupS3ConfigEditorView: View {
         }
         .editMode(presenter.isEditMode)
         .unsavedChanges(presenter.hasUnsavedChanges)
-        .saving(presenter.isTesting)
+        .isSaving(presenter.isTesting)
         .canSave(presenter.canSave)
         .disabled(presenter.isTesting)
         .sensoryFeedback(.success, trigger: presenter.successFeedbackTrigger)
@@ -63,5 +63,5 @@ struct BackupS3ConfigEditorView: View {
 }
 
 #Preview {
-    BackupS3ConfigEditorRouter.buildView(configID: nil)
+    BackupS3ConfigEditorRouter.buildView(configID: nil, onClose: { _ in })
 }

@@ -13,8 +13,8 @@ enum BackupConfigsAddDestination: RouterDestination {
     /// row before the sheet animates away), or `nil` on plain cancel/dismiss. The
     /// closure itself is responsible for dismissing the sheet — the form view doesn't
     /// know it's hosted in one.
-    case webDAV(onClose: (BackupConfig.ID?) -> Void)
-    case s3(onClose: (BackupConfig.ID?) -> Void)
+    case webDAV(onClose: @MainActor (BackupConfig.ID?) -> Void)
+    case s3(onClose: @MainActor (BackupConfig.ID?) -> Void)
 
     /// Explicit `String` id (not `Self`) because the associated `onClose` closures
     /// aren't `Hashable`. Cases without payloads are still distinct — switch ignores
@@ -39,11 +39,11 @@ final class BackupConfigsAddPresenter {
     /// `savedConfigID` binding. Called with the new config's id on success (so the parent
     /// can flip its matched-zoom destination to the new row before the sheet animates
     /// away) or `nil` on plain cancel.
-    private let onClose: (BackupConfig.ID?) -> Void
+    private let onClose: @MainActor (BackupConfig.ID?) -> Void
 
     init(
         interactor: BackupConfigsAddModuleInteracting,
-        onClose: @escaping (BackupConfig.ID?) -> Void
+        onClose: @escaping @MainActor (BackupConfig.ID?) -> Void
     ) {
         self.interactor = interactor
         self.canAddiCloud = interactor.canAddiCloud

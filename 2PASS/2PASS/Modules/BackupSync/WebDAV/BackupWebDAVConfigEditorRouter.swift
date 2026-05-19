@@ -9,15 +9,21 @@ import CommonUI
 
 struct BackupWebDAVConfigEditorRouter: Router {
 
-    /// Constructs the form. When `onClose` is provided the caller takes full ownership of
-    /// the close path (including dismissal); when omitted the container falls back to
-    /// dismissing via `\.dismiss`, matching the edit-from-row behavior.
+    /// `onClose` is required — the caller owns the close path (dismissal, list refresh,
+    /// matched-zoom retargeting, etc.). The id passed back is the saved config's id on
+    /// successful save, or `nil` on cancel/close.
     @MainActor
     static func buildView(
         configID: BackupConfig.ID?,
-        onClose: ((BackupConfig.ID?) -> Void)? = nil
+        onClose: @escaping @MainActor (BackupConfig.ID?) -> Void
     ) -> some View {
-        BackupWebDAVConfigEditorContainerView(configID: configID, onClose: onClose)
+        BackupWebDAVConfigEditorView(
+            presenter: .init(
+                interactor: ModuleInteractorFactory.shared.backupWebDAVConfigEditorModuleInteractor(configID: configID),
+                configID: configID,
+                onClose: onClose
+            )
+        )
     }
 
     func routingType(for destination: BackupWebDAVConfigEditorDestination?) -> RoutingType? {
@@ -32,22 +38,5 @@ struct BackupWebDAVConfigEditorRouter: Router {
     @ViewBuilder
     func view(for destination: BackupWebDAVConfigEditorDestination) -> some View {
         EmptyView()
-    }
-}
-
-private struct BackupWebDAVConfigEditorContainerView: View {
-    let configID: BackupConfig.ID?
-    let onClose: ((BackupConfig.ID?) -> Void)?
-
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        BackupWebDAVConfigEditorView(
-            presenter: .init(
-                interactor: ModuleInteractorFactory.shared.backupWebDAVConfigEditorModuleInteractor(configID: configID),
-                configID: configID,
-                onClose: onClose ?? { _ in dismiss() }
-            )
-        )
     }
 }

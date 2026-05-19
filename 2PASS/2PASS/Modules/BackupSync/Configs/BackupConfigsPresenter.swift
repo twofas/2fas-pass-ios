@@ -23,18 +23,23 @@ enum BackupConfigsDestination: RouterDestination {
     /// mid-dismiss. Carrying the resolver here keeps the Router stateless: no
     /// presenter ref.
     case add(
-        onClose: (BackupConfig.ID?) -> Void,
+        onClose: @MainActor (BackupConfig.ID?) -> Void,
         savedConfigID: @MainActor () -> BackupConfig.ID?
     )
-    case editWebDAV(configID: BackupConfig.ID)
-    case editS3(configID: BackupConfig.ID)
-    case removeConfirmation(name: String, onConfirm: Callback)
+    /// `onClose` clears `destination` (which dismisses the sheet). Same shape as
+    /// `.add.onClose`, but edit doesn't need the run-loop deferral that the add
+    /// flow requires — edit's matched-zoom id is stable across the sheet's lifetime
+    /// (purely a function of `configID`), so no observation has to propagate
+    /// mid-dismiss. The closure clears `destination` synchronously.
+    case editWebDAV(configID: BackupConfig.ID, onClose: @MainActor (BackupConfig.ID?) -> Void)
+    case editS3(configID: BackupConfig.ID, onClose: @MainActor (BackupConfig.ID?) -> Void)
+    case removeConfirmation(name: String, onConfirm: @MainActor () -> Void)
 
     var id: String {
         switch self {
         case .add: "add"
-        case .editWebDAV(let configID): "editWebDAV-\(configID)"
-        case .editS3(let configID): "editS3-\(configID)"
+        case .editWebDAV(let configID, _): "editWebDAV-\(configID)"
+        case .editS3(let configID, _): "editS3-\(configID)"
         case .removeConfirmation(let name, _): "removeConfirmation-\(name)"
         }
     }
@@ -140,11 +145,17 @@ final class BackupConfigsPresenter {
     }
 
     func onSelect(_ row: BackupConfigCellItem) {
+        // Synchronous clear is safe here: the edit sheet's matched-zoom id is stable
+        // for the sheet's lifetime, so there's no observation that needs to propagate
+        // before `destination` flips. Contrast with `.add.onClose`, which must defer.
+        let onClose: @MainActor (BackupConfig.ID?) -> Void = { [weak self] _ in
+            self?.destination = nil
+        }
         switch row.kind {
         case .webDAV:
-            destination = .editWebDAV(configID: row.id)
+            destination = .editWebDAV(configID: row.id, onClose: onClose)
         case .s3:
-            destination = .editS3(configID: row.id)
+            destination = .editS3(configID: row.id, onClose: onClose)
         case .iCloud:
             break
         }

@@ -64,7 +64,7 @@ final class BackupWebDAVConfigEditorPresenter {
     private let configID: BackupConfig.ID?
     /// Called on save (with the saved config's id) or programmatic close (with `nil`).
     /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
-    private let onClose: (BackupConfig.ID?) -> Void
+    private let onClose: @MainActor (BackupConfig.ID?) -> Void
     /// Held so the in-flight probe can be torn down on dismissal — without this the network
     /// request continues until the server responds even after the user taps Cancel.
     @ObservationIgnored
@@ -74,7 +74,7 @@ final class BackupWebDAVConfigEditorPresenter {
     @ObservationIgnored
     private var originalSnapshot: BackupWebDAVConfig?
 
-    init(interactor: BackupWebDAVConfigEditorModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
+    init(interactor: BackupWebDAVConfigEditorModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping @MainActor (BackupConfig.ID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose

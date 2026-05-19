@@ -82,7 +82,7 @@ final class BackupS3ConfigEditorPresenter {
     private let configID: BackupConfig.ID?
     /// Called on save (with the saved config's id) or programmatic close (with `nil`).
     /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
-    private let onClose: (BackupConfig.ID?) -> Void
+    private let onClose: @MainActor (BackupConfig.ID?) -> Void
     /// Held so the in-flight probe can be torn down on dismissal — without this the network
     /// request continues until the server responds even after the user taps Cancel.
     @ObservationIgnored
@@ -99,7 +99,7 @@ final class BackupS3ConfigEditorPresenter {
     @ObservationIgnored
     private var originalSnapshot: S3ServiceConfig?
 
-    init(interactor: BackupS3ConfigEditorModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping (BackupConfig.ID?) -> Void) {
+    init(interactor: BackupS3ConfigEditorModuleInteracting, configID: BackupConfig.ID?, onClose: @escaping @MainActor (BackupConfig.ID?) -> Void) {
         self.interactor = interactor
         self.configID = configID
         self.onClose = onClose
@@ -107,40 +107,47 @@ final class BackupS3ConfigEditorPresenter {
     }
 
     func onAppear() {
-        guard let existing = interactor.existingConfig else { return }
-        originalSnapshot = existing
-        endpoint = existing.endpoint.absoluteString
-        region = existing.region
-        bucket = existing.bucket
-        accessKeyId = existing.accessKeyId
-        secretAccessKey = existing.secretAccessKey
-        allowTLSOff = existing.allowTLSOff
+        if let existing = interactor.existingConfig {
+            originalSnapshot = existing
+            endpoint = existing.endpoint.absoluteString
+            region = existing.region
+            bucket = existing.bucket
+            accessKeyId = existing.accessKeyId
+            secretAccessKey = existing.secretAccessKey
+            allowTLSOff = existing.allowTLSOff
+        }
     }
 
     var endpointChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return endpoint != original.endpoint.absoluteString
     }
+    
     var regionChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return region != original.region
     }
+    
     var bucketChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return bucket != original.bucket
     }
+    
     var accessKeyIdChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return accessKeyId != original.accessKeyId
     }
+    
     var secretAccessKeyChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return secretAccessKey != original.secretAccessKey
     }
+    
     var allowTLSOffChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return allowTLSOff != original.allowTLSOff
     }
+    
     var hasUnsavedChanges: Bool {
         if isEditMode {
             return endpointChanged
@@ -194,15 +201,18 @@ final class BackupS3ConfigEditorPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
+                
                 let savedID = interactor.save(config)
                 isTesting = false
                 testTask = nil
                 onClose(savedID)
+                
                 // Brief delay so the success haptic punctuates the dismissal
                 // animation instead of firing alongside it.
                 try? await Task.sleep(for: .milliseconds(200))
                 if Task.isCancelled { return }
                 successFeedbackTrigger &+= 1
+                
             } catch {
                 guard let self else { return }
                 isTesting = false
@@ -253,6 +263,7 @@ final class BackupS3ConfigEditorPresenter {
     /// anything the user typed manually.
     private func autofillFromAWSEndpoint() {
         guard let detection = interactor.detect(endpoint: endpoint) else { return }
+        
         if let detectedRegion = detection.region {
             let trimmed = region.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty || trimmed == lastAutofilledRegion {
@@ -260,6 +271,7 @@ final class BackupS3ConfigEditorPresenter {
                 lastAutofilledRegion = detectedRegion
             }
         }
+        
         if let detectedBucket = detection.bucket {
             let trimmed = bucket.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty || trimmed == lastAutofilledBucket {

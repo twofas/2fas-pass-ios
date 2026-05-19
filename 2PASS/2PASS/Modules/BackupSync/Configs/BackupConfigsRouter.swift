@@ -52,18 +52,18 @@ struct BackupConfigsRouter: Router {
                     in: transitionNamespace
                 )
 
-        case .editWebDAV(let configID):
+        case .editWebDAV(let configID, let onClose):
             // The zoom modifier wraps the NavigationStack (the sheet's outermost content) so it
             // animates the sheet's presentation from the source row. Applied inside the stack it
             // would act as a push transition — wrong, since the form is the stack's root.
             NavigationStack {
-                BackupWebDAVConfigEditorRouter.buildView(configID: configID)
+                BackupWebDAVConfigEditorRouter.buildView(configID: configID, onClose: onClose)
             }
             .matchedZoomDestination(id: Self.editSourceID(for: configID), in: transitionNamespace)
 
-        case .editS3(let configID):
+        case .editS3(let configID, let onClose):
             NavigationStack {
-                BackupS3ConfigEditorRouter.buildView(configID: configID)
+                BackupS3ConfigEditorRouter.buildView(configID: configID, onClose: onClose)
             }
             .matchedZoomDestination(id: Self.editSourceID(for: configID), in: transitionNamespace)
 
