@@ -65,7 +65,14 @@ extension MainFlowController {
 extension MainFlowController: PasswordsNavigationFlowControllerParent {
     
     func toQuickSetup() {
-        let quickSetupViewController = UIHostingController(rootView: QuickSetupRouter.buildView())
+        // QuickSetupRouter.buildView() is @MainActor-isolated (it constructs the
+        // @MainActor @Observable QuickSetupPresenter); this method's protocol
+        // requirement isn't isolated, but FlowController call sites are always
+        // invoked from UIKit main-thread paths. `assumeIsolated` bridges the gap
+        // without rippling @MainActor into PasswordsNavigationFlowControllerParent.
+        let quickSetupViewController = MainActor.assumeIsolated {
+            UIHostingController(rootView: QuickSetupRouter.buildView())
+        }
         viewController.present(quickSetupViewController, animated: true)
     }
     
