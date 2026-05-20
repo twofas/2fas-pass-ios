@@ -35,8 +35,8 @@ struct BackupConfigsView: View {
                     } label: {
                         HStack(spacing: Spacing.xs) {
                             Text(presenter.isSyncing
-                                 ? .backupConfigsCancelSyncButton
-                                 : .backupConfigsSyncAllNowButton)
+                                 ? .backupConfigsCancelSyncCta
+                                 : .backupConfigsSyncAllNowCta)
                                 .font(.body)
                             
                             Spacer()
@@ -145,7 +145,7 @@ struct BackupConfigsView: View {
             presenter.onAddPressed()
         } label: {
             Image(systemName: "plus")
-                .accessibilityLabel(Text(.backupConfigsAddButton))
+                .accessibilityLabel(Text(.backupConfigsAddCta))
                 .foregroundStyle(.white)
         }
         .disabled(presenter.isSyncing)
@@ -187,7 +187,7 @@ private struct BackupConfigCell: View {
                 } label: {
                     HStack {
                         Image(systemName: "arrow.clockwise")
-                        Text(.backupConfigsSyncNowButton)
+                        Text(.backupConfigsSyncNowCta)
                     }
                 }
 

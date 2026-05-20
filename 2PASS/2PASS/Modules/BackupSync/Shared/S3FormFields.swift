@@ -108,14 +108,14 @@ struct S3FormFields: View {
             HStack {
                 Text(.s3Credentials)
                 Spacer()
-                Button(String(localized: .s3LoadFromCsvButton)) {
+                Button(String(localized: .s3LoadFromCsvCta)) {
                     onLoadFromCSV()
                 }
                 .font(.calloutEmphasized)
             }
         }
 
-        Section(.backupConfigsSecurity) {
+        Section(.backupConfigsSecurityHeader) {
             Toggle(.backupConfigsAllowUntrustedCertificates, isOn: $allowTLSOff)
                 .tint(.accent)
                 .formFieldChanged(allowTLSOffChanged)

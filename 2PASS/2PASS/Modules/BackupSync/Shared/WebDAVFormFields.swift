@@ -70,7 +70,7 @@ struct WebDAVFormFields: View {
                 .formFieldChanged(passwordChanged)
         }
 
-        Section(.backupConfigsSecurity) {
+        Section(.backupConfigsSecurityHeader) {
             Toggle(.backupConfigsAllowUntrustedCertificates, isOn: $allowTLSOff)
                 .tint(.accent)
                 .formFieldChanged(allowTLSOffChanged)

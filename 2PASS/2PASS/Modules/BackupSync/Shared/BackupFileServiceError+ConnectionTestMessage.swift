@@ -30,7 +30,7 @@ extension BackupFileServiceError {
         case .server:
             return String(localized: .connectionTestErrorServer)
         case .url:
-            return String(localized: .connectionTestErrorUrl)
+            return String(localized: .connectionTestErrorInvalidUrl)
         case .invalidResponse:
             return String(localized: .connectionTestErrorInvalidResponse)
         }
