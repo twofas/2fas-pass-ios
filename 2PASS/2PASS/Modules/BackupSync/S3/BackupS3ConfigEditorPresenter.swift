@@ -182,6 +182,11 @@ final class BackupS3ConfigEditorPresenter {
             return
         }
 
+        guard interactor.isSecureURL(endpointURL) else {
+            destination = .errorAlert(message: String(localized: .syncStatusErrorIncorrectUrl))
+            return
+        }
+
         let trimmedRegion = region.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedBucket = bucket.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedAccessKey = accessKeyId.trimmingCharacters(in: .whitespacesAndNewlines)

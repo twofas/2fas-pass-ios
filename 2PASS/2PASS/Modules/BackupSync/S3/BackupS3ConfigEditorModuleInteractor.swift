@@ -15,6 +15,7 @@ protocol BackupS3ConfigEditorModuleInteracting: AnyObject {
     @discardableResult func save(_ config: S3ServiceConfig) -> BackupConfig.ID
     func detect(endpoint: String) -> S3EndpointDetection?
     func normalize(endpoint: String) -> URL?
+    func isSecureURL(_ url: URL) -> Bool
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
 }
 
@@ -70,6 +71,10 @@ final class BackupS3ConfigEditorModuleInteractor: BackupS3ConfigEditorModuleInte
     /// unparseable input.
     func normalize(endpoint: String) -> URL? {
         uriInteractor.normalizeURL(endpoint)
+    }
+
+    func isSecureURL(_ url: URL) -> Bool {
+        uriInteractor.isSecureURL(url)
     }
 
     func detect(endpoint: String) -> S3EndpointDetection? {
