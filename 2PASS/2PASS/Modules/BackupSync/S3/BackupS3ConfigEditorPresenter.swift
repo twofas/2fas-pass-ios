@@ -61,7 +61,7 @@ final class BackupS3ConfigEditorPresenter {
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !bucket.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !accessKeyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-            !secretAccessKey.isEmpty
+            !secretAccessKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         else {
             return false
         }
@@ -190,13 +190,14 @@ final class BackupS3ConfigEditorPresenter {
         let trimmedRegion = region.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedBucket = bucket.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedAccessKey = accessKeyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedSecretKey = secretAccessKey.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let config = S3ServiceConfig(
             endpoint: endpointURL,
             region: trimmedRegion,
             bucket: trimmedBucket,
             accessKeyId: trimmedAccessKey,
-            secretAccessKey: secretAccessKey,
+            secretAccessKey: trimmedSecretKey,
             allowTLSOff: allowTLSOff
         )
 
