@@ -18,7 +18,7 @@ struct VaultRecoveryWebDAVView: View {
     var body: some View {
         BackupConfigEditorForm(
             kind: .webDAV,
-            title: .backupConfigsRowWebdavTitle,
+            title: .backupConfigsProviderWebdavTitle,
             hasUnsavedChanges: presenter.hasUnsavedChanges,
             isSaving: presenter.isFetching,
             canSave: presenter.canSave,

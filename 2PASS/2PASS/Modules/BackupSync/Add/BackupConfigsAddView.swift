@@ -30,7 +30,7 @@ struct BackupConfigsAddView: View {
                     if presenter.canAddiCloud {
                         BackupConfigsAddProviderCell(
                             kind: .iCloud,
-                            title: .backupConfigsRowIcloudTitle,
+                            title: .backupConfigsProviderIcloudTitle,
                             subtitle: .backupConfigsProviderIcloudDescription,
                             action: presenter.selectIcloud
                         )
@@ -39,7 +39,7 @@ struct BackupConfigsAddView: View {
                     
                     BackupConfigsAddProviderCell(
                         kind: .webDAV,
-                        title: .backupConfigsRowWebdavTitle,
+                        title: .backupConfigsProviderWebdavTitle,
                         subtitle: .backupConfigsProviderWebdavDescription,
                         action: presenter.selectWebDAV
                     )
@@ -47,7 +47,7 @@ struct BackupConfigsAddView: View {
                     
                     BackupConfigsAddProviderCell(
                         kind: .s3,
-                        title: .backupConfigsRowS3Title,
+                        title: .backupConfigsProviderS3Title,
                         subtitle: .backupConfigsProviderS3Description,
                         action: presenter.selectS3
                     )

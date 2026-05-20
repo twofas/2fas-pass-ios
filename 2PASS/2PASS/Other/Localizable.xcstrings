@@ -1112,7 +1112,7 @@
         }
       }
     },
-    "backup_configs_row_icloud_title" : {
+    "backup_configs_provider_icloud_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -1129,7 +1129,7 @@
         }
       }
     },
-    "backup_configs_row_s3_title" : {
+    "backup_configs_provider_s3_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -1146,7 +1146,7 @@
         }
       }
     },
-    "backup_configs_row_webdav_title" : {
+    "backup_configs_provider_webdav_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

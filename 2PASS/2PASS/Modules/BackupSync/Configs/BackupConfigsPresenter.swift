@@ -262,17 +262,17 @@ private extension BackupConfigsPresenter {
         let subtitle: String?
         switch config {
         case .iCloud:
-            title = String(localized: .backupConfigsRowIcloudTitle)
+            title = String(localized: .backupConfigsProviderIcloudTitle)
             subtitle = nil
         case .webDAV(let entry):
             let host = entry.config.normalizedURL.host ?? entry.config.baseURL
             let domain = interactor.displayDomain(from: host)
-            title = domain.isEmpty ? String(localized: .backupConfigsRowWebdavTitle) : domain
+            title = domain.isEmpty ? String(localized: .backupConfigsProviderWebdavTitle) : domain
             let trimmed = String(entry.config.normalizedURL.path.trimmingPrefix("/"))
             subtitle = trimmed.isEmpty ? nil : trimmed
         case .s3(let entry):
             let domain = interactor.displayDomain(from: entry.config.endpoint.host() ?? "")
-            title = domain.isEmpty ? String(localized: .backupConfigsRowS3Title) : domain
+            title = domain.isEmpty ? String(localized: .backupConfigsProviderS3Title) : domain
             subtitle = entry.config.bucket
         }
 

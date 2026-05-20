@@ -18,7 +18,7 @@ struct VaultRecoveryS3View: View {
     var body: some View {
         BackupConfigEditorForm(
             kind: .s3,
-            title: .backupConfigsRowS3Title,
+            title: .backupConfigsProviderS3Title,
             hasUnsavedChanges: presenter.hasUnsavedChanges,
             isSaving: presenter.isFetching,
             canSave: presenter.canSave,
