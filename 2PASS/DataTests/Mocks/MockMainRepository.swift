@@ -1980,8 +1980,10 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    var backfillVaultContentModificationDateVaultIDs: [VaultID] = []
     func backfillVaultContentModificationDate(vaultID: VaultID) {
         recordCall()
+        backfillVaultContentModificationDateVaultIDs.append(vaultID)
     }
 
     func selectVault(_ vaultID: VaultID) {

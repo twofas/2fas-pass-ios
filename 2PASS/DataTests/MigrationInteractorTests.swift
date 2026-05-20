@@ -44,6 +44,67 @@ import Storage
 
         #expect(repo.migrateLegacyBackupConfigsCallCount == 0)
     }
+
+    @Test func migrateStorageIfNeeded_backfillsEveryVault_whenLastKnownVersionIsBelow1_9_0() {
+        let vault1 = Self.makeVault()
+        let vault2 = Self.makeVault()
+        let repo = MockMainRepository()
+            .withCurrentAppVersion("1.9.0")
+            .withLastKnownAppVersion("1.8.0")
+            .withListEncryptedVaults { [vault1, vault2] }
+        let interactor = MigrationInteractor(mainRepository: repo, tagInteractor: NoopTagInteractor())
+
+        interactor.migrateStorageIfNeeded()
+
+        #expect(repo.backfillVaultContentModificationDateVaultIDs == [vault1.vaultID, vault2.vaultID])
+    }
+
+    @Test func migrateStorageIfNeeded_skipsBackfill_whenLastKnownVersionIsAtLeast1_9_0() {
+        let repo = MockMainRepository()
+            .withCurrentAppVersion("1.9.0")
+            .withLastKnownAppVersion("1.9.0")
+            .withListEncryptedVaults { [Self.makeVault()] }
+        let interactor = MigrationInteractor(mainRepository: repo, tagInteractor: NoopTagInteractor())
+
+        interactor.migrateStorageIfNeeded()
+
+        #expect(repo.backfillVaultContentModificationDateVaultIDs.isEmpty)
+    }
+
+    @Test func migrateStorageIfNeeded_skipsBackfill_onFreshInstall() {
+        let repo = MockMainRepository()
+            .withCurrentAppVersion("1.9.0")
+            .withLastKnownAppVersion(nil)
+            .withListEncryptedVaults { [Self.makeVault()] }
+        let interactor = MigrationInteractor(mainRepository: repo, tagInteractor: NoopTagInteractor())
+
+        interactor.migrateStorageIfNeeded()
+
+        #expect(repo.backfillVaultContentModificationDateVaultIDs.isEmpty)
+    }
+
+    @Test func migrateStorageIfNeeded_isNoOp_whenVaultListIsEmpty() {
+        let repo = MockMainRepository()
+            .withCurrentAppVersion("1.9.0")
+            .withLastKnownAppVersion("1.8.0")
+            .withListEncryptedVaults { [] }
+        let interactor = MigrationInteractor(mainRepository: repo, tagInteractor: NoopTagInteractor())
+
+        interactor.migrateStorageIfNeeded()
+
+        #expect(repo.backfillVaultContentModificationDateVaultIDs.isEmpty)
+    }
+
+    private static func makeVault(vaultID: VaultID = UUID()) -> VaultEncryptedData {
+        VaultEncryptedData(
+            vaultID: vaultID,
+            name: "MockVault",
+            trustedKey: Data(),
+            createdAt: Date(),
+            updatedAt: Date(),
+            isEmpty: false
+        )
+    }
 }
 
 private final class NoopTagInteractor: TagInteracting {
