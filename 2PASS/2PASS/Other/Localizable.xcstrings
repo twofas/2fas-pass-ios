@@ -959,23 +959,6 @@
         }
       }
     },
-    "backup_configs_last_error" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last error: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ostatni błąd: %@"
-          }
-        }
-      }
-    },
     "backup_configs_last_synced" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -13281,23 +13264,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wczytaj z CSV"
-          }
-        }
-      }
-    },
-    "s3_missing_required_fields" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please fill in all required fields."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wypełnij wszystkie wymagane pola."
           }
         }
       }
