@@ -4253,24 +4253,7 @@
         }
       }
     },
-    "connection_test_error_forbidden" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Access denied. The credentials don't have permission for this location."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brak dostępu. Te dane uwierzytelniające nie mają uprawnień do tej lokalizacji."
-          }
-        }
-      }
-    },
-    "connection_test_error_invalid_response" : {
+    "sync_error_invalid_response" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4287,24 +4270,7 @@
         }
       }
     },
-    "connection_test_error_method_not_allowed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The server does not support the operations required for backup sync."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serwer nie obsługuje operacji wymaganych do synchronizacji kopii zapasowej."
-          }
-        }
-      }
-    },
-    "connection_test_error_network" : {
+    "sync_error_network" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4321,7 +4287,7 @@
         }
       }
     },
-    "connection_test_error_not_found" : {
+    "sync_error_not_found" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4338,7 +4304,7 @@
         }
       }
     },
-    "connection_test_error_server" : {
+    "sync_error_server" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -4351,74 +4317,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serwer zwrócił błąd. Spróbuj ponownie później."
-          }
-        }
-      }
-    },
-    "connection_test_error_ssl" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't establish a secure connection. Check the server's TLS certificate."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie można nawiązać bezpiecznego połączenia. Sprawdź certyfikat TLS serwera."
-          }
-        }
-      }
-    },
-    "connection_test_error_unauthorized" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Authentication failed. Check your credentials."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uwierzytelnianie nie powiodło się. Sprawdź dane logowania."
-          }
-        }
-      }
-    },
-    "connection_test_error_unexpected_status" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The server returned an unexpected response (HTTP %lld)."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serwer zwrócił nieoczekiwaną odpowiedź (HTTP %lld)."
-          }
-        }
-      }
-    },
-    "connection_test_error_invalid_url" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The address appears to be invalid."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adres wydaje się być nieprawidłowy."
           }
         }
       }

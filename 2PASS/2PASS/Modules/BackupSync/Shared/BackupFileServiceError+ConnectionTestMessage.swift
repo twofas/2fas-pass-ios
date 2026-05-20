@@ -14,25 +14,25 @@ extension BackupFileServiceError {
         }
         switch error {
         case .unauthorized:
-            return String(localized: .connectionTestErrorUnauthorized)
+            return String(localized: .syncStatusErrorNotAuthorized)
         case .forbidden:
-            return String(localized: .connectionTestErrorForbidden)
+            return String(localized: .syncStatusErrorUserIsForbidden)
         case .notFound:
-            return String(localized: .connectionTestErrorNotFound)
+            return String(localized: .syncErrorNotFound)
         case .methodNotAllowed:
-            return String(localized: .connectionTestErrorMethodNotAllowed)
+            return String(localized: .syncStatusErrorMethodNotAllowed)
         case .unexpectedStatus(let code):
-            return String(localized: .connectionTestErrorUnexpectedStatus(code))
+            return String(localized: .syncStatusErrorGeneralReason("HTTP \(code)"))
         case .ssl:
-            return String(localized: .connectionTestErrorSsl)
+            return String(localized: .syncStatusErrorSslError)
         case .network:
-            return String(localized: .connectionTestErrorNetwork)
+            return String(localized: .syncErrorNetwork)
         case .server:
-            return String(localized: .connectionTestErrorServer)
+            return String(localized: .syncErrorServer)
         case .url:
-            return String(localized: .connectionTestErrorInvalidUrl)
+            return String(localized: .syncStatusErrorIncorrectUrl)
         case .invalidResponse:
-            return String(localized: .connectionTestErrorInvalidResponse)
+            return String(localized: .syncErrorInvalidResponse)
         }
     }
 }
