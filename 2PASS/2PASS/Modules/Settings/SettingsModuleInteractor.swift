@@ -18,6 +18,8 @@ protocol SettingsModuleInteracting: AnyObject {
     var isPushNotificationsEnabled: Bool { get }
     var didAutoFillStatusChanged: NotificationCenter.Notifications { get }
     var didPushNotificationsStatusChanged: NotificationCenter.Notifications { get }
+    var syncErrorChanges: AsyncStream<Bool> { get }
+    var syncEnabledChanges: AsyncStream<Bool> { get }
     var is2FASAuthInstalled: Bool { get }
 }
 
@@ -27,6 +29,7 @@ final class SettingsModuleInteractor {
     private let systemInteractor: SystemInteracting
     private let configInteractor: ConfigInteracting
     private let configsInteractor: BackupSyncConfigsInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let autoFillStatusInteractor: AutoFillStatusInteracting
     private let pushNotificationsInteractor: PushNotificationsPermissionInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
@@ -36,12 +39,14 @@ final class SettingsModuleInteractor {
     init(systemInteractor: SystemInteracting,
          configInteractor: ConfigInteracting,
          configsInteractor: BackupSyncConfigsInteracting,
+         syncTriggerInteractor: BackupSyncTriggerInteracting,
          autoFillStatusInteractor: AutoFillStatusInteracting,
          pushNotificationsInteractor: PushNotificationsPermissionInteracting,
          paymentStatusInteractor: PaymentStatusInteracting) {
         self.systemInteractor = systemInteractor
         self.configInteractor = configInteractor
         self.configsInteractor = configsInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.autoFillStatusInteractor = autoFillStatusInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
@@ -77,7 +82,36 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
     }
     
     var syncHasError: Bool {
-        systemInteractor.syncHasError
+        syncTriggerInteractor.hasAnySyncError
+    }
+
+    var syncErrorChanges: AsyncStream<Bool> {
+        syncTriggerInteractor.syncErrorChanges
+    }
+
+    /// Emits the current `isSyncEnabled` value only when it actually flips. Wraps
+    /// `configsInteractor.configsDidChange` (which fires on any CRUD — add, update, or remove)
+    /// into a value-carrying stream by re-deriving `!allConfigs.isEmpty` on each upstream
+    /// signal and dedupping against the prior yield. Updates that don't change the count
+    /// (e.g. editing an existing config's fields) are suppressed. The seed is the value at
+    /// subscription time, so the first matching signal is dropped if it carries the same
+    /// flag the consumer would have read synchronously. The configs interactor stays narrow
+    /// at the Data layer; the "is sync enabled" projection lives here because it's a
+    /// Settings-domain concept.
+    var syncEnabledChanges: AsyncStream<Bool> {
+        let configsInteractor = self.configsInteractor
+        return AsyncStream { continuation in
+            let task = Task {
+                var lastYielded = !configsInteractor.allConfigs.isEmpty
+                for await _ in configsInteractor.configsDidChange {
+                    let current = !configsInteractor.allConfigs.isEmpty
+                    guard current != lastYielded else { continue }
+                    lastYielded = current
+                    continuation.yield(current)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
     }
     
     var isAutoFillEnabled: Bool {

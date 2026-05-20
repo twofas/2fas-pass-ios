@@ -61,7 +61,7 @@ extension SettingsPresenter {
     func onAppear() {
         refreshAutoFillStatus()
         refreshPushNotificationsStatus()
-        refreshSyncStatus()
+        refreshSyncStatus(hasError: interactor.syncHasError, isEnabled: interactor.isSyncEnabled)
         refreshSubscriptionStatus()
     }
     
@@ -77,10 +77,18 @@ extension SettingsPresenter {
         }
     }
     
-    func observeSyncStateChanged() async {
-        for await _ in NotificationCenter.default.notifications(named: .settingsSyncStateChanged) {
-            Task { @MainActor in
-                refreshSyncStatus()
+    func observeSyncErrorChanges() async {
+        for await hasError in interactor.syncErrorChanges {
+            await MainActor.run {
+                refreshSyncStatus(hasError: hasError, isEnabled: interactor.isSyncEnabled)
+            }
+        }
+    }
+
+    func observeSyncEnabledChanges() async {
+        for await isEnabled in interactor.syncEnabledChanges {
+            await MainActor.run {
+                refreshSyncStatus(hasError: interactor.syncHasError, isEnabled: isEnabled)
             }
         }
     }
@@ -153,13 +161,12 @@ extension SettingsPresenter {
         pushNotificationsStatus = interactor.isPushNotificationsEnabled ? .on : .off
     }
     
-    private func refreshSyncStatus() {
-        let hasError = interactor.syncHasError
+    private func refreshSyncStatus(hasError: Bool, isEnabled: Bool) {
         self.syncStatus = {
             guard !hasError else {
                 return String(localized: .commonError)
             }
-            return self.interactor.isSyncEnabled ? String(localized: .commonEnabled) : String(localized: .commonDisabled)
+            return isEnabled ? String(localized: .commonEnabled) : String(localized: .commonDisabled)
         }()
         self.hasSyncError = hasError
     }

@@ -33,7 +33,6 @@ final class MainRepositoryImpl: MainRepository {
     var _isInBackground = false
     var _isAutoFillEnabled: Bool = false
     var _pushNotificationToken: String?
-    var _syncHasError = false
     var _startPurchaseBlock: StartPurchaseBlock?
     var _subscriptionPlan: SubscriptionPlan = .free
     var _cloudCacheInitilizingNewStore = false

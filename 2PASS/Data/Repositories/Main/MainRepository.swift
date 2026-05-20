@@ -697,9 +697,6 @@ protocol MainRepository: AnyObject {
     func cloudCacheSave()
     
     // MARK: - System
-    var syncHasError: Bool { get }
-    func setSyncHasError(_ value: Bool)
-    
     func copyToClipboard(_ str: String)
     func positiveFeedback()
     func negativeFeedback()

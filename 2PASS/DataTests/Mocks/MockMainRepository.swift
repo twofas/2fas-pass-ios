@@ -2453,15 +2453,6 @@ final class MockMainRepository: MainRepository {
 
     // MARK: System
 
-    var stubbedSyncHasError: Bool = false
-    var syncHasError: Bool { stubbedSyncHasError }
-
-    var capturedSyncHasError: Bool?
-    func setSyncHasError(_ value: Bool) {
-        recordCall()
-        capturedSyncHasError = value
-    }
-
     func copyToClipboard(_ str: String) {
         recordCall()
     }

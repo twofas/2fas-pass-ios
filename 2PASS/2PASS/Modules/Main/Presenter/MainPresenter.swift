@@ -13,21 +13,39 @@ final class MainPresenter {
 
     weak var view: (any MainViewControlling)?
 
+    /// Drives the tab-bar badge from `interactor.badgeUpdates` (a dedupped passthrough to
+    /// `BackupSyncTriggerInteractor.syncErrorChanges`). Cancelled in `deinit` so the stream's
+    /// upstream subscriptions tear down when the presenter goes away. `var ...?` per the
+    /// Swift two-phase init exception (CLAUDE.md): the Task captures `[weak self]` and so
+    /// cannot be assigned during phase-one init.
+    private var badgeSubscription: Task<Void, Never>?
+
     init(flowController: MainFlowControlling, interactor: MainModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
 
-        interactor.updateBadge = { [weak self] showError in
-            DispatchQueue.main.async {
-                if showError {
-                    self?.view?.showBadge()
-                } else {
-                    self?.view?.hideBadge()
-                }
-            }
-        }
         interactor.paymentScreen = { [weak flowController] in
             flowController?.toPayment()
+        }
+
+        badgeSubscription = Task { [weak self] in
+            guard let stream = self?.interactor.badgeUpdates else { return }
+            for await showError in stream {
+                await self?.applyBadge(showError)
+            }
+        }
+    }
+
+    deinit {
+        badgeSubscription?.cancel()
+    }
+
+    @MainActor
+    private func applyBadge(_ showError: Bool) {
+        if showError {
+            view?.showBadge()
+        } else {
+            view?.hideBadge()
         }
     }
 

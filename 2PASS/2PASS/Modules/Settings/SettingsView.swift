@@ -215,7 +215,10 @@ struct SettingsView: View {
                 await presenter.observePushNotificationsStatusChanged()
             }
             .task {
-                await presenter.observeSyncStateChanged()
+                await presenter.observeSyncErrorChanges()
+            }
+            .task {
+                await presenter.observeSyncEnabledChanges()
             }
         }
     }

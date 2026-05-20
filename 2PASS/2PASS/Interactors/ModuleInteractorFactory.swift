@@ -47,6 +47,7 @@ extension ModuleInteractorFactory {
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
             pushNotificationsInteractor: InteractorFactory.shared.pushNotificationsPermissionInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor()
@@ -199,8 +200,6 @@ extension ModuleInteractorFactory {
     func mainModuleInteracting() -> MainModuleInteracting {
         MainModuleInteractor(
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
-            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
-            systemInteractor: InteractorFactory.shared.systemInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
             loginInteractor: InteractorFactory.shared.loginInteractor()
         )

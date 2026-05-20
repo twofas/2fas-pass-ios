@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import os
 import Backup
 
 /// User-driven sync trigger entry points ("Sync now" buttons, per-row sync), plus read access
@@ -120,6 +121,15 @@ public protocol BackupSyncTriggerInteracting: AnyObject {
     /// Each yield is a real moment of local-state mutation; subscribers whose reload work is
     /// expensive should add their own throttle.
     func syncDidApplyRemoteChanges() -> AsyncStream<Void>
+
+    /// Stream that yields the current value of `hasAnySyncError` whenever it actually flips.
+    /// Upstream signals (`.sessionFinished` and `configsDidChange`) fire whenever the value
+    /// *may* have changed; this stream dedups internally — the value is read under a lock,
+    /// compared to the last yielded value, and only emitted on a real transition. The seed for
+    /// dedup is the value at subscription time, so a signal that arrives with the same value
+    /// the consumer would have read synchronously is suppressed. Each access returns a fresh
+    /// stream; cancelling the consumer Task tears down both upstream subscriptions.
+    var syncErrorChanges: AsyncStream<Bool> { get }
 }
 
 final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
@@ -201,6 +211,46 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
                 continuation.finish()
             }
             continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    var syncErrorChanges: AsyncStream<Bool> {
+        let container = mainRepository.backupSyncContainer
+        let events = container.syncEvents()
+        let configChanges = container.configsDidChange
+        return AsyncStream { continuation in
+            // Seed dedup state with the current value so an upstream signal carrying the same
+            // flag the consumer would have just read synchronously is suppressed. The lock
+            // serializes the read-compare-update against the two upstream tasks, which fire
+            // independently and could otherwise race a duplicate yield through.
+            let lastYielded = OSAllocatedUnfairLock<Bool>(initialState: container.hasAnySyncError)
+            let yieldIfChanged: @Sendable () -> Void = {
+                let valueToYield: Bool? = lastYielded.withLock { last in
+                    let current = container.hasAnySyncError
+                    guard last != current else { return nil }
+                    last = current
+                    return current
+                }
+                if let valueToYield {
+                    continuation.yield(valueToYield)
+                }
+            }
+            let eventsTask = Task {
+                for await event in events {
+                    if case .sessionFinished = event {
+                        yieldIfChanged()
+                    }
+                }
+            }
+            let configsTask = Task {
+                for await _ in configChanges {
+                    yieldIfChanged()
+                }
+            }
+            continuation.onTermination = { _ in
+                eventsTask.cancel()
+                configsTask.cancel()
+            }
         }
     }
 }
