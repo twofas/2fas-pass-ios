@@ -155,6 +155,10 @@ extension MainRepositoryImpl {
         encryptedStorage.markVaultContentModified(vaultID)
     }
 
+    func backfillVaultContentModificationDate(vaultID: VaultID) {
+        encryptedStorage.backfillContentModificationDate(in: vaultID)
+    }
+
     func saveEncryptedStorage() {
         Log("Save Encrypted Storage", module: .mainRepository)
         encryptedStorage.save()

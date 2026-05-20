@@ -394,4 +394,12 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     public func markVaultContentModified(_ vaultID: VaultID) {
         VaultEncryptedEntity.setContentModificationDate(on: context, vaultID: vaultID, date: Date())
     }
+
+    public func backfillContentModificationDate(in vaultID: VaultID) {
+        let item = ItemEncryptedEntity.latestModificationDate(on: context, vaultID: vaultID)
+        let deleted = DeletedItemEncryptedEntity.latestDeletionDate(on: context, vaultID: vaultID)
+        let tag = TagEncryptedEntity.latestModificationDate(on: context, vaultID: vaultID)
+        guard let derived = [item, deleted, tag].compactMap({ $0 }).max() else { return }
+        VaultEncryptedEntity.setContentModificationDate(on: context, vaultID: vaultID, date: derived)
+    }
 }

@@ -1976,6 +1976,14 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func markVaultContentModified(vaultID: VaultID) {
+        recordCall()
+    }
+
+    func backfillVaultContentModificationDate(vaultID: VaultID) {
+        recordCall()
+    }
+
     func selectVault(_ vaultID: VaultID) {
         recordCall()
     }

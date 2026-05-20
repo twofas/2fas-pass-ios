@@ -76,6 +76,10 @@ public protocol EncryptedStorageDataSource: AnyObject {
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
     func markVaultContentModified(_ vaultID: VaultID)
+    /// Recomputes the vault's `contentModificationDate` from the most recent timestamp across
+    /// its items, deleted-item tombstones, and tags. No-op when the vault has no entities.
+    /// Reads plain Core Data attributes only — safe to call before vault unlock.
+    func backfillContentModificationDate(in vaultID: VaultID)
 
     // MARK: Deleted Items
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)

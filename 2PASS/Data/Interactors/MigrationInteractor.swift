@@ -81,8 +81,11 @@ final class MigrationInteractor: MigrationInteracting {
         }
 
         if lastKnownAppVersion?.compare("1.9.0", options: .numeric) == .orderedAscending {
+            // Derive contentModificationDate from existing item/deleted-item/tag timestamps
+            // rather than stamping Date(). Same input → same output across devices, so the
+            // first 1.9.0 sync compares actual content age instead of upgrade wall-clocks.
             for vault in mainRepository.listEncryptedVaults() {
-                mainRepository.markVaultContentModified(vaultID: vault.vaultID)
+                mainRepository.backfillVaultContentModificationDate(vaultID: vault.vaultID)
             }
         }
 
