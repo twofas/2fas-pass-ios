@@ -142,7 +142,11 @@ private extension S3SigV4Signer {
     }
 }
 
-private extension CharacterSet {
+extension CharacterSet {
+    /// RFC 3986 unreserved characters (alphanumerics + `-_.~`) — the set AWS SigV4 mandates
+    /// for percent-encoding path/key segments and certain header values (e.g.
+    /// `x-amz-copy-source`). Shared with `BackupS3ServiceSession` so request-building
+    /// callers encode to the exact set the signer expects in the canonical request.
     static let awsUnreserved: CharacterSet = {
         var set = CharacterSet()
         set.insert(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~")

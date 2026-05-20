@@ -83,7 +83,12 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
         let finalResource: BackupFileResource = .vault(vaultID: vaultID)
 
         var copyRequest = Self.request(.put, for: finalResource)
-        copyRequest.setValue("/\(config.bucket)/\(tempResource.filename)", forHTTPHeaderField: "x-amz-copy-source")
+        // AWS spec: x-amz-copy-source must be URI-encoded per segment (the separating `/`
+        // stays literal). Encoding here — not during URL construction — keeps the header
+        // value byte-identical to what SigV4 folds into the canonical request.
+        let encodedBucket = config.bucket.addingPercentEncoding(withAllowedCharacters: .awsUnreserved) ?? config.bucket
+        let encodedKey = tempResource.filename.addingPercentEncoding(withAllowedCharacters: .awsUnreserved) ?? tempResource.filename
+        copyRequest.setValue("/\(encodedBucket)/\(encodedKey)", forHTTPHeaderField: "x-amz-copy-source")
         let (_, copyResponse) = try await perform(copyRequest)
         try validateStatus(copyResponse, expected: BackupFileServiceExpectedStatus.read)
 
