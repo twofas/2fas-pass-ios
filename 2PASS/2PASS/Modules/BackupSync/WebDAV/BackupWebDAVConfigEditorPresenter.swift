@@ -94,18 +94,22 @@ final class BackupWebDAVConfigEditorPresenter {
         guard let original = originalSnapshot else { return false }
         return url != original.baseURL
     }
+    
     var allowTLSOffChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return allowTLSOff != original.allowTLSOff
     }
+    
     var usernameChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return username != (original.login ?? "")
     }
+    
     var passwordChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return password != (original.password ?? "")
     }
+    
     var hasUnsavedChanges: Bool {
         if isEditMode {
             return urlChanged
@@ -163,6 +167,7 @@ final class BackupWebDAVConfigEditorPresenter {
                 try? await Task.sleep(for: .milliseconds(200))
                 if Task.isCancelled { return }
                 successFeedbackTrigger &+= 1
+                
             } catch {
                 guard let self else { return }
                 isTesting = false
