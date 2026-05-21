@@ -59,6 +59,10 @@ protocol MainRepository: AnyObject {
     var lastAppUpdatePromptDate: Date? { get }
     func setLastAppUpdatePromptDate(_ date: Date)
     func clearLastAppUpdatePromptDate()
+
+    var lastAppReviewPromptDate: Date? { get }
+    func setLastAppReviewPromptDate(_ date: Date)
+    func clearLastAppReviewPromptDate()
     
     var minimalAppVersionSupported: String? { get }
     func setMinimalAppVersionSupported(_ version: String)
@@ -121,6 +125,7 @@ protocol MainRepository: AnyObject {
     var appDisplayName: String? { get }
     var dateOfFirstRun: Date? { get }
     func saveDateOfFirstRun(_ date: Date)
+    func clearDateOfFirstRun()
     
     func setActiveSearchEnabled(_ enabled: Bool)
     var isActiveSearchEnabled: Bool { get }

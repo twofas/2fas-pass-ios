@@ -11,6 +11,7 @@ import Common
 protocol MainModuleInteracting: AnyObject {
     var paymentScreen: Callback? { get set }
     var badgeUpdates: AsyncStream<Bool> { get }
+    var reviewRequests: AsyncStream<Void> { get }
     var shouldShowQuickSetup: Bool { get }
     var shouldRequestForBiometryToLogin: Bool { get }
 
@@ -23,16 +24,19 @@ final class MainModuleInteractor {
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let quickSetupInteractor: QuickSetupInteracting
     private let loginInteractor: LoginInteracting
+    private let appReviewInteractor: AppReviewInteracting
     private let notificationCenter: NotificationCenter
 
     init(
         syncTriggerInteractor: BackupSyncTriggerInteracting,
         quickSetupInteractor: QuickSetupInteracting,
-        loginInteractor: LoginInteracting
+        loginInteractor: LoginInteracting,
+        appReviewInteractor: AppReviewInteracting
     ) {
         self.syncTriggerInteractor = syncTriggerInteractor
         self.quickSetupInteractor = quickSetupInteractor
         self.loginInteractor = loginInteractor
+        self.appReviewInteractor = appReviewInteractor
         self.notificationCenter = NotificationCenter.default
 
         notificationCenter.addObserver(
@@ -41,6 +45,7 @@ final class MainModuleInteractor {
             name: .userLoggedIn,
             object: nil
         )
+
         notificationCenter.addObserver(
                 self,
                 selector: #selector(presentPaymentScreen),
@@ -68,6 +73,10 @@ extension MainModuleInteractor: MainModuleInteracting {
     /// tab-bar badge; the interactor no longer owns a subscription.
     var badgeUpdates: AsyncStream<Bool> {
         syncTriggerInteractor.syncErrorChanges
+    }
+
+    var reviewRequests: AsyncStream<Void> {
+        appReviewInteractor.reviewRequests
     }
 
     func viewIsVisible() {

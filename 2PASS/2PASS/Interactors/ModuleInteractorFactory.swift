@@ -201,7 +201,8 @@ extension ModuleInteractorFactory {
         MainModuleInteractor(
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor(),
-            loginInteractor: InteractorFactory.shared.loginInteractor()
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            appReviewInteractor: InteractorFactory.shared.appReviewInteractor()
         )
     }
     

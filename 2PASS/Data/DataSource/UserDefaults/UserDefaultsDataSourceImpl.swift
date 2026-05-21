@@ -49,6 +49,7 @@ final class UserDefaultsDataSourceImpl {
         case lastKnownAppVersion
         case shouldShowQuickSetup
         case lastAppUpdatePromptDate
+        case lastAppReviewPromptDate
         case screenCaptureAllowedUntil
         case shareLinkConfig
         case deviceName
@@ -122,12 +123,17 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.set(date.timeIntervalSince1970, forKey: Keys.dateOfFirstRun.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var dateOfFirstRun: Date? {
         guard userDefaults.object(forKey: Keys.dateOfFirstRun.rawValue) != nil else { return nil }
         let value = userDefaults.double(forKey: Keys.dateOfFirstRun.rawValue)
         let date = Date(timeIntervalSince1970: value)
         return date
+    }
+
+    func clearDateOfFirstRun() {
+        userDefaults.set(nil, forKey: Keys.dateOfFirstRun.rawValue)
+        userDefaults.synchronize()
     }
     
     func setAppLockAttempts(_ value: AppLockAttempts) {
@@ -517,14 +523,28 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     var lastAppUpdatePromptDate: Date? {
         userDefaults.object(forKey: Keys.lastAppUpdatePromptDate.rawValue) as? Date
     }
-    
+
     func setLastAppUpdatePromptDate(_ date: Date) {
         userDefaults.set(date, forKey: Keys.lastAppUpdatePromptDate.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func clearLastAppUpdatePromptDate() {
         userDefaults.set(nil, forKey: Keys.lastAppUpdatePromptDate.rawValue)
+        userDefaults.synchronize()
+    }
+
+    var lastAppReviewPromptDate: Date? {
+        userDefaults.object(forKey: Keys.lastAppReviewPromptDate.rawValue) as? Date
+    }
+
+    func setLastAppReviewPromptDate(_ date: Date) {
+        userDefaults.set(date, forKey: Keys.lastAppReviewPromptDate.rawValue)
+        userDefaults.synchronize()
+    }
+
+    func clearLastAppReviewPromptDate() {
+        userDefaults.set(nil, forKey: Keys.lastAppReviewPromptDate.rawValue)
         userDefaults.synchronize()
     }
 

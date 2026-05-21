@@ -17,6 +17,7 @@ protocol UserDefaultsDataSource: AnyObject {
     
     func saveDateOfFirstRun(_ date: Date)
     var dateOfFirstRun: Date? { get }
+    func clearDateOfFirstRun()
     
     func setAppLockAttempts(_ value: AppLockAttempts)
     var appLockAttempts: AppLockAttempts? { get }
@@ -140,6 +141,10 @@ protocol UserDefaultsDataSource: AnyObject {
     var lastAppUpdatePromptDate: Date? { get }
     func setLastAppUpdatePromptDate(_ date: Date)
     func clearLastAppUpdatePromptDate()
+
+    var lastAppReviewPromptDate: Date? { get }
+    func setLastAppReviewPromptDate(_ date: Date)
+    func clearLastAppReviewPromptDate()
 
     var screenCaptureAllowedUntil: Date? { get }
     func setScreenCaptureAllowedUntil(_ date: Date)

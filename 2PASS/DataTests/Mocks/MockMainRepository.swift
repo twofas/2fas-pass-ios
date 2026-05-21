@@ -259,6 +259,25 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    private var stubbedLastAppReviewPromptDate: Date?
+    var lastAppReviewPromptDate: Date? { stubbedLastAppReviewPromptDate }
+
+    @discardableResult
+    func withLastAppReviewPromptDate(_ value: Date?) -> Self {
+        stubbedLastAppReviewPromptDate = value
+        return self
+    }
+
+    private(set) var capturedLastAppReviewPromptDate: Date?
+    func setLastAppReviewPromptDate(_ date: Date) {
+        recordCall()
+        capturedLastAppReviewPromptDate = date
+    }
+
+    func clearLastAppReviewPromptDate() {
+        recordCall()
+    }
+
     private var stubbedMinimalAppVersionSupported: String?
     var minimalAppVersionSupported: String? { stubbedMinimalAppVersionSupported }
 
@@ -558,6 +577,10 @@ final class MockMainRepository: MainRepository {
     func saveDateOfFirstRun(_ date: Date) {
         recordCall()
         capturedDateOfFirstRun = date
+    }
+
+    func clearDateOfFirstRun() {
+        recordCall()
     }
 
     private(set) var capturedActiveSearchEnabled: Bool?

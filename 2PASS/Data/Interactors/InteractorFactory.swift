@@ -142,12 +142,14 @@ public final class InteractorFactory {
     
     public func startupInteractor() -> StartupInteracting {
         StartupInteractor(
+            mainRepository: MainRepositoryImpl.shared,
             protectionInteractor: protectionInteractor(),
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
             onboardingInteractor: onboardingInteractor(),
             migrationInteractor: migrationInteractor(),
-            securityInteractor: securityInteractor()
+            securityInteractor: securityInteractor(),
+            currentDateInteractor: currentDateInteractor()
         )
     }
     
@@ -397,6 +399,14 @@ public final class InteractorFactory {
             mainRepository: MainRepositoryImpl.shared,
             systemInteractor: systemInteractor(),
             syncTriggerInteractor: backupSyncTriggerInteractor()
+        )
+    }
+
+    public func appReviewInteractor() -> AppReviewInteracting {
+        AppReviewInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            currentDateInteractor: currentDateInteractor(),
+            paymentStatusInteractor: paymentStatusInteractor()
         )
     }
 }

@@ -78,7 +78,7 @@ struct SettingsDebugView: View {
                 Picker(selection: $presenter.debugSubscriptionPlanType) {
                     Text("None" as String)
                         .tag(SubscriptionPlanType?.none)
-                    
+
                     ForEach(SubscriptionPlanType.allCases, id: \.self) { plan in
                         Text(plan.rawValue.capitalized)
                             .tag(SubscriptionPlanType?.some(plan))
@@ -112,6 +112,49 @@ struct SettingsDebugView: View {
                         actionIcon: nil
                     )
                 }
+            }
+
+            Section {
+                LabeledContent {
+                    if presenter.currentDateOfFirstRun != nil {
+                        Button("Clear" as String) {
+                            presenter.onClearDateOfFirstRun()
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                } label: {
+                    VStack(alignment: .leading) {
+                        SettingsRowView(
+                            icon: .debug,
+                            title: Text("Date of First Run" as String),
+                            actionIcon: nil
+                        )
+                        
+                        if let currentDateOfFirstRun = presenter.currentDateOfFirstRun {
+                            Text(currentDateOfFirstRun, format: .dateTime)
+                                .padding(.leading, 40)
+                        } else {
+                            HStack {
+                                DatePicker(
+                                    selection: $presenter.debugDateOfFirstRun,
+                                    displayedComponents: [.date, .hourAndMinute],
+                                    label: {}
+                                )
+                                .labelsHidden()
+                                
+                                Button("Set" as String) {
+                                    presenter.onSetDateOfFirstRun()
+                                }
+                                .buttonStyle(.borderless)
+                                
+                                Spacer()
+                            }
+                            .padding(.leading, 40)
+                        }
+                    }
+                }
+            } footer: {
+                Text("Used by the App Review prompt's install-age gate. Backdate this to bypass the 1-day minimum during testing." as String)
             }
         }
         .router(router: SettingsDebugRouter(), destination: $presenter.destination)

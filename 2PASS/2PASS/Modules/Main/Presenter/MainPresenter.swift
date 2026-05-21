@@ -20,6 +20,8 @@ final class MainPresenter {
     /// cannot be assigned during phase-one init.
     private var badgeSubscription: Task<Void, Never>?
 
+    private var reviewSubscription: Task<Void, Never>?
+
     init(flowController: MainFlowControlling, interactor: MainModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
@@ -34,10 +36,18 @@ final class MainPresenter {
                 await self?.applyBadge(showError)
             }
         }
+
+        reviewSubscription = Task { [weak self] in
+            guard let stream = self?.interactor.reviewRequests else { return }
+            for await _ in stream {
+                await self?.presentStoreReview()
+            }
+        }
     }
 
     deinit {
         badgeSubscription?.cancel()
+        reviewSubscription?.cancel()
     }
 
     @MainActor
@@ -47,6 +57,11 @@ final class MainPresenter {
         } else {
             view?.hideBadge()
         }
+    }
+
+    @MainActor
+    private func presentStoreReview() {
+        flowController.requestStoreReview()
     }
 
     func viewDidAppear() {
