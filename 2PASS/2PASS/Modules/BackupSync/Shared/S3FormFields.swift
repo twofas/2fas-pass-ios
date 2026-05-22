@@ -90,6 +90,7 @@ struct S3FormFields: View {
                     onLoadFromCSV()
                 }
                 .font(.calloutEmphasized)
+                .textCase(nil)
             }
         }
 
