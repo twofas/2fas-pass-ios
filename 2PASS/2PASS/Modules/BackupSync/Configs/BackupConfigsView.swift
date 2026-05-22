@@ -81,6 +81,7 @@ struct BackupConfigsView: View {
                         }
                     }
                     .settingsFooter()
+                    .padding(.top, footerTopAdjustment)
                 }
             }
         } header: {
@@ -140,13 +141,16 @@ struct BackupConfigsView: View {
         )
     }
 
+    private var footerTopAdjustment: CGFloat {
+        if #available(iOS 26, *) { 0 } else { -16 }
+    }
+
     private var addButton: some View {
         Button {
             presenter.onAddPressed()
         } label: {
             Image(systemName: "plus")
                 .accessibilityLabel(Text(.backupConfigsAddCta))
-                .foregroundStyle(.white)
         }
         .disabled(presenter.isSyncing)
         .matchedZoomSource(id: BackupConfigsRouter.pickerSourceID, in: transitionNamespace)
