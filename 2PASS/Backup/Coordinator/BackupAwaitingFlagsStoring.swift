@@ -6,18 +6,11 @@
 
 import Foundation
 
-/// Persistence port for the per-config "next sync needs special handling" flags. Two
-/// independent `Set<BackupConfig.ID>` slots, both populated externally and consumed by
-/// `BackupSyncContainer` to decorate the next sync with `overwritingVault` /
-/// `allowingAnyDeviceId` for the matching ids.
-///
-/// `vaultOverrideAwaitingConfigIDs` is set after a master-password change so every file
-/// backend re-pushes the freshly re-encrypted vault; `deviceRegistrationAwaitingConfigIDs`
-/// is set after recovery so the first sync can register this device's id even on a
-/// non-multi-device entitlement. Each id is cleared independently when its specific sync
-/// succeeds — that clearing path lives outside this protocol (in the adapter that observes
-/// session success) and reads the same backing store, so this port intentionally exposes
-/// only read + mark.
+/// Persistence port for the per-config "next sync needs special handling" flags.
+/// `vaultOverride` is marked after a master-password change (re-push the re-encrypted
+/// vault); `deviceRegistration` is marked after recovery (first sync registers this device
+/// even without the multi-device entitlement). Clearing happens elsewhere — when the
+/// specific sync succeeds — so this port only exposes read + mark.
 public protocol BackupAwaitingFlagsStoring: Sendable {
     var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { get }
     func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>)

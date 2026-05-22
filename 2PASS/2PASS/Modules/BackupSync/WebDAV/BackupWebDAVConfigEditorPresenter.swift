@@ -28,19 +28,13 @@ final class BackupWebDAVConfigEditorPresenter {
     var username: String = ""
     var password: String = ""
 
-    /// `true` while the probe is in flight. Drives the button's spinner and disabled state.
     private(set) var isTesting: Bool = false
-    /// Bumped once each time the probe + save succeeds; the view observes this to fire a
-    /// success haptic. Counter (not Bool) so two consecutive successes still register as
-    /// distinct value changes and re-fire `.sensoryFeedback`.
+    /// Counter (not Bool) so two consecutive successes still register as a value change
+    /// and re-fire `.sensoryFeedback`.
     private(set) var successFeedbackTrigger: Int = 0
-    /// Bumped once each time the probe fails (other than user cancellation); drives the
-    /// error haptic. Same counter rationale as `successFeedbackTrigger`.
     private(set) var failureFeedbackTrigger: Int = 0
-    /// Drives the toolbar Save/Done button's enabled state. URL must parse to a normalized
-    /// secure URL before tapping is allowed; in edit mode the button additionally requires
-    /// at least one field to differ from the loaded values — re-saving an unchanged config
-    /// would just trigger a redundant probe.
+    /// URL must parse to a normalized secure URL. In edit mode at least one field must
+    /// differ from the loaded snapshot.
     var canSave: Bool {
         guard !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return false
@@ -62,15 +56,12 @@ final class BackupWebDAVConfigEditorPresenter {
 
     private let interactor: BackupWebDAVConfigEditorModuleInteracting
     private let configID: BackupConfig.ID?
-    /// Called on save (with the saved config's id) or programmatic close (with `nil`).
-    /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
+    /// Called on save (saved id) or programmatic close (`nil`). Toolbar Cancel uses
+    /// `\.dismiss` directly and bypasses this.
     private let onClose: @MainActor (BackupConfig.ID?) -> Void
-    /// Held so the in-flight probe can be torn down on dismissal — without this the network
-    /// request continues until the server responds even after the user taps Cancel.
     @ObservationIgnored
     private var testTask: Task<Void, Never>?
-    /// Snapshot of the config as it was when the form opened. Drives the per-field "changed"
-    /// indicators that highlight modified rows in edit mode. Stays nil in add mode.
+    /// Snapshot from form-open; drives per-field changed indicators in edit mode.
     @ObservationIgnored
     private var originalSnapshot: BackupWebDAVConfig?
 
@@ -123,11 +114,8 @@ final class BackupWebDAVConfigEditorPresenter {
             || !password.isEmpty
     }
 
-    /// Programmatic close without saving. Routes through `onClose` so the close request
-    /// reaches whoever owns the form's host presentation — required in add mode (where
-    /// the form is pushed inside the picker's `NavigationStack`, so a form-local
-    /// `@Environment(\.dismiss)` would only pop back to the picker), and consistent with
-    /// edit mode (where `onClose` is wired to a closure that dismisses the sheet).
+    /// Programmatic close without saving. Routes through `onClose` rather than
+    /// `@Environment(\.dismiss)` so the close reaches whoever owns the host presentation.
     func close() {
         onClose(nil)
     }
@@ -162,8 +150,7 @@ final class BackupWebDAVConfigEditorPresenter {
                 isTesting = false
                 testTask = nil
                 onClose(savedID)
-                // Brief delay so the success haptic punctuates the dismissal
-                // animation instead of firing alongside it.
+                // Delay so the haptic lands after the dismissal animation, not alongside it.
                 try? await Task.sleep(for: .milliseconds(200))
                 if Task.isCancelled { return }
                 successFeedbackTrigger &+= 1
@@ -176,8 +163,7 @@ final class BackupWebDAVConfigEditorPresenter {
                 destination = .errorAlert(
                     message: BackupFileServiceError.connectionTestMessage(for: error)
                 )
-                // Brief delay so the error haptic punctuates the alert's presentation
-                // animation instead of firing alongside it.
+                // Delay so the haptic lands after the alert appears, not alongside it.
                 try? await Task.sleep(for: .milliseconds(100))
                 if Task.isCancelled { return }
                 failureFeedbackTrigger &+= 1

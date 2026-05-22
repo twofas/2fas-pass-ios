@@ -18,73 +18,47 @@ public struct S3EndpointDetection: Equatable {
     }
 }
 
-/// CRUD-style access to the backup-sync configs, plus a connection probe used to validate a
-/// config before persisting it. Persistence reads/writes go straight to `MainRepository` —
-/// orchestrated sync lives in `BackupSyncTriggerInteracting`. The probe is included here
-/// because it's a "thing you can do with a config" alongside read/write; it routes through
-/// `BackupSyncContainer.testConnection(config:)`, which constructs a transient
-/// `BackupFileServiceSession` for the supplied config. Per-kind filtering is left to callers
-/// via the `[BackupConfig].webDAVEntries` / `.iCloudEntry` extensions.
+/// CRUD-style access to backup-sync configs, plus a connection probe. Orchestrated sync
+/// lives in `BackupSyncTriggerInteracting`.
 public protocol BackupSyncConfigsInteracting: AnyObject {
-    /// Every registered config in registration order.
     var allConfigs: [BackupConfig] { get }
 
-    /// Adds a new WebDAV backend; returns the assigned id.
     @discardableResult
     func addWebDAVConfig(_ config: BackupWebDAVConfig) -> BackupConfig.ID
 
-    /// Adds a new S3 backend; returns the assigned id.
     @discardableResult
     func addS3Config(_ config: S3ServiceConfig) -> BackupConfig.ID
 
-    /// Adds the iCloud backend; returns the assigned id, or `nil` if an iCloud entry already
-    /// exists. Single-instance: there is exactly one CloudKit container per build, so a
-    /// second iCloud config would point at the same data and create a phantom duplicate in
-    /// the convergence loop.
+    /// Adds the iCloud backend; returns the assigned id, or `nil` if one already exists.
+    /// Single-instance: only one CloudKit container per build.
     @discardableResult
     func addiCloudConfig() -> BackupConfig.ID?
 
-    /// UI-affordance signal: `true` when no iCloud entry exists yet, so a subsequent
-    /// `addiCloudConfig()` would succeed. Drives "add iCloud" button enable-state and pre-call
-    /// guards in flows that want to short-circuit without invoking the mutation path. The
-    /// authoritative check lives inside `addiCloudConfig()` itself — this property is a read
-    /// for UX, not a replacement for the atomic dedupe at the mutation site.
+    /// `true` when no iCloud entry exists yet. UI affordance — the authoritative check is
+    /// inside `addiCloudConfig()`.
     var canAddiCloud: Bool { get }
 
-    /// Replaces the WebDAV config bound to `id`, preserving id and `createdAt`. No-op if the
-    /// id either doesn't exist or maps to an entry of another kind.
+    /// Replaces the config bound to `id`, preserving id and `createdAt`. No-op if the id
+    /// doesn't exist or maps to a different kind.
     func updateWebDAVConfig(id: BackupConfig.ID, with config: BackupWebDAVConfig)
-
-    /// Replaces the S3 config bound to `id`, preserving id and `createdAt`. No-op if the id
-    /// either doesn't exist or maps to an entry of another kind.
     func updateS3Config(id: BackupConfig.ID, with config: S3ServiceConfig)
 
-    /// Removes the entry with `id` regardless of kind. No-op if no entry matches.
     func removeConfig(id: BackupConfig.ID)
 
-    /// Typed sequence that emits one element every time configs are persisted via this
-    /// interactor (add / update / remove). Mirrors `BackupSyncContainer.configsDidChange` —
-    /// surfaced at the interactor seam so consumers don't reach into `NotificationCenter`.
-    /// Zero-cost passthrough; each access yields a fresh subscription.
+    /// Emits once per successful add / update / remove.
     var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
-    /// Read probe: routes through `BackupSyncContainer.testConnection(config:)`, which builds
-    /// a transient `BackupFileServiceSession` for the supplied config and runs auth +
-    /// index-read in one call. Throws on auth failure, network error, or read denial. Returns
-    /// silently on success including the no-index-yet fresh-setup case (`fetchIndex()` 404 is
-    /// folded into success).
+    /// Auth + index-read probe. Returns silently on success including the "no index yet"
+    /// 404 (folded into success).
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
 
-    /// Best-effort parse of standard AWS S3 endpoint shapes. Returns `nil` for non-AWS hosts
-    /// since S3-compatible providers (MinIO, Backblaze, R2) use ad-hoc URL shapes that aren't
-    /// reliable to auto-parse. Input is normalized first (whitespace trim, scheme add, host
-    /// lowercase) so the detection accepts permissive user typing.
+    /// Best-effort parse of standard AWS S3 endpoint shapes. Returns `nil` for non-AWS
+    /// hosts (S3-compatible providers use ad-hoc URL shapes).
     func detectS3Endpoint(_ endpoint: String) -> S3EndpointDetection?
 
-    /// Parses an AWS-exported access keys CSV (header row: `Access key ID,Secret access key`).
-    /// Tolerates BOM, CRLF/LF line endings, surrounding double-quotes, and case differences in
-    /// header names. URL is security-scoped (returned by `fileImporter`), so access is bracketed.
+    /// Parses an AWS-exported access keys CSV. Tolerates BOM, CRLF/LF, surrounding quotes,
+    /// and header case. URL is security-scoped (`fileImporter`), bracketed inside.
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
 }
 

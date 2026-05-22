@@ -7,25 +7,9 @@
 import SwiftUI
 import CommonUI
 
-/// Sectioned WebDAV credential fields shared by the backup-config form (edit/add) and
-/// the recovery WebDAV form. Renders three sections: server URL, credentials, and a
-/// security toggle for self-signed certs.
-///
-/// Edit-mode "changed" indicators are opt-in via per-field chainable modifiers. Forms
-/// that have no original snapshot (recovery, fresh add) simply omit them.
-///
-/// ```
-/// WebDAVFormFields(
-///     url: $presenter.url,
-///     username: $presenter.username,
-///     password: $presenter.password,
-///     allowTLSOff: $presenter.allowTLSOff
-/// )
-/// .formFieldChanged(url: presenter.urlChanged)
-/// .formFieldChanged(username: presenter.usernameChanged)
-/// .formFieldChanged(password: presenter.passwordChanged)
-/// .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
-/// ```
+/// Sectioned WebDAV credential fields shared by the config editor and the recovery form.
+/// Edit-mode "changed" indicators are opt-in via the per-field `formFieldChanged(_:)`
+/// modifiers below.
 struct WebDAVFormFields: View {
 
     @Binding var url: String
@@ -77,28 +61,24 @@ struct WebDAVFormFields: View {
         }
     }
 
-    /// Lights the URL row's "changed from original" indicator.
     func formFieldChanged(url flag: Bool) -> Self {
         var instance = self
         instance.urlChanged = flag
         return instance
     }
 
-    /// Lights the username row's "changed from original" indicator.
     func formFieldChanged(username flag: Bool) -> Self {
         var instance = self
         instance.usernameChanged = flag
         return instance
     }
 
-    /// Lights the password row's "changed from original" indicator.
     func formFieldChanged(password flag: Bool) -> Self {
         var instance = self
         instance.passwordChanged = flag
         return instance
     }
 
-    /// Lights the allow-self-signed-certs row's "changed from original" indicator.
     func formFieldChanged(allowTLSOff flag: Bool) -> Self {
         var instance = self
         instance.allowTLSOffChanged = flag

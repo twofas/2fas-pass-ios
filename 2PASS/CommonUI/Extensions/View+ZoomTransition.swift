@@ -8,19 +8,9 @@ import SwiftUI
 
 public extension View {
 
-    /// Anchors a matched-zoom *source* when `namespace` is non-nil and the platform
-    /// supports iOS 26+ navigation transitions; passes through unchanged otherwise.
-    ///
-    /// The id is taken via `@autoclosure`, so both literal call sites
-    /// (`id: "foo"`) and `@Observable` expressions (`id: presenter.someProp`) use
-    /// the same overload — the expression is wrapped into a closure and evaluated
-    /// inside the `ViewModifier`'s body, where SwiftUI's observation tracking is
-    /// active. Static-id callers pay one `ViewModifier` indirection; reactive
-    /// callers get body re-fires on property change without any extra wiring.
-    ///
-    /// On pre-iOS-26 (or non-iOS platforms) the modifier is skipped entirely —
-    /// the autoclosure expression is constructed (one closure capture) but never
-    /// invoked.
+    /// Anchors a matched-zoom source when `namespace` is non-nil on iOS 26+. The id is
+    /// `@autoclosure` so reactive expressions (`id: presenter.someProp`) re-evaluate
+    /// inside the modifier's body and propagate observation changes without extra wiring.
     @ViewBuilder
     func matchedZoomSource(
         id: @autoclosure @escaping @MainActor () -> String,
@@ -37,11 +27,8 @@ public extension View {
         #endif
     }
 
-    /// Anchors a matched-zoom *destination* when `namespace` is non-nil and the
-    /// platform supports iOS 26+ navigation transitions; passes through unchanged
-    /// otherwise. See `matchedZoomSource(id:in:)` for autoclosure semantics — the
-    /// destination overload is most useful with reactive ids (e.g. flipping the
-    /// zoom target mid-sheet-dismiss based on `@Observable` state).
+    /// Destination counterpart to `matchedZoomSource(id:in:)`. Useful with reactive ids
+    /// — e.g. flipping the zoom target mid-sheet-dismiss based on `@Observable` state.
     @ViewBuilder
     func matchedZoomDestination(
         id: @autoclosure @escaping @MainActor () -> String,
@@ -81,10 +68,9 @@ private struct MatchedZoomDestinationModifier: ViewModifier {
     let namespace: Namespace.ID?
 
     func body(content: Content) -> some View {
-        // `idResolver()` runs inside this body — when the autoclosure expression
-        // reads an `@Observable` property, the dependency is registered here, and
-        // a change re-fires the body so the underlying transition picks up the
-        // new source id in place (no sheet teardown).
+        // `idResolver()` runs here so an `@Observable`-reading autoclosure registers its
+        // dependency on this body — a change re-fires it and the transition picks up the
+        // new source id in place.
         if let namespace {
             content.navigationTransition(.zoom(sourceID: idResolver(), in: namespace))
         } else {

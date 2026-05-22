@@ -11,26 +11,13 @@ import Common
 import CommonUI
 
 enum BackupConfigsDestination: RouterDestination {
-    /// `onClose` receives the new config's id on a successful save (so the presenter
-    /// can flip `savedConfigIDFromPicker` and the parent's matched-zoom destination
-    /// re-targets the new row before the sheet animates away), or `nil` on plain
-    /// cancel/dismiss. The closure is also responsible for clearing `destination`
-    /// — the picker view doesn't know it's hosted in a sheet.
-    ///
-    /// `savedConfigID` is a reactive resolver — read inside `MatchedZoomDestinationModifier`'s
-    /// body via `matchedZoomDestination(id: savedConfigID()..., in:)`'s autoclosure,
-    /// so observation on `savedConfigIDFromPicker` re-fires the zoom-target update
-    /// mid-dismiss. Carrying the resolver here keeps the Router stateless: no
-    /// presenter ref.
+    /// `onClose` receives the saved config's id (or `nil` on cancel) and clears
+    /// `destination`. `savedConfigID` is a reactive resolver so the matched-zoom
+    /// destination re-targets the new row before the sheet animates away.
     case add(
         onClose: @MainActor (BackupConfig.ID?) -> Void,
         savedConfigID: @MainActor () -> BackupConfig.ID?
     )
-    /// `onClose` clears `destination` (which dismisses the sheet). Same shape as
-    /// `.add.onClose`, but edit doesn't need the run-loop deferral that the add
-    /// flow requires — edit's matched-zoom id is stable across the sheet's lifetime
-    /// (purely a function of `configID`), so no observation has to propagate
-    /// mid-dismiss. The closure clears `destination` synchronously.
     case editWebDAV(configID: BackupConfig.ID, onClose: @MainActor (BackupConfig.ID?) -> Void)
     case editS3(configID: BackupConfig.ID, onClose: @MainActor (BackupConfig.ID?) -> Void)
     case removeConfirmation(name: String, onConfirm: @MainActor () -> Void)
@@ -59,50 +46,31 @@ struct BackupConfigCellItem: Identifiable, Equatable {
 final class BackupConfigsPresenter {
 
     var destination: BackupConfigsDestination?
-    /// Set by the picker's `onClose` when its inner form saves successfully — the new
-    /// config's UUID. Drives the add sheet's matched-zoom destination to point at the
-    /// freshly-added row instead of the `+` button, so the dismiss animates the sheet
-    /// down INTO the new row. Cleared by `onAddPressed()` before each new open so
-    /// cancel/iCloud paths zoom back to the `+` button.
+    /// Set by the picker's `onClose` on save; drives the add sheet's matched-zoom
+    /// destination to point at the new row instead of the `+` button. Cleared before
+    /// each new open.
     private(set) var savedConfigIDFromPicker: BackupConfig.ID?
     private(set) var configs: [BackupConfigCellItem] = []
-    /// Call-level "is a sync in flight overall?" — driven by `.sessionStarted` /
-    /// `.sessionFinished` from the container, which span the orchestration window
-    /// (services-list construction, inter-service gaps, post-results notification). Distinct
-    /// from `activeConfigIDs.isEmpty`, which only reflects per-service activity and goes
-    /// briefly empty between services even while the call hasn't returned.
+    /// Call-level "any sync in flight?" — spans inter-service gaps, unlike
+    /// `activeConfigIDs.isEmpty` which only reflects per-service activity.
     private(set) var isSyncing: Bool = false
 
     var isEmpty: Bool { configs.isEmpty }
     var errorCount: Int { configs.filter { $0.errorText != nil }.count }
 
     private let interactor: BackupConfigsModuleInteracting
-    /// Local mirror of which configs are currently mid-service. Seeded once at init from
-    /// `interactor.currentActivity.activeConfigIDs` (covers "presenter opened mid-sync"),
-    /// then maintained by consuming `syncEvents()`. Drives per-row spinner state and the
-    /// "suppress stale error while syncing" rule via `makeCellItem(for:)`.
+    /// Local mirror of mid-service config ids. Seeded from `currentActivity` and maintained
+    /// via `syncEvents()`; drives per-row spinner state and the "suppress stale error while
+    /// syncing" rule.
     private var activeConfigIDs: Set<BackupConfig.ID> = []
-    /// `@ObservationIgnored` — the task handle isn't observable UI state, so `@Observable`
-    /// shouldn't synthesize tracking storage for it (the synth storage trips the
-    /// "`nonisolated` cannot be applied to mutable stored properties" rule).
-    /// `nonisolated(unsafe)` because `deinit` is implicitly nonisolated on `@MainActor`
-    /// classes; the handle is written once at the end of `init`, read only by `deinit` to
-    /// cancel — no concurrent mutation, so the `unsafe` opt-out is sound.
     @ObservationIgnored
     private var syncEventTask: Task<Void, Never>?
-    /// Long-lived `for await` consumer of `interactor.configsDidChange` — fires once per
-    /// successful add / update / remove from `BackupSyncContainer.saveConfigs(_:)`. Drives
-    /// `reload()` so newly added/removed config rows animate in even when triggered from
-    /// another screen (e.g. iCloud toggled via QuickSetup while BackupConfigs is off-stack).
-    /// Cancelled in `onDisappear`, with `deinit` as a safety net — same lifecycle as
-    /// `syncEventTask` above.
     @ObservationIgnored
     private var configsChangeTask: Task<Void, Never>?
-    /// Skips snapshot on first onAppear (init seeded); re-appearances catch up after off-screen.
 
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
-        // Seed rows for first body pass; without this, onAppear's later reload causes an empty-state flash.
+        // Seed rows for first body pass; without this, onAppear's later reload flashes empty.
         snapshotActivity()
     }
     
@@ -120,20 +88,16 @@ final class BackupConfigsPresenter {
     }
 
     func onAddPressed() {
-        // Clear before showing so each fresh picker open zooms from the `+` button.
-        // The picker's `onClose` writes back into `savedConfigIDFromPicker` only on
-        // a successful save, at which point the matched-zoom destination flips to
-        // the new row.
+        // Reset so a cancel/iCloud dismiss zooms back to the `+` button.
         savedConfigIDFromPicker = nil
         destination = .add(
             onClose: { [weak self] configID in
                 guard let self else { return }
                 if let configID {
                     // Set BEFORE clearing `destination` so SwiftUI re-evaluates the
-                    // reactive matched-zoom modifier with the new row's source ID
-                    // before the sheet starts animating away. `Task` defers the
-                    // destination clear one run-loop hop so observation propagates
-                    // first.
+                    // reactive matched-zoom modifier with the new row's source id
+                    // before the sheet animates away. `Task` defers the clear one
+                    // run-loop hop so observation propagates first.
                     self.savedConfigIDFromPicker = configID
                 }
                 Task { @MainActor [weak self] in
@@ -145,9 +109,8 @@ final class BackupConfigsPresenter {
     }
 
     func onSelect(_ row: BackupConfigCellItem) {
-        // Synchronous clear is safe here: the edit sheet's matched-zoom id is stable
-        // for the sheet's lifetime, so there's no observation that needs to propagate
-        // before `destination` flips. Contrast with `.add.onClose`, which must defer.
+        // Edit's matched-zoom id is stable, so a synchronous `destination = nil` is fine
+        // (unlike the add flow, which has to defer for observation to propagate first).
         let onClose: @MainActor (BackupConfig.ID?) -> Void = { [weak self] _ in
             self?.destination = nil
         }
@@ -170,9 +133,8 @@ final class BackupConfigsPresenter {
     }
 
     func onSyncAllNow() {
-        // User-initiated tap — wrap in `Task` (not `Task.detached`) so the work inherits
-        // MainActor's `.userInitiated` priority. Background post-mutation syncs use the
-        // sync-overload fire-and-forget path; this one wants the user-facing priority.
+        // `Task` (not `Task.detached`) so the work inherits MainActor's `.userInitiated`
+        // priority — background sync uses the fire-and-forget overload instead.
         Task { [interactor] in
             await interactor.syncAll()
         }
@@ -189,9 +151,7 @@ final class BackupConfigsPresenter {
     }
 
     isolated deinit {
-        // Safety net: `onDisappear` should cancel first under normal lifecycle, but if the
-        // presenter is torn down without the view ever firing onDisappear (rare but possible),
-        // the AsyncStream continuations would otherwise leak.
+        // Safety net for presenters torn down without an onDisappear fire.
         syncEventTask?.cancel()
         configsChangeTask?.cancel()
     }
@@ -220,9 +180,6 @@ private extension BackupConfigsPresenter {
         configsChangeTask = Task { [weak self, interactor] in
             for await _ in interactor.configsDidChange {
                 guard let self else { return }
-                // Animate so row additions/removals slide in regardless of whether the
-                // change came from this screen or another (e.g. iCloud toggled via
-                // QuickSetup while off-stack, or added via the picker sheet).
                 withAnimation { self.reload() }
             }
         }
@@ -244,17 +201,11 @@ private extension BackupConfigsPresenter {
     }
 
     func reload() {
-        // Newest config first so a freshly-added row appears at the top of the visible list
-        // — required for the picker's matched-zoom-back animation, which can only target a
-        // source view that's actually mounted on-screen. Off-screen rows (below the fold)
-        // wouldn't have a registered `.matchedZoomSource(...)` for iOS to find.
+        // Newest first so a freshly-added row is on-screen — matched-zoom-back can only
+        // target a mounted source view.
         configs = interactor.allConfigs.reversed().map(makeCellItem(for:))
     }
-    
-    /// Builds a single row's view model from a config. Computes `isSyncing` once at the top
-    /// so every derived field — including the "suppress stale error while a sync is in flight"
-    /// rule — sees the same activity snapshot, instead of each field re-reading `activeConfigIDs`
-    /// and risking a desync if a future field forgets the suppression invariant.
+
     func makeCellItem(for config: BackupConfig) -> BackupConfigCellItem {
         let isSyncing = activeConfigIDs.contains(config.id)
 
@@ -287,12 +238,8 @@ private extension BackupConfigsPresenter {
             statusText = String(localized: .backupConfigsNeverSynced)
         }
 
-        // Suppress stale error while a sync is in flight: showing a past failure next to a live
-        // progress spinner would mix present and past state. The in-flight attempt is what
-        // matters now and it'll either replace or clear the record on finish. Error message
-        // resolves through `BackupSyncError.errorDescription` (LocalizedError conformance from
-        // the Backup module's own xcstrings) — render-time localization, not write-time, so a
-        // system-language switch re-localizes on the next reload.
+        // Hide stale error while a sync is in flight — the live attempt will replace or
+        // clear it on finish.
         let errorText = isSyncing ? nil : interactor.lastSyncError(for: config.id)?.errorDescription
 
         return BackupConfigCellItem(

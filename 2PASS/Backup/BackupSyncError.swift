@@ -22,10 +22,9 @@ public enum BackupSyncError: Error, Sendable {
     case export(BackupVaultExportError)
     case invalidResponse
     case unexpected(String)
-    /// iCloud-specific terminal condition: account signed out, container unavailable, or
-    /// equivalent state where the user must take action in Settings before sync can resume.
-    /// Distinct from `.unauthorized` (which the UX layer treats as "ask for credentials") and
-    /// `.network` (transient, retried). Other backends never throw this case.
+    /// iCloud terminal condition (account signed out, container unavailable, …) where the
+    /// user must act in Settings before sync resumes. Distinct from `.unauthorized` (ask for
+    /// credentials) and `.network` (transient).
     case iCloudUnavailable
 }
 
@@ -87,15 +86,8 @@ extension BackupSyncError {
 }
 
 extension BackupSyncError: LocalizedError {
-    /// User-facing localized message for each failure case. Resolves through the Backup module's
-    /// own `Localizable.xcstrings` (auto-generated `LocalizedStringResource` symbols carry the
-    /// bundle reference, so callers don't pass `bundle:` explicitly).
-    ///
-    /// Returns `nil` for `.cancelled` so a user-initiated cancel never surfaces as an error
-    /// message — the standard `LocalizedError` contract for "not really an error worth showing."
-    /// `.network` / `.server` deliberately collapse the underlying NSError into a static
-    /// localized message; the underlying error's `localizedDescription` would be a system-locale
-    /// English NSURLError string that doesn't respect the user's app language.
+    /// `nil` for `.cancelled` so user cancels don't surface as errors. `.network` / `.server`
+    /// use a static localized message instead of the underlying NSError's English description.
     public var errorDescription: String? {
         switch self {
         case .unauthorized:

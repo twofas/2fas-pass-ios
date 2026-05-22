@@ -34,28 +34,16 @@ final class BackupS3ConfigEditorPresenter {
     var secretAccessKey: String = ""
     var allowTLSOff = false
 
-    /// `true` while the probe is in flight. Drives the button's spinner and disabled state.
     private(set) var isTesting: Bool = false
-    /// Bumped once each time the probe + save succeeds; the view observes this to fire a
-    /// success haptic. Counter (not Bool) so two consecutive successes still register as
-    /// distinct value changes and re-fire `.sensoryFeedback`.
+    /// Counter (not Bool) so two consecutive successes still register as a value change
+    /// and re-fire `.sensoryFeedback`.
     private(set) var successFeedbackTrigger: Int = 0
-    /// Bumped once each time the probe fails (other than user cancellation); drives the
-    /// error haptic. Same counter rationale as `successFeedbackTrigger`.
     private(set) var failureFeedbackTrigger: Int = 0
-    /// Drives the toolbar Save/Done button's enabled state. Endpoint, bucket, access key,
-    /// and secret must all be filled in before tapping is allowed. Bucket is required even
-    /// for non-AWS S3-compatible endpoints: server-side `CopyObject` (used in `finalizeVault`)
-    /// needs an explicit bucket name in the `x-amz-copy-source` header, and a virtual-hosted
-    /// host like `bucket.example.com` does not satisfy that — the bucket has to be a string
-    /// we can read back, not just whatever the user happened to encode in the URL.
-    /// Region is *additionally* required when the endpoint targets AWS S3
-    /// (`*.amazonaws.com`) — SigV4 hashes the region into the credential scope, so a wrong
-    /// or empty region against AWS surfaces only as opaque `SignatureDoesNotMatch`. Non-AWS
-    /// S3-compatible providers vary on whether they validate the region header, so we don't
-    /// gate Save on it there.
-    /// In edit mode the button additionally requires at least one field to differ from the
-    /// loaded values — re-saving an unchanged config would just trigger a redundant probe.
+    /// Endpoint/bucket/access-key/secret all required. Bucket is required even for non-AWS
+    /// endpoints because `CopyObject` needs an explicit bucket in `x-amz-copy-source`.
+    /// Region is *additionally* required against `*.amazonaws.com` — SigV4 hashes it into
+    /// the credential scope and a wrong region surfaces only as `SignatureDoesNotMatch`.
+    /// In edit mode at least one field must differ from the loaded snapshot.
     var canSave: Bool {
         guard
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -80,22 +68,18 @@ final class BackupS3ConfigEditorPresenter {
 
     private let interactor: BackupS3ConfigEditorModuleInteracting
     private let configID: BackupConfig.ID?
-    /// Called on save (with the saved config's id) or programmatic close (with `nil`).
-    /// Toolbar Cancel goes through `\.dismiss` directly and bypasses this callback.
+    /// Called on save (saved id) or programmatic close (`nil`). Toolbar Cancel uses
+    /// `\.dismiss` directly and bypasses this.
     private let onClose: @MainActor (BackupConfig.ID?) -> Void
-    /// Held so the in-flight probe can be torn down on dismissal — without this the network
-    /// request continues until the server responds even after the user taps Cancel.
     @ObservationIgnored
     private var testTask: Task<Void, Never>?
-    /// Last region/bucket values that autofill wrote into the form. When the user edits the
-    /// endpoint, these let us tell "field still holds an autofilled value, safe to refresh"
-    /// apart from "user typed something custom, leave it alone."
+    /// Distinguish "field still holds an autofilled value" from "user typed something
+    /// custom" so re-autofill never clobbers manual input.
     @ObservationIgnored
     private var lastAutofilledRegion: String?
     @ObservationIgnored
     private var lastAutofilledBucket: String?
-    /// Snapshot of the config as it was when the form opened. Drives the per-field "changed"
-    /// indicators that highlight modified rows in edit mode. Stays nil in add mode.
+    /// Snapshot from form-open; drives per-field changed indicators in edit mode.
     @ObservationIgnored
     private var originalSnapshot: S3ServiceConfig?
 
@@ -165,11 +149,10 @@ final class BackupS3ConfigEditorPresenter {
             || allowTLSOff
     }
 
-    /// Programmatic close without saving. Routes through `onClose` so the close request
-    /// reaches whoever owns the form's host presentation — required in add mode (where
-    /// the form is pushed inside the picker's `NavigationStack`, so a form-local
-    /// `@Environment(\.dismiss)` would only pop back to the picker), and consistent with
-    /// edit mode (where `onClose` is wired to a closure that dismisses the sheet).
+    /// Programmatic close without saving. Routes through `onClose` rather than
+    /// `@Environment(\.dismiss)` so the close reaches whoever owns the host presentation
+    /// (in add mode the form is nested inside the picker's NavigationStack, where a local
+    /// dismiss would only pop back one level).
     func close() {
         onClose(nil)
     }
@@ -213,8 +196,7 @@ final class BackupS3ConfigEditorPresenter {
                 testTask = nil
                 onClose(savedID)
                 
-                // Brief delay so the success haptic punctuates the dismissal
-                // animation instead of firing alongside it.
+                // Delay so the haptic lands after the dismissal animation, not alongside it.
                 try? await Task.sleep(for: .milliseconds(200))
                 if Task.isCancelled { return }
                 successFeedbackTrigger &+= 1
@@ -227,8 +209,7 @@ final class BackupS3ConfigEditorPresenter {
                 destination = .errorAlert(
                     message: BackupFileServiceError.connectionTestMessage(for: error)
                 )
-                // Brief delay so the error haptic punctuates the alert's presentation
-                // animation instead of firing alongside it.
+                // Delay so the haptic lands after the alert appears, not alongside it.
                 try? await Task.sleep(for: .milliseconds(100))
                 if Task.isCancelled { return }
                 failureFeedbackTrigger &+= 1
@@ -263,10 +244,8 @@ final class BackupS3ConfigEditorPresenter {
         }
     }
 
-    /// Calls the interactor's pattern matcher and fills region/bucket from the URL when:
-    /// (a) the field is empty, OR (b) the field still holds the value autofill last wrote
-    /// — pasting a new AWS URL refreshes auto-derived values but never overwrites
-    /// anything the user typed manually.
+    /// Fills region/bucket from the URL when the field is empty or still holds the prior
+    /// auto-derived value — never overwrites user-typed input.
     private func autofillFromAWSEndpoint() {
         guard let detection = interactor.detect(endpoint: endpoint) else { return }
         

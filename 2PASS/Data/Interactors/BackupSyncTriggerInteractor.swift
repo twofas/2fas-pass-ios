@@ -8,127 +8,66 @@ import Foundation
 import os
 import Backup
 
-/// User-driven sync trigger entry points ("Sync now" buttons, per-row sync), plus read access
-/// to the per-config last-success timestamps that those triggers produce. Reads the installed
-/// `BackupSyncContainer` off `MainRepository` and forwards. Lives apart from
-/// `BackupSyncConfigsInteracting` so that callers needing only CRUD on configs don't transitively
-/// depend on the orchestration surface — and vice versa.
-///
-/// `lastSyncDate(for:)` is on this protocol because the timestamp is an *output* of sync runs
-/// (written by `BackupFileSyncSession` on success via the `BackupSyncDateStore` adapter) rather
-/// than an input to the config CRUD surface.
-///
-/// All trigger entry points are no-ops when the container hasn't been installed yet
-/// (`backupSyncSetupInteractor().initialize()` must have run first). The container is the optional
-/// piece; the configs themselves are persisted in `MainRepository` and outlive any container
-/// lifecycle.
+/// Sync trigger entry points plus read access to per-config last-sync timestamps and errors.
+/// Routes through the `BackupSyncContainer` installed on `MainRepository`. Trigger calls
+/// no-op until `backupSyncSetupInteractor().initialize()` has installed the container.
 public protocol BackupSyncTriggerInteracting: AnyObject {
-    /// Live app-wide backup sync activity snapshot.
     var currentActivity: BackupSyncActivity { get }
 
-    /// Marks every currently-registered backend for vault overwrite on its next sync. Used
-    /// by the password-change flow. The container resolves the id set internally — callers
-    /// don't enumerate configs. Each backend's `performSync` decides per-kind whether to
-    /// honor the flag, and `BackupSyncAdapter` clears each id only when the matching sync
-    /// reported `consumed.overwritingVault`, so flagging a kind that ignores the override
-    /// is harmless.
+    /// Marks every registered config for vault overwrite on its next sync.
+    /// Used by the password-change flow.
     func markAllServicesAwaitingVaultOverride()
 
-    /// Marks the supplied config id for `allowingAnyDeviceId: true` on its next sync.
-    /// Used by the recovery flow on the specific config it just added. The first
-    /// successful sync clears the entry; any failed-and-retried sync in between still
-    /// honors the flag because it persists across attempts.
+    /// Marks `configID` for `allowingAnyDeviceId: true` on its next sync. Persists across
+    /// retries; cleared by the first successful sync.
     func markAwaitingDeviceRegistration(configID: BackupConfig.ID)
 
-    /// Fire-and-forget: triggers a sync at background priority and returns immediately. Use
-    /// this from non-async post-mutation sites ("user changed something, propagate to
-    /// backups when convenient") — internally spawns a detached `.utility`-priority task in
-    /// the container. Cancellation is via `cancelCurrentSync()`.
+    /// Fire-and-forget: detached `.utility`-priority task. Cancel via `cancelCurrentSync()`.
     func syncAll()
 
-    /// Awaitable variant — runs every registered backend through the convergence loop and
-    /// returns each service's `BackupSyncSession.SyncResult` from the final pass. Returns
-    /// an empty array when no services are configured. Throws `.cancelled` when the call
-    /// was suppressed because another sync was already in flight (debounced). Use this
-    /// from sites that need to chain work after the sync finishes (e.g. password-change
-    /// re-encryption push), inspect per-service outcomes, or have caller-task cancellation
-    /// propagate.
+    /// Awaitable. Throws `.cancelled` when debounced (another sync already in flight).
     @discardableResult
     func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult]
 
-    /// Fire-and-forget: triggers a sync of the backend with `id` at background priority and
-    /// returns immediately. Use this from non-async post-mutation sites that only need
-    /// "propagate this one backend when convenient" — the container spawns a detached
-    /// `.utility`-priority task internally. Cancellation is via `cancelSync(id:)` /
+    /// Fire-and-forget single-config trigger. Cancel via `cancelSync(id:)` /
     /// `cancelCurrentSync()`.
     func sync(id: BackupConfig.ID)
 
-    /// Awaitable variant — runs only the backend with the given id through the coordinator.
-    /// Returns silently on success or no-op (no entry matches the id, or the container hasn't
-    /// been installed yet). Throws `BackupSyncError` on actual sync failure or when debounced
-    /// because another sync is in flight (`.cancelled`).
-    ///
-    /// Per-config `overwritingVault` / `allowingAnyDeviceId` come from the awaiting-flag
-    /// sets — callers don't pass them. Mark via `markAllServicesAwaitingVaultOverride()` /
-    /// `markAwaitingDeviceRegistration(configID:)` before triggering.
+    /// Awaitable. Silent no-op when no config matches `id` or the container isn't installed.
+    /// Throws on actual failure or `.cancelled` when debounced.
     func sync(id: BackupConfig.ID) async throws(BackupSyncError)
 
-    /// Most recent successful sync timestamp for `id`, or `nil` if no successful sync recorded.
-    /// Reads through to the persistent date store; intended for UI display ("Last synced …").
+    /// Most recent successful sync timestamp for `id`; persistent across launches.
     func lastSyncDate(for id: BackupConfig.ID) -> Date?
 
-    /// Most recent failure for `id` observed by the running container, or `nil` if the last
-    /// attempt succeeded (or no attempt has run in this app process). Cleared automatically on
-    /// the next success for that id. **Process-scoped** — does not survive an app restart.
-    /// Intended for UI display via `BackupSyncError.errorDescription` (LocalizedError).
+    /// Most recent failure for `id` in this app process; cleared on next success.
+    /// Process-scoped — does not survive an app restart.
     func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError?
 
-    /// `true` when any registered config has a recorded last-sync error in this app process.
-    /// Single-bit rollup over all per-config `lastSyncError(for:)` reads — drives the global
-    /// "backups need attention" badge on the tab bar and the Cloud Sync settings row.
+    /// `true` when any registered config has a recorded last-sync error in this process.
+    /// Drives the global "backups need attention" badge.
     var hasAnySyncError: Bool { get }
 
-    /// Cancels the currently running backup sync session, if any.
     func cancelCurrentSync()
 
-    /// Forwards an incoming CloudKit silent push so iCloud's sync engine can mark
-    /// `needsResync` if a sync is already in flight past its fetch phase. Bypasses the
-    /// container's in-flight debounce specifically for push-driven triggers — see
-    /// `BackupSyncContainer.handlePush()` for the load-bearing semantics. iCloud-only by
-    /// nature: only CloudKit produces push-driven sync triggers in this app.
+    /// Forwards a CloudKit silent push. Bypasses the container's debounce so the
+    /// `fromPush: true` semantics inside `CloudSync` (mark `needsResync` on an in-flight
+    /// sync past its fetch phase) are preserved.
     func handlePushNotification()
 
-    /// Per-id counterpart to `cancelCurrentSync()`. Cancels the running sync only if `id` is
-    /// among the currently active config ids — backs per-row "Cancel" buttons so a tap on
-    /// one row doesn't tear down a sync running for a different config. No-op when `id`
-    /// isn't active.
+    /// Per-id cancel; no-op when `id` isn't currently active.
     func cancelSync(id: BackupConfig.ID)
 
-    /// Live stream of session-level (`.sessionStarted` / `.sessionFinished`) and per-service
-    /// (`.started` / `.finished`) events from every sync the underlying container runs. Each
-    /// call returns a fresh stream — multiple subscribers can listen concurrently. Use this
-    /// when a consumer wants to react to sync lifecycle as it happens (e.g. driving per-row
-    /// UI) instead of polling `currentActivity` on a notification trigger.
+    /// Multi-subscriber session/service event stream.
     func syncEvents() -> AsyncStream<BackupSyncSession.Event>
 
-    /// Convenience stream that yields once for each per-service sync that merged remote content
-    /// into the local database. Filters `syncEvents()` for `.finished(_, _, .success(let outcome))`
-    /// where `outcome.appliedRemoteChanges == true`. View-layer presenters use this to refresh
-    /// their displayed data without seeing Backup-module event types.
-    ///
-    /// **Multi-emit per `syncAll`:** the convergence loop can apply remote changes from more
-    /// than one service across passes, so a single `syncAll` call may yield multiple times.
-    /// Each yield is a real moment of local-state mutation; subscribers whose reload work is
-    /// expensive should add their own throttle.
+    /// Filters `syncEvents()` for successful per-service syncs that merged remote content
+    /// into the local database. The convergence loop can yield this multiple times per
+    /// `syncAll` call — subscribers with expensive reload work should throttle themselves.
     func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 
-    /// Stream that yields the current value of `hasAnySyncError` whenever it actually flips.
-    /// Upstream signals (`.sessionFinished` and `configsDidChange`) fire whenever the value
-    /// *may* have changed; this stream dedups internally — the value is read under a lock,
-    /// compared to the last yielded value, and only emitted on a real transition. The seed for
-    /// dedup is the value at subscription time, so a signal that arrives with the same value
-    /// the consumer would have read synchronously is suppressed. Each access returns a fresh
-    /// stream; cancelling the consumer Task tears down both upstream subscriptions.
+    /// Yields the current `hasAnySyncError` value only on real transitions. Seeded with
+    /// the value at subscription time so a same-value upstream signal is suppressed.
     var syncErrorChanges: AsyncStream<Bool> { get }
 }
 
@@ -173,9 +112,8 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
     }
 
     func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError? {
-        // Reads through to the container's in-memory store rather than `MainRepository` —
-        // unlike `lastSyncDate(for:)`, there is no persistence layer behind this. Same shape
-        // as `currentActivity` (which also reads container state directly).
+        // No persistence layer behind this — reads the container's in-memory store
+        // directly, unlike `lastSyncDate(for:)`.
         mainRepository.backupSyncContainer.lastSyncError(for: id)
     }
 
@@ -219,10 +157,8 @@ final class BackupSyncTriggerInteractor: BackupSyncTriggerInteracting {
         let events = container.syncEvents()
         let configChanges = container.configsDidChange
         return AsyncStream { continuation in
-            // Seed dedup state with the current value so an upstream signal carrying the same
-            // flag the consumer would have just read synchronously is suppressed. The lock
-            // serializes the read-compare-update against the two upstream tasks, which fire
-            // independently and could otherwise race a duplicate yield through.
+            // Lock serializes the read-compare-update against the two upstream tasks,
+            // which fire independently and could otherwise race a duplicate yield.
             let lastYielded = OSAllocatedUnfairLock<Bool>(initialState: container.hasAnySyncError)
             let yieldIfChanged: @Sendable () -> Void = {
                 let valueToYield: Bool? = lastYielded.withLock { last in
