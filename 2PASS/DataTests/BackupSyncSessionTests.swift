@@ -78,10 +78,8 @@ import Backup
         #expect(fake.recording.lastOverwriting == true)
     }
 
-    /// The new per-id resolver must address each service independently. With two services,
-    /// only the one whose id is `true` in the closure should see `overwritingVault: true` —
-    /// the other should get `false`. This is the precise guarantee that makes a multi-config
-    /// post-password-change sync re-push only the marked backends, not all of them.
+    /// Only the service whose id is `true` in the closure should see
+    /// `overwritingVault: true` — the guarantee post-password-change relies on.
     @Test func syncAllResolvesOverwritingPerService() async {
         let marked = FakeSynchronizer(kind: .webDAV)
         let unmarked = FakeSynchronizer(kind: .s3)
@@ -165,9 +163,8 @@ import Backup
         #expect(webDAV2.recording.calls == 1)
     }
 
-    /// `.iCloud` is the third backend kind. The session works on the `BackupSynchronizing`
-    /// abstraction, so adding the kind shouldn't perturb ordering, convergence, or aggregation —
-    /// this smoke test pins that assumption.
+    /// Smoke test that `.iCloud` (the third backend kind) doesn't perturb ordering or
+    /// convergence — the session only sees `BackupSynchronizing`.
     @Test func syncAllRoundTripsiCloudKind() async throws {
         let iCloud = FakeSynchronizer(
             kind: .iCloud,

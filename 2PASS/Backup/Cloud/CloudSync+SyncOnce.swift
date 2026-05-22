@@ -8,28 +8,16 @@ import Foundation
 
 extension CloudSync {
 
-    /// Performs a single CloudKit sync pass, awaitable.
+    /// Awaitable single-pass bridge over `CloudSync`'s event-driven `synchronize()` /
+    /// `addFinishedSyncHandler` callback shape, fulfilling `BackupSynchronizing.performSync`.
     ///
-    /// Bridges `CloudSync`'s event-driven flow (`synchronize()` is fire-and-forget; result
-    /// is delivered via the in-module `addFinishedSyncHandler` / `addStateChangedHandler`
-    /// callback hooks on `CloudHandler`) into the imperative `BackupSynchronizing.performSync(...)`
-    /// shape required by `BackupSyncSession`.
+    /// **Coexistence.** Legacy callers (push, foregrounding, vault edits) share the same
+    /// `SyncHandler.isSyncing` gate. If a legacy sync is in flight, the inner `synchronize()`
+    /// no-ops and the awaiter adopts the legacy sync's outcome via the same handler.
     ///
-    /// **Coexistence with legacy callers.** Legacy paths (push handlers, app foregrounding,
-    /// vault edits) call `synchronize(fromPush:)` directly without awaiting. They share the
-    /// same instance and `SyncHandler.isSyncing` gate. If a legacy sync is in flight when
-    /// `syncOnce` is called, the inner `synchronize()` becomes a no-op and the awaiter
-    /// adopts the legacy sync's outcome through the same `finishedSync` handler. This is
-    /// the documented behaviour — convergence picks up any divergence on the next pass.
-    ///
-    /// **State pre-check.** A state-change handler only catches transitions; if the current
-    /// state is already terminal (`.disabled` or `.enabledNotAvailable`) when entering, no
-    /// transition fires. The first thing this method does after registering its handlers is
-    /// evaluate `currentState` and resume immediately if terminal.
-    ///
-    /// **Cancellation.** Cooperative — resumes the continuation with `.cancelled` if the
-    /// task is cancelled. The underlying CloudKit operation continues in the background;
-    /// CloudKit does not surface a cancellation primitive at this layer.
+    /// **Cancellation.** Cooperative — resumes with `.cancelled` so the cancel button has an
+    /// observable effect. The underlying CloudKit op runs to completion in the background;
+    /// CloudKit doesn't surface a cancellation primitive at this layer.
     public func syncOnce(allowingAnyDeviceId: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
         do {
             return try await syncOncePass(allowingAnyDeviceId: allowingAnyDeviceId)
@@ -52,24 +40,14 @@ extension CloudSync {
                 bridge.start(allowingAnyDeviceId: allowingAnyDeviceId)
             }
         } onCancel: {
-            // Resume the awaiting continuation with `.cancelled` so the cancel button has an
-            // observable effect. The underlying CloudKit op keeps running to completion in the
-            // background — CloudKit doesn't surface a cancellation primitive at this layer —
-            // but the session's `.finished` event fires immediately, `clearSyncSlot()` runs,
-            // and the UI's `isSyncing` flag flips off without waiting for CloudKit to settle.
             holder.cancel()
         }
     }
 }
 
-/// Carries the per-call `Bridge` instance across the `withTaskCancellationHandler` boundary so
-/// `onCancel` can reach it. The bridge is created inside the continuation closure (it needs the
-/// continuation to construct), but `onCancel` runs in a separate scope and would otherwise have
-/// no way to signal it.
-///
-/// Race-safe in both directions: if `cancel()` lands before `set(_:)` (task cancelled while the
-/// continuation closure is still running), the `cancelled` flag is sticky and the just-set
-/// bridge is cancelled immediately.
+/// Carries the per-call `Bridge` across the `withTaskCancellationHandler` boundary so
+/// `onCancel` can reach it. Race-safe both directions: a `cancel()` landing before `set(_:)`
+/// is remembered and applied to the bridge as soon as it's set.
 private final class BridgeHolder: @unchecked Sendable {
     private let lock = NSLock()
     private var bridge: Bridge?
@@ -111,9 +89,7 @@ private final class Bridge: @unchecked Sendable {
         self.continuation = continuation
     }
 
-    /// Resumes the awaiting continuation with `.cancelled`. Idempotent and safe to race with
-    /// the natural completion path — `resume(_:)` no-ops on second call. The underlying
-    /// CloudKit operation keeps running in the background; this only releases the awaiter.
+    /// Idempotent; safe to race with the natural completion path.
     func cancel() {
         resume(.failure(BackupSyncError.cancelled))
     }
@@ -124,16 +100,9 @@ private final class Bridge: @unchecked Sendable {
             return
         }
 
-        // Strong `self` is intentional. The `Bridge` instance is created locally in
-        // `Bridge.bridge(...)` and has no other strong owner once that factory returns —
-        // so a `[weak self]` capture would let `Bridge` deallocate before CloudKit's
-        // async callback fires, leaving `self?.resume(...)` a no-op and the awaiting
-        // `syncOnce` hanging forever (and the session's `.finished` event never broadcast,
-        // surfacing as stuck "Syncing…" UI on every iCloud row). The closures stored on
-        // `CloudHandler` keep `Bridge` alive exactly until `resume(...)` removes them via
-        // the saved tokens — at which point ARC reclaims it normally. The reverse direction
-        // is already weak (`private weak var cloudSync: CloudSync?`), so this does not form
-        // a retain cycle through the engine.
+        // Strong `self` is intentional: the `Bridge` has no other strong owner. The
+        // closures stored on `CloudHandler` keep it alive until `resume(...)` removes them
+        // via the saved tokens. `cloudSync` is weak in the reverse direction, so no cycle.
         finishedSyncToken = cloudSync.addFinishedSyncHandler { applied in
             self.resume(.success(BackupSyncOutcome(appliedRemoteChanges: applied)))
         }
@@ -145,13 +114,9 @@ private final class Bridge: @unchecked Sendable {
         if isResumed { return }
 
         if allowingAnyDeviceId {
-            // CloudKit analogue of the file-based path's `allowingAnyDeviceId || context.allowsMultiDeviceSync`
-            // gate: flag the merge handler so a deviceID conflict resolves in favour of this
-            // device. `isTakingOverVault` short-circuits the multi-device-sync entitlement check
-            // at the use-site (`MergeHandler.applyChanges`'s `isMultiDeviceSyncEnabled || isTakingOverVault`),
-            // so a Free-tier user can still complete an explicit "take over" intent
-            // (post-recovery, the recovery flow marks `awaitingDeviceRegistration` for the
-            // iCloud config, which lands here as `allowingAnyDeviceId: true`).
+            // CloudKit analogue of the file-based `allowingAnyDeviceId` gate: short-circuits
+            // the multi-device-sync entitlement check in `MergeHandler.applyChanges`, so
+            // Free-tier users can complete an explicit post-recovery take-over.
             cloudSync.setTakingOverVault(true)
         }
 

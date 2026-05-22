@@ -40,18 +40,13 @@ final class VaultRecoveryS3Presenter {
     var secretAccessKey: String = ""
     var allowTLSOff = false
 
-    /// `true` while the index fetch is in flight. Drives the toolbar item's spinner and
-    /// disabled state. A successful fetch is itself the connectivity check — there is no
-    /// separate `testConnection` probe before it.
+    /// A successful fetch is itself the connectivity check — no separate probe before it.
     private(set) var isFetching: Bool = false
 
     var destination: VaultRecoveryS3Destination?
 
-    /// Drives the toolbar Connect button's enabled state. Mirrors the settings form's
-    /// add-mode predicate (no edit mode here — recovery has no original snapshot).
-    /// Bucket is required even for non-AWS S3-compatible endpoints (the container's
-    /// `finalizeVault` needs an explicit bucket name in `x-amz-copy-source`); region is
-    /// only required when the endpoint targets AWS S3.
+    /// Bucket is required even for non-AWS endpoints (`x-amz-copy-source`); region is
+    /// only required against AWS.
     var canSave: Bool {
         guard
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -68,14 +63,9 @@ final class VaultRecoveryS3Presenter {
         return true
     }
 
-    /// Drives the drag-dismiss "Unsaved changes" alert: form values differ from the
-    /// last saved state. `initialConfig` is set at `init` (from the cache seed) and
-    /// refreshed on a successful Connect (from the just-cached value) — so pre-filled-
-    /// from-cache and just-cached states both register as "no unsaved changes." Only a
-    /// *change* the user makes against the most-recent-saved baseline triggers the
-    /// discard prompt. With no `initialConfig`, the baseline collapses to empty strings
-    /// and `allowTLSOff = false` via optional-chain defaults — matching the "all-empty
-    /// form is not 'unsaved'" semantics from before.
+    /// Compares against `initialConfig`, which is reseeded on every successful Connect so
+    /// only user-made deviations from the most-recent baseline trigger the discard prompt.
+    /// With no `initialConfig`, the baseline collapses to empty defaults.
     var hasUnsavedChanges: Bool {
         endpoint != (initialConfig?.endpoint.absoluteString ?? "")
             || region != (initialConfig?.region ?? "")
@@ -86,27 +76,19 @@ final class VaultRecoveryS3Presenter {
     }
 
     private let interactor: VaultRecoveryS3ModuleInteracting
-    /// Bubbles the picked vault up to the parent presenter, which dismisses the S3
-    /// sheet and pushes the recovery flow into its own enclosing navigation stack —
-    /// mirrors the WebDAV source's pattern (`VaultRecoveryPresenter.onRestoreFromWebDAV`).
+    /// Bubbles the picked vault up to the parent presenter.
     private let onSelect: (VaultRecoveryData) -> Void
 
-    /// Held so the in-flight fetch can be torn down on dismissal — without this the
-    /// network request continues until the server responds even after the user backs out.
     @ObservationIgnored
     private var fetchTask: Task<Void, Never>?
 
-    /// Last region/bucket values that autofill wrote into the form. When the user edits the
-    /// endpoint, these let us tell "field still holds an autofilled value, safe to refresh"
-    /// apart from "user typed something custom, leave it alone."
+    /// Distinguish "field still holds the prior autofilled value" from "user typed
+    /// something custom" so re-autofill never clobbers manual input.
     @ObservationIgnored
     private var lastAutofilledRegion: String?
     @ObservationIgnored
     private var lastAutofilledBucket: String?
 
-    // Snapshot of the "saved" config — captured at init (from the recovery cache, if any)
-    // and refreshed on every successful Connect (after the cache write). Compared against
-    // the live `@Observable` form fields by `hasUnsavedChanges` to gate the discard alert.
     @ObservationIgnored
     private var initialConfig: S3ServiceConfig?
 
@@ -117,10 +99,6 @@ final class VaultRecoveryS3Presenter {
         self.interactor = interactor
         self.onSelect = onSelect
 
-        // Seed from the in-memory recovery cache on `MainRepository`. The cache handles
-        // decryption and JSON decoding internally — `cachedConfig` returns the typed
-        // `S3ServiceConfig?` directly. `nil` means "no cache" (or decode/decrypt failure);
-        // defaults stand in that case.
         if let config = interactor.cachedConfig {
             endpoint = config.endpoint.absoluteString
             region = config.region
@@ -128,15 +106,12 @@ final class VaultRecoveryS3Presenter {
             accessKeyId = config.accessKeyId
             secretAccessKey = config.secretAccessKey
             allowTLSOff = config.allowTLSOff
-            // Prime autofill memory so a paste-then-restore sequence doesn't clobber the
-            // restored region/bucket. Without this, the `endpoint`'s `didSet` re-runs
-            // autofill against the empty-`lastAutofilled*` baseline and overwrites values
-            // it shouldn't.
+            // Prime autofill memory so the `endpoint` didSet doesn't re-overwrite the
+            // restored region/bucket on first load.
             lastAutofilledRegion = config.region
             lastAutofilledBucket = config.bucket
-            // Capture the just-seeded config as the baseline for `hasUnsavedChanges`.
-            // Without this the form would register as "changed" on first open even when
-            // pre-filled verbatim from the recovery cache.
+            // Baseline for `hasUnsavedChanges` — without this a verbatim-from-cache form
+            // would register as "changed" on first open.
             initialConfig = config
         }
     }
@@ -172,17 +147,12 @@ final class VaultRecoveryS3Presenter {
                 fetchTask = nil
                 if Task.isCancelled { return }
 
-                // Hand the validated config to the cache. `MainRepository` JSON-encodes
-                // and AES-GCM-encrypts it under the Secure-Enclave appKey internally —
-                // same pipeline `saveBackupConfigs` already uses on this type. The
-                // strongly-typed value exists only across this call site; nothing about
-                // the credentials travels through the view chain past this presenter.
-                // The source enum bubbled upward is tag-only; `persistRecoverySource`
-                // reads back from the cache when it commits to disk.
+                // Cache is now the saved-state source of truth. `MainRepository` AES-GCM-
+                // encrypts under the Secure-Enclave appKey internally; credentials never
+                // travel through the view chain past this presenter.
                 interactor.cacheConfig(config)
-                // The cache is now the source of truth for "saved" — re-baseline so the
-                // discard alert won't fire if the user back-navigates from the vault list
-                // to a form that exactly matches what was just cached.
+                // Re-baseline so the discard alert won't fire when back-navigating to a
+                // form that matches the just-cached values verbatim.
                 initialConfig = config
 
                 destination = .selectVault(
@@ -198,9 +168,8 @@ final class VaultRecoveryS3Presenter {
                 if Task.isCancelled { return }
                 destination = .errorAlert(message: error.message)
             } catch {
-                // Typed throws on a protocol erase to `any Error` at the Task boundary; the
-                // catch above handles every realistic case, but a defensive fallback keeps
-                // the UI responsive if a future change introduces a new error type.
+                // Typed throws erase at the Task boundary; defensive fallback for future
+                // additions to `VaultRecoveryS3Error`.
                 isFetching = false
                 fetchTask = nil
                 if Task.isCancelled { return }
@@ -232,10 +201,8 @@ final class VaultRecoveryS3Presenter {
         }
     }
 
-    /// Calls the interactor's pattern matcher and fills region/bucket from the URL when:
-    /// (a) the field is empty, OR (b) the field still holds the value autofill last wrote
-    /// — pasting a new AWS URL refreshes auto-derived values but never overwrites
-    /// anything the user typed manually.
+    /// Fills region/bucket from the URL when the field is empty or still holds the prior
+    /// auto-derived value — never overwrites user-typed input.
     private func autofillFromAWSEndpoint() {
         guard let detection = interactor.detect(endpoint: endpoint) else { return }
         if let detectedRegion = detection.region {

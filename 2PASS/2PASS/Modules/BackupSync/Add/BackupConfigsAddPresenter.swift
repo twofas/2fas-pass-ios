@@ -8,17 +8,12 @@ import SwiftUI
 import CommonUI
 
 enum BackupConfigsAddDestination: RouterDestination {
-    /// `onClose` receives the new config's id on a successful save (the View writes it
-    /// into `savedConfigID` so the parent's matched-zoom destination flips to the new
-    /// row before the sheet animates away), or `nil` on plain cancel/dismiss. The
-    /// closure itself is responsible for dismissing the sheet — the form view doesn't
-    /// know it's hosted in one.
+    /// `onClose` receives the saved config's id (or `nil` on cancel) and dismisses the
+    /// sheet — the form view doesn't know it's hosted in one.
     case webDAV(onClose: @MainActor (BackupConfig.ID?) -> Void)
     case s3(onClose: @MainActor (BackupConfig.ID?) -> Void)
 
-    /// Explicit `String` id (not `Self`) because the associated `onClose` closures
-    /// aren't `Hashable`. Cases without payloads are still distinct — switch ignores
-    /// associated values.
+    /// Explicit `String` because the associated `onClose` closures aren't `Hashable`.
     var id: String {
         switch self {
         case .webDAV: "webDAV"
@@ -35,10 +30,8 @@ final class BackupConfigsAddPresenter {
     var destination: BackupConfigsAddDestination?
 
     private let interactor: BackupConfigsAddModuleInteracting
-    /// Injected at construction so the View doesn't need `@Environment(\.dismiss)` or a
-    /// `savedConfigID` binding. Called with the new config's id on success (so the parent
-    /// can flip its matched-zoom destination to the new row before the sheet animates
-    /// away) or `nil` on plain cancel.
+    /// Called with the saved id on success (so the parent can flip matched-zoom to the
+    /// new row before the sheet animates away) or `nil` on cancel.
     private let onClose: @MainActor (BackupConfig.ID?) -> Void
 
     init(

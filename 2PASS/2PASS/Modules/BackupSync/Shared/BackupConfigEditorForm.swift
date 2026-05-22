@@ -8,32 +8,13 @@ import SwiftUI
 import CommonUI
 import Backup
 
-/// Reusable wrapper for backup config forms (S3, WebDAV) that bundles:
-/// - The `SettingsDetailsForm` shell + content with interactive keyboard dismissal
-/// - The principal toolbar title, an edit-mode cancel item with discard guard, and a save item
-/// - The drag-dismiss attempt catcher for swipe-dismiss with unsaved changes
-/// - The centered "Unsaved changes" alert used as the add-mode fallback (no anchor available)
+/// Reusable wrapper for S3/WebDAV config editors. Bundles the form shell, toolbar title,
+/// cancel/save items with unsaved-changes guards, and the discard alerts used by both the
+/// in-form Cancel tap and the swipe-to-dismiss path.
 ///
-/// `onClose` is invoked for every "user is leaving" path: edit-mode cancel-tap with no
-/// unsaved changes, edit-mode discard-confirm, and add-mode swipe-then-discard. The
-/// consumer routes through `presenter.close()` so the close request reaches the host
-/// presentation's dismiss — works in both sheet-root (edit) and pushed-into-stack (add)
-/// hosting contexts via the presenter's `onClose` wiring.
-///
-/// ```
-/// BackupConfigEditorForm(
-///     kind: .s3,
-///     title: .backupConfigsProviderS3Title,
-///     hasUnsavedChanges: presenter.hasUnsavedChanges,
-///     isSaving: presenter.isTesting,
-///     canSave: presenter.canSave,
-///     onSave: { … },
-///     onClose: { … }
-/// ) {
-///     Section { … }
-/// }
-/// .editMode(presenter.isEditMode)
-/// ```
+/// `onClose` is invoked for every "user is leaving" path; the consumer routes through
+/// `presenter.close()` so the dismiss reaches the host presentation in both sheet-root
+/// (edit) and pushed-into-stack (add) hosting contexts.
 struct BackupConfigEditorForm<Content: View>: View {
 
     private let kind: BackupSyncService
@@ -92,8 +73,7 @@ struct BackupConfigEditorForm<Content: View>: View {
             saveItem
         }
         .dragDismissAttempt(isEnabled: hasUnsavedChanges) {
-            // The dialog anchors to the cancel button; the centered alert is the
-            // fallback when no anchor is available (add-mode without cancellable).
+            // Anchor to the cancel button if there is one; fall back to a centered alert.
             if isEditMode || isCancellable {
                 isDiscardConfirmationPresented = true
             } else {
@@ -126,16 +106,15 @@ struct BackupConfigEditorForm<Content: View>: View {
         return instance
     }
 
-    /// Overrides the confirmation toolbar item's label (defaults to system "Save"/"Done").
+    /// Overrides the save toolbar item's label (defaults to system "Save"/"Done").
     func confirmLabel(_ label: Text) -> Self {
         var instance = self
         instance.confirmLabel = label
         return instance
     }
 
-    /// Forces the leading cancel toolbar item to render even outside edit mode. Useful
-    /// when the form is the root of its presentation (e.g. a sheet) and there's no
-    /// system back chevron to fall back on.
+    /// Forces the cancel toolbar item to render outside edit mode — for sheet-root forms
+    /// with no system back chevron.
     func cancellable(_ flag: Bool = true) -> Self {
         var instance = self
         instance.isCancellable = flag

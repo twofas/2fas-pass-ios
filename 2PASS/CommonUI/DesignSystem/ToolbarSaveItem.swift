@@ -6,20 +6,8 @@
 
 import SwiftUI
 
-/// Confirmation-action toolbar item with a save action.
-///
-/// Renders one of three states:
-/// - loading → `ProgressView` (no button)
-/// - iOS 26+ → `Button(role: .confirm)` with the system-provided label
-/// - earlier → labeled "Save" button
-///
-/// ```
-/// ToolbarSaveItem {
-///     presenter.onSave()
-/// }
-/// .loading(presenter.isTesting)
-/// .disabled(!presenter.canSave)
-/// ```
+/// Confirmation-action toolbar item with three states: loading (`ProgressView`),
+/// iOS 26+ (`Button(role: .confirm)`), or earlier (labeled "Save" button).
 public struct ToolbarSaveItem: ToolbarContent {
 
     private let action: () -> Void
@@ -73,9 +61,7 @@ public struct ToolbarSaveItem: ToolbarContent {
         return instance
     }
 
-    /// Overrides the default "Save" / system-confirm label. When set, the explicit
-    /// label is used on every iOS version (iOS 26+ keeps the `.confirm` button role
-    /// for the system styling — only its label is replaced).
+    /// Overrides the default label. iOS 26+ keeps the `.confirm` role styling.
     public func label(_ label: Text) -> Self {
         var instance = self
         instance.customLabel = label

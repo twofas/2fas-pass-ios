@@ -8,21 +8,17 @@ import SwiftUI
 
 public extension View {
 
-    /// Fires `onAttempt` when the user tries to swipe-dismiss the enclosing sheet while
-    /// `isEnabled` is `true`. While enabled, the sheet's `isModalInPresentation` is set so
-    /// the pull-down gesture is intercepted instead of dismissing — typical use is to
-    /// present a discard-changes confirmation when there are unsaved edits, then either
-    /// confirm and dismiss programmatically, or stay.
+    /// Fires `onAttempt` when the user swipes-to-dismiss the enclosing sheet while
+    /// `isEnabled` is `true`. Sets `isModalInPresentation` while enabled so the pull-down
+    /// is intercepted — use this to gate dismissal behind a discard-changes confirmation.
     func dragDismissAttempt(isEnabled: Bool, onAttempt: @escaping () -> Void) -> some View {
         background(DragDismissAttemptCatcher(isEnabled: isEnabled, onAttempt: onAttempt))
     }
 }
 
-/// UIKit bridge that fires `onAttempt` when the user tries to swipe-dismiss a sheet whose
-/// content has unsaved changes. Sets `isModalInPresentation = true` on the sheet's
-/// presentation VC (precondition for `presentationControllerDidAttemptToDismiss` callbacks)
-/// and chains its delegate slot to SwiftUI's original delegate so sheet dismiss tracking,
-/// detent updates, etc. continue to work.
+/// UIKit bridge: sets `isModalInPresentation` on the enclosing sheet's presentation VC
+/// (required for `presentationControllerDidAttemptToDismiss` to fire) and chains its
+/// delegate slot to SwiftUI's original so detents/dismiss tracking keep working.
 private struct DragDismissAttemptCatcher: UIViewControllerRepresentable {
     let isEnabled: Bool
     let onAttempt: () -> Void
@@ -89,9 +85,8 @@ private struct DragDismissAttemptCatcher: UIViewControllerRepresentable {
             presentedTarget?.isModalInPresentation = isEnabled
         }
 
-        /// Walks the parent chain to find the topmost ancestor that's actually presented as
-        /// a sheet — its `presentationController` is the one whose dismiss-attempt callback
-        /// we want to receive.
+        /// Topmost presented ancestor — its `presentationController` is the one whose
+        /// dismiss-attempt we care about.
         private func findPresentedAncestor() -> UIViewController? {
             var current: UIViewController? = parent
             var lastPresented: UIViewController? = nil

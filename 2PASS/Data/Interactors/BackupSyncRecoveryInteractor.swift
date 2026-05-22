@@ -8,49 +8,27 @@ import Foundation
 import Common
 import Backup
 
-/// Ad-hoc reads (and an iCloud delete) for the vault-recovery flow, run before any config is
-/// registered. Distinct from `BackupSyncConfigsInteracting` (CRUD + connection probe before
-/// persistence) because the audience is recovery UI specifically: the user picks a backend,
-/// we read what's there without persisting anything, they pick a vault, we download it, and
-/// only after a successful import does any config get registered. Reads the installed
-/// `BackupSyncContainer` off `MainRepository` and forwards.
-///
-/// Two backend shapes coexist here:
-/// - **File-based** (WebDAV and S3): `fetchIndex(_:)` + `fetchVault(vaultID:_:)` against
-///   typed `Config` values, paired-overloaded on `BackupWebDAVConfig` / `S3ServiceConfig`.
-/// - **iCloud**: `listICloudVaultsToRecover()` + `deleteICloudVault(id:)`. No `Config` (auth
-///   is identity-based), no `BackupIndex` (CloudKit records, separate state machine), and
-///   it's the only backend whose recovery surface includes deletion.
+/// Ad-hoc reads (and an iCloud delete) for the vault-recovery flow, run before any config
+/// is registered. Distinct from `BackupSyncConfigsInteracting` (CRUD + pre-persistence
+/// probe): here the user picks a backend, reads what's there, picks a vault, downloads it,
+/// and only after a successful import does any config get registered.
 public protocol BackupSyncRecoveryInteracting: AnyObject {
-    /// Recovery step 1 (file-based): fetch the remote index for an unregistered WebDAV config
-    /// and decode it inside the container. Surfaces transport vs. corrupt-index failures
-    /// separately so the UI can render distinct error states ("no backup at this URL" vs.
-    /// "the index file is damaged").
+    /// Fetch the remote index for an unregistered config. Transport vs. corrupt-index
+    /// failures are surfaced separately via `BackupIndexFetchError`.
     func fetchIndex(_ config: BackupWebDAVConfig) async throws(BackupIndexFetchError) -> BackupIndex
-
-    /// S3 counterpart to the WebDAV index fetch. Same contract: container-side decode, typed
-    /// transport vs. corrupt-index failure. Used by recovery before any config is persisted.
     func fetchIndex(_ config: S3ServiceConfig) async throws(BackupIndexFetchError) -> BackupIndex
 
-    /// Recovery step 2 (file-based): download and decode the vault blob the user picked from
-    /// the index. Decoding happens inside the container via `ExchangeVaultVersioned`'s custom
-    /// `Decodable` impl; the typed `BackupVaultFetchError` lets the UI distinguish transport
-    /// failure, "schema too new for this build," and corrupt-file outcomes.
+    /// Download and decode the vault blob the user picked. `BackupVaultFetchError`
+    /// distinguishes transport, schema-too-new, and corrupt-file outcomes.
     func fetchVault(vaultID: UUID, _ config: BackupWebDAVConfig) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned
-
-    /// S3 counterpart to the WebDAV vault fetch. Same contract: container-side decode, typed
-    /// transport / schema / corrupt-file outcomes. Used after the user picks an entry from
-    /// the S3 index returned by `fetchIndex(_ config: S3ServiceConfig)`.
     func fetchVault(vaultID: UUID, _ config: S3ServiceConfig) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned
 
-    /// iCloud counterpart to file-based `fetchIndex`: lists vaults the signed-in iCloud
-    /// account has previously backed up. Empty array means the account is reachable but has
-    /// no backed-up vaults.
+    /// Lists vaults the signed-in iCloud account has previously backed up. Empty means the
+    /// account is reachable but has no backups. iCloud is identity-based — no `Config`.
     func listICloudVaultsToRecover() async throws -> [VaultRawData]
 
-    /// Deletes the CloudKit zone backing the vault with `id`. Drives swipe-to-delete in the
-    /// iCloud recovery picker. No file-based equivalent — WebDAV/S3 don't expose deletion
-    /// from the recovery flow.
+    /// Deletes the CloudKit zone backing the vault. Drives swipe-to-delete in the iCloud
+    /// recovery picker; no file-based equivalent.
     func deleteICloudVault(id: VaultID) async throws
 }
 

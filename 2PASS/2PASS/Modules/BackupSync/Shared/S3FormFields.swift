@@ -7,30 +7,9 @@
 import SwiftUI
 import CommonUI
 
-/// Sectioned S3 credential fields shared by the backup-config form (edit/add) and the
-/// recovery S3 form. Renders three sections: endpoint + region + bucket, access keys
-/// (with a "Load from CSV" header action), and a security toggle.
-///
-/// Edit-mode "changed" indicators are opt-in via per-field chainable modifiers. Forms
-/// that have no original snapshot (recovery, fresh add) simply omit them.
-///
-/// ```
-/// S3FormFields(
-///     endpoint: $presenter.endpoint,
-///     region: $presenter.region,
-///     bucket: $presenter.bucket,
-///     accessKeyId: $presenter.accessKeyId,
-///     secretAccessKey: $presenter.secretAccessKey,
-///     allowTLSOff: $presenter.allowTLSOff,
-///     onLoadFromCSV: { presenter.onLoadFromCSV() }
-/// )
-/// .formFieldChanged(endpoint: presenter.endpointChanged)
-/// .formFieldChanged(region: presenter.regionChanged)
-/// .formFieldChanged(bucket: presenter.bucketChanged)
-/// .formFieldChanged(accessKeyId: presenter.accessKeyIdChanged)
-/// .formFieldChanged(secretAccessKey: presenter.secretAccessKeyChanged)
-/// .formFieldChanged(allowTLSOff: presenter.allowTLSOffChanged)
-/// ```
+/// Sectioned S3 credential fields shared by the config editor and the recovery form.
+/// Edit-mode "changed" indicators are opt-in via the per-field `formFieldChanged(_:)`
+/// modifiers below; forms without an original snapshot just omit them.
 struct S3FormFields: View {
 
     @Binding var endpoint: String
@@ -49,8 +28,7 @@ struct S3FormFields: View {
     private var secretAccessKeyChanged = false
     private var allowTLSOffChanged = false
 
-    /// Shared label width across the labeled rows (region, bucket) so the input columns
-    /// stay aligned regardless of which label happens to be longer in the active locale.
+    /// Shared label width across labeled rows so input columns stay aligned across locales.
     @State private var fieldLabelWidth: CGFloat?
 
     init(
@@ -112,6 +90,7 @@ struct S3FormFields: View {
                     onLoadFromCSV()
                 }
                 .font(.calloutEmphasized)
+                .textCase(nil)
             }
         }
 
@@ -122,42 +101,36 @@ struct S3FormFields: View {
         }
     }
 
-    /// Lights the endpoint row's "changed from original" indicator.
     func formFieldChanged(endpoint flag: Bool) -> Self {
         var instance = self
         instance.endpointChanged = flag
         return instance
     }
 
-    /// Lights the region row's "changed from original" indicator.
     func formFieldChanged(region flag: Bool) -> Self {
         var instance = self
         instance.regionChanged = flag
         return instance
     }
 
-    /// Lights the bucket row's "changed from original" indicator.
     func formFieldChanged(bucket flag: Bool) -> Self {
         var instance = self
         instance.bucketChanged = flag
         return instance
     }
 
-    /// Lights the access-key-ID row's "changed from original" indicator.
     func formFieldChanged(accessKeyId flag: Bool) -> Self {
         var instance = self
         instance.accessKeyIdChanged = flag
         return instance
     }
 
-    /// Lights the secret-access-key row's "changed from original" indicator.
     func formFieldChanged(secretAccessKey flag: Bool) -> Self {
         var instance = self
         instance.secretAccessKeyChanged = flag
         return instance
     }
 
-    /// Lights the allow-self-signed-certs row's "changed from original" indicator.
     func formFieldChanged(allowTLSOff flag: Bool) -> Self {
         var instance = self
         instance.allowTLSOffChanged = flag

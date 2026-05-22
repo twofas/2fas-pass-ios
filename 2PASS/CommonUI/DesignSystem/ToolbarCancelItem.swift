@@ -6,17 +6,8 @@
 
 import SwiftUI
 
-/// Cancellation-action toolbar item wrapping a `ToolbarCancelButton`.
-///
-/// Adapts per OS via the underlying `ToolbarCancelButton`:
-/// - iOS 26+ → leading X icon (Liquid Glass)
-/// - earlier → localized "Cancel" text button
-///
-/// ```
-/// ToolbarCancelItem {
-///     dismiss()
-/// }
-/// ```
+/// Cancellation-action toolbar item wrapping `ToolbarCancelButton` (X icon on iOS 26+,
+/// localized "Cancel" text earlier).
 public struct ToolbarCancelItem: ToolbarContent {
 
     private let action: () -> Void

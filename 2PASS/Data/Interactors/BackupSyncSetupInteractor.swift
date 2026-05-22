@@ -9,41 +9,18 @@ import Backup
 import Common
 
 public protocol BackupSyncInstalling: AnyObject {
-    /// Wires the existing `MainRepository.backupSyncContainer` (constructed inert by
-    /// `MainRepositoryImpl.init`) with its production collaborators and per-vault
-    /// `CloudSync` configuration via `BackupSyncContainer.setup(...)`. Idempotent: calling
-    /// more than once re-runs `setup`, which atomically replaces the providers and
-    /// re-applies the CloudSync chain — the supported re-apply path used by vault recovery
-    /// after the recovered vault becomes the selected one.
-    ///
-    /// The "vault data is authoritative" signal that vault recovery used to carry via a
-    /// `takingOverVault:` argument is now expressed through
-    /// `BackupSyncContainer.markAllConfigsAwaitingVaultOverride()` — a unified per-config
-    /// flag the next sync honors via `CloudSyncAdapter.performSync(overwritingVault:)`. The
-    /// recovery flow marks that flag separately, then triggers the sync; `initialize()`
-    /// stays a single no-arg entry point.
+    /// Wires `MainRepository.backupSyncContainer` (constructed inert in `MainRepositoryImpl.init`)
+    /// with production collaborators and per-vault `CloudSync` configuration. Idempotent —
+    /// re-runs `setup`, which atomically replaces providers and re-applies the CloudSync chain.
+    /// Used by vault recovery once the recovered vault becomes the selected one.
     func initialize()
 }
 
-/// Wires the app-lifetime `BackupSyncContainer` after construction.
-///
-/// `MainRepositoryImpl` owns the container as a `let` stored property and creates it inert
-/// via `BackupSyncContainer()` in its own init. This interactor — which has access to the
-/// `Export` / `BackupImport` / `Sync` interactors needed to build the adapter, plus the
-/// `Items` / `DeletedItems` / `Tag` interactors needed to construct the `LocalStorage` /
-/// `CloudCacheStorage` / `EncryptionHandler` for `CloudSync`'s per-vault setup — finishes
-/// the job by calling `BackupSyncContainer.setup(...)` on the existing instance. Two-phase
-/// init resolves the cycle: the data layer holds the container without needing its
-/// dependencies, and this upper layer supplies the dependencies without owning the
-/// container.
-///
-/// `BackupSyncAdapter` is the single bridge from the new sync stack into the existing data
-/// layer — it conforms to `BackupSyncContext`, `BackupVaultExporting`, `BackupLocalMerging`,
-/// AND `BackupSyncConfigStore`. The container takes the same adapter instance for every
-/// collaborator slot. The runtime values CloudSync's setup chain needs (deviceID, vaultID,
-/// multi-device-sync entitlement) are read by the container from the `BackupSyncContext`
-/// the adapter exposes — the adapter forwards each to `MainRepository`, so this interactor
-/// doesn't plumb them as separate arguments.
+/// Two-phase init for the app-lifetime `BackupSyncContainer`. `MainRepositoryImpl` owns the
+/// container as an inert `let`; this interactor — which has access to the interactors needed
+/// to build the adapter and the per-vault storage — calls `setup(...)` to finish wiring it.
+/// `BackupSyncAdapter` fulfills every collaborator slot, so the container holds a single
+/// reference for all roles.
 final class BackupSyncSetupInteractor: BackupSyncInstalling {
     private let mainRepository: MainRepository
     private let exportInteractor: ExportInteracting

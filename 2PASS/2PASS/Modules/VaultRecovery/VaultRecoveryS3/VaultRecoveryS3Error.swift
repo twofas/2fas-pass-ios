@@ -7,14 +7,8 @@
 import Foundation
 import Backup
 
-/// Surfaces recovery-flow outcomes to the two S3 recovery presenters
-/// (`VaultRecoveryS3Presenter`, `VaultRecoverySelectS3IndexPresenter`).
-///
-/// Same shape as `VaultRecoveryWebDAVError` — both file-based backends share the underlying
-/// `BackupFileServiceError` transport layer, schema-mismatch outcomes, and "did the missing
-/// file mean the index or the vault is missing?" disambiguation. Kept as a sibling type so
-/// each module owns the strings shown to the user (S3-specific wording can diverge later
-/// without dragging WebDAV along).
+/// Recovery-flow outcomes for the S3 presenters. Kept separate from
+/// `VaultRecoveryWebDAVError` so each backend owns its user-facing strings.
 enum VaultRecoveryS3Error: Error {
     case transport(BackupFileServiceError)
     case indexNotFound
@@ -25,9 +19,7 @@ enum VaultRecoveryS3Error: Error {
 }
 
 extension VaultRecoveryS3Error {
-    /// Localized message for an alert. Reuses the WebDAV recovery strings — both backends are
-    /// file-based and the user-facing wording is transport-agnostic. If S3-specific wording
-    /// becomes useful, swap individual cases to dedicated `recoveryErrorS3*` strings.
+    /// Reuses the WebDAV recovery strings — wording is transport-agnostic.
     var message: String {
         switch self {
         case .transport(let inner):
@@ -45,9 +37,8 @@ extension VaultRecoveryS3Error {
         }
     }
 
-    /// Same transport mapping as the WebDAV equivalent. `.notFound` is unreachable from this
-    /// path — the module interactors catch it and rethrow as `.indexNotFound` /
-    /// `.vaultNotFound` before this mapping runs.
+    /// `.notFound` is unreachable from this path — interactors rethrow it as
+    /// `.indexNotFound` / `.vaultNotFound` before this mapping runs.
     private static func message(for transport: BackupFileServiceError) -> String {
         switch transport {
         case .unauthorized:

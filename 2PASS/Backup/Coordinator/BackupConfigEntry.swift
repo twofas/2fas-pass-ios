@@ -7,25 +7,13 @@
 import Foundation
 import Common
 
-/// Pairs a registered backup-sync config with its persistent instance id.
-///
-/// Used in two roles:
-///   - **In-memory:** appears wrapped in `BackupConfig` cases inside the unified list returned
-///     by `BackupSyncContainer.savedConfigs` / `BackupSyncConfigStore.loadConfigs()`.
-///   - **On-disk:** the JSON shape inside the encrypted blob the adapter writes through
-///     `MainRepository.saveBackupConfigs(_:)`. `Codable` conformance means the same struct
-///     serves both ends with no separate wrapper type.
-///
-/// The kind is encoded in the `Config` type parameter — `BackupConfigEntry<BackupWebDAVConfig>`
-/// is unambiguously a WebDAV entry — so storing kind alongside the id would be redundant.
-/// `id` is just the `UUID` minted at registration time; consumers that need the discriminator
-/// read it from `BackupSynchronizing.kind` on the materialized service.
+/// Pairs a registered backup-sync config with its persistent instance id. Used both
+/// in-memory (wrapped in `BackupConfig`) and on-disk (inside the encrypted persisted blob).
+/// Kind is encoded in the `Config` type parameter, so no kind field is stored alongside.
 public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
     public let id: BackupConfig.ID
-    /// Wall-clock time the entry was first registered. Set at registration; preserved by
-    /// `BackupSyncContainer.update(_:)`. Lets callers sort entries by add-order across kinds —
-    /// the per-kind storage lists already preserve order *within* a kind, but a global ordering
-    /// requires a comparable field shared between them.
+    /// Set at registration; preserved by updates. Enables sorting across kinds since
+    /// per-kind ordering on its own doesn't give a global order.
     public let createdAt: Date
     public let config: Config
 
@@ -36,13 +24,8 @@ public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
     }
 }
 
-/// A registered backup config, kind-discriminated. The type-erased counterpart to the generic
-/// `BackupConfigEntry<Config>` — use this where callers need to deal with every kind in one
-/// homogeneous list (UI lists, "all backends" overviews, global ordering by `createdAt`). Each
-/// case preserves the underlying typed entry so consumers can switch to recover the full config.
-///
-/// `Identifiable` via the inner entry's `id`, so SwiftUI's `ForEach` / `List` work out of the
-/// box: `ForEach(interactor.allConfigs) { ... }`.
+/// Kind-discriminated, type-erased counterpart to `BackupConfigEntry<Config>` for callers
+/// that handle every kind in one list. `Identifiable` via the inner entry's `id`.
 public enum BackupConfig: Sendable, Identifiable, Codable {
     public typealias ID = UUID
     public typealias Service = BackupSyncService
@@ -77,25 +60,19 @@ public enum BackupConfig: Sendable, Identifiable, Codable {
 }
 
 public extension Array where Element == BackupConfig {
-    /// All WebDAV entries from this list, registration order preserved.
     var webDAVEntries: [BackupConfigEntry<BackupWebDAVConfig>] {
         compactMap {
             if case .webDAV(let entry) = $0 { return entry } else { return nil }
         }
     }
 
-    /// The single iCloud entry from this list, if any. Single-instance is enforced at
-    /// registration time by the configs interactor; this accessor returns the first hit and
-    /// silently ignores duplicates if the persisted blob ever contains more than one (e.g. a
-    /// future migration bug).
+    /// The single iCloud entry, if any. Single-instance is enforced at registration time;
+    /// this accessor returns the first hit and ignores duplicates.
     var iCloudEntry: BackupConfigEntry<BackupiCloudConfig>? {
         for case .iCloud(let entry) in self { return entry }
         return nil
     }
 
-    /// `true` when an iCloud backend is registered. Convenience for call sites that only need
-    /// the presence bit (e.g. `if configs.hasICloud { ... }`) — equivalent to
-    /// `iCloudEntry != nil` but reads more naturally at the use site.
     var hasICloud: Bool {
         iCloudEntry != nil
     }
