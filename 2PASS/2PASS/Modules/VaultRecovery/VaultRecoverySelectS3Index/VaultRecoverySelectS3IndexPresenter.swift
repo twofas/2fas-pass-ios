@@ -70,8 +70,6 @@ extension VaultRecoverySelectS3IndexPresenter {
                     vaultID: uuid,
                     schemeVersion: vault.schemaVersion
                 )
-                // The encrypted source is wrapped by `VaultRecoveryS3Presenter` (which owns
-                // the encryption seam); this presenter just hands the picked vault upward.
                 onSelect(exchangeVault)
             } catch let error as VaultRecoveryS3Error {
                 self.showStatus(error)

@@ -61,8 +61,6 @@ final class VaultRecoveryS3Presenter {
         return true
     }
 
-    /// `initialConfig` is reseeded on every successful Connect — only deviations from the
-    /// most-recent baseline trigger the discard prompt.
     var hasUnsavedChanges: Bool {
         endpoint != (initialConfig?.endpoint.absoluteString ?? "")
             || region != (initialConfig?.region ?? "")
@@ -78,9 +76,9 @@ final class VaultRecoveryS3Presenter {
     @ObservationIgnored
     private var fetchTask: Task<Void, Never>?
 
-    /// Tracks the prior autofilled value so re-autofill never overwrites user-typed input.
     @ObservationIgnored
     private var lastAutofilledRegion: String?
+    
     @ObservationIgnored
     private var lastAutofilledBucket: String?
 
@@ -101,13 +99,11 @@ final class VaultRecoveryS3Presenter {
             accessKeyId = config.accessKeyId
             secretAccessKey = config.secretAccessKey
             allowTLSOff = config.allowTLSOff
-            // Prime autofill memory so the `endpoint` didSet doesn't re-overwrite the
-            // restored region/bucket on first load.
+            
+            initialConfig = config
+            
             lastAutofilledRegion = config.region
             lastAutofilledBucket = config.bucket
-            // Baseline for `hasUnsavedChanges` — without this a verbatim-from-cache form
-            // would register as "changed" on first open.
-            initialConfig = config
         }
     }
 
@@ -136,18 +132,14 @@ final class VaultRecoveryS3Presenter {
 
         fetchTask = Task { [weak self] in
             guard let self else { return }
+            
             do {
                 let index = try await interactor.recover(config)
                 isFetching = false
                 fetchTask = nil
                 if Task.isCancelled { return }
 
-                // Cache is now the saved-state source of truth. `MainRepository` AES-GCM-
-                // encrypts under the Secure-Enclave appKey internally; credentials never
-                // travel through the view chain past this presenter.
                 interactor.cacheConfig(config)
-                // Re-baseline so the discard alert won't fire when back-navigating to a
-                // form that matches the just-cached values verbatim.
                 initialConfig = config
 
                 destination = .selectVault(
@@ -157,14 +149,14 @@ final class VaultRecoveryS3Presenter {
                         self?.onSelect(.file(vault, source: .s3))
                     }
                 )
+                
             } catch let error as VaultRecoveryS3Error {
                 isFetching = false
                 fetchTask = nil
                 if Task.isCancelled { return }
                 destination = .errorAlert(message: error.message)
+                
             } catch {
-                // Typed throws erase at the Task boundary; defensive fallback for future
-                // additions to `VaultRecoveryS3Error`.
                 isFetching = false
                 fetchTask = nil
                 if Task.isCancelled { return }

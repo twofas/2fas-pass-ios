@@ -7,8 +7,6 @@
 import Foundation
 import Backup
 
-/// `.indexNotFound` / `.vaultNotFound` are synthesized per call site from
-/// `BackupFileServiceError.notFound` — UI never sees `transport(.notFound)`.
 enum VaultRecoveryWebDAVError: Error {
     case transport(BackupFileServiceError)
     case indexNotFound

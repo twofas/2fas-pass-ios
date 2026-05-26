@@ -65,7 +65,6 @@ final class BackupConfigsPresenter {
     init(interactor: BackupConfigsModuleInteracting) {
         self.interactor = interactor
 
-        // Seed rows for first body pass; without this, onAppear's later reload flashes empty.
         snapshotActivity()
     }
 

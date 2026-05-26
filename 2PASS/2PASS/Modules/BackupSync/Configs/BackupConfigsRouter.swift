@@ -9,7 +9,6 @@ import CommonUI
 
 struct BackupConfigsRouter: Router {
 
-    /// Stored only to thread `@Namespace` (View-only API) into matched-zoom modifiers.
     let transitionNamespace: Namespace.ID?
 
     @MainActor
@@ -37,11 +36,6 @@ struct BackupConfigsRouter: Router {
     func view(for destination: BackupConfigsDestination) -> some View {
         switch destination {
         case .add(let onClose, let savedConfigID):
-            // Autoclosure overload — the id expression is resolved inside the
-            // matched-zoom modifier's body, so observation on the presenter's
-            // `savedConfigIDFromPicker` (read through `savedConfigID()`) re-fires
-            // the zoom target mid-dismiss. The sheet animates from "+" on open
-            // and zooms into the new row after save.
             BackupConfigsAddRouter.buildView(onClose: onClose)
                 .matchedZoomDestination(
                     id: savedConfigID().map(Self.editSourceID(for:)) ?? Self.pickerSourceID,
@@ -49,9 +43,6 @@ struct BackupConfigsRouter: Router {
                 )
 
         case .editWebDAV(let configID, let onClose):
-            // The zoom modifier wraps the NavigationStack (the sheet's outermost content) so it
-            // animates the sheet's presentation from the source row. Applied inside the stack it
-            // would act as a push transition — wrong, since the form is the stack's root.
             NavigationStack {
                 BackupWebDAVConfigEditorRouter.buildView(configID: configID, onClose: onClose)
             }

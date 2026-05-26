@@ -7,18 +7,10 @@
 import Foundation
 import Common
 
-/// Single-use; one instance per `run()`. Services run sequentially, ordered by oldest
-/// successful `lastSyncDate`. When a service applies remote changes, every peer is
-/// re-queued (its remote is now stale); loop stops on a quiet pass or
-/// `maxConvergencePasses`. Cancellation cancels the in-flight service and drops the rest
-/// from the result.
 public final class BackupSyncSession: Sendable {
 
     public typealias SyncResult = (id: BackupConfig.ID, kind: BackupSyncService, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
-    /// `sessionStarted`/`sessionFinished` bracket the whole orchestration (emitted by the
-    /// container). `started`/`finished` bracket each `performSync` and can repeat across
-    /// convergence passes for the same id.
     public enum Event: Sendable {
         case sessionStarted
         case sessionFinished
@@ -102,8 +94,6 @@ public final class BackupSyncSession: Sendable {
 
     private static let maxConvergencePasses = 3
 
-    /// Verdict reflects the latest attempt; `appliedRemoteChanges` OR'd across passes.
-    /// Without this, an earlier pass that pulled changes would be hidden by a later quiet pass.
     private static func merge(
         _ outcome: Result<BackupSyncOutcome, BackupSyncError>,
         for id: BackupConfig.ID,

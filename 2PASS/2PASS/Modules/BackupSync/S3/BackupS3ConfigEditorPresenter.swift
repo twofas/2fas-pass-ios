@@ -243,8 +243,6 @@ final class BackupS3ConfigEditorPresenter {
         }
     }
 
-    /// Only overwrites empty fields or fields still holding the prior auto-derived value;
-    /// never clobbers user input.
     private func autofillFromAWSEndpoint() {
         guard let detection = interactor.detect(endpoint: endpoint) else { return }
 

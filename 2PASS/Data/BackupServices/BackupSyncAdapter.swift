@@ -8,10 +8,6 @@ import Foundation
 import Backup
 import Common
 
-/// Strong ref to `mainRepository` forms a `MainRepository → container → adapter →
-/// MainRepository` cycle — benign only while `MainRepository` is a process-lifetime
-/// singleton. `@unchecked Sendable` relies on (1) stateless held interactors and (2) the
-/// container's debounce of overlapping triggers; re-audit if either changes.
 final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLocalMerging, BackupSyncConfigStore, BackupSyncDateStore, BackupAwaitingFlagsStoring, @unchecked Sendable {
 
     private let mainRepository: MainRepository
@@ -74,17 +70,20 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
 #endif
 
     // MARK: - BackupVaultExporting
-    //
-    // `ExportInteractor.prepareItemsForExport` JSON-encodes to `Data`; we decode back to
-    // `ExchangeVault` to satisfy the typed return, and the caller re-encodes before upload.
-    // Transitional; future cleanup: add an `ExportInteracting` method returning `ExchangeVault`.
-    // `vaultID` is ignored — `ExportInteracting` always exports `mainRepository.selectedVault`.
 
     func prepareEncryptedExport(
         vaultID: UUID,
         includeDeleted: Bool
     ) async throws(BackupVaultExportError) -> ExchangeVault {
-        try await runExport(encrypt: true, includeDeleted: includeDeleted)
+        do {
+            return try await exportInteractor.prepareItemsForExport(
+                encrypt: true,
+                exportIfEmpty: true,
+                includeDeletedItems: includeDeleted
+            )
+        } catch {
+            throw Self.mapExportError(error)
+        }
     }
 
 #if DEBUG
@@ -92,35 +91,17 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         vaultID: UUID,
         includeDeleted: Bool
     ) async throws(BackupVaultExportError) -> ExchangeVault {
-        try await runExport(encrypt: false, includeDeleted: includeDeleted)
-    }
-#endif
-
-    private func runExport(
-        encrypt: Bool,
-        includeDeleted: Bool
-    ) async throws(BackupVaultExportError) -> ExchangeVault {
-        let result: Result<(Data, String), ExportError> = await withCheckedContinuation { continuation in
-            exportInteractor.prepareItemsForExport(
-                encrypt: encrypt,
+        do {
+            return try await exportInteractor.prepareItemsForExport(
+                encrypt: false,
                 exportIfEmpty: true,
                 includeDeletedItems: includeDeleted
-            ) { result in
-                continuation.resume(returning: result)
-            }
-        }
-
-        switch result {
-        case .success(let (data, _)):
-            do {
-                return try JSONDecoder().decode(ExchangeVault.self, from: data)
-            } catch {
-                throw .other("export decode: \(error)")
-            }
-        case .failure(let error):
+            )
+        } catch {
             throw Self.mapExportError(error)
         }
     }
+#endif
 
     private static func mapExportError(_ error: ExportError) -> BackupVaultExportError {
         switch error {
@@ -138,12 +119,6 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
     }
 
     // MARK: - BackupLocalMerging
-    //
-    // `parseContents` takes `Data` but we get a decoded `ExchangeVaultVersioned`, so we
-    // re-encode. The returned `Bool` mirrors `SyncInteractor.syncAndApplyChanges`'s own
-    // change tracking — `true` only on real mutations; the convergence loop relies on an
-    // accurate `false` to avoid re-queueing peers. The local push happens unconditionally,
-    // so `false` is safe to return on a no-op merge.
 
     func applyRemoteChanges(
         _ remoteVault: ExchangeVaultVersioned,
@@ -153,8 +128,6 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         do {
             data = try Self.encode(remoteVault)
         } catch {
-            // Encoding a typed value we just produced shouldn't fail. Treat as decryption-class
-            // failure so the sync attempt aborts cleanly.
             throw .errorDecrypting
         }
 
@@ -185,8 +158,6 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         case .failure(let error):
             switch error {
             case .errorDecrypting, .corruptedFile, .schemaNotSupported:
-                // .corruptedFile / .schemaNotSupported are defensive — we just encoded a
-                // typed value ourselves. If they fire, surface as decryption-class failure.
                 throw .errorDecrypting
             case .otherDeviceId:
                 throw .otherDeviceId
@@ -198,7 +169,6 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         }
     }
 
-    /// `ExchangeVaultVersioned` is `Decodable`-only — encode by switching on the case.
     private static func encode(_ versioned: ExchangeVaultVersioned) throws -> Data {
         let encoder = JSONEncoder()
         switch versioned {
@@ -225,8 +195,6 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         mainRepository.loadLastSyncDates()[id]
     }
 
-    /// Clear is conditional on `consumed`: a sync that captured the pre-mark snapshot must
-    /// not wipe a flag whose work it didn't actually perform.
     func setLastSyncDate(_ date: Date, for id: BackupConfig.ID, consumed: BackupSyncFlags) {
         var dates = mainRepository.loadLastSyncDates()
         dates[id] = date

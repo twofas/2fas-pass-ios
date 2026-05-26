@@ -102,7 +102,6 @@ final class PasswordsPresenter {
     }
 
     deinit {
-        // Safety net for the rare case where `viewWillDisappear` doesn't fire.
         syncDidApplyRemoteChangesTask?.cancel()
         notificationCenter.removeObserver(self)
     }

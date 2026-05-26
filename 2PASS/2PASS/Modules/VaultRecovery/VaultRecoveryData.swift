@@ -9,8 +9,6 @@ import Common
 import Data
 import Backup
 
-/// Tag-only: actual credentials live in the recovery cache, looked up by case in
-/// `VaultRecoveryRecoverModuleInteractor.persistRecoverySource(_:)` after import succeeds.
 enum VaultRecoveryFileSource: Sendable {
     case webDAV
     case s3

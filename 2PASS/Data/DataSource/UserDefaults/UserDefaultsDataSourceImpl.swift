@@ -26,12 +26,6 @@ final class UserDefaultsDataSourceImpl {
         case passwordGeneratorConfig
         case backupConfigsBlob
         case lastSyncDatesBlob
-        /// Pre-multi-config WebDAV blob; read-only for migration into `backupConfigsBlob`.
-        case webDAVSavedConfig
-        case webDAVIsConnected
-        case webDAVState
-        case webDAVLastSync
-        case webDAVHasLocalChanges
         case onboardingCompleted
         case connectOnboardingCompleted
         case defaultPasswordListAction
@@ -52,6 +46,13 @@ final class UserDefaultsDataSourceImpl {
         case shareLinkConfig
         case deviceName
         case legacyCloudEnabled = "KeyCloudEnabled"
+        
+        /// Pre-multi-config WebDAV blob; read-only for migration into `backupConfigsBlob`.
+        case webDAVSavedConfig
+        case webDAVIsConnected
+        case webDAVState
+        case webDAVLastSync
+        case webDAVHasLocalChanges
     }
 
     private let userDefaults = UserDefaults()

@@ -6,9 +6,6 @@
 
 import Foundation
 
-/// Read + mark only — flags are cleared by `BackupSyncDateStore.setLastSyncDate` when the
-/// sync that honored them succeeds. `vaultOverride` follows master-password change;
-/// `deviceRegistration` follows recovery.
 public protocol BackupAwaitingFlagsStoring: Sendable {
     var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { get }
     func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>)

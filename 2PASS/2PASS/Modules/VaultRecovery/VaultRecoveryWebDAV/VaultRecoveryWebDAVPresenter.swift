@@ -64,14 +64,9 @@ final class VaultRecoveryWebDAVPresenter {
     private let interactor: VaultRecoveryWebDAVModuleInteracting
     private let onSelect: (VaultRecoveryData) -> Void
 
-    /// Held so the in-flight fetch can be torn down on dismissal — otherwise the request
-    /// runs to completion even after the user backs out.
     @ObservationIgnored
     private var fetchTask: Task<Void, Never>?
 
-    // Snapshot of the "saved" config — captured at init (from the recovery cache, if any)
-    // and refreshed on every successful Connect (after the cache write). Compared against
-    // the live `@Observable` form fields by `hasUnsavedChanges` to gate the discard alert.
     @ObservationIgnored
     private var initialConfig: BackupWebDAVConfig?
 
@@ -82,23 +77,12 @@ final class VaultRecoveryWebDAVPresenter {
         self.interactor = interactor
         self.onSelect = onSelect
 
-        // Seed from the in-memory recovery cache on `MainRepository`. The cache handles
-        // decryption and JSON decoding internally — `cachedConfig` returns the typed
-        // `BackupWebDAVConfig?` directly. `nil` means "no cache" (or decode/decrypt
-        // failure); defaults stand in that case.
         if let config = interactor.cachedConfig {
             url = config.baseURL
             allowTLSOff = config.allowTLSOff
             username = config.login ?? ""
             password = config.password ?? ""
-            // `config.normalizedURL` is recomputed by `interactor.normalizeURL` on the next
-            // `onSave`; `config.lockTime` is a backup-sync setting recovery has no opinion on
-            // (the convenience init below uses `Config.webDAVLockFileTime`). Both ignored on
-            // seed.
-            //
-            // Capture the just-seeded config as the baseline for `hasUnsavedChanges`.
-            // Without this the form would register as "changed" on first open even when
-            // pre-filled verbatim from the recovery cache.
+
             initialConfig = config
         }
     }
@@ -131,13 +115,6 @@ final class VaultRecoveryWebDAVPresenter {
                 fetchTask = nil
                 if Task.isCancelled { return }
 
-                // Hand the validated config to the cache. `MainRepository` JSON-encodes
-                // and AES-GCM-encrypts it under the Secure-Enclave appKey internally —
-                // same pipeline `saveBackupConfigs` already uses on this type. The
-                // strongly-typed value exists only across this call site; nothing about
-                // the credentials travels through the view chain past this presenter.
-                // The source enum bubbled upward is tag-only; `persistRecoverySource`
-                // reads back from the cache when it commits to disk.
                 let snapshot = BackupWebDAVConfig(
                     baseURL: url,
                     normalizedURL: normalizedURL,
@@ -146,9 +123,7 @@ final class VaultRecoveryWebDAVPresenter {
                     password: password.isEmpty ? nil : password
                 )
                 interactor.cacheConfig(snapshot)
-                // The cache is now the source of truth for "saved" — re-baseline so the
-                // discard alert won't fire if the user back-navigates from the vault list
-                // to a form that exactly matches what was just cached.
+
                 initialConfig = snapshot
 
                 destination = .selectVault(
@@ -161,15 +136,14 @@ final class VaultRecoveryWebDAVPresenter {
                         self?.onSelect(.file(vault, source: .webDAV))
                     }
                 )
+                
             } catch let error as VaultRecoveryWebDAVError {
                 isFetching = false
                 fetchTask = nil
                 if Task.isCancelled { return }
                 destination = .errorAlert(message: error.message)
+                
             } catch {
-                // Typed throws on a protocol erase to `any Error` at the Task boundary; the
-                // catch above handles every realistic case, but a defensive fallback keeps
-                // the UI responsive if a future change introduces a new error type.
                 isFetching = false
                 fetchTask = nil
                 if Task.isCancelled { return }

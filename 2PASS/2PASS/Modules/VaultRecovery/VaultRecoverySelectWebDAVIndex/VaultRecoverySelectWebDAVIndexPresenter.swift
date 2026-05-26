@@ -82,8 +82,6 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
                     login: login,
                     password: password
                 )
-                // The encrypted source is wrapped by `VaultRecoveryWebDAVPresenter` (which
-                // owns the encryption seam); this presenter just hands the picked vault upward.
                 onSelect(exchangeVault)
             } catch let error as VaultRecoveryWebDAVError {
                 self.showStatus(error)

@@ -65,9 +65,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
     private let syncEventContinuations = OSAllocatedUnfairLock<[UUID: AsyncStream<BackupSyncSession.Event>.Continuation]>(initialState: [:])
     private let lastErrors = OSAllocatedUnfairLock<[BackupConfig.ID: BackupSyncError]>(initialState: [:])
 
-    /// Bridges iCloud push completions arriving outside any active session into a
-    /// `.finished(.success)` event. Self-suppresses while a session is in flight to avoid
-    /// double-firing.
     private let cloudSyncPushBridgeToken = OSAllocatedUnfairLock<UUID?>(initialState: nil)
 
     private let cloudSync = CloudSync()
@@ -141,8 +138,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
             kind: .iCloud,
             outcome: .success(outcome)
         )
-        // Same handle → broadcast order as the session path so `lastErrors[id]` is cleared
-        // alongside the fan-out.
         handle(event)
         broadcast(event)
     }
@@ -287,8 +282,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         cancel?()
     }
 
-    /// `fromPush: true` is load-bearing inside `SyncHandler.synchronize` — it triggers
-    /// `needsResync` when a sync is past its fetch phase, so the push isn't dropped.
     public func handlePush() {
         cloudSync.synchronize(fromPush: true)
     }
@@ -302,8 +295,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         cancel?()
     }
 
-    /// Each call returns a fresh `AsyncStream`; continuations are auto-removed via
-    /// `onTermination`.
     public func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
         let subscriberID = UUID()
         return AsyncStream(bufferingPolicy: .unbounded) { [weak self] continuation in

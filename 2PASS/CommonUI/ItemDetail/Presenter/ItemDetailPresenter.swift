@@ -70,7 +70,6 @@ final class ItemDetailPresenter {
     }
 
     deinit {
-        // Safety net for the rare case where `onDisappear` doesn't fire.
         syncDidApplyRemoteChangesTask?.cancel()
     }
 }

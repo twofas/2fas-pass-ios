@@ -92,8 +92,6 @@ public final class CloudSync {
         syncHandler?.setCurrentDate(date)
     }
 
-    /// Returns `nil` before `setup(...)` runs; callers fall back to the `currentState`
-    /// pre-check (`.unknown` is non-terminal, so `syncOnce` no-ops in that case).
     @discardableResult
     func addStateChangedHandler(_ handler: @escaping (CloudCurrentState) -> Void) -> UUID? {
         cloudHandler?.addStateChangedHandler(handler)

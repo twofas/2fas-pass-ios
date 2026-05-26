@@ -27,7 +27,6 @@ extension VaultRecoveryWebDAVError {
         }
     }
 
-    /// `.notFound` should be unreachable — interactors rethrow as `.indexNotFound` / `.vaultNotFound` first.
     private static func message(for transport: BackupFileServiceError) -> String {
         switch transport {
         case .unauthorized:
@@ -49,9 +48,6 @@ extension VaultRecoveryWebDAVError {
         case .invalidResponse:
             return String(localized: .commonGeneralErrorTryAgain)
         case .notFound:
-            // Should be unreachable — the module interactors catch this and rethrow as
-            // `.indexNotFound` / `.vaultNotFound`. Falling back to the generic message keeps
-            // us from crashing if a future call site forgets to catch it.
             return String(localized: .commonGeneralErrorTryAgain)
         }
     }

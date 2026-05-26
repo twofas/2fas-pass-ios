@@ -25,8 +25,6 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
         session.invalidateAndCancel()
     }
 
-    /// `.probe` is ephemeral with `waitsForConnectivity = false` so wrong endpoints surface
-    /// in seconds instead of hanging on retries.
     private static func buildSession(config: BackupWebDAVConfig, mode: Mode) -> URLSession {
         let sessionConfiguration: URLSessionConfiguration
         switch mode {
@@ -63,11 +61,7 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
     }
 
     public func testConnection() async throws(BackupFileServiceError) {
-        // PROPFIND/Depth:0 on the collection — bad paths return 404; fresh setups still return 207.
-        //
-        // Transient probe-config session: tight timeouts and `waitsForConnectivity = false`
-        // so a wrong endpoint surfaces in seconds. Lives only for this call;
-        // `invalidateAndCancel` runs at function exit via defer.
+        // PROPFIND/Depth:0 on the collection — bad paths return 404; fresh setups return 207.
         let probeSession = Self.buildSession(config: config, mode: .probe)
         defer { probeSession.invalidateAndCancel() }
 

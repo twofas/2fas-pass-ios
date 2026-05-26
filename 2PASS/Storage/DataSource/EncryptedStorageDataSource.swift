@@ -76,7 +76,6 @@ public protocol EncryptedStorageDataSource: AnyObject {
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
     func markVaultContentModified(_ vaultID: VaultID)
-    /// Reads plain Core Data attributes only — safe to call before vault unlock.
     func backfillContentModificationDate(in vaultID: VaultID)
 
     // MARK: Deleted Items

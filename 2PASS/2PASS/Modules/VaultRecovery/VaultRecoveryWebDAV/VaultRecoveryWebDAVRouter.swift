@@ -20,9 +20,6 @@ struct VaultRecoveryWebDAVRouter: Router {
             onSelect: onSelect
         )
 
-        // The form is the root of the recovery WebDAV sheet. Wrapping in NavigationStack
-        // here gives the toolbar items a host AND lets `.selectVault` push the index
-        // list inside the sheet. Past that point, `onSelect` bubbles up to the parent.
         NavigationStack {
             VaultRecoveryWebDAVView(presenter: presenter)
         }

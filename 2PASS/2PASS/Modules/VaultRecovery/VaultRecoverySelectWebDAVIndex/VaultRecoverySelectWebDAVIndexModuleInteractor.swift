@@ -38,10 +38,6 @@ extension VaultRecoverySelectWebDAVIndexModuleInteractor: VaultRecoverySelectWeb
         login: String?,
         password: String?
     ) async throws(VaultRecoveryWebDAVError) -> ExchangeVaultVersioned {
-        // Pre-flight schema check before any network I/O — index entries carry the schema
-        // version, so we can reject incompatible vaults without downloading them. The
-        // post-fetch schema check inside the container catches drift between the index and
-        // the actual vault file (rare but possible).
         if schemeVersion > Config.schemaVersion {
             throw .schemaNotSupported(schemeVersion)
         }
@@ -58,15 +54,8 @@ extension VaultRecoverySelectWebDAVIndexModuleInteractor: VaultRecoverySelectWeb
         do {
             return try await recoveryInteractor.fetchVault(vaultID: vaultID, config)
         } catch {
-            // Single `catch` + inner `switch` — same typed-throws idiom used in
-            // `VaultRecoveryWebDAVModuleInteractor.recover`. Both `VaultRecoveryWebDAVError`
-            // and `BackupVaultFetchError` share `.transport`/`.schemaNotSupported` case
-            // names, so qualified throws inside the switch keep the inference unambiguous.
             switch error {
             case .transport(let transportError):
-                // Vault-fetch 404 means the index pointed at a vault that no longer exists on
-                // the server — distinct from the index-fetch 404 in
-                // `VaultRecoveryWebDAVModuleInteractor` ("no index at this URL yet").
                 if case .notFound = transportError {
                     throw VaultRecoveryWebDAVError.vaultNotFound
                 }

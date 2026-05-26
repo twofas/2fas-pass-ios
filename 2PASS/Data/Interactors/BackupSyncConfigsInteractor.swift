@@ -27,13 +27,12 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     @discardableResult
     func addS3Config(_ config: S3ServiceConfig) -> BackupConfig.ID
 
-    /// `nil` when an iCloud entry already exists — only one CloudKit container per build.
+    /// `nil` when an iCloud entry already exists — only one CloudKit container per app.
     @discardableResult
     func addiCloudConfig() -> BackupConfig.ID?
 
     var canAddiCloud: Bool { get }
 
-    /// No-op if `id` doesn't exist or maps to a different kind.
     func updateWebDAVConfig(id: BackupConfig.ID, with config: BackupWebDAVConfig)
     func updateS3Config(id: BackupConfig.ID, with config: S3ServiceConfig)
 
@@ -41,14 +40,11 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
 
     var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
-    /// "No index yet" 404 is folded into success.
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
 
-    /// Best-effort — `nil` for non-AWS hosts (S3-compatible providers use ad-hoc URL shapes).
     func detectS3Endpoint(_ endpoint: String) -> S3EndpointDetection?
 
-    /// URL must be security-scoped (`fileImporter`); bracketing happens inside.
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
 }
 

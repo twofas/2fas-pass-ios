@@ -106,8 +106,6 @@ public final class S3ServiceSession: Sendable {
         return config
     }
 
-    /// Ephemeral + `waitsForConnectivity = false` so wrong-host/wrong-creds surface in ~15s
-    /// instead of hanging on connectivity-wait retries.
     private static var probeConfiguration: URLSessionConfiguration {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 15
@@ -140,12 +138,8 @@ public final class S3ServiceSession: Sendable {
 
 private extension S3ServiceSession {
     func buildURLRequest(from request: S3URLRequest) -> URLRequest {
-        // Hetzner Object Storage (and any S3-compatible backend that publishes per-bucket
-        // hostnames) uses virtual-hosted addressing: the bucket is the leftmost subdomain
-        // of the endpoint host. If we then also append `config.bucket` to the path, the
-        // bucket appears twice — the server reads it from the host and treats the path
-        // (including the literal "misctest/" prefix) as part of the object key. Detect
-        // this case and skip the path-style bucket prefix.
+        // Virtual-hosted endpoints already encode the bucket in the hostname — skip the
+        // path-style prefix to avoid the bucket appearing twice in the URL.
         let endpointHost = config.endpoint.host() ?? ""
         let isVirtualHosted = endpointHost == config.bucket
             || endpointHost.hasPrefix("\(config.bucket).")

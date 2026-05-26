@@ -8,16 +8,9 @@ import Foundation
 import os
 
 // MARK: - Typed-message backport of iOS 26's NotificationCenter.AsyncMessage / .MainActorMessage
-//
-// Same API shape (argument labels, method names) as the iOS 26 SDK so adoption today is
-// identical to adoption tomorrow. Transport reuses `NotificationCenter`: the typed message
-// is packed into `userInfo` under one private key; subject scoping reuses `object:`.
 
 public enum Notifications {
 
-    /// Posting is synchronous (observers run before `post` returns); `Subject` matched by
-    /// pointer identity (non-retained), so a `subject` that deinits before delivery silently
-    /// drops the message.
     public protocol AsyncMessage: Sendable {
         associatedtype Subject: AnyObject
         static var name: Notification.Name { get }
@@ -30,7 +23,6 @@ public enum Notifications {
 
     public typealias MessageSequence<M> = AsyncCompactMapSequence<NotificationCenter.Notifications, M>
 
-    /// Observer is removed on `deinit` or `cancel()`, whichever comes first; `cancel()` is idempotent.
     public final class ObservationToken: @unchecked Sendable {
         private let token: NSObjectProtocol
         private let center: NotificationCenter
@@ -77,11 +69,6 @@ private struct AnyMessageBox: @unchecked Sendable {
 }
 
 // MARK: - Module-scope public aliases
-//
-// Inside `extension NotificationCenter { ... }` the bare name `Notifications` resolves to
-// Foundation's nested `NotificationCenter.Notifications` first. Single-token typealiases
-// at module scope sidestep the dotted-path lookup. Call sites should still use
-// `Notifications.AsyncMessage` etc. — these are extension-method internals.
 
 public typealias NotificationsAsyncMessage = Notifications.AsyncMessage
 public typealias NotificationsMainActorMessage = Notifications.MainActorMessage
@@ -105,7 +92,6 @@ extension NotificationCenter {
             }
     }
 
-    /// Handler runs synchronously on the poster's thread before `post(_:subject:)` returns.
     public func addObserver<M: NotificationsAsyncMessage>(
         of type: M.Type,
         from subject: M.Subject? = nil,

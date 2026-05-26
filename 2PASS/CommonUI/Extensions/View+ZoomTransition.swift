@@ -8,8 +8,6 @@ import SwiftUI
 
 public extension View {
 
-    /// `id` is `@autoclosure` so `@Observable`-reading expressions re-evaluate inside the
-    /// modifier body and the transition picks up id changes.
     @ViewBuilder
     func matchedZoomSource(
         id: @autoclosure @escaping @MainActor () -> String,
@@ -65,9 +63,6 @@ private struct MatchedZoomDestinationModifier: ViewModifier {
     let namespace: Namespace.ID?
 
     func body(content: Content) -> some View {
-        // `idResolver()` runs here so an `@Observable`-reading autoclosure registers its
-        // dependency on this body — a change re-fires it and the transition picks up the
-        // new source id in place.
         if let namespace {
             content.navigationTransition(.zoom(sourceID: idResolver(), in: namespace))
         } else {

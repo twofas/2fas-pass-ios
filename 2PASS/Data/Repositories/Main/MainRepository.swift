@@ -729,27 +729,14 @@ protocol MainRepository: AnyObject {
     func removeOldStoreLogs()
 
     // MARK: - Backup Sync config persistence
-    // Used by `BackupSyncAdapter` (the production `BackupSyncConfigStore`), which forwards 1:1.
-    // These methods own the full persistence boundary: encryption with the Secure Enclave-derived
-    // key, JSON encoding of `[BackupConfig]`, and UserDefaults blob storage. Callers deal only
-    // in typed configs — they never see raw bytes or encryption.
-    //
-    // Returns an empty array on any failure (no configs persisted, decryption failed, decode
-    // failed). Callers cannot distinguish "no entries" from "load failed"; that's deliberate
-    // since both states present the same way to the user (no backends configured).
     func loadBackupConfigs() -> [BackupConfig]
     func saveBackupConfigs(_ configs: [BackupConfig])
 
-    /// Plaintext (no `appKey` dependency, readable in any auth state).
     func loadLastSyncDates() -> [BackupConfig.ID: Date]
     func saveLastSyncDates(_ dates: [BackupConfig.ID: Date])
 
-    /// iCloud-side re-run guard relies on `configs.hasICloud` dedupe — the legacy
-    /// `cloudEnabled` flag is intentionally never cleared (CloudHandler still reads it).
     func migrateLegacyBackupConfigs()
 
-    /// Process-memory only; encrypted-at-rest in transit through the same pipeline as
-    /// `saveBackupConfigs`. `nil` on any failure (missing, no appKey, decrypt/decode error).
     var cachedS3RecoveryConfig: S3ServiceConfig? { get }
     var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? { get }
     func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig)
@@ -766,10 +753,6 @@ protocol MainRepository: AnyObject {
     func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>)
     func clearVaultOverrideAwaiting(configID: BackupConfig.ID)
 
-    /// Cleared conditionally — only when a sync actually *consumed*
-    /// `allowingAnyDeviceId == true`. A routine sync that finishes while the flag is set
-    /// must not wipe it without honoring it (otherwise the next merge trips the
-    /// multi-device-id gate).
     var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { get }
     func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>)
     func clearDeviceRegistrationAwaiting(configID: BackupConfig.ID)
@@ -815,6 +798,5 @@ protocol MainRepository: AnyObject {
     func uriCacheGet(originalUri: String) -> String?
 
     // MARK: - Backup Sync Container
-    /// Constructed inert; reads before `setup(...)` no-op gracefully (zero services, `.idle`).
     var backupSyncContainer: BackupSyncContainer { get }
 }

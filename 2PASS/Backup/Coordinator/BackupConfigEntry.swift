@@ -59,7 +59,6 @@ public extension Array where Element == BackupConfig {
         }
     }
 
-    /// Single-instance is enforced at registration; this returns the first hit either way.
     var iCloudEntry: BackupConfigEntry<BackupiCloudConfig>? {
         for case .iCloud(let entry) in self { return entry }
         return nil

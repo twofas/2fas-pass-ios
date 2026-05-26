@@ -7,8 +7,6 @@
 import Foundation
 import Backup
 
-/// Transient in-memory cache (AES-GCM under the appKey via `MainRepository`); cleared by
-/// `persistRecoverySource` on save or `OnboardingInteractor.finishVault*` on flow completion.
 public protocol VaultRecoveryCacheInteracting: AnyObject {
     var cachedS3Config: S3ServiceConfig? { get }
     var cachedWebDAVConfig: BackupWebDAVConfig? { get }

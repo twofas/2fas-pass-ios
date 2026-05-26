@@ -29,9 +29,6 @@ final class MergeHandler {
     private let jsonDecoder: JSONDecoder
     private let jsonEncoder: JSONEncoder
 
-    /// Read live (no snapshot) — same trap that produced the stale `isMultiDeviceSyncEnabled`
-    /// bug. Force-unwrap safe: `CloudSync.setup` guards `context.deviceID != nil` before
-    /// constructing this; the keychain-backed device ID is write-once.
     private var deviceID: DeviceID { context.deviceID! }
     private var isMultiDeviceSyncEnabled: Bool { context.allowsMultiDeviceSync }
     private var isTakingOverVault: Bool = false
@@ -423,9 +420,6 @@ private extension MergeHandler {
             }
         }
 
-        // Handle cloud deleted records where the item exists locally but wasn't in the
-        // items diff dict (because local and cloud items matched in mergeItems and were
-        // removed). Without this, the receiving device never moves items to trash.
         for (itemID, deletedEntry) in deleted where deletedEntry.isDeletedItem {
             guard !handledItemIDs.contains(itemID) else { continue }
             if case .cloud = deletedEntry,
@@ -435,10 +429,6 @@ private extension MergeHandler {
             }
         }
 
-        // Handle cloud items that have matching local deleted records which were already
-        // resolved in mergeDeletedItems (local == cloud). Without this check, items
-        // re-uploaded by another device during a batch deletion race condition would
-        // bypass the deletion check and get restored from trash.
         for localDeleted in allLocalDeletedItems where localDeleted.kind == .login {
             let itemID = localDeleted.itemID
             guard deleted[itemID] == nil else { continue }
@@ -462,8 +452,6 @@ private extension MergeHandler {
             }
         }
 
-        // Handle cloud deleted records where the tag exists locally but wasn't in the
-        // tags diff dict (because local and cloud tags matched in mergeTags)
         for (tagID, deletedEntry) in deleted where deletedEntry.isDeletedTag {
             guard !handledTagIDs.contains(tagID) else { continue }
             if case .cloud = deletedEntry,
@@ -473,7 +461,6 @@ private extension MergeHandler {
             }
         }
 
-        // Same race condition protection for tags
         for localDeleted in allLocalDeletedItems where localDeleted.kind == .tag {
             let itemID = localDeleted.itemID
             guard deleted[itemID] == nil else { continue }

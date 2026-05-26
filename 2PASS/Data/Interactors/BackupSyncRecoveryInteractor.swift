@@ -8,8 +8,6 @@ import Foundation
 import Common
 import Backup
 
-/// Pre-registration reads for vault recovery — config is only persisted after a successful
-/// import.
 public protocol BackupSyncRecoveryInteracting: AnyObject {
     func fetchIndex(_ config: BackupWebDAVConfig) async throws(BackupIndexFetchError) -> BackupIndex
     func fetchIndex(_ config: S3ServiceConfig) async throws(BackupIndexFetchError) -> BackupIndex
@@ -17,7 +15,6 @@ public protocol BackupSyncRecoveryInteracting: AnyObject {
     func fetchVault(vaultID: UUID, _ config: BackupWebDAVConfig) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned
     func fetchVault(vaultID: UUID, _ config: S3ServiceConfig) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned
 
-    /// Empty means the account is reachable but has no backups.
     func listICloudVaultsToRecover() async throws -> [VaultRawData]
 
     func deleteICloudVault(id: VaultID) async throws

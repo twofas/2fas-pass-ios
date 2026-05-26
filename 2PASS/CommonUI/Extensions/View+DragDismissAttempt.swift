@@ -8,8 +8,25 @@ import SwiftUI
 
 public extension View {
 
-    /// Sets `isModalInPresentation` while `isEnabled`, intercepting the sheet pull-down so
-    /// `onAttempt` can gate dismissal (e.g. discard-changes confirmation).
+    /// Intercepts the user's swipe-down gesture on a presented sheet and
+    /// calls `onAttempt` instead of dismissing.
+    ///
+    /// Toggle `isEnabled` dynamically — for example, bind it to a "has
+    /// unsaved changes" flag so the sheet dismisses freely when clean and
+    /// asks for confirmation only when dirty.
+    ///
+    /// ```swift
+    /// .dragDismissAttempt(isEnabled: hasUnsavedChanges) {
+    ///     isDiscardConfirmationPresented = true
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - isEnabled: When `true`, interactive dismissal is blocked and
+    ///     `onAttempt` fires on a swipe-down. When `false`, the sheet
+    ///     dismisses normally.
+    ///   - onAttempt: Called on the main actor when the user tries to
+    ///     dismiss the sheet while `isEnabled` is `true`.
     func dragDismissAttempt(isEnabled: Bool, onAttempt: @escaping () -> Void) -> some View {
         background(DragDismissAttemptCatcher(isEnabled: isEnabled, onAttempt: onAttempt))
     }

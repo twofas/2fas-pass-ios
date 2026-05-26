@@ -9,8 +9,6 @@ import Backup
 import Common
 
 public protocol BackupSyncInstalling: AnyObject {
-    /// Idempotent — re-running atomically replaces providers and re-applies CloudSync wiring.
-    /// Recovery calls this again once the recovered vault becomes selected.
     func initialize()
 }
 

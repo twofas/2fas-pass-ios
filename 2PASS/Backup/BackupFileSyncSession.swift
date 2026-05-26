@@ -403,8 +403,6 @@ private extension BackupFileSyncSession {
 
     // MARK: - Helpers (pure)
 
-    /// Falls back to `vault.updatedAt` when the vault has no content yet, so first sync still
-    /// has a comparable index timestamp.
     func vaultContentTimestamp(_ vault: VaultEncryptedData) async -> Int {
         (await context.latestContentModification(for: vault.vaultID) ?? vault.updatedAt).exportTimestamp
     }

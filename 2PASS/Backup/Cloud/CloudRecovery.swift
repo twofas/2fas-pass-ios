@@ -52,10 +52,6 @@ public final class CloudRecovery: CloudRecovering {
     }
 }
 
-// Per-call session that owns the accumulator and the single-shot continuation. Keeps
-// `CloudRecovery` itself stateless so concurrent callers can't collide on shared instance
-// state (the previous completion-handler implementation stored `vaults` and `completion`
-// on the class — a second call would clobber an in-flight first call).
 private final class ListSession {
     private let continuation: CheckedContinuation<[VaultRawData], Error>
     private let database: CKDatabase
@@ -78,10 +74,6 @@ private final class ListSession {
         operation.resultsLimit = resultLimit
         operation.queuePriority = .veryHigh
 
-        // Strong self capture is intentional: the session owns its own lifetime until it
-        // resumes the continuation. With `[weak self]` the local `session` in the
-        // continuation body is the only strong reference, so the session would deallocate
-        // before CloudKit fires its callbacks — leaking the continuation.
         operation.recordMatchedBlock = { _, result in
             switch result {
             case .success(let record):

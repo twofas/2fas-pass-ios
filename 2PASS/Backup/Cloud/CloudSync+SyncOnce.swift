@@ -8,9 +8,6 @@ import Foundation
 
 extension CloudSync {
 
-    /// If a legacy push/foreground sync is already in flight, the inner `synchronize()` no-ops
-    /// and the awaiter adopts that sync's outcome via the shared finished-handler. Cancellation
-    /// is cooperative — resumes `.cancelled` but the CloudKit op runs to completion.
     public func syncOnce(allowingAnyDeviceId: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
         do {
             return try await syncOncePass(allowingAnyDeviceId: allowingAnyDeviceId)
@@ -38,8 +35,6 @@ extension CloudSync {
     }
 }
 
-/// Race-safe both directions: a `cancel()` landing before `set(_:)` is remembered and
-/// applied as soon as the bridge is installed.
 private final class BridgeHolder: @unchecked Sendable {
     private let lock = NSLock()
     private var bridge: Bridge?
@@ -91,9 +86,6 @@ private final class Bridge: @unchecked Sendable {
             return
         }
 
-        // Strong `self` is intentional: the `Bridge` has no other strong owner. The
-        // closures stored on `CloudHandler` keep it alive until `resume(...)` removes them
-        // via the saved tokens. `cloudSync` is weak in the reverse direction, so no cycle.
         finishedSyncToken = cloudSync.addFinishedSyncHandler { applied in
             self.resume(.success(BackupSyncOutcome(appliedRemoteChanges: applied)))
         }
@@ -105,9 +97,6 @@ private final class Bridge: @unchecked Sendable {
         if isResumed { return }
 
         if allowingAnyDeviceId {
-            // CloudKit analogue of the file-based `allowingAnyDeviceId` gate: short-circuits
-            // the multi-device-sync entitlement check in `MergeHandler.applyChanges`, so
-            // Free-tier users can complete an explicit post-recovery take-over.
             cloudSync.setTakingOverVault(true)
         }
 

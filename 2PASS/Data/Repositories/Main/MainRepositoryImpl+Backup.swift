@@ -37,9 +37,7 @@ extension MainRepositoryImpl {
     }
 
     func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>) {
-        // Additive merge: a second password-change-then-add-config sequence shouldn't drop
-        // ids the first one already marked. The global progress observer is responsible for
-        // removing entries; callers only ever insert.
+        // Additive merge: a second sequence shouldn't drop ids the first one already marked.
         let merged = userDefaultsDataSource.vaultOverrideAwaitingConfigIDs.union(configIDs)
         userDefaultsDataSource.saveVaultOverrideAwaitingConfigIDs(merged)
     }
@@ -55,10 +53,6 @@ extension MainRepositoryImpl {
     }
 
     func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>) {
-        // Additive merge — same shape as `markVaultOverrideAwaiting`. Concurrent recovery
-        // flows for different configs are vanishingly rare, but the merge keeps the rule
-        // "callers only ever insert; the success path removes" symmetrical with the sister
-        // override flag.
         let merged = userDefaultsDataSource.deviceRegistrationAwaitingConfigIDs.union(configIDs)
         userDefaultsDataSource.saveDeviceRegistrationAwaitingConfigIDs(merged)
     }
@@ -70,23 +64,8 @@ extension MainRepositoryImpl {
     }
 
     // MARK: - Backup Sync Container
-    //
-    // Known retain cycle: `MainRepository → container → adapter → MainRepository`. The adapter
-    // retains `MainRepository` strongly. Benign today because `MainRepository` is the
-    // `static var _shared` singleton; if that ever becomes per-session the cycle becomes a
-    // real leak and must be broken (move container ownership out of `MainRepository`, or
-    // weak-ref `MainRepository` from the adapter).
 
     // MARK: - Backup Sync config persistence
-    //
-    // Owns the full persistence boundary: the unified `[BackupConfig]` list is JSON-encoded,
-    // encrypted with a Secure Enclave-derived key, and stored as one UserDefaults blob.
-    // Reading reverses the chain. Saving an empty array clears the stored blob (decoding back
-    // yields `[]`).
-    //
-    // Failures (no `appKey`, enclave unavailable, decode mismatch) return an empty array on
-    // load and silently no-op on save. The logged-out / not-set-up state is the only expected
-    // failure mode; everything else is a corrupted-state bug.
 
     func loadBackupConfigs() -> [BackupConfig] {
         guard let data = userDefaultsDataSource.backupConfigsBlob,
@@ -106,12 +85,7 @@ extension MainRepositoryImpl {
         userDefaultsDataSource.saveBackupConfigsBlob(encrypted)
     }
 
-    // MARK: - Last sync dates (plaintext)
-    //
-    // Per-config success timestamps. Stored as a JSON `[UUID: Date]` blob in UserDefaults
-    // without encryption — timestamps are not sensitive, and dropping the Secure Enclave path
-    // means reads succeed regardless of auth state. Returns an empty map on any failure
-    // (no blob, decode mismatch).
+    // MARK: - Last sync dates
 
     func loadLastSyncDates() -> [BackupConfig.ID: Date] {
         guard let data = userDefaultsDataSource.lastSyncDatesBlob else { return [:] }
@@ -124,10 +98,6 @@ extension MainRepositoryImpl {
     }
 
     // MARK: - Legacy single-config migration
-    //
-    // The pre-multi-config persistence stored exactly one `BackupWebDAVConfig` per app, no
-    // UUID and no `createdAt`. Migration code reads this once, wraps the config into the new
-    // unified list, then clears the legacy blob so the path becomes a no-op forever.
 
     var legacyWebDAVSavedConfig: BackupWebDAVConfig? {
         guard let data = userDefaultsDataSource.legacyWebDAVSavedConfig,
@@ -146,8 +116,7 @@ extension MainRepositoryImpl {
         let legacyWebDAV = legacyWebDAVSavedConfig
         let legacyiCloudEnabled = userDefaultsDataSource.legacyCloudEnabled
 
-        // Short-circuit when there's nothing to migrate. Avoids a `loadBackupConfigs`
-        // decrypt round-trip on the common post-migration / fresh-install paths.
+        // Avoids a decrypt round-trip on the common post-migration / fresh-install path.
         guard legacyWebDAV != nil || legacyiCloudEnabled else { return }
 
         var configs = loadBackupConfigs()
@@ -167,29 +136,14 @@ extension MainRepositoryImpl {
             saveBackupConfigs(configs)
         }
 
-        // Always clear the WebDAV blob if it was present, even when dedupe skipped the
-        // append — clearing is the WebDAV migration's idempotency mechanism for future runs.
-        // The iCloud flag stays put on purpose: `CloudHandler.isEnabled` still reads it.
+        // Clearing is the migration's idempotency mechanism; the iCloud flag stays because
+        // `CloudHandler.isEnabled` still reads it.
         if legacyWebDAV != nil {
             clearLegacyWebDAVSavedConfig()
         }
     }
 
     // MARK: - Recovery form cache (in-memory)
-    //
-    // Owns the full encode-and-encrypt pipeline for the user's last-validated S3 / WebDAV
-    // recovery config — identical shape to `saveBackupConfigs` / `loadBackupConfigs` above,
-    // minus the UserDefaults read/write. Callers exchange the strongly-typed configs;
-    // storage holds AES-GCM ciphertext under the Secure-Enclave appKey of the JSON-encoded
-    // config. Cleared by `persistRecoverySource` on disk save and by both
-    // `OnboardingInteractor.finishVault*` calls; otherwise dies with the process.
-    //
-    // The strongly-typed configs cross the API boundary only at the call site that just
-    // produced one (`VaultRecoveryS3Presenter.onSave` / `WebDAVPresenter.onSave`) or the
-    // call site that immediately consumes one
-    // (`VaultRecoveryRecoverModuleInteractor.persistRecoverySource`).
-    // Returns `nil` on any failure (no cache, no appKey, decrypt error, decode error) —
-    // callers tolerate nil exactly like `loadBackupConfigs` does.
 
     var cachedS3RecoveryConfig: S3ServiceConfig? {
         guard let blob = _cachedS3RecoveryConfig,

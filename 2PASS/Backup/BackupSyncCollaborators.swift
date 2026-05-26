@@ -43,8 +43,6 @@ public protocol BackupVaultExporting: Sendable {
 }
 
 public protocol BackupSyncContext: Sendable {
-    /// `nil` before the device has generated/stored an ID. Sync must fail fast — locking and
-    /// index identity both require a stable device ID.
     var deviceID: UUID? { get }
     var deviceName: String { get }
     var allowsMultiDeviceSync: Bool { get }

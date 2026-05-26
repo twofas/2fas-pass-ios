@@ -26,7 +26,6 @@ struct VaultRecoverySelectS3IndexRouter: Router {
             onSelect: onSelect
         )
 
-        // No NavigationStack here: this view is pushed inside the S3 form's stack.
         VaultRecoverySelectS3IndexView(presenter: presenter)
     }
 
@@ -36,10 +35,6 @@ struct VaultRecoverySelectS3IndexRouter: Router {
         case .error(_, let onClose):
             Button(.commonOk, action: onClose)
         case .selectRecoveryKey(let vault, let onClose):
-            // Mirrors the WebDAV nested-router branch: this leg is reached only when the
-            // recovery flow has already been routed through the parent `VaultRecoveryS3Presenter`,
-            // which carries the source config forward via `.select(.file(vault, source:))`.
-            // `.localFile` here marks "no transport credentials to persist" for this branch.
             VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: .file(vault, source: .localFile))
         case .appUpdateNeeded(_, let onUpdate, let onClose):
             Button(.importInvalidSchemaErrorCta, action: onUpdate)
