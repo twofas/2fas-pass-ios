@@ -224,6 +224,7 @@ extension LoginPresenter {
     @objc
     func willEnterForegroundNotification() {
         biometryFailed = false
+        biometrySuccess = false
         showKeyboard = false
     }
     

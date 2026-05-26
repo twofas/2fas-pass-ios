@@ -22,18 +22,20 @@ protocol TrashModuleInteracting: AnyObject {
     
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 final class TrashModuleInteractor {
     private let itemsInteractor: ItemsInteracting
     private let fileIconInteractor: FileIconInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let paymentStatusInteractor: PaymentStatusInteracting
     
-    init(itemsInteractor: ItemsInteracting, fileIconInteractor: FileIconInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
+    init(itemsInteractor: ItemsInteracting, fileIconInteractor: FileIconInteracting, syncTriggerInteractor: BackupSyncTriggerInteracting, paymentStatusInteractor: PaymentStatusInteracting) {
         self.itemsInteractor = itemsInteractor
         self.fileIconInteractor = fileIconInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
     }
 }
@@ -69,16 +71,16 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         Log("TrashModuleInteractor: Restoring item: \(itemID)", module: .moduleInteractor)
         itemsInteractor.markAsNotTrashed(for: itemID)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
-    
+
     func restoreAll() {
         Log("TrashModuleInteractor: Restore all", module: .moduleInteractor)
         list().forEach { item in
             itemsInteractor.markAsNotTrashed(for: item.id)
         }
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
     
     func emptyTrash() {
@@ -95,5 +97,9 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     
     func fetchIconImage(from url: URL) async throws -> Data {
         try await fileIconInteractor.fetchImage(from: url)
+    }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        syncTriggerInteractor.syncDidApplyRemoteChanges()
     }
 }

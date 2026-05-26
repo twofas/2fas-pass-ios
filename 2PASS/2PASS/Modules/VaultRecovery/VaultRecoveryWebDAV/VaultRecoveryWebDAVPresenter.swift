@@ -1,85 +1,131 @@
 // SPDX-License-Identifier: BUSL-1.1
 //
-// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Copyright © 2026 Two Factor Authentication Service, Inc.
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
 import SwiftUI
 import Common
+import CommonUI
 import Data
+import Backup
 
-enum VaultRecoveryWebDAVDestination: Identifiable {
-    var id: String {
-        switch self {
-        case .selectVault: "selectVault"
-        case .select: "select"
-        case .error: "error"
-        }
-    }
-    
+enum VaultRecoveryWebDAVDestination: RouterDestination {
+    case errorAlert(message: String)
     case selectVault(
-        WebDAVIndex,
+        BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,
         password: String?,
         onSelect: (ExchangeVaultVersioned) -> Void
     )
-    case select(VaultRecoveryData, onClose: Callback)
-    case error(message: String, onClose: Callback)
+
+    var id: String {
+        switch self {
+        case .errorAlert: "errorAlert"
+        case .selectVault: "selectVault"
+        }
+    }
 }
 
-@Observable
+@Observable @MainActor
 final class VaultRecoveryWebDAVPresenter {
-    
+
     var url: String = ""
     var allowTLSOff: Bool = false
     var username: String = ""
     var password: String = ""
-    
-    var isLoading = false
-    
+
+    private(set) var isFetching: Bool = false
+
     var destination: VaultRecoveryWebDAVDestination?
-    
+
+    var canSave: Bool {
+        guard !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        guard let normalized = interactor.normalizeURL(url) else {
+            return false
+        }
+        guard interactor.isSecureURL(normalized) else {
+            return false
+        }
+        return true
+    }
+
+    var hasUnsavedChanges: Bool {
+        url != (initialConfig?.baseURL ?? "")
+            || allowTLSOff != (initialConfig?.allowTLSOff ?? false)
+            || username != (initialConfig?.login ?? "")
+            || password != (initialConfig?.password ?? "")
+    }
+
     private let interactor: VaultRecoveryWebDAVModuleInteracting
-    
+    private let onSelect: (VaultRecoveryData) -> Void
+
+    @ObservationIgnored
+    private var fetchTask: Task<Void, Never>?
+
+    @ObservationIgnored
+    private var initialConfig: BackupWebDAVConfig?
+
     init(
-        interactor: VaultRecoveryWebDAVModuleInteracting
+        interactor: VaultRecoveryWebDAVModuleInteracting,
+        onSelect: @escaping (VaultRecoveryData) -> Void
     ) {
         self.interactor = interactor
-    }
-}
+        self.onSelect = onSelect
 
-extension VaultRecoveryWebDAVPresenter {
-    
-    func onConnect() {
-        isLoading = true
+        if let config = interactor.cachedConfig {
+            url = config.baseURL
+            allowTLSOff = config.allowTLSOff
+            username = config.login ?? ""
+            password = config.password ?? ""
+
+            initialConfig = config
+        }
+    }
+
+    func onSave() {
+        guard !isFetching else { return }
 
         guard let normalizedURL = interactor.normalizeURL(url) else {
-            showError(String(localized: .syncStatusErrorWrongDirectoryUrl))
-            isLoading = false
+            destination = .errorAlert(message: String(localized: .syncStatusErrorWrongDirectoryUrl))
             return
         }
-        
         guard interactor.isSecureURL(normalizedURL) else {
-            showError("Unsecure URL!")
-            isLoading = false
+            destination = .errorAlert(message: String(localized: .syncStatusErrorIncorrectUrl))
             return
         }
-                
-        interactor.recover(
-            baseUrl: url,
-            normalizedURL: normalizedURL,
-            allowTLSOff: allowTLSOff,
-            login: username,
-            password: password
-        ) { [weak self] result in
+
+        isFetching = true
+
+        fetchTask = Task { [weak self] in
             guard let self else { return }
-            
-            self.isLoading = false
-            
-            switch result {
-            case .success(let index):
+            do {
+                let index = try await interactor.recover(
+                    baseURL: url,
+                    normalizedURL: normalizedURL,
+                    allowTLSOff: allowTLSOff,
+                    login: username.isEmpty ? nil : username,
+                    password: password.isEmpty ? nil : password
+                )
+                isFetching = false
+                fetchTask = nil
+                if Task.isCancelled { return }
+
+                let snapshot = BackupWebDAVConfig(
+                    baseURL: url,
+                    normalizedURL: normalizedURL,
+                    allowTLSOff: allowTLSOff,
+                    login: username.isEmpty ? nil : username,
+                    password: password.isEmpty ? nil : password
+                )
+                interactor.cacheConfig(snapshot)
+
+                initialConfig = snapshot
+
                 destination = .selectVault(
                     index,
                     baseURL: normalizedURL,
@@ -87,38 +133,26 @@ extension VaultRecoveryWebDAVPresenter {
                     login: username,
                     password: password,
                     onSelect: { [weak self] vault in
-                        self?.destination = nil
-                        
-                        Task {
-                            try await Task.sleep(for: .milliseconds(700))
-                            guard let self else { return }
-                            
-                            self.destination = .select(.file(vault), onClose: { [weak self] in
-                                self?.destination = nil
-                            })
-                        }
+                        self?.onSelect(.file(vault, source: .webDAV))
                     }
                 )
-            case .failure(let status):
-                showStatus(status)
+                
+            } catch let error as VaultRecoveryWebDAVError {
+                isFetching = false
+                fetchTask = nil
+                if Task.isCancelled { return }
+                destination = .errorAlert(message: error.message)
+                
+            } catch {
+                isFetching = false
+                fetchTask = nil
+                if Task.isCancelled { return }
+                destination = .errorAlert(message: VaultRecoveryWebDAVError.transport(.invalidResponse).message)
             }
         }
     }
-    
+
     func onDisappear() {
-        if destination == nil {
-            interactor.resetConfiguration()
-        }
-    }
-    
-    private func showStatus(_ status: WebDAVRecoveryInteractorError) {
-        isLoading = false
-        showError(status.message)
-    }
-    
-    func showError(_ message: String) {
-        destination = .error(message: message, onClose: { [weak self] in
-            self?.destination = nil
-        })
+        fetchTask?.cancel()
     }
 }

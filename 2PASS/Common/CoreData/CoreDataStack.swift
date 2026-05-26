@@ -10,7 +10,7 @@ import CoreData
 public typealias LoadStoreCallback = (Bool) -> Void
 
 public final class CoreDataStack {
-    private let migrator: CoreDataMigratorProtocol?
+    private let migrator: (any CoreDataMigratorProtocol)?
     
     public var logError: ((LogMessage) -> Void)? {
         didSet {
@@ -42,7 +42,7 @@ public final class CoreDataStack {
         name: String,
         bundle: Bundle,
         storeInGroup: Bool = false,
-        migrator: CoreDataMigratorProtocol? = nil,
+        migrator: (any CoreDataMigratorProtocol)? = nil,
         isPersistent: Bool = true
     ) {
         self.name = name
@@ -157,7 +157,9 @@ public final class CoreDataStack {
     private lazy var storeUrl: URL = {
         CoreDataStack.storeUrl(forName: name, storeInGroup: storeInGroup)
     }()
-    
+
+    public var storeURL: URL? { storeDescription.url }
+
     public var context: NSManagedObjectContext { persistentContainer.viewContext }
     
     public func save() {
@@ -206,16 +208,6 @@ public final class CoreDataStack {
         }
     }
     
-    public var migrationRequired: Bool {
-        guard let migrator, isPersistent else {
-            return false
-        }
-        guard let storeURL = storeDescription.url else {
-            fatalError("persistentContainer was not set up properly")
-        }
-        return migrator.requiresMigrationToCurrentVersion(at: storeURL)
-    }
-    
     private func migrateStoreIfNeeded(completion: @escaping (Error?) -> Void) {
         guard let migrator, isPersistent else {
             completion(nil)
@@ -224,10 +216,15 @@ public final class CoreDataStack {
         guard let storeURL = storeDescription.url else {
             fatalError("persistentContainer was not set up properly")
         }
-        
+
         if migrator.requiresMigrationToCurrentVersion(at: storeURL) {
             do {
-                try migrator.migrateStoreToCurrentVersion(at: storeURL)
+                let usesHistory = Self.shouldUsePersistentHistory(
+                    storeInGroup: storeInGroup,
+                    isPersistent: isPersistent,
+                    readOnly: readOnly
+                )
+                try migrator.migrateStoreToCurrentVersion(at: storeURL, usesPersistentHistoryTracking: usesHistory)
                 completion(nil)
             } catch {
                 completion(error)

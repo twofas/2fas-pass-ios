@@ -35,7 +35,7 @@ struct SettingsRouter: Router {
         case .about:
             AboutRouter.buildView()
         case .sync:
-            SyncRouter.buildView()
+            BackupConfigsRouter.buildView()
         case .debug:
             SettingsDebugRouter.buildView()
         case .importExport:

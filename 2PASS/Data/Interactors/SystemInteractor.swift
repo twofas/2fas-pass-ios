@@ -13,10 +13,7 @@ public protocol SystemInteracting: AnyObject {
     var isMainAppProcess: Bool { get }
     
     func copyToClipboard(_ str: String)
-    
-    var syncHasError: Bool { get }
-    func setSyncHasError(_ value: Bool)
-    
+
     func positiveFeedback()
     func negativeFeedback()
     func warningFeedback()
@@ -48,15 +45,7 @@ extension SystemInteractor: SystemInteracting {
     func copyToClipboard(_ str: String) {
         mainRepository.copyToClipboard(str)
     }
-    
-    var syncHasError: Bool {
-        mainRepository.syncHasError
-    }
-    
-    func setSyncHasError(_ value: Bool) {
-        mainRepository.setSyncHasError(value)
-    }
-    
+
     func positiveFeedback() {
         mainRepository.positiveFeedback()
     }

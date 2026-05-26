@@ -86,6 +86,11 @@ public protocol DebugInteracting: AnyObject {
     var subscriptionPlan: SubscriptionPlan { get }
     func overrideSubscriptionPlan(_ plan: SubscriptionPlan)
     func clearOverrideSubscriptionPlan()
+
+    // MARK: - First-Run Date
+    var dateOfFirstRun: Date? { get }
+    func setDateOfFirstRun(_ date: Date)
+    func clearDateOfFirstRun()
 }
 
 final class DebugInteractor {
@@ -364,7 +369,6 @@ extension DebugInteractor: DebugInteracting {
         mainRepository.deleteAllEncryptedItems()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
-        mainRepository.webDAVSetHasLocalChanges()
     }
     
     func generateItems(count: Int, completion: @escaping Callback) {
@@ -407,7 +411,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
     
@@ -440,7 +443,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
 
@@ -483,7 +485,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
 
@@ -525,7 +526,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
 
@@ -538,7 +538,6 @@ extension DebugInteractor: DebugInteracting {
         mainRepository.deleteAllEncryptedTags()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
-        mainRepository.webDAVSetHasLocalChanges()
     }
 
     // MARK: - WebDAV debug
@@ -566,6 +565,20 @@ extension DebugInteractor: DebugInteracting {
     
     func clearOverrideSubscriptionPlan() {
         mainRepository.clearOverrideSubscriptionPlan()
+    }
+
+    // MARK: - First-Run Date
+
+    var dateOfFirstRun: Date? {
+        mainRepository.dateOfFirstRun
+    }
+
+    func setDateOfFirstRun(_ date: Date) {
+        mainRepository.saveDateOfFirstRun(date)
+    }
+
+    func clearDateOfFirstRun() {
+        mainRepository.clearDateOfFirstRun()
     }
 }
 private extension DebugInteractor {

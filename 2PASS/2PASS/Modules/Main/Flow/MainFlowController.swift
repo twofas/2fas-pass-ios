@@ -6,6 +6,7 @@
 
 import UIKit
 import SwiftUI
+import StoreKit
 import CommonUI
 import RevenueCatUI
 
@@ -16,6 +17,7 @@ protocol MainFlowControlling: AnyObject {
     func toPayment()
     func toRequestEnableBiometry()
     func dismissRequestEnableBiometry()
+    @MainActor func requestStoreReview()
 }
 
 final class MainFlowController: FlowController {
@@ -56,6 +58,12 @@ extension MainFlowController: MainFlowControlling {
         }
         viewController.topViewController.present(controller, animated: true, completion: nil)
     }
+
+    @MainActor
+    func requestStoreReview() {
+        guard let scene = viewController.view.window?.windowScene else { return }
+        AppStore.requestReview(in: scene)
+    }
 }
 
 extension MainFlowController {
@@ -65,7 +73,9 @@ extension MainFlowController {
 extension MainFlowController: PasswordsNavigationFlowControllerParent {
     
     func toQuickSetup() {
-        let quickSetupViewController = UIHostingController(rootView: QuickSetupRouter.buildView())
+        let quickSetupViewController = MainActor.assumeIsolated {
+            UIHostingController(rootView: QuickSetupRouter.buildView())
+        }
         viewController.present(quickSetupViewController, animated: true)
     }
     

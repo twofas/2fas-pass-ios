@@ -139,7 +139,7 @@ extension MainRepositoryImpl {
             updatedAt: updatedAt
         )
     }
-    
+
     func deleteAllVaults() {
         listEncryptedVaults().forEach { vault in
             deleteEncryptedVault(vault.vaultID)
@@ -150,7 +150,15 @@ extension MainRepositoryImpl {
     func deleteEncryptedVault(_ vaultID: VaultID) {
         encryptedStorage.deleteEncryptedVault(vaultID)
     }
-    
+
+    func markVaultContentModified(vaultID: VaultID) {
+        encryptedStorage.markVaultContentModified(vaultID)
+    }
+
+    func backfillVaultContentModificationDate(vaultID: VaultID) {
+        encryptedStorage.backfillContentModificationDate(in: vaultID)
+    }
+
     func saveEncryptedStorage() {
         Log("Save Encrypted Storage", module: .mainRepository)
         encryptedStorage.save()
@@ -169,7 +177,7 @@ extension MainRepositoryImpl {
     }
     
     func requiresReencryptionMigration() -> Bool {
-        hasEncryptionReference && encryptedStorage.migrationRequired
+        hasEncryptionReference && encryptedStorage.requiresReencryptionMigration
     }
     
     func loadEncryptedStore(completion: @escaping Callback) {

@@ -98,16 +98,17 @@ final class VaultRecoveryiCloudVaultSelectionPresenter {
 private extension VaultRecoveryiCloudVaultSelectionPresenter {
     
     func fetchList() {
-        interactor.listVaultsToRecover { [weak self] result in
-            switch result {
-            case .success(let vaults):
-                guard let formattedVaults = self?.prepareVaults(vaults), !formattedVaults.isEmpty else {
-                    self?.state = .empty
-                    return
+        Task { @MainActor in
+            do {
+                let vaults = try await self.interactor.listVaultsToRecover()
+                let formattedVaults = self.prepareVaults(vaults)
+                if formattedVaults.isEmpty {
+                    self.state = .empty
+                } else {
+                    self.state = .list(formattedVaults)
                 }
-                self?.state = .list(formattedVaults)
-            case .failure(let error):
-                self?.state = .error(error.localizedDescription)
+            } catch {
+                self.state = .error(error.localizedDescription)
             }
         }
     }

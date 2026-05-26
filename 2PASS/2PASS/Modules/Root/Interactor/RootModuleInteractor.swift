@@ -62,7 +62,7 @@ final class RootModuleInteractor {
     private let rootInteractor: RootInteracting
     private let startupInteractor: StartupInteracting
     private let securityInteractor: SecurityInteracting
-    private let syncInteractor: CloudSyncInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let appNotificationsInteractor: AppNotificationsInteracting
     private let timeVerificationInteractor: TimeVerificationInteracting
     private let paymentHandlingInteractor: PaymentHandlingInteracting
@@ -71,13 +71,14 @@ final class RootModuleInteractor {
     private let credentialExchangeImporter: CredentialExchangeImporting
     private let configInteractor: ConfigInteracting
     private let shareLinkInteractor: ShareLinkInteracting
+    private let backupSyncInstaller: BackupSyncInstalling
     private let notificationCenter = NotificationCenter.default
 
     init(
         rootInteractor: RootInteracting,
         startupInteractor: StartupInteracting,
         securityInteractor: SecurityInteracting,
-        syncInteractor: CloudSyncInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         appNotificationsInteractor: AppNotificationsInteracting,
         timeVerificationInteractor: TimeVerificationInteracting,
         paymentHandlingInteractor: PaymentHandlingInteracting,
@@ -85,12 +86,13 @@ final class RootModuleInteractor {
         updateAppPromptInteractor: UpdateAppPromptInteracting,
         credentialExchangeImporter: CredentialExchangeImporting,
         configInteractor: ConfigInteracting,
-        shareLinkInteractor: ShareLinkInteracting
+        shareLinkInteractor: ShareLinkInteracting,
+        backupSyncInstaller: BackupSyncInstalling
     ) {
         self.rootInteractor = rootInteractor
         self.startupInteractor = startupInteractor
         self.securityInteractor = securityInteractor
-        self.syncInteractor = syncInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.appNotificationsInteractor = appNotificationsInteractor
         self.timeVerificationInteractor = timeVerificationInteractor
         self.paymentHandlingInteractor = paymentHandlingInteractor
@@ -99,6 +101,7 @@ final class RootModuleInteractor {
         self.credentialExchangeImporter = credentialExchangeImporter
         self.configInteractor = configInteractor
         self.shareLinkInteractor = shareLinkInteractor
+        self.backupSyncInstaller = backupSyncInstaller
 
         rootInteractor.storageError = { [weak self] error in
             self?.storageError?(error)
@@ -122,61 +125,62 @@ extension RootModuleInteractor: RootModuleInteracting {
     var isOnboardingCompleted: Bool {
         onboardingInteractor.isOnboardingCompleted
     }
-    
+
     var appVersionPromptState: UpdateAppPromptState {
         updateAppPromptInteractor.appVersionPromptState
     }
-    
+
     func markAppVersionPromptAsShown() {
         updateAppPromptInteractor.markPromptAsShown()
     }
-    
+
     var isUserSetUp: Bool {
         startupInteractor.isUserSetUp
     }
-    
+
     func initializeApp() {
         Log("RootModuleInteractor: Initialize app", module: .moduleInteractor)
         startupInteractor.initialize()
+        backupSyncInstaller.initialize()
         rootInteractor.initializeApp()
         UIApplication.shared.registerForRemoteNotifications()
         timeVerificationInteractor.startVerification()
         paymentHandlingInteractor.initialize()
     }
-    
+
     @MainActor
     func start() async -> StartupInteractorStartResult {
         await startupInteractor.start()
     }
-    
+
     func logoutFromApp() {
         rootInteractor.lockApplication()
     }
-    
+
     func applicationWillResignActive() {
         rootInteractor.applicationWillResignActive()
     }
-    
+
     func applicationWillEnterForeground() {
         rootInteractor.applicationWillEnterForeground()
         timeVerificationInteractor.startVerification()
     }
-    
+
     func applicationWillTerminate() {
         rootInteractor.applicationWillTerminate()
     }
-    
+
     func applicationDidBecomeActive(didCopyToken: @escaping Callback) {
         rootInteractor.applicationDidBecomeActive()
     }
-    
+
     func handleRemoteNotification() {
         guard securityInteractor.isUserLoggedIn && isUserSetUp else {
             return
         }
-        syncInteractor.synchronize(fromPush: true)
+        syncTriggerInteractor.handlePushNotification()
     }
-    
+
     func fetchAppNotifications() async throws -> [AppNotification] {
         try await appNotificationsInteractor.fetchAppNotifications()
     }
@@ -184,7 +188,7 @@ extension RootModuleInteractor: RootModuleInteracting {
     func handleDidReceiveRegistrationToken(_ token: String?) {
         rootInteractor.handleDidReceiveRegistrationToken(token)
     }
-    
+
     func isConnectNotification(userInfo: [AnyHashable : Any]) -> Bool {
         if let messageType = userInfo["messageType"] as? String, messageType == "be_request" {
             return true
@@ -192,7 +196,7 @@ extension RootModuleInteractor: RootModuleInteracting {
             return false
         }
     }
-    
+
     var isScreenCaptureAllowed: Bool {
         configInteractor.isScreenCaptureAllowed
     }
@@ -233,12 +237,12 @@ extension RootModuleInteractor: RootModuleInteracting {
 }
 
 private extension RootModuleInteractor {
-    
+
     @objc func handleShowUpdatePromptNotification(_ notification: Notification) {
         guard let reason = notification.userInfo?[Notification.showUpdateAppPromptReasonKey] as? UpdateAppPromptRequestReason else {
             return
         }
-        
+
         switch reason {
         case .webDAVSchemeNotSupported(let schemaVersion):
             presentAppUpdateNeededForNewSyncSchema?(schemaVersion)

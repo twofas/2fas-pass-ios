@@ -11,15 +11,14 @@ protocol CloudHandlerType: AnyObject {
     var userToggledState: UserToggledState? { get set }
     var currentState: CloudCurrentState { get }
     var isConnected: Bool { get }
-    
-    func setVaultID(vaultID: VaultID)
+
     func checkState()
     func synchronize(fromPush: Bool)
     func enable()
     func disable(notify: Bool)
     func clearBackup()
     func resetStateBeforeSync()
-    
+
     func resetBeforeMigration()
 }
 
@@ -29,42 +28,50 @@ final class CloudHandler: CloudHandlerType {
     private let clearHandler: ClearHandler
     private let mergeHandler: MergeHandler
     private let cacheHandler: CacheHandler
-    
-    private var vaultID: VaultID?
-    
+    /// Read fresh per `sync()` — vault changes propagate via `context.vaultID` instead of a
+    /// cached field that would need explicit `setVaultID(_:)` invalidation.
+    private let context: BackupSyncContext
+
     private var isClearing = false
-    
+
     private var shouldResetState = false
     private var isEnabling = false
-    
-    
+
+
     private(set) var currentState: CloudCurrentState = .unknown {
         didSet {
             guard oldValue != currentState else { return }
             guard !isClearing else { return }
-            
+
             switch currentState {
             case .enabled(sync: .syncing): break
             default: isEnabling = false
             }
-            
+
             Log("Cloud Handler - state change \(currentState)", module: .cloudSync)
-            NotificationCenter.default.post(name: .cloudStateChanged, object: nil)
+            for handler in stateChangedHandlers.values { handler(currentState) }
         }
     }
-    
+
     var userToggledState: UserToggledState?
-    
+
+    private var stateChangedHandlers: [UUID: (CloudCurrentState) -> Void] = [:]
+    /// Multi-slot — `Bridge` (per-syncOnce) and the container's ambient push hook can both
+    /// be registered concurrently and must each receive every completion.
+    private var finishedSyncHandlers: [UUID: (Bool) -> Void] = [:]
+
     init(
         cloudAvailability: CloudAvailability,
         syncHandler: SyncHandler,
         mergeHandler: MergeHandler,
-        cacheHandler: CacheHandler
+        cacheHandler: CacheHandler,
+        context: BackupSyncContext
     ) {
         self.cloudAvailability = cloudAvailability
         self.syncHandler = syncHandler
         self.mergeHandler = mergeHandler
         self.cacheHandler = cacheHandler
+        self.context = context
         clearHandler = ClearHandler()
 
         mergeHandler.schemaNotSupported = { [weak self] schemaVersion in
@@ -72,23 +79,20 @@ final class CloudHandler: CloudHandlerType {
         }
         mergeHandler.incorrectEncryption = { [weak self] in self?.incorrectEncryption() }
         mergeHandler.syncNotAllowed = { [weak self] in self?.syncNotAllowed() }
-        
+
         cloudAvailability.availabilityCheckResult = { [weak self] resultStatus in
             self?.availabilityCheckResult(resultStatus)
         }
-        
+
         syncHandler.startedSync = { [weak self] in self?.startedSync() }
-        syncHandler.finishedSync = { [weak self] in self?.finishedSync() }
+        syncHandler.finishedSync = { [weak self] applied in self?.finishedSync(appliedRemoteChanges: applied) }
         syncHandler.otherError = { [weak self] error in self?.otherError(error) }
         syncHandler.quotaExceeded = { [weak self] in self?.quotaError() }
         syncHandler.userDisabledCloud = { [weak self] in self?.disabledByUser() }
         syncHandler.useriCloudProblem = { [weak self] in self?.useriCloudProblem() }
-        syncHandler.refreshLocalData = {
-            NotificationCenter.default.post(name: .cloudRefreshLocalData, object: nil)
-        }
-        
+
         clearHandler.didClear = { [weak self] in self?.didClear() }
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(setPasswordWasChanged),
@@ -96,18 +100,13 @@ final class CloudHandler: CloudHandlerType {
             object: nil
         )
     }
-    
-    func setVaultID(vaultID: VaultID) {
-        Log("Cloud Handler - setting VaultID", module: .cloudSync)
-        self.vaultID = vaultID
-    }
-    
+
     func checkState() {
         guard !isClearing else { return }
         Log("Cloud Handler - checking state", module: .cloudSync)
         cloudAvailability.checkAvailability()
     }
-    
+
     func synchronize(fromPush: Bool = false) {
         guard !isClearing else { return }
 
@@ -131,12 +130,12 @@ final class CloudHandler: CloudHandlerType {
             Log("Cloud Handler -  Can't synchronize if cloud is disabled", module: .cloudSync)
         }
     }
-    
+
     func enable() {
         guard !isClearing else { return }
 
         isEnabling = true
-        
+
         Log("Cloud Handler - Got Enable action", module: .cloudSync)
         switch currentState {
         case .enabled, .enabledNotAvailable:
@@ -150,7 +149,7 @@ final class CloudHandler: CloudHandlerType {
             Log("Cloud Handler - Can't enable - state unknown", module: .cloudSync)
         }
     }
-    
+
     func disable(notify: Bool = true) {
         Log("Cloud Handler - Got Disable action", module: .cloudSync)
         switch currentState {
@@ -166,25 +165,25 @@ final class CloudHandler: CloudHandlerType {
             Log("Cloud Handler - Can't disable again!", module: .cloudSync)
         }
     }
-    
+
     func clearBackup() {
         isClearing = true
         if isSynced {
             clearBackupForSyncedState()
         }
     }
-    
+
     var isConnected: Bool {
         switch currentState {
         case .enabled: return true
         default: return false
         }
     }
-    
+
     func resetStateBeforeSync() {
         shouldResetState = true
     }
-    
+
     var isSynced: Bool {
         switch currentState {
         case .enabled(let sync):
@@ -195,13 +194,13 @@ final class CloudHandler: CloudHandlerType {
         default: return false
         }
     }
-    
+
     // MARK: - Private
     func resetBeforeMigration() {
         Log("Cloud Handler - resetBeforeMigration", module: .cloudSync)
         syncHandler.firstStart()
     }
-    
+
     private func availabilityCheckResult(_ resultStatus: CloudAvailabilityStatus) {
         Log("Cloud Handler - availabilityCheckResult \(resultStatus)", module: .cloudSync)
         switch resultStatus {
@@ -224,62 +223,62 @@ final class CloudHandler: CloudHandlerType {
             otherError(error)
         case .noAccount:
             clearCache()
-            currentState = .enabledNotAvailable(reason: .noAccount)
+            currentState = isEnabled ? .enabledNotAvailable(reason: .noAccount) : .disabled
         case .restricted:
             clearCache()
-            currentState = .enabledNotAvailable(reason: .restricted)
+            currentState = isEnabled ? .enabledNotAvailable(reason: .restricted) : .disabled
         case .notAvailable:
             clearCache()
-            currentState = .enabledNotAvailable(reason: .other)
+            currentState = isEnabled ? .enabledNotAvailable(reason: .other) : .disabled
         }
     }
-    
+
     private func sync(fromPush: Bool = false) {
         Log("Cloud Handler - Sync", module: .cloudSync)
-        guard let vaultID else {
+        guard let vaultID = context.vaultID else {
             Log("Cloud Handler - VaultID not set!", module: .cloudSync, severity: .error)
             return
         }
         syncHandler.synchronize(zoneID: .from(vaultID: vaultID), fromPush: fromPush)
     }
-    
+
     private func clearCache() {
         Log("Cloud Handler - clear cache", module: .cloudSync)
         cloudAvailability.clear()
         syncHandler.clearCacheAndDisable()
     }
-    
+
     // MARK: -
-    
+
     private func setEnabled() {
         Log("Cloud Handler - Set Enabled", module: .cloudSync)
         ConstStorage.cloudEnabled = true
         syncHandler.firstStart()
     }
-    
+
     private func setDisabled() {
         Log("Cloud Handler - Set Disabled", module: .cloudSync)
         ConstStorage.cloudEnabled = false
     }
-    
+
     private var isEnabled: Bool { ConstStorage.cloudEnabled }
-    
+
     // MARK: - Clearing
-    
+
     private func didClear() {
         Log("Cloud Handler - didClear", module: .cloudSync)
         isClearing = false
     }
-    
+
     private func clearBackupForSyncedState() {
         Log("Cloud Handler - clearBackupForSyncedState", module: .cloudSync)
         let recordIDs = cacheHandler.listAllItemsRecordIDs()
         disable(notify: false)
         clearHandler.clear(recordIDs: recordIDs)
     }
-    
+
     // MARK: -
-    
+
     @objc
     private func setPasswordWasChanged() {
         guard currentState == .enabled(sync: .syncing) || currentState == .enabled(sync: .synced) else {
@@ -288,66 +287,88 @@ final class CloudHandler: CloudHandlerType {
         Log("Cloud Handler - Setting Password was changed", module: .cloudSync)
         ConstStorage.passwordWasChanged = true
     }
-    
+
     private func startedSync() {
         Log("Cloud Handler - Started Sync", module: .cloudSync)
         currentState = .enabled(sync: .syncing)
     }
-    
-    private func finishedSync() {
-        Log("Cloud Handler - Finished Sync", module: .cloudSync)
+
+    private func finishedSync(appliedRemoteChanges: Bool) {
+        Log("Cloud Handler - Finished Sync (appliedRemoteChanges=\(appliedRemoteChanges))", module: .cloudSync)
         currentState = .enabled(sync: .synced)
         ConstStorage.passwordWasChanged = false
-        NotificationCenter.default.post(name: .cloudDidSync, object: nil)
-        
+        for handler in finishedSyncHandlers.values { handler(appliedRemoteChanges) }
+
         if isClearing {
             clearBackup()
         }
     }
-    
+
+    @discardableResult
+    func addStateChangedHandler(_ handler: @escaping (CloudCurrentState) -> Void) -> UUID {
+        let id = UUID()
+        stateChangedHandlers[id] = handler
+        return id
+    }
+
+    func removeStateChangedHandler(_ id: UUID) {
+        stateChangedHandlers.removeValue(forKey: id)
+    }
+
+    @discardableResult
+    func addFinishedSyncHandler(_ handler: @escaping (Bool) -> Void) -> UUID {
+        let id = UUID()
+        finishedSyncHandlers[id] = handler
+        return id
+    }
+
+    func removeFinishedSyncHandler(_ id: UUID) {
+        finishedSyncHandlers.removeValue(forKey: id)
+    }
+
     private func quotaError() {
         Log("Cloud Handler - Quota Error", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .overQuota)
     }
-    
+
     private func disabledByUser() {
         Log("Cloud Handler - Disabled by User", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .disabledByUser)
     }
-    
+
     private func useriCloudProblem() {
         Log("Cloud Handler - User has iCloud problem", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .useriCloudProblem)
     }
-    
+
     private func otherError(_ error: NSError?) {
         Log("Cloud Handler - Other Error \(String(describing: error))", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .error(error: error))
     }
-    
+
     private func schemaNotSupported(_ schemaVersion: Int) {
         Log("Cloud Handler - schema not supported (v\(schemaVersion))", module: .cloudSync)
-        
+
         currentState = .enabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
         clearCache()
     }
-    
+
     private func incorrectEncryption() {
         Log("Cloud Handler - newer version of cloud", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .incorrectEncryption)
     }
-    
+
     private func syncNotAllowed() {
         Log("Cloud Handler - sync not allowed", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .syncNotAllowed)
     }
-    
+
     // MARK: -
     deinit {
         NotificationCenter.default.removeObserver(self)

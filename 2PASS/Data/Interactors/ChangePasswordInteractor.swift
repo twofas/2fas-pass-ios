@@ -19,18 +19,18 @@ final class ChangePasswordInteractor {
     private let biometryInteractor: BiometryInteracting
     private let itemsInteractor: ItemsInteracting
     private let protectionInteractor: ProtectionInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
-    
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
+
     init(
         biometryInteractor: BiometryInteracting,
         itemsInteractor: ItemsInteracting,
         protectionInteractor: ProtectionInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+        syncTriggerInteractor: BackupSyncTriggerInteracting
     ) {
         self.biometryInteractor = biometryInteractor
         self.itemsInteractor = itemsInteractor
         self.protectionInteractor = protectionInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
     }
 }
 
@@ -38,7 +38,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
     var isBiometryAvailable: Bool {
         biometryInteractor.isBiometryAvailable
     }
-    
+
     func changeMasterPassword(
         _ masterPassword: MasterPassword,
         completion: @escaping () -> Void
@@ -54,11 +54,25 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
             self?.protectionInteractor.saveEncryptionReference()
             self?.protectionInteractor.updateExistingVault()
             self?.protectionInteractor.setupKeys()
-            self?.itemsInteractor.reencryptDecryptedList(current, tags: tags, completion: { [weak self] _ in
-                self?.syncChangeTriggerInteractor.setPasswordWasChanged()
+            self?.itemsInteractor.reencryptDecryptedList(current, tags: tags, completion: { _ in
+                Log("ChangePasswordInteractor - password was changed", module: .interactor)
+                NotificationCenter.default.post(name: .passwordWasChanged, object: nil)
+                self?.scheduleBackupSyncAfterPasswordChange()
                 completion()
-                self?.syncChangeTriggerInteractor.trigger()
             })
+        }
+    }
+
+    private func scheduleBackupSyncAfterPasswordChange() {
+        Task { @MainActor [syncTriggerInteractor] in
+            if syncTriggerInteractor.currentActivity.isRunning {
+                syncTriggerInteractor.cancelCurrentSync()
+                for await _ in syncTriggerInteractor.syncEvents() {
+                    if !syncTriggerInteractor.currentActivity.isRunning { break }
+                }
+            }
+            syncTriggerInteractor.markAllServicesAwaitingVaultOverride()
+            _ = try? await syncTriggerInteractor.syncAll()
         }
     }
 }

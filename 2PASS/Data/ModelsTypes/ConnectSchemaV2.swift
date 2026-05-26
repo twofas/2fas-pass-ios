@@ -4,6 +4,9 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
+import Foundation
+import Common
+
 typealias ConnectURI = ConnectSchemaV2.ConnectURI
 typealias ConnectTag = ConnectSchemaV2.ConnectTag
 

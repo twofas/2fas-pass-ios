@@ -20,6 +20,7 @@ enum VaultRecoveryRecoverKind {
 
 struct VaultRecoveryRecoverRouter {
 
+    @MainActor
     @ViewBuilder
     static func buildView(kind: VaultRecoveryRecoverKind, onTryAgain: @escaping Callback) -> some View {
         let presenter = VaultRecoveryRecoverPresenter(

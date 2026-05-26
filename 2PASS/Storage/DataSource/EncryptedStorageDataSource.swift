@@ -10,12 +10,12 @@ import Common
 
 public protocol EncryptedStorageDataSource: AnyObject {
     func loadStore(completion: @escaping LoadStoreCallback)
-    var migrationRequired: Bool { get }
-    
+    var requiresReencryptionMigration: Bool { get }
+
     var storageError: ((String) -> Void)? { get set }
-    
+
     // MARK: Encrypted Items
-    
+
     func createEncryptedItem(
         itemID: ItemID,
         creationDate: Date,
@@ -28,7 +28,7 @@ public protocol EncryptedStorageDataSource: AnyObject {
         vaultID: VaultID,
         tagIds: [ItemTagID]?
     )
-    
+
     func updateEncryptedItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -41,23 +41,23 @@ public protocol EncryptedStorageDataSource: AnyObject {
         tagIds: [ItemTagID]?
     )
     func batchUpdateRencryptedItems(_ items: [ItemEncryptedData], date: Date)
-    
+
     func getEncryptedItemEntity(itemID: ItemID) -> ItemEncryptedData?
-    
+
     func listEncryptedItems(in vaultID: VaultID) -> [ItemEncryptedData]
     func listEncryptedItems(
         in vaultID: VaultID,
         itemIDs: [ItemID]?,
         excludeProtectionLevels: Set<ItemProtectionLevel>?
     ) -> [ItemEncryptedData]
-    
+
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
-    
+
     func deleteEncryptedItem(itemID: ItemID)
     func deleteAllEncryptedItems(in vault: VaultID?)
-    
+
     // MARK: Encrypted Vaults
-    
+
     func listEncrypteVaults() -> [VaultEncryptedData]
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
@@ -75,7 +75,9 @@ public protocol EncryptedStorageDataSource: AnyObject {
         updatedAt: Date
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
-    
+    func markVaultContentModified(_ vaultID: VaultID)
+    func backfillContentModificationDate(in vaultID: VaultID)
+
     // MARK: Deleted Items
     func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
     func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID)
@@ -91,7 +93,7 @@ public protocol EncryptedStorageDataSource: AnyObject {
     func updateEncryptedWebBrowser(_ data: WebBrowserEncryptedData)
     func deleteEncryptedWebBrowser(id: UUID)
     func listEncryptedWebBrowsers() -> [WebBrowserEncryptedData]
-    
+
     // MARK: Tags
     func createEncryptedTag(_ tag: ItemTagEncryptedData)
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
@@ -100,9 +102,9 @@ public protocol EncryptedStorageDataSource: AnyObject {
     func listAllEncryptedTags() -> [ItemTagEncryptedData]
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData], in vault: VaultID)
     func deleteAllEncryptedTags(in vault: VaultID)
-    
+
     // MARK: Storage
-    
+
     func warmUp()
     func save()
 }

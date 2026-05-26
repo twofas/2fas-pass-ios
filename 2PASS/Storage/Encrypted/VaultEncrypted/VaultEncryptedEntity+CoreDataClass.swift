@@ -41,12 +41,24 @@ final class VaultEncryptedEntity: NSManagedObject {
         Log("VaultEncryptedEntity: Can't find entity for vaultID: \(vaultID)", module: .storage)
             return
         }
-        
+
         entity.name = name
         entity.trustedKey = trustedKey
-        
+
         entity.createdAt = createdAt
         entity.updatedAt = updatedAt
+    }
+
+    @nonobjc static func setContentModificationDate(
+        on context: NSManagedObjectContext,
+        vaultID: VaultID,
+        date: Date
+    ) {
+        guard let entity = getEntity(on: context, vaultID: vaultID) else {
+            Log("VaultEncryptedEntity: Can't find entity for vaultID: \(vaultID)", module: .storage)
+            return
+        }
+        entity.contentModificationDate = date
     }
     
     @nonobjc static func getEntity(

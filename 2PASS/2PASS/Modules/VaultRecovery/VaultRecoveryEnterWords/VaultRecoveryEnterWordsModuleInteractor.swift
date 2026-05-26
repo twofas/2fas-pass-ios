@@ -43,7 +43,7 @@ extension VaultRecoveryEnterWordsModuleInteractor: VaultRecoveryEnterWordsModule
     
     func validateWords(_ words: [String], using recoveryData: VaultRecoveryData) -> Bool {
         switch recoveryData {
-        case .file(let exchangeVault):
+        case .file(let exchangeVault, _):
             guard let externalSeedHash = exchangeVault.encryption?.seedHash,
                   let vaultID = UUID(uuidString: exchangeVault.vault.id) else {
                 Log(

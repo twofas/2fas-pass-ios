@@ -1,0 +1,202 @@
+// SPDX-License-Identifier: BUSL-1.1
+//
+// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Licensed under the Business Source License 1.1
+// See LICENSE file for full terms
+
+import Foundation
+import Common
+
+public struct S3ServiceConfig: Codable, Equatable, Sendable {
+    public let endpoint: URL
+    public let region: String
+    public let bucket: String
+    public let accessKeyId: String
+    public let secretAccessKey: String
+    public let allowTLSOff: Bool
+
+    public init(
+        endpoint: URL,
+        region: String,
+        bucket: String,
+        accessKeyId: String,
+        secretAccessKey: String,
+        allowTLSOff: Bool = false
+    ) {
+        self.endpoint = endpoint
+        self.region = region
+        self.bucket = bucket
+        self.accessKeyId = accessKeyId
+        self.secretAccessKey = secretAccessKey
+        self.allowTLSOff = allowTLSOff
+    }
+}
+
+public enum S3ServiceError: Error, Sendable {
+    case ssl
+    case network(underlying: any Error)
+    case server(underlying: any Error)
+    case url(underlying: any Error)
+    case invalidResponse
+}
+
+public struct S3URLRequest: Sendable, Equatable {
+    public enum HTTPMethod: String, Sendable {
+        case get = "GET"
+        case put = "PUT"
+        case delete = "DELETE"
+        case head = "HEAD"
+    }
+
+    public var objectKey: String
+    public var httpMethod: HTTPMethod
+    public var httpBody: Data?
+    public var allHTTPHeaderFields: [String: String]
+
+    public init(objectKey: String, httpMethod: HTTPMethod = .get) {
+        self.objectKey = objectKey
+        self.httpMethod = httpMethod
+        self.httpBody = nil
+        self.allHTTPHeaderFields = [:]
+    }
+
+    public mutating func setValue(_ value: String?, forHTTPHeaderField field: String) {
+        if let value {
+            allHTTPHeaderFields[field] = value
+        } else {
+            allHTTPHeaderFields.removeValue(forKey: field)
+        }
+    }
+
+    public func value(forHTTPHeaderField field: String) -> String? {
+        allHTTPHeaderFields[field]
+    }
+}
+
+public final class S3ServiceSession: Sendable {
+    public let config: S3ServiceConfig
+    private let session: URLSession
+
+    public enum Mode {
+        case `default`
+        case probe
+    }
+
+    public init(config: S3ServiceConfig, mode: Mode = .default) {
+        self.config = config
+
+        switch mode {
+        case .default:
+            self.session = URLSession(configuration: Self.defaultConfiguration)
+        case .probe:
+            self.session = URLSession(configuration: Self.probeConfiguration)
+        }
+    }
+
+    private static var defaultConfiguration: URLSessionConfiguration {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 120
+        // GET requests benefit from conditional revalidation. Non-GET methods opt out of cache
+        // lookups per-request in `buildURLRequest`, because some S3-compatible backends respond
+        // `501 NotImplemented` when conditional headers ride along with writes/deletes.
+        config.requestCachePolicy = .reloadRevalidatingCacheData
+        config.networkServiceType = .responsiveData
+        config.waitsForConnectivity = true
+        return config
+    }
+
+    private static var probeConfiguration: URLSessionConfiguration {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 20
+        config.waitsForConnectivity = false
+        return config
+    }
+
+    deinit {
+        session.invalidateAndCancel()
+    }
+
+    public func data(for request: S3URLRequest) async throws(S3ServiceError) -> (Data, HTTPURLResponse) {
+        let urlRequest = buildURLRequest(from: request)
+        let delegate: URLSessionTaskDelegate? = config.allowTLSOff ? TLSBypassDelegate() : nil
+        do {
+            let (data, response) = try await session.data(for: urlRequest, delegate: delegate)
+            guard let http = response as? HTTPURLResponse else {
+                throw S3ServiceError.invalidResponse
+            }
+            return (data, http)
+        } catch let error as S3ServiceError {
+            throw error
+        } catch {
+            Log("S3ServiceSession: transport error \(error)", module: .backup)
+            throw Self.mapTransportError(error)
+        }
+    }
+}
+
+private extension S3ServiceSession {
+    func buildURLRequest(from request: S3URLRequest) -> URLRequest {
+        // Virtual-hosted endpoints already encode the bucket in the hostname — skip the
+        // path-style prefix to avoid the bucket appearing twice in the URL.
+        let endpointHost = config.endpoint.host() ?? ""
+        let isVirtualHosted = endpointHost == config.bucket
+            || endpointHost.hasPrefix("\(config.bucket).")
+        let url: URL
+        if isVirtualHosted {
+            url = config.endpoint.appendingPathComponent(request.objectKey, isDirectory: false)
+        } else {
+            url = config.endpoint
+                .appendingPathComponent(config.bucket, isDirectory: false)
+                .appendingPathComponent(request.objectKey, isDirectory: false)
+        }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = request.httpMethod.rawValue
+        urlRequest.httpBody = request.httpBody
+        if request.httpMethod != .get {
+            urlRequest.cachePolicy = .reloadIgnoringLocalCacheData
+        }
+        for (name, value) in request.allHTTPHeaderFields {
+            urlRequest.setValue(value, forHTTPHeaderField: name)
+        }
+        let bodyHash: String
+        if let body = request.httpBody, !body.isEmpty {
+            bodyHash = S3SigV4Signer.sha256Hex(body)
+        } else {
+            bodyHash = S3SigV4Signer.emptyBodySHA256Hex
+        }
+        S3SigV4Signer.sign(
+            request: &urlRequest,
+            bodySHA256Hex: bodyHash,
+            now: Date(),
+            config: config
+        )
+        return urlRequest
+    }
+
+    static func mapTransportError(_ error: any Error) -> S3ServiceError {
+        let code = (error as NSError).code
+        if code.isSSLError { return .ssl }
+        if code.isNetworkError { return .network(underlying: error) }
+        if code.isServerError { return .server(underlying: error) }
+        if code.isURLError { return .url(underlying: error) }
+        return .server(underlying: error)
+    }
+}
+
+private final class TLSBypassDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        didReceive challenge: URLAuthenticationChallenge
+    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+        guard
+            challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+            let serverTrust = challenge.protectionSpace.serverTrust
+        else {
+            return (.performDefaultHandling, nil)
+        }
+        return (.useCredential, URLCredential(trust: serverTrust))
+    }
+}

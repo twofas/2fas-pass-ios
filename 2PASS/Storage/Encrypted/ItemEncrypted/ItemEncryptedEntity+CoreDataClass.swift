@@ -158,6 +158,28 @@ final class ItemEncryptedEntity: NSManagedObject {
         }
     }
     
+    @nonobjc static func latestModificationDate(
+        on context: NSManagedObjectContext,
+        vaultID: VaultID
+    ) -> Date? {
+        let request = ItemEncryptedEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "vault.vaultID == %@", vaultID as CVarArg)
+        request.sortDescriptors = [
+            NSSortDescriptor(
+                key: #keyPath(ItemEncryptedEntity.modificationDate),
+                ascending: false
+            )
+        ]
+        request.fetchLimit = 1
+
+        do {
+            return try context.fetch(request).first?.modificationDate
+        } catch {
+            Log("ItemEncryptedEntity latestModificationDate error: \(error.localizedDescription)", module: .storage)
+            return nil
+        }
+    }
+
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
         predicate: NSPredicate? = nil,

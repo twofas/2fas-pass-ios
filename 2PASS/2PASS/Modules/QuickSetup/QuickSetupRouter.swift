@@ -8,7 +8,8 @@ import SwiftUI
 import CommonUI
 
 struct QuickSetupRouter: Router {
-    
+
+    @MainActor
     static func buildView() -> some View {
         NavigationStack {
             QuickSetupView(presenter: .init(interactor: ModuleInteractorFactory.shared.quickSetupModuleInteractor()))

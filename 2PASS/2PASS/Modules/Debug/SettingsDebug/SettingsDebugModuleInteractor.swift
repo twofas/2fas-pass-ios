@@ -9,10 +9,14 @@ import Common
 
 protocol SettingsDebugModuleInteracting: AnyObject {
     var appVersion: String { get }
-    
+
     var debugSubscriptionPlan: SubscriptionPlan? { get }
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan)
     func clearDebugSubscriptionPlan()
+
+    var dateOfFirstRun: Date? { get }
+    func setDateOfFirstRun(_ date: Date)
+    func clearDateOfFirstRun()
 }
 
 final class SettingsDebugModuleInteractor: SettingsDebugModuleInteracting {
@@ -36,8 +40,20 @@ final class SettingsDebugModuleInteractor: SettingsDebugModuleInteracting {
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan) {
         debugInteractor.overrideSubscriptionPlan(plan)
     }
-    
+
     func clearDebugSubscriptionPlan() {
         debugInteractor.clearOverrideSubscriptionPlan()
+    }
+
+    var dateOfFirstRun: Date? {
+        debugInteractor.dateOfFirstRun
+    }
+
+    func setDateOfFirstRun(_ date: Date) {
+        debugInteractor.setDateOfFirstRun(date)
+    }
+
+    func clearDateOfFirstRun() {
+        debugInteractor.clearDateOfFirstRun()
     }
 }

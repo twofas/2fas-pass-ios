@@ -10,15 +10,7 @@ extension MainRepositoryImpl {
     func copyToClipboard(_ str: String) {
         UIPasteboard.general.string = str
     }
-    
-    var syncHasError: Bool {
-        _syncHasError
-    }
-    
-    func setSyncHasError(_ value: Bool) {
-        _syncHasError = value
-    }
-    
+
     func positiveFeedback() {
         feedbackGenerator.notificationOccurred(.success)
     }

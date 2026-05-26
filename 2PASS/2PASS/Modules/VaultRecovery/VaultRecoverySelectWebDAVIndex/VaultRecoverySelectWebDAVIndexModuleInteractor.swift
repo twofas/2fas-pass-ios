@@ -6,6 +6,7 @@
 
 import Foundation
 import Data
+import Backup
 import Common
 
 protocol VaultRecoverySelectWebDAVIndexModuleInteracting: AnyObject {
@@ -15,61 +16,55 @@ protocol VaultRecoverySelectWebDAVIndexModuleInteracting: AnyObject {
         vaultID: VaultID,
         schemeVersion: Int,
         login: String?,
-        password: String?,
-        completion: @escaping (Result<ExchangeVaultVersioned, WebDAVRecoveryInteractorError>) -> Void
-    )
-    func saveConfiguration(
-        baseURL: URL,
-        allowTLSOff: Bool,
-        vaultID: VaultID,
-        login: String?,
         password: String?
-    )
+    ) async throws(VaultRecoveryWebDAVError) -> ExchangeVaultVersioned
 }
 
 final class VaultRecoverySelectWebDAVIndexModuleInteractor {
-    private let webDAVRecoveryInteractor: WebDAVRecoveryInteracting
-    
-    init(webDAVRecoveryInteractor: WebDAVRecoveryInteracting) {
-        self.webDAVRecoveryInteractor = webDAVRecoveryInteractor
+    private let recoveryInteractor: BackupSyncRecoveryInteracting
+
+    init(recoveryInteractor: BackupSyncRecoveryInteracting) {
+        self.recoveryInteractor = recoveryInteractor
     }
 }
 
 extension VaultRecoverySelectWebDAVIndexModuleInteractor: VaultRecoverySelectWebDAVIndexModuleInteracting {
+
     func fetchVault(
         baseURL: URL,
         allowTLSOff: Bool,
         vaultID: VaultID,
         schemeVersion: Int,
         login: String?,
-        password: String?,
-        completion: @escaping (Result<ExchangeVaultVersioned, WebDAVRecoveryInteractorError>) -> Void
-    ) {
-        webDAVRecoveryInteractor.fetchVault(
-            baseURL: baseURL,
-            allowTLSOff: allowTLSOff,
-            vaultID: vaultID,
-            schemeVersion: schemeVersion,
-            login: login,
-            password: password,
-            completion: completion
-        )
-    }
-    
-    func saveConfiguration(
-        baseURL: URL,
-        allowTLSOff: Bool,
-        vaultID: VaultID,
-        login: String?,
         password: String?
-    ) {
-        webDAVRecoveryInteractor.saveConfiguration(
-            baseURL: baseURL,
+    ) async throws(VaultRecoveryWebDAVError) -> ExchangeVaultVersioned {
+        if schemeVersion > Config.schemaVersion {
+            throw .schemaNotSupported(schemeVersion)
+        }
+
+        let config = BackupWebDAVConfig(
+            baseURL: baseURL.absoluteString,
+            normalizedURL: baseURL,
+            lockTime: Config.webDAVLockFileTime,
             allowTLSOff: allowTLSOff,
-            vaultID: vaultID,
             login: login,
             password: password
         )
+
+        do {
+            return try await recoveryInteractor.fetchVault(vaultID: vaultID, config)
+        } catch {
+            switch error {
+            case .transport(let transportError):
+                if case .notFound = transportError {
+                    throw VaultRecoveryWebDAVError.vaultNotFound
+                }
+                throw VaultRecoveryWebDAVError.transport(transportError)
+            case .schemaNotSupported(let version):
+                throw VaultRecoveryWebDAVError.schemaNotSupported(version)
+            case .vaultIsDamaged:
+                throw VaultRecoveryWebDAVError.vaultIsDamaged
+            }
+        }
     }
 }
-

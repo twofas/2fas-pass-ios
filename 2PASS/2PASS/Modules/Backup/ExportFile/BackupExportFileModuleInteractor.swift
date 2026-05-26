@@ -28,23 +28,15 @@ final class BackupExportFileModuleInteractor {
 extension BackupExportFileModuleInteractor: BackupExportFileModuleInteracting {
     
     func export(encrypt: Bool) async throws -> URL {
-        try await withCheckedThrowingContinuation { continuation in
-            self.exportInteractor.prepareItemsForExport(encrypt: encrypt, exportIfEmpty: false, includeDeletedItems: false) { result in
-                switch result {
-                case .success(let data):
-                    do {                    
-                        let url = try self.saveFile(data.0, vaultName: data.1)
-                        self.fileURL = url
-                        continuation.resume(returning: url)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case .failure(let error):
-                    Log("BackupExportSaveFileModuleInteractor - Error while exporting: \(error)")
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        let vault = try await exportInteractor.prepareItemsForExport(
+            encrypt: encrypt,
+            exportIfEmpty: false,
+            includeDeletedItems: false
+        )
+        let data = try JSONEncoder().encode(vault)
+        let url = try saveFile(data, vaultName: vault.vault.name)
+        fileURL = url
+        return url
     }
     
     func clear() {

@@ -14,23 +14,30 @@ public protocol OnboardingInteracting: AnyObject {
 final class OnboardingInteractor {
 
     let mainrepository: MainRepository
-    
-    init(mainRepository: MainRepository) {
+    private let cacheInteractor: VaultRecoveryCacheInteracting
+
+    init(
+        mainRepository: MainRepository,
+        cacheInteractor: VaultRecoveryCacheInteracting
+    ) {
         self.mainrepository = mainRepository
+        self.cacheInteractor = cacheInteractor
     }
 }
 
 extension OnboardingInteractor: OnboardingInteracting {
-    
+
     var isOnboardingCompleted: Bool {
         mainrepository.isOnboardingCompleted
     }
-    
+
     func finishVaultRecovery() {
+        cacheInteractor.clearCachedConfigs()
         mainrepository.finishOnboarding()
     }
-    
+
     func finishVaultCreation() {
+        cacheInteractor.clearCachedConfigs()
         mainrepository.setShouldShowQuickSetup(true)
         mainrepository.finishOnboarding()
     }

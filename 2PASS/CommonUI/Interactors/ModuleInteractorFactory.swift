@@ -35,7 +35,7 @@ public final class ModuleInteractorFactory {
             paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
             passwordGeneratorInteractor: InteractorFactory.shared.passwordGeneratorInteractor(),
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
@@ -54,7 +54,7 @@ public final class ModuleInteractorFactory {
             fileIconInteractor: InteractorFactory.shared.fileIconInteractor(),
             systemInteractor: InteractorFactory.shared.systemInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
             autoFillCredentialsInteractor: InteractorFactory.shared.autoFillCredentialsInteractor(),
             configInteractor: InteractorFactory.shared.configInteractor(),
             paymentStatusInteractor: InteractorFactory.shared.paymentStatusInteractor(),
@@ -79,7 +79,8 @@ public final class ModuleInteractorFactory {
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             tagInteractor: InteractorFactory.shared.tagInteractor(),
             paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
-            wifiQRCodeInteractor: InteractorFactory.shared.wifiQRCodeInteractor()
+            wifiQRCodeInteractor: InteractorFactory.shared.wifiQRCodeInteractor(),
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
     
@@ -157,7 +158,7 @@ public final class ModuleInteractorFactory {
     func editTagModuleInteractor() -> EditTagModuleInteracting {
         EditTagModuleInteractor(
             tagInteractor: InteractorFactory.shared.tagInteractor(),
-            syncChangeTriggerInteractor: InteractorFactory.shared.syncChangeTriggerInteractor(callsChange: false)
+            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
         )
     }
 }

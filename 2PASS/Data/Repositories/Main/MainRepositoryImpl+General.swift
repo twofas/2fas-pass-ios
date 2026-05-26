@@ -68,6 +68,10 @@ extension MainRepositoryImpl {
     var dateOfFirstRun: Date? {
         userDefaultsDataSource.dateOfFirstRun
     }
+
+    func clearDateOfFirstRun() {
+        userDefaultsDataSource.clearDateOfFirstRun()
+    }
     
     func setActiveSearchEnabled(_ enabled: Bool) {
         userDefaultsDataSource.setActiveSearchEnabled(enabled)
@@ -258,13 +262,25 @@ extension MainRepositoryImpl {
     var lastAppUpdatePromptDate: Date? {
         userDefaultsDataSource.lastAppUpdatePromptDate
     }
-    
+
     func setLastAppUpdatePromptDate(_ date: Date) {
         userDefaultsDataSource.setLastAppUpdatePromptDate(date)
     }
-    
+
     func clearLastAppUpdatePromptDate() {
         userDefaultsDataSource.clearLastAppUpdatePromptDate()
+    }
+
+    var lastAppReviewPromptDate: Date? {
+        userDefaultsDataSource.lastAppReviewPromptDate
+    }
+
+    func setLastAppReviewPromptDate(_ date: Date) {
+        userDefaultsDataSource.setLastAppReviewPromptDate(date)
+    }
+
+    func clearLastAppReviewPromptDate() {
+        userDefaultsDataSource.clearLastAppReviewPromptDate()
     }
     
     var minimalAppVersionSupported: String? {

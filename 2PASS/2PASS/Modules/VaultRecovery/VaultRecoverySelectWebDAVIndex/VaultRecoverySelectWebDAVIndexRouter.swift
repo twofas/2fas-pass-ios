@@ -7,13 +7,14 @@
 import SwiftUI
 import Common
 import Data
+import Backup
 import CommonUI
 
 struct VaultRecoverySelectWebDAVIndexRouter: Router {
     
     @ViewBuilder
     static func buildView(
-        index: WebDAVIndex,
+        index: BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,
@@ -30,10 +31,8 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
             password: password,
             onSelect: onSelect
         )
-        
-        NavigationStack {
-            VaultRecoverySelectWebDAVIndexView(presenter: presenter)
-        }
+
+        VaultRecoverySelectWebDAVIndexView(presenter: presenter)
     }
     
     @ViewBuilder
@@ -42,7 +41,7 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
         case .error(_, let onClose):
             Button(.commonOk, action: onClose)
         case .selectRecoveryKey(let vault, let onClose):
-            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: .file(vault))
+            VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: .file(vault, source: .localFile))
         case .appUpdateNeeded(_, let onUpdate, let onClose):
             Button(.importInvalidSchemaErrorCta, action: onUpdate)
             Button(.commonCancel, role: .cancel, action: onClose)

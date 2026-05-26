@@ -31,15 +31,20 @@ final class MainRepositoryImpl: MainRepository {
     var _empheralSalt: Data?
     var _empheralMasterPassword: MasterPassword?
     var _isInBackground = false
-    var _webDAVState: WebDAVState = .idle
     var _isAutoFillEnabled: Bool = false
     var _pushNotificationToken: String?
-    var _syncHasError = false
     var _startPurchaseBlock: StartPurchaseBlock?
     var _subscriptionPlan: SubscriptionPlan = .free
     var _cloudCacheInitilizingNewStore = false
     var _minimalAppVersionSupported: String?
-    
+
+    // In-memory recovery cache (Phase 2). Encrypted ciphertext blobs of the user's last
+    // successfully-validated S3 / WebDAV recovery-form config under the Secure-Enclave appKey
+    // (same pipeline as `saveBackupConfigs`). Cleared by `persistRecoverySource` on disk save
+    // and by `OnboardingInteractor.finishVault*`. Never written to disk.
+    var _cachedS3RecoveryConfig: Data?
+    var _cachedWebDAVRecoveryConfig: Data?
+
     // Cached values for higher pefrormance
     var cachedSortType: SortType?
     var cachedSortTypeInitialized = false
@@ -61,16 +66,14 @@ final class MainRepositoryImpl: MainRepository {
     let feedbackGenerator: UINotificationFeedbackGenerator
     let network: NetworkDataSource
     let logDataSource: LogStorageDataSource
-    let backupWebDAV: BackupWebDAVController
-    let cloudSync: CloudSync
     let cloudCache: CloudCacheStorageDataSource
-    let cloudRecovery: CloudRecovering
     let autoFillStatusDataSource: AutoFillStatusDataSourcing
     let pushNotificationsPermissionsDataSource: PushNotificationsPermissionsDataSourcing
     let twoFASWebServiceSession: TwoFASWebServiceSession
     let twoFASShareServiceSession: TwoFASShareServiceSession
     let revenueCatDelegate: RevenueCatDelegate
-    
+    let backupSyncContainer: BackupSyncContainer
+
     var inMemoryStorage: InMemoryStorageDataSource?
     var storageError: ((String) -> Void)?
     
@@ -93,10 +96,8 @@ final class MainRepositoryImpl: MainRepository {
         encryptedStorage: EncryptedStorageDataSource = EncryptedStorageDataSourceImpl(),
         network: NetworkDataSource = NetworkDataSourceImpl(),
         logDataSource: LogStorageDataSource = LogStorageDataSourceImpl(),
-        backupWebDAV: BackupWebDAVController = BackupWebDAVController(),
-        cloudSync: CloudSync = CloudSync(),
+        backupSyncContainer: BackupSyncContainer = .init(),
         cloudCache: CloudCacheStorageDataSource = CloudCacheStorageDataSourceImpl(),
-        cloudRecovery: CloudRecovering = CloudRecovery(),
         autoFillStatusDataSource: AutoFillStatusDataSourcing = AutoFillStatusDataSource(),
         pushNotificationsPermissionsDataSource: PushNotificationsPermissionsDataSourcing = PushNotificationsPermissionsDataSource(),
         twoFASWebServiceSession: TwoFASWebServiceSession = .init(baseURL: Config.twoFASBaseURL),
@@ -111,10 +112,8 @@ final class MainRepositoryImpl: MainRepository {
         self.encryptedStorage = encryptedStorage
         self.network = network
         self.logDataSource = logDataSource
-        self.backupWebDAV = backupWebDAV
-        self.cloudSync = cloudSync
+        self.backupSyncContainer = backupSyncContainer
         self.cloudCache = cloudCache
-        self.cloudRecovery = cloudRecovery
         self.autoFillStatusDataSource = autoFillStatusDataSource
         self.pushNotificationsPermissionsDataSource = pushNotificationsPermissionsDataSource
         self.twoFASWebServiceSession = twoFASWebServiceSession
@@ -132,14 +131,6 @@ final class MainRepositoryImpl: MainRepository {
             LogStorage.setStorage(logDataSource)
         }
         
-        cloudCache.warmUp()
-        
-        updateTimeOffsetListeners()
-    }
-}
-
-extension MainRepositoryImpl {
-    func updateTimeOffsetListeners() {
-        cloudSync.setCurrentDate(currentDate)
+        cloudCache.loadStore { }
     }
 }

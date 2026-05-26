@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Backup
 
 typealias CloudStateListenerID = String
 typealias CloudStateListener = (CloudState) -> Void
@@ -20,3 +21,5 @@ public typealias BiometryKey = Data
 public typealias TrustedKey = Data
 public typealias SecureKey = Data
 public typealias ExternalKey = Data
+
+public typealias BackupConfig = Backup.BackupConfig

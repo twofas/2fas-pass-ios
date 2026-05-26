@@ -11,7 +11,7 @@ import Data
 
 @Observable
 final class ItemEditorPresenter {
-    
+
     enum Form {
         case login(LoginEditorFormPresenter)
         case secureNote(SecureNoteEditorFormPresenter)
@@ -54,35 +54,36 @@ final class ItemEditorPresenter {
             ""
         }
     }
-    
+
     private(set) var form: Form
-    
+
     var saveEnabled: ((Bool) -> Void)?
-    
+
     var loginFormPresenter: LoginEditorFormPresenter?
     var secureNotePresenter: SecureNoteEditorFormPresenter?
     var paymentCardPresenter: PaymentCardEditorFormPresenter?
     var wifiPresenter: WiFiEditorFormPresenter?
-    
+
     let allowChangeContentType: Bool
-    
+
     var showRemoveItemButton: Bool {
         isEdit && interactor.changeRequest == nil
     }
-    
+
     var cantSave = false
 
     private(set) var isEdit: Bool
-    
+
     var passwordWasEdited = false
     var passwordWasDeleted = false
 
     private let flowController: ItemEditorFlowControlling
     private let interactor: ItemEditorModuleInteracting
-    private let notificationCenter: NotificationCenter
-    
+    @ObservationIgnored
+    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+
     private var firstAppear = true
-    
+
     private var currentPresenter: ItemEditorFormPresenter {
         switch form {
         case .login(let presenter):
@@ -95,18 +96,17 @@ final class ItemEditorPresenter {
             return presenter
         }
     }
-    
+
     init(flowController: ItemEditorFlowControlling, interactor: ItemEditorModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
-        self.notificationCenter = .default
-        
+
         let initalData = interactor.getEditItem()
         let changeRequest = interactor.changeRequest
-        
+
         let contentType = changeRequest?.contentType ?? initalData?.contentType ?? .login
         self.isEdit = initalData != nil
-        
+
         if let changeRequest {
             self.allowChangeContentType = changeRequest.allowChangeContentType
         } else {
@@ -157,69 +157,76 @@ final class ItemEditorPresenter {
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")
         }
-        
-        if initalData != nil {
-            notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
-            notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
-        }
-        
+
         observeCurrentPresenterChanges()
     }
-    
+
     func setContentType(_ contentType: ItemContentType) {
         withAnimation {
             self.form = form(for: contentType)
         }
     }
-    
+
     func onClose() {
         flowController.close(with: .failure(.userCancelled))
     }
-    
+
     func handleChangeProtectionLevel(_ value: ItemProtectionLevel) {
         currentPresenter.protectionLevel = value
     }
-    
+
     func handleIconChange(_ value: PasswordIconType) {
         loginFormPresenter?.handleIconChange(value)
     }
-    
+
     func onAppear() {
-        guard firstAppear else {
-            return
+        if firstAppear {
+            updateSaveState()
+            firstAppear = false
         }
-        updateSaveState()
-        firstAppear = false
+
+        if isEdit {
+            syncDidApplyRemoteChangesTask?.cancel()
+            syncDidApplyRemoteChangesTask = Task { [weak self] in
+                guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
+                for await _ in stream {
+                    self?.checkCurrentPasswordState()
+                }
+            }
+        }
     }
-    
+
     func onDisappear() {
         loginFormPresenter?.cancelFetchIcon()
+        syncDidApplyRemoteChangesTask?.cancel()
+        syncDidApplyRemoteChangesTask = nil
     }
-    
+
     func onSave() {
         guard currentPresenter.canSave else {
             updateSaveState()
             return
         }
-        
+
         let result = currentPresenter.onSave()
-        
+
         if result.isSuccess {
             flowController.close(with: result)
         } else {
             cantSave = true
         }
     }
-    
+
     func onDelete() {
         guard let itemID = interactor.moveToTrash() else {
             return
         }
         flowController.close(with: .success(.deleted(itemID)))
     }
-    
+
     deinit {
-        notificationCenter.removeObserver(self)
+        // Safety net for the rare case where `onDisappear` doesn't fire.
+        syncDidApplyRemoteChangesTask?.cancel()
     }
 }
 
@@ -279,7 +286,7 @@ private extension ItemEditorPresenter {
             fatalError("Unsupported unknown item type in Item Editor")
         }
     }
-    
+
     func observeCurrentPresenterChanges() {
         withObservationTracking { [weak self] in
             guard let self else { return }
@@ -290,24 +297,11 @@ private extension ItemEditorPresenter {
             }
         }
     }
-    
+
     func updateSaveState() {
         saveEnabled?(currentPresenter.canSave)
     }
 
-    @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
-        checkCurrentPasswordState()
-    }
-    
-    @objc
-    func iCloudSyncFinished() {
-        checkCurrentPasswordState()
-    }
-    
     func checkCurrentPasswordState() {
         DispatchQueue.main.async {
             switch self.interactor.checkCurrentPasswordState() {

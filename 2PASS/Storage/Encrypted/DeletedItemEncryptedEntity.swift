@@ -55,6 +55,29 @@ final class DeletedItemEncryptedEntity: NSManagedObject {
         entity.vaultID = vaultID
     }
     
+    @nonobjc static func latestDeletionDate(
+        on context: NSManagedObjectContext,
+        vaultID: VaultID
+    ) -> Date? {
+        let request = DeletedItemEncryptedEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "vaultID == %@", vaultID as CVarArg)
+        request.sortDescriptors = [
+            NSSortDescriptor(
+                key: #keyPath(DeletedItemEncryptedEntity.deletedAt),
+                ascending: false,
+                selector: #selector(NSDate.compare)
+            )
+        ]
+        request.fetchLimit = 1
+
+        do {
+            return try context.fetch(request).first?.deletedAt
+        } catch {
+            Log("DeletedItemEncryptedEntity latestDeletionDate error: \(error.localizedDescription)", module: .storage)
+            return nil
+        }
+    }
+
     @nonobjc static func listItems(
         on context: NSManagedObjectContext,
         vaultID: VaultID,

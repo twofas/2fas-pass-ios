@@ -18,6 +18,7 @@ extension VaultEncryptedEntity {
     @NSManaged var trustedKey: Data
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
+    @NSManaged var contentModificationDate: Date?
     @NSManaged var items: Set<ItemEncryptedEntity>?
 }
 
@@ -46,7 +47,8 @@ extension VaultEncryptedEntity {
             trustedKey: trustedKey,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            isEmpty: items?.isEmpty ?? true
+            isEmpty: items?.isEmpty ?? true,
+            contentModificationDate: contentModificationDate
         )
     }
 }
