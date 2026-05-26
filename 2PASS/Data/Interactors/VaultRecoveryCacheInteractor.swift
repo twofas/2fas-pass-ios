@@ -7,14 +7,8 @@
 import Foundation
 import Backup
 
-/// Owns the recovery flow's transient S3 / WebDAV form cache. Wraps `MainRepository`'s
-/// in-memory recovery-cache pipeline (JSON encode + AES-GCM under the Secure-Enclave appKey,
-/// mirroring `saveBackupConfigs`/`loadBackupConfigs`). Callers see strongly-typed configs and
-/// never need to think about the underlying encryption.
-///
-/// The cache is set by the recovery presenters after a successful index fetch and cleared
-/// either by `VaultRecoveryRecoverModuleInteractor.persistRecoverySource` on disk save or by
-/// `OnboardingInteractor.finishVault*` on flow completion.
+/// Transient in-memory cache (AES-GCM under the appKey via `MainRepository`); cleared by
+/// `persistRecoverySource` on save or `OnboardingInteractor.finishVault*` on flow completion.
 public protocol VaultRecoveryCacheInteracting: AnyObject {
     var cachedS3Config: S3ServiceConfig? { get }
     var cachedWebDAVConfig: BackupWebDAVConfig? { get }

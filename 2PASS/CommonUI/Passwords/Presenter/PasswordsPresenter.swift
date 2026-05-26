@@ -9,17 +9,17 @@ import Common
 import Data
 
 private class IconFetcherProxy: RemoteImageCollectionFetcher {
-    
+
     let interactor: PasswordsModuleInteracting
-    
+
     init(interactor: PasswordsModuleInteracting) {
         self.interactor = interactor
     }
-    
+
     func cachedImage(from url: URL) -> Data? {
         interactor.cachedImage(from: url)
     }
-    
+
     func fetchImage(from url: URL) async throws -> Data {
         try await interactor.fetchIconImage(from: url)
     }
@@ -27,15 +27,15 @@ private class IconFetcherProxy: RemoteImageCollectionFetcher {
 
 final class PasswordsPresenter {
     weak var view: PasswordsViewControlling?
-    
+
     var selectedSort: SortType {
         interactor.currentSortType
     }
-    
+
     var isAutoFillExtension: Bool {
         autoFillEnvironment != nil
     }
-    
+
     var selectedFilterTag: ItemTagData? {
         didSet {
             view?.filterDidChange()
@@ -49,7 +49,7 @@ final class PasswordsPresenter {
             reload()
         }
     }
-    
+
     var showContentTypePicker: Bool {
         if let autoFillEnvironment {
             return autoFillEnvironment.isTextToInsert && hasItems
@@ -57,9 +57,9 @@ final class PasswordsPresenter {
             return hasItems
         }
     }
-    
+
     private(set) var contentTypeFilter: ItemContentTypeFilter = .all
-    
+
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
     private(set) var hasItems = false {
@@ -80,9 +80,6 @@ final class PasswordsPresenter {
     private var listData: [Int: [ItemData]] = [:]
     private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
     private var isViewReady: Bool = false
-    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `viewWillAppear`,
-    /// cancelled in `viewWillDisappear`, so the subscription is alive only while the view is
-    /// on screen.
     private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
     private var canLoadData: Bool {
         isViewReady && interactor.isUserLoggedIn
@@ -112,7 +109,7 @@ final class PasswordsPresenter {
 }
 
 extension PasswordsPresenter {
-    
+
     func viewWillAppear() {
         isViewReady = true
         refreshSelectedFilterTag()
@@ -143,11 +140,11 @@ extension PasswordsPresenter {
             self.selectedFilterTag = nil
         }
     }
-    
+
     func onQuickSetup() {
         flowController.toQuickSetup()
     }
-    
+
     func onAdd(sourceItem: UIBarButtonItem?) {
         if interactor.canAddPassword {
             flowController.toContentTypeSelection(sourceItem: sourceItem)
@@ -155,21 +152,21 @@ extension PasswordsPresenter {
             flowController.toPremiumPlanPrompt(itemsLimit: interactor.currentPlanItemsLimit)
         }
     }
-    
+
     func onCancel() {
         flowController.cancel()
     }
-    
+
     func onSelectSort(_ sortType: SortType) {
         interactor.setSortType(sortType)
         reload()
     }
-    
+
     func onSetSearchPhrase(_ searchPhrase: String?) {
         interactor.setSearchPhrase(searchPhrase)
         reload()
     }
-    
+
     func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
         view?.clearSelectionForContentTypeChange()
         contentTypeFilter = filter
@@ -178,12 +175,12 @@ extension PasswordsPresenter {
 
     func onClearSearchPhrase() {
         interactor.setSearchPhrase(nil)
-        
+
         Task { @MainActor in // fix animation
             reload()
         }
     }
-    
+
     func onSelectFilterTag(_ tag: ItemTagData?) {
         selectedFilterTag = tag
     }
@@ -199,7 +196,7 @@ extension PasswordsPresenter {
     func onClearFilterProtectionLevel() {
         selectedFilterProtectionLevel = nil
     }
-    
+
     func onCellMenuAction(_ action: PasswordCellMenu, itemID: ItemID, selectedURI: URL?) {
         switch action {
         case .view: flowController.toItemDetail(itemID: itemID)
@@ -215,7 +212,7 @@ extension PasswordsPresenter {
             }
         case .copy(.loginPassword):
             copyPassword(id: itemID)
-            
+
         case .copy(.secureNoteText):
             copySecureNote(id: itemID)
 
@@ -243,12 +240,12 @@ extension PasswordsPresenter {
             }
         }
     }
-    
+
     func onDidSelectAt(_ indexPath: IndexPath) {
         guard let itemData = item(at: indexPath) else {
             return
         }
-        
+
         switch interactor.selectAction {
         case .viewDetails:
             flowController.selectItem(id: itemData.id, contentType: itemData.contentType)
@@ -265,7 +262,7 @@ extension PasswordsPresenter {
             case .raw:
                 break
             }
-            
+
         case .goToURI:
             if let uri = itemData.asLoginItem?.uris?.first, let normalized = interactor.normalizedURL(for: uri.uri) {
                 flowController.toURI(normalized)
@@ -287,15 +284,15 @@ extension PasswordsPresenter {
             }
         }
     }
-    
+
     func normalizedURL(for uri: String) -> URL? {
         interactor.normalizedURL(for: uri)
     }
-    
+
     func handleRefresh() {
         reload()
     }
-    
+
     func listAllTags() -> [ItemTagData] {
         interactor.listAllTags()
     }
@@ -307,7 +304,7 @@ extension PasswordsPresenter {
     func countPasswordsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
         interactor.countItemsForProtectionLevel(protectionLevel)
     }
-    
+
     func applyProtectionLevel(_ protectionLevel: ItemProtectionLevel, to itemIDs: [ItemID]) {
         do {
             try interactor.updateProtectionLevel(protectionLevel, for: itemIDs)
@@ -368,7 +365,7 @@ extension PasswordsPresenter {
 }
 
 private extension PasswordsPresenter {
-    
+
     func copyPassword(id: ItemID) {
         if interactor.copyPassword(id) {
             toastPresenter.presentPasswordCopied()
@@ -379,7 +376,7 @@ private extension PasswordsPresenter {
             )
         }
     }
-    
+
     func copySecureNote(id: ItemID) {
         if interactor.copySecureNote(id) {
             toastPresenter.presentSecureNoteCopied()
@@ -438,7 +435,7 @@ private extension PasswordsPresenter {
     func item(at indexPath: IndexPath) -> ItemData? {
         listData[indexPath.section]?[safe: indexPath.item]
     }
-    
+
     func reload() {
         guard canLoadData else {
             return
@@ -450,26 +447,26 @@ private extension PasswordsPresenter {
             listAllTags().map { ($0.tagID, $0.color) },
             uniquingKeysWith: { _, new in new }
         )
-        
+
         let cellsCount: Int
-        
+
         if let serviceIdentifiers = autoFillEnvironment?.serviceIdentifiers, autoFillEnvironment?.isTextToInsert == false {
             let list = interactor.loadList(forServiceIdentifiers: serviceIdentifiers, contentType: .login, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
-            
+
             var snapshot = NSDiffableDataSourceSnapshot<ItemSectionData, ItemCellData>()
-            
+
             if list.suggested.isEmpty {
                 listData[0] = list.rest
-                
+
                 let restCells = list.rest.compactMap(makeCellData(for:))
                 let section = ItemSectionData()
-                
+
                 snapshot.appendSections([section])
                 snapshot.appendItems(restCells, toSection: section)
-                
+
                 cellsCount = list.rest.count
                 itemsCount = cellsCount
-                
+
             } else {
                 listData[0] = list.suggested
                 listData[1] = list.rest
@@ -479,19 +476,19 @@ private extension PasswordsPresenter {
                 let restCells = list.rest.compactMap(makeCellData(for:))
                 let suggestedSection = ItemSectionData(title: String(localized: .commonSuggested))
                 let section = ItemSectionData(title: String(localized: .commonOther))
-                
+
                 snapshot.appendSections([suggestedSection])
                 snapshot.appendItems(suggestedCells, toSection: suggestedSection)
                 snapshot.appendSections([section])
                 snapshot.appendItems(restCells, toSection: section)
-                
+
                 cellsCount = suggestedCells.count + restCells.count
                 itemsCount = cellsCount
             }
 
             hasItems = interactor.hasItems(for: .login)
             view?.reloadData(newSnapshot: snapshot)
-            
+
         } else {
             let list = interactor.loadList(contentType: contentTypeFilter.contentType, tag: selectedFilterTag, protectionLevel: selectedFilterProtectionLevel)
             listData[0] = list
@@ -518,7 +515,7 @@ private extension PasswordsPresenter {
             view?.showList()
         }
     }
-    
+
     func makeCellData(for itemData: ItemData) -> ItemCellData? {
         switch itemData {
         case .login(let loginItem):
@@ -605,7 +602,7 @@ private extension PasswordsPresenter {
         }
         return tagIds.compactMap { tagColorsByID[$0] }
     }
-    
+
     func selectedItems(for itemIDs: [ItemID]) -> [ItemData] {
         guard itemIDs.isEmpty == false else { return [] }
         let selectedIDs = Set(itemIDs)
@@ -623,7 +620,7 @@ private extension PasswordsPresenter {
     func userLoggedIn() {
         reload()
     }
-    
+
     @objc
     func didImportItems() {
         Task { @MainActor in

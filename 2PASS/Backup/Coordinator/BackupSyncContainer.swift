@@ -8,35 +8,24 @@ import Foundation
 import os
 import Common
 
-/// Error for ad-hoc `fetchIndex` reads: transport failure vs. corrupted index file.
-/// The orchestrated sync path folds decode failure into "no index, overwrite next sync"
-/// instead, so it doesn't use this type.
 public enum BackupIndexFetchError: Error, Sendable {
     case transport(BackupFileServiceError)
     case indexIsDamaged
 }
 
-/// Error for ad-hoc `fetchVault` reads: transport, unsupported schema version, or generic
-/// decode failure.
 public enum BackupVaultFetchError: Error, Sendable {
     case transport(BackupFileServiceError)
     case schemaNotSupported(Int)
     case vaultIsDamaged
 }
 
-/// Posted by `saveConfigs(_:)` after each successful persistence. Payload-less — consumers
-/// re-read `MainRepository.loadBackupConfigs()` in response.
 public struct BackupConfigsDidChange: Notifications.AsyncMessage {
     public typealias Subject = NSObject
     public init() {}
 }
 
-/// Runs registered backup-sync backends through the convergence loop.
-///
-/// Inert until `setup(...)` runs. Each `syncAll` / `sync(_:)` call freshly loads configs,
-/// rebuilds services, and constructs a fresh `BackupSyncSession`. Overlapping triggers are
-/// debounced via an unfair lock: while a sync is in flight, additional invocations throw
-/// `.cancelled` instead of queueing.
+/// While a sync is in flight, overlapping `syncAll`/`sync(_:)` calls throw `.cancelled`
+/// rather than queueing.
 public final class BackupSyncContainer: @unchecked Sendable {
     private struct State {
         var isSyncing = false
@@ -48,8 +37,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    /// Slots wired up by `setup(...)`. Empty/no-op defaults keep a freshly-init'd container
-    /// inert. Stored together under one lock so `setup`'s update is atomic.
     private struct Providers {
         var servicesProvider: @Sendable () -> [any BackupSynchronizing]
         var lastSyncDateProvider: @Sendable (BackupConfig.ID) -> Date?
@@ -76,13 +63,11 @@ public final class BackupSyncContainer: @unchecked Sendable {
     private let providers = OSAllocatedUnfairLock<Providers>(initialState: .empty)
     private let state = OSAllocatedUnfairLock(initialState: State())
     private let syncEventContinuations = OSAllocatedUnfairLock<[UUID: AsyncStream<BackupSyncSession.Event>.Continuation]>(initialState: [:])
-    /// Process-scoped last-error per config. Cleared on next success or on config removal.
-    /// `.cancelled` outcomes are skipped (user-initiated cancel isn't an error).
     private let lastErrors = OSAllocatedUnfairLock<[BackupConfig.ID: BackupSyncError]>(initialState: [:])
 
-    /// Token for the in-module finished-sync handler that synthesizes a `.finished(.success)`
-    /// event when a `cloudSync` completion arrives from a push (i.e. outside any active
-    /// session). Self-suppresses while a session is in flight to avoid double-firing.
+    /// Bridges iCloud push completions arriving outside any active session into a
+    /// `.finished(.success)` event. Self-suppresses while a session is in flight to avoid
+    /// double-firing.
     private let cloudSyncPushBridgeToken = OSAllocatedUnfairLock<UUID?>(initialState: nil)
 
     private let cloudSync = CloudSync()
@@ -90,9 +75,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     public init() {}
 
-    /// Wires collaborators and applies the per-vault CloudSync configuration. Idempotent —
-    /// re-call to re-apply (used by vault recovery once the recovered vault is selected).
-    /// Bails on `nil` `context.deviceID`; caller re-runs once deviceID is available.
     public func setup(
         configStore: BackupSyncConfigStore,
         dateStore: BackupSyncDateStore,
@@ -165,8 +147,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         broadcast(event)
     }
 
-    /// Test-only init. Awaiting-flags slot defaults to an empty store; tests driving the
-    /// override / device-registration paths inject a conforming fake.
     init(
         servicesProvider: @escaping @Sendable () -> [any BackupSynchronizing],
         lastSyncDateProvider: @escaping @Sendable (BackupConfig.ID) -> Date? = { _ in nil },
@@ -192,9 +172,8 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     // MARK: - Config CRUD
 
-    /// Single seam where the iCloud lifecycle is reconciled with the presence of a
-    /// `BackupConfig.iCloud(...)` entry. Order matters: reads `old` before writing `new` —
-    /// flipping the order would silently observe `old == new`.
+    /// Reads `old` before writing `new` — flipping the order would silently observe
+    /// `old == new` and skip the iCloud lifecycle reconciliation.
     public func saveConfigs(_ configs: [BackupConfig]) {
         let store = providers.withLock { $0.configStore }
         guard let store else { return }
@@ -215,8 +194,8 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    /// Drops `lastErrors[id]` for removed configs so `hasAnySyncError` can't stay stuck
-    /// on `true` for an id that no longer exists.
+    /// Without this, `hasAnySyncError` would stay stuck on `true` for an id that no
+    /// longer exists.
     private func reconcileLastErrors(old: [BackupConfig], new: [BackupConfig]) {
         let newIDs = Set(new.map(\.id))
         let removed = old.compactMap { newIDs.contains($0.id) ? nil : $0.id }
@@ -232,10 +211,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     // MARK: - Ad-hoc transport reads (no session, no setup required)
 
-    /// Fetches and decodes the remote index. Independent of `setup(...)` — used by the
-    /// recovery flow before any config has been registered. Decode failure is surfaced
-    /// distinctly from transport failure via `BackupIndexFetchError`.
-
     public func fetchIndex(config: BackupWebDAVConfig) async throws(BackupIndexFetchError) -> BackupIndex {
         let session = BackupWebDAVServiceSession(config: config)
         return try await fetchAndDecodeIndex(session: session)
@@ -245,10 +220,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         let session = BackupS3ServiceSession(config: config)
         return try await fetchAndDecodeIndex(session: session)
     }
-
-    /// Fetches and decodes the vault blob for `vaultID`. Same independence-from-`setup`
-    /// rationale as `fetchIndex(config:)`; schema-version mismatches are surfaced as
-    /// `.schemaNotSupported`.
 
     public func fetchVault(vaultID: UUID, config: BackupWebDAVConfig) async throws(BackupVaultFetchError) -> ExchangeVaultVersioned {
         let session = BackupWebDAVServiceSession(config: config)
@@ -260,9 +231,8 @@ public final class BackupSyncContainer: @unchecked Sendable {
         return try await fetchAndDecodeVault(vaultID: vaultID, session: session)
     }
 
-    /// Auth + index-read probe used to validate credentials before persisting a new config.
-    /// Returns silently on success, including the "no index yet" 404 (folded into success).
-
+    /// A "no index yet" 404 is folded into success — `testConnection` only fails on real
+    /// transport/auth errors.
     public func testConnection(config: BackupWebDAVConfig) async throws(BackupFileServiceError) {
         let session = BackupWebDAVServiceSession(config: config)
         try await session.testConnection()
@@ -285,10 +255,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
 
     // MARK: - Awaiting flags (per-config "next sync needs special handling")
 
-    /// Marks every registered config for vault overwrite on its next sync. Used by the
-    /// password-change flow. Each backend's `performSync` decides per-kind whether to honor
-    /// the flag; `BackupSyncAdapter.setLastSyncDate(_:for:consumed:)` clears per-id only
-    /// when the sync reported `consumed.overwritingVault`.
     public func markAllConfigsAwaitingVaultOverride() {
         let snapshot = providers.withLock { $0 }
         let configIDs = snapshot.configIDsProvider()
@@ -296,8 +262,6 @@ public final class BackupSyncContainer: @unchecked Sendable {
         snapshot.awaitingFlags.markVaultOverrideAwaiting(configIDs: configIDs)
     }
 
-    /// Marks `configID` for `allowingAnyDeviceId: true` on its next sync. Persists across
-    /// retries; cleared by the first successful sync via `setLastSyncDate`.
     public func markAwaitingDeviceRegistration(configID: BackupConfig.ID) {
         let store = providers.withLock { $0.awaitingFlags }
         store.markDeviceRegistrationAwaiting(configIDs: [configID])
@@ -309,14 +273,11 @@ public final class BackupSyncContainer: @unchecked Sendable {
         state.withLock { $0.activity }
     }
 
-    /// Most recent failure for `id` in this app process, or `nil` if the last sync succeeded
-    /// or no sync has run. Process-scoped — not persisted. `.cancelled` outcomes never appear.
+    /// Process-scoped (not persisted). `.cancelled` outcomes are never recorded here.
     public func lastSyncError(for id: BackupConfig.ID) -> BackupSyncError? {
         lastErrors.withLock { $0[id] }
     }
 
-    /// Single-bit rollup over `lastSyncError(for:)` — drives the global "any backup is
-    /// broken" badge.
     public var hasAnySyncError: Bool {
         lastErrors.withLock { !$0.isEmpty }
     }
@@ -326,15 +287,14 @@ public final class BackupSyncContainer: @unchecked Sendable {
         cancel?()
     }
 
-    /// CloudKit silent-push entry point. Bypasses the container's in-flight debounce: the
-    /// `fromPush: true` flag is load-bearing inside `SyncHandler.synchronize` — it triggers
-    /// `needsResync` when a sync is already past its fetch phase, so the push isn't dropped.
+    /// `fromPush: true` is load-bearing inside `SyncHandler.synchronize` — it triggers
+    /// `needsResync` when a sync is past its fetch phase, so the push isn't dropped.
     public func handlePush() {
         cloudSync.synchronize(fromPush: true)
     }
 
-    /// Per-id cancel. No-op when `id` isn't currently active — a tap on one row mustn't
-    /// tear down a sync running for a different config.
+    /// No-op when `id` isn't currently active — a tap on one row mustn't tear down a sync
+    /// running for a different config.
     public func cancelSync(id: BackupConfig.ID) {
         let cancel = state.withLock { state in
             state.activeConfigIDs.contains(id) ? state.cancelCurrentSync : nil
@@ -342,8 +302,8 @@ public final class BackupSyncContainer: @unchecked Sendable {
         cancel?()
     }
 
-    /// Multi-subscriber event stream. Each call returns a fresh `AsyncStream`; continuations
-    /// are auto-removed via `onTermination`. Fan-out is non-blocking (per-subscriber buffer).
+    /// Each call returns a fresh `AsyncStream`; continuations are auto-removed via
+    /// `onTermination`.
     public func syncEvents() -> AsyncStream<BackupSyncSession.Event> {
         let subscriberID = UUID()
         return AsyncStream(bufferingPolicy: .unbounded) { [weak self] continuation in
@@ -354,17 +314,12 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    /// Fire-and-forget: detached `.utility`-priority task. Cross-client cancellation via
-    /// `cancelCurrentSync()`.
     public func syncAll() {
         Task.detached(priority: .utility) { [weak self] in
             try? await self?.syncAll()
         }
     }
 
-    /// Awaitable. Returns each service's final result; empty when no services. Throws
-    /// `.cancelled` when debounced. Reads the awaiting-flag sets once at the top and
-    /// forwards them as per-id resolvers so the run is consistent across services.
     @discardableResult
     public func syncAll() async throws(BackupSyncError) -> [BackupSyncSession.SyncResult] {
         guard reserveSyncSlot() else {
@@ -395,16 +350,12 @@ public final class BackupSyncContainer: @unchecked Sendable {
         }
     }
 
-    /// Fire-and-forget single-config sync. Cross-client cancellation via `cancelSync(id:)` /
-    /// `cancelCurrentSync()`.
     public func sync(_ id: BackupConfig.ID) {
         Task.detached(priority: .utility) { [weak self] in
             try? await self?.sync(id)
         }
     }
 
-    /// Runs only the backend with `id`. Silent no-op when nothing matches; throws on
-    /// failure or `.cancelled` when debounced.
     public func sync(_ id: BackupConfig.ID) async throws(BackupSyncError) {
         let snapshot = providers.withLock { $0 }
         guard let service = snapshot.servicesProvider().first(where: { $0.id == id }) else { return }
@@ -501,8 +452,7 @@ public final class BackupSyncContainer: @unchecked Sendable {
             case .success:
                 lastErrors.withLock { $0[id] = nil }
             case .failure(.cancelled):
-                // User-initiated cancel: leave any prior recorded error in place — the
-                // underlying problem (network down, bad credentials, …) is unchanged.
+                // Cancel doesn't change the underlying problem — leave any prior error in place.
                 break
             case .failure(let error):
                 lastErrors.withLock { $0[id] = error }

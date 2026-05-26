@@ -497,7 +497,7 @@ final class MockMainRepository: MainRepository {
         recordCall()
         capturedLastKnownAppVersion = version
     }
-    
+
     private(set) var didMigrateLegacyValuesToSharedDefaults = false
     func migrateLegacyValuesToSharedDefaults() {
         recordCall()
@@ -2797,9 +2797,6 @@ final class MockMainRepository: MainRepository {
 
     // MARK: Backup Sync Container
 
-    /// Default empty container — tests that don't exercise sync paths can leave this alone;
-    /// `syncAll`/`sync` no-op (zero services) and `currentActivity` reads `.idle`. Tests that
-    /// want a specific container can assign before exercising the system.
     var stubbedBackupSyncContainer: BackupSyncContainer = BackupSyncContainer()
     var backupSyncContainer: BackupSyncContainer {
         recordCall()

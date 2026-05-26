@@ -10,6 +10,11 @@ import Backup
 import Common
 import CommonUI
 
+private struct Constants {
+    static let successFeedbackDelay: Duration = .milliseconds(200)
+    static let failureFeedbackDelay: Duration = .milliseconds(100)
+}
+
 enum BackupS3ConfigEditorDestination: RouterDestination {
     case errorAlert(message: String)
     case loadSecretsFromCSV(onClose: (FileImportResult) -> Void)
@@ -35,15 +40,10 @@ final class BackupS3ConfigEditorPresenter {
     var allowTLSOff = false
 
     private(set) var isTesting: Bool = false
-    /// Counter (not Bool) so two consecutive successes still register as a value change
-    /// and re-fire `.sensoryFeedback`.
+
     private(set) var successFeedbackTrigger: Int = 0
     private(set) var failureFeedbackTrigger: Int = 0
-    /// Endpoint/bucket/access-key/secret all required. Bucket is required even for non-AWS
-    /// endpoints because `CopyObject` needs an explicit bucket in `x-amz-copy-source`.
-    /// Region is *additionally* required against `*.amazonaws.com` — SigV4 hashes it into
-    /// the credential scope and a wrong region surfaces only as `SignatureDoesNotMatch`.
-    /// In edit mode at least one field must differ from the loaded snapshot.
+
     var canSave: Bool {
         guard
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -68,18 +68,18 @@ final class BackupS3ConfigEditorPresenter {
 
     private let interactor: BackupS3ConfigEditorModuleInteracting
     private let configID: BackupConfig.ID?
-    /// Called on save (saved id) or programmatic close (`nil`). Toolbar Cancel uses
-    /// `\.dismiss` directly and bypasses this.
+
     private let onClose: @MainActor (BackupConfig.ID?) -> Void
+
     @ObservationIgnored
     private var testTask: Task<Void, Never>?
-    /// Distinguish "field still holds an autofilled value" from "user typed something
-    /// custom" so re-autofill never clobbers manual input.
+
     @ObservationIgnored
     private var lastAutofilledRegion: String?
+
     @ObservationIgnored
     private var lastAutofilledBucket: String?
-    /// Snapshot from form-open; drives per-field changed indicators in edit mode.
+
     @ObservationIgnored
     private var originalSnapshot: S3ServiceConfig?
 
@@ -106,32 +106,32 @@ final class BackupS3ConfigEditorPresenter {
         guard let original = originalSnapshot else { return false }
         return endpoint != original.endpoint.absoluteString
     }
-    
+
     var regionChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return region != original.region
     }
-    
+
     var bucketChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return bucket != original.bucket
     }
-    
+
     var accessKeyIdChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return accessKeyId != original.accessKeyId
     }
-    
+
     var secretAccessKeyChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return secretAccessKey != original.secretAccessKey
     }
-    
+
     var allowTLSOffChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return allowTLSOff != original.allowTLSOff
     }
-    
+
     var hasUnsavedChanges: Bool {
         if isEditMode {
             return endpointChanged
@@ -149,10 +149,6 @@ final class BackupS3ConfigEditorPresenter {
             || allowTLSOff
     }
 
-    /// Programmatic close without saving. Routes through `onClose` rather than
-    /// `@Environment(\.dismiss)` so the close reaches whoever owns the host presentation
-    /// (in add mode the form is nested inside the picker's NavigationStack, where a local
-    /// dismiss would only pop back one level).
     func close() {
         onClose(nil)
     }
@@ -190,28 +186,31 @@ final class BackupS3ConfigEditorPresenter {
             do {
                 try await self?.interactor.testConnection(config)
                 guard let self else { return }
-                
+
                 let savedID = interactor.save(config)
                 isTesting = false
                 testTask = nil
                 onClose(savedID)
-                
-                // Delay so the haptic lands after the dismissal animation, not alongside it.
-                try? await Task.sleep(for: .milliseconds(200))
+
+                try? await Task.sleep(for: Constants.successFeedbackDelay)
                 if Task.isCancelled { return }
+
                 successFeedbackTrigger &+= 1
-                
+
             } catch {
                 guard let self else { return }
                 isTesting = false
                 testTask = nil
+
                 if Task.isCancelled { return }
+
                 destination = .errorAlert(
                     message: BackupFileServiceError.connectionTestMessage(for: error)
                 )
-                // Delay so the haptic lands after the alert appears, not alongside it.
-                try? await Task.sleep(for: .milliseconds(100))
+
+                try? await Task.sleep(for: Constants.failureFeedbackDelay)
                 if Task.isCancelled { return }
+
                 failureFeedbackTrigger &+= 1
             }
         }
@@ -244,11 +243,11 @@ final class BackupS3ConfigEditorPresenter {
         }
     }
 
-    /// Fills region/bucket from the URL when the field is empty or still holds the prior
-    /// auto-derived value — never overwrites user-typed input.
+    /// Only overwrites empty fields or fields still holding the prior auto-derived value;
+    /// never clobbers user input.
     private func autofillFromAWSEndpoint() {
         guard let detection = interactor.detect(endpoint: endpoint) else { return }
-        
+
         if let detectedRegion = detection.region {
             let trimmed = region.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty || trimmed == lastAutofilledRegion {
@@ -256,7 +255,7 @@ final class BackupS3ConfigEditorPresenter {
                 lastAutofilledRegion = detectedRegion
             }
         }
-        
+
         if let detectedBucket = detection.bucket {
             let trimmed = bucket.trimmingCharacters(in: .whitespacesAndNewlines)
             if trimmed.isEmpty || trimmed == lastAutofilledBucket {

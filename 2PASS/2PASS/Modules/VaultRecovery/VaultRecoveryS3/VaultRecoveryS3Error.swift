@@ -7,8 +7,6 @@
 import Foundation
 import Backup
 
-/// Recovery-flow outcomes for the S3 presenters. Kept separate from
-/// `VaultRecoveryWebDAVError` so each backend owns its user-facing strings.
 enum VaultRecoveryS3Error: Error {
     case transport(BackupFileServiceError)
     case indexNotFound
@@ -19,7 +17,6 @@ enum VaultRecoveryS3Error: Error {
 }
 
 extension VaultRecoveryS3Error {
-    /// Reuses the WebDAV recovery strings — wording is transport-agnostic.
     var message: String {
         switch self {
         case .transport(let inner):
@@ -37,8 +34,6 @@ extension VaultRecoveryS3Error {
         }
     }
 
-    /// `.notFound` is unreachable from this path — interactors rethrow it as
-    /// `.indexNotFound` / `.vaultNotFound` before this mapping runs.
     private static func message(for transport: BackupFileServiceError) -> String {
         switch transport {
         case .unauthorized:

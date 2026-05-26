@@ -8,29 +8,10 @@ import Foundation
 import Backup
 import Common
 
-/// Adapter that fulfills the Backup module's collaborator ports (`BackupSyncContext`,
-/// `BackupVaultExporting`, `BackupLocalMerging`, `BackupSyncConfigStore`,
-/// `BackupSyncDateStore`, `BackupAwaitingFlagsStoring`) over `MainRepository` plus the
-/// callback-based interactor stack.
-///
-/// **One class, not three.** Every realistic implementation of these ports shares the same
-/// dependencies; splitting would duplicate the dependency graph and the `@unchecked Sendable`
-/// boundary. Lives in `Data/BackupServices/` because it's cross-cutting infrastructure, not
-/// feature/UI business logic.
-///
-/// **Strong reference to `mainRepository`.** The chain
-/// `MainRepository → container → adapter → MainRepository` is a real strong retain cycle.
-/// Today `MainRepository` is a process-lifetime singleton so the cycle is benign. If
-/// `MainRepository` becomes per-user-session, this must be broken — either `weak` here or
-/// move container ownership out of `MainRepository`.
-///
-/// **`@unchecked Sendable` invariants.** Two preconditions the codebase already maintains:
-/// 1. The held interactors are stateless service objects (no mutable cross-call state).
-/// 2. `BackupSyncContainer` debounces overlapping triggers, so calls into this adapter are
-///    never parallel.
-///
-/// If a future change adds mutable state to a held interactor or removes the container's
-/// debounce, this annotation becomes unsafe and must be re-audited.
+/// Strong ref to `mainRepository` forms a `MainRepository → container → adapter →
+/// MainRepository` cycle — benign only while `MainRepository` is a process-lifetime
+/// singleton. `@unchecked Sendable` relies on (1) stateless held interactors and (2) the
+/// container's debounce of overlapping triggers; re-audit if either changes.
 final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLocalMerging, BackupSyncConfigStore, BackupSyncDateStore, BackupAwaitingFlagsStoring, @unchecked Sendable {
 
     private let mainRepository: MainRepository
@@ -217,8 +198,7 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         }
     }
 
-    /// `ExchangeVaultVersioned` is `Decodable`-only; encode by switching on the case. Each
-    /// inner struct carries its own `schemaVersion` so the decoder routes back correctly.
+    /// `ExchangeVaultVersioned` is `Decodable`-only — encode by switching on the case.
     private static func encode(_ versioned: ExchangeVaultVersioned) throws -> Data {
         let encoder = JSONEncoder()
         switch versioned {
@@ -245,10 +225,8 @@ final class BackupSyncAdapter: BackupSyncContext, BackupVaultExporting, BackupLo
         mainRepository.loadLastSyncDates()[id]
     }
 
-    /// Stamps the success timestamp AND clears per-config awaiting-flags only when the sync
-    /// actually honored them. Conditional clears matter: a routine sync that finishes after
-    /// a password-change mark (but captured the pre-change snapshot) would otherwise wipe a
-    /// flag whose work hadn't been performed.
+    /// Clear is conditional on `consumed`: a sync that captured the pre-mark snapshot must
+    /// not wipe a flag whose work it didn't actually perform.
     func setLastSyncDate(_ date: Date, for id: BackupConfig.ID, consumed: BackupSyncFlags) {
         var dates = mainRepository.loadLastSyncDates()
         dates[id] = date

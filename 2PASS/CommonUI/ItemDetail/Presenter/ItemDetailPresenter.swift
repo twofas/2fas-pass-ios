@@ -11,11 +11,11 @@ import SwiftUI
 
 @Observable
 final class ItemDetailPresenter {
-    
+
     var createdAt: String? {
         formPresenter?.createdAt
     }
-    
+
     var modifiedAt: String? {
         formPresenter?.modifiedAt
     }
@@ -29,10 +29,6 @@ final class ItemDetailPresenter {
     private let interactor: ItemDetailModuleInteracting
     private let toastPresenter: ToastPresenter
     private let autoFillEnvironment: AutoFillEnvironment?
-    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `onAppear`, cancelled
-    /// in `onDisappear`, so the subscription is alive only while the view is on screen.
-    /// `@ObservationIgnored` because the handle is internal lifecycle plumbing, not observable
-    /// UI state.
     @ObservationIgnored
     private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
 
@@ -80,7 +76,7 @@ final class ItemDetailPresenter {
 }
 
 extension ItemDetailPresenter {
-    
+
     func onAppear() {
         guard let item = interactor.fetchItem(for: itemID) else {
             flowController.close()

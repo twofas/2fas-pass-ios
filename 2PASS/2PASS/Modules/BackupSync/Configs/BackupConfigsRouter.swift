@@ -9,11 +9,7 @@ import CommonUI
 
 struct BackupConfigsRouter: Router {
 
-    /// Held only to thread `@Namespace` from the parent view down into matched-zoom
-    /// modifiers — same shape as `VaultRecoveryRouter` and `BackupConfigsAddRouter`.
-    /// SwiftUI's `Namespace.ID` can only be obtained from a `@Namespace` declaration
-    /// in a `View`, so it must be passed in. Beyond this, the Router is stateless:
-    /// no presenter back-reference, no mutable state.
+    /// Stored only to thread `@Namespace` (View-only API) into matched-zoom modifiers.
     let transitionNamespace: Namespace.ID?
 
     @MainActor

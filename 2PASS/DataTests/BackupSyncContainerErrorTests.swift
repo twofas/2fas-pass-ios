@@ -9,10 +9,6 @@ import Foundation
 import os
 @testable import Backup
 
-/// Pins the in-memory `lastSyncError(for:)` surface on `BackupSyncContainer`. The container
-/// observes session `.finished` events and records on `.failure` (except `.cancelled`) / clears
-/// on `.success`; these tests drive deterministic outcomes through the test-only init's
-/// `servicesProvider` and assert post-conditions on the public read accessor.
 @Suite struct BackupSyncContainerErrorTests {
 
     @Test func recordsErrorOnFinishedFailure() async throws {
@@ -124,9 +120,6 @@ import os
 
 // MARK: - Test fakes
 
-/// Minimal `BackupSynchronizing` fake whose outcome can be flipped between calls. The `error`
-/// slot is mutable behind a lock so a single instance can be re-used across multiple `syncAll`
-/// invocations within one test (failure → success transition).
 private final class ProgrammableSynchronizer: BackupSynchronizing, @unchecked Sendable {
     let id = UUID()
     let kind: BackupSyncService

@@ -28,18 +28,16 @@ final class CloudHandler: CloudHandlerType {
     private let clearHandler: ClearHandler
     private let mergeHandler: MergeHandler
     private let cacheHandler: CacheHandler
-    /// Pull-based vault id source. Read once per `sync()` to derive the CloudKit zone id.
-    /// Replaces the previous push-based cached `vaultID` field — vault changes propagate
-    /// through `BackupSyncContext.vaultID → MainRepository.selectedVault?.vaultID` without
-    /// needing a `setVaultID(_:)` call or re-init.
+    /// Read fresh per `sync()` — vault changes propagate via `context.vaultID` instead of a
+    /// cached field that would need explicit `setVaultID(_:)` invalidation.
     private let context: BackupSyncContext
 
     private var isClearing = false
-    
+
     private var shouldResetState = false
     private var isEnabling = false
-    
-    
+
+
     private(set) var currentState: CloudCurrentState = .unknown {
         didSet {
             guard oldValue != currentState else { return }
@@ -57,20 +55,11 @@ final class CloudHandler: CloudHandlerType {
 
     var userToggledState: UserToggledState?
 
-    /// Per-id state-change handlers. The Backup module's `Bridge` (per `syncOnce` call)
-    /// installs one to catch terminal states (`.disabled` / `.enabledNotAvailable`) that
-    /// `syncOnce` should resolve to a failure. Multi-slot so future intra-module observers
-    /// can coexist; in practice only `Bridge` registers and there is at most one in flight
-    /// at a time because `BackupSyncContainer.reserveSyncSlot` debounces overlapping syncs.
     private var stateChangedHandlers: [UUID: (CloudCurrentState) -> Void] = [:]
-    /// Per-id sync-completion handlers. Receives the `appliedRemoteChanges` flag from
-    /// `MergeHandler.applyChanges()` for every completed sync, regardless of which entry
-    /// point initiated it (`syncOnce` via the adapter, or `synchronize(fromPush: true)`
-    /// from `BackupSyncContainer.handlePush`). Multi-slot because two consumers can be
-    /// active concurrently — `Bridge` for `syncOnce` and the container's ambient hook
-    /// that fans push-driven completions back into `syncEvents()`.
+    /// Multi-slot — `Bridge` (per-syncOnce) and the container's ambient push hook can both
+    /// be registered concurrently and must each receive every completion.
     private var finishedSyncHandlers: [UUID: (Bool) -> Void] = [:]
-    
+
     init(
         cloudAvailability: CloudAvailability,
         syncHandler: SyncHandler,
@@ -90,11 +79,11 @@ final class CloudHandler: CloudHandlerType {
         }
         mergeHandler.incorrectEncryption = { [weak self] in self?.incorrectEncryption() }
         mergeHandler.syncNotAllowed = { [weak self] in self?.syncNotAllowed() }
-        
+
         cloudAvailability.availabilityCheckResult = { [weak self] resultStatus in
             self?.availabilityCheckResult(resultStatus)
         }
-        
+
         syncHandler.startedSync = { [weak self] in self?.startedSync() }
         syncHandler.finishedSync = { [weak self] applied in self?.finishedSync(appliedRemoteChanges: applied) }
         syncHandler.otherError = { [weak self] error in self?.otherError(error) }
@@ -103,7 +92,7 @@ final class CloudHandler: CloudHandlerType {
         syncHandler.useriCloudProblem = { [weak self] in self?.useriCloudProblem() }
 
         clearHandler.didClear = { [weak self] in self?.didClear() }
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(setPasswordWasChanged),
@@ -111,13 +100,13 @@ final class CloudHandler: CloudHandlerType {
             object: nil
         )
     }
-    
+
     func checkState() {
         guard !isClearing else { return }
         Log("Cloud Handler - checking state", module: .cloudSync)
         cloudAvailability.checkAvailability()
     }
-    
+
     func synchronize(fromPush: Bool = false) {
         guard !isClearing else { return }
 
@@ -141,12 +130,12 @@ final class CloudHandler: CloudHandlerType {
             Log("Cloud Handler -  Can't synchronize if cloud is disabled", module: .cloudSync)
         }
     }
-    
+
     func enable() {
         guard !isClearing else { return }
 
         isEnabling = true
-        
+
         Log("Cloud Handler - Got Enable action", module: .cloudSync)
         switch currentState {
         case .enabled, .enabledNotAvailable:
@@ -160,7 +149,7 @@ final class CloudHandler: CloudHandlerType {
             Log("Cloud Handler - Can't enable - state unknown", module: .cloudSync)
         }
     }
-    
+
     func disable(notify: Bool = true) {
         Log("Cloud Handler - Got Disable action", module: .cloudSync)
         switch currentState {
@@ -176,25 +165,25 @@ final class CloudHandler: CloudHandlerType {
             Log("Cloud Handler - Can't disable again!", module: .cloudSync)
         }
     }
-    
+
     func clearBackup() {
         isClearing = true
         if isSynced {
             clearBackupForSyncedState()
         }
     }
-    
+
     var isConnected: Bool {
         switch currentState {
         case .enabled: return true
         default: return false
         }
     }
-    
+
     func resetStateBeforeSync() {
         shouldResetState = true
     }
-    
+
     var isSynced: Bool {
         switch currentState {
         case .enabled(let sync):
@@ -205,13 +194,13 @@ final class CloudHandler: CloudHandlerType {
         default: return false
         }
     }
-    
+
     // MARK: - Private
     func resetBeforeMigration() {
         Log("Cloud Handler - resetBeforeMigration", module: .cloudSync)
         syncHandler.firstStart()
     }
-    
+
     private func availabilityCheckResult(_ resultStatus: CloudAvailabilityStatus) {
         Log("Cloud Handler - availabilityCheckResult \(resultStatus)", module: .cloudSync)
         switch resultStatus {
@@ -243,7 +232,7 @@ final class CloudHandler: CloudHandlerType {
             currentState = isEnabled ? .enabledNotAvailable(reason: .other) : .disabled
         }
     }
-    
+
     private func sync(fromPush: Bool = false) {
         Log("Cloud Handler - Sync", module: .cloudSync)
         guard let vaultID = context.vaultID else {
@@ -252,44 +241,44 @@ final class CloudHandler: CloudHandlerType {
         }
         syncHandler.synchronize(zoneID: .from(vaultID: vaultID), fromPush: fromPush)
     }
-    
+
     private func clearCache() {
         Log("Cloud Handler - clear cache", module: .cloudSync)
         cloudAvailability.clear()
         syncHandler.clearCacheAndDisable()
     }
-    
+
     // MARK: -
-    
+
     private func setEnabled() {
         Log("Cloud Handler - Set Enabled", module: .cloudSync)
         ConstStorage.cloudEnabled = true
         syncHandler.firstStart()
     }
-    
+
     private func setDisabled() {
         Log("Cloud Handler - Set Disabled", module: .cloudSync)
         ConstStorage.cloudEnabled = false
     }
-    
+
     private var isEnabled: Bool { ConstStorage.cloudEnabled }
-    
+
     // MARK: - Clearing
-    
+
     private func didClear() {
         Log("Cloud Handler - didClear", module: .cloudSync)
         isClearing = false
     }
-    
+
     private func clearBackupForSyncedState() {
         Log("Cloud Handler - clearBackupForSyncedState", module: .cloudSync)
         let recordIDs = cacheHandler.listAllItemsRecordIDs()
         disable(notify: false)
         clearHandler.clear(recordIDs: recordIDs)
     }
-    
+
     // MARK: -
-    
+
     @objc
     private func setPasswordWasChanged() {
         guard currentState == .enabled(sync: .syncing) || currentState == .enabled(sync: .synced) else {
@@ -298,12 +287,12 @@ final class CloudHandler: CloudHandlerType {
         Log("Cloud Handler - Setting Password was changed", module: .cloudSync)
         ConstStorage.passwordWasChanged = true
     }
-    
+
     private func startedSync() {
         Log("Cloud Handler - Started Sync", module: .cloudSync)
         currentState = .enabled(sync: .syncing)
     }
-    
+
     private func finishedSync(appliedRemoteChanges: Bool) {
         Log("Cloud Handler - Finished Sync (appliedRemoteChanges=\(appliedRemoteChanges))", module: .cloudSync)
         currentState = .enabled(sync: .synced)
@@ -336,50 +325,50 @@ final class CloudHandler: CloudHandlerType {
     func removeFinishedSyncHandler(_ id: UUID) {
         finishedSyncHandlers.removeValue(forKey: id)
     }
-    
+
     private func quotaError() {
         Log("Cloud Handler - Quota Error", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .overQuota)
     }
-    
+
     private func disabledByUser() {
         Log("Cloud Handler - Disabled by User", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .disabledByUser)
     }
-    
+
     private func useriCloudProblem() {
         Log("Cloud Handler - User has iCloud problem", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .useriCloudProblem)
     }
-    
+
     private func otherError(_ error: NSError?) {
         Log("Cloud Handler - Other Error \(String(describing: error))", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .error(error: error))
     }
-    
+
     private func schemaNotSupported(_ schemaVersion: Int) {
         Log("Cloud Handler - schema not supported (v\(schemaVersion))", module: .cloudSync)
-        
+
         currentState = .enabledNotAvailable(reason: .schemaNotSupported(schemaVersion))
         clearCache()
     }
-    
+
     private func incorrectEncryption() {
         Log("Cloud Handler - newer version of cloud", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .incorrectEncryption)
     }
-    
+
     private func syncNotAllowed() {
         Log("Cloud Handler - sync not allowed", module: .cloudSync)
         clearCache()
         currentState = .enabledNotAvailable(reason: .syncNotAllowed)
     }
-    
+
     // MARK: -
     deinit {
         NotificationCenter.default.removeObserver(self)

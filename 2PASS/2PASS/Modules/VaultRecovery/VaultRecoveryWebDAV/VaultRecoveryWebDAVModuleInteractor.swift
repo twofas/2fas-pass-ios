@@ -21,9 +21,6 @@ protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
         password: String?
     ) async throws(VaultRecoveryWebDAVError) -> BackupIndex
 
-    /// Strongly-typed recovery-config cache. JSON encoding and AES-GCM encryption-at-rest
-    /// are both handled inside MainRepository (`MainRepositoryImpl+Backup.swift`'s
-    /// recovery-cache pipeline, mirroring `saveBackupConfigs` on this type).
     var cachedConfig: BackupWebDAVConfig? { get }
     func cacheConfig(_ config: BackupWebDAVConfig)
 }

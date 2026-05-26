@@ -30,9 +30,6 @@ import os
         let value: Int
     }
 
-    /// Reference-typed counter used to capture observed values from inside `@Sendable`
-    /// observer closures without tripping local-`var` capture diagnostics. Lock-protected
-    /// because synchronous observers may fire from any thread.
     final class Counter: @unchecked Sendable {
         private let storage = OSAllocatedUnfairLock<[Int]>(initialState: [])
         func record(_ value: Int) { storage.withLock { $0.append(value) } }

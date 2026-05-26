@@ -11,7 +11,7 @@ public final class CloudSync {
     private var cloudHandler: CloudHandler?
     private var syncHandler: SyncHandler?
     private var mergeHandler: MergeHandler?
-    
+
     public var userToggledState: UserToggledState? {
         get {
             cloudHandler?.userToggledState
@@ -22,9 +22,9 @@ public final class CloudSync {
     }
     public var currentState: CloudCurrentState { cloudHandler?.currentState ?? .unknown }
     public var isConnected: Bool { cloudHandler?.isConnected ?? false }
-    
+
     public init() {}
-    
+
     public func setup(
         localStorage: LocalStorage,
         cloudCacheStorage: CloudCacheStorage,
@@ -75,28 +75,25 @@ public final class CloudSync {
     public func checkState() {
         cloudHandler?.checkState()
     }
-    
+
     public func enable() {
         cloudHandler?.enable()
     }
-    
+
     public func disable(notify: Bool) {
         cloudHandler?.disable(notify: notify)
     }
-    
+
     public func clearBackup() {
         cloudHandler?.clearBackup()
     }
-    
+
     public func setCurrentDate(_ date: Date) {
         syncHandler?.setCurrentDate(date)
     }
 
-    /// Internal — the Backup module's `Bridge` (per `syncOnce` call) registers here to
-    /// detect terminal states. Returns `nil` if `setup(...)` hasn't run yet (no underlying
-    /// `cloudHandler`); callers should treat that as "no observation possible" and rely on
-    /// the pre-check on `currentState` (`.unknown` for an unconfigured engine — non-terminal,
-    /// so `syncOnce` would proceed to `synchronize` which itself no-ops).
+    /// Returns `nil` before `setup(...)` runs; callers fall back to the `currentState`
+    /// pre-check (`.unknown` is non-terminal, so `syncOnce` no-ops in that case).
     @discardableResult
     func addStateChangedHandler(_ handler: @escaping (CloudCurrentState) -> Void) -> UUID? {
         cloudHandler?.addStateChangedHandler(handler)
@@ -106,10 +103,6 @@ public final class CloudSync {
         cloudHandler?.removeStateChangedHandler(id)
     }
 
-    /// Internal — fan-out for sync-completion handlers. Forwards each call's
-    /// `appliedRemoteChanges` flag from `MergeHandler.applyChanges()` to every registered
-    /// handler. See `CloudHandler.finishedSyncHandlers` for the load-bearing semantics
-    /// (Bridge + container hook coexisting).
     @discardableResult
     func addFinishedSyncHandler(_ handler: @escaping (Bool) -> Void) -> UUID? {
         cloudHandler?.addFinishedSyncHandler(handler)

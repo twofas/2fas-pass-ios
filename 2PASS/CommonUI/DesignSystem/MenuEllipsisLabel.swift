@@ -6,9 +6,6 @@
 
 import SwiftUI
 
-/// Standard trailing-aligned ellipsis trigger used as the `label` of `Menu`s in row cells.
-/// Reads `\.isEnabled` so applying `.disabled(...)` on the parent `Menu` automatically
-/// dims the trigger.
 public struct MenuEllipsisLabel: View {
 
     @Environment(\.isEnabled) private var isEnabled

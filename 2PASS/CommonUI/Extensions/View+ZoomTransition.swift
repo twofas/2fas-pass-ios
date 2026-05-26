@@ -8,9 +8,8 @@ import SwiftUI
 
 public extension View {
 
-    /// Anchors a matched-zoom source when `namespace` is non-nil on iOS 26+. The id is
-    /// `@autoclosure` so reactive expressions (`id: presenter.someProp`) re-evaluate
-    /// inside the modifier's body and propagate observation changes without extra wiring.
+    /// `id` is `@autoclosure` so `@Observable`-reading expressions re-evaluate inside the
+    /// modifier body and the transition picks up id changes.
     @ViewBuilder
     func matchedZoomSource(
         id: @autoclosure @escaping @MainActor () -> String,
@@ -27,8 +26,6 @@ public extension View {
         #endif
     }
 
-    /// Destination counterpart to `matchedZoomSource(id:in:)`. Useful with reactive ids
-    /// — e.g. flipping the zoom target mid-sheet-dismiss based on `@Observable` state.
     @ViewBuilder
     func matchedZoomDestination(
         id: @autoclosure @escaping @MainActor () -> String,

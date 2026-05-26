@@ -7,34 +7,18 @@
 import Foundation
 import Common
 
-/// Single-use orchestrator over a set of `BackupSynchronizing` services. One instance per
-/// `run()` call — sessions are cheap allocations and aren't reused.
-///
-/// **Convergence loop.** Services run sequentially, ordered by oldest successful
-/// `lastSyncDate` first (never-synced services first; input order as tiebreaker). When a
-/// service applies remote changes, every other service's remote becomes stale; the session
-/// queues another pass for them. Loop terminates when a full pass applies no remote changes,
-/// or at the `maxConvergencePasses` ceiling.
-///
-/// **Failure isolation.** A service's failure doesn't abort peers. A failed service can't
-/// have applied remote changes, so it doesn't re-queue them either.
-///
-/// **Result.** `appliedRemoteChanges` is OR'd across passes so callers see whether any pass
-/// pulled new content; verdict reflects the latest attempt.
-///
-/// **Cancellation.** Checked between services and between passes. Cancellation cancels the
-/// in-flight service; remaining services are absent from the result.
-///
-/// **Concurrency.** All stored state is `let`, so this type is naturally `Sendable`.
-/// Cross-trigger debouncing belongs to `BackupSyncContainer`, not here.
+/// Single-use; one instance per `run()`. Services run sequentially, ordered by oldest
+/// successful `lastSyncDate`. When a service applies remote changes, every peer is
+/// re-queued (its remote is now stale); loop stops on a quiet pass or
+/// `maxConvergencePasses`. Cancellation cancels the in-flight service and drops the rest
+/// from the result.
 public final class BackupSyncSession: Sendable {
 
     public typealias SyncResult = (id: BackupConfig.ID, kind: BackupSyncService, outcome: Result<BackupSyncOutcome, BackupSyncError>)
 
-    /// Two granularities, both delivered through `BackupSyncContainer.syncEvents()`.
-    /// `sessionStarted` / `sessionFinished` are emitted by the container and bracket the
-    /// whole orchestration window. `started` / `finished` are emitted by the session
-    /// around each `performSync` and can repeat across convergence passes.
+    /// `sessionStarted`/`sessionFinished` bracket the whole orchestration (emitted by the
+    /// container). `started`/`finished` bracket each `performSync` and can repeat across
+    /// convergence passes for the same id.
     public enum Event: Sendable {
         case sessionStarted
         case sessionFinished
@@ -45,11 +29,7 @@ public final class BackupSyncSession: Sendable {
     public typealias EventHandler = @Sendable (Event) -> Void
 
     private let services: [any BackupSynchronizing]
-    /// Per-config "overwrite vault on this sync" decision, resolved per `runService` call so
-    /// the caller can consult a config-scoped flag. Defaults to `false` for everyone.
     private let overwritingVault: @Sendable (BackupConfig.ID) -> Bool
-    /// Per-config "bypass device-id gate" decision. Used by recovery for the freshly-added
-    /// config until its first successful sync.
     private let allowingAnyDeviceId: @Sendable (BackupConfig.ID) -> Bool
     private let lastSyncDate: @Sendable (BackupConfig.ID) -> Date?
     private let onEvent: EventHandler?
@@ -70,7 +50,6 @@ public final class BackupSyncSession: Sendable {
 
     // MARK: - Run
 
-    /// Runs the convergence loop and returns each service's final outcome.
     @discardableResult
     public func run() async -> [SyncResult] {
         guard !services.isEmpty else { return [] }
@@ -124,6 +103,7 @@ public final class BackupSyncSession: Sendable {
     private static let maxConvergencePasses = 3
 
     /// Verdict reflects the latest attempt; `appliedRemoteChanges` OR'd across passes.
+    /// Without this, an earlier pass that pulled changes would be hidden by a later quiet pass.
     private static func merge(
         _ outcome: Result<BackupSyncOutcome, BackupSyncError>,
         for id: BackupConfig.ID,

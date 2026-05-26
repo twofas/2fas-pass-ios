@@ -19,11 +19,11 @@ public protocol URIInteracting: AnyObject {
 
 public struct URINormalizeOptions: OptionSet {
     public let rawValue: Int
-    
+
     public init(rawValue: Int) {
         self.rawValue = rawValue
     }
-    
+
     public static let doNotRemoveWWW = URINormalizeOptions(rawValue: 1 << 0)
     public static let trailingSlash = URINormalizeOptions(rawValue: 2 << 0)
 }
@@ -33,18 +33,18 @@ final class URIInteractor {
     private static let ending: Regex = try! Regex(##"\/(\?|\#|\?\#|\#\?)*$"##)
 
     private let mainRepository: MainRepository
-    
+
     init(mainRepository: MainRepository) {
         self.mainRepository = mainRepository
     }
 }
 
 extension URIInteractor: URIInteracting {
-    
+
     func isSecureURL(_ url: URL) -> Bool {
         url.scheme == "https"
     }
-    
+
     func extractDomain(from str: String) -> String? {
         guard str.isEmpty == false, let normalized = normalize(str) else {
             return nil
@@ -53,13 +53,8 @@ extension URIInteractor: URIInteracting {
         return URLComponents(string: normalized)?.host
     }
 
-    /// Heuristic domain trimmer for human display: drops subdomains while preserving
-    /// multi-label public suffixes like `co.uk` / `com.au` / `gov.uk`. Detects the
-    /// multi-label case by checking whether *both* the last and second-to-last labels
-    /// appear in `tldList` — if so, takes 3 components; otherwise 2. IPv4 literals,
-    /// single-label hosts, and empty input pass through unchanged. Not strictly
-    /// PSL-correct (over-extends for `tv.com`/`it.com`-style coincidences), but accurate
-    /// for the common ccTLD second-level public suffixes.
+    /// Not PSL-correct: over-extends to 3 labels for coincidences like `tv.com`/`it.com`
+    /// where both the last two labels happen to be in `tldList`.
     func displayDomain(from host: String) -> String {
         let parts = host.split(separator: ".")
         guard !parts.isEmpty else { return host }
@@ -71,32 +66,32 @@ extension URIInteractor: URIInteracting {
         let labelCount = (tldList.contains(last) && tldList.contains(secondLast)) ? 3 : 2
         return parts.suffix(labelCount).joined(separator: ".")
     }
-    
+
     // MARK: Normalize
-    
+
     func normalize(_ str: String) -> String? {
         normalize(str, options: [])
     }
-    
+
     func normalizeURL(_ str: String) -> URL? {
         guard let normalized = normalize(str, options: []) else {
             return nil
         }
         return URL(string: normalized)
     }
-    
+
     func normalizeURL(_ str: String, options: URINormalizeOptions) -> URL? {
         guard let normalized = normalize(str, options: options) else {
             return nil
         }
         return URL(string: normalized)
     }
-    
+
     func normalize(_ str: String, options: URINormalizeOptions) -> String? {
         if let cached = mainRepository.uriCacheGet(originalUri: str) {
             return cached
         }
-        
+
         var string = str.trim()
         guard !string.isEmpty else { return nil }
         if !(string.lowercased().hasPrefix("https://") || string.lowercased().hasPrefix("http://")) {
@@ -107,11 +102,11 @@ extension URIInteractor: URIInteracting {
         guard let idn = URL(string: string)?.absoluteString,
               var components = NSURLComponents(string: idn, encodingInvalidCharacters: false)
         else { return nil }
-        
+
         let queryItems = components.queryItems?.filter({ !listTrackerParams.contains($0.name) })
         components.queryItems = queryItems
         components.scheme = components.scheme?.lowercased()
-        
+
         if let host = components.host {
             let parts = host.split(separator: ".")
             if parts.count > 2 {
@@ -120,19 +115,19 @@ extension URIInteractor: URIInteracting {
                 }
             }
         }
-        
+
         components.user = nil
         components.password = nil
         components.host = components.host?.lowercased()
-        
+
         if let scheme = components.scheme, let port = components.port {
             if (scheme == "http" && port == 80) || (scheme == "https" && port == 443) {
                 components.port = nil
             }
         }
-        
+
         components.path = components.path?.removingPercentEncoding
-        
+
         let ranges = components.string?.ranges(of: URIInteractor.ending).reversed()
         if let ranges, !ranges.isEmpty, var str = components.string {
             for r in ranges {
@@ -141,7 +136,7 @@ extension URIInteractor: URIInteracting {
             guard let newComp = NSURLComponents(string: str, encodingInvalidCharacters: false) else { return nil }
             components = newComp
         }
-        
+
         if var path = components.percentEncodedPath {
             for (index, char) in path.enumerated() {
                 if char == "%" {
@@ -155,7 +150,7 @@ extension URIInteractor: URIInteracting {
             }
             components.percentEncodedPath = path
         }
-        
+
         if options.contains(.trailingSlash) {
             if let path = components.path {
                 if path.last != "/" {
@@ -165,16 +160,16 @@ extension URIInteractor: URIInteracting {
                 components.path = "/"
             }
         }
-        
+
         let value = components.url?.absoluteString
-        
+
         if let value {
             mainRepository.uriCacheSet(originalUri: str, parsedUri: value)
         }
-        
+
         return value
     }
-    
+
     private func shouldAddTheScheme(_ str: String) -> Bool {
         let string = "https://" + str
         guard let idn = URL(string: string)?.absoluteString,
@@ -192,7 +187,7 @@ extension URIInteractor: URIInteracting {
         }
         return tldList.firstIndex(where: { $0 == last }) != nil
     }
-    
+
     func isMatch(_ input: String, to uri: String, rule: PasswordURI.Match) -> Bool {
         switch rule {
         case .domain:
@@ -205,52 +200,52 @@ extension URIInteractor: URIInteracting {
             isMatchByExactRule(input, to: uri)
         }
     }
-    
+
     private func isMatchByDomainRule(_ input: String, to uri: String) -> Bool {
         let normalizedInput = normalize(input) ?? ""
         let normalizedUri = normalize(uri) ?? ""
-        
+
         guard let inputURLComponents = URLComponents(string: normalizedInput) else {
             return false
         }
-    
+
         guard let uriURLComponents = URLComponents(string: normalizedUri) else {
             return false
         }
-        
+
         let lhs = removeSubdomain(fromHost: inputURLComponents.host ?? "")
         let rhs = removeSubdomain(fromHost: uriURLComponents.host ?? "")
-        
+
         return lhs == rhs
     }
-    
+
     private func isMatchByHostRule(_ input: String, to uri: String) -> Bool {
         let normalizedInput = normalize(input) ?? ""
         let normalizedUri = normalize(uri) ?? ""
-        
+
         guard let inputURLComponents = URLComponents(string: normalizedInput) else {
             return false
         }
-    
+
         guard let uriURLComponents = URLComponents(string: normalizedUri) else {
             return false
         }
-        
+
         return inputURLComponents.host == uriURLComponents.host
             && inputURLComponents.port == uriURLComponents.port
     }
-    
+
     private func isMatchByPrefixRule(_ input: String, to uri: String) -> Bool {
         let normalizedInput = normalize(input) ?? ""
         let normalizedUri = normalize(uri) ?? ""
-        
+
         return normalizedInput.hasPrefix(normalizedUri)
     }
-    
+
     private func isMatchByExactRule(_ input: String, to uri: String) -> Bool {
         let normalizedInput = normalize(input, options: .doNotRemoveWWW) ?? ""
         let normalizedUri = normalize(uri, options: .doNotRemoveWWW) ?? ""
-        
+
         return normalizedInput == normalizedUri
     }
 
@@ -259,13 +254,13 @@ extension URIInteractor: URIInteracting {
         guard parts.count > 2 else { return host }
         return parts.suffix(2).joined(separator: ".")
     }
-    
+
     private func isValidIPAddress(_ host: String) -> Bool {
         let cleanedHost = host.trimmingCharacters(in: CharacterSet(charactersIn: "[]"))
 
         var sin = sockaddr_in()
         var sin6 = sockaddr_in6()
-        
+
         return cleanedHost.withCString { cString in
             inet_pton(AF_INET, cString, &sin.sin_addr) == 1 ||
             inet_pton(AF_INET6, cString, &sin6.sin6_addr) == 1

@@ -7,13 +7,8 @@
 import Foundation
 import Common
 
-/// Pairs a registered backup-sync config with its persistent instance id. Used both
-/// in-memory (wrapped in `BackupConfig`) and on-disk (inside the encrypted persisted blob).
-/// Kind is encoded in the `Config` type parameter, so no kind field is stored alongside.
 public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
     public let id: BackupConfig.ID
-    /// Set at registration; preserved by updates. Enables sorting across kinds since
-    /// per-kind ordering on its own doesn't give a global order.
     public let createdAt: Date
     public let config: Config
 
@@ -24,8 +19,6 @@ public struct BackupConfigEntry<Config: Codable & Sendable>: Codable, Sendable {
     }
 }
 
-/// Kind-discriminated, type-erased counterpart to `BackupConfigEntry<Config>` for callers
-/// that handle every kind in one list. `Identifiable` via the inner entry's `id`.
 public enum BackupConfig: Sendable, Identifiable, Codable {
     public typealias ID = UUID
     public typealias Service = BackupSyncService
@@ -66,8 +59,7 @@ public extension Array where Element == BackupConfig {
         }
     }
 
-    /// The single iCloud entry, if any. Single-instance is enforced at registration time;
-    /// this accessor returns the first hit and ignores duplicates.
+    /// Single-instance is enforced at registration; this returns the first hit either way.
     var iCloudEntry: BackupConfigEntry<BackupiCloudConfig>? {
         for case .iCloud(let entry) in self { return entry }
         return nil

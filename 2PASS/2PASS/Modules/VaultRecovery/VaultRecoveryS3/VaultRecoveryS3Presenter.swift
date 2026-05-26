@@ -40,13 +40,11 @@ final class VaultRecoveryS3Presenter {
     var secretAccessKey: String = ""
     var allowTLSOff = false
 
-    /// A successful fetch is itself the connectivity check — no separate probe before it.
     private(set) var isFetching: Bool = false
 
     var destination: VaultRecoveryS3Destination?
 
-    /// Bucket is required even for non-AWS endpoints (`x-amz-copy-source`); region is
-    /// only required against AWS.
+    /// Bucket required even for non-AWS endpoints (`x-amz-copy-source`); region only on AWS.
     var canSave: Bool {
         guard
             !endpoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -63,9 +61,8 @@ final class VaultRecoveryS3Presenter {
         return true
     }
 
-    /// Compares against `initialConfig`, which is reseeded on every successful Connect so
-    /// only user-made deviations from the most-recent baseline trigger the discard prompt.
-    /// With no `initialConfig`, the baseline collapses to empty defaults.
+    /// `initialConfig` is reseeded on every successful Connect — only deviations from the
+    /// most-recent baseline trigger the discard prompt.
     var hasUnsavedChanges: Bool {
         endpoint != (initialConfig?.endpoint.absoluteString ?? "")
             || region != (initialConfig?.region ?? "")
@@ -76,14 +73,12 @@ final class VaultRecoveryS3Presenter {
     }
 
     private let interactor: VaultRecoveryS3ModuleInteracting
-    /// Bubbles the picked vault up to the parent presenter.
     private let onSelect: (VaultRecoveryData) -> Void
 
     @ObservationIgnored
     private var fetchTask: Task<Void, Never>?
 
-    /// Distinguish "field still holds the prior autofilled value" from "user typed
-    /// something custom" so re-autofill never clobbers manual input.
+    /// Tracks the prior autofilled value so re-autofill never overwrites user-typed input.
     @ObservationIgnored
     private var lastAutofilledRegion: String?
     @ObservationIgnored
@@ -201,8 +196,6 @@ final class VaultRecoveryS3Presenter {
         }
     }
 
-    /// Fills region/bucket from the URL when the field is empty or still holds the prior
-    /// auto-derived value — never overwrites user-typed input.
     private func autofillFromAWSEndpoint() {
         guard let detection = interactor.detect(endpoint: endpoint) else { return }
         if let detectedRegion = detection.region {

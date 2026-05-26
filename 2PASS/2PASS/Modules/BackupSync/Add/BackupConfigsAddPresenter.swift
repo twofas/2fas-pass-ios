@@ -8,12 +8,9 @@ import SwiftUI
 import CommonUI
 
 enum BackupConfigsAddDestination: RouterDestination {
-    /// `onClose` receives the saved config's id (or `nil` on cancel) and dismisses the
-    /// sheet — the form view doesn't know it's hosted in one.
     case webDAV(onClose: @MainActor (BackupConfig.ID?) -> Void)
     case s3(onClose: @MainActor (BackupConfig.ID?) -> Void)
 
-    /// Explicit `String` because the associated `onClose` closures aren't `Hashable`.
     var id: String {
         switch self {
         case .webDAV: "webDAV"
@@ -30,8 +27,7 @@ final class BackupConfigsAddPresenter {
     var destination: BackupConfigsAddDestination?
 
     private let interactor: BackupConfigsAddModuleInteracting
-    /// Called with the saved id on success (so the parent can flip matched-zoom to the
-    /// new row before the sheet animates away) or `nil` on cancel.
+
     private let onClose: @MainActor (BackupConfig.ID?) -> Void
 
     init(

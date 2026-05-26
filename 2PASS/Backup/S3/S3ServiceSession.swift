@@ -81,10 +81,10 @@ public final class S3ServiceSession: Sendable {
         case `default`
         case probe
     }
-    
+
     public init(config: S3ServiceConfig, mode: Mode = .default) {
         self.config = config
-        
+
         switch mode {
         case .default:
             self.session = URLSession(configuration: Self.defaultConfiguration)
@@ -93,9 +93,6 @@ public final class S3ServiceSession: Sendable {
         }
     }
 
-    /// Standard config for vault traffic: 30s/120s timeouts, conditional revalidation cache
-    /// (304 saves bytes on unchanged vault GETs), waits-for-connectivity so flaky links don't
-    /// spuriously fail mid-upload.
     private static var defaultConfiguration: URLSessionConfiguration {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
@@ -109,10 +106,8 @@ public final class S3ServiceSession: Sendable {
         return config
     }
 
-    /// Probe config for the user-facing connection test: tight timeouts and
-    /// `waitsForConnectivity = false` so wrong-host / wrong-creds surface within ~15s rather
-    /// than hanging on connectivity-wait retries. Ephemeral so the one-off probe never
-    /// poisons the on-disk cache.
+    /// Ephemeral + `waitsForConnectivity = false` so wrong-host/wrong-creds surface in ~15s
+    /// instead of hanging on connectivity-wait retries.
     private static var probeConfiguration: URLSessionConfiguration {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 15

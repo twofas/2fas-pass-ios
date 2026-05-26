@@ -7,13 +7,9 @@
 import Foundation
 
 public protocol BackupSynchronizing: Sendable {
-    /// Stable per-instance id; matches the id stored in the corresponding `BackupConfigEntry`.
     var id: BackupConfig.ID { get }
-    /// Backend discriminator; redundant with the entry's `Config` type parameter on disk, but
-    /// needed at runtime since the coordinator works with `[any BackupSynchronizing]`.
     var kind: BackupSyncService { get }
-    /// `allowingAnyDeviceId` is the recovery override — when true, the local merge tolerates a
-    /// vault belonging to a different device id even without the multi-device entitlement. Only
-    /// recovery flows pass `true`; routine syncs always pass `false`.
+    /// `allowingAnyDeviceId: true` is the recovery override — bypasses the device-id gate
+    /// in the local merge. Routine syncs always pass `false`.
     func performSync(overwritingVault: Bool, allowingAnyDeviceId: Bool) async throws(BackupSyncError) -> BackupSyncOutcome
 }

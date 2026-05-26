@@ -38,7 +38,7 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
     var isBiometryAvailable: Bool {
         biometryInteractor.isBiometryAvailable
     }
-    
+
     func changeMasterPassword(
         _ masterPassword: MasterPassword,
         completion: @escaping () -> Void
@@ -67,13 +67,6 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         }
     }
 
-    /// Marks every registered backend for vault overwrite on its next sync, then either
-    /// triggers a fresh `syncAll` (no in-flight sync) or cancels the in-flight one and
-    /// retries once it idles. The container resolves "all configs" itself, so this method
-    /// has no opinion on the registered set — it just signals "next sync should overwrite,
-    /// across the board." Each backend's `performSync` decides per-kind whether to honor
-    /// the flag, and `BackupSyncAdapter` clears each id only when the matching sync
-    /// reported `consumed.overwritingVault`.
     private func scheduleBackupSyncAfterPasswordChange() {
         // Fire-and-forget cancel/wait/mark/retry. Captures only `syncTriggerInteractor`
         // (app-lifetime) — no `self` retention, no instance state.

@@ -37,15 +37,10 @@ final class VaultRecoveryWebDAVPresenter {
     var username: String = ""
     var password: String = ""
 
-    /// `true` while the index fetch is in flight. Drives the toolbar item's spinner and
-    /// disabled state. A successful fetch is itself the connectivity check — there is no
-    /// separate `testConnection` probe before it.
     private(set) var isFetching: Bool = false
 
     var destination: VaultRecoveryWebDAVDestination?
 
-    /// Drives the toolbar Connect button's enabled state. Mirrors the backup form's
-    /// add-mode predicate (no edit mode here — recovery has no original snapshot).
     var canSave: Bool {
         guard !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return false
@@ -59,14 +54,6 @@ final class VaultRecoveryWebDAVPresenter {
         return true
     }
 
-    /// Drives the drag-dismiss "Unsaved changes" alert: form values differ from the
-    /// last saved state. `initialConfig` is set at `init` (from the cache seed) and
-    /// refreshed on a successful Connect (from the just-cached value) — so pre-filled-
-    /// from-cache and just-cached states both register as "no unsaved changes." Only a
-    /// *change* the user makes against the most-recent-saved baseline triggers the
-    /// discard prompt. With no `initialConfig`, the baseline collapses to empty strings
-    /// and `allowTLSOff = false` via optional-chain defaults — matching the "all-empty
-    /// form is not 'unsaved'" semantics from before.
     var hasUnsavedChanges: Bool {
         url != (initialConfig?.baseURL ?? "")
             || allowTLSOff != (initialConfig?.allowTLSOff ?? false)
@@ -75,13 +62,10 @@ final class VaultRecoveryWebDAVPresenter {
     }
 
     private let interactor: VaultRecoveryWebDAVModuleInteracting
-    /// Bubbles the picked vault up to the parent presenter, which dismisses the WebDAV
-    /// sheet and pushes the recovery flow into its own enclosing navigation stack —
-    /// mirrors the iCloud source's pattern (`VaultRecoveryPresenter.onRestoreFromCloud`).
     private let onSelect: (VaultRecoveryData) -> Void
 
-    /// Held so the in-flight fetch can be torn down on dismissal — without this the
-    /// network request continues until the server responds even after the user backs out.
+    /// Held so the in-flight fetch can be torn down on dismissal — otherwise the request
+    /// runs to completion even after the user backs out.
     @ObservationIgnored
     private var fetchTask: Task<Void, Never>?
 

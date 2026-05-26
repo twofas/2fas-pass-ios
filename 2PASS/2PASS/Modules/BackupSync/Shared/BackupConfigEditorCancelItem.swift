@@ -7,10 +7,6 @@
 import SwiftUI
 import CommonUI
 
-/// Cancel toolbar item with an unsaved-changes confirmation dialog anchored to the
-/// button. `isConfirmationPresented` is exposed as a `Binding` so the surrounding screen
-/// can open the same dialog (e.g. from a swipe-dismiss catcher) with the iPad popover
-/// still anchored to the cancel button.
 struct BackupConfigEditorCancelItem: ToolbarContent {
 
     private let hasUnsavedChanges: Bool

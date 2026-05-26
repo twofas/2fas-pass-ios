@@ -25,10 +25,8 @@ final class BackupWebDAVServiceSession: BackupFileServiceSession {
         session.invalidateAndCancel()
     }
 
-    /// Builds a fresh `URLSession` with timing/connectivity tuned per mode.
-    /// `.default` — vault traffic: 30s/120s, conditional revalidation, waits-for-connectivity.
-    /// `.probe` — connection test: 15s/20s, ephemeral, fails immediately on no connectivity
-    /// so wrong endpoints surface within seconds rather than hanging on retries.
+    /// `.probe` is ephemeral with `waitsForConnectivity = false` so wrong endpoints surface
+    /// in seconds instead of hanging on retries.
     private static func buildSession(config: BackupWebDAVConfig, mode: Mode) -> URLSession {
         let sessionConfiguration: URLSessionConfiguration
         switch mode {
