@@ -27,10 +27,6 @@ extension VaultRecoveryWebDAVError {
         }
     }
 
-    /// Maps the new transport-layer enum onto the same localized strings the legacy
-    /// `WebDAVRecoveryInteractorError+message` extension used. `.notFound` is intentionally
-    /// absent — the call sites in the module interactors catch it and rethrow as
-    /// `.indexNotFound` / `.vaultNotFound` before this mapping ever runs.
     private static func message(for transport: BackupFileServiceError) -> String {
         switch transport {
         case .unauthorized:
@@ -52,9 +48,6 @@ extension VaultRecoveryWebDAVError {
         case .invalidResponse:
             return String(localized: .commonGeneralErrorTryAgain)
         case .notFound:
-            // Should be unreachable — the module interactors catch this and rethrow as
-            // `.indexNotFound` / `.vaultNotFound`. Falling back to the generic message keeps
-            // us from crashing if a future call site forgets to catch it.
             return String(localized: .commonGeneralErrorTryAgain)
         }
     }

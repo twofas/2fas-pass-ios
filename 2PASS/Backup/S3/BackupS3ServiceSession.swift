@@ -24,16 +24,8 @@ final class BackupS3ServiceSession: BackupFileServiceSession {
     }
 
     public func testConnection() async throws(BackupFileServiceError) {
-        // HEAD against the bucket root (no object key) is the canonical S3 "HeadBucket"
-        // probe. A key-level GET can't reliably distinguish "bucket missing" from
-        // "index file missing in an existing bucket": Ceph-backed services (e.g. Hetzner
-        // Object Storage) report `NoSuchKey` for a missing bucket too, so a body-based
-        // heuristic on the GET silently accepts misconfigured bucket names. With no key
-        // in the request URL, a 404 unambiguously means the bucket is missing.
-        //
-        // Transient probe-config session: tight timeouts and `waitsForConnectivity = false`
-        // so a wrong endpoint surfaces in seconds. Lives only for this call; deinit's
-        // `invalidateAndCancel` runs at function exit.
+        // HEAD on the bucket root (no object key) — a key-level GET can't distinguish
+        // "bucket missing" from "index missing" on Ceph-backed backends (e.g. Hetzner).
         let probeSession = S3ServiceSession(config: config, mode: .probe)
         let request = S3URLRequest(objectKey: "", httpMethod: .head)
         let (_, response) = try await perform(request, on: probeSession)

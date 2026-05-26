@@ -21,9 +21,6 @@ protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
         password: String?
     ) async throws(VaultRecoveryWebDAVError) -> BackupIndex
 
-    /// Strongly-typed recovery-config cache. JSON encoding and AES-GCM encryption-at-rest
-    /// are both handled inside MainRepository (`MainRepositoryImpl+Backup.swift`'s
-    /// recovery-cache pipeline, mirroring `saveBackupConfigs` on this type).
     var cachedConfig: BackupWebDAVConfig? { get }
     func cacheConfig(_ config: BackupWebDAVConfig)
 }
@@ -80,17 +77,8 @@ extension VaultRecoveryWebDAVModuleInteractor: VaultRecoveryWebDAVModuleInteract
         do {
             return try await recoveryInteractor.fetchIndex(config)
         } catch {
-            // Single `catch` + inner `switch` is the form Swift's typed-throws exhaustiveness
-            // checker accepts. Multiple `catch BackupIndexFetchError.X` clauses look exhaustive
-            // by inspection but the compiler doesn't recognize them that way — and the case
-            // names `.transport`/`.indexIsDamaged` collide with `VaultRecoveryWebDAVError`,
-            // making leading-dot inference unreliable too. Switching over the bound `error`
-            // sidesteps both issues.
             switch error {
             case .transport(let transportError):
-                // 404 here means "no index yet at this URL" — distinct from the vault-fetch
-                // 404 in `VaultRecoverySelectWebDAVIndexModuleInteractor` ("vault disappeared
-                // from server").
                 if case .notFound = transportError {
                     throw VaultRecoveryWebDAVError.indexNotFound
                 }

@@ -646,9 +646,6 @@ public enum ExchangeDecodeError: Error, Sendable {
 }
 
 extension ExchangeVaultVersioned: Decodable {
-    /// Peeks the `schemaVersion` first, then decodes into the matching case.
-    /// Unknown versions throw `ExchangeDecodeError.schemaNotSupported`;
-    /// malformed JSON or per-schema decoding failures propagate as `DecodingError`.
     public init(from decoder: Decoder) throws {
         struct SchemaPeek: Decodable {
             let schemaVersion: Int

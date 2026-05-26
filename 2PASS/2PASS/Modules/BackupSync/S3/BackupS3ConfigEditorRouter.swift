@@ -10,9 +10,6 @@ import CommonUI
 
 struct BackupS3ConfigEditorRouter: Router {
 
-    /// `onClose` is required — the caller owns the close path (dismissal, list refresh,
-    /// matched-zoom retargeting, etc.). The id passed back is the saved config's id on
-    /// successful save, or `nil` on cancel/close.
     @MainActor
     static func buildView(
         configID: BackupConfig.ID?,

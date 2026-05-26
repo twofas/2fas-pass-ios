@@ -32,10 +32,6 @@ extension VaultRecoverySelectS3IndexModuleInteractor: VaultRecoverySelectS3Index
         vaultID: VaultID,
         schemeVersion: Int
     ) async throws(VaultRecoveryS3Error) -> ExchangeVaultVersioned {
-        // Pre-flight schema check before any network I/O — index entries carry the schema
-        // version, so we can reject incompatible vaults without downloading them. The
-        // post-fetch schema check inside the container catches drift between the index and
-        // the actual vault file (rare but possible).
         if schemeVersion > Config.schemaVersion {
             throw .schemaNotSupported(schemeVersion)
         }
@@ -43,13 +39,8 @@ extension VaultRecoverySelectS3IndexModuleInteractor: VaultRecoverySelectS3Index
         do {
             return try await recoveryInteractor.fetchVault(vaultID: vaultID, config)
         } catch {
-            // Single `catch` + inner `switch` — same typed-throws idiom used in
-            // `VaultRecoverySelectWebDAVIndexModuleInteractor.fetchVault`.
             switch error {
             case .transport(let transportError):
-                // Vault-fetch 404 means the index pointed at a vault that no longer exists in
-                // the bucket — distinct from the index-fetch 404 in
-                // `VaultRecoveryS3ModuleInteractor` ("no index in this bucket yet").
                 if case .notFound = transportError {
                     throw VaultRecoveryS3Error.vaultNotFound
                 }

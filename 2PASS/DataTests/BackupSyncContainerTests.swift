@@ -44,9 +44,6 @@ import os
         #expect(container.currentActivity == .idle)
     }
 
-    /// `syncEvents()` returns a fresh stream per call; multiple subscribers each see every event
-    /// the container emits. Pins the broadcast contract that the AsyncStream-based observer
-    /// API replaced the old single-observer `setGlobalProgressObserver` to provide.
     @Test func syncEventsBroadcastsToMultipleSubscribers() async throws {
         let service = FakeSynchronizer(kind: .webDAV)
         let container = BackupSyncContainer(servicesProvider: { [service] in [service] })

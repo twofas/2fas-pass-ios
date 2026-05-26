@@ -25,9 +25,6 @@ import Backup
         #expect(results.map(\.kind) == [.webDAV, .s3])
     }
 
-    /// Services are reordered by oldest successful `lastSyncDate` first; entries with no recorded
-    /// sync (`nil`) sort before any dated entry so brand-new configs and never-synced backends get
-    /// priority on first sync.
     @Test func syncAllRunsServicesByLastSyncDateAscending() async {
         let neverSynced = FakeSynchronizer(kind: .webDAV)
         let oldest = FakeSynchronizer(kind: .s3)
@@ -50,9 +47,6 @@ import Backup
         #expect(results.map(\.id) == [neverSynced.id, oldest.id, newest.id])
     }
 
-    /// When two services share the same `lastSyncDate`, the original input array order is the
-    /// stable tiebreaker. This is what keeps `syncAllRunsServicesInRegistrationOrder` valid: with
-    /// no date provider supplied, every service ties at `nil` and falls back to input order.
     @Test func syncAllPreservesInputOrderWhenDatesTie() async {
         let a = FakeSynchronizer(kind: .webDAV)
         let b = FakeSynchronizer(kind: .s3)
@@ -78,8 +72,6 @@ import Backup
         #expect(fake.recording.lastOverwriting == true)
     }
 
-    /// Only the service whose id is `true` in the closure should see
-    /// `overwritingVault: true` — the guarantee post-password-change relies on.
     @Test func syncAllResolvesOverwritingPerService() async {
         let marked = FakeSynchronizer(kind: .webDAV)
         let unmarked = FakeSynchronizer(kind: .s3)
@@ -135,8 +127,6 @@ import Backup
         #expect(results.count == 1, "only the cancelled first service should appear in results")
     }
 
-    /// Single-service sessions return a one-element results array. The convergence loop runs one
-    /// pass, finds no peers to re-queue, and terminates. Container's `sync(_ id:)` relies on this.
     @Test func runWithSingleServiceReturnsOneResult() async throws {
         let fake = FakeSynchronizer(kind: .webDAV)
 
@@ -163,8 +153,6 @@ import Backup
         #expect(webDAV2.recording.calls == 1)
     }
 
-    /// Smoke test that `.iCloud` (the third backend kind) doesn't perturb ordering or
-    /// convergence — the session only sees `BackupSynchronizing`.
     @Test func syncAllRoundTripsiCloudKind() async throws {
         let iCloud = FakeSynchronizer(
             kind: .iCloud,
@@ -182,8 +170,6 @@ import Backup
 
     // MARK: - Convergence loop
 
-    /// When a later-iterated service applies remote changes, an earlier-iterated peer that already
-    /// completed its sync this pass must run again so its remote learns about the new local state.
     @Test func syncAllReRunsEarlierPeerWhenLaterServiceAppliesRemoteChanges() async {
         let earlier = FakeSynchronizer(kind: .webDAV)
         let later = FakeSynchronizer(
@@ -198,8 +184,6 @@ import Backup
         #expect(later.recording.calls == 1, "the service that pulled does not need to re-run itself")
     }
 
-    /// When the FIRST-iterated service applies remote changes, peers later in the same pass run
-    /// once with the updated local state — no second pass needed.
     @Test func syncAllDoesNotRePassWhenChangesAppliedBeforePeers() async {
         let first = FakeSynchronizer(
             kind: .webDAV,
@@ -214,7 +198,6 @@ import Backup
         #expect(second.recording.calls == 1, "later peer in same pass already runs with new local state")
     }
 
-    /// All services quiescent → exactly one pass.
     @Test func syncAllStopsAfterOnePassWhenAllServicesQuiescent() async {
         let a = FakeSynchronizer(kind: .webDAV)
         let b = FakeSynchronizer(kind: .s3)
@@ -226,8 +209,6 @@ import Backup
         #expect(b.recording.calls == 1)
     }
 
-    /// `appliedRemoteChanges` should be OR'd across passes — a service that applied changes in any
-    /// pass must report true in the final aggregated result, even if its last pass was quiescent.
     @Test func syncAllAggregatesAppliedRemoteChangesAcrossPasses() async throws {
         let a = FakeSynchronizer(
             kind: .webDAV,
@@ -261,8 +242,6 @@ import Backup
         #expect(bSuccess.appliedRemoteChanges == true, "B's pass-1 success should propagate via OR")
     }
 
-    /// A failing service must not re-queue its peers: failure means we don't know the state
-    /// changed, and re-running peers would just pile up duplicate failures.
     @Test func syncAllFailureDoesNotTriggerPeerReRuns() async {
         let failing = FakeSynchronizer(kind: .webDAV, error: .unauthorized)
         let quiet = FakeSynchronizer(kind: .s3)
@@ -274,9 +253,6 @@ import Backup
         #expect(quiet.recording.calls == 1, "peer not re-run because peer's failure cannot have applied changes")
     }
 
-    /// Pathological oscillation must not loop forever — the session caps at a small number of
-    /// passes. With two services both always claiming to apply changes, each pass runs both, so
-    /// total invocations equal 2 * maxPasses.
     @Test func syncAllRespectsMaxConvergencePasses() async {
         let a = FakeSynchronizer(
             kind: .webDAV,
@@ -320,8 +296,6 @@ private final class FakeSynchronizer: BackupSynchronizing, @unchecked Sendable {
     private let state: OSAllocatedUnfairLock<State>
 
     /// `outcomes` is consumed one-per-call; once exhausted, every further call returns `outcome`.
-    /// Use `outcomes` to model "first call applies remote changes, subsequent calls are quiescent"
-    /// scenarios that exercise the convergence loop.
     init(
         kind: BackupSyncService,
         outcome: BackupSyncOutcome = BackupSyncOutcome(appliedRemoteChanges: false),

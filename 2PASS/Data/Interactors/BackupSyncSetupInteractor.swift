@@ -9,18 +9,9 @@ import Backup
 import Common
 
 public protocol BackupSyncInstalling: AnyObject {
-    /// Wires `MainRepository.backupSyncContainer` (constructed inert in `MainRepositoryImpl.init`)
-    /// with production collaborators and per-vault `CloudSync` configuration. Idempotent —
-    /// re-runs `setup`, which atomically replaces providers and re-applies the CloudSync chain.
-    /// Used by vault recovery once the recovered vault becomes the selected one.
     func initialize()
 }
 
-/// Two-phase init for the app-lifetime `BackupSyncContainer`. `MainRepositoryImpl` owns the
-/// container as an inert `let`; this interactor — which has access to the interactors needed
-/// to build the adapter and the per-vault storage — calls `setup(...)` to finish wiring it.
-/// `BackupSyncAdapter` fulfills every collaborator slot, so the container holds a single
-/// reference for all roles.
 final class BackupSyncSetupInteractor: BackupSyncInstalling {
     private let mainRepository: MainRepository
     private let exportInteractor: ExportInteracting

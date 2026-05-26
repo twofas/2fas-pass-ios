@@ -129,7 +129,6 @@ struct BackupConfigsView: View {
                         .buttonStyle(.glassProminent)
                         .labelStyle(.titleOnly)
                         .tint(.accent)
-                        .foregroundStyle(.white)
                 } else {
                     addButton
                 }
@@ -149,11 +148,21 @@ struct BackupConfigsView: View {
         Button {
             presenter.onAddPressed()
         } label: {
-            Image(systemName: "plus")
+            addButtonLabel
                 .accessibilityLabel(Text(.backupConfigsAddCta))
         }
         .disabled(presenter.isSyncing)
         .matchedZoomSource(id: BackupConfigsRouter.pickerSourceID, in: transitionNamespace)
+    }
+
+    @ViewBuilder
+    private var addButtonLabel: some View {
+        if #available(iOS 26, *) {
+            Image(systemName: "plus")
+                .foregroundStyle(.white)
+        } else {
+            Image(systemName: "plus")
+        }
     }
 }
 

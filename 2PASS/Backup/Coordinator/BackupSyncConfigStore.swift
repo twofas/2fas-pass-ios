@@ -6,8 +6,6 @@
 
 import Foundation
 
-/// Persistence port for backup sync configs. Each save overwrites the full list;
-/// conformers serialize access internally.
 public protocol BackupSyncConfigStore: Sendable {
     func loadConfigs() -> [BackupConfig]
     func saveConfigs(_ configs: [BackupConfig])

@@ -81,10 +81,10 @@ public final class S3ServiceSession: Sendable {
         case `default`
         case probe
     }
-    
+
     public init(config: S3ServiceConfig, mode: Mode = .default) {
         self.config = config
-        
+
         switch mode {
         case .default:
             self.session = URLSession(configuration: Self.defaultConfiguration)
@@ -93,9 +93,6 @@ public final class S3ServiceSession: Sendable {
         }
     }
 
-    /// Standard config for vault traffic: 30s/120s timeouts, conditional revalidation cache
-    /// (304 saves bytes on unchanged vault GETs), waits-for-connectivity so flaky links don't
-    /// spuriously fail mid-upload.
     private static var defaultConfiguration: URLSessionConfiguration {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
@@ -109,10 +106,6 @@ public final class S3ServiceSession: Sendable {
         return config
     }
 
-    /// Probe config for the user-facing connection test: tight timeouts and
-    /// `waitsForConnectivity = false` so wrong-host / wrong-creds surface within ~15s rather
-    /// than hanging on connectivity-wait retries. Ephemeral so the one-off probe never
-    /// poisons the on-disk cache.
     private static var probeConfiguration: URLSessionConfiguration {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 15
@@ -145,12 +138,8 @@ public final class S3ServiceSession: Sendable {
 
 private extension S3ServiceSession {
     func buildURLRequest(from request: S3URLRequest) -> URLRequest {
-        // Hetzner Object Storage (and any S3-compatible backend that publishes per-bucket
-        // hostnames) uses virtual-hosted addressing: the bucket is the leftmost subdomain
-        // of the endpoint host. If we then also append `config.bucket` to the path, the
-        // bucket appears twice — the server reads it from the host and treats the path
-        // (including the literal "misctest/" prefix) as part of the object key. Detect
-        // this case and skip the path-style bucket prefix.
+        // Virtual-hosted endpoints already encode the bucket in the hostname — skip the
+        // path-style prefix to avoid the bucket appearing twice in the URL.
         let endpointHost = config.endpoint.host() ?? ""
         let isVirtualHosted = endpointHost == config.bucket
             || endpointHost.hasPrefix("\(config.bucket).")

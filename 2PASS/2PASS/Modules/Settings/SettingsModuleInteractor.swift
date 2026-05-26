@@ -50,7 +50,7 @@ final class SettingsModuleInteractor {
         self.autoFillStatusInteractor = autoFillStatusInteractor
         self.pushNotificationsInteractor = pushNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
-        
+
         notificationCenter.addObserver(
                 self,
                 selector: #selector(updatePaymentStatusAction),
@@ -58,7 +58,7 @@ final class SettingsModuleInteractor {
                 object: nil
             )
     }
-    
+
     deinit {
         notificationCenter.removeObserver(self)
     }
@@ -68,19 +68,15 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
     var isPaidUser: Bool {
         paymentStatusInteractor.isPremium
     }
-    
+
     var appVersion: String {
         systemInteractor.appVersion
     }
-    
+
     var isSyncEnabled: Bool {
-        // "Any sync backend is configured" — iCloud presence is a config-store fact now (the
-        // old `cloudSyncInteractor.currentState` derivation collapsed into the same check
-        // that already covers WebDAV / S3). True when the user has at least one persisted
-        // backup config of any kind.
         !configsInteractor.allConfigs.isEmpty
     }
-    
+
     var syncHasError: Bool {
         syncTriggerInteractor.hasAnySyncError
     }
@@ -89,15 +85,6 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
         syncTriggerInteractor.syncErrorChanges
     }
 
-    /// Emits the current `isSyncEnabled` value only when it actually flips. Wraps
-    /// `configsInteractor.configsDidChange` (which fires on any CRUD — add, update, or remove)
-    /// into a value-carrying stream by re-deriving `!allConfigs.isEmpty` on each upstream
-    /// signal and dedupping against the prior yield. Updates that don't change the count
-    /// (e.g. editing an existing config's fields) are suppressed. The seed is the value at
-    /// subscription time, so the first matching signal is dropped if it carries the same
-    /// flag the consumer would have read synchronously. The configs interactor stays narrow
-    /// at the Data layer; the "is sync enabled" projection lives here because it's a
-    /// Settings-domain concept.
     var syncEnabledChanges: AsyncStream<Bool> {
         let configsInteractor = self.configsInteractor
         return AsyncStream { continuation in
@@ -113,27 +100,27 @@ extension SettingsModuleInteractor: SettingsModuleInteracting {
             continuation.onTermination = { _ in task.cancel() }
         }
     }
-    
+
     var isAutoFillEnabled: Bool {
         autoFillStatusInteractor.isEnabled
     }
-    
+
     var isPushNotificationsEnabled: Bool {
         pushNotificationsInteractor.isEnabled
     }
-    
+
     var didAutoFillStatusChanged: NotificationCenter.Notifications {
         autoFillStatusInteractor.didStatusChanged
     }
-    
+
     var didPushNotificationsStatusChanged: NotificationCenter.Notifications {
         pushNotificationsInteractor.didStatusChanged
     }
-    
+
     var is2FASAuthInstalled: Bool {
         systemInteractor.is2FASAuthInstalled
     }
-    
+
     @objc
     private func updatePaymentStatusAction() {
         updatePaymentStatus?()

@@ -28,9 +28,6 @@ final class VaultRecoveryiCloudVaultSelectionModuleInteractorPreview: VaultRecov
     func listVaultsToRecover() async throws -> [VaultRawData] {
         switch state {
         case .loading:
-            // Suspend until the preview's enclosing task is cancelled. Mirrors the previous
-            // behavior of the completion-based mock that simply never invoked its callback,
-            // which left the presenter parked in `.loading` for the duration of the preview.
             try await Task.sleep(for: .seconds(.infinity))
             return []
         case .error:

@@ -49,10 +49,7 @@ final class TrashPresenter {
     private let iconDataSource: RemoteImageCollectionDataSource<TrashItemData>
     
     private let interactor: TrashModuleInteracting
-    /// Consumer of `interactor.syncDidApplyRemoteChanges()` — spawned in `onAppear`, cancelled
-    /// in `onDisappear`, so the subscription is alive only while the view is on screen.
-    /// `@ObservationIgnored` because the handle is internal lifecycle plumbing, not observable
-    /// UI state.
+    
     @ObservationIgnored
     private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
 
@@ -64,7 +61,6 @@ final class TrashPresenter {
     }
 
     deinit {
-        // Safety net for the rare case where `onDisappear` doesn't fire.
         syncDidApplyRemoteChangesTask?.cancel()
     }
 }

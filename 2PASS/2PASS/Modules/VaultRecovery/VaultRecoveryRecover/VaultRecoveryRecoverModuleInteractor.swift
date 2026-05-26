@@ -110,11 +110,6 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                     itemsImportInteractor.importDeleted(deletedItems)
                     let count = await importItems(items, tags: tags)
                     guard count == items.count else { return false }
-                    // Persist the source-of-truth config NOW — items are committed to local
-                    // storage, so the credentials match a vault we successfully decrypted and
-                    // imported. (Earlier the persistence happened on `fetchVault` success,
-                    // which leaked credentials whenever recovery was aborted between fetch
-                    // and import.)
                     guard let configID = persistRecoverySource(source) else { return true }
                     return await performRecoverySync(configID: configID)
                 case .failure(let error):
@@ -128,44 +123,22 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
             }
         }
     }
-    
-    /// Persists the recovery's source-of-truth config (e.g. the WebDAV credentials the user
-    /// entered to fetch this vault). Called *only* after a successful item import — the
-    /// guarantee being: a config record exists in `MainRepository.loadBackupConfigs` only
-    /// for backends whose vaults are actually decrypted and stored locally. Returns the
-    /// new config's id so the caller can drive the immediate post-recovery sync without
-    /// re-querying; `nil` means "nothing further to sync" (e.g. local-file recovery).
+
     private func persistRecoverySource(_ source: VaultRecoveryFileSource) -> BackupConfig.ID? {
         switch source {
         case .webDAV:
-            // The source enum is tag-only: it tells us which recovery cache slot to read.
-            // The cache interactor owns the JSON + encrypt-at-rest pipeline internally
-            // (same shape as `saveBackupConfigs`), so `cachedWebDAVConfig` returns the
-            // typed `BackupWebDAVConfig?` directly. `nil` means the cache was wiped between
-            // vault-pick and persist — shouldn't happen in practice; treat as
-            // `.localFile` and skip post-recovery sync.
             guard let config = cacheInteractor.cachedWebDAVConfig
             else { return nil }
-            // Persist the config and mark it as needing first-sync device-id registration.
-            // The flag drives `allowingAnyDeviceId: true` on every sync (this immediate
-            // `performRecoverySync` AND any future retry — routine, per-row, etc.) until
-            // the first successful sync clears it via `BackupSyncAdapter.setLastSyncDate`.
-            // Closes the regression where a transient post-recovery sync failure left
-            // routine syncs permanently broken on the multi-device-id gate.
+            
             let id = configsInteractor.addWebDAVConfig(config)
             syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
-            // Config is now on disk (encrypted under saveBackupConfigs) — the in-memory
-            // recovery cache is redundant. Wipe both source slots; the user may have explored
-            // both S3 and WebDAV in the same session, and once any recovery commits to disk
-            // the other slot is stale too.
+
             cacheInteractor.clearCachedConfigs()
             return id
         case .s3:
             guard let config = cacheInteractor.cachedS3Config
             else { return nil }
-            // Same registration shape as WebDAV — file-based backends share the
-            // post-recovery `awaitingDeviceRegistration` handshake. The first successful
-            // sync clears the flag via `BackupSyncAdapter.setLastSyncDate`.
+            
             let id = configsInteractor.addS3Config(config)
             syncTriggerInteractor.markAwaitingDeviceRegistration(configID: id)
             cacheInteractor.clearCachedConfigs()
@@ -175,29 +148,15 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         }
     }
 
-    /// Kick off a recovery sync against the just-persisted WebDAV config through the
-    /// `BackupSyncContainer`. The `allowingAnyDeviceId: true` behavior — needed because
-    /// recovery's whole point is "this vault used to live somewhere else" — comes for free
-    /// from the `markAwaitingDeviceRegistration(configID:)` mark issued in
-    /// `persistRecoverySource`; the container ORs it into the per-id closure inside
-    /// `sync(_:)`.
     private func performRecoverySync(configID: BackupConfig.ID) async -> Bool {
         do {
             try await syncTriggerInteractor.sync(id: configID)
-            // Returns silently on success OR when no service matched / container not set
-            // up — both treated as a soft success so recovery doesn't get stuck on edge
-            // cases (the no-service path "shouldn't happen" since we just resolved an id).
             return true
         } catch {
-            // Sync failure or debounce (.cancelled) — recovery treats both as needing
-            // user attention.
             return false
         }
     }
 
-    /// Bridges the completion-handler `ItemsImportInteractor.importItems` into Swift
-    /// Concurrency. The completion is invoked exactly once by the importer, so a
-    /// `withCheckedContinuation` wrapper is safe.
     private func importItems(_ items: [ItemData], tags: [ItemTagData]) async -> Int {
         await withCheckedContinuation { continuation in
             itemsImportInteractor.importItems(items, tags: tags) { count in
@@ -206,10 +165,6 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         }
     }
 
-    /// Bridges the queue-based `ImportInteractor.extractItemsUsingMasterKey` into Swift
-    /// Concurrency. The completion fires once on the importer's internal queue, which is
-    /// fine for `withCheckedContinuation` — the resumption hops back to the caller's
-    /// executor automatically.
     private func extractItems(
         masterKey: MasterKey,
         exchangeVault: ExchangeVaultVersioned
@@ -221,33 +176,12 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
         }
     }
 
-    /// Wait for the post-recovery iCloud sync to finish — or for the timeout to fire.
-    ///
-    /// Three steps: (1) ensure an iCloud config exists — adds it (driving `cloudSync.enable()`
-    /// via the container's `saveConfigs(_:)` diff) if missing, or reuses the existing entry.
-    /// (2) Mark the iCloud config as awaiting device registration — the per-config "next sync
-    /// is allowed to register a new deviceID against this vault" flag, honored by
-    /// `CloudSyncAdapter.performSync` via `cloudSync.syncOnce(allowingAnyDeviceId:)` which
-    /// arms `setTakingOverVault(true)` and bypasses `MergeHandler`'s deviceID mismatch gate.
-    /// (3) Race a timer Task against the actual
-    /// `sync(id:)`: whichever completes first unblocks the await. **Sync is never cancelled**
-    /// — it runs in a `Task.detached` that deliberately outlives this function, so when the
-    /// timer elapses naturally we let recovery proceed to the main screen while iCloud keeps
-    /// running in the background. When sync finishes first, it calls `timer.cancel()`, which
-    /// throws inside `Task.sleep` and unblocks `await timer.value` immediately;
-    /// `timer.isCancelled` then distinguishes the success path from the timeout path.
-    ///
-    /// No explicit `BackupSyncSetupInteractor.initialize()` re-run is needed. The vault id
-    /// is read pull-style from `BackupSyncContext.vaultID` inside `CloudHandler.sync()` —
-    /// `createVault → selectVault` (which ran before `performRecoveryCloudSync()` is called) updated
-    /// `MainRepository.selectedVault`, so the `sync(id:)` call below picks up the recovered
-    /// vault id automatically.
     private func performRecoveryCloudSync() async -> Bool {
         guard let iCloudID = resolveiCloudConfigID() else { return true }
-        
+
         cacheInteractor.clearCachedConfigs()
         syncTriggerInteractor.markAwaitingDeviceRegistration(configID: iCloudID)
-        
+
         let timer = Task {
             try? await Task.sleep(for: .seconds(syncAwaitSeconds))
         }

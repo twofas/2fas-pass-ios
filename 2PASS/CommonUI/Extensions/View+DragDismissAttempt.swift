@@ -8,17 +8,30 @@ import SwiftUI
 
 public extension View {
 
-    /// Fires `onAttempt` when the user swipes-to-dismiss the enclosing sheet while
-    /// `isEnabled` is `true`. Sets `isModalInPresentation` while enabled so the pull-down
-    /// is intercepted — use this to gate dismissal behind a discard-changes confirmation.
+    /// Intercepts the user's swipe-down gesture on a presented sheet and
+    /// calls `onAttempt` instead of dismissing.
+    ///
+    /// Toggle `isEnabled` dynamically — for example, bind it to a "has
+    /// unsaved changes" flag so the sheet dismisses freely when clean and
+    /// asks for confirmation only when dirty.
+    ///
+    /// ```swift
+    /// .dragDismissAttempt(isEnabled: hasUnsavedChanges) {
+    ///     isDiscardConfirmationPresented = true
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - isEnabled: When `true`, interactive dismissal is blocked and
+    ///     `onAttempt` fires on a swipe-down. When `false`, the sheet
+    ///     dismisses normally.
+    ///   - onAttempt: Called on the main actor when the user tries to
+    ///     dismiss the sheet while `isEnabled` is `true`.
     func dragDismissAttempt(isEnabled: Bool, onAttempt: @escaping () -> Void) -> some View {
         background(DragDismissAttemptCatcher(isEnabled: isEnabled, onAttempt: onAttempt))
     }
 }
 
-/// UIKit bridge: sets `isModalInPresentation` on the enclosing sheet's presentation VC
-/// (required for `presentationControllerDidAttemptToDismiss` to fire) and chains its
-/// delegate slot to SwiftUI's original so detents/dismiss tracking keep working.
 private struct DragDismissAttemptCatcher: UIViewControllerRepresentable {
     let isEnabled: Bool
     let onAttempt: () -> Void
@@ -85,8 +98,6 @@ private struct DragDismissAttemptCatcher: UIViewControllerRepresentable {
             presentedTarget?.isModalInPresentation = isEnabled
         }
 
-        /// Topmost presented ancestor — its `presentationController` is the one whose
-        /// dismiss-attempt we care about.
         private func findPresentedAncestor() -> UIViewController? {
             var current: UIViewController? = parent
             var lastPresented: UIViewController? = nil

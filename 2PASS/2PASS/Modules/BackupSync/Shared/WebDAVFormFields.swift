@@ -7,9 +7,6 @@
 import SwiftUI
 import CommonUI
 
-/// Sectioned WebDAV credential fields shared by the config editor and the recovery form.
-/// Edit-mode "changed" indicators are opt-in via the per-field `formFieldChanged(_:)`
-/// modifiers below.
 struct WebDAVFormFields: View {
 
     @Binding var url: String

@@ -32,7 +32,6 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
             onSelect: onSelect
         )
 
-        // No NavigationStack here: this view is pushed inside the WebDAV form's stack.
         VaultRecoverySelectWebDAVIndexView(presenter: presenter)
     }
     
@@ -42,11 +41,6 @@ struct VaultRecoverySelectWebDAVIndexRouter: Router {
         case .error(_, let onClose):
             Button(.commonOk, action: onClose)
         case .selectRecoveryKey(let vault, let onClose):
-            // This downstream view is only reached when the recovery flow has already been
-            // routed through `VaultRecoveryWebDAVPresenter`, which carries the source config
-            // forward via `.select(.file(vault, source:))`. This nested router branch (kept
-            // for the alternative layout it serves) loses that source — `.localFile` here
-            // marks "no transport credentials to persist."
             VaultRecoverySelectRouter.buildView(flowContext: .onboarding(onClose: onClose), recoveryData: .file(vault, source: .localFile))
         case .appUpdateNeeded(_, let onUpdate, let onClose):
             Button(.importInvalidSchemaErrorCta, action: onUpdate)

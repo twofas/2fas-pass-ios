@@ -21,9 +21,6 @@ struct VaultRecoveryS3Router: Router {
             onSelect: onSelect
         )
 
-        // The form is the root of the recovery S3 sheet. Wrapping in NavigationStack here
-        // gives the toolbar items a host AND lets `.selectVault` push the index list inside
-        // the sheet. Past that point, `onSelect` bubbles up to the parent.
         NavigationStack {
             VaultRecoveryS3View(presenter: presenter)
         }

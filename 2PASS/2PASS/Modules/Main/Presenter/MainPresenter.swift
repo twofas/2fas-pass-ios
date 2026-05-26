@@ -13,11 +13,6 @@ final class MainPresenter {
 
     weak var view: (any MainViewControlling)?
 
-    /// Drives the tab-bar badge from `interactor.badgeUpdates` (a dedupped passthrough to
-    /// `BackupSyncTriggerInteractor.syncErrorChanges`). Cancelled in `deinit` so the stream's
-    /// upstream subscriptions tear down when the presenter goes away. `var ...?` per the
-    /// Swift two-phase init exception (CLAUDE.md): the Task captures `[weak self]` and so
-    /// cannot be assigned during phase-one init.
     private var badgeSubscription: Task<Void, Never>?
 
     private var reviewSubscription: Task<Void, Never>?

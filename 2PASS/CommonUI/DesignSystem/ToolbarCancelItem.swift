@@ -6,8 +6,6 @@
 
 import SwiftUI
 
-/// Cancellation-action toolbar item wrapping `ToolbarCancelButton` (X icon on iOS 26+,
-/// localized "Cancel" text earlier).
 public struct ToolbarCancelItem: ToolbarContent {
 
     private let action: () -> Void

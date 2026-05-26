@@ -59,16 +59,12 @@ final class BackupS3ConfigEditorModuleInteractor: BackupS3ConfigEditorModuleInte
         } else {
             id = configsInteractor.addS3Config(config)
         }
-        
+
         Task { try await syncTriggerInteractor.sync(id: id) }
-        
+
         return id
     }
 
-    /// Canonicalizes the endpoint string the same way URIInteractor does for the rest of the app:
-    /// trim whitespace, add `https://` scheme if missing, lowercase host, drop default ports,
-    /// strip embedded credentials and trailing slashes/fragments. Returns `nil` for empty or
-    /// unparseable input.
     func normalize(endpoint: String) -> URL? {
         uriInteractor.normalizeURL(endpoint)
     }
