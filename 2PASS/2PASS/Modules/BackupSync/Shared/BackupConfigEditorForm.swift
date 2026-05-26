@@ -8,13 +8,6 @@ import SwiftUI
 import CommonUI
 import Backup
 
-/// Reusable wrapper for S3/WebDAV config editors. Bundles the form shell, toolbar title,
-/// cancel/save items with unsaved-changes guards, and the discard alerts used by both the
-/// in-form Cancel tap and the swipe-to-dismiss path.
-///
-/// `onClose` is invoked for every "user is leaving" path; the consumer routes through
-/// `presenter.close()` so the dismiss reaches the host presentation in both sheet-root
-/// (edit) and pushed-into-stack (add) hosting contexts.
 struct BackupConfigEditorForm<Content: View>: View {
 
     private let kind: BackupSyncService
@@ -61,7 +54,7 @@ struct BackupConfigEditorForm<Content: View>: View {
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
             BackupConfigEditorToolbarTitle(kind: kind, title: title)
-            
+
             if isEditMode || isCancellable {
                 BackupConfigEditorCancelItem(
                     hasUnsavedChanges: hasUnsavedChanges,
@@ -69,7 +62,7 @@ struct BackupConfigEditorForm<Content: View>: View {
                     onDismiss: onClose
                 )
             }
-            
+
             saveItem
         }
         .dragDismissAttempt(isEnabled: hasUnsavedChanges) {
@@ -106,15 +99,12 @@ struct BackupConfigEditorForm<Content: View>: View {
         return instance
     }
 
-    /// Overrides the save toolbar item's label (defaults to system "Save"/"Done").
     func confirmLabel(_ label: Text) -> Self {
         var instance = self
         instance.confirmLabel = label
         return instance
     }
 
-    /// Forces the cancel toolbar item to render outside edit mode — for sheet-root forms
-    /// with no system back chevron.
     func cancellable(_ flag: Bool = true) -> Self {
         var instance = self
         instance.isCancellable = flag

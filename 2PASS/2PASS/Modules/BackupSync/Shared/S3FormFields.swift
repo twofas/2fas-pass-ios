@@ -7,9 +7,6 @@
 import SwiftUI
 import CommonUI
 
-/// Sectioned S3 credential fields shared by the config editor and the recovery form.
-/// Edit-mode "changed" indicators are opt-in via the per-field `formFieldChanged(_:)`
-/// modifiers below; forms without an original snapshot just omit them.
 struct S3FormFields: View {
 
     @Binding var endpoint: String
@@ -28,7 +25,6 @@ struct S3FormFields: View {
     private var secretAccessKeyChanged = false
     private var allowTLSOffChanged = false
 
-    /// Shared label width across labeled rows so input columns stay aligned across locales.
     @State private var fieldLabelWidth: CGFloat?
 
     init(

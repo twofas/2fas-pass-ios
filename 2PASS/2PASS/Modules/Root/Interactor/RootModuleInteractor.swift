@@ -125,19 +125,19 @@ extension RootModuleInteractor: RootModuleInteracting {
     var isOnboardingCompleted: Bool {
         onboardingInteractor.isOnboardingCompleted
     }
-    
+
     var appVersionPromptState: UpdateAppPromptState {
         updateAppPromptInteractor.appVersionPromptState
     }
-    
+
     func markAppVersionPromptAsShown() {
         updateAppPromptInteractor.markPromptAsShown()
     }
-    
+
     var isUserSetUp: Bool {
         startupInteractor.isUserSetUp
     }
-    
+
     func initializeApp() {
         Log("RootModuleInteractor: Initialize app", module: .moduleInteractor)
         startupInteractor.initialize()
@@ -147,45 +147,40 @@ extension RootModuleInteractor: RootModuleInteracting {
         timeVerificationInteractor.startVerification()
         paymentHandlingInteractor.initialize()
     }
-    
+
     @MainActor
     func start() async -> StartupInteractorStartResult {
         await startupInteractor.start()
     }
-    
+
     func logoutFromApp() {
         rootInteractor.lockApplication()
     }
-    
+
     func applicationWillResignActive() {
         rootInteractor.applicationWillResignActive()
     }
-    
+
     func applicationWillEnterForeground() {
         rootInteractor.applicationWillEnterForeground()
         timeVerificationInteractor.startVerification()
     }
-    
+
     func applicationWillTerminate() {
         rootInteractor.applicationWillTerminate()
     }
-    
+
     func applicationDidBecomeActive(didCopyToken: @escaping Callback) {
         rootInteractor.applicationDidBecomeActive()
     }
-    
+
     func handleRemoteNotification() {
         guard securityInteractor.isUserLoggedIn && isUserSetUp else {
             return
         }
-        // Routes through the dedicated push path so `cloudSync.synchronize(fromPush: true)`
-        // can mark `needsResync` if a sync is already in flight past its fetch phase. Going
-        // through `syncTriggerInteractor.syncAll()` here would let the container's in-flight
-        // debounce drop the trigger, leaving the remote change announced by the push to wait
-        // until the next user-driven sync.
         syncTriggerInteractor.handlePushNotification()
     }
-    
+
     func fetchAppNotifications() async throws -> [AppNotification] {
         try await appNotificationsInteractor.fetchAppNotifications()
     }
@@ -193,7 +188,7 @@ extension RootModuleInteractor: RootModuleInteracting {
     func handleDidReceiveRegistrationToken(_ token: String?) {
         rootInteractor.handleDidReceiveRegistrationToken(token)
     }
-    
+
     func isConnectNotification(userInfo: [AnyHashable : Any]) -> Bool {
         if let messageType = userInfo["messageType"] as? String, messageType == "be_request" {
             return true
@@ -201,7 +196,7 @@ extension RootModuleInteractor: RootModuleInteracting {
             return false
         }
     }
-    
+
     var isScreenCaptureAllowed: Bool {
         configInteractor.isScreenCaptureAllowed
     }
@@ -242,12 +237,12 @@ extension RootModuleInteractor: RootModuleInteracting {
 }
 
 private extension RootModuleInteractor {
-    
+
     @objc func handleShowUpdatePromptNotification(_ notification: Notification) {
         guard let reason = notification.userInfo?[Notification.showUpdateAppPromptReasonKey] as? UpdateAppPromptRequestReason else {
             return
         }
-        
+
         switch reason {
         case .webDAVSchemeNotSupported(let schemaVersion):
             presentAppUpdateNeededForNewSyncSchema?(schemaVersion)

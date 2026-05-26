@@ -7,8 +7,6 @@
 import Foundation
 import Common
 
-/// A logical resource managed by a `BackupFileServiceSession`.
-/// Each service implementation maps these to its own wire-format keys or paths.
 public enum BackupFileResource: Sendable {
     case index
     case indexLock

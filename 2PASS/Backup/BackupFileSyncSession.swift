@@ -58,7 +58,6 @@ public final class BackupFileSyncSession: BackupSynchronizing, Sendable {
         statusContinuation.finish()
     }
 
-    /// Runs a full sync attempt, retrying transient errors up to `maxRetries` times.
     public func performSync(
         overwritingVault: Bool,
         allowingAnyDeviceId: Bool
@@ -329,7 +328,7 @@ private extension BackupFileSyncSession {
         } catch {
             throw BackupSyncError.export(error)
         }
-        
+
         precondition(
             vault.encryption != nil
                 && vault.vault.items == nil
@@ -337,7 +336,7 @@ private extension BackupFileSyncSession {
                 && vault.vault.itemsDeleted == nil,
             "\(#function) produced a vault that isn't fully encrypted"
         )
-        
+
         do {
             return try encoder.encode(vault)
         } catch {
@@ -404,9 +403,6 @@ private extension BackupFileSyncSession {
 
     // MARK: - Helpers (pure)
 
-    /// Index timestamp derived from the newest item, tag, or tombstone modification in the vault.
-    /// Falls back to `vault.createdAt` for a vault with no content yet, so the index still has a
-    /// stable, comparable value on first sync.
     func vaultContentTimestamp(_ vault: VaultEncryptedData) async -> Int {
         (await context.latestContentModification(for: vault.vaultID) ?? vault.updatedAt).exportTimestamp
     }

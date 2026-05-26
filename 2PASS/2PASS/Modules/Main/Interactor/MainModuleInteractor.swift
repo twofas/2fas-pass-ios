@@ -68,9 +68,6 @@ extension MainModuleInteractor: MainModuleInteracting {
         quickSetupInteractor.shouldShowQuickSetup
     }
 
-    /// Pass-through to the trigger interactor's dedupped sync-error stream — each yield is a
-    /// true transition of `hasAnySyncError`. The presenter consumes this directly to drive the
-    /// tab-bar badge; the interactor no longer owns a subscription.
     var badgeUpdates: AsyncStream<Bool> {
         syncTriggerInteractor.syncErrorChanges
     }
@@ -99,10 +96,6 @@ private extension MainModuleInteractor {
 
     func sync() {
         Log("MainModuleInteractor - triggering sync on Main", module: .moduleInteractor)
-        // Drives the new `BackupSyncContainer` over every config registered through the
-        // BackupConfigs UI (WebDAV, S3, iCloud). Fire-and-forget — the previous legacy calls
-        // (`webDAVBackupInteractor.sync()`, `cloudSyncInteractor.synchronize()`) had the same
-        // semantics. The container no-ops when no configs are registered.
         syncTriggerInteractor.syncAll()
     }
 }

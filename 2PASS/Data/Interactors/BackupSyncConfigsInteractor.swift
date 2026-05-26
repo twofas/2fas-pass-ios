@@ -18,8 +18,6 @@ public struct S3EndpointDetection: Equatable {
     }
 }
 
-/// CRUD-style access to backup-sync configs, plus a connection probe. Orchestrated sync
-/// lives in `BackupSyncTriggerInteracting`.
 public protocol BackupSyncConfigsInteracting: AnyObject {
     var allConfigs: [BackupConfig] { get }
 
@@ -29,36 +27,24 @@ public protocol BackupSyncConfigsInteracting: AnyObject {
     @discardableResult
     func addS3Config(_ config: S3ServiceConfig) -> BackupConfig.ID
 
-    /// Adds the iCloud backend; returns the assigned id, or `nil` if one already exists.
-    /// Single-instance: only one CloudKit container per build.
+    /// `nil` when an iCloud entry already exists — only one CloudKit container per app.
     @discardableResult
     func addiCloudConfig() -> BackupConfig.ID?
 
-    /// `true` when no iCloud entry exists yet. UI affordance — the authoritative check is
-    /// inside `addiCloudConfig()`.
     var canAddiCloud: Bool { get }
 
-    /// Replaces the config bound to `id`, preserving id and `createdAt`. No-op if the id
-    /// doesn't exist or maps to a different kind.
     func updateWebDAVConfig(id: BackupConfig.ID, with config: BackupWebDAVConfig)
     func updateS3Config(id: BackupConfig.ID, with config: S3ServiceConfig)
 
     func removeConfig(id: BackupConfig.ID)
 
-    /// Emits once per successful add / update / remove.
     var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
-    /// Auth + index-read probe. Returns silently on success including the "no index yet"
-    /// 404 (folded into success).
     func test(_ config: BackupWebDAVConfig) async throws(BackupFileServiceError)
     func test(_ config: S3ServiceConfig) async throws(BackupFileServiceError)
 
-    /// Best-effort parse of standard AWS S3 endpoint shapes. Returns `nil` for non-AWS
-    /// hosts (S3-compatible providers use ad-hoc URL shapes).
     func detectS3Endpoint(_ endpoint: String) -> S3EndpointDetection?
 
-    /// Parses an AWS-exported access keys CSV. Tolerates BOM, CRLF/LF, surrounding quotes,
-    /// and header case. URL is security-scoped (`fileImporter`), bracketed inside.
     func parseAccessKeysCSV(at url: URL) throws -> (accessKeyId: String, secretAccessKey: String)
 }
 

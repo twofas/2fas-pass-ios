@@ -29,12 +29,10 @@ final class BackupWebDAVConfigEditorPresenter {
     var password: String = ""
 
     private(set) var isTesting: Bool = false
-    /// Counter (not Bool) so two consecutive successes still register as a value change
-    /// and re-fire `.sensoryFeedback`.
+
     private(set) var successFeedbackTrigger: Int = 0
     private(set) var failureFeedbackTrigger: Int = 0
-    /// URL must parse to a normalized secure URL. In edit mode at least one field must
-    /// differ from the loaded snapshot.
+
     var canSave: Bool {
         guard !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return false
@@ -50,18 +48,18 @@ final class BackupWebDAVConfigEditorPresenter {
         }
         return true
     }
+
     var destination: BackupWebDAVConfigEditorDestination?
 
     let isEditMode: Bool
 
     private let interactor: BackupWebDAVConfigEditorModuleInteracting
     private let configID: BackupConfig.ID?
-    /// Called on save (saved id) or programmatic close (`nil`). Toolbar Cancel uses
-    /// `\.dismiss` directly and bypasses this.
     private let onClose: @MainActor (BackupConfig.ID?) -> Void
+
     @ObservationIgnored
     private var testTask: Task<Void, Never>?
-    /// Snapshot from form-open; drives per-field changed indicators in edit mode.
+
     @ObservationIgnored
     private var originalSnapshot: BackupWebDAVConfig?
 
@@ -85,22 +83,22 @@ final class BackupWebDAVConfigEditorPresenter {
         guard let original = originalSnapshot else { return false }
         return url != original.baseURL
     }
-    
+
     var allowTLSOffChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return allowTLSOff != original.allowTLSOff
     }
-    
+
     var usernameChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return username != (original.login ?? "")
     }
-    
+
     var passwordChanged: Bool {
         guard let original = originalSnapshot else { return false }
         return password != (original.password ?? "")
     }
-    
+
     var hasUnsavedChanges: Bool {
         if isEditMode {
             return urlChanged
@@ -114,8 +112,6 @@ final class BackupWebDAVConfigEditorPresenter {
             || !password.isEmpty
     }
 
-    /// Programmatic close without saving. Routes through `onClose` rather than
-    /// `@Environment(\.dismiss)` so the close reaches whoever owns the host presentation.
     func close() {
         onClose(nil)
     }
@@ -145,27 +141,34 @@ final class BackupWebDAVConfigEditorPresenter {
         testTask = Task { [weak self] in
             do {
                 try await self?.interactor.testConnection(config)
+
                 guard let self else { return }
+
                 let savedID = interactor.save(config)
                 isTesting = false
                 testTask = nil
                 onClose(savedID)
-                // Delay so the haptic lands after the dismissal animation, not alongside it.
+
                 try? await Task.sleep(for: .milliseconds(200))
                 if Task.isCancelled { return }
+
                 successFeedbackTrigger &+= 1
-                
+
             } catch {
                 guard let self else { return }
+
                 isTesting = false
                 testTask = nil
+
                 if Task.isCancelled { return }
+
                 destination = .errorAlert(
                     message: BackupFileServiceError.connectionTestMessage(for: error)
                 )
-                // Delay so the haptic lands after the alert appears, not alongside it.
+
                 try? await Task.sleep(for: .milliseconds(100))
                 if Task.isCancelled { return }
+
                 failureFeedbackTrigger &+= 1
             }
         }

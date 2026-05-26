@@ -266,6 +266,7 @@ extension ModuleInteractorFactory {
     func vaultRecoveryS3ModuleInteractor() -> VaultRecoveryS3ModuleInteracting {
         VaultRecoveryS3ModuleInteractor(
             recoveryInteractor: InteractorFactory.shared.backupSyncRecoveryInteractor(),
+            configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             cacheInteractor: InteractorFactory.shared.vaultRecoveryCacheInteractor()
         )

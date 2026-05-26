@@ -26,13 +26,6 @@ final class UserDefaultsDataSourceImpl {
         case passwordGeneratorConfig
         case backupConfigsBlob
         case lastSyncDatesBlob
-        /// Legacy key: a single encrypted `BackupWebDAVConfig` blob used before the multi-config
-        /// rework. Retained read-only to support migration into `backupConfigsBlob`.
-        case webDAVSavedConfig
-        case webDAVIsConnected
-        case webDAVState
-        case webDAVLastSync
-        case webDAVHasLocalChanges
         case onboardingCompleted
         case connectOnboardingCompleted
         case defaultPasswordListAction
@@ -54,14 +47,21 @@ final class UserDefaultsDataSourceImpl {
         case shareLinkConfig
         case deviceName
         case legacyCloudEnabled = "KeyCloudEnabled"
+        
+        /// Pre-multi-config WebDAV blob; read-only for migration into `backupConfigsBlob`.
+        case webDAVSavedConfig
+        case webDAVIsConnected
+        case webDAVState
+        case webDAVLastSync
+        case webDAVHasLocalChanges
     }
-    
+
     private let userDefaults = UserDefaults()
-    private let sharedDefaults = UserDefaults(suiteName: Config.suiteName)!    
+    private let sharedDefaults = UserDefaults(suiteName: Config.suiteName)!
 }
 
 extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
-    
+
     func migrateLegacyValuesToSharedDefaults() {
         var hasMigratedValues = false
 
@@ -75,7 +75,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
             .defaultProtectionLevel,
             .passwordGeneratorConfig
         ]
-        
+
         for key in migratedToSharedDefaultsKeys {
             guard sharedDefaults.object(forKey: key.rawValue) == nil,
                   let value = userDefaults.object(forKey: key.rawValue) else {
@@ -99,26 +99,26 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         }
         return UUID(uuidString: uuidString)
     }
-    
+
     func setDeviceID(_ deviceID: UUID) {
         sharedDefaults.set(deviceID.uuidString, forKey: Keys.deviceID.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func clearDeviceID() {
         sharedDefaults.set(nil, forKey: Keys.deviceID.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func setCrashlyticsDisabled(_ disabled: Bool) {
         userDefaults.set(disabled, forKey: Keys.crashlyticsDisabled.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var isCrashlyticsDisabled: Bool {
         userDefaults.bool(forKey: Keys.crashlyticsDisabled.rawValue)
     }
-    
+
     func saveDateOfFirstRun(_ date: Date) {
         userDefaults.set(date.timeIntervalSince1970, forKey: Keys.dateOfFirstRun.rawValue)
         userDefaults.synchronize()
@@ -135,96 +135,96 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.set(nil, forKey: Keys.dateOfFirstRun.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func setAppLockAttempts(_ value: AppLockAttempts) {
         sharedDefaults.set(value.rawValue, forKey: Keys.appLockAttempts.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var appLockAttempts: AppLockAttempts? {
         guard let value = sharedDefaults.string(forKey: Keys.appLockAttempts.rawValue) else { return nil }
         return AppLockAttempts(rawValue: value)
     }
-    
+
     func clearAppLockBlockTime() {
         sharedDefaults.set(nil, forKey: Keys.appLockBlockTime.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func setAppLockBlockTime(_ value: AppLockBlockTime) {
         sharedDefaults.set(value.rawValue, forKey: Keys.appLockBlockTime.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var appLockBlockTime: AppLockBlockTime? {
         guard let value = sharedDefaults.string(forKey: Keys.appLockBlockTime.rawValue) else { return nil }
         return AppLockBlockTime(rawValue: value)
     }
-    
+
     func setLockAppUntil(date: Date) {
         sharedDefaults.set(date.timeIntervalSince1970, forKey: Keys.lockAppUntil.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var lockAppUntil: Date? {
         guard sharedDefaults.object(forKey: Keys.lockAppUntil.rawValue) != nil else { return nil }
         let value = sharedDefaults.double(forKey: Keys.lockAppUntil.rawValue)
         let date = Date(timeIntervalSince1970: value)
         return date
     }
-    
+
     func clearLockAppUntil() {
         sharedDefaults.set(nil, forKey: Keys.lockAppUntil.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func setSortType(_ sortType: SortType) {
         sharedDefaults.set(sortType.rawValue, forKey: Keys.sortType.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var sortType: SortType? {
         guard let value = sharedDefaults.string(forKey: Keys.sortType.rawValue) else { return nil }
         return SortType(rawValue: value)
     }
-    
+
     func setActiveSearchEnabled(_ enabled: Bool) {
         userDefaults.set(enabled, forKey: Keys.activeSearchEnabled.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var isActiveSearchEnabled: Bool {
         userDefaults.bool(forKey: Keys.activeSearchEnabled.rawValue)
     }
-    
+
     var incorrectLoginCountAttemp: Int {
         sharedDefaults.integer(forKey: Keys.incorrectLoginCountAttemp.rawValue)
     }
-    
+
     func setIncorrectLoginCountAttempt(_ count: Int) {
         sharedDefaults.setValue(count, forKey: Keys.incorrectLoginCountAttemp.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func clearIncorrectLoginCountAttempt() {
         sharedDefaults.setValue(nil, forKey: Keys.incorrectLoginCountAttemp.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var incorrectBiometryCountAttemp: Int {
         sharedDefaults.integer(forKey: Keys.incorrectBiometryCountAttemp.rawValue)
     }
-    
+
     func setIncorrectBiometryCountAttempt(_ count: Int) {
         sharedDefaults.setValue(count, forKey: Keys.incorrectBiometryCountAttemp.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func clearIncorrectBiometryCountAttempt() {
         sharedDefaults.setValue(nil, forKey: Keys.incorrectBiometryCountAttemp.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var currentDefaultProtectionLevel: ItemProtectionLevel {
         guard let string = sharedDefaults.string(forKey: Keys.defaultProtectionLevel.rawValue),
               let value = ItemProtectionLevel(rawValue: string)
@@ -233,16 +233,16 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         }
         return value
     }
-    
+
     func setDefaultProtectionLevel(_ value: ItemProtectionLevel) {
         sharedDefaults.setValue(value.rawValue, forKey: Keys.defaultProtectionLevel.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var passwordGeneratorConfig: Data? {
         sharedDefaults.data(forKey: Keys.passwordGeneratorConfig.rawValue)
     }
-    
+
     func setPasswordGeneratorConfig(_ data: Data) {
         sharedDefaults.setValue(data, forKey: Keys.passwordGeneratorConfig.rawValue)
         sharedDefaults.synchronize()
@@ -256,7 +256,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         sharedDefaults.setValue(data, forKey: Keys.shareLinkConfig.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     var backupConfigsBlob: Data? {
         userDefaults.data(forKey: Keys.backupConfigsBlob.rawValue)
     }
@@ -304,40 +304,40 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     var webDAVIsConnected: Bool {
         userDefaults.bool(forKey: Keys.webDAVIsConnected.rawValue)
     }
-    
+
     func webDAVSetIsConnected(_ isConnected: Bool) {
         userDefaults.setValue(isConnected, forKey: Keys.webDAVIsConnected.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func webDAVClearIsConnected() {
         userDefaults.setValue(false, forKey: Keys.webDAVIsConnected.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var webDAVState: Data? {
         userDefaults.data(forKey: Keys.webDAVState.rawValue)
     }
-    
+
     func webDAVSetState(_ state: Data) {
         userDefaults.setValue(state, forKey: Keys.webDAVState.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func webDAVClearState() {
         userDefaults.setValue(nil, forKey: Keys.webDAVState.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var webDAVLastSync: Data? {
         userDefaults.data(forKey: Keys.webDAVLastSync.rawValue)
     }
-    
+
     func webDAVSetLastSync(_ lastSync: Data) {
         userDefaults.setValue(lastSync, forKey: Keys.webDAVLastSync.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func webDAVClearLastSync() {
         userDefaults.setValue(nil, forKey: Keys.webDAVLastSync.rawValue)
         userDefaults.synchronize()
@@ -346,48 +346,48 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     var webDAVHasLocalChanges: Bool {
         userDefaults.bool(forKey: Keys.webDAVHasLocalChanges.rawValue)
     }
-    
+
     func webDAVSetHasLocalChanges() {
         userDefaults.setValue(true, forKey: Keys.webDAVHasLocalChanges.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func webDAVClearHasLocalChanges() {
         userDefaults.setValue(false, forKey: Keys.webDAVHasLocalChanges.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var isOnboardingCompleted: Bool {
         sharedDefaults.bool(forKey: Keys.onboardingCompleted.rawValue)
     }
-    
+
     func onboardingCompleted(_ completed: Bool) {
         sharedDefaults.set(completed, forKey: Keys.onboardingCompleted.rawValue)
         sharedDefaults.synchronize()
     }
-    
+
     func clearOnboardingCompleted() {
         sharedDefaults.setValue(nil, forKey: Keys.onboardingCompleted.rawValue)
     }
-    
+
     var isConnectOnboardingCompleted: Bool {
         userDefaults.bool(forKey: Keys.connectOnboardingCompleted.rawValue)
     }
-    
+
     func connectOnboardingCompleted(_ complete: Bool) {
         userDefaults.set(complete, forKey: Keys.connectOnboardingCompleted.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func clearConnectOnboardingCompleted() {
         userDefaults.setValue(nil, forKey: Keys.connectOnboardingCompleted.rawValue)
     }
-    
+
     var defaultPassswordListAction: PasswordListAction {
         let value = userDefaults.integer(forKey: Keys.defaultPasswordListAction.rawValue)
         return PasswordListAction(rawValue: value) ?? .viewDetails
     }
-    
+
     func setDefaultPassswordListAction(_ action: PasswordListAction) {
         userDefaults.set(action.rawValue, forKey: Keys.defaultPasswordListAction.rawValue)
         userDefaults.synchronize()
@@ -408,7 +408,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     var webDAVWriteDecryptedCopy: Bool {
         userDefaults.bool(forKey: Keys.webDAVWriteDecryptedCopy.rawValue)
     }
-    
+
     func webDAVSetWriteDecryptedCopy(_ writeDecryptedCopy: Bool) {
         userDefaults.set(writeDecryptedCopy, forKey: Keys.webDAVWriteDecryptedCopy.rawValue)
         userDefaults.synchronize()
@@ -417,26 +417,26 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     var timeOffset: TimeInterval {
         userDefaults.double(forKey: Keys.timeOffset.rawValue)
     }
-    
+
     func setTimeOffset(_ offset: TimeInterval) {
         userDefaults.set(offset, forKey: Keys.timeOffset.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var requestedForBiometryToLogin: Bool {
         userDefaults.bool(forKey: Keys.requestedForBiometryToLogin.rawValue)
     }
-    
+
     func setRequestedForBiometryToLogin(_ requested: Bool) {
         userDefaults.set(requested, forKey: Keys.requestedForBiometryToLogin.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var debugSubscriptionPlan: SubscriptionPlan? {
         guard let value = sharedDefaults.string(forKey: Keys.debugSubscriptionPlan.rawValue) else {
             return nil
         }
-        
+
         switch SubscriptionPlanType(rawValue: value) {
         case .free:
             return SubscriptionPlan.free
@@ -447,7 +447,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
             return nil
         }
     }
-    
+
     var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> {
         let stored = userDefaults.array(forKey: Keys.vaultOverrideAwaitingConfigIDs.rawValue) as? [String] ?? []
         return Set(stored.compactMap(BackupConfig.ID.init))
@@ -471,31 +471,31 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         userDefaults.set(strings, forKey: Keys.deviceRegistrationAwaitingConfigIDs.rawValue)
         userDefaults.synchronize()
     }
-    
+
     func setDebugSubscriptionPlan(_ plan: SubscriptionPlan) {
         sharedDefaults.set(plan.planType.rawValue, forKey: Keys.debugSubscriptionPlan.rawValue)
         sharedDefaults.set(plan.expirationDate?.timeIntervalSinceReferenceDate, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
     }
-    
+
     func clearDebugSubscriptionPlan() {
         sharedDefaults.set(nil, forKey: Keys.debugSubscriptionPlan.rawValue)
         sharedDefaults.set(nil, forKey: Keys.debugSubscriptionPlanExpireDate.rawValue)
     }
-    
+
     var lastKnownAppVersion: String? {
         userDefaults.string(forKey: Keys.lastKnownAppVersion.rawValue)
     }
-    
+
     func setLastKnownAppVersion(_ version: String) {
         userDefaults.set(version, forKey: Keys.lastKnownAppVersion.rawValue)
         userDefaults.synchronize()
     }
-    
+
     var lastKnownSubscriptionPlan: SubscriptionPlan? {
         guard let value = sharedDefaults.string(forKey: Keys.lastKnownSubscriptionPlan.rawValue) else {
             return nil
         }
-        
+
         switch SubscriptionPlanType(rawValue: value) {
         case .free:
             return SubscriptionPlan.free
@@ -506,20 +506,20 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
             return nil
         }
     }
-    
+
     func setLastKnownSubscriptionPlan(_ plan: SubscriptionPlan) {
         sharedDefaults.set(plan.planType.rawValue, forKey: Keys.lastKnownSubscriptionPlan.rawValue)
         sharedDefaults.set(plan.expirationDate?.timeIntervalSinceReferenceDate, forKey: Keys.lastKnownSubscriptionPlanExpireDate.rawValue)
     }
-    
+
     var shouldShowQuickSetup: Bool {
         userDefaults.bool(forKey: Keys.shouldShowQuickSetup.rawValue)
     }
-    
+
     func setShouldShowQuickSetup(_ value: Bool) {
         userDefaults.set(value, forKey: Keys.shouldShowQuickSetup.rawValue)
     }
-    
+
     var lastAppUpdatePromptDate: Date? {
         userDefaults.object(forKey: Keys.lastAppUpdatePromptDate.rawValue) as? Date
     }

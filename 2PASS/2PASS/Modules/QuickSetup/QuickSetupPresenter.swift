@@ -15,7 +15,7 @@ enum QuickSetupDestination: RouterDestination {
     case importExport(onClose: Callback)
     case transferItems(onClose: Callback)
     case syncNotAllowed
-    
+
     var id: String {
         switch self {
         case .defaultSecurityTier:
@@ -32,10 +32,10 @@ enum QuickSetupDestination: RouterDestination {
 
 @MainActor @Observable
 final class QuickSetupPresenter {
- 
+
     var destination: QuickSetupDestination?
     var showVaultSyncFailure = false
-    
+
     var autofillIsEnabled: Bool {
         get {
             _autofillIsEnabled
@@ -49,7 +49,7 @@ final class QuickSetupPresenter {
         }
     }
     private var _autofillIsEnabled: Bool = false
-    
+
     var iCloudSyncEnabled: Bool {
         get {
             _iCloudSyncEnabled
@@ -60,28 +60,25 @@ final class QuickSetupPresenter {
             } else {
                 interactor.turnOffCloud()
             }
-            
+
             _iCloudSyncEnabled = newValue
         }
     }
     private var _iCloudSyncEnabled: Bool = false
-    
+
     private(set) var defaultSecurityTier: ItemProtectionLevel
-    
+
     private let interactor: QuickSetupModuleInteracting
-    
+
     init(interactor: QuickSetupModuleInteracting) {
         self.interactor = interactor
         self._autofillIsEnabled = interactor.isAutoFillEnabled
         self._iCloudSyncEnabled = interactor.isCloudEnabled
         self.defaultSecurityTier = interactor.defaultSecurityTier
     }
-    
+
     func onAppear() async {
         defaultSecurityTier = interactor.defaultSecurityTier
-        // Re-seed iCloud-toggle state once on appear in case a config was added/removed while
-        // this screen was off-stack — covers the gap between init-time seeding and the
-        // `BackupConfigsDidChange` subscription starting below.
         _iCloudSyncEnabled = interactor.isCloudEnabled
 
         await withTaskGroup() { group in
@@ -96,43 +93,39 @@ final class QuickSetupPresenter {
             }
         }
     }
-    
+
     func onChangeDefaultSecurityTier() {
         destination = .defaultSecurityTier
     }
-    
+
     func onImportItems() {
         destination = .importExport(onClose: { [weak self] in
             self?.destination = nil
         })
     }
-    
+
     func onTransferItems() {
         destination = .transferItems(onClose: { [weak self] in
             self?.destination = nil
         })
     }
-    
+
     func onClose() {
         interactor.finishQuickSetup()
     }
-    
+
     private func observeAutoFillStatusChanged() async {
         for await _ in interactor.didAutoFillStatusChanged {
             _autofillIsEnabled = interactor.isAutoFillEnabled
         }
     }
-    
+
     private func observePremiumPlanPrompt() async {
         for await _ in interactor.syncPremiumNeededScreen {
             destination = .syncNotAllowed
         }
     }
 
-    /// Refreshes the iCloud-toggle mirror whenever `BackupSyncConfigsInteractor` posts a
-    /// successful add / update / remove. Covers cross-screen changes (e.g. iCloud added via
-    /// vault recovery or removed via the BackupConfigs screen) that don't pass through this
-    /// presenter's own `turnOnCloud` / `turnOffCloud` setters.
     private func observeConfigsChanged() async {
         for await _ in interactor.configsDidChange {
             _iCloudSyncEnabled = interactor.isCloudEnabled

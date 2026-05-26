@@ -8,16 +8,6 @@ import Foundation
 
 extension CloudSync {
 
-    /// Awaitable single-pass bridge over `CloudSync`'s event-driven `synchronize()` /
-    /// `addFinishedSyncHandler` callback shape, fulfilling `BackupSynchronizing.performSync`.
-    ///
-    /// **Coexistence.** Legacy callers (push, foregrounding, vault edits) share the same
-    /// `SyncHandler.isSyncing` gate. If a legacy sync is in flight, the inner `synchronize()`
-    /// no-ops and the awaiter adopts the legacy sync's outcome via the same handler.
-    ///
-    /// **Cancellation.** Cooperative — resumes with `.cancelled` so the cancel button has an
-    /// observable effect. The underlying CloudKit op runs to completion in the background;
-    /// CloudKit doesn't surface a cancellation primitive at this layer.
     public func syncOnce(allowingAnyDeviceId: Bool) async throws(BackupSyncError) -> BackupSyncOutcome {
         do {
             return try await syncOncePass(allowingAnyDeviceId: allowingAnyDeviceId)
@@ -45,9 +35,6 @@ extension CloudSync {
     }
 }
 
-/// Carries the per-call `Bridge` across the `withTaskCancellationHandler` boundary so
-/// `onCancel` can reach it. Race-safe both directions: a `cancel()` landing before `set(_:)`
-/// is remembered and applied to the bridge as soon as it's set.
 private final class BridgeHolder: @unchecked Sendable {
     private let lock = NSLock()
     private var bridge: Bridge?
@@ -89,7 +76,6 @@ private final class Bridge: @unchecked Sendable {
         self.continuation = continuation
     }
 
-    /// Idempotent; safe to race with the natural completion path.
     func cancel() {
         resume(.failure(BackupSyncError.cancelled))
     }
@@ -100,9 +86,6 @@ private final class Bridge: @unchecked Sendable {
             return
         }
 
-        // Strong `self` is intentional: the `Bridge` has no other strong owner. The
-        // closures stored on `CloudHandler` keep it alive until `resume(...)` removes them
-        // via the saved tokens. `cloudSync` is weak in the reverse direction, so no cycle.
         finishedSyncToken = cloudSync.addFinishedSyncHandler { applied in
             self.resume(.success(BackupSyncOutcome(appliedRemoteChanges: applied)))
         }
@@ -114,9 +97,6 @@ private final class Bridge: @unchecked Sendable {
         if isResumed { return }
 
         if allowingAnyDeviceId {
-            // CloudKit analogue of the file-based `allowingAnyDeviceId` gate: short-circuits
-            // the multi-device-sync entitlement check in `MergeHandler.applyChanges`, so
-            // Free-tier users can complete an explicit post-recovery take-over.
             cloudSync.setTakingOverVault(true)
         }
 

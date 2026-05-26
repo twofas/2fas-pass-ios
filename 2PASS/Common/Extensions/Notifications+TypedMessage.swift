@@ -8,38 +8,21 @@ import Foundation
 import os
 
 // MARK: - Typed-message backport of iOS 26's NotificationCenter.AsyncMessage / .MainActorMessage
-//
-// Same API shape (argument labels, method names) as the iOS 26 SDK so adoption today is
-// identical to adoption tomorrow. Transport reuses `NotificationCenter`: the typed message
-// is packed into `userInfo` under one private key; subject scoping reuses `object:`.
 
 public enum Notifications {
 
-    /// Typed multicast message that may cross actor boundaries. Backport of iOS 26's
-    /// `NotificationCenter.AsyncMessage`.
-    ///
-    /// Posting is **synchronous**: observers registered via `addObserver(of:from:using:)`
-    /// run before `post(_:subject:)` returns. `messages(of:from:)` consumers wake up later
-    /// off-actor. The `Subject` is matched by pointer identity (non-retained), so a
-    /// `subject` that deinits before delivery silently drops the message.
     public protocol AsyncMessage: Sendable {
         associatedtype Subject: AnyObject
         static var name: Notification.Name { get }
     }
 
-    /// Main-actor-bound variant. Both posting and synchronous observation require
-    /// `@MainActor` isolation. Backport of iOS 26's `NotificationCenter.MainActorMessage`.
     public protocol MainActorMessage {
         associatedtype Subject: AnyObject
         static var name: Notification.Name { get }
     }
 
-    /// Element-typed concrete return type of `NotificationCenter.messages(of:)`. Spell as
-    /// `Notifications.MessageSequence<M>` at call sites.
     public typealias MessageSequence<M> = AsyncCompactMapSequence<NotificationCenter.Notifications, M>
 
-    /// RAII handle for `addObserver(of:from:using:)`. The underlying observer is removed
-    /// on `deinit` or explicit `cancel()`, whichever comes first. Cancellation is idempotent.
     public final class ObservationToken: @unchecked Sendable {
         private let token: NSObjectProtocol
         private let center: NotificationCenter
@@ -81,19 +64,11 @@ extension Notifications.MainActorMessage {
 
 private let messagePayloadKey = "Notifications.payload"
 
-/// Erased envelope that carries a `Sendable` payload through `userInfo: [AnyHashable: Any]?`.
-/// The only `@unchecked Sendable` in the backport — public APIs only deposit `Sendable`
-/// messages and only extract back to the original type, so the erasure window is narrow.
 private struct AnyMessageBox: @unchecked Sendable {
     let value: Any
 }
 
 // MARK: - Module-scope public aliases
-//
-// Inside `extension NotificationCenter { ... }` the bare name `Notifications` resolves to
-// Foundation's nested `NotificationCenter.Notifications` first. Single-token typealiases
-// at module scope sidestep the dotted-path lookup. Call sites should still use
-// `Notifications.AsyncMessage` etc. — these are extension-method internals.
 
 public typealias NotificationsAsyncMessage = Notifications.AsyncMessage
 public typealias NotificationsMainActorMessage = Notifications.MainActorMessage
@@ -117,9 +92,6 @@ extension NotificationCenter {
             }
     }
 
-    /// Synchronous observer. Handler runs on the poster's thread before `post(_:subject:)`
-    /// returns — useful when the producer needs observer-driven side effects to have landed
-    /// before continuing.
     public func addObserver<M: NotificationsAsyncMessage>(
         of type: M.Type,
         from subject: M.Subject? = nil,
@@ -153,9 +125,6 @@ extension NotificationCenter {
             }
     }
 
-    /// Synchronous observer delivered on the main thread via `OperationQueue.main`. The
-    /// `MainActor.assumeIsolated` bridge is safe because `OperationQueue.main` is pinned
-    /// to the main thread.
     @MainActor
     public func addObserver<M: NotificationsMainActorMessage>(
         of type: M.Type,

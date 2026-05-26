@@ -22,9 +22,8 @@ public enum BackupSyncError: Error, Sendable {
     case export(BackupVaultExportError)
     case invalidResponse
     case unexpected(String)
-    /// iCloud terminal condition (account signed out, container unavailable, …) where the
-    /// user must act in Settings before sync resumes. Distinct from `.unauthorized` (ask for
-    /// credentials) and `.network` (transient).
+    /// Terminal — user must act in Settings before sync resumes. Distinct from `.unauthorized`
+    /// (ask for credentials) and `.network` (transient).
     case iCloudUnavailable
 }
 
@@ -74,7 +73,6 @@ extension BackupSyncError {
 }
 
 extension BackupSyncError {
-    /// True when the error describes a transient condition that a retry loop should handle.
     var isTransient: Bool {
         switch self {
         case .network, .server, .invalidResponse:
@@ -86,8 +84,7 @@ extension BackupSyncError {
 }
 
 extension BackupSyncError: LocalizedError {
-    /// `nil` for `.cancelled` so user cancels don't surface as errors. `.network` / `.server`
-    /// use a static localized message instead of the underlying NSError's English description.
+    /// `nil` for `.cancelled` so user cancels don't surface as errors.
     public var errorDescription: String? {
         switch self {
         case .unauthorized:

@@ -72,12 +72,6 @@ final class UpdateAppPromptInteractor: UpdateAppPromptInteracting {
 private extension UpdateAppPromptInteractor {
 
     func startMonitoring() {
-        // iCloud schema-not-supported errors flow through the unified `syncEvents()` stream
-        // alongside WebDAV / S3 — `CloudSyncAdapter.performSync` surfaces them as
-        // `BackupSyncError.schemaNotSupported(version)` on `.finished` just like the
-        // file-based adapters. Subscribing before `BackupSyncSetupInteractor.initialize()`
-        // runs is safe — `syncEvents()` registers the continuation immediately; sessions
-        // only yield once `setup(...)` has wired the providers later in app boot.
         let syncEventStream = syncTriggerInteractor.syncEvents()
         syncEventTask = Task.detached { [weak self] in
             for await event in syncEventStream {

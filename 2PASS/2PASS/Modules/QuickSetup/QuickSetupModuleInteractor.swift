@@ -9,20 +9,20 @@ import Common
 import Backup
 
 protocol QuickSetupModuleInteracting: AnyObject {
-    
+
     func finishQuickSetup()
-    
+
     // MARK: AutoFill
-    
+
     var isAutoFillEnabled: Bool { get }
-    
+
     func turnOnAutoFill()
     func turnOffAutoFill()
-    
+
     var didAutoFillStatusChanged: NotificationCenter.Notifications { get }
-    
+
     // MARK: iCloud
-    
+
     var isCloudEnabled: Bool { get }
 
     func turnOnCloud()
@@ -31,9 +31,9 @@ protocol QuickSetupModuleInteracting: AnyObject {
     var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
     var syncPremiumNeededScreen: NotificationCenter.Notifications { get }
-    
+
     // MARK: Security Tier
-    
+
     var defaultSecurityTier: ItemProtectionLevel { get }
 }
 
@@ -80,19 +80,12 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
     }
 
     func turnOnCloud() {
-        // Persisting the iCloud config is the enable signal — the container's
-        // `saveConfigs(_:)` diff detects the iCloud-added transition and runs
-        // `cloudSync.enable()` internally. After enable, kick off an initial sync so any
-        // existing local vault state is pushed up to iCloud immediately rather than waiting
-        // for the next post-mutation `syncAll`.
         guard configsInteractor.canAddiCloud else { return }
         guard let id = configsInteractor.addiCloudConfig() else { return }
         syncTriggerInteractor.sync(id: id)
     }
 
     func turnOffCloud() {
-        // Mirror of `turnOnCloud()`: removing the iCloud entry triggers the disable side
-        // effect inside the container.
         if let id = configsInteractor.allConfigs.iCloudEntry?.id {
             syncTriggerInteractor.cancelSync(id: id)
             configsInteractor.removeConfig(id: id)
@@ -106,11 +99,11 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
     var syncPremiumNeededScreen: NotificationCenter.Notifications {
         NotificationCenter.default.notifications(named: .presentSyncPremiumNeededScreen)
     }
-    
+
     var defaultSecurityTier: ItemProtectionLevel {
         configInteractor.currentDefaultProtectionLevel
     }
-    
+
     func finishQuickSetup() {
         quickSetupInteractor.finishQuickSetup()
     }
