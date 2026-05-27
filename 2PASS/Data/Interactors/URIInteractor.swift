@@ -53,8 +53,6 @@ extension URIInteractor: URIInteracting {
         return URLComponents(string: normalized)?.host
     }
 
-    /// Not PSL-correct: over-extends to 3 labels for coincidences like `tv.com`/`it.com`
-    /// where both the last two labels happen to be in `tldList`.
     func displayDomain(from host: String) -> String {
         let parts = host.split(separator: ".")
         guard !parts.isEmpty else { return host }

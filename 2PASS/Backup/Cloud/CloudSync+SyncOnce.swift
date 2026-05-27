@@ -110,7 +110,6 @@ private final class Bridge: @unchecked Sendable {
         case .enabledNotAvailable(let reason):
             resume(.failure(Self.mapNotAvailable(reason)))
         case .unknown, .enabled:
-            // Intermediate; keep waiting.
             break
         }
     }

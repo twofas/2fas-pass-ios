@@ -40,7 +40,6 @@ public final class CloudCacheStorageDataSourceImpl {
     }
 
     private func warmUp() {
-        // Artifically calling out context so it will prepare storage for concurrent access
         coreDataStack.context.performAndWait { [weak self] in
             try? self?.coreDataStack.context.save()
         }

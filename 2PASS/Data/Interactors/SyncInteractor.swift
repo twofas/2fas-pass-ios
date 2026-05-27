@@ -8,6 +8,7 @@ import Foundation
 import Common
 
 public protocol SyncInteracting: AnyObject {
+    
     /// `true` iff the merge mutated any local row (items, tags, or tombstones).
     @discardableResult
     func syncAndApplyChanges(
