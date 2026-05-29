@@ -134,6 +134,7 @@ private extension ItemsImportInteractor {
                 } else {
                     do {
                         try itemsInteractor.updateItem(item.update(
+                            id: current.id,
                             creationDate: adjustDateIfNeeded(item.creationDate),
                             modificationDate: adjustDateIfNeeded(item.modificationDate)
                         ))

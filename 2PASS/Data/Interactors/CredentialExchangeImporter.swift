@@ -134,6 +134,10 @@ private extension CredentialExchangeImporter {
         var wifi: ASImportableCredential.WiFi?
         var firstUnsupportedCredential: ASImportableCredential?
 
+        if let subtitle = importableItem.subtitle?.nonBlankTrimmedOrNil {
+            notes.append(subtitle)
+        }
+
         for credential in credentials {
             switch credential {
             case .basicAuthentication(let value):
