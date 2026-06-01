@@ -105,6 +105,8 @@ protocol ItemEditorModuleInteracting: AnyObject {
     func fetchIconImage(from url: URL) async throws -> Data
     func checkCurrentPasswordState() -> ItemEditorModuleInteractorCheckState
     func moveToTrash() -> ItemID?
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 final class ItemEditorModuleInteractor {
@@ -118,7 +120,7 @@ final class ItemEditorModuleInteractor {
     private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let fileIconInteractor: FileIconInteracting
@@ -138,7 +140,7 @@ final class ItemEditorModuleInteractor {
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         fileIconInteractor: FileIconInteracting,
@@ -156,7 +158,7 @@ final class ItemEditorModuleInteractor {
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.fileIconInteractor = fileIconInteractor
@@ -552,12 +554,16 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         }
         itemsInteractor.markAsTrashed(for: editItemID)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
         return editItemID
     }
     
     private func didSaveItem() {
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
+    }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        syncTriggerInteractor.syncDidApplyRemoteChanges()
     }
 }

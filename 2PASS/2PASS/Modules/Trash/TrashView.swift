@@ -47,6 +47,9 @@ struct TrashView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .onDisappear {
+            presenter.onDisappear()
+        }
         .router(router: TrashRouter(), destination: $presenter.destination)
     }
 }

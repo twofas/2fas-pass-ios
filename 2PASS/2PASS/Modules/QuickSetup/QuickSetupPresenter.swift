@@ -7,13 +7,15 @@
 import SwiftUI
 import Common
 import CommonUI
+import Data
+import Backup
 
 enum QuickSetupDestination: RouterDestination {
     case defaultSecurityTier
     case importExport(onClose: Callback)
     case transferItems(onClose: Callback)
     case syncNotAllowed
-    
+
     var id: String {
         switch self {
         case .defaultSecurityTier:
@@ -28,12 +30,12 @@ enum QuickSetupDestination: RouterDestination {
     }
 }
 
-@Observable
+@MainActor @Observable
 final class QuickSetupPresenter {
- 
+
     var destination: QuickSetupDestination?
     var showVaultSyncFailure = false
-    
+
     var autofillIsEnabled: Bool {
         get {
             _autofillIsEnabled
@@ -47,7 +49,7 @@ final class QuickSetupPresenter {
         }
     }
     private var _autofillIsEnabled: Bool = false
-    
+
     var iCloudSyncEnabled: Bool {
         get {
             _iCloudSyncEnabled
@@ -58,25 +60,26 @@ final class QuickSetupPresenter {
             } else {
                 interactor.turnOffCloud()
             }
-            
+
             _iCloudSyncEnabled = newValue
         }
     }
     private var _iCloudSyncEnabled: Bool = false
-    
+
     private(set) var defaultSecurityTier: ItemProtectionLevel
-    
+
     private let interactor: QuickSetupModuleInteracting
-    
+
     init(interactor: QuickSetupModuleInteracting) {
         self.interactor = interactor
         self._autofillIsEnabled = interactor.isAutoFillEnabled
         self._iCloudSyncEnabled = interactor.isCloudEnabled
         self.defaultSecurityTier = interactor.defaultSecurityTier
     }
-    
+
     func onAppear() async {
         defaultSecurityTier = interactor.defaultSecurityTier
+        _iCloudSyncEnabled = interactor.isCloudEnabled
 
         await withTaskGroup() { group in
             group.addTask {
@@ -86,54 +89,45 @@ final class QuickSetupPresenter {
                 await self.observeAutoFillStatusChanged()
             }
             group.addTask {
-                await self.observeCloudStatusChanged()
+                await self.observeConfigsChanged()
             }
         }
     }
-    
+
     func onChangeDefaultSecurityTier() {
         destination = .defaultSecurityTier
     }
-    
+
     func onImportItems() {
         destination = .importExport(onClose: { [weak self] in
             self?.destination = nil
         })
     }
-    
+
     func onTransferItems() {
         destination = .transferItems(onClose: { [weak self] in
             self?.destination = nil
         })
     }
-    
+
     func onClose() {
         interactor.finishQuickSetup()
     }
-    
+
     private func observeAutoFillStatusChanged() async {
         for await _ in interactor.didAutoFillStatusChanged {
             _autofillIsEnabled = interactor.isAutoFillEnabled
         }
     }
-    
+
     private func observePremiumPlanPrompt() async {
         for await _ in interactor.syncPremiumNeededScreen {
             destination = .syncNotAllowed
         }
     }
-    
-    private func observeCloudStatusChanged() async {
-        for await _ in interactor.didCloudStatusChanged {
-            switch interactor.cloudState {
-            case .enabledNotAvailable(.syncNotAllowed):
-                destination = .syncNotAllowed
-            case .enabledNotAvailable:
-                showVaultSyncFailure = true
-            default:
-                break
-            }
 
+    private func observeConfigsChanged() async {
+        for await _ in interactor.configsDidChange {
             _iCloudSyncEnabled = interactor.isCloudEnabled
         }
     }

@@ -4,45 +4,49 @@
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
-import UIKit
+import Foundation
 
 final class MainPresenter {
     private let flowController: MainFlowControlling
     private let interactor: MainModuleInteracting
-    private let notificationCenter: NotificationCenter = .default
     private let waitingTime: Duration = .milliseconds(750)
-    
+
     weak var view: (any MainViewControlling)?
-        
+
+    private var badgeSubscription: Task<Void, Never>?
+
     init(flowController: MainFlowControlling, interactor: MainModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
-        
-        interactor.updateBadge = { [weak self] showError in
-            DispatchQueue.main.async {
-                if showError {
-                    self?.view?.showBadge()
-                } else {
-                    self?.view?.hideBadge()
-                }
-            }
-        }
+
         interactor.paymentScreen = { [weak flowController] in
             flowController?.toPayment()
         }
-        notificationCenter
-            .addObserver(
-                self,
-                selector: #selector(viewDidAppear),
-                name: UIApplication.didBecomeActiveNotification,
-                object: nil
-            )
+
+        badgeSubscription = Task { [weak self] in
+            guard let stream = self?.interactor.badgeUpdates else { return }
+            for await showError in stream {
+                await self?.applyBadge(showError)
+            }
+        }
     }
-    
-    @objc
+
+    deinit {
+        badgeSubscription?.cancel()
+    }
+
+    @MainActor
+    private func applyBadge(_ showError: Bool) {
+        if showError {
+            view?.showBadge()
+        } else {
+            view?.hideBadge()
+        }
+    }
+
     func viewDidAppear() {
         interactor.viewIsVisible()
-        
+
         if interactor.shouldShowQuickSetup {
             Task { @MainActor in
                 try await Task.sleep(for: waitingTime)
@@ -55,12 +59,8 @@ final class MainPresenter {
             }
         }
     }
-    
+
     func viewWillDisappear() {
         flowController.dismissRequestEnableBiometry()
-    }
-    
-    deinit {
-        notificationCenter.removeObserver(self)
     }
 }

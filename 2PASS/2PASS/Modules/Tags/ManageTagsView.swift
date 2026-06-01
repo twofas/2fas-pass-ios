@@ -77,4 +77,8 @@ private struct PreviewManageTagsModuleInteractor: ManageTagsModuleInteracting {
     func getItemCountForTag(tagID: ItemTagID) -> Int {
         Int.random(in: 1...15)
     }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        AsyncStream { _ in }
+    }
 }

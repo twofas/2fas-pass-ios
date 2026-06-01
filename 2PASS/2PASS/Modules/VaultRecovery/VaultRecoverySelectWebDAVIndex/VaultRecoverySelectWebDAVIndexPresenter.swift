@@ -8,6 +8,7 @@ import SwiftUI
 import UIKit
 import Common
 import Data
+import Backup
 
 enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
     var id: String {
@@ -25,13 +26,13 @@ enum VaultRecoverySelectWebDAVIndexDestination: Identifiable {
 
 @Observable
 final class VaultRecoverySelectWebDAVIndexPresenter {
-    let backups: [WebDAVIndexEntry]
-    private let index: WebDAVIndex
-   
-    var isLoading = false
-    
+    let backups: [BackupIndexEntry]
+    private let index: BackupIndex
+
+    var selectedVaultID: String?
+
     var destination: VaultRecoverySelectWebDAVIndexDestination?
-    
+
     private let interactor: VaultRecoverySelectWebDAVIndexModuleInteracting
     private let baseURL: URL
     private let allowTLSOff: Bool
@@ -41,7 +42,7 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
 
     init(
         interactor: VaultRecoverySelectWebDAVIndexModuleInteracting,
-        index: WebDAVIndex,
+        index: BackupIndex,
         baseURL: URL,
         allowTLSOff: Bool,
         login: String?,
@@ -60,44 +61,39 @@ final class VaultRecoverySelectWebDAVIndexPresenter {
 }
 
 extension VaultRecoverySelectWebDAVIndexPresenter {
-    func onSelectVault(_ vault: WebDAVIndexEntry) {
-        isLoading = true
-        
+    func onSelectVault(_ vault: BackupIndexEntry) {
+        guard selectedVaultID == nil else { return }
+        selectedVaultID = vault.vaultId
+
         guard let uuid = UUID(uuidString: vault.vaultId) else {
             Log("VaultRecoverySelectWebDAVIndexPresenter - incorrect UUID", severity: .error)
-            isLoading = false
+            selectedVaultID = nil
             return
         }
-        
-        interactor.fetchVault(
-            baseURL: baseURL,
-            allowTLSOff: allowTLSOff,
-            vaultID: uuid,
-            schemeVersion: vault.schemaVersion,
-            login: login,
-            password: password
-        ) { [weak self] result in
+
+        Task { @MainActor [weak self] in
             guard let self else { return }
-            switch result {
-            case .success(let exchangeVault):
-                interactor
-                    .saveConfiguration(
-                        baseURL: baseURL,
-                        allowTLSOff: allowTLSOff,
-                        vaultID: uuid,
-                        login: login,
-                        password: password
-                    )
+            do {
+                let exchangeVault = try await interactor.fetchVault(
+                    baseURL: baseURL,
+                    allowTLSOff: allowTLSOff,
+                    vaultID: uuid,
+                    schemeVersion: vault.schemaVersion,
+                    login: login,
+                    password: password
+                )
                 onSelect(exchangeVault)
-            case .failure(let status):
-                showStatus(status)
+            } catch let error as VaultRecoveryWebDAVError {
+                self.showStatus(error)
+            } catch {
+                self.showStatus(.transport(.invalidResponse))
             }
         }
     }
-    
-    private func showStatus(_ status: WebDAVRecoveryInteractorError) {
-        isLoading = false
-        
+
+    private func showStatus(_ status: VaultRecoveryWebDAVError) {
+        selectedVaultID = nil
+
         switch status {
         case .schemaNotSupported(let schemaVersion):
             destination = .appUpdateNeeded(
@@ -113,13 +109,13 @@ extension VaultRecoverySelectWebDAVIndexPresenter {
             showError(status.message)
         }
     }
-    
+
     func showError(_ message: String) {
         destination = .error(message: message, onClose: { [weak self] in
             self?.destination = nil
         })
     }
-    
+
     private func onUpdateApp() {
         UIApplication.shared.open(Config.appStoreURL)
     }

@@ -38,9 +38,7 @@ struct ManageTagCell: View {
                     }
                 }
             } label: {
-                Image(systemName: "ellipsis")
-                    .foregroundStyle(.neutral500)
-                    .frame(width: 40, height: 40, alignment: .trailing)
+                MenuEllipsisLabel()
             }
             .tint(nil)
         }

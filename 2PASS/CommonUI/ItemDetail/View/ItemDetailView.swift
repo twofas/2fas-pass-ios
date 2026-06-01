@@ -47,8 +47,11 @@ struct ItemDetailView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .onDisappear {
+            presenter.onDisappear()
+        }
     }
-    
+
     private var topMargin: CGFloat {
         if case .paymentCard = presenter.form {
             return Spacing.s
@@ -254,5 +257,9 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
 
     func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
         issuer == .americanExpress ? 4 : 3
+    }
+
+    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
+        AsyncStream { _ in }
     }
 }

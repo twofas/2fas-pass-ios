@@ -65,7 +65,9 @@ extension MainFlowController {
 extension MainFlowController: PasswordsNavigationFlowControllerParent {
     
     func toQuickSetup() {
-        let quickSetupViewController = UIHostingController(rootView: QuickSetupRouter.buildView())
+        let quickSetupViewController = MainActor.assumeIsolated {
+            UIHostingController(rootView: QuickSetupRouter.buildView())
+        }
         viewController.present(quickSetupViewController, animated: true)
     }
     

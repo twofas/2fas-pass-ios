@@ -69,10 +69,19 @@ struct VaultRecoveryiCloudVaultSelectionView: View {
                                 editMode = .active
                             }
                         }
+                        .tint(nil)
                     case .active:
-                        Button(.commonDone) {
-                            withAnimation {
-                                editMode = .inactive
+                        if #available(iOS 26, *) {
+                            Button(.commonDone, role: .confirm) {
+                                withAnimation {
+                                    editMode = .inactive
+                                }
+                            }
+                        } else {
+                            Button(.commonDone) {
+                                withAnimation {
+                                    editMode = .inactive
+                                }
                             }
                         }
                     default:

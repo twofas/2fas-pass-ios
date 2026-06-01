@@ -51,7 +51,7 @@ extension VaultRecoveryEnterPasswordModuleInteractor: VaultRecoveryEnterPassword
                 kdfSpec: try? jsonDecoder.decode(KDFSpec.self, from: vault.kdfSpec),
                 completion: completion
             )
-        case .file(let exchangeVault):
+        case .file(let exchangeVault, _):
             let uuidString = exchangeVault.vault.id
             guard let seedHashHex = exchangeVault.encryption?.seedHash,
                   let reference = exchangeVault.encryption?.reference,

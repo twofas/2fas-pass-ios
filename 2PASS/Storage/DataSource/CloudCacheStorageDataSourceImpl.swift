@@ -28,9 +28,20 @@ public final class CloudCacheStorageDataSourceImpl {
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.initilizingNewStore = { [weak self] in self?.initilizingNewStore?() }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
-        coreDataStack.loadStore { success in
+    }
+
+    public func loadStore(completion: @escaping Callback) {
+        coreDataStack.loadStore { [weak self] success in
             guard success else { fatalError("Failed to load CloudCache store") }
             Log("CloudCache storage initialized")
+            self?.warmUp()
+            completion()
+        }
+    }
+
+    private func warmUp() {
+        coreDataStack.context.performAndWait { [weak self] in
+            try? self?.coreDataStack.context.save()
         }
     }
 }
@@ -336,13 +347,6 @@ extension CloudCacheStorageDataSourceImpl: CloudCacheStorageDataSource {
     public func cloudCacheDeleteAllDeletedItems() {
         DeletedItemCachedEntity.listItems(on: context, vaultID: nil).forEach { entity in
             context.delete(entity)
-        }
-    }
-    
-    public func warmUp() {
-        // Artifically calling out context so it will prepare storage for concurrent access
-        coreDataStack.context.performAndWait { [weak self] in
-            try? self?.coreDataStack.context.save()
         }
     }
     

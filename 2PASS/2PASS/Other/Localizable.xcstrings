@@ -891,6 +891,363 @@
         }
       }
     },
+    "backup_configs_add_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add backup method"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj kopię zapasową"
+          }
+        }
+      }
+    },
+    "backup_configs_allow_untrusted_certificates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Untrusted Certificates"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwalaj na niezaufane certyfikaty"
+          }
+        }
+      }
+    },
+    "backup_configs_cancel_sync_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel sync"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anuluj synchronizację"
+          }
+        }
+      }
+    },
+    "backup_configs_empty_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a backup method to start syncing your vault."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj kopię zapasową, aby rozpocząć synchronizację swojego sejfu."
+          }
+        }
+      }
+    },
+    "backup_configs_last_synced" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synced %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zsynchronizowano %@"
+          }
+        }
+      }
+    },
+    "backup_configs_never_synced" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not synced yet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeszcze nie zsynchronizowano"
+          }
+        }
+      }
+    },
+    "backup_configs_provider_icloud_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync with your iCloud account."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizacja z kontem iCloud."
+          }
+        }
+      }
+    },
+    "backup_configs_provider_icloud_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        }
+      }
+    },
+    "backup_configs_provider_picker_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose where 2FAS Pass will back up your encrypted vault."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz miejsce, w którym 2FAS Pass będzie tworzyć kopię zapasową zaszyfrowanego sejfu."
+          }
+        }
+      }
+    },
+    "backup_configs_provider_picker_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select backup method"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz metodę tworzenia kopii zapasowej"
+          }
+        }
+      }
+    },
+    "backup_configs_provider_s3_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use any S3-compatible storage."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj dowolnej pamięci zgodnej z S3."
+          }
+        }
+      }
+    },
+    "backup_configs_provider_s3_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3"
+          }
+        }
+      }
+    },
+    "backup_configs_provider_webdav_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect with your WebDAV server."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Połącz się z własnym serwerem WebDAV."
+          }
+        }
+      }
+    },
+    "backup_configs_provider_webdav_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WebDAV"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WebDAV"
+          }
+        }
+      }
+    },
+    "backup_configs_remove_confirm_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will disable automatic sync of your Vault. Do you wish to continue?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spowoduje to wyłączenie automatycznej synchronizacji Twojego sejfu. Czy chcesz kontynuować?"
+          }
+        }
+      }
+    },
+    "backup_configs_remove_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete %@ sync?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć %@?"
+          }
+        }
+      }
+    },
+    "backup_configs_security_header" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Security"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezpieczeństwo"
+          }
+        }
+      }
+    },
+    "backup_configs_sync_all_now_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync all now"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizuj wszystkie teraz"
+          }
+        }
+      }
+    },
+    "backup_configs_sync_now_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync now"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizuj teraz"
+          }
+        }
+      }
+    },
+    "backup_configs_unsaved_changes_dialog_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you want to discard your changes?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy chcesz odrzucić wprowadzone zmiany?"
+          }
+        }
+      }
+    },
+    "backup_configs_unsaved_changes_dialog_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unsaved changes"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niezapisane zmiany"
+          }
+        }
+      }
+    },
     "backup_export_cta" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2400,6 +2757,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wył."
+          }
+        }
+      }
+    },
+    "common_discard_changes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard changes"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odrzuć zmiany"
           }
         }
       }
@@ -8763,40 +9137,6 @@
         }
       }
     },
-    "onboarding_create_master_password_guide_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This simple tutorial will help you prepare and memorize your Master Password."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ten prosty poradnik pomoże w przygotowaniu i zapamiętaniu hasła głównego."
-          }
-        }
-      }
-    },
-    "onboarding_create_master_password_guide_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A Simple Guide"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Poradnik"
-          }
-        }
-      }
-    },
     "onboarding_create_master_password_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8895,74 +9235,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wygeneruj tajne słowa"
-          }
-        }
-      }
-    },
-    "onboarding_guide_1" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Look around and select 3 objects (e.g.: Flower, Candle, Bookshelf)."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Look around and select 3 objects (e.g.: Flower, Candle, Bookshelf)."
-          }
-        }
-      }
-    },
-    "onboarding_guide_2" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Think about short story that connects these 3 objects (for example: A Flower and a Candle lays on the Bookshelf.)"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Think about short story that connects these 3 objects (for example: A Flower and a Candle lays on the Bookshelf.)"
-          }
-        }
-      }
-    },
-    "onboarding_guide_3" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selected objects are the words in your password. The story helps you remember them. Now think about the separator between the words (e.g.: # or $)."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selected objects are the words in your password. The story helps you remember them. Now think about the separator between the words (e.g.: # or $)."
-          }
-        }
-      }
-    },
-    "onboarding_guide_4" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The strong, unique, and easy-to-remember password looks like this Object1 #Object2 #Object3 (e.g. Flower#Candle#Bookshelf)"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The strong, unique, and easy-to-remember password looks like this Object1 #Object2 #Object3 (e.g. Flower#Candle#Bookshelf)"
           }
         }
       }
@@ -12452,6 +12724,40 @@
         }
       }
     },
+    "restore_vault_source_option_s3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3"
+          }
+        }
+      }
+    },
+    "restore_vault_source_option_s3_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recover your Vault from an S3 or S3-compatible storage."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzyskaj swój sejf z pamięci S3 lub kompatybilnej z S3"
+          }
+        }
+      }
+    },
     "restore_vault_source_option_webdav" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12584,6 +12890,142 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "WebDAV"
+          }
+        }
+      }
+    },
+    "s3_access_key_id" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access Key ID"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access Key ID"
+          }
+        }
+      }
+    },
+    "s3_bucket" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket"
+          }
+        }
+      }
+    },
+    "s3_connect" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Połącz"
+          }
+        }
+      }
+    },
+    "s3_credentials" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credentials"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dane uwierzytelniające"
+          }
+        }
+      }
+    },
+    "s3_csv_load_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read access keys from this file."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się odczytać kluczy dostępu z tego pliku."
+          }
+        }
+      }
+    },
+    "s3_load_from_csv_cta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load from CSV"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wczytaj z CSV"
+          }
+        }
+      }
+    },
+    "s3_region" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region"
+          }
+        }
+      }
+    },
+    "s3_secret_access_key" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secret Access Key"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secret Access Key"
           }
         }
       }
@@ -14277,7 +14719,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Securely sync your 2FAS Pass Vault with iCloud or WebDAV to protect your data in case this device gets lost or damaged."
+            "value" : "Securely sync your 2FAS Pass Vault to protect your data in case this device gets lost or damaged."
           }
         },
         "pl" : {
@@ -16368,13 +16810,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Link expiration time"
+            "value" : "Link expiration"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Czas wygaśnięcia linku"
+            "value" : "Wygaśnięcie linku"
           }
         }
       }
@@ -16923,6 +17365,74 @@
         }
       }
     },
+    "sync_error_invalid_response" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server returned an unexpected response."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieoczekiwana odpowiedź serwera."
+          }
+        }
+      }
+    },
+    "sync_error_network" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't reach the server. Check your network connection."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można połączyć się z serwerem. Sprawdź połączenie z Internetem."
+          }
+        }
+      }
+    },
+    "sync_error_not_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This location wasn't found."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie znaleziono lokalizacji."
+          }
+        }
+      }
+    },
+    "sync_error_server" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server returned an error. Please try again later."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Błąd serwera. Spróbuj ponownie później."
+          }
+        }
+      }
+    },
     "sync_not_available" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -17388,7 +17898,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove permanently"
+            "value" : "Remove"
           }
         },
         "pl" : {

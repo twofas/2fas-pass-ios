@@ -8,12 +8,15 @@ import SwiftUI
 import CommonUI
 
 struct VaultRecoveryCell: View {
-    
+
     let vaultID: String
     let deviceName: String
     let updatedAt: Date
     let canBeUsed: Bool
-    
+    var isLoading: Bool = false
+
+    @Environment(\.isEnabled) private var isEnabled
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: Spacing.m) {
@@ -22,24 +25,24 @@ struct VaultRecoveryCell: View {
                         .font(.caption2)
                         .foregroundStyle(.neutral600)
                         .padding(.bottom, Spacing.xxs)
-                    
+
                     Text(deviceName)
                         .font(.bodyEmphasized)
                         .multilineTextAlignment(.leading)
                         .foregroundStyle(.neutral950)
-                    
+
                     Text("restore_cloud_files_updated_at \(Text(updatedAt.formatted(date: .numeric, time: .standard)))")
                         .font(.footnote)
                         .multilineTextAlignment(.leading)
                         .foregroundStyle(.neutral600)
                 }
-                
+
                 if canBeUsed == false {
                     HStack {
                         Image(systemName: "exclamationmark.octagon.fill")
                             .foregroundStyle(Color.danger400)
                             .blinking()
-                        
+
                         Text("This Vault was created using newer version of the app. Update the app" as String)
                             .multilineTextAlignment(.leading)
                             .font(.caption)
@@ -47,13 +50,21 @@ struct VaultRecoveryCell: View {
                     }
                 }
             }
-            
+
             Spacer()
-            
-            Image(systemName: "chevron.forward")
-                .frame(width: 20, height: 20)
-                .foregroundStyle(.neutral500)
+
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(.secondary)
+                    .frame(width: 20, height: 20)
+            } else {
+                Image(systemName: "chevron.forward")
+                    .frame(width: 20, height: 20)
+                    .foregroundStyle(.neutral500)
+            }
         }
+        .opacity(isEnabled ? 1.0 : 0.4)
         .listRowInsets(EdgeInsets(top: Spacing.l, leading: Spacing.l, bottom: Spacing.l, trailing: Spacing.l))
     }
 }

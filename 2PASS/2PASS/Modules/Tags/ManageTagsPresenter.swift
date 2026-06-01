@@ -43,19 +43,8 @@ final class ManageTagsPresenter {
     }
 
     func observeSync() async {
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask { [weak self] in
-                for await _ in NotificationCenter.default.notifications(named: .cloudDidSync) {
-                    await self?.reload()
-                }
-            }
-            group.addTask { [weak self] in
-                for await notification in NotificationCenter.default.notifications(named: .webDAVStateChange) {
-                    guard let state = notification.userInfo?[Notification.webDAVState] as? WebDAVState,
-                          state == .synced else { continue }
-                    await self?.reload()
-                }
-            }
+        for await _ in interactor.syncDidApplyRemoteChanges() {
+            reload()
         }
     }
     

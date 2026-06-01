@@ -37,6 +37,7 @@ final class MockURIInteractor: URIInteracting {
     private var stubbedNormalizeURL: (String) -> URL? = { URL(string: $0) }
     private var stubbedNormalizeURLWithOptions: (String, URINormalizeOptions) -> URL? = { str, _ in URL(string: str) }
     private var stubbedExtractDomain: (String) -> String? = { $0 }
+    private var stubbedDisplayDomain: (String) -> String = { $0 }
     private var stubbedIsMatch: (String, String, PasswordURI.Match) -> Bool = { _, _, _ in true }
 
     // MARK: - Stub Configuration
@@ -72,6 +73,12 @@ final class MockURIInteractor: URIInteracting {
     }
 
     @discardableResult
+    func withDisplayDomain(_ handler: @escaping (String) -> String) -> Self {
+        stubbedDisplayDomain = handler
+        return self
+    }
+
+    @discardableResult
     func withIsMatch(_ handler: @escaping (String, String, PasswordURI.Match) -> Bool) -> Self {
         stubbedIsMatch = handler
         return self
@@ -102,6 +109,11 @@ final class MockURIInteractor: URIInteracting {
     func extractDomain(from str: String) -> String? {
         recordCall()
         return stubbedExtractDomain(str)
+    }
+
+    func displayDomain(from host: String) -> String {
+        recordCall()
+        return stubbedDisplayDomain(host)
     }
 
     func isMatch(_ str: String, to uri: String, rule: PasswordURI.Match) -> Bool {

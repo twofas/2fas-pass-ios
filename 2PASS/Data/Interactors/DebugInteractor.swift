@@ -364,7 +364,6 @@ extension DebugInteractor: DebugInteracting {
         mainRepository.deleteAllEncryptedItems()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
-        mainRepository.webDAVSetHasLocalChanges()
     }
     
     func generateItems(count: Int, completion: @escaping Callback) {
@@ -407,7 +406,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
     
@@ -440,7 +438,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
 
@@ -483,7 +480,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
 
@@ -525,7 +521,6 @@ extension DebugInteractor: DebugInteracting {
         }
 
         itemsInteractor.saveStorage()
-        mainRepository.webDAVSetHasLocalChanges()
         completion()
     }
 
@@ -538,7 +533,6 @@ extension DebugInteractor: DebugInteracting {
         mainRepository.deleteAllEncryptedTags()
         mainRepository.saveStorage()
         mainRepository.saveEncryptedStorage()
-        mainRepository.webDAVSetHasLocalChanges()
     }
 
     // MARK: - WebDAV debug

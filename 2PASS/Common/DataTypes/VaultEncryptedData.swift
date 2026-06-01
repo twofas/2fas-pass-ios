@@ -17,7 +17,8 @@ public struct VaultEncryptedData: Hashable, Identifiable {
         trustedKey: Data,
         createdAt: Date,
         updatedAt: Date,
-        isEmpty: Bool
+        isEmpty: Bool,
+        contentModificationDate: Date? = nil
     ) {
         self.vaultID = vaultID
         self.name = name
@@ -25,12 +26,14 @@ public struct VaultEncryptedData: Hashable, Identifiable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.isEmpty = isEmpty
+        self.contentModificationDate = contentModificationDate
     }
-    
+
     public let vaultID: VaultID
     public let name: String
     public let trustedKey: Data
     public let createdAt: Date
     public let updatedAt: Date
     public let isEmpty: Bool
+    public let contentModificationDate: Date?
 }

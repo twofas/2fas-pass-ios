@@ -9,51 +9,35 @@ import Common
 import CommonUI
 
 struct VaultRecoverySelectWebDAVIndexView: View {
-    
+
     @State
     var presenter: VaultRecoverySelectWebDAVIndexPresenter
-        
-    @Environment(\.dismiss)
-    private var dismiss
-    
+
     var body: some View {
-        VStack {
-            if presenter.isLoading {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .controlSize(.large)
-                    .tint(nil)
-            } else {
-                List {
-                    ForEach(Array(presenter.backups.enumerated()), id: \.1) { index, vault in
-                        Section {
-                            Button {
-                                presenter.onSelectVault(vault)
-                            } label: {
-                                VaultRecoveryCell(
-                                    vaultID: vault.vaultId,
-                                    deviceName: vault.deviceName,
-                                    updatedAt: Date(exportTimestamp: vault.vaultUpdatedAt),
-                                    canBeUsed: vault.schemaVersion <= Config.cloudSchemaVersion
-                                )
-                            }
-                        } header: {
-                            if index == 0 {
-                                Text(.restoreCloudFilesHeader)
-                            }
-                        }
+        List {
+            ForEach(Array(presenter.backups.enumerated()), id: \.1) { index, vault in
+                Section {
+                    Button {
+                        presenter.onSelectVault(vault)
+                    } label: {
+                        VaultRecoveryCell(
+                            vaultID: vault.vaultId,
+                            deviceName: vault.deviceName,
+                            updatedAt: Date(exportTimestamp: vault.vaultUpdatedAt),
+                            canBeUsed: vault.schemaVersion <= Config.cloudSchemaVersion,
+                            isLoading: presenter.selectedVaultID == vault.vaultId
+                        )
+                    }
+                    .disabled(presenter.selectedVaultID != nil && presenter.selectedVaultID != vault.vaultId)
+                } header: {
+                    if index == 0 {
+                        Text(.restoreCloudFilesHeader)
                     }
                 }
-                .listSectionSpacing(Spacing.s)
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                ToolbarCancelButton {
-                    dismiss()
-                }
-            }
-        }
+        .listSectionSpacing(Spacing.s)
+        .animation(.easeInOut(duration: 0.25), value: presenter.selectedVaultID)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(.restoreCloudFilesTitle)
         .router(router: VaultRecoverySelectWebDAVIndexRouter(), destination: $presenter.destination)

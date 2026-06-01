@@ -14,19 +14,19 @@ struct CoreDataMigrationStep {
     
     // MARK: Init
     
-    init(
-        sourceVersion: CoreDataMigrationVersion,
-        destinationVersion: CoreDataMigrationVersion,
+    init<V: CoreDataModelVersionProtocol>(
+        sourceVersion: V,
+        destinationVersion: V,
         momdSubdirectory: String,
         bundle: Bundle
     ) {
         let sourceModel = NSManagedObjectModel.managedObjectModel(
-            forResource: sourceVersion.rawValue,
+            forResource: sourceVersion.versionName,
             momdSubdirectory: momdSubdirectory,
             bundle: bundle
         )
         let destinationModel = NSManagedObjectModel.managedObjectModel(
-            forResource: destinationVersion.rawValue,
+            forResource: destinationVersion.versionName,
             momdSubdirectory: momdSubdirectory,
             bundle: bundle
         )
