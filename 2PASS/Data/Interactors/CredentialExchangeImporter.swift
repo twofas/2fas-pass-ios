@@ -238,10 +238,16 @@ private extension CredentialExchangeImporter {
     }
 
     func makeItemID(from data: Data) -> ItemID {
-        guard data.count == 16 else { return ItemID() }
-        return data.withUnsafeBytes { buffer in
-            UUID(uuid: buffer.load(as: uuid_t.self))
+        if data.count == 16 {
+            return data.withUnsafeBytes { buffer in
+                UUID(uuid: buffer.load(as: uuid_t.self))
+            }
         }
+        if let string = String(data: data, encoding: .utf8),
+           let uuid = UUID(uuidString: string) {
+            return uuid
+        }
+        return ItemID()
     }
 
     func makeMetadataDates(from importableItem: ASImportableItem) -> (creationDate: Date, modificationDate: Date) {
