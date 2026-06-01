@@ -125,7 +125,7 @@ private extension ItemsImportInteractor {
          
             if let current {
                 exists += 1
-                if current.modificationDate >= item.modificationDate {
+                if current.modificationDate > item.modificationDate {
                     imported += 1
                     switch current.trashedStatus {
                     case .no: break
@@ -134,6 +134,7 @@ private extension ItemsImportInteractor {
                 } else {
                     do {
                         try itemsInteractor.updateItem(item.update(
+                            id: current.id,
                             creationDate: adjustDateIfNeeded(item.creationDate),
                             modificationDate: adjustDateIfNeeded(item.modificationDate)
                         ))

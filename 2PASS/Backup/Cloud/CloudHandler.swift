@@ -28,8 +28,6 @@ final class CloudHandler: CloudHandlerType {
     private let clearHandler: ClearHandler
     private let mergeHandler: MergeHandler
     private let cacheHandler: CacheHandler
-    /// Read fresh per `sync()` — vault changes propagate via `context.vaultID` instead of a
-    /// cached field that would need explicit `setVaultID(_:)` invalidation.
     private let context: BackupSyncContext
 
     private var isClearing = false
@@ -56,8 +54,6 @@ final class CloudHandler: CloudHandlerType {
     var userToggledState: UserToggledState?
 
     private var stateChangedHandlers: [UUID: (CloudCurrentState) -> Void] = [:]
-    /// Multi-slot — `Bridge` (per-syncOnce) and the container's ambient push hook can both
-    /// be registered concurrently and must each receive every completion.
     private var finishedSyncHandlers: [UUID: (Bool) -> Void] = [:]
 
     init(

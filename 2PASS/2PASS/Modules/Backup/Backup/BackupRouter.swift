@@ -37,9 +37,6 @@ struct BackupRouter: Router {
         case .importing(let input, let onClose):
             BackupImportImportingRouter.buildView(input: input, onClose: onClose)
         case .recoveryEnterPassword(let vault, let entropy, let onClose, let onTryAgain):
-            // Backup-import-derived recovery: the vault data came from a local backup file
-            // chosen by the user, not a transport. `.localFile` marker — no remote config
-            // gets persisted on success.
             VaultRecoveryEnterPasswordRouter.buildView(flowContext: .importVault(onClose: onClose), entropy: entropy, recoveryData: .file(vault, source: .localFile), onTryAgain: onTryAgain)
         case .recovery(let vault, let onClose):
             VaultRecoverySelectRouter.buildView(flowContext: .importVault(onClose: onClose), recoveryData: .file(vault, source: .localFile))

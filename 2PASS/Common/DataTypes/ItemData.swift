@@ -241,9 +241,9 @@ public extension ItemDataType {
 
 extension _ItemData {
 
-    public func update(creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
+    public func update(id: ItemID? = nil, creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
         _ItemData(
-            id: id,
+            id: id ?? self.id,
             vaultId: vaultId,
             metadata: ItemMetadata(
                 creationDate: creationDate ?? metadata.creationDate,
@@ -298,18 +298,18 @@ extension _ItemData {
 
 extension ItemData {
 
-    public func update(creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
+    public func update(id: ItemID? = nil, creationDate: Date? = nil, modificationDate: Date? = nil) -> Self {
         switch self {
         case .login(let data):
-            return .login(data.update(creationDate: creationDate, modificationDate: modificationDate))
+            return .login(data.update(id: id, creationDate: creationDate, modificationDate: modificationDate))
         case .secureNote(let data):
-            return .secureNote(data.update(creationDate: creationDate, modificationDate: modificationDate))
+            return .secureNote(data.update(id: id, creationDate: creationDate, modificationDate: modificationDate))
         case .paymentCard(let data):
-            return .paymentCard(data.update(creationDate: creationDate, modificationDate: modificationDate))
+            return .paymentCard(data.update(id: id, creationDate: creationDate, modificationDate: modificationDate))
         case .wifi(let data):
-            return .wifi(data.update(creationDate: creationDate, modificationDate: modificationDate))
+            return .wifi(data.update(id: id, creationDate: creationDate, modificationDate: modificationDate))
         case .raw(let data):
-            return .raw(data.update(creationDate: creationDate, modificationDate: modificationDate))
+            return .raw(data.update(id: id, creationDate: creationDate, modificationDate: modificationDate))
         }
     }
 

@@ -51,8 +51,6 @@ public protocol BackupSyncContext: Sendable {
     func vault(for vaultID: UUID) async -> VaultEncryptedData?
     func seedHash(for vaultID: UUID) -> String?
 
-    /// Newest modification across items (active and trashed), tags, and deleted-item
-    /// tombstones. Implementations must run on the main thread (Core Data view-context affinity).
     func latestContentModification(for vaultID: UUID) async -> Date?
 
 #if DEBUG

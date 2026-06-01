@@ -33,8 +33,6 @@ public protocol BackupFileServiceSession: Sendable {
     func finalizeVault(vaultID: UUID) async throws(BackupFileServiceError)
     func deleteLock() async throws(BackupFileServiceError)
 
-    /// Default implementation treats `.notFound` (HTTP 404) as success — fresh-setup case
-    /// where credentials are valid but no backup exists yet.
     func testConnection() async throws(BackupFileServiceError)
 }
 

@@ -454,8 +454,6 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
     }
 
     func saveVaultOverrideAwaitingConfigIDs(_ ids: Set<BackupConfig.ID>) {
-        // UserDefaults stores `[String]` natively; sorting yields a stable on-disk shape that
-        // also makes diffs in tests / debug dumps easier to read.
         let strings = ids.map(String.init(describing:)).sorted()
         userDefaults.set(strings, forKey: Keys.vaultOverrideAwaitingConfigIDs.rawValue)
         userDefaults.synchronize()

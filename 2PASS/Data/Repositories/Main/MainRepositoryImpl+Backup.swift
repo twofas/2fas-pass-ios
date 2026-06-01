@@ -116,7 +116,6 @@ extension MainRepositoryImpl {
         let legacyWebDAV = legacyWebDAVSavedConfig
         let legacyiCloudEnabled = userDefaultsDataSource.legacyCloudEnabled
 
-        // Avoids a decrypt round-trip on the common post-migration / fresh-install path.
         guard legacyWebDAV != nil || legacyiCloudEnabled else { return }
 
         var configs = loadBackupConfigs()
@@ -136,8 +135,6 @@ extension MainRepositoryImpl {
             saveBackupConfigs(configs)
         }
 
-        // Clearing is the migration's idempotency mechanism; the iCloud flag stays because
-        // `CloudHandler.isEnabled` still reads it.
         if legacyWebDAV != nil {
             clearLegacyWebDAVSavedConfig()
         }

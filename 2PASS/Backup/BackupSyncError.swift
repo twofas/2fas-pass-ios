@@ -22,8 +22,6 @@ public enum BackupSyncError: Error, Sendable {
     case export(BackupVaultExportError)
     case invalidResponse
     case unexpected(String)
-    /// Terminal — user must act in Settings before sync resumes. Distinct from `.unauthorized`
-    /// (ask for credentials) and `.network` (transient).
     case iCloudUnavailable
 }
 
@@ -84,7 +82,7 @@ extension BackupSyncError {
 }
 
 extension BackupSyncError: LocalizedError {
-    /// `nil` for `.cancelled` so user cancels don't surface as errors.
+    
     public var errorDescription: String? {
         switch self {
         case .unauthorized:

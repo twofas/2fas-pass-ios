@@ -60,7 +60,6 @@ protocol UserDefaultsDataSource: AnyObject {
     func saveBackupConfigsBlob(_ data: Data)
     func clearBackupConfigsBlob()
 
-    /// Plaintext (no `appKey` dependency, so readable in any auth state).
     var lastSyncDatesBlob: Data? { get }
     func saveLastSyncDatesBlob(_ data: Data)
     func clearLastSyncDatesBlob()
@@ -69,7 +68,7 @@ protocol UserDefaultsDataSource: AnyObject {
     func clearLegacyWebDAVSavedConfig()
 
     /// Shares key `"KeyCloudEnabled"` with the still-live `Backup/Cloud/ConstStorage.swift`;
-    /// migration reads only — never clears — to avoid disturbing the runtime `CloudHandler`.
+    /// migration reads only — never clears.
     var legacyCloudEnabled: Bool { get }
 
     var webDAVIsConnected: Bool { get }
