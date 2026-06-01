@@ -116,6 +116,7 @@ final class LoginEditorFormPresenter: ItemEditorFormPresenter {
             initialDecryptedPassword = nil
             username = changeRequest?.username?.value ?? interactor.mostUsedUsernames().first ?? ""
             uri = (changeRequest?.uris ?? []).map { URI(id: .init(), uri: $0.uri, match: $0.match) }
+            notes = changeRequest?.notes ?? ""
             
             if let changeRequestPassword = changeRequest?.password?.value {
                 password = changeRequestPassword
