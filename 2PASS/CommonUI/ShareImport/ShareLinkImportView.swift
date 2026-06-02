@@ -35,30 +35,42 @@ struct ShareLinkImportView: View {
                     ProgressView()
                         .controlSize(.large)
                         .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                ToolbarCancelButton {
-                                    presenter.onClose()
-                                }
+                            ToolbarCancelItem {
+                                presenter.onClose()
                             }
                         }
                 }
                 .transition(.asymmetric(insertion: .opacity, removal: .identity))
 
             case .error:
-                ResultView(kind: .failure, title: Text(.shareLinkImportErrorTitle)) {
-                    Button(.commonClose) {
-                        presenter.onClose()
+                NavigationStack {
+                    ResultView(kind: .failure, title: Text(.shareLinkImportErrorTitle)) {
+                        Button(.commonClose) {
+                            presenter.onClose()
+                        }
+                    }
+                    .toolbar {
+                        ToolbarCancelItem {
+                            presenter.onClose()
+                        }
                     }
                 }
 
             case .networkError:
-                ResultView(
-                    kind: .failure,
-                    title: Text(.commonError),
-                    description: Text(.shareLinkImportNetworkErrorDescription)
-                ) {
-                    Button(.commonTryAgain) {
-                        presenter.onRetry()
+                NavigationStack {
+                    ResultView(
+                        kind: .failure,
+                        title: Text(.commonError),
+                        description: Text(.shareLinkImportNetworkErrorDescription)
+                    ) {
+                        Button(.commonTryAgain) {
+                            presenter.onRetry()
+                        }
+                    }
+                    .toolbar {
+                        ToolbarCancelItem {
+                            presenter.onClose()
+                        }
                     }
                 }
             }
