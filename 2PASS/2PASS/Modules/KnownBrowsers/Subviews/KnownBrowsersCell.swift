@@ -10,19 +10,20 @@ import SVGView
 import CommonUI
 
 struct KnownBrowsersCell: View {
-    
+
     let data: WebBrowser
     let identicon: String?
-    
+    let onDelete: () -> Void
+
     var body: some View {
         HStack(spacing: Spacing.s) {
             ConnectIdenticonView(identicon: identicon)
-            
+
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(data.extName)
                     .font(.body)
                     .foregroundStyle(.neutral950)
-                
+
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(.knownBrowserLastConnectionPrefix) + Text(verbatim: " ") + Text(data.lastConnectionDate, format: .dateTime)
                     Text(.knownBrowserFirstConnectionPrefix) + Text(verbatim: " ") + Text(data.firstConnectionDate, format: .dateTime)
@@ -30,6 +31,22 @@ struct KnownBrowsersCell: View {
                 .font(.caption2)
                 .foregroundStyle(.neutral600)
             }
+
+            Spacer(minLength: 0)
+
+            Menu {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    HStack {
+                        Image(systemName: "trash")
+                        Text(.knownBrowserDeleteButton)
+                    }
+                }
+            } label: {
+                MenuEllipsisLabel()
+            }
+            .tint(nil)
         }
     }
 }
