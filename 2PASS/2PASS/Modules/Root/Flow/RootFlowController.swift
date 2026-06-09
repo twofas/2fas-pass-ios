@@ -108,6 +108,7 @@ extension RootFlowController {
 
 extension RootFlowController: RootFlowControlling {
     func toCover() {
+        coverWindow.windowScene = window?.windowScene
         coverWindow.isHidden = false
         coverWindow.makeKeyAndVisible()
     }
@@ -138,6 +139,7 @@ extension RootFlowController: RootFlowControlling {
         )
 
         self.loginViewController = loginViewController
+        loginWindow.windowScene = window?.windowScene
         loginWindow.isHidden = false
         loginWindow.makeKeyAndVisible()
     }

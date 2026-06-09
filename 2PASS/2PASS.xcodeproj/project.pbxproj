@@ -98,6 +98,7 @@
 		C26D2BE42DD91DDA00B16D73 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C26D2BE32DD91DDA00B16D73 /* StoreKit.framework */; };
 		C26D2BE52DD91E1A00B16D73 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C26D2BE32DD91DDA00B16D73 /* StoreKit.framework */; };
 		C27D99EF2BD596620008203F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C27D99EE2BD596620008203F /* AppDelegate.swift */; };
+		5CE7DE1B2BD596620008203F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE7DE1A2BD596620008203F /* SceneDelegate.swift */; };
 		C27D99F82BD596630008203F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C27D99F72BD596630008203F /* Assets.xcassets */; };
 		C27D99FB2BD596630008203F /* Base in Resources */ = {isa = PBXBuildFile; fileRef = C27D99FA2BD596630008203F /* Base */; };
 		C27F0BE92CC437FF00F5688F /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = C27F0BE82CC437FF00F5688F /* DeviceKit */; };
@@ -351,6 +352,7 @@
 		C26D2BE32DD91DDA00B16D73 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		C27D99EB2BD596620008203F /* 2FAS Pass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "2FAS Pass.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C27D99EE2BD596620008203F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		5CE7DE1A2BD596620008203F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		C27D99F72BD596630008203F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C27D99FA2BD596630008203F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C27D99FC2BD596630008203F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -811,6 +813,7 @@
 			isa = PBXGroup;
 			children = (
 				C27D99EE2BD596620008203F /* AppDelegate.swift */,
+				5CE7DE1A2BD596620008203F /* SceneDelegate.swift */,
 				C2B0B8222C1E050500D26D11 /* Modules */,
 				C267F93F2BE30046005F7B89 /* Common */,
 				54C090542D6E6B4C00954E76 /* Interactors */,
@@ -1591,6 +1594,7 @@
 				5402A8CE2D6452DF0092765B /* InteractiveProgressAnimator.swift in Sources */,
 				8F6D5B2B2D2C9317002A7574 /* OnboardingPagesView.swift in Sources */,
 				C27D99EF2BD596620008203F /* AppDelegate.swift in Sources */,
+				5CE7DE1B2BD596620008203F /* SceneDelegate.swift in Sources */,
 				8F6F40F12D387E4D0010F7CE /* SetupCompleteView.swift in Sources */,
 				C28E9E2C2C1CE5A8008B99F8 /* MainPresenter.swift in Sources */,
 				5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */,
