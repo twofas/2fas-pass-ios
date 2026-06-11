@@ -79,11 +79,10 @@ public final class ModuleInteractorFactory {
             uriInteractor: InteractorFactory.shared.uriInteractor(),
             tagInteractor: InteractorFactory.shared.tagInteractor(),
             paymentCardUtilityInteractor: InteractorFactory.shared.paymentCardUtilityInteractor(),
-            wifiQRCodeInteractor: InteractorFactory.shared.wifiQRCodeInteractor(),
-            syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor()
+            wifiQRCodeInteractor: InteractorFactory.shared.wifiQRCodeInteractor()
         )
     }
-    
+
     func biometricPromptModuleInteractor() -> BiometricPromptModuleInteracting {
         BiometricPromptModuleInteractor(
             biometryInteractor: InteractorFactory.shared.biometryInteractor(),

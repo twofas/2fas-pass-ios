@@ -82,6 +82,7 @@ public protocol ItemsInteracting: AnyObject {
     )
     
     func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int
+    func itemCountsByTag() -> [ItemTagID: Int]
 }
 
 final class ItemsInteractor {
@@ -960,6 +961,14 @@ extension ItemsInteractor: ItemsInteracting {
                 return $0.tagIds?.contains(tagID) ?? false
             }
             .count
+    }
+
+    func itemCountsByTag() -> [ItemTagID: Int] {
+        var counts: [ItemTagID: Int] = [:]
+        for item in mainRepository.listItems(options: .allNotTrashed) {
+            item.tagIds?.forEach { counts[$0, default: 0] += 1 }
+        }
+        return counts
     }
 }
 

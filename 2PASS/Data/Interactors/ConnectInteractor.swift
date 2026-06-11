@@ -8,10 +8,6 @@ import CryptoKit
 import Gzip
 import Common
 
-extension Notification.Name {
-    public static let connectPullReqestDidChangeNotification = Notification.Name("ConnectPullReqestDidChangeNotification")
-}
-
 public enum ConnectError: Error {
     case createKeysFailure(Error?)
     case missingDeviceId

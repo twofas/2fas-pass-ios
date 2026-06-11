@@ -75,12 +75,11 @@ final class PasswordsPresenter {
     private let iconsDataSource: RemoteImageCollectionDataSource<ItemCellData>
     private let flowController: PasswordsFlowControlling
     private let interactor: PasswordsModuleInteracting
-    private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private var listData: [Int: [ItemData]] = [:]
     private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
     private var isViewReady: Bool = false
-    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+    private var storageDidChangeToken: Notifications.ObservationToken?
     private var canLoadData: Bool {
         isViewReady && interactor.isUserLoggedIn
     }
@@ -89,43 +88,35 @@ final class PasswordsPresenter {
         self.autoFillEnvironment = autoFillEnvironment
         self.flowController = flowController
         self.interactor = interactor
-        self.notificationCenter = .default
         self.toastPresenter = .shared
         self.iconsDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
-
-        notificationCenter.addObserver(self, selector: #selector(userLoggedIn), name: .userLoggedIn, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(didImportItems), name: .didImportItems, object: nil)
-
-        notificationCenter.addObserver(forName: .connectPullReqestDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
-            self?.reload()
-        }
     }
 
     deinit {
-        syncDidApplyRemoteChangesTask?.cancel()
-        notificationCenter.removeObserver(self)
+        storageDidChangeToken?.cancel()
     }
 }
 
 extension PasswordsPresenter {
 
+    @MainActor
     func viewWillAppear() {
         isViewReady = true
         refreshSelectedFilterTag()
         reload()
 
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = Task { [weak self] in
-            guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
-            for await _ in stream {
-                await MainActor.run { [weak self] in self?.reload() }
-            }
+        // Register synchronously so a save posted before the observer is live isn't dropped.
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items, .tags]) else { return }
+            self.reload()
         }
     }
 
+    @MainActor
     func viewWillDisappear() {
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = nil
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
     }
 
     private func refreshSelectedFilterTag() {
@@ -234,7 +225,6 @@ extension PasswordsPresenter {
             Task { @MainActor in
                 if await flowController.toConfirmDelete() {
                     interactor.moveToTrash(itemID)
-                    reload()
                 }
             }
         }
@@ -279,17 +269,12 @@ extension PasswordsPresenter {
             if await flowController.toConfirmMultiselectDelete(selectedCount: itemIDs.count, source: source) {
                 interactor.moveToTrash(itemIDs)
                 view?.exitEditingMode()
-                reload()
             }
         }
     }
 
     func normalizedURL(for uri: String) -> URL? {
         interactor.normalizedURL(for: uri)
-    }
-
-    func handleRefresh() {
-        reload()
     }
 
     func listAllTags() -> [ItemTagData] {
@@ -308,7 +293,6 @@ extension PasswordsPresenter {
         do {
             try interactor.updateProtectionLevel(protectionLevel, for: itemIDs)
             view?.exitEditingMode()
-            handleRefresh()
         } catch {
             Log("PasswordsPresenter: Failed to update protection level", module: .ui, severity: .error)
             toastPresenter.present(.commonGeneralErrorTryAgain, style: .failure)
@@ -331,7 +315,6 @@ extension PasswordsPresenter {
         do {
             try interactor.applyTagChanges(to: itemIDs, tagsToAdd: tagsToAdd, tagsToRemove: tagsToRemove)
             view?.exitEditingMode()
-            handleRefresh()
         } catch {
             Log("PasswordsPresenter: Failed to apply tag changes", module: .ui, severity: .error)
             toastPresenter.present(.commonGeneralErrorTryAgain, style: .failure)
@@ -615,15 +598,4 @@ private extension PasswordsPresenter {
         return results
     }
 
-    @objc
-    func userLoggedIn() {
-        reload()
-    }
-
-    @objc
-    func didImportItems() {
-        Task { @MainActor in
-            reload()
-        }
-    }
 }

@@ -22,8 +22,6 @@ protocol TrashModuleInteracting: AnyObject {
     
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
-
-    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 final class TrashModuleInteractor {
@@ -97,9 +95,5 @@ extension TrashModuleInteractor: TrashModuleInteracting {
     
     func fetchIconImage(from url: URL) async throws -> Data {
         try await fileIconInteractor.fetchImage(from: url)
-    }
-
-    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
-        syncTriggerInteractor.syncDidApplyRemoteChanges()
     }
 }

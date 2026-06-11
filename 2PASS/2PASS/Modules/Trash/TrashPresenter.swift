@@ -51,7 +51,7 @@ final class TrashPresenter {
     private let interactor: TrashModuleInteracting
     
     @ObservationIgnored
-    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+    private var storageDidChangeToken: Notifications.ObservationToken?
 
     var destination: TrashDestination?
 
@@ -61,7 +61,7 @@ final class TrashPresenter {
     }
 
     deinit {
-        syncDidApplyRemoteChangesTask?.cancel()
+        storageDidChangeToken?.cancel()
     }
 }
 
@@ -75,12 +75,11 @@ extension TrashPresenter {
             }
         }
 
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = Task { [weak self] in
-            guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
-            for await _ in stream {
-                await MainActor.run { [weak self] in self?.reload() }
-            }
+        // Register synchronously so a save posted before the observer is live isn't dropped.
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items]) else { return }
+            self.reload()
         }
 
         reload()
@@ -88,8 +87,8 @@ extension TrashPresenter {
 
     @MainActor
     func onDisappear() {
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = nil
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
     }
 
     @MainActor
@@ -141,31 +140,27 @@ extension TrashPresenter {
     func onRestore(itemID: ItemID) {
         if interactor.canRestore {
             interactor.restore(with: itemID)
-            reload()
         } else {
             destination = .upgradePlanPrompt(limitItems: interactor.currentPlanLimitItems)
         }
     }
-    
+
     func onDelete(itemID: ItemID) {
         destination = .confirmDelete(id: itemID, onFinish: { [weak self] confirm in
             self?.destination = nil
-            
+
             if confirm {
                 self?.interactor.delete(with: itemID)
-                self?.reload()
             }
         })
     }
-    
+
     func onEmptyTrash() {
         interactor.emptyTrash()
-        reload()
     }
-    
+
     func onRestoreAll() {
         interactor.restoreAll()
-        reload()
     }
 }
 

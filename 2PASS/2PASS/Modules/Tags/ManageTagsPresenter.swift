@@ -34,57 +34,58 @@ final class ManageTagsPresenter {
     private(set) var tags: [TagViewItem] = []
     var destination: ManageTagsDestination?
 
+    @ObservationIgnored
+    private var storageDidChangeToken: Notifications.ObservationToken?
+
     init(interactor: ManageTagsModuleInteracting) {
         self.interactor = interactor
     }
 
     func onAppear() {
         reload()
+
+        // Register synchronously so a save posted before the observer is live isn't dropped.
+        // Rows show item counts, so item changes affect them too — not just tag changes.
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items, .tags]) else { return }
+            withAnimation {
+                self.reload()
+            }
+        }
     }
 
-    func observeSync() async {
-        for await _ in interactor.syncDidApplyRemoteChanges() {
-            reload()
-        }
+    func onDisappear() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
     }
     
     func addTag() {
         destination = .addTag(onClose: { [weak self] in
             self?.destination = nil
-            
-            withAnimation {
-                self?.reload()
-            }
         })
     }
-    
+
     func editTag(tag: TagViewItem) {
         destination = .editTag(tagID: tag.tagID, onClose: { [weak self] in
             self?.destination = nil
-            
-            withAnimation {
-                self?.reload()
-            }
         })
     }
-    
+
     func deleteTag(tag: TagViewItem) {
         destination = .deleteConfirmation(tagName: tag.name, onConfirm: { [weak self] in
             self?.interactor.deleteTag(tagID: tag.tagID)
             self?.destination = nil
-            
-            withAnimation {
-                self?.reload()
-            }
         })
     }
     
     private func reload() {
         let allTags = interactor.listAllTags()
+        let countsByTag = interactor.itemCountsByTag()
         tags = allTags.map { tag in
             TagViewItem(
                 tag: tag,
-                itemCount: interactor.getItemCountForTag(tagID: tag.tagID)
+                itemCount: countsByTag[tag.tagID] ?? 0
             )
         }
     }

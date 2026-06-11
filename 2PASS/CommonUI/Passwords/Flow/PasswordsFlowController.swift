@@ -210,9 +210,6 @@ extension PasswordsFlowController {
 extension PasswordsFlowController: ItemEditorNavigationFlowControllerParent {
 
     public func closeItemEditor(with result: SaveItemResult) {
-        if result.isSuccess {
-            viewController.presenter.handleRefresh()
-        }
         viewController.dismiss(animated: true)
     }
 }
@@ -220,9 +217,6 @@ extension PasswordsFlowController: ItemEditorNavigationFlowControllerParent {
 extension PasswordsFlowController: ContentTypeSelectionFlowControllerParent {
 
     func contentTypeSelectionDidClose(with result: SaveItemResult) {
-        if result.isSuccess {
-            viewController.presenter.handleRefresh()
-        }
         viewController.dismiss(animated: true)
     }
 

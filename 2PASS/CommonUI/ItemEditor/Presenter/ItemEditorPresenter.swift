@@ -74,13 +74,10 @@ final class ItemEditorPresenter {
 
     private(set) var isEdit: Bool
 
-    var passwordWasEdited = false
-    var passwordWasDeleted = false
-
     private let flowController: ItemEditorFlowControlling
     private let interactor: ItemEditorModuleInteracting
     @ObservationIgnored
-    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+    private var storageDidChangeToken: Notifications.ObservationToken?
 
     private var firstAppear = true
 
@@ -179,6 +176,7 @@ final class ItemEditorPresenter {
         loginFormPresenter?.handleIconChange(value)
     }
 
+    @MainActor
     func onAppear() {
         if firstAppear {
             updateSaveState()
@@ -186,27 +184,22 @@ final class ItemEditorPresenter {
         }
 
         if isEdit {
-            syncDidApplyRemoteChangesTask?.cancel()
-            syncDidApplyRemoteChangesTask = Task { [weak self] in
-                guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
-                for await _ in stream {
-                    self?.checkCurrentPasswordState()
-                }
-            }
+            startStorageObservation()
         }
     }
 
     func onDisappear() {
         loginFormPresenter?.cancelFetchIcon()
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = nil
     }
 
+    @MainActor
     func onSave() {
         guard currentPresenter.canSave else {
             updateSaveState()
             return
         }
+
+        stopStorageObservation()
 
         let result = currentPresenter.onSave()
 
@@ -214,10 +207,15 @@ final class ItemEditorPresenter {
             flowController.close(with: result)
         } else {
             cantSave = true
+            if isEdit {
+                startStorageObservation()
+            }
         }
     }
 
     func onDelete() {
+        stopStorageObservation()
+
         guard let itemID = interactor.moveToTrash() else {
             return
         }
@@ -225,7 +223,7 @@ final class ItemEditorPresenter {
     }
 
     deinit {
-        syncDidApplyRemoteChangesTask?.cancel()
+        stopStorageObservation()
     }
 }
 
@@ -301,13 +299,32 @@ private extension ItemEditorPresenter {
         saveEnabled?(currentPresenter.canSave)
     }
 
+    @MainActor
+    func startStorageObservation() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items]) else { return }
+            self.checkCurrentPasswordState()
+        }
+        checkCurrentPasswordState()
+    }
+
+    func stopStorageObservation() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
+    }
+
     func checkCurrentPasswordState() {
         DispatchQueue.main.async {
+            let deleted: Bool
             switch self.interactor.checkCurrentPasswordState() {
-            case .deleted: self.passwordWasDeleted = true
-            case .edited: self.passwordWasEdited = true
-            case .noChange: break
+            case .deleted: deleted = true
+            case .edited: deleted = false
+            case .noChange: return
             }
+            // Stop watching before presenting: further notifications must not stack more alerts.
+            self.stopStorageObservation()
+            self.flowController.toItemChangedOnOtherDevice(deleted: deleted)
         }
     }
 }

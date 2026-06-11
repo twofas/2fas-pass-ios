@@ -36,8 +36,4 @@ final class PreviewTrashModuleInteractor: TrashModuleInteracting {
     func fetchIconImage(from url: URL) async throws -> Data {
         throw NSError(domain: "", code: 0, userInfo: nil)
     }
-
-    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
-        AsyncStream { _ in }
-    }
 }

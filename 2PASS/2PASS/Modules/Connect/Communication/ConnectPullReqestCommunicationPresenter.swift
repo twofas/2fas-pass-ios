@@ -163,12 +163,10 @@ final class ConnectPullReqestCommunicationPresenter {
             
         case .action(.delete(let loginItem)):
             interactor.deleteItem(for: loginItem.id)
-            
+
             state = .connecting
             actionContinuation?.resume(returning: (true, nil))
             actionContinuation = nil
-            
-            NotificationCenter.default.post(name: .connectPullReqestDidChangeNotification, object: nil)
         }
     }
     
@@ -271,8 +269,6 @@ final class ConnectPullReqestCommunicationPresenter {
                 actionContinuation?.resume(returning: (true, saveResult.itemID))
                 actionContinuation = nil
             }
-            
-            NotificationCenter.default.post(name: .connectPullReqestDidChangeNotification, object: nil)
         case .failure:
             break
         }

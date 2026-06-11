@@ -160,8 +160,6 @@ private extension ItemsImportInteractor {
         itemsInteractor.saveStorage()
         syncTriggerInteractor.syncAll()
 
-        NotificationCenter.default.post(name: .didImportItems, object: nil)
-
         return imported
     }
     

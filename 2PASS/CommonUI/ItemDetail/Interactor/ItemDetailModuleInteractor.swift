@@ -17,8 +17,6 @@ protocol ItemDetailModuleInteracting: AnyObject {
     func fetchIconImage(from url: URL) async throws -> Data
     func normalizedURL(for uri: PasswordURI) -> URL?
     func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int
-
-    func syncDidApplyRemoteChanges() -> AsyncStream<Void>
 }
 
 final class ItemDetailModuleInteractor {
@@ -29,7 +27,6 @@ final class ItemDetailModuleInteractor {
     private let tagInteractor: TagInteracting
     private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let wifiQRCodeInteractor: WiFiQRCodeInteracting
-    private let syncTriggerInteractor: BackupSyncTriggerInteracting
 
     init(
         itemsInteractor: ItemsInteracting,
@@ -38,8 +35,7 @@ final class ItemDetailModuleInteractor {
         uriInteractor: URIInteracting,
         tagInteractor: TagInteracting,
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
-        wifiQRCodeInteractor: WiFiQRCodeInteracting,
-        syncTriggerInteractor: BackupSyncTriggerInteracting
+        wifiQRCodeInteractor: WiFiQRCodeInteracting
     ) {
         self.itemsInteractor = itemsInteractor
         self.systemInteractor = systemInteractor
@@ -48,7 +44,6 @@ final class ItemDetailModuleInteractor {
         self.tagInteractor = tagInteractor
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.wifiQRCodeInteractor = wifiQRCodeInteractor
-        self.syncTriggerInteractor = syncTriggerInteractor
     }
 }
 
@@ -87,9 +82,5 @@ extension ItemDetailModuleInteractor: ItemDetailModuleInteracting {
 
     func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
         paymentCardUtilityInteractor.maxSecurityCodeLength(for: issuer)
-    }
-
-    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
-        syncTriggerInteractor.syncDidApplyRemoteChanges()
     }
 }

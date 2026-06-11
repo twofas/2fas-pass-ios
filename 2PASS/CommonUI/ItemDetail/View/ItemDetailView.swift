@@ -258,8 +258,4 @@ private class ItemDetailModulePreviewInteractor: ItemDetailModuleInteracting {
     func paymentCardSecurityCodeLength(for issuer: PaymentCardIssuer?) -> Int {
         issuer == .americanExpress ? 4 : 3
     }
-
-    func syncDidApplyRemoteChanges() -> AsyncStream<Void> {
-        AsyncStream { _ in }
-    }
 }

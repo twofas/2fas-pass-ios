@@ -30,7 +30,7 @@ final class ItemDetailPresenter {
     private let toastPresenter: ToastPresenter
     private let autoFillEnvironment: AutoFillEnvironment?
     @ObservationIgnored
-    private var syncDidApplyRemoteChangesTask: Task<Void, Never>?
+    private var storageDidChangeToken: Notifications.ObservationToken?
 
     enum Form {
         case login(LoginDetailFormPresenter)
@@ -70,12 +70,13 @@ final class ItemDetailPresenter {
     }
 
     deinit {
-        syncDidApplyRemoteChangesTask?.cancel()
+        storageDidChangeToken?.cancel()
     }
 }
 
 extension ItemDetailPresenter {
 
+    @MainActor
     func onAppear() {
         guard let item = interactor.fetchItem(for: itemID) else {
             flowController.close()
@@ -110,18 +111,17 @@ extension ItemDetailPresenter {
             fatalError("Unsupported content type")
         }
 
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = Task { [weak self] in
-            guard let stream = self?.interactor.syncDidApplyRemoteChanges() else { return }
-            for await _ in stream {
-                self?.refreshState()
-            }
+        // Register synchronously so a save posted before the observer is live isn't dropped.
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items, .tags]) else { return }
+            self.refreshState()
         }
     }
 
     func onDisappear() {
-        syncDidApplyRemoteChangesTask?.cancel()
-        syncDidApplyRemoteChangesTask = nil
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
     }
 
     func onEdit() {
