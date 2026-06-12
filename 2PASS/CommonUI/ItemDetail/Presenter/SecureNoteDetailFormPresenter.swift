@@ -10,8 +10,13 @@ import SwiftUI
 @Observable
 final class SecureNoteFormPresenter: ItemDetailFormPresenter {
     
-    private(set) var secureNoteItem: SecureNoteItemData
-    
+    private(set) var secureNoteItem: SecureNoteItemData {
+        didSet {
+            item = secureNoteItem
+            refreshValues()
+        }
+    }
+
     var isReveal = false
     var isNoteExpanded = false
     
@@ -31,8 +36,7 @@ final class SecureNoteFormPresenter: ItemDetailFormPresenter {
         guard let newSecureNote = interactor.fetchItem(for: secureNoteItem.id)?.asSecureNote else {
             return
         }
-        self.secureNoteItem = newSecureNote
-        refreshValues()
+        secureNoteItem = newSecureNote
     }
     
     func onViewNote() {

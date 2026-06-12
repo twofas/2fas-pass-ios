@@ -10,7 +10,12 @@ import SwiftUI
 @Observable
 final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
 
-    private(set) var paymentCardItem: PaymentCardItemData
+    private(set) var paymentCardItem: PaymentCardItemData {
+        didSet {
+            item = paymentCardItem
+            refreshValues()
+        }
+    }
 
     var cardHolder: String? {
         paymentCardItem.content.cardHolder
@@ -42,8 +47,7 @@ final class PaymentCardDetailFormPresenter: ItemDetailFormPresenter {
         guard let newPaymentCard = interactor.fetchItem(for: paymentCardItem.id)?.asPaymentCard else {
             return
         }
-        self.paymentCardItem = newPaymentCard
-        refreshValues()
+        paymentCardItem = newPaymentCard
     }
 
     func onSelectCardNumber() {

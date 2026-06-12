@@ -21,15 +21,15 @@ struct ItemDetailFormConfiguration {
 
 @Observable
 class _ItemDetailFormPresenter {
-    
-    let createdAt: String
-    let modifiedAt: String
-    let tags: [ItemTagData]
-    
+
+    private(set) var createdAt: String
+    private(set) var modifiedAt: String
+    private(set) var tags: [ItemTagData]
+
     var name: String {
         item.name ?? ""
     }
-    
+
     var protectionLevel: ItemProtectionLevel {
         item.protectionLevel
     }
@@ -50,7 +50,14 @@ class _ItemDetailFormPresenter {
         configuration.interactor
     }
     
-    private let item: any ItemDataType
+    var item: any ItemDataType {
+        didSet {
+            createdAt = dateFormatter.string(from: item.creationDate)
+            modifiedAt = dateFormatter.string(from: item.modificationDate)
+            tags = Self.tags(for: item, interactor: configuration.interactor)
+        }
+    }
+    
     private let configuration: ItemDetailFormConfiguration
     
     let dateFormatter: DateFormatter
@@ -63,20 +70,20 @@ class _ItemDetailFormPresenter {
         return formatter
     }
     
+    private static func tags(for item: any ItemDataType, interactor: ItemDetailModuleInteracting) -> [ItemTagData] {
+        guard let tagIds = item.tagIds, tagIds.isEmpty == false else { return [] }
+        return interactor.fetchTags(for: tagIds)
+    }
+    
     init(item: any ItemDataType, configuration: ItemDetailFormConfiguration) {
         self.item = item
         self.configuration = configuration
-
+        
         let dateFormatter = Self.makeDateFormatter()
         self.dateFormatter = dateFormatter
         
         self.createdAt = dateFormatter.string(from: item.creationDate)
         self.modifiedAt = dateFormatter.string(from: item.modificationDate)
-        
-        if let tagIds = item.tagIds, tagIds.isEmpty == false {
-            tags = configuration.interactor.fetchTags(for: tagIds)
-        } else {
-            tags = []
-        }
+        self.tags = Self.tags(for: item, interactor: configuration.interactor)
     }
 }

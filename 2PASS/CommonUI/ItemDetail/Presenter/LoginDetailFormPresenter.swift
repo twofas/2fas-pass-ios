@@ -21,8 +21,13 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
         }
     }
     
-    private(set) var loginItem: LoginItemData
-    
+    private(set) var loginItem: LoginItemData {
+        didSet {
+            item = loginItem
+            refreshValues()
+        }
+    }
+
     private let passwordPlaceholder = "•••••••••••••••••"
     private var passwordDecrypted: String?
     
@@ -119,10 +124,9 @@ final class LoginDetailFormPresenter: ItemDetailFormPresenter {
         guard let newLoginItem = interactor.fetchItem(for: loginItem.id)?.asLoginItem else {
             return
         }
-        self.loginItem = newLoginItem
-        refreshValues()
+        loginItem = newLoginItem
     }
-    
+
     private func refreshValues() {
         if let encryptedPassword = loginItem.password, let password = interactor.decryptSecureField(encryptedPassword, protectionLevel: loginItem.protectionLevel) {
             isPasswordAvailable = true

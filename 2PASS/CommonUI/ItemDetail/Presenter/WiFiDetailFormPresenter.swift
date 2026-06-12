@@ -9,7 +9,12 @@ import Common
 @Observable
 final class WiFiDetailFormPresenter: ItemDetailFormPresenter {
 
-    private(set) var wifiItem: WiFiItemData
+    private(set) var wifiItem: WiFiItemData {
+        didSet {
+            item = wifiItem
+            refreshValues()
+        }
+    }
 
     private let passwordPlaceholder = "••••••••••••"
     private var decryptedPassword: String?
@@ -48,7 +53,6 @@ final class WiFiDetailFormPresenter: ItemDetailFormPresenter {
             return
         }
         wifiItem = newWiFiItem
-        refreshValues()
     }
 
     func onSelectPassword() {
