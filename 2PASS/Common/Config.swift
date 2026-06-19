@@ -133,10 +133,6 @@ public enum Config {
         public static let freeEntitlements = SubscriptionPlan.Entitlements(itemsLimit: 200, connectedBrowsersLimit: 1, multiDeviceSync: false)
         public static let premiumEntitlements = SubscriptionPlan.Entitlements(itemsLimit: nil, connectedBrowsersLimit: nil, multiDeviceSync: true)
     }
-
-    public enum AppReview {
-        public static let minimumInstallAge: Duration = .seconds(60 * 60 * 24)
-    }
     
     #if PROD
     public static let deepLinkScheme = "twofaspass"

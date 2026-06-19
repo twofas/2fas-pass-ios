@@ -49,11 +49,7 @@ final class AppReviewInteractor: AppReviewInteracting {
 
     @MainActor
     private func shouldPromptForReview(at current: Date) -> Bool {
-        guard let firstRun = mainRepository.dateOfFirstRun,
-              Duration.seconds(current.timeIntervalSince(firstRun)) >= Config.AppReview.minimumInstallAge else {
-            return false
-        }
-        return !mainRepository.listItems(options: .allNotTrashed).isEmpty
+        !mainRepository.listItems(options: .allNotTrashed).isEmpty
     }
 
     @MainActor
