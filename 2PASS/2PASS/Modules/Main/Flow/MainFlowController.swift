@@ -76,6 +76,8 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
         let quickSetupViewController = MainActor.assumeIsolated {
             UIHostingController(rootView: QuickSetupRouter.buildView())
         }
+        quickSetupViewController.modalPresentationStyle = .formSheet
+        quickSetupViewController.preferredContentSize = CGSize(width: 600, height: 760)
         viewController.present(quickSetupViewController, animated: true)
     }
     
