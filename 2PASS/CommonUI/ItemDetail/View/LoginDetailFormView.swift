@@ -103,9 +103,7 @@ struct LoginDetailFormView: View {
         .onAppear {
             selectedField = nil
         }
-        .onAppear {
-            selectedField = nil
-        }
+        .clearSelectionOnLeavingApp($selectedField)
         .onDisappear {
             presenter.onDisappear()
         }
