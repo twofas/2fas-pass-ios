@@ -139,6 +139,11 @@ final class RootPresenter {
     
     func applicationOpenURL(_ url: URL) -> Bool {
         Log("App: applicationOpenURL: \(url)")
+        #if DEBUG
+        if interactor.handleE2EConnectDeepLink(url) {
+            return true
+        }
+        #endif
         if interactor.isUserSetUp, interactor.isBackupFileURL(url) {
             flowController.toOpenExternalFileError()
             return true

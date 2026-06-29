@@ -176,6 +176,12 @@ public final class InteractorFactory {
             secureNoteItemInteractor: secureNoteInteractor()
         )
     }
+
+#if DEBUG
+    public func connectDebugCameraInteractor() -> ConnectDebugCameraInteracting {
+        ConnectDebugCameraInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+#endif
     
     public func importInteractor() -> ImportInteracting {
         ImportInteractor(

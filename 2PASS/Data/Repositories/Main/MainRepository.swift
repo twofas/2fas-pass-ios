@@ -804,4 +804,9 @@ protocol MainRepository: AnyObject {
 
     // MARK: - Backup Sync Container
     var backupSyncContainer: BackupSyncContainer { get }
+
+#if DEBUG
+    // MARK: - E2E Connect (debug test seam)
+    var isE2EConnectCameraForced: Bool { get }
+#endif
 }

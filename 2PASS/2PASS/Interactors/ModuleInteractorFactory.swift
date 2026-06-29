@@ -340,12 +340,30 @@ extension ModuleInteractorFactory {
     }
     
     func connectModuleInteractor() -> ConnectModuleInteracting {
+#if DEBUG
+        ConnectModuleInteractor(
+            cameraInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
+            connectOnboardingInteractor: InteractorFactory.shared.connectOnboardingInteractor(),
+            debugCameraInteractor: InteractorFactory.shared.connectDebugCameraInteractor()
+        )
+#else
         ConnectModuleInteractor(
             cameraInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
             connectOnboardingInteractor: InteractorFactory.shared.connectOnboardingInteractor()
         )
+#endif
     }
-    
+
+    func connectCameraModuleInteractor() -> ConnectCameraModuleInteracting {
+#if DEBUG
+        ConnectCameraModuleInteractor(
+            debugCameraInteractor: InteractorFactory.shared.connectDebugCameraInteractor()
+        )
+#else
+        ConnectCameraModuleInteractor()
+#endif
+    }
+
     func connectPermissionsModuleInteractor() -> ConnectPermissionsModuleInteracting {
         ConnectPermissionsModuleInteractor(
             cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),

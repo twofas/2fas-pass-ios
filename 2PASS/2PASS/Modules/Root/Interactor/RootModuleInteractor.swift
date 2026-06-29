@@ -53,6 +53,12 @@ protocol RootModuleInteracting: AnyObject {
 
     @available(iOS 26.0, *)
     func fetchCredentialExchangeData(token: UUID) async throws -> ASExportedCredentialData
+
+#if DEBUG
+    /// E2E test seam: parses a Connect QR payload from a debug deep link and hands it to the camera
+    /// screen if it's open. Returns true if `url` was an E2E Connect deep link.
+    func handleE2EConnectDeepLink(_ url: URL) -> Bool
+#endif
 }
 
 final class RootModuleInteractor {
@@ -73,6 +79,10 @@ final class RootModuleInteractor {
     private let shareLinkInteractor: ShareLinkInteracting
     private let backupSyncInstaller: BackupSyncInstalling
     private let notificationCenter = NotificationCenter.default
+
+#if DEBUG
+    private let connectDebugCameraInteractor: ConnectDebugCameraInteracting = InteractorFactory.shared.connectDebugCameraInteractor()
+#endif
 
     init(
         rootInteractor: RootInteracting,
@@ -234,6 +244,12 @@ extension RootModuleInteractor: RootModuleInteracting {
     func fetchCredentialExchangeData(token: UUID) async throws -> ASExportedCredentialData {
         try await credentialExchangeImporter.fetchCredentials(token: token)
     }
+
+#if DEBUG
+    func handleE2EConnectDeepLink(_ url: URL) -> Bool {
+        connectDebugCameraInteractor.notifyScannedCode(fromDeepLink: url)
+    }
+#endif
 }
 
 private extension RootModuleInteractor {
