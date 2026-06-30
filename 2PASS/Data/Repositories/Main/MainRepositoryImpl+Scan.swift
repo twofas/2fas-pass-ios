@@ -6,6 +6,9 @@
 
 import UIKit
 import Vision
+#if targetEnvironment(simulator)
+import CoreImage
+#endif
 import Common
 
 public enum ScanImageError: Error {
@@ -32,6 +35,9 @@ extension MainRepositoryImpl {
         completion: @escaping VisionScanCompletion
     ) {
         DispatchQueue.global(qos: .userInitiated).async {
+            #if targetEnvironment(simulator)
+            self.scanUsingCIDetector(image: image, orientation: orientation, completion: completion)
+            #else
             let requests = self.createVisionRequests(completion: completion)
             let imageRequestHandler = VNImageRequestHandler(cgImage: image, orientation: orientation, options: [:])
 
@@ -42,10 +48,37 @@ extension MainRepositoryImpl {
                 DispatchQueue.main.async {
                     completion(.failure(.scanError))
                 }
-                return
             }
+            #endif
         }
     }
+
+    #if targetEnvironment(simulator)
+    private func scanUsingCIDetector(
+        image: CGImage,
+        orientation: CGImagePropertyOrientation,
+        completion: @escaping VisionScanCompletion
+    ) {
+        let ciImage = CIImage(cgImage: image)
+            .oriented(forExifOrientation: Int32(orientation.rawValue))
+        let detector = CIDetector(
+            ofType: CIDetectorTypeQRCode,
+            context: nil,
+            options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        )
+        let codes = (detector?.features(in: ciImage) ?? [])
+            .compactMap { ($0 as? CIQRCodeFeature)?.messageString }
+
+        DispatchQueue.main.async {
+            guard !codes.isEmpty else {
+                completion(.failure(.noCodesFound))
+                return
+            }
+
+            completion(.success(codes))
+        }
+    }
+    #endif
     
     private func createVisionRequests(completion: @escaping VisionScanCompletion) -> [VNRequest] {
         func errorWhileScanning() {
