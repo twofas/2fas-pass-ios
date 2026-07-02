@@ -27,3 +27,16 @@ public struct DeletedItemData: Hashable, Identifiable {
         self.deletedAt = deletedAt
     }
 }
+
+public extension DeletedItemData.Kind {
+
+    init?(exchangeDeletedItemType rawValue: String) {
+        if let kind = Self(rawValue: rawValue) {
+            self = kind
+        } else if ItemContentType.allKnownTypes.contains(where: { $0.rawValue == rawValue }) {
+            self = .login
+        } else {
+            return nil
+        }
+    }
+}
