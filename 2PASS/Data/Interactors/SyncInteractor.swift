@@ -207,28 +207,35 @@ private extension SyncInteractor {
         var deletedResult: [DeletedItemData] = []
 
         for del in deleted {
-            if let index = items.firstIndex(where: { $0.id == del.itemID && !$0.isTrashed }), let item = items[safe: index] {
-                if item.modificationDate < del.deletedAt {
-                    items.remove(at: index)
-                    deletedResult.append(del)
+            switch del.kind {
+            case .login:
+                if let index = items.firstIndex(where: { $0.id == del.itemID && !$0.isTrashed }), let item = items[safe: index] {
+                    if item.modificationDate < del.deletedAt {
+                        items.remove(at: index)
+                        deletedResult.append(del)
 
-                    addedItems.removeAll(where: { $0.id == item.id })
-                    deletedItems.append(item)
+                        addedItems.removeAll(where: { $0.id == item.id })
+                        deletedItems.append(item)
+                    } else {
+                        removedDeleted.append(del)
+                    }
                 } else {
-                    removedDeleted.append(del)
-                }
-            } else if let index = tags.firstIndex(where: { $0.tagID == del.itemID }), let tag = tags[safe: index] {
-                if tag.modificationDate < del.deletedAt {
-                    tags.remove(at: index)
                     deletedResult.append(del)
-
-                    addedTags.removeAll(where: { $0.tagID == tag.tagID })
-                    deletedTags.append(tag)
-                } else {
-                    removedDeleted.append(del)
                 }
-            } else {
-                deletedResult.append(del)
+            case .tag:
+                if let index = tags.firstIndex(where: { $0.tagID == del.itemID }), let tag = tags[safe: index] {
+                    if tag.modificationDate < del.deletedAt {
+                        tags.remove(at: index)
+                        deletedResult.append(del)
+
+                        addedTags.removeAll(where: { $0.tagID == tag.tagID })
+                        deletedTags.append(tag)
+                    } else {
+                        removedDeleted.append(del)
+                    }
+                } else {
+                    deletedResult.append(del)
+                }
             }
         }
 
