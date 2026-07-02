@@ -60,6 +60,9 @@ final class MockMainRepository: MainRepository {
     private var stubbedIsMainAppProcess: Bool = true
     var isMainAppProcess: Bool { stubbedIsMainAppProcess }
 
+    private var stubbedIsE2EConnectCameraForced: Bool = false
+    var isE2EConnectCameraForced: Bool { stubbedIsE2EConnectCameraForced }
+
     @discardableResult
     func withIsMainAppProcess(_ value: Bool) -> Self {
         stubbedIsMainAppProcess = value

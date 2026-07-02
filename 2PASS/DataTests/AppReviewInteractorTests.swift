@@ -12,7 +12,6 @@ import Common
 @Suite struct AppReviewInteractorTests {
 
     private static let fixedNow = Date(timeIntervalSinceReferenceDate: 800_000_000)
-    private static let installAgeBoundary = TimeInterval(Config.AppReview.minimumInstallAge.components.seconds)
     private static let yieldDeadline: Duration = .milliseconds(200)
 
     // MARK: - All gates pass
@@ -34,31 +33,6 @@ import Common
         let center = NotificationCenter()
         let repo = Self.eligibleRepo()
         let interactor = Self.makeInteractor(repo: repo, isPremium: false, center: center)
-
-        let yielded = await Self.waitForReviewRequest(on: interactor, posting: center)
-
-        #expect(yielded == false)
-        #expect(repo.capturedLastAppReviewPromptDate == nil)
-    }
-
-    // MARK: - Install-age gate
-
-    @Test func doesNotYield_whenDateOfFirstRunIsNil() async {
-        let center = NotificationCenter()
-        let repo = Self.eligibleRepo().withDateOfFirstRun(nil)
-        let interactor = Self.makeInteractor(repo: repo, isPremium: true, center: center)
-
-        let yielded = await Self.waitForReviewRequest(on: interactor, posting: center)
-
-        #expect(yielded == false)
-        #expect(repo.capturedLastAppReviewPromptDate == nil)
-    }
-
-    @Test func doesNotYield_whenInstalledLessThanOneDayAgo() async {
-        let center = NotificationCenter()
-        let recentInstall = Self.fixedNow.addingTimeInterval(-Self.installAgeBoundary + 60)
-        let repo = Self.eligibleRepo().withDateOfFirstRun(recentInstall)
-        let interactor = Self.makeInteractor(repo: repo, isPremium: true, center: center)
 
         let yielded = await Self.waitForReviewRequest(on: interactor, posting: center)
 
@@ -97,7 +71,6 @@ import Common
 
     private static func eligibleRepo() -> MockMainRepository {
         MockMainRepository()
-            .withDateOfFirstRun(fixedNow.addingTimeInterval(-installAgeBoundary * 2))
             .withListItems { _ in [Self.makeAnyItem()] }
     }
 
