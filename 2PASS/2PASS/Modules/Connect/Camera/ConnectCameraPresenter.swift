@@ -11,7 +11,7 @@ import CommonUI
 
 enum ConnectCameraDestination: Identifiable {
     case connecting(ConnectSession, onScanAgain: Callback)
-    
+
     var id: String {
         switch self {
         case .connecting(let session, _):
@@ -29,15 +29,39 @@ final class ConnectCameraPresenter {
     private let _onScannedQRCode: Callback
     private let scanDebouncer = ScanDebouncer()
 
-    init(onScannedQRCode: @escaping Callback, onScanAgain: @escaping Callback) {
+    private let interactor: ConnectCameraModuleInteracting
+
+#if DEBUG
+    @ObservationIgnored private var e2eObservationTask: Task<Void, Never>?
+#endif
+
+    init(interactor: ConnectCameraModuleInteracting, onScannedQRCode: @escaping Callback, onScanAgain: @escaping Callback) {
+        self.interactor = interactor
         self._onScannedQRCode = onScannedQRCode
         self.onScanAgain = onScanAgain
     }
+
+#if DEBUG
+    deinit {
+        e2eObservationTask?.cancel()
+    }
+#endif
 
     @MainActor
     func onAppear() {
         scanDebouncer.reset()
         showInvalidCodeError = false
+#if DEBUG
+        startObservingE2ECodes()
+#endif
+    }
+
+    @MainActor
+    func onDisappear() {
+#if DEBUG
+        e2eObservationTask?.cancel()
+        e2eObservationTask = nil
+#endif
     }
 
     @MainActor
@@ -49,7 +73,7 @@ final class ConnectCameraPresenter {
                 self.showInvalidCodeError = true
                 return
             }
-            
+
             guard session.verify() else {
                 return
             }
@@ -66,4 +90,17 @@ final class ConnectCameraPresenter {
             self?.showInvalidCodeError = false
         }
     }
+
+#if DEBUG
+    @MainActor
+    private func startObservingE2ECodes() {
+        e2eObservationTask?.cancel()
+        e2eObservationTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            for await message in self.interactor.e2eScannedCodes {
+                self.onScannedQRCode(message.code)
+            }
+        }
+    }
+#endif
 }

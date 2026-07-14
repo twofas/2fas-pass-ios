@@ -1,0 +1,104 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "backup_sync_error_export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't prepare backup" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie udało się przygotować kopii zapasowej" } }
+      }
+    },
+    "backup_sync_error_forbidden" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Access denied" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak dostępu" } }
+      }
+    },
+    "backup_sync_error_icloud_unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "iCloud unavailable" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "iCloud niedostępny" } }
+      }
+    },
+    "backup_sync_error_invalid_response" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Invalid server response" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nieprawidłowa odpowiedź serwera" } }
+      }
+    },
+    "backup_sync_error_limit_devices_reached" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Device limit reached" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Osiągnięto limit urządzeń" } }
+      }
+    },
+    "backup_sync_error_method_not_allowed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Server doesn't support sync" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Serwer nie obsługuje synchronizacji" } }
+      }
+    },
+    "backup_sync_error_network" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Network error" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Błąd sieci" } }
+      }
+    },
+    "backup_sync_error_not_configured" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Backup not configured" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Kopia zapasowa nie jest skonfigurowana" } }
+      }
+    },
+    "backup_sync_error_password_changed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Master password changed remotely" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Hasło główne zostało zmienione zdalnie" } }
+      }
+    },
+    "backup_sync_error_schema_not_supported" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Backup schema not supported (v%lld)" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Schemat kopii zapasowej nieobsługiwany (v%lld)" } }
+      }
+    },
+    "backup_sync_error_server" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Server error" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Błąd serwera" } }
+      }
+    },
+    "backup_sync_error_ssl" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SSL/TLS error" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Błąd SSL/TLS" } }
+      }
+    },
+    "backup_sync_error_unauthorized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Authentication failed" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Uwierzytelnianie nieudane" } }
+      }
+    },
+    "backup_sync_error_unexpected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unexpected error: %@" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nieoczekiwany błąd: %@" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

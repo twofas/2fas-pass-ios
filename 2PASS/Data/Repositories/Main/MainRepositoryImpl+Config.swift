@@ -44,4 +44,12 @@ extension MainRepositoryImpl {
     func setDefaultPassswordListAction(_ action: PasswordListAction) {
         userDefaultsDataSource.setDefaultPassswordListAction(action)
     }
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        userDefaultsDataSource.defaultURIMatchRule
+    }
+
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
+        userDefaultsDataSource.setDefaultURIMatchRule(rule)
+    }
 }

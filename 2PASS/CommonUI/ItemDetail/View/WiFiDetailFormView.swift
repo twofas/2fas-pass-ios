@@ -94,6 +94,7 @@ struct WiFiDetailFormView: View {
         .onAppear {
             selectedField = nil
         }
+        .clearSelectionOnLeavingApp($selectedField)
 
         if presenter.canShowNetworkQRCode {
             GroupedSection {

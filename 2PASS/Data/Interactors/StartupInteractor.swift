@@ -56,27 +56,33 @@ extension StartupInteracting {
 }
 
 final class StartupInteractor {
+    private let mainRepository: MainRepository
     private let protectionInteractor: ProtectionInteracting
     private let storageInteractor: StorageInteracting
     private let biometryInteractor: BiometryInteracting
     private let onboardingInteractor: OnboardingInteracting
     private let migrationInteractor: MigrationInteracting
     private let securityInteractor: SecurityInteracting
-    
+    private let currentDateInteractor: CurrentDateInteracting
+
     init(
+        mainRepository: MainRepository,
         protectionInteractor: ProtectionInteracting,
         storageInteractor: StorageInteracting,
         biometryInteractor: BiometryInteracting,
         onboardingInteractor: OnboardingInteracting,
         migrationInteractor: MigrationInteracting,
-        securityInteractor: SecurityInteracting
+        securityInteractor: SecurityInteracting,
+        currentDateInteractor: CurrentDateInteracting
     ) {
+        self.mainRepository = mainRepository
         self.protectionInteractor = protectionInteractor
         self.storageInteractor = storageInteractor
         self.biometryInteractor = biometryInteractor
         self.onboardingInteractor = onboardingInteractor
         self.migrationInteractor = migrationInteractor
         self.securityInteractor = securityInteractor
+        self.currentDateInteractor = currentDateInteractor
     }
 }
 
@@ -109,7 +115,11 @@ extension StartupInteractor: StartupInteracting {
     /// Run once on app startup
     func initialize() {
         Log("StartupInteractor: Initializing", module: .interactor)
-        
+
+        if mainRepository.dateOfFirstRun == nil {
+            mainRepository.saveDateOfFirstRun(currentDateInteractor.currentDate)
+        }
+
         migrationInteractor.migrateIfNeeded()
         
         if !protectionInteractor.hasDeviceID {

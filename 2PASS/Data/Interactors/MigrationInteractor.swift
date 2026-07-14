@@ -43,15 +43,20 @@ final class MigrationInteractor: MigrationInteracting {
     
     func migrateIfNeeded() {
         let appVersion = mainRepository.currentAppVersion
+        let lastKnownAppVersion = mainRepository.lastKnownAppVersion
 
-        if mainRepository.lastKnownAppVersion == nil { // Below 1.1.0 or first app run
-            if mainRepository.isMainAppProcess {
-                Log("Start app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
-                mainRepository.removeOldStoreLogs()
-                Log("Finish app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
-            }
-        } else {
-            Log("Already migrated for \(appVersion, privacy: .public) version", module: .migration, severity: .info)
+        guard mainRepository.isMainAppProcess else {
+            return
+        }
+        
+        if lastKnownAppVersion == nil { // Below 1.1.0 or first app run
+            Log("Start app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
+            mainRepository.removeOldStoreLogs()
+            Log("Finish app migration to \(appVersion, privacy: .public)", module: .migration, severity: .info)
+        }
+
+        if lastKnownAppVersion?.compare("1.9.0", options: .numeric) == .orderedAscending {
+            mainRepository.migrateLegacyBackupConfigs()
         }
     }
 
@@ -74,7 +79,13 @@ final class MigrationInteractor: MigrationInteracting {
         if lastKnownAppVersion?.compare("1.8.0", options: .numeric) == .orderedAscending {
             mainRepository.removeDuplicatedDeletedItems()
         }
-        
+
+        if lastKnownAppVersion?.compare("1.9.0", options: .numeric) == .orderedAscending {
+            for vault in mainRepository.listEncryptedVaults() {
+                mainRepository.backfillVaultContentModificationDate(vaultID: vault.vaultID)
+            }
+        }
+
         mainRepository.saveEncryptedStorage()
 
         mainRepository.setLastKnownAppVersion(appVersion)

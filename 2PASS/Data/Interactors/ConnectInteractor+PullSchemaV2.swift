@@ -105,7 +105,7 @@ extension ConnectInteractor {
                         password: password.action == .generate
                             ? .generate
                             : newPassword.map { .value($0) },
-                        uris: [PasswordURI(uri: url, match: .domain)]
+                        uris: [PasswordURI(uri: url, match: mainRepository.defaultURIMatchRule)]
                     )
                 )
             } else {

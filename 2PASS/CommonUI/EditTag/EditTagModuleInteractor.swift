@@ -13,23 +13,23 @@ final class EditTagModuleInteractor: EditTagModuleInteracting {
 
     private let tagInteractor: TagInteracting
     private let vaultsInteractor: VaultsInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
 
     init(
         tagInteractor: TagInteracting,
         vaultsInteractor: VaultsInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+        syncTriggerInteractor: BackupSyncTriggerInteracting
     ) {
         self.tagInteractor = tagInteractor
         self.vaultsInteractor = vaultsInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
     }
 
     func createTag(name: String, color: ItemTagColor) {
         guard let defaultVaultID = vaultsInteractor.defaultVaultID else { return }
         tagInteractor.createTag(name: name, color: color, in: defaultVaultID)
         tagInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
     
     func updateTag(tagID: ItemTagID, name: String, color: ItemTagColor) {
@@ -39,7 +39,7 @@ final class EditTagModuleInteractor: EditTagModuleInteracting {
         tag.color = color
         tagInteractor.updateTag(data: tag)
         tagInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
     
     func getTag(tagID: ItemTagID) -> ItemTagData? {

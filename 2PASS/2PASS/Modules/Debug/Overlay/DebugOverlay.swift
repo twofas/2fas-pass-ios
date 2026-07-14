@@ -32,6 +32,7 @@ final class DebugOverlay {
         let center = round((width - size)/2.0)
         
         overlayButtonWindow = UIWindow(frame: CGRect(x: center, y: y, width: size, height: size))
+        overlayButtonWindow?.windowScene = window?.windowScene
         overlayButtonWindow?.windowLevel = .alert + 1
         overlayButtonWindow?.isHidden = true
         
@@ -43,6 +44,7 @@ final class DebugOverlay {
         
         // Debug Window
         overlayDebugWindow = UIWindow(frame: UIScreen.main.bounds)
+        overlayDebugWindow?.windowScene = window?.windowScene
         overlayDebugWindow?.windowLevel = .alert + 2
         overlayDebugWindow?.isHidden = true
         

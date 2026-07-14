@@ -1206,7 +1206,7 @@ private extension ImportInteractor {
         vaultID: VaultID
     ) -> DeletedItemData? {
         guard let itemID = ItemTagID(uuidString: exchangeDeleted.id) else { return nil }
-        guard let kind = DeletedItemData.Kind(rawValue: exchangeDeleted.type) else { return nil }
+        guard let kind = DeletedItemData.Kind(exchangeDeletedItemType: exchangeDeleted.type) else { return nil }
         return .init(itemID: itemID, vaultID: vaultID, kind: kind, deletedAt: Date(exportTimestamp: exchangeDeleted.deletedAt))
     }
 

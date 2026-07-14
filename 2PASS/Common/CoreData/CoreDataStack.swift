@@ -157,7 +157,7 @@ public final class CoreDataStack {
     private lazy var storeUrl: URL = {
         CoreDataStack.storeUrl(forName: name, storeInGroup: storeInGroup)
     }()
-    
+
     public var storeURL: URL? { storeDescription.url }
 
     public var context: NSManagedObjectContext { persistentContainer.viewContext }
@@ -216,7 +216,7 @@ public final class CoreDataStack {
         guard let storeURL = storeDescription.url else {
             fatalError("persistentContainer was not set up properly")
         }
-        
+
         if migrator.requiresMigrationToCurrentVersion(at: storeURL) {
             do {
                 let usesHistory = Self.shouldUsePersistentHistory(

@@ -44,6 +44,8 @@ protocol ItemEditorModuleInteracting: AnyObject {
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
     var defaultVaultID: VaultID? { get }
 
+    var defaultURIMatchRule: PasswordURI.Match { get }
+
     func getEditItem() -> ItemData?
     func getTags(for tagIds: [ItemTagID]) -> [ItemTagData]
     func listVaults() -> [VaultData]
@@ -124,7 +126,7 @@ final class ItemEditorModuleInteractor {
     private let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
     private let configInteractor: ConfigInteracting
     private let uriInteractor: URIInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let autoFillCredentialsInteractor: AutoFillCredentialsInteracting
     private let passwordGeneratorInteractor: PasswordGeneratorInteracting
     private let fileIconInteractor: FileIconInteracting
@@ -145,7 +147,7 @@ final class ItemEditorModuleInteractor {
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
         configInteractor: ConfigInteracting,
         uriInteractor: URIInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         autoFillCredentialsInteractor: AutoFillCredentialsInteracting,
         passwordGeneratorInteractor: PasswordGeneratorInteracting,
         fileIconInteractor: FileIconInteracting,
@@ -164,7 +166,7 @@ final class ItemEditorModuleInteractor {
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
         self.configInteractor = configInteractor
         self.uriInteractor = uriInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.autoFillCredentialsInteractor = autoFillCredentialsInteractor
         self.passwordGeneratorInteractor = passwordGeneratorInteractor
         self.fileIconInteractor = fileIconInteractor
@@ -196,6 +198,10 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
 
     func vault(for vaultID: VaultID) -> VaultData? {
         vaultsInteractor.vault(for: vaultID)
+    }
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        configInteractor.defaultURIMatchRule
     }
     
     func getEditItem() -> ItemData? {
@@ -580,12 +586,12 @@ extension ItemEditorModuleInteractor: ItemEditorModuleInteracting {
         }
         itemsInteractor.markAsTrashed(for: editItemID)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
         return editItemID
     }
     
     private func didSaveItem() {
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 }

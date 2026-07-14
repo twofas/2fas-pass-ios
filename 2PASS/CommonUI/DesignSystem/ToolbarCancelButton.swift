@@ -15,7 +15,7 @@ public struct ToolbarCancelButton: View {
     
     public var body: some View {
         if #available(iOS 26, *) {
-            Button(symbol: Image(systemName: "xmark")) {
+            Button(role: .close) {
                 action()
             }
             .tint(nil)

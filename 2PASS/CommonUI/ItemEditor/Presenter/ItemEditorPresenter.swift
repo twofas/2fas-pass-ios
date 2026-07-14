@@ -11,7 +11,7 @@ import Data
 
 @Observable
 final class ItemEditorPresenter {
-    
+
     enum Form {
         case login(LoginEditorFormPresenter)
         case secureNote(SecureNoteEditorFormPresenter)
@@ -54,35 +54,33 @@ final class ItemEditorPresenter {
             ""
         }
     }
-    
+
     private(set) var form: Form
-    
+
     var saveEnabled: ((Bool) -> Void)?
-    
+
     var loginFormPresenter: LoginEditorFormPresenter?
     var secureNotePresenter: SecureNoteEditorFormPresenter?
     var paymentCardPresenter: PaymentCardEditorFormPresenter?
     var wifiPresenter: WiFiEditorFormPresenter?
-    
+
     let allowChangeContentType: Bool
-    
+
     var showRemoveItemButton: Bool {
         isEdit && interactor.changeRequest == nil
     }
-    
+
     var cantSave = false
 
     private(set) var isEdit: Bool
-    
-    var passwordWasEdited = false
-    var passwordWasDeleted = false
 
     private let flowController: ItemEditorFlowControlling
     private let interactor: ItemEditorModuleInteracting
-    private let notificationCenter: NotificationCenter
-    
+    @ObservationIgnored
+    private var storageDidChangeToken: Notifications.ObservationToken?
+
     private var firstAppear = true
-    
+
     private var currentPresenter: ItemEditorFormPresenter {
         switch form {
         case .login(let presenter):
@@ -95,18 +93,17 @@ final class ItemEditorPresenter {
             return presenter
         }
     }
-    
+
     init(flowController: ItemEditorFlowControlling, interactor: ItemEditorModuleInteracting) {
         self.flowController = flowController
         self.interactor = interactor
-        self.notificationCenter = .default
-        
+
         let initalData = interactor.getEditItem()
         let changeRequest = interactor.changeRequest
-        
+
         let contentType = changeRequest?.contentType ?? initalData?.contentType ?? .login
         self.isEdit = initalData != nil
-        
+
         if let changeRequest {
             self.allowChangeContentType = changeRequest.allowChangeContentType
         } else {
@@ -157,69 +154,76 @@ final class ItemEditorPresenter {
         case .unknown:
             fatalError("Unsupported unknown item type in Item Editor")
         }
-        
-        if initalData != nil {
-            notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
-            notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudDidSync, object: nil)
-        }
-        
+
         observeCurrentPresenterChanges()
     }
-    
+
     func setContentType(_ contentType: ItemContentType) {
         withAnimation {
             self.form = form(for: contentType)
         }
     }
-    
+
     func onClose() {
         flowController.close(with: .failure(.userCancelled))
     }
-    
+
     func handleChangeProtectionLevel(_ value: ItemProtectionLevel) {
         currentPresenter.protectionLevel = value
     }
-    
+
     func handleIconChange(_ value: PasswordIconType) {
         loginFormPresenter?.handleIconChange(value)
     }
-    
+
+    @MainActor
     func onAppear() {
-        guard firstAppear else {
-            return
+        if firstAppear {
+            updateSaveState()
+            firstAppear = false
         }
-        updateSaveState()
-        firstAppear = false
+
+        if isEdit {
+            startStorageObservation()
+        }
     }
-    
+
     func onDisappear() {
         loginFormPresenter?.cancelFetchIcon()
     }
-    
+
+    @MainActor
     func onSave() {
         guard currentPresenter.canSave else {
             updateSaveState()
             return
         }
-        
+
+        stopStorageObservation()
+
         let result = currentPresenter.onSave()
-        
+
         if result.isSuccess {
             flowController.close(with: result)
         } else {
             cantSave = true
+            if isEdit {
+                startStorageObservation()
+            }
         }
     }
-    
+
     func onDelete() {
+        stopStorageObservation()
+
         guard let itemID = interactor.moveToTrash() else {
             return
         }
         flowController.close(with: .success(.deleted(itemID)))
     }
-    
+
     deinit {
-        notificationCenter.removeObserver(self)
+        stopStorageObservation()
     }
 }
 
@@ -279,7 +283,7 @@ private extension ItemEditorPresenter {
             fatalError("Unsupported unknown item type in Item Editor")
         }
     }
-    
+
     func observeCurrentPresenterChanges() {
         withObservationTracking { [weak self] in
             guard let self else { return }
@@ -290,31 +294,37 @@ private extension ItemEditorPresenter {
             }
         }
     }
-    
+
     func updateSaveState() {
         saveEnabled?(currentPresenter.canSave)
     }
 
-    @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
+    @MainActor
+    func startStorageObservation() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items]) else { return }
+            self.checkCurrentPasswordState()
         }
         checkCurrentPasswordState()
     }
-    
-    @objc
-    func iCloudSyncFinished() {
-        checkCurrentPasswordState()
+
+    func stopStorageObservation() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
     }
-    
+
     func checkCurrentPasswordState() {
         DispatchQueue.main.async {
+            let deleted: Bool
             switch self.interactor.checkCurrentPasswordState() {
-            case .deleted: self.passwordWasDeleted = true
-            case .edited: self.passwordWasEdited = true
-            case .noChange: break
+            case .deleted: deleted = true
+            case .edited: deleted = false
+            case .noChange: return
             }
+            // Stop watching before presenting: further notifications must not stack more alerts.
+            self.stopStorageObservation()
+            self.flowController.toItemChangedOnOtherDevice(deleted: deleted)
         }
     }
 }

@@ -49,21 +49,19 @@ final class TrashPresenter {
     private let iconDataSource: RemoteImageCollectionDataSource<TrashItemData>
     
     private let interactor: TrashModuleInteracting
-    private let notificationCenter: NotificationCenter
     
+    @ObservationIgnored
+    private var storageDidChangeToken: Notifications.ObservationToken?
+
     var destination: TrashDestination?
-    
+
     init(interactor: TrashModuleInteracting) {
         self.interactor = interactor
         self.iconDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
-        self.notificationCenter = .default
-        
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
-    
+
     deinit {
-        notificationCenter.removeObserver(self)
+        storageDidChangeToken?.cancel()
     }
 }
 
@@ -76,10 +74,23 @@ extension TrashPresenter {
                 self?.icons[item.id] = .icon(image)
             }
         }
-        
+
+        // Register synchronously so a save posted before the observer is live isn't dropped.
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items]) else { return }
+            self.reload()
+        }
+
         reload()
     }
-    
+
+    @MainActor
+    func onDisappear() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
+    }
+
     @MainActor
     func onAppear(for item: TrashItemData) {
         switch item.icon {
@@ -129,31 +140,27 @@ extension TrashPresenter {
     func onRestore(itemID: ItemID) {
         if interactor.canRestore {
             interactor.restore(with: itemID)
-            reload()
         } else {
             destination = .upgradePlanPrompt(limitItems: interactor.currentPlanLimitItems)
         }
     }
-    
+
     func onDelete(itemID: ItemID) {
         destination = .confirmDelete(id: itemID, onFinish: { [weak self] confirm in
             self?.destination = nil
-            
+
             if confirm {
                 self?.interactor.delete(with: itemID)
-                self?.reload()
             }
         })
     }
-    
+
     func onEmptyTrash() {
         interactor.emptyTrash()
-        reload()
     }
-    
+
     func onRestoreAll() {
         interactor.restoreAll()
-        reload()
     }
 }
 
@@ -204,22 +211,5 @@ private extension TrashPresenter {
                     }
                 }
             })
-    }
-    
-    @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
-        DispatchQueue.main.async {
-            self.reload()
-        }
-    }
-    
-    @objc
-    func iCloudSyncFinished() {
-        DispatchQueue.main.async {
-            self.reload()
-        }
     }
 }

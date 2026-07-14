@@ -40,7 +40,6 @@ struct ApplePasswordsMobileImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -78,7 +77,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsMobile, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -87,13 +86,13 @@ struct ApplePasswordsMobileImportInteractorTests {
         let visaCard = try #require(cards.first { $0.name == "VISA - virtual" })
         #expect(visaCard.content.cardHolder == "Maciej Szewczyk")
 
-        let cardNumber = try #require(decrypt(visaCard.content.cardNumber))
+        let cardNumber = try #require(visaCard.content.cardNumber)
         #expect(cardNumber == "4779251087305470")
 
-        let expirationDate = try #require(decrypt(visaCard.content.expirationDate))
+        let expirationDate = try #require(visaCard.content.expirationDate)
         #expect(expirationDate == "11/25")
 
-        #expect(visaCard.vaultId == testVaultID)
+        #expect(visaCard.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(visaCard.metadata.protectionLevel == .normal)
         #expect(visaCard.metadata.trashedStatus == .no)
     }
@@ -107,7 +106,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsMobile, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -116,7 +115,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let visaCard = try #require(cards.first { $0.name == "Visa" })
         #expect(visaCard.content.cardHolder == nil)
 
-        let cardNumber = try #require(decrypt(visaCard.content.cardNumber))
+        let cardNumber = try #require(visaCard.content.cardNumber)
         #expect(cardNumber == "4246710137228318")
 
         #expect(visaCard.content.expirationDate == nil)
@@ -131,7 +130,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsMobile, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -139,10 +138,10 @@ struct ApplePasswordsMobileImportInteractorTests {
         // MasterCard with 2022 expiration
         let masterCard = try #require(cards.first { $0.name == "MasterCard" })
 
-        let cardNumber = try #require(decrypt(masterCard.content.cardNumber))
+        let cardNumber = try #require(masterCard.content.cardNumber)
         #expect(cardNumber == "5472670107591883")
 
-        let expirationDate = try #require(decrypt(masterCard.content.expirationDate))
+        let expirationDate = try #require(masterCard.content.expirationDate)
         #expect(expirationDate == "1/22")
     }
 
@@ -155,7 +154,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsMobile, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -175,7 +174,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsMobile, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -187,7 +186,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let acrcloudLogin = try #require(logins.first { $0.name == "console.acrcloud.com" })
         #expect(acrcloudLogin.content.username == "user@gmail.com")
 
-        let password = try #require(decrypt(acrcloudLogin.content.password))
+        let password = try #require(acrcloudLogin.content.password)
         #expect(password == "koqma4-kyCxov-vycpur")
 
         #expect(acrcloudLogin.content.uris?.first?.uri == "https://console.acrcloud.com/")
@@ -201,7 +200,6 @@ struct ApplePasswordsMobileImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -225,10 +223,10 @@ struct ApplePasswordsMobileImportInteractorTests {
 
         // MARK: Login - "console.acrcloud.com"
         let acrcloudLogin = try #require(logins.first { $0.name == "console.acrcloud.com" })
-        #expect(acrcloudLogin.vaultId == testVaultID)
+        #expect(acrcloudLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(acrcloudLogin.content.username == "user@gmail.com")
 
-        let acrcloudPassword = try #require(decrypt(acrcloudLogin.content.password))
+        let acrcloudPassword = try #require(acrcloudLogin.content.password)
         #expect(acrcloudPassword == "koqma4-kyCxov-vycpur")
 
         #expect(acrcloudLogin.content.uris?[0].uri == "https://console.acrcloud.com/")
@@ -244,7 +242,7 @@ struct ApplePasswordsMobileImportInteractorTests {
         let adobeNa1Login = try #require(logins.first { $0.name == "adobeid-na1.services.adobe.com" })
         #expect(adobeNa1Login.content.username == "user2@cohesiva.com")
 
-        let adobeNa1Password = try #require(decrypt(adobeNa1Login.content.password))
+        let adobeNa1Password = try #require(adobeNa1Login.content.password)
         #expect(adobeNa1Password == "uMF-mL3-yVH-eYM")
 
         #expect(adobeNa1Login.content.notes == nil)
@@ -255,18 +253,18 @@ struct ApplePasswordsMobileImportInteractorTests {
         #expect(adobeLogin.content.username == nil)
         #expect(adobeLogin.content.uris == nil)
 
-        let adobePassword = try #require(decrypt(adobeLogin.content.password))
+        let adobePassword = try #require(adobeLogin.content.password)
         #expect(adobePassword == "austyf-6jekzo-wivhIx")
 
         // MARK: Payment Card - "VISA - virtual"
         let visaVirtualCard = try #require(cards.first { $0.name == "VISA - virtual" })
-        #expect(visaVirtualCard.vaultId == testVaultID)
+        #expect(visaVirtualCard.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(visaVirtualCard.content.cardHolder == "Maciej Szewczyk")
 
-        let visaVirtualCardNumber = try #require(decrypt(visaVirtualCard.content.cardNumber))
+        let visaVirtualCardNumber = try #require(visaVirtualCard.content.cardNumber)
         #expect(visaVirtualCardNumber == "4779251087305470")
 
-        let visaVirtualExpiration = try #require(decrypt(visaVirtualCard.content.expirationDate))
+        let visaVirtualExpiration = try #require(visaVirtualCard.content.expirationDate)
         #expect(visaVirtualExpiration == "11/25")
 
         #expect(visaVirtualCard.content.securityCode == nil)
@@ -280,16 +278,16 @@ struct ApplePasswordsMobileImportInteractorTests {
         #expect(visaCard.content.cardHolder == nil)
         #expect(visaCard.content.expirationDate == nil)
 
-        let visaCardNumber = try #require(decrypt(visaCard.content.cardNumber))
+        let visaCardNumber = try #require(visaCard.content.cardNumber)
         #expect(visaCardNumber == "4246710137228318")
 
         // MARK: Payment Card - "MasterCard"
         let masterCard = try #require(cards.first { $0.name == "MasterCard" })
 
-        let masterCardNumber = try #require(decrypt(masterCard.content.cardNumber))
+        let masterCardNumber = try #require(masterCard.content.cardNumber)
         #expect(masterCardNumber == "5472670107591883")
 
-        let masterCardExpiration = try #require(decrypt(masterCard.content.expirationDate))
+        let masterCardExpiration = try #require(masterCard.content.expirationDate)
         #expect(masterCardExpiration == "1/22")
     }
 
@@ -307,15 +305,16 @@ struct ApplePasswordsMobileImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadApplePasswordsMobileTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.applePasswordsMobile, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.applePasswordsMobile, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     // MARK: - Helper Methods

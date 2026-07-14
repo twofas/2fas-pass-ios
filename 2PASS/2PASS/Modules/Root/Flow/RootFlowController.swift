@@ -108,6 +108,7 @@ extension RootFlowController {
 
 extension RootFlowController: RootFlowControlling {
     func toCover() {
+        coverWindow.windowScene = window?.windowScene
         coverWindow.isHidden = false
         coverWindow.makeKeyAndVisible()
     }
@@ -130,14 +131,15 @@ extension RootFlowController: RootFlowControlling {
     
     func toLogin(coldRun: Bool) {
         guard loginViewController == nil else { return }
-        
+
         let loginViewController = LoginFlowController.setAsCover(
             in: loginWindow,
             coldRun: coldRun,
             parent: self
         )
-        
+
         self.loginViewController = loginViewController
+        loginWindow.windowScene = window?.windowScene
         loginWindow.isHidden = false
         loginWindow.makeKeyAndVisible()
     }
@@ -149,15 +151,23 @@ extension RootFlowController: RootFlowControlling {
     }
     
     func toRemoveLogin() {
-        guard loginViewController != nil else { return }
+        guard let dismissing = loginViewController else { return }
+        loginViewController = nil
+
         UIView.animate(
             withDuration: Animation.duration,
             delay: 0,
-            options:  [.curveEaseInOut, .beginFromCurrentState]
+            options: [.curveEaseInOut, .beginFromCurrentState]
         ) {
-            self.loginViewController?.view.alpha = 0
-        } completion: { _ in
-            self.removeLogin()
+            dismissing.view.alpha = 0
+        } completion: { [weak self] _ in
+            guard let self else { return }
+            dismissing.view.removeFromSuperview()
+            if loginWindow.rootViewController === dismissing {
+                loginWindow.endEditing(true)
+                loginWindow.isHidden = true
+                loginWindow.rootViewController = nil
+            }
         }
     }
     
@@ -349,11 +359,4 @@ extension RootFlowController: LoginFlowControllerParent {
         viewController.presenter.handleUserWasLoggedIn()
     }
     
-    private func removeLogin() {
-        loginViewController?.view.removeFromSuperview()
-        loginViewController = nil
-        loginWindow.endEditing(true)
-        loginWindow.isHidden = true
-        loginWindow.rootViewController = nil
-    }
 }

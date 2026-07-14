@@ -40,7 +40,6 @@ struct ApplePasswordsDesktopImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -78,7 +77,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsDesktop, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -89,7 +88,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let testLogin = try #require(logins.first { $0.name == "console.acrcloud.com" })
         #expect(testLogin.content.username == "user@gmail.com")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "koqma4-kyCxov-vycpur")
 
         #expect(testLogin.content.uris?.first?.uri == "https://console.acrcloud.com/")
@@ -108,13 +107,13 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsDesktop, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let testLogin = try #require(logins.first)
-        #expect(testLogin.vaultId == testVaultID)
+        #expect(testLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(testLogin.metadata.protectionLevel == .normal)
         #expect(testLogin.metadata.trashedStatus == .no)
         #expect(testLogin.metadata.tagIds == nil)
@@ -132,7 +131,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsDesktop, content: .file(csvData))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -150,7 +149,6 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -172,10 +170,10 @@ struct ApplePasswordsDesktopImportInteractorTests {
         // MARK: Login - "console.acrcloud.com (user@gmail.com)"
         // Note: Username in CSV has leading space, so title suffix removal doesn't apply
         let acrcloudLogin = try #require(logins.first { $0.name == "console.acrcloud.com" })
-        #expect(acrcloudLogin.vaultId == testVaultID)
+        #expect(acrcloudLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(acrcloudLogin.content.username == "user@gmail.com")
 
-        let acrcloudPassword = try #require(decrypt(acrcloudLogin.content.password))
+        let acrcloudPassword = try #require(acrcloudLogin.content.password)
         #expect(acrcloudPassword == "koqma4-kyCxov-vycpur")
 
         #expect(acrcloudLogin.content.uris?[0].uri == "https://console.acrcloud.com/")
@@ -192,7 +190,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let adobeNa1Login = try #require(logins.first { $0.name == "adobeid-na1.services.adobe.com" })
         #expect(adobeNa1Login.content.username == "user2@cohesiva.com")
 
-        let adobeNa1Password = try #require(decrypt(adobeNa1Login.content.password))
+        let adobeNa1Password = try #require(adobeNa1Login.content.password)
         #expect(adobeNa1Password == "uMF-mL3-yVH-eYM")
 
         // No notes for this item
@@ -204,7 +202,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         #expect(adobeLogin.content.username == nil)
         #expect(adobeLogin.content.uris == nil)
 
-        let adobePassword = try #require(decrypt(adobeLogin.content.password))
+        let adobePassword = try #require(adobeLogin.content.password)
         #expect(adobePassword == "austyf-6jekzo-wivhIx")
 
         #expect(adobeLogin.content.notes == nil)
@@ -226,7 +224,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -235,7 +233,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         #expect(testLogin.name == "www.example.com")
         #expect(testLogin.content.username == "testuser")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "testpass123")
 
         // Notes should contain original note plus unknown headers as additional info
@@ -258,7 +256,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         let result = try await interactor.importService(.applePasswordsDesktop, content: .file(csvData))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -282,15 +280,16 @@ struct ApplePasswordsDesktopImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadApplePasswordsDesktopTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.applePasswordsDesktop, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.applePasswordsDesktop, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     @Test
@@ -339,20 +338,20 @@ struct ApplePasswordsDesktopImportInteractorTests {
         // THEN
         #expect(result.items.count == 2)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let githubLogin = logins.first { $0.name == "github.com" }
         #expect(githubLogin?.content.username == "developer")
-        let githubPassword = decrypt(githubLogin?.content.password)
+        let githubPassword = githubLogin?.content.password
         #expect(githubPassword == "secretpass123")
         #expect(githubLogin?.content.notes == "Work account")
 
         let gitlabLogin = logins.first { $0.name == "gitlab.com" }
         #expect(gitlabLogin?.content.username == "dev@company.com")
-        let gitlabPassword = decrypt(gitlabLogin?.content.password)
+        let gitlabPassword = gitlabLogin?.content.password
         #expect(gitlabPassword == "anotherpass")
         #expect(gitlabLogin?.content.notes == "Personal")
     }
@@ -371,7 +370,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -380,7 +379,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         #expect(testLogin.name == "test.com")
         #expect(testLogin.content.username == "testuser")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "testpass")
 
         // No notes
@@ -401,7 +400,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -424,7 +423,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -435,7 +434,7 @@ struct ApplePasswordsDesktopImportInteractorTests {
         #expect(testLogin.content.username == nil)
         #expect(testLogin.content.uris == nil)
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "austyf-6jekzo-wivhIx")
     }
 
@@ -447,14 +446,5 @@ struct ApplePasswordsDesktopImportInteractorTests {
             throw TestError.resourceNotFound("ApplePasswordsDesktop.csv test resource not found")
         }
         return try Data(contentsOf: url)
-    }
-
-    private func decrypt(_ data: Data?) -> String? {
-        guard let data,
-              let key = mockMainRepository.getKey(isPassword: true, protectionLevel: .normal, forVault: UUID()),
-              let decrypted = mockMainRepository.decrypt(data, key: key) else {
-            return nil
-        }
-        return String(data: decrypted, encoding: .utf8)
     }
 }

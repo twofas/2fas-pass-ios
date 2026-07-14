@@ -40,6 +40,7 @@ struct SecureNoteDetailFormView: View {
             ItemDetailFormNotes(presenter.additionalInfo)
         }
         .padding(.horizontal, Spacing.l)
+        .clearSelectionOnLeavingApp($selectedField)
     }
     
     @ViewBuilder

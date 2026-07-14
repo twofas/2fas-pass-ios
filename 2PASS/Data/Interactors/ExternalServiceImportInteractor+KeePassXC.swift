@@ -65,7 +65,7 @@ extension ExternalServiceImportInteractor {
                     let name = dict["Title"].formattedName
                     let uris: [PasswordURI]? = {
                         guard let urlString = dict["URL"]?.nonBlankTrimmedOrNil else { return nil }
-                        let uri = PasswordURI(uri: urlString, match: .domain)
+                        let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
                         return [uri]
                     }()
                     let username = dict["Username"]?.nonBlankTrimmedOrNil
@@ -148,7 +148,7 @@ extension ExternalServiceImportInteractor {
                 let password = entry.fields["Password"]?.nonBlankTrimmedOrNil
                 let uris: [PasswordURI]? = {
                     guard let urlString = entry.fields["URL"]?.nonBlankTrimmedOrNil else { return nil }
-                    return [PasswordURI(uri: urlString, match: .domain)]
+                    return [PasswordURI(uri: urlString, match: context.defaultURIMatchRule)]
                 }()
 
                 let knownKeys: Set<String> = ["Title", "UserName", "Password", "URL", "Notes"]

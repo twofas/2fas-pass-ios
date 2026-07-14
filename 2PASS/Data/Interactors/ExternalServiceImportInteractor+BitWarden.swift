@@ -210,7 +210,7 @@ private extension ExternalServiceImportInteractor.BitWardenImporter {
         let password = dict["login_password"]?.nonBlankOrNil
         let uris: [PasswordURI]? = {
             guard let urlString = dict["login_uri"]?.nonBlankTrimmedOrNil else { return nil }
-            let uri = PasswordURI(uri: urlString, match: .domain)
+            let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
             return [uri]
         }()
 

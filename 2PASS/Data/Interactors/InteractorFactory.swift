@@ -9,7 +9,36 @@ import Common
 
 public final class InteractorFactory {
     public static let shared = InteractorFactory()
-    
+
+    public func backupSyncSetupInteractor() -> BackupSyncInstalling {
+        BackupSyncSetupInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            exportInteractor: exportInteractor(),
+            backupImportInteractor: backupImportInteractor(),
+            syncInteractor: syncInteractor(),
+            itemsInteractor: itemsInteractor(),
+            deletedItemsInteractor: deletedItemsInteractor(),
+            tagInteractor: tagInteractor(),
+            vaultsInteractor: vaultsInteractor()
+        )
+    }
+
+    public func backupSyncConfigsInteractor() -> BackupSyncConfigsInteracting {
+        BackupSyncConfigsInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            currentDateInteractor: currentDateInteractor(),
+            uriInteractor: uriInteractor()
+        )
+    }
+
+    public func backupSyncTriggerInteractor() -> BackupSyncTriggerInteracting {
+        BackupSyncTriggerInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
+    public func backupSyncRecoveryInteractor() -> BackupSyncRecoveryInteracting {
+        BackupSyncRecoveryInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+
     public func rootInteractor() -> RootInteracting {
         RootInteractor(
             mainRepository: MainRepositoryImpl.shared,
@@ -28,6 +57,10 @@ public final class InteractorFactory {
             vaultsInteractor: vaultsInteractor(),
             storageInteractor: storageInteractor()
         )
+    }
+
+    public func vaultRecoveryCacheInteractor() -> VaultRecoveryCacheInteracting {
+        VaultRecoveryCacheInteractor(mainRepository: MainRepositoryImpl.shared)
     }
     
     public func securityInteractor() -> SecurityInteracting {
@@ -117,12 +150,14 @@ public final class InteractorFactory {
     
     public func startupInteractor() -> StartupInteracting {
         StartupInteractor(
+            mainRepository: MainRepositoryImpl.shared,
             protectionInteractor: protectionInteractor(),
             storageInteractor: storageInteractor(),
             biometryInteractor: biometryInteractor(),
             onboardingInteractor: onboardingInteractor(),
             migrationInteractor: migrationInteractor(),
-            securityInteractor: securityInteractor()
+            securityInteractor: securityInteractor(),
+            currentDateInteractor: currentDateInteractor()
         )
     }
     
@@ -151,6 +186,12 @@ public final class InteractorFactory {
             secureNoteItemInteractor: secureNoteInteractor()
         )
     }
+
+#if DEBUG
+    public func connectDebugCameraInteractor() -> ConnectDebugCameraInteracting {
+        ConnectDebugCameraInteractor(mainRepository: MainRepositoryImpl.shared)
+    }
+#endif
     
     public func importInteractor() -> ImportInteracting {
         ImportInteractor(
@@ -197,7 +238,7 @@ public final class InteractorFactory {
             itemsInteractor: itemsInteractor(),
             vaultsInteractor: vaultsInteractor(),
             protectionInteractor: protectionInteractor(),
-            syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false)
+            syncTriggerInteractor: backupSyncTriggerInteractor()
         )
     }
     
@@ -210,32 +251,10 @@ public final class InteractorFactory {
             fileIconInteractor: fileIconInteractor(),
             itemsInteractor: itemsInteractor(),
             deletedItemsInteractor: deletedItemsInteractor(),
-            syncChangeTriggerInteractor: syncChangeTriggerInteractor(callsChange: false),
+            syncTriggerInteractor: backupSyncTriggerInteractor(),
             tagInteractor: tagInteractor(),
             mainRepository: MainRepositoryImpl.shared
         )
-    }
-    
-    public func webDAVBackupInteractor(ignoreDeviceId: Bool = false) -> WebDAVBackupInteracting {
-        WebDAVBackupInteractor(
-            ignoreDeviceId: ignoreDeviceId,
-            mainRepository: MainRepositoryImpl.shared,
-            vaultsInteractor: vaultsInteractor(),
-            backupImportInteractor: backupImportInteractor(),
-            exportInteractor: exportInteractor(),
-            webDAVStateInteractor: webDAVStateInteractor(),
-            timerInteractor: timerInteractor(),
-            syncInteractor: syncInteractor(),
-            paymentStatusInteractor: paymentStatusInteractor()
-        )
-    }
-    
-    public func webDAVStateInteractor() -> WebDAVStateInteracting {
-        WebDAVStateInteractor(mainRepository: MainRepositoryImpl.shared, vaultsInteractor: vaultsInteractor())
-    }
-    
-    public func syncChangeTriggerInteractor(callsChange: Bool) -> SyncChangeTriggerInteracting {
-        SyncChangeTriggerInteractor(mainRepository: MainRepositoryImpl.shared, callsChange: callsChange)
     }
     
     public func syncInteractor() -> SyncInteracting {
@@ -248,48 +267,15 @@ public final class InteractorFactory {
         )
     }
     
-    public func webDAVRecoveryInteractor() -> WebDAVRecoveryInteracting {
-        WebDAVRecoveryInteractor(
-            mainRepository: MainRepositoryImpl.shared,
-            backupImportInteractor: backupImportInteractor()
-        )
-    }
-
     public func passwordGeneratorInteractor() -> PasswordGeneratorInteracting {
         PasswordGeneratorInteractor()
     }
     
     public func onboardingInteractor() -> OnboardingInteracting {
-        OnboardingInteractor(mainRepository: MainRepositoryImpl.shared)
-    }
-    
-    public func cloudSyncInteractor() -> CloudSyncInteracting {
-        CloudSyncInteractor(
-            cloudCacheStorage: CloudCacheStorageImpl(
-                mainRepository: MainRepositoryImpl.shared,
-                vaultsInteractor: vaultsInteractor()
-            ),
-            encryptionHandler: EncryptionHandlerImpl(
-                mainRepository: MainRepositoryImpl.shared,
-                vaultsInteractor: vaultsInteractor(),
-                itemsInteractor: itemsInteractor(),
-                tagInteractor: tagInteractor()
-            ),
-            localStorage: LocalStorageImpl(
-                itemsInteractor: itemsInteractor(),
-                deletedItemsInteractor: deletedItemsInteractor(),
-                tagInteractor: tagInteractor(),
-                mainRepository: MainRepositoryImpl.shared,
-                vaultsInteractor: vaultsInteractor()
-            ),
+        OnboardingInteractor(
             mainRepository: MainRepositoryImpl.shared,
-            vaultsInteractor: vaultsInteractor(),
-            paymentStatusInteractor: paymentStatusInteractor()
+            cacheInteractor: vaultRecoveryCacheInteractor()
         )
-    }
-    
-    public func cloudRecoveryInteracting() -> CloudRecoveryInteracting {
-        CloudRecoveryInteractor(mainRepository: MainRepositoryImpl.shared)
     }
     
     public func autoFillCredentialsInteractor() -> AutoFillCredentialsInteracting {
@@ -432,7 +418,15 @@ public final class InteractorFactory {
         UpdateAppPromptInteractor(
             mainRepository: MainRepositoryImpl.shared,
             systemInteractor: systemInteractor(),
-            cloudSyncInteractor: cloudSyncInteractor()
+            syncTriggerInteractor: backupSyncTriggerInteractor()
+        )
+    }
+
+    public func appReviewInteractor() -> AppReviewInteracting {
+        AppReviewInteractor(
+            mainRepository: MainRepositoryImpl.shared,
+            currentDateInteractor: currentDateInteractor(),
+            paymentStatusInteractor: paymentStatusInteractor()
         )
     }
 }

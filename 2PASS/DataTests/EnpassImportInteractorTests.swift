@@ -40,7 +40,6 @@ struct EnpassImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -94,7 +93,7 @@ struct EnpassImportInteractorTests {
         let result = try await interactor.importService(.enpass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -118,7 +117,7 @@ struct EnpassImportInteractorTests {
         let result = try await interactor.importService(.enpass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -139,7 +138,7 @@ struct EnpassImportInteractorTests {
         let result = try await interactor.importService(.enpass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -164,7 +163,7 @@ struct EnpassImportInteractorTests {
         let result = try await interactor.importService(.enpass, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -194,7 +193,7 @@ struct EnpassImportInteractorTests {
         let result = try await interactor.importService(.enpass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
@@ -217,7 +216,7 @@ struct EnpassImportInteractorTests {
         // THEN
         #expect(result.itemsConvertedToSecureNotes == 1)
 
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
@@ -257,7 +256,7 @@ struct EnpassImportInteractorTests {
 
         // THEN
         // "wdas" item is in folder "Rafael" which is nested under "Erunestian" -> "Test"
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -276,7 +275,6 @@ struct EnpassImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: realPaymentCardUtilityInteractor
         )
@@ -306,15 +304,15 @@ struct EnpassImportInteractorTests {
         let tagNames = Set(result.tags.map { $0.name })
         #expect(tagNames == Set(["Test", "Erunestian", "Rafael", "2"]))
         for tag in result.tags {
-            #expect(tag.vaultID == testVaultID)
+            #expect(tag.vaultID == ExternalServiceImportInteractor.placeholderVaultID)
         }
 
         // MARK: Login 1 - "wdas"
         let withoutUsername = try #require(logins.first { $0.name == "Bez username" })
-        #expect(withoutUsername.vaultId == testVaultID)
+        #expect(withoutUsername.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(withoutUsername.content.username == "Example@gmail.com")
 
-        let withoutUsernamePassword = try #require(decrypt(withoutUsername.content.password))
+        let withoutUsernamePassword = try #require(withoutUsername.content.password)
         #expect(withoutUsernamePassword == "kt{PK\\/l2C\\YvYCebd/9LUI^=b}Sx7MD")
         #expect(withoutUsername.content.uris?[0].uri == "https://www.amazon.pl/")
         #expect(withoutUsername.content.uris?[0].match == .domain)
@@ -333,10 +331,10 @@ struct EnpassImportInteractorTests {
 
         // MARK: Login 2 - "testenpass"
         let testenpassLogin = try #require(logins.first { $0.name == "testenpass" })
-        #expect(testenpassLogin.vaultId == testVaultID)
+        #expect(testenpassLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(testenpassLogin.content.username == "testenpass")
         // Decrypt and verify password
-        let testenpassPassword = try #require(decrypt(testenpassLogin.content.password))
+        let testenpassPassword = try #require(testenpassLogin.content.password)
         #expect(testenpassPassword == "UyLmhARSgHe5DlS5e]g,G9DydLx]&^67")
         #expect(testenpassLogin.content.uris?.first?.uri == "https://www.youtube.com/")
         #expect(testenpassLogin.content.uris?.first?.match == .domain)
@@ -363,9 +361,9 @@ struct EnpassImportInteractorTests {
 
         // MARK: Login 3 - "Password" (password category -> login)
         let passwordLogin = try #require(logins.first { $0.name == "Password" })
-        #expect(passwordLogin.vaultId == testVaultID)
+        #expect(passwordLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(passwordLogin.content.username == "Proton")
-        let passwordLoginPassword = try #require(decrypt(passwordLogin.content.password))
+        let passwordLoginPassword = try #require(passwordLogin.content.password)
         #expect(passwordLoginPassword == "9U#@XFq.TM;t]-lc~j^J{[&lcAZE@o64")
         #expect(passwordLogin.content.uris == nil)
         let expectedPasswordNotes = """
@@ -387,14 +385,14 @@ struct EnpassImportInteractorTests {
         // MARK: Credit Card - "Credit Card"
         let creditCard = try #require(cards.first)
         #expect(creditCard.name == "Credit Card")
-        #expect(creditCard.vaultId == testVaultID)
+        #expect(creditCard.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(creditCard.content.cardHolder == "Joe Schmoe")
         // Decrypt and verify card fields
-        let cardNumber = try #require(decrypt(creditCard.content.cardNumber))
+        let cardNumber = try #require(creditCard.content.cardNumber)
         #expect(cardNumber == "4179078730395581")
-        let securityCode = try #require(decrypt(creditCard.content.securityCode))
+        let securityCode = try #require(creditCard.content.securityCode)
         #expect(securityCode == "354")
-        let expirationDate = try #require(decrypt(creditCard.content.expirationDate))
+        let expirationDate = try #require(creditCard.content.expirationDate)
         #expect(expirationDate == "11/29")
         #expect(creditCard.content.cardNumberMask == "5581")
         #expect(creditCard.content.cardIssuer == PaymentCardIssuer.visa.rawValue)
@@ -428,10 +426,10 @@ struct EnpassImportInteractorTests {
 
         // MARK: Secure Note 1 - "Note"
         let secureNote = try #require(notes.first { $0.name == "Note" })
-        #expect(secureNote.vaultId == testVaultID)
+        #expect(secureNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         
         #expect(secureNote.content.text != nil)
-        let noteText = try #require(decrypt(secureNote.content.text))
+        let noteText = try #require(secureNote.content.text)
         #expect(noteText == "Lorem ipsum notka")
         
         #expect(secureNote.content.additionalInfo == nil) // no fields
@@ -448,7 +446,7 @@ struct EnpassImportInteractorTests {
         // MARK: Secure Note 2 - "Bank account" (finance category -> secure note)
         let bankAccount = try #require(notes.first { $0.name?.contains("(Finance)") ?? false })
         #expect(bankAccount.name == "Bank account (Finance)")
-        #expect(bankAccount.vaultId == testVaultID)
+        #expect(bankAccount.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(bankAccount.content.text != nil)
         let expectedBankAccountText = """
             Bank name: Santander
@@ -459,7 +457,7 @@ struct EnpassImportInteractorTests {
 
             Notatka do banku
             """
-        let bankAccountText = try #require(decrypt(bankAccount.content.text))
+        let bankAccountText = try #require(bankAccount.content.text)
         #expect(bankAccountText == expectedBankAccountText)
         #expect(bankAccount.content.additionalInfo == nil)
         #expect(bankAccount.metadata.protectionLevel == .normal)
@@ -472,12 +470,12 @@ struct EnpassImportInteractorTests {
         // MARK: WiFi - "Wireless router"
         let wifiItem = try #require(wifis.first)
         #expect(wifiItem.name == "Wireless router")
-        #expect(wifiItem.vaultId == testVaultID)
+        #expect(wifiItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(wifiItem.content.ssid == "Sieć")
         #expect(wifiItem.content.securityType == .wpa2)
         #expect(wifiItem.content.hidden == false)
 
-        let wifiPassword = try #require(decrypt(wifiItem.content.password))
+        let wifiPassword = try #require(wifiItem.content.password)
         #expect(wifiPassword == "JZ@5ZR7J/0D:kOCtGf#$m%lo&<X4-eg{")
 
         // Notes should contain: original note + additional fields
@@ -522,15 +520,16 @@ struct EnpassImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadEnpassTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.enpass, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.enpass, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     // MARK: - Helper Methods

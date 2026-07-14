@@ -33,10 +33,10 @@ final class VaultRecoveryRecoverPresenter {
 extension VaultRecoveryRecoverPresenter {
     
     func onAppear() {
-        interactor.recover { [weak self] success in
-            guard let self else { return }
+        Task { @MainActor [interactor] in
+            let success = await interactor.recover()
             if success {
-                self.interactor.finish()
+                interactor.finish()
                 state = .success
             } else {
                 state = .error

@@ -10,13 +10,17 @@ import CoreData
 
 public final class InMemoryStorageDataSourceImpl {
     private let coreDataStack: CoreDataStack
-    
+
     public var storageError: ((String) -> Void)?
-    
+
+    public var didChange: ((Set<VaultDataKind>) -> Void)?
+
+    private var didChangeObserver: NSObjectProtocol?
+
     var context: NSManagedObjectContext {
         coreDataStack.context
     }
-    
+
     public init() {
         self.coreDataStack = CoreDataStack(
             readOnly: false,
@@ -26,10 +30,49 @@ public final class InMemoryStorageDataSourceImpl {
         )
         coreDataStack.logError = { Log($0, module: .storage) }
         coreDataStack.presentErrorToUser = { [weak self] in self?.storageError?($0) }
+
+        didChangeObserver = NotificationCenter.default.addObserver(
+            forName: .NSManagedObjectContextDidSave,
+            object: coreDataStack.context,
+            queue: nil
+        ) { [weak self] notification in
+            self?.notifyDidChange(from: notification)
+        }
     }
-    
+
+    deinit {
+        if let didChangeObserver {
+            NotificationCenter.default.removeObserver(didChangeObserver)
+        }
+    }
+
     public func loadStore(completion: @escaping LoadStoreCallback) {
         coreDataStack.loadStore(completion: completion)
+    }
+
+    private func notifyDidChange(from notification: Notification) {
+        guard let didChange else { return }
+
+        let userInfo = notification.userInfo ?? [:]
+        var changedObjects: Set<NSManagedObject> = []
+        for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey] {
+            if let objects = userInfo[key] as? Set<NSManagedObject> {
+                changedObjects.formUnion(objects)
+            }
+        }
+
+        var kinds: Set<VaultDataKind> = []
+        for object in changedObjects {
+            if object is TagEntity {
+                kinds.insert(.tags)
+            } else if object is ItemMetadataEntity {
+                kinds.insert(.items)
+            }
+            if kinds.count == VaultDataKind.allCases.count { break }
+        }
+
+        guard kinds.isEmpty == false else { return }
+        didChange(kinds)
     }
 }
 
@@ -615,11 +658,14 @@ extension InMemoryStorageDataSourceImpl {
     }
     
     public func warmUp() {
-        // Artifically calling out context so it will prepare storage for concurrent access
-        try? coreDataStack.context.save()
+        context.performAndWait {
+            try? context.save()
+        }
     }
-    
+
     public func save() {
-        coreDataStack.save()
+        context.performAndWait {
+            coreDataStack.save()
+        }
     }
 }

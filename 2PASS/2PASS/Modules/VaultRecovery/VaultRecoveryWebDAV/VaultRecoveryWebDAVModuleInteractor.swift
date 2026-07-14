@@ -6,62 +6,87 @@
 
 import Foundation
 import Data
+import Backup
 
 protocol VaultRecoveryWebDAVModuleInteracting: AnyObject {
+
     func isSecureURL(_ url: URL) -> Bool
     func normalizeURL(_ url: String) -> URL?
+
     func recover(
-        baseUrl: String,
+        baseURL: String,
         normalizedURL: URL,
         allowTLSOff: Bool,
         login: String?,
-        password: String?,
-        completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
-    )
-    func resetConfiguration()
+        password: String?
+    ) async throws(VaultRecoveryWebDAVError) -> BackupIndex
+
+    var cachedConfig: BackupWebDAVConfig? { get }
+    func cacheConfig(_ config: BackupWebDAVConfig)
 }
 
 final class VaultRecoveryWebDAVModuleInteractor {
-    private let webDAVRecoveryInteractor: WebDAVRecoveryInteracting
+    private let recoveryInteractor: BackupSyncRecoveryInteracting
     private let uriInteractor: URIInteracting
-    
-    init(webDAVRecoveryInteractor: WebDAVRecoveryInteracting, uriInteractor: URIInteracting) {
-        self.webDAVRecoveryInteractor = webDAVRecoveryInteractor
+    private let cacheInteractor: VaultRecoveryCacheInteracting
+
+    init(
+        recoveryInteractor: BackupSyncRecoveryInteracting,
+        uriInteractor: URIInteracting,
+        cacheInteractor: VaultRecoveryCacheInteracting
+    ) {
+        self.recoveryInteractor = recoveryInteractor
         self.uriInteractor = uriInteractor
+        self.cacheInteractor = cacheInteractor
     }
 }
 
 extension VaultRecoveryWebDAVModuleInteractor: VaultRecoveryWebDAVModuleInteracting {
 
+    var cachedConfig: BackupWebDAVConfig? {
+        cacheInteractor.cachedWebDAVConfig
+    }
+
+    func cacheConfig(_ config: BackupWebDAVConfig) {
+        cacheInteractor.cacheWebDAVConfig(config)
+    }
+
     func isSecureURL(_ url: URL) -> Bool {
         uriInteractor.isSecureURL(url)
     }
-    
+
     func normalizeURL(_ url: String) -> URL? {
         uriInteractor.normalizeURL(url, options: .trailingSlash)
     }
-    
-    func resetConfiguration() {
-        webDAVRecoveryInteractor.resetConfiguration()
-    }
-    
+
     func recover(
-        baseUrl: String,
+        baseURL: String,
         normalizedURL: URL,
         allowTLSOff: Bool,
         login: String?,
-        password: String?,
-        completion: @escaping (Result<WebDAVIndex, WebDAVRecoveryInteractorError>) -> Void
-    ) {
-        webDAVRecoveryInteractor
-            .recover(
-                baseURL: baseUrl,
-                normalizedURL: normalizedURL,
-                allowTLSOff: allowTLSOff,
-                login: login,
-                password: password,
-                completion: completion
-            )
-    }
-}
+        password: String?
+    ) async throws(VaultRecoveryWebDAVError) -> BackupIndex {
+        let config = BackupWebDAVConfig(
+            baseURL: baseURL,
+            normalizedURL: normalizedURL,
+            allowTLSOff: allowTLSOff,
+            login: login,
+            password: password
+        )
 
+        do {
+            return try await recoveryInteractor.fetchIndex(config)
+        } catch {
+            switch error {
+            case .transport(let transportError):
+                if case .notFound = transportError {
+                    throw VaultRecoveryWebDAVError.indexNotFound
+                }
+                throw VaultRecoveryWebDAVError.transport(transportError)
+            case .indexIsDamaged:
+                throw VaultRecoveryWebDAVError.indexIsDamaged
+            }
+        }
+    }
+
+}

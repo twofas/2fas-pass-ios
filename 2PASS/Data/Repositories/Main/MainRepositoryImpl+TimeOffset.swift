@@ -21,8 +21,6 @@ extension MainRepositoryImpl {
     func setTimeOffset(_ offset: TimeInterval) {
         userDefaultsDataSource.setTimeOffset(offset)
         cachedTimeOffset = offset
-        
-        updateTimeOffsetListeners()
     }
     
     func checkTimeOffset(completion: @escaping (TimeInterval?) -> Void) {

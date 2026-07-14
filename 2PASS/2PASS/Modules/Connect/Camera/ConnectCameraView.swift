@@ -31,9 +31,16 @@ struct ConnectCameraView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .onDisappear {
+            presenter.onDisappear()
+        }
     }
 }
 
 #Preview {
-    ConnectCameraView(presenter: .init(onScannedQRCode: {}, onScanAgain: {}))
+    ConnectCameraView(presenter: .init(
+        interactor: ModuleInteractorFactory.shared.connectCameraModuleInteractor(),
+        onScannedQRCode: {},
+        onScanAgain: {}
+    ))
 }

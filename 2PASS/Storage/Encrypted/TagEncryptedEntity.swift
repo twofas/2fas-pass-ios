@@ -78,6 +78,29 @@ extension TagEncryptedEntity {
         }
     }
     
+    @nonobjc static func latestModificationDate(
+        on context: NSManagedObjectContext,
+        vaultID: VaultID
+    ) -> Date? {
+        let request = TagEncryptedEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "vaultID == %@", vaultID as CVarArg)
+        request.sortDescriptors = [
+            NSSortDescriptor(
+                key: #keyPath(TagEncryptedEntity.modificationDate),
+                ascending: false,
+                selector: #selector(NSDate.compare)
+            )
+        ]
+        request.fetchLimit = 1
+
+        do {
+            return try context.fetch(request).first?.modificationDate
+        } catch {
+            Log("TagEncryptedEntity latestModificationDate error: \(error.localizedDescription)", module: .storage)
+            return nil
+        }
+    }
+
     @nonobjc static func list(on context: NSManagedObjectContext, in vaultID: VaultID) -> [TagEncryptedEntity] {
         let request = TagEncryptedEntity.fetchRequest()
         request.predicate = NSPredicate(format: "vaultID == %@", vaultID as CVarArg)

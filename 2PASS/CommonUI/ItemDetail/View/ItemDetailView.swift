@@ -47,8 +47,11 @@ struct ItemDetailView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .onDisappear {
+            presenter.onDisappear()
+        }
     }
-    
+
     private var topMargin: CGFloat {
         if case .paymentCard = presenter.form {
             return Spacing.s

@@ -17,7 +17,7 @@ public protocol CoreDataMigratorProtocol: AnyObject {
     var bundle: Bundle? { get set }
     var migrating: Migrating? { get set }
 }
-    
+
 public final class CoreDataMigrator<Version: CoreDataModelVersionProtocol>: CoreDataMigratorProtocol {
     public var bundle: Bundle?
     public var migrating: ((Version, Version) -> Void)?
@@ -41,7 +41,7 @@ public final class CoreDataMigrator<Version: CoreDataModelVersionProtocol>: Core
         guard let bundle else {
             fatalError("Cant migrate without passed bundle")
         }
-        
+
         let storedVersion = compatibleVersionForStoreMetadata(
             metadata,
             momdSubdirectory: momdSubdirectory,
@@ -53,7 +53,7 @@ public final class CoreDataMigrator<Version: CoreDataModelVersionProtocol>: Core
             Log("Need to migrate Core Data to current version: \(versions.current.versionName, privacy: .public) from \(String(describing: storedVersion?.versionName), privacy: .public)", module: .storage)
             // swiftlint:enable line_length
         }
-        
+
         return needsToMigrate
     }
 

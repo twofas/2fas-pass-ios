@@ -58,7 +58,7 @@ class _ItemEditorFormPresenter {
         guard let initialData else {
             return false
         }
-        return selectedTags.map { $0.id } != (initialData.tagIds ?? [])
+        return Set(selectedTags.map { $0.id }) != Set((initialData.tagIds ?? []))
     }
     
     init(interactor: ItemEditorModuleInteracting, flowController: ItemEditorFlowControlling, initialData: (any ItemDataType)? = nil, changeRequest: (any ItemDataChangeRequest)? = nil) {

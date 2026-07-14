@@ -39,7 +39,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     let appNotificationsInteractor: AppNotificationsInteracting
     let paymentStatusInteractor: PaymentStatusInteracting
     let paymentCardUtilityInteractor: PaymentCardUtilityInteracting
-    let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    let syncTriggerInteractor: BackupSyncTriggerInteracting
 
     init(
         appNotification: AppNotification,
@@ -51,7 +51,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         appNotificationsInteractor: AppNotificationsInteracting,
         paymentStatusInteractor: PaymentStatusInteracting,
         paymentCardUtilityInteractor: PaymentCardUtilityInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+        syncTriggerInteractor: BackupSyncTriggerInteracting
     ) {
         self.appNotification = appNotification
         self.connectInteractor = connectInteractor
@@ -62,7 +62,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
         self.appNotificationsInteractor = appNotificationsInteractor
         self.paymentStatusInteractor = paymentStatusInteractor
         self.paymentCardUtilityInteractor = paymentCardUtilityInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
     }
     
     var canAddItem: Bool {
@@ -111,7 +111,7 @@ final class ConnectPullReqestCommunicationModuleInteractor: ConnectPullReqestCom
     func deleteItem(for itemID: ItemID) {
         itemsInteractor.markAsTrashed(for: itemID)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
     
     func deleteAppNotification() async throws {

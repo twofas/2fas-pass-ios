@@ -37,9 +37,9 @@ struct BackupRouter: Router {
         case .importSummary(let input, let onClose):
             BackupImportSummaryRouter.buildView(input: input, onClose: onClose)
         case .recoveryEnterPassword(let vault, let entropy, let onClose, let onTryAgain):
-            VaultRecoveryEnterPasswordRouter.buildView(flowContext: .importVault(onClose: onClose), entropy: entropy, recoveryData: .file(vault), onTryAgain: onTryAgain)
+            VaultRecoveryEnterPasswordRouter.buildView(flowContext: .importVault(onClose: onClose), entropy: entropy, recoveryData: .file(vault, source: .localFile), onTryAgain: onTryAgain)
         case .recovery(let vault, let onClose):
-            VaultRecoverySelectRouter.buildView(flowContext: .importVault(onClose: onClose), recoveryData: .file(vault))
+            VaultRecoverySelectRouter.buildView(flowContext: .importVault(onClose: onClose), recoveryData: .file(vault, source: .localFile))
         case .importFile:
             EmptyView()
         case .currentPassword(let config, let onSuccess):

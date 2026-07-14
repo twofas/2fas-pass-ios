@@ -40,7 +40,6 @@ struct LastPassImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -92,14 +91,14 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let testLogin = try #require(logins.first { $0.name == "Hasło do eksportu" })
         #expect(testLogin.content.username == "Erunestian")
-        let testLoginPassword = try #require(decrypt(testLogin.content.password))
+        let testLoginPassword = try #require(testLogin.content.password)
         #expect(testLoginPassword == "zixxUs-dijnej-1rante")
         #expect(testLogin.content.uris?.first?.uri == "https://www.youtube.com/feed/subscriptions")
         #expect(testLogin.content.notes == "Lorem ipsum")
@@ -114,7 +113,7 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -144,7 +143,7 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -153,13 +152,13 @@ struct LastPassImportInteractorTests {
         let creditCard = try #require(cards.first { $0.name == "Karta 1" })
         #expect(creditCard.content.cardHolder == "Karta 2FAS")
 
-        let cardNumber = try #require(decrypt(creditCard.content.cardNumber))
+        let cardNumber = try #require(creditCard.content.cardNumber)
         #expect(cardNumber == "5597599903700719")
 
-        let securityCode = try #require(decrypt(creditCard.content.securityCode))
+        let securityCode = try #require(creditCard.content.securityCode)
         #expect(securityCode == "824")
 
-        let expirationDate = try #require(decrypt(creditCard.content.expirationDate))
+        let expirationDate = try #require(creditCard.content.expirationDate)
         #expect(expirationDate == "11/30")
 
         #expect(creditCard.content.cardNumberMask == "0719")
@@ -183,13 +182,13 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         let noteItem = try #require(notes.first { $0.name == "Notka 1" })
-        let noteText = try #require(decrypt(noteItem.content.text))
+        let noteText = try #require(noteItem.content.text)
         #expect(noteText == "Notka testowa")
     }
 
@@ -202,7 +201,7 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
@@ -210,7 +209,7 @@ struct LastPassImportInteractorTests {
         let noteItem = notes.first { $0.name == "Notka 2" }
         #expect(noteItem != nil)
         // HTML content should be preserved
-        let noteText = try #require(decrypt(noteItem?.content.text))
+        let noteText = try #require(noteItem?.content.text)
         let expectedHTMLNote = """
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit. Volutpat odio facilisis mauris sit amet massa. Commodo odio aenean sed adipiscing diam donec adipiscing tristique. Mi eget mauris pharetra et. Non tellus orci ac auctor augue. Elit at imperdiet dui accumsan sit. Ornare arcu dui vivamus arcu felis. Egestas integer eget aliquet nibh praesent. In hac habitasse platea dictumst quisque sagittis purus. Pulvinar elementum integer enim neque volutpat ac.</p><p>Senectus et netus et malesuada. Nunc pulvinar sapien et ligula ullamcorper malesuada proin. Neque convallis a cras semper auctor. Libero id faucibus nisl tincidunt eget. Leo a diam sollicitudin tempor id. A lacus vestibulum sed arcu non odio euismod lacinia. In tellus integer feugiat scelerisque. Feugiat in fermentum posuere urna nec tincidunt praesent. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nisi scelerisque eu ultrices vitae auctor eu augue ut lectus. Ipsum faucibus vitae aliquet nec ullamcorper sit amet risus. Et malesuada fames ac turpis egestas sed. Sit amet nisl suscipit adipiscing bibendum est ultricies. Arcu ac tortor dignissim convallis aenean et tortor at. Pretium viverra suspendisse potenti nullam ac tortor vitae purus. Eros donec ac odio tempor orci dapibus ultrices. Elementum nibh tellus molestie nunc. Et magnis dis parturient montes nascetur. Est placerat in egestas erat imperdiet. Consequat interdum varius sit amet mattis vulputate enim.</p><p>Sit amet nulla facilisi morbi tempus. Nulla facilisi cras fermentum odio eu. Etiam erat velit scelerisque in dictum non consectetur a erat. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere. Ut sem nulla pharetra diam. Fames ac turpis egestas maecenas. Bibendum neque egestas congue quisque egestas diam. Laoreet id donec ultrices tincidunt arcu non sodales neque. Eget felis eget nunc lobortis mattis aliquam faucibus purus. Faucibus interdum posuere lorem ipsum dolor sit.</p><p>Et netus et malesuada fames ac. Erat pellentesque adipiscing commodo elit at imperdiet dui accumsan. Sodales neque sodales ut etiam sit amet nisl purus in. Maecenas volutpat blandit aliquam etiam. Sit amet luctus venenatis lectus magna fringilla urna porttitor rhoncus. Egestas purus viverra accumsan in nisl. Semper feugiat nibh sed pulvinar proin. Duis convallis convallis tellus id interdum velit laoreet. Ante in nibh mauris cursus mattis molestie. Ut etiam sit amet nisl purus in mollis nunc. Feugiat sed lectus vestibulum mattis ullamcorper velit sed ullamcorper. Tellus at urna condimentum mattis pellentesque id nibh tortor id. Tristique magna sit amet purus gravida quis blandit turpis cursus. Dolor sit amet consectetur adipiscing. Consequat ac felis donec et odio pellentesque diam volutpat. Nunc sed augue lacus viverra vitae congue. Mauris in aliquam sem fringilla ut morbi tincidunt augue.</p>
             """
@@ -230,7 +229,7 @@ struct LastPassImportInteractorTests {
         // THEN
         #expect(result.itemsConvertedToSecureNotes >= 1)
 
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
@@ -239,7 +238,7 @@ struct LastPassImportInteractorTests {
         #expect(addressNote != nil)
         #expect(addressNote?.name == "Adres do eksportu (Address)")
 
-        let noteText = try #require(decrypt(addressNote?.content.text))
+        let noteText = try #require(addressNote?.content.text)
         let expectedAddressText = """
             Address 1: Szara
             Address 2: Długa
@@ -280,7 +279,7 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
@@ -289,7 +288,7 @@ struct LastPassImportInteractorTests {
         #expect(bankNote != nil)
         #expect(bankNote?.name == "Konto bankowe (Bank Account)")
 
-        let noteText = try #require(decrypt(bankNote?.content.text))
+        let noteText = try #require(bankNote?.content.text)
         let expectedBankText = """
             Account Number: 12345678890987654321
             Account Type: Oszczędnościowe
@@ -333,7 +332,7 @@ struct LastPassImportInteractorTests {
         let result = try await interactor.importService(.lastPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
@@ -357,7 +356,6 @@ struct LastPassImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: realPaymentCardUtilityInteractor
         )
@@ -385,15 +383,15 @@ struct LastPassImportInteractorTests {
         let tagNames = Set(result.tags.map { $0.name })
         #expect(tagNames == Set(["Folder 1", "Folder 2"]))
         for tag in result.tags {
-            #expect(tag.vaultID == testVaultID)
+            #expect(tag.vaultID == ExternalServiceImportInteractor.placeholderVaultID)
         }
 
         // MARK: Login - "Hasło do eksportu"
         let loginItem = try #require(logins.first { $0.name == "Hasło do eksportu" })
-        #expect(loginItem.vaultId == testVaultID)
+        #expect(loginItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(loginItem.content.username == "Erunestian")
 
-        let loginPassword = try #require(decrypt(loginItem.content.password))
+        let loginPassword = try #require(loginItem.content.password)
         #expect(loginPassword == "zixxUs-dijnej-1rante")
         #expect(loginItem.content.uris?[0].uri == "https://www.youtube.com/feed/subscriptions")
         #expect(loginItem.content.uris?[0].match == .domain)
@@ -409,16 +407,16 @@ struct LastPassImportInteractorTests {
 
         // MARK: Credit Card 1 - "Karta 1"
         let creditCard1 = try #require(cards.first { $0.name == "Karta 1" })
-        #expect(creditCard1.vaultId == testVaultID)
+        #expect(creditCard1.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(creditCard1.content.cardHolder == "Karta 2FAS")
 
-        let cardNumber1 = try #require(decrypt(creditCard1.content.cardNumber))
+        let cardNumber1 = try #require(creditCard1.content.cardNumber)
         #expect(cardNumber1 == "5597599903700719")
 
-        let securityCode1 = try #require(decrypt(creditCard1.content.securityCode))
+        let securityCode1 = try #require(creditCard1.content.securityCode)
         #expect(securityCode1 == "824")
 
-        let expirationDate1 = try #require(decrypt(creditCard1.content.expirationDate))
+        let expirationDate1 = try #require(creditCard1.content.expirationDate)
         #expect(expirationDate1 == "11/30")
 
         #expect(creditCard1.content.cardNumberMask == "0719")
@@ -442,7 +440,7 @@ struct LastPassImportInteractorTests {
         let creditCard3 = try #require(cards.first { $0.name == "Karta 3" })
         #expect(creditCard3.metadata.tagIds == nil) // not in any folder
 
-        let cardNumber3 = try #require(decrypt(creditCard3.content.cardNumber))
+        let cardNumber3 = try #require(creditCard3.content.cardNumber)
         #expect(cardNumber3 == "3550020566961870")
 
         // Notes should contain the original note + additional fields
@@ -455,9 +453,9 @@ struct LastPassImportInteractorTests {
 
         // MARK: Secure Note 1 - "Notka 1"
         let secureNote1 = try #require(notes.first { $0.name == "Notka 1" })
-        #expect(secureNote1.vaultId == testVaultID)
+        #expect(secureNote1.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-        let noteText1 = try #require(decrypt(secureNote1.content.text))
+        let noteText1 = try #require(secureNote1.content.text)
         #expect(noteText1 == "Notka testowa")
 
         #expect(secureNote1.metadata.tagIds?.count == 1)
@@ -470,7 +468,7 @@ struct LastPassImportInteractorTests {
         let secureNote2 = try #require(notes.first { $0.name == "Notka 2" })
         #expect(secureNote2.metadata.tagIds == nil) // not in any folder
 
-        let noteText2 = try #require(decrypt(secureNote2.content.text))
+        let noteText2 = try #require(secureNote2.content.text)
         let expectedNote2Text = """
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit. Volutpat odio facilisis mauris sit amet massa. Commodo odio aenean sed adipiscing diam donec adipiscing tristique. Mi eget mauris pharetra et. Non tellus orci ac auctor augue. Elit at imperdiet dui accumsan sit. Ornare arcu dui vivamus arcu felis. Egestas integer eget aliquet nibh praesent. In hac habitasse platea dictumst quisque sagittis purus. Pulvinar elementum integer enim neque volutpat ac.</p><p>Senectus et netus et malesuada. Nunc pulvinar sapien et ligula ullamcorper malesuada proin. Neque convallis a cras semper auctor. Libero id faucibus nisl tincidunt eget. Leo a diam sollicitudin tempor id. A lacus vestibulum sed arcu non odio euismod lacinia. In tellus integer feugiat scelerisque. Feugiat in fermentum posuere urna nec tincidunt praesent. Porttitor rhoncus dolor purus non enim praesent elementum facilisis. Nisi scelerisque eu ultrices vitae auctor eu augue ut lectus. Ipsum faucibus vitae aliquet nec ullamcorper sit amet risus. Et malesuada fames ac turpis egestas sed. Sit amet nisl suscipit adipiscing bibendum est ultricies. Arcu ac tortor dignissim convallis aenean et tortor at. Pretium viverra suspendisse potenti nullam ac tortor vitae purus. Eros donec ac odio tempor orci dapibus ultrices. Elementum nibh tellus molestie nunc. Et magnis dis parturient montes nascetur. Est placerat in egestas erat imperdiet. Consequat interdum varius sit amet mattis vulputate enim.</p><p>Sit amet nulla facilisi morbi tempus. Nulla facilisi cras fermentum odio eu. Etiam erat velit scelerisque in dictum non consectetur a erat. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere. Ut sem nulla pharetra diam. Fames ac turpis egestas maecenas. Bibendum neque egestas congue quisque egestas diam. Laoreet id donec ultrices tincidunt arcu non sodales neque. Eget felis eget nunc lobortis mattis aliquam faucibus purus. Faucibus interdum posuere lorem ipsum dolor sit.</p><p>Et netus et malesuada fames ac. Erat pellentesque adipiscing commodo elit at imperdiet dui accumsan. Sodales neque sodales ut etiam sit amet nisl purus in. Maecenas volutpat blandit aliquam etiam. Sit amet luctus venenatis lectus magna fringilla urna porttitor rhoncus. Egestas purus viverra accumsan in nisl. Semper feugiat nibh sed pulvinar proin. Duis convallis convallis tellus id interdum velit laoreet. Ante in nibh mauris cursus mattis molestie. Ut etiam sit amet nisl purus in mollis nunc. Feugiat sed lectus vestibulum mattis ullamcorper velit sed ullamcorper. Tellus at urna condimentum mattis pellentesque id nibh tortor id. Tristique magna sit amet purus gravida quis blandit turpis cursus. Dolor sit amet consectetur adipiscing. Consequat ac felis donec et odio pellentesque diam volutpat. Nunc sed augue lacus viverra vitae congue. Mauris in aliquam sem fringilla ut morbi tincidunt augue.</p>
             """
@@ -479,9 +477,9 @@ struct LastPassImportInteractorTests {
         // MARK: Address - "Adres do eksportu (Address)"
         let addressNote = try #require(notes.first { $0.name?.contains("(Address)") ?? false })
         #expect(addressNote.name == "Adres do eksportu (Address)")
-        #expect(addressNote.vaultId == testVaultID)
+        #expect(addressNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-        let addressText = try #require(decrypt(addressNote.content.text))
+        let addressText = try #require(addressNote.content.text)
         let expectedAddressText = """
             Address 1: Szara
             Address 2: Długa
@@ -513,9 +511,9 @@ struct LastPassImportInteractorTests {
         // MARK: Bank Account - "Konto bankowe (Bank Account)"
         let bankNote = try #require(notes.first { $0.name?.contains("(Bank Account)") ?? false })
         #expect(bankNote.name == "Konto bankowe (Bank Account)")
-        #expect(bankNote.vaultId == testVaultID)
+        #expect(bankNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-        let bankText = try #require(decrypt(bankNote.content.text))
+        let bankText = try #require(bankNote.content.text)
         let expectedBankText = """
             Account Number: 12345678890987654321
             Account Type: Oszczędnościowe
@@ -546,15 +544,16 @@ struct LastPassImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadLastPassTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.lastPass, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.lastPass, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     @Test

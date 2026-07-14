@@ -54,12 +54,17 @@ extension MainRepositoryImpl {
     func paymentUpdatePaymentStatus(subscriptionName: String) {
         Log("Updating payment status", module: .mainRepository)
         Purchases.shared.getCustomerInfo { [weak self] (customerInfo, error) in
-            if let entitlement = customerInfo?.entitlements[subscriptionName], entitlement.isActive == true {
-                Log("Premium user", module: .mainRepository)
-                self?.updatePaymentStatus(entitlement: entitlement)
-            } else {
-                Log("Non - premium user", module: .mainRepository)
-                self?.updatePaymentStatus(entitlement: nil)
+            let entitlement = customerInfo?.entitlements[subscriptionName]
+            let isActive = entitlement?.isActive == true
+            let expirationDate = entitlement?.expirationDate
+            let willRenew = entitlement?.willRenew ?? false
+            Log(isActive ? "Premium user" : "Non - premium user", module: .mainRepository)
+            Task { @MainActor in
+                self?.updatePaymentStatus(
+                    isActive: isActive,
+                    expirationDate: expirationDate,
+                    willRenew: willRenew
+                )
             }
         }
     }
@@ -118,23 +123,22 @@ extension MainRepositoryImpl {
 }
 
 private extension MainRepositoryImpl {
-    func updatePaymentStatus(entitlement: EntitlementInfo?) {
+    
+    @MainActor
+    func updatePaymentStatus(isActive: Bool, expirationDate: Date?, willRenew: Bool) {
         let currentIsPremium = _subscriptionPlan.planType == .premium
-        
-        guard currentIsPremium != (entitlement != nil) else { return }
-        
-        if let entitlement {
+
+        guard currentIsPremium != isActive else { return }
+
+        if isActive {
             _subscriptionPlan = SubscriptionPlan(
                 planType: .premium,
-                paymentInfo: .init(
-                    expirationDate: entitlement.expirationDate,
-                    willRenew: entitlement.willRenew
-                )
+                paymentInfo: .init(expirationDate: expirationDate, willRenew: willRenew)
             )
         } else {
             _subscriptionPlan = .free
         }
-        
+
         userDefaultsDataSource.setLastKnownSubscriptionPlan(_subscriptionPlan)
         notificationCenter.post(name: .paymentStatusChanged, object: nil)
     }

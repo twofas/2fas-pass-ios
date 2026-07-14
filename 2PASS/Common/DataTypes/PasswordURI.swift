@@ -39,4 +39,17 @@ extension PasswordURI.Match {
             return nil
         }
     }
+    
+    public var intValue: Int {
+        switch self {
+        case .domain:
+            return 0
+        case .host:
+            return 1
+        case .startsWith:
+            return 2
+        case .exact:
+            return 3
+        }
+    }
 }

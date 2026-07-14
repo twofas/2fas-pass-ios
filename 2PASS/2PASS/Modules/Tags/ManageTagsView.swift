@@ -46,8 +46,8 @@ struct ManageTagsView: View {
         .onAppear {
             presenter.onAppear()
         }
-        .task {
-            await presenter.observeSync()
+        .onDisappear {
+            presenter.onDisappear()
         }
         .router(router: ManageTagsRouter(), destination: $presenter.destination)
     }
@@ -62,19 +62,21 @@ struct ManageTagsView: View {
 }
 
 private struct PreviewManageTagsModuleInteractor: ManageTagsModuleInteracting {
+    private let tags = [
+        ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .indigo, position: 0, modificationDate: Date()),
+        ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .green, position: 1, modificationDate: Date()),
+        ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .orange, position: 2, modificationDate: Date()),
+        ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Social", color: .cyan, position: 3, modificationDate: Date()),
+        ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Shopping", color: .purple, position: 4, modificationDate: Date())
+    ]
+
     func listAllTags() -> [ItemTagData] {
-        [
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Work", color: .indigo, position: 0, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Personal", color: .green, position: 1, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Finance", color: .orange, position: 2, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Social", color: .cyan, position: 3, modificationDate: Date()),
-            ItemTagData(tagID: UUID(), vaultID: UUID(), name: "Shopping", color: .purple, position: 4, modificationDate: Date())
-        ]
+        tags
     }
 
     func deleteTag(tagID: ItemTagID) {}
 
-    func getItemCountForTag(tagID: ItemTagID) -> Int {
-        Int.random(in: 1...15)
+    func itemCountsByTag() -> [ItemTagID: Int] {
+        Dictionary(uniqueKeysWithValues: tags.map { ($0.tagID, Int.random(in: 1...15)) })
     }
 }

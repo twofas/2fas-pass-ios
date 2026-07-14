@@ -38,12 +38,29 @@ final class SettingsDebugPresenter {
             }
         }
     }
-    
+
+    var debugDateOfFirstRun: Date
+
+    private(set) var currentDateOfFirstRun: Date?
+
     private let interactor: SettingsDebugModuleInteracting
-    
+
     init(interactor: SettingsDebugModuleInteracting) {
         self.interactor = interactor
         self.debugSubscriptionPlanType = interactor.debugSubscriptionPlan?.planType
+        let initialDateOfFirstRun = interactor.dateOfFirstRun
+        self.debugDateOfFirstRun = initialDateOfFirstRun ?? Date()
+        self.currentDateOfFirstRun = initialDateOfFirstRun
+    }
+
+    func onSetDateOfFirstRun() {
+        interactor.setDateOfFirstRun(debugDateOfFirstRun)
+        currentDateOfFirstRun = debugDateOfFirstRun
+    }
+
+    func onClearDateOfFirstRun() {
+        interactor.clearDateOfFirstRun()
+        currentDateOfFirstRun = nil
     }
     
     func onEventLog() {

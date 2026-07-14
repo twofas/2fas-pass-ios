@@ -40,7 +40,6 @@ struct ChromeImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -78,7 +77,7 @@ struct ChromeImportInteractorTests {
         let result = try await interactor.importService(.chrome, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -87,7 +86,7 @@ struct ChromeImportInteractorTests {
         #expect(testLogin.name == "www.youtube.com")
         #expect(testLogin.content.username == "Jeff")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "2asdfop3keo3jrnfdknke")
 
         #expect(testLogin.content.uris?.first?.uri == "https://www.youtube.com/")
@@ -106,13 +105,13 @@ struct ChromeImportInteractorTests {
         let result = try await interactor.importService(.chrome, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let testLogin = try #require(logins.first)
-        #expect(testLogin.vaultId == testVaultID)
+        #expect(testLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(testLogin.metadata.protectionLevel == .normal)
         #expect(testLogin.metadata.trashedStatus == .no)
         #expect(testLogin.metadata.tagIds == nil)
@@ -126,7 +125,6 @@ struct ChromeImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -148,10 +146,10 @@ struct ChromeImportInteractorTests {
         // MARK: Login - "www.youtube.com"
         let loginItem = try #require(logins.first)
         #expect(loginItem.name == "www.youtube.com")
-        #expect(loginItem.vaultId == testVaultID)
+        #expect(loginItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(loginItem.content.username == "Jeff")
 
-        let loginPassword = try #require(decrypt(loginItem.content.password))
+        let loginPassword = try #require(loginItem.content.password)
         #expect(loginPassword == "2asdfop3keo3jrnfdknke")
 
         #expect(loginItem.content.uris?[0].uri == "https://www.youtube.com/")
@@ -180,7 +178,7 @@ struct ChromeImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -189,7 +187,7 @@ struct ChromeImportInteractorTests {
         #expect(testLogin.name == "www.example.com")
         #expect(testLogin.content.username == "testuser")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "testpass123")
 
         // Notes should contain original note plus unknown headers as additional info
@@ -211,7 +209,7 @@ struct ChromeImportInteractorTests {
         let result = try await interactor.importService(.chrome, content: .file(csvData))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -235,15 +233,16 @@ struct ChromeImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadChromeTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.chrome, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.chrome, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     @Test
@@ -292,20 +291,20 @@ struct ChromeImportInteractorTests {
         // THEN
         #expect(result.items.count == 2)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let githubLogin = logins.first { $0.name == "github.com" }
         #expect(githubLogin?.content.username == "developer")
-        let githubPassword = decrypt(githubLogin?.content.password)
+        let githubPassword = githubLogin?.content.password
         #expect(githubPassword == "secretpass123")
         #expect(githubLogin?.content.notes == "Work account")
 
         let gitlabLogin = logins.first { $0.name == "gitlab.com" }
         #expect(gitlabLogin?.content.username == "dev@company.com")
-        let gitlabPassword = decrypt(gitlabLogin?.content.password)
+        let gitlabPassword = gitlabLogin?.content.password
         #expect(gitlabPassword == "anotherpass")
         #expect(gitlabLogin?.content.notes == "Personal")
     }
@@ -324,7 +323,7 @@ struct ChromeImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -333,7 +332,7 @@ struct ChromeImportInteractorTests {
         #expect(testLogin.name == "test.com")
         #expect(testLogin.content.username == "testuser")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "testpass")
 
         // No notes
@@ -354,7 +353,7 @@ struct ChromeImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }

@@ -24,7 +24,6 @@ struct OnePasswordCSVImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -68,7 +67,7 @@ struct OnePasswordCSVImportInteractorTests {
         let result = try await interactor.importService(.onePassword, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -76,7 +75,7 @@ struct OnePasswordCSVImportInteractorTests {
         let testLogin = try #require(logins.first { $0.name == "Password" })
         #expect(testLogin.content.username == "rafols")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "y8gL676v7iyNrQWL7shE")
 
         #expect(testLogin.content.uris?.first?.uri == "https://2fas.com")
@@ -96,13 +95,13 @@ struct OnePasswordCSVImportInteractorTests {
         let result = try await interactor.importService(.onePassword, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let testLogin = try #require(logins.first)
-        #expect(testLogin.vaultId == mockMainRepository.selectedVault?.id)
+        #expect(testLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(testLogin.metadata.protectionLevel == .normal)
     }
 
@@ -123,7 +122,7 @@ struct OnePasswordCSVImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -146,7 +145,7 @@ struct OnePasswordCSVImportInteractorTests {
         let result = try await interactor.importService(.onePassword, content: .file(csvData))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -196,15 +195,16 @@ struct OnePasswordCSVImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadOnePasswordTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.onePassword, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.onePassword, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     @Test
@@ -254,20 +254,20 @@ struct OnePasswordCSVImportInteractorTests {
         // THEN
         #expect(result.items.count == 3)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let githubLogin = logins.first { $0.name == "GitHub" }
         #expect(githubLogin?.content.username == "developer")
-        let githubPassword = decrypt(githubLogin?.content.password)
+        let githubPassword = githubLogin?.content.password
         #expect(githubPassword == "secretpass123")
         #expect(githubLogin?.content.notes == "Work account")
 
         let gitlabLogin = logins.first { $0.name == "GitLab" }
         #expect(gitlabLogin?.content.username == "dev@company.com")
-        let gitlabPassword = decrypt(gitlabLogin?.content.password)
+        let gitlabPassword = gitlabLogin?.content.password
         #expect(gitlabPassword == "anotherpass")
         #expect(gitlabLogin?.content.notes == "Personal")
 
@@ -290,7 +290,7 @@ struct OnePasswordCSVImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -299,7 +299,7 @@ struct OnePasswordCSVImportInteractorTests {
         #expect(testLogin.name == "Test Item")
         #expect(testLogin.content.username == "testuser")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "testpass")
 
         #expect(testLogin.content.uris == nil)
@@ -320,7 +320,7 @@ struct OnePasswordCSVImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -343,7 +343,7 @@ struct OnePasswordCSVImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -352,7 +352,7 @@ struct OnePasswordCSVImportInteractorTests {
         #expect(testLogin.name == "Test \"Quoted\" Item")
         #expect(testLogin.content.username == "user@email.com")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "p@ss,word!#$%")
 
         let notes = try #require(testLogin.content.notes)
@@ -393,8 +393,7 @@ extension OnePasswordCSVImportInteractorTests {
         func importCSV() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -423,10 +422,10 @@ extension OnePasswordCSVImportInteractorTests {
 
             // MARK: Login - "Password"
             let passwordItem = try #require(logins.first { $0.name == "Password" })
-            #expect(passwordItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(passwordItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(passwordItem.content.username == "rafols")
 
-            let passwordValue = try #require(decrypt(passwordItem.content.password))
+            let passwordValue = try #require(passwordItem.content.password)
             #expect(passwordValue == "y8gL676v7iyNrQWL7shE")
 
             #expect(passwordItem.content.uris?[0].uri == "https://2fas.com")
@@ -455,8 +454,7 @@ extension OnePasswordCSVImportInteractorTests {
         func import1Pux() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -493,10 +491,10 @@ extension OnePasswordCSVImportInteractorTests {
 
             // MARK: Login - "Password"
             let passwordItem = try #require(logins.first { $0.name == "Password" })
-            #expect(passwordItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(passwordItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(passwordItem.content.username == "rafols")
 
-            let passwordValue = try #require(decrypt(passwordItem.content.password))
+            let passwordValue = try #require(passwordItem.content.password)
             #expect(passwordValue == "y8gL676v7iyNrQWL7shE")
 
             #expect(passwordItem.content.uris?[0].uri == "https://2fas.com")
@@ -508,7 +506,7 @@ extension OnePasswordCSVImportInteractorTests {
             let multiTagItem = try #require(logins.first { $0.name == "Login dla Maćka" })
             #expect(multiTagItem.content.username == "Rafael")
 
-            let multiTagPassword = try #require(decrypt(multiTagItem.content.password))
+            let multiTagPassword = try #require(multiTagItem.content.password)
             #expect(multiTagPassword == "UXcDQuZuE9ohNoWAgnFi")
 
             #expect(multiTagItem.metadata.tagIds?.count == 3)
@@ -519,14 +517,14 @@ extension OnePasswordCSVImportInteractorTests {
 
             // MARK: Secure Note - "Notka 2"
             let notka2 = try #require(secureNotes.first { $0.name == "Notka 2" })
-            let notka2Text = try #require(decrypt(notka2.content.text))
+            let notka2Text = try #require(notka2.content.text)
             #expect(notka2Text == "Notka testowa 2FAS")
             #expect(notka2.metadata.tagIds?.count == 1)
             #expect(notka2.metadata.tagIds?.contains(tagNameToId["Starter Kit"]!) == true)
 
             // MARK: Secure Note - "Secure Note"
             let secureNote = try #require(secureNotes.first { $0.name == "Secure Note" })
-            let secureNoteText = try #require(decrypt(secureNote.content.text))
+            let secureNoteText = try #require(secureNote.content.text)
             #expect(secureNoteText == "Lorem Ipsum")
             #expect(secureNote.metadata.tagIds?.count == 1)
             #expect(secureNote.metadata.tagIds?.contains(tagNameToId["Rafael"]!) == true)
@@ -535,13 +533,13 @@ extension OnePasswordCSVImportInteractorTests {
             let cardWithTag = try #require(creditCards.first { $0.metadata.tagIds?.isEmpty == false })
             #expect(cardWithTag.content.cardHolder == "2FAS")
 
-            let cardNumber = try #require(decrypt(cardWithTag.content.cardNumber))
+            let cardNumber = try #require(cardWithTag.content.cardNumber)
             #expect(cardNumber == "4110968834331988")
 
-            let cvv = try #require(decrypt(cardWithTag.content.securityCode))
+            let cvv = try #require(cardWithTag.content.securityCode)
             #expect(cvv == "338")
 
-            let expiry = try #require(decrypt(cardWithTag.content.expirationDate))
+            let expiry = try #require(cardWithTag.content.expirationDate)
             #expect(expiry == "11/29")
 
             #expect(cardWithTag.metadata.tagIds?.count == 1)
@@ -560,7 +558,7 @@ extension OnePasswordCSVImportInteractorTests {
             #expect(wifi.content.securityType == .wpa2)
             #expect(wifi.content.hidden == false)
 
-            let wifiPassword = try #require(decrypt(wifi.content.password))
+            let wifiPassword = try #require(wifi.content.password)
             #expect(wifiPassword == "hp2Euh8YwwddZqsCehCQ")
 
             // Notes should contain the plain note and additional router fields
@@ -570,7 +568,7 @@ extension OnePasswordCSVImportInteractorTests {
 
             // MARK: Converted items - Driver License
             let driverLicenseNote = try #require(secureNotes.first { $0.name?.contains("Driver License") == true })
-            let driverLicenseText = try #require(decrypt(driverLicenseNote.content.text))
+            let driverLicenseText = try #require(driverLicenseNote.content.text)
             #expect(driverLicenseText.contains("Arthur Morgan"))
             #expect(driverLicenseNote.metadata.tagIds?.contains(tagNameToId["Rafael"]!) == true)
         }

@@ -15,7 +15,10 @@ struct ConnectView: View {
     var body: some View {
         ZStack {
             if presenter.isCameraAllowed {
-                ConnectCameraView(presenter: presenter.cameraPresenter)
+                ConnectCameraRouter.buildView(
+                    onScannedQRCode: presenter.onScannedQRCode,
+                    onScanAgain: presenter.onScanAgain
+                )
             } else if let introPresenter = presenter.introPresenter {
                 ConnectIntroView(presenter: introPresenter)
             }

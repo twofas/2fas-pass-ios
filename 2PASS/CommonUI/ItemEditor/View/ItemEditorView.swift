@@ -68,16 +68,6 @@ struct ItemEditorFormView: View {
                 presenter.cantSave = false
             }
         }
-        .alert(String(localized: .loginErrorEditedOtherDevice), isPresented: $presenter.passwordWasEdited) {
-            Button(.commonClose, role: .cancel) {
-                presenter.onClose()
-            }
-        }
-        .alert(String(localized: .loginErrorDeletedOtherDevice), isPresented: $presenter.passwordWasDeleted) {
-            Button(.commonClose, role: .cancel) {
-                presenter.onClose()
-            }
-        }
         .alert(String(localized: .loginDeleteConfirmTitle), isPresented: $showDeleteConfirmation, actions: {
             Button(role: .destructive) {
                 presenter.onDelete()

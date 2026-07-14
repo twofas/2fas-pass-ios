@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 //
-// Copyright © 2025 Two Factor Authentication Service, Inc.
+// Copyright © 2026 Two Factor Authentication Service, Inc.
 // Licensed under the Business Source License 1.1
 // See LICENSE file for full terms
 
@@ -41,7 +41,8 @@ struct CoreDataModelVersionList<Version: CoreDataModelVersionProtocol> {
 
     func nextVersion(for version: Version) -> Version? {
         guard let index = versions.firstIndex(where: { $0.versionName == version.versionName }) else { return nil }
-        return versions[safe: index + 1]
+        let nextIndex = index + 1
+        return nextIndex < versions.count ? versions[nextIndex] : nil
     }
 
     func isCurrentVersion(for version: Version) -> Bool {

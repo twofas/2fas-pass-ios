@@ -56,7 +56,8 @@ final public class ToastPresenter {
         window.frame = CGRect(x: 0, y: 0, width: toastSize.width, height: toastSize.height)
         window.center.x = UIScreen.main.bounds.width / 2.0
         window.windowLevel = .alert
-        
+        window.windowScene = UIApplication.shared.activeWindowScene
+
         window.rootViewController = toastViewController
         window.isHidden = false
         window.backgroundColor = .clear

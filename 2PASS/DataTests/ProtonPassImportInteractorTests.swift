@@ -40,7 +40,6 @@ struct ProtonPassImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -87,7 +86,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -95,12 +94,12 @@ struct ProtonPassImportInteractorTests {
         let login = try #require(logins.first { $0.name == "wellcome-home.com" })
         #expect(login.content.username == "mark")
 
-        let password = try #require(decrypt(login.content.password))
+        let password = try #require(login.content.password)
         #expect(password == "Washout2-Professor5-Antibody1-Lustfully9-Barrel5")
 
         #expect(login.content.uris?.first?.uri == "https://wellcome-home.com")
         #expect(login.content.uris?.first?.match == .domain)
-        #expect(login.vaultId == testVaultID)
+        #expect(login.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(login.metadata.protectionLevel == .normal)
         #expect(login.metadata.trashedStatus == .no)
     }
@@ -114,7 +113,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -123,7 +122,7 @@ struct ProtonPassImportInteractorTests {
         let login = try #require(logins.first { $0.name == "Przykład tytuł Login" })
         #expect(login.content.username == "simon@kac.vegas")
 
-        let password = try #require(decrypt(login.content.password))
+        let password = try #require(login.content.password)
         #expect(password == "Tarnish9-Green2-Scanner8-Unretired9-Operable7")
 
         #expect(login.content.uris?.first?.uri == "https://onet.com")
@@ -145,7 +144,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -153,19 +152,19 @@ struct ProtonPassImportInteractorTests {
         let card = try #require(cards.first { $0.name == "Karta 1238" })
         #expect(card.content.cardHolder == "Simon H Bron")
 
-        let cardNumber = try #require(decrypt(card.content.cardNumber))
+        let cardNumber = try #require(card.content.cardNumber)
         #expect(cardNumber == "1234123413241238")
 
-        let securityCode = try #require(decrypt(card.content.securityCode))
+        let securityCode = try #require(card.content.securityCode)
         #expect(securityCode == "810")
 
-        let expirationDate = try #require(decrypt(card.content.expirationDate))
+        let expirationDate = try #require(card.content.expirationDate)
         #expect(expirationDate == "10/30")
 
         let notes = try #require(card.content.notes)
         #expect(notes == "Note to card\n\nPin: 111111\n\nVault: Personal")
 
-        #expect(card.vaultId == testVaultID)
+        #expect(card.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(card.metadata.protectionLevel == .normal)
     }
 
@@ -178,7 +177,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -186,7 +185,7 @@ struct ProtonPassImportInteractorTests {
         let card = try #require(cards.first { $0.name == "Karta 2" })
         #expect(card.content.cardHolder == "Marek Hodler")
 
-        let expirationDate = try #require(decrypt(card.content.expirationDate))
+        let expirationDate = try #require(card.content.expirationDate)
         #expect(expirationDate == "12/18")
 
         let notes = try #require(card.content.notes)
@@ -204,18 +203,18 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         // Native secure note (not converted)
         let note = try #require(notes.first { $0.name == "Sekure Notę" })
-        let text = try #require(decrypt(note.content.text))
+        let text = try #require(note.content.text)
         #expect(text == "Trudny język Polski język jest być")
         #expect(note.content.additionalInfo == "Vault: Personal")
 
-        #expect(note.vaultId == testVaultID)
+        #expect(note.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(note.metadata.protectionLevel == .normal)
     }
 
@@ -230,14 +229,14 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         let identityNote = try #require(notes.first { $0.name == "Paszport z Israela (Identity)" })
 
-        let text = try #require(decrypt(identityNote.content.text))
+        let text = try #require(identityNote.content.text)
         // formatDictionary sorts alphabetically and formats camelCase to Title Case
         let expectedText = """
             City: Miasto W Izraelu
@@ -272,14 +271,14 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         // API custom item - extraFields only (content.sections is empty)
         let apiNote = try #require(notes.first { $0.name == "API tytuł (Custom)" })
-        let apiText = try #require(decrypt(apiNote.content.text))
+        let apiText = try #require(apiNote.content.text)
         let expectedApiText = """
             API key: Klucz do api
             Secret: Sekretny klucz
@@ -294,7 +293,7 @@ struct ProtonPassImportInteractorTests {
 
         // Database custom item
         let dbNote = try #require(notes.first { $0.name == "Baza danych tytuł (Custom)" })
-        let dbText = try #require(decrypt(dbNote.content.text))
+        let dbText = try #require(dbNote.content.text)
         let expectedDbText = """
             Host: Host
             Port: 2222
@@ -320,14 +319,14 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         let sshNote = try #require(notes.first { $0.name == "Klucz ssh (SshKey)" })
 
-        let text = try #require(decrypt(sshNote.content.text))
+        let text = try #require(sshNote.content.text)
         // formatDictionary output (sorted alphabetically) + extraFields + metadata note
         let expectedText = """
             Private Key: prywatny\(" ")
@@ -355,7 +354,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let wifis = result.items.compactMap { item -> WiFiItemData? in
+        let wifis = result.items.compactMap { item -> WiFiItemDecryptedData? in
             if case .wifi(let wifi) = item { return wifi }
             return nil
         }
@@ -364,10 +363,10 @@ struct ProtonPassImportInteractorTests {
         #expect(wifi.content.ssid == "defcon")
         #expect(wifi.content.securityType == .wpa2)
         #expect(wifi.content.hidden == false)
-        #expect(wifi.vaultId == testVaultID)
+        #expect(wifi.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(wifi.metadata.protectionLevel == .normal)
 
-        let password = try #require(decrypt(wifi.content.password))
+        let password = try #require(wifi.content.password)
         #expect(password == "haslo111")
 
         let notes = try #require(wifi.content.notes)
@@ -383,7 +382,6 @@ struct ProtonPassImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: realPaymentCardUtilityInteractor
         )
@@ -411,9 +409,9 @@ struct ProtonPassImportInteractorTests {
 
         // MARK: Login 1 - "wellcome-home.com"
         let welcomeLogin = try #require(logins.first { $0.name == "wellcome-home.com" })
-        #expect(welcomeLogin.vaultId == testVaultID)
+        #expect(welcomeLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(welcomeLogin.content.username == "mark")
-        let welcomePassword = try #require(decrypt(welcomeLogin.content.password))
+        let welcomePassword = try #require(welcomeLogin.content.password)
         #expect(welcomePassword == "Washout2-Professor5-Antibody1-Lustfully9-Barrel5")
         #expect(welcomeLogin.content.uris?[0].uri == "https://wellcome-home.com")
         #expect(welcomeLogin.content.uris?[0].match == .domain)
@@ -427,7 +425,7 @@ struct ProtonPassImportInteractorTests {
         // MARK: Login 2 - "Przykład tytuł Login"
         let przykladLogin = try #require(logins.first { $0.name == "Przykład tytuł Login" })
         #expect(przykladLogin.content.username == "simon@kac.vegas")
-        let przykladPassword = try #require(decrypt(przykladLogin.content.password))
+        let przykladPassword = try #require(przykladLogin.content.password)
         #expect(przykladPassword == "Tarnish9-Green2-Scanner8-Unretired9-Operable7")
         #expect(przykladLogin.content.uris?[0].uri == "https://onet.com")
         #expect(przykladLogin.content.notes == "Notatka do login\n\nVault: Personal")
@@ -436,13 +434,13 @@ struct ProtonPassImportInteractorTests {
 
         // MARK: Credit Card 1 - "Karta 1238"
         let karta1238 = try #require(cards.first { $0.name == "Karta 1238" })
-        #expect(karta1238.vaultId == testVaultID)
+        #expect(karta1238.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(karta1238.content.cardHolder == "Simon H Bron")
-        let karta1238Number = try #require(decrypt(karta1238.content.cardNumber))
+        let karta1238Number = try #require(karta1238.content.cardNumber)
         #expect(karta1238Number == "1234123413241238")
-        let karta1238CVV = try #require(decrypt(karta1238.content.securityCode))
+        let karta1238CVV = try #require(karta1238.content.securityCode)
         #expect(karta1238CVV == "810")
-        let karta1238Exp = try #require(decrypt(karta1238.content.expirationDate))
+        let karta1238Exp = try #require(karta1238.content.expirationDate)
         #expect(karta1238Exp == "10/30")
         let karta1238Notes = try #require(karta1238.content.notes)
         #expect(karta1238Notes == "Note to card\n\nPin: 111111\n\nVault: Personal")
@@ -451,26 +449,26 @@ struct ProtonPassImportInteractorTests {
         // MARK: Credit Card 2 - "Karta 2"
         let karta2 = try #require(cards.first { $0.name == "Karta 2" })
         #expect(karta2.content.cardHolder == "Marek Hodler")
-        let karta2Number = try #require(decrypt(karta2.content.cardNumber))
+        let karta2Number = try #require(karta2.content.cardNumber)
         #expect(karta2Number == "1234514545151848")
-        let karta2CVV = try #require(decrypt(karta2.content.securityCode))
+        let karta2CVV = try #require(karta2.content.securityCode)
         #expect(karta2CVV == "555")
-        let karta2Exp = try #require(decrypt(karta2.content.expirationDate))
+        let karta2Exp = try #require(karta2.content.expirationDate)
         #expect(karta2Exp == "12/18")
         let karta2Notes = try #require(karta2.content.notes)
         #expect(karta2Notes == "Ktoś do karty dopisał notatkę\n\nPin: 1234\n\nVault: Personal")
 
         // MARK: Secure Note - "Sekure Notę"
         let secureNote = try #require(notes.first { $0.name == "Sekure Notę" })
-        #expect(secureNote.vaultId == testVaultID)
-        let secureNoteText = try #require(decrypt(secureNote.content.text))
+        #expect(secureNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
+        let secureNoteText = try #require(secureNote.content.text)
         #expect(secureNoteText == "Trudny język Polski język jest być")
         #expect(secureNote.content.additionalInfo == "Vault: Personal")
         #expect(secureNote.metadata.creationDate == Date(timeIntervalSince1970: 1766050464))
 
         // MARK: Identity -> Secure Note - "Paszport z Israela"
         let identity = try #require(notes.first { $0.name == "Paszport z Israela (Identity)" })
-        let identityText = try #require(decrypt(identity.content.text))
+        let identityText = try #require(identity.content.text)
         let expectedIdentityText = """
             City: Miasto W Izraelu
             Country Or Region: Israel
@@ -497,8 +495,8 @@ struct ProtonPassImportInteractorTests {
         #expect(wifi.content.ssid == "defcon")
         #expect(wifi.content.securityType == .wpa2)
         #expect(wifi.content.hidden == false)
-        #expect(wifi.vaultId == testVaultID)
-        let wifiPassword = try #require(decrypt(wifi.content.password))
+        #expect(wifi.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
+        let wifiPassword = try #require(wifi.content.password)
         #expect(wifiPassword == "haslo111")
         let wifiNotes = try #require(wifi.content.notes)
         #expect(wifiNotes == "Note: Notka\n\nTa normalna\n\nVault: Personal")
@@ -506,7 +504,7 @@ struct ProtonPassImportInteractorTests {
 
         // MARK: SSH Key -> Secure Note - "Klucz ssh"
         let sshKey = try #require(notes.first { $0.name == "Klucz ssh (SshKey)" })
-        let sshKeyText = try #require(decrypt(sshKey.content.text))
+        let sshKeyText = try #require(sshKey.content.text)
         let expectedSshText = """
             Private Key: prywatny\(" ")
             Public Key: fdzjxjdj public
@@ -533,7 +531,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -569,15 +567,16 @@ struct ProtonPassImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadProtonPassTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.protonPass, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.protonPass, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     // MARK: - CSV Import Tests
@@ -619,7 +618,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -627,7 +626,7 @@ struct ProtonPassImportInteractorTests {
         let login = try #require(logins.first { $0.name == "wellcome-home.com" })
         #expect(login.content.username == "mark")
 
-        let password = try #require(decrypt(login.content.password))
+        let password = try #require(login.content.password)
         #expect(password == "Washout2-Professor5-Antibody1-Lustfully9-Barrel5")
 
         #expect(login.content.uris?.first?.uri == "https://wellcome-home.com")
@@ -647,7 +646,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -678,7 +677,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -705,7 +704,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let cards = result.items.compactMap { item -> PaymentCardItemData? in
+        let cards = result.items.compactMap { item -> PaymentCardItemDecryptedData? in
             if case .paymentCard(let card) = item { return card }
             return nil
         }
@@ -713,13 +712,13 @@ struct ProtonPassImportInteractorTests {
         let card = try #require(cards.first { $0.name == "Karta 1238" })
         #expect(card.content.cardHolder == "Simon H Bron")
 
-        let cardNumber = try #require(decrypt(card.content.cardNumber))
+        let cardNumber = try #require(card.content.cardNumber)
         #expect(cardNumber == "1234123413241238")
 
-        let securityCode = try #require(decrypt(card.content.securityCode))
+        let securityCode = try #require(card.content.securityCode)
         #expect(securityCode == "810")
 
-        let expirationDate = try #require(decrypt(card.content.expirationDate))
+        let expirationDate = try #require(card.content.expirationDate)
         #expect(expirationDate == "10/30")
 
         let notes = try #require(card.content.notes)
@@ -735,13 +734,13 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         let note = try #require(notes.first { $0.name == "Sekure Notę" })
-        let text = try #require(decrypt(note.content.text))
+        let text = try #require(note.content.text)
         #expect(text == "Trudny język Polski język jest być")
         #expect(note.content.additionalInfo == "Vault: Personal")
     }
@@ -755,13 +754,13 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let notes = result.items.compactMap { item -> SecureNoteItemData? in
+        let notes = result.items.compactMap { item -> SecureNoteItemDecryptedData? in
             if case .secureNote(let note) = item { return note }
             return nil
         }
 
         let identityNote = try #require(notes.first { $0.name == "Paszport z Israela (Identity)" })
-        let text = try #require(decrypt(identityNote.content.text))
+        let text = try #require(identityNote.content.text)
         // CSV uses formatContentDictionary (alphabetically sorted, camelCase to Title Case)
         let expectedText = """
             City: Miasto W Izraelu
@@ -794,7 +793,7 @@ struct ProtonPassImportInteractorTests {
         let result = try await interactor.importService(.protonPass, content: .file(data))
 
         // THEN
-        let wifis = result.items.compactMap { item -> WiFiItemData? in
+        let wifis = result.items.compactMap { item -> WiFiItemDecryptedData? in
             if case .wifi(let wifi) = item { return wifi }
             return nil
         }
@@ -804,7 +803,7 @@ struct ProtonPassImportInteractorTests {
         #expect(wifi.content.securityType == .wpa2) // CSV format doesn't include security type
         #expect(wifi.content.hidden == false)
 
-        let password = try #require(decrypt(wifi.content.password))
+        let password = try #require(wifi.content.password)
         #expect(password == "haslo111")
 
         let notes = try #require(wifi.content.notes)
@@ -820,7 +819,6 @@ struct ProtonPassImportInteractorTests {
         let realURIInteractor = URIInteractor(mainRepository: mockMainRepository)
         let realInteractor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: realURIInteractor,
             paymentCardUtilityInteractor: realPaymentCardUtilityInteractor
         )
@@ -848,9 +846,9 @@ struct ProtonPassImportInteractorTests {
 
         // MARK: Login 1 - "wellcome-home.com"
         let welcomeLogin = try #require(logins.first { $0.name == "wellcome-home.com" })
-        #expect(welcomeLogin.vaultId == testVaultID)
+        #expect(welcomeLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(welcomeLogin.content.username == "mark")
-        let welcomePassword = try #require(decrypt(welcomeLogin.content.password))
+        let welcomePassword = try #require(welcomeLogin.content.password)
         #expect(welcomePassword == "Washout2-Professor5-Antibody1-Lustfully9-Barrel5")
         #expect(welcomeLogin.content.uris?[0].uri == "https://wellcome-home.com")
         #expect(welcomeLogin.content.uris?[0].match == .domain)
@@ -864,7 +862,7 @@ struct ProtonPassImportInteractorTests {
         // MARK: Login 2 - "Przykład tytuł Login"
         let przykladLogin = try #require(logins.first { $0.name == "Przykład tytuł Login" })
         #expect(przykladLogin.content.username == "simon@kac.vegas")
-        let przykladPassword = try #require(decrypt(przykladLogin.content.password))
+        let przykladPassword = try #require(przykladLogin.content.password)
         #expect(przykladPassword == "Tarnish9-Green2-Scanner8-Unretired9-Operable7")
         #expect(przykladLogin.content.uris?[0].uri == "https://onet.com")
         #expect(przykladLogin.content.notes == "Notatka do login\n\nVault: Personal")
@@ -873,13 +871,13 @@ struct ProtonPassImportInteractorTests {
 
         // MARK: Credit Card 1 - "Karta 1238"
         let karta1238 = try #require(cards.first { $0.name == "Karta 1238" })
-        #expect(karta1238.vaultId == testVaultID)
+        #expect(karta1238.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(karta1238.content.cardHolder == "Simon H Bron")
-        let karta1238Number = try #require(decrypt(karta1238.content.cardNumber))
+        let karta1238Number = try #require(karta1238.content.cardNumber)
         #expect(karta1238Number == "1234123413241238")
-        let karta1238CVV = try #require(decrypt(karta1238.content.securityCode))
+        let karta1238CVV = try #require(karta1238.content.securityCode)
         #expect(karta1238CVV == "810")
-        let karta1238Exp = try #require(decrypt(karta1238.content.expirationDate))
+        let karta1238Exp = try #require(karta1238.content.expirationDate)
         #expect(karta1238Exp == "10/30")
         let karta1238Notes = try #require(karta1238.content.notes)
         #expect(karta1238Notes == "Note to card\n\nPin: 111111\n\nVault: Personal")
@@ -888,26 +886,26 @@ struct ProtonPassImportInteractorTests {
         // MARK: Credit Card 2 - "Karta 2"
         let karta2 = try #require(cards.first { $0.name == "Karta 2" })
         #expect(karta2.content.cardHolder == "Marek Hodler")
-        let karta2Number = try #require(decrypt(karta2.content.cardNumber))
+        let karta2Number = try #require(karta2.content.cardNumber)
         #expect(karta2Number == "1234514545151848")
-        let karta2CVV = try #require(decrypt(karta2.content.securityCode))
+        let karta2CVV = try #require(karta2.content.securityCode)
         #expect(karta2CVV == "555")
-        let karta2Exp = try #require(decrypt(karta2.content.expirationDate))
+        let karta2Exp = try #require(karta2.content.expirationDate)
         #expect(karta2Exp == "12/18")
         let karta2Notes = try #require(karta2.content.notes)
         #expect(karta2Notes == "Ktoś do karty dopisał notatkę\n\nPin: 1234\n\nVault: Personal")
 
         // MARK: Secure Note - "Sekure Notę"
         let secureNote = try #require(notes.first { $0.name == "Sekure Notę" })
-        #expect(secureNote.vaultId == testVaultID)
-        let secureNoteText = try #require(decrypt(secureNote.content.text))
+        #expect(secureNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
+        let secureNoteText = try #require(secureNote.content.text)
         #expect(secureNoteText == "Trudny język Polski język jest być")
         #expect(secureNote.content.additionalInfo == "Vault: Personal")
         #expect(secureNote.metadata.creationDate == Date(timeIntervalSince1970: 1766050464))
 
         // MARK: Identity -> Secure Note - "Paszport z Israela"
         let identity = try #require(notes.first { $0.name == "Paszport z Israela (Identity)" })
-        let identityText = try #require(decrypt(identity.content.text))
+        let identityText = try #require(identity.content.text)
         let expectedIdentityText = """
             City: Miasto W Izraelu
             Country Or Region: Israel
@@ -934,43 +932,43 @@ struct ProtonPassImportInteractorTests {
         #expect(wifi.content.ssid == nil) // CSV format doesn't include SSID
         #expect(wifi.content.securityType == .wpa2)
         #expect(wifi.content.hidden == false)
-        let wifiPassword = try #require(decrypt(wifi.content.password))
+        let wifiPassword = try #require(wifi.content.password)
         #expect(wifiPassword == "haslo111")
         let wifiNotes = try #require(wifi.content.notes)
         #expect(wifiNotes == "Ta normalna\n\nVault: Personal")
 
         // MARK: SSH Key -> Secure Note - "Klucz ssh"
         let sshKey = try #require(notes.first { $0.name == "Klucz ssh (SshKey)" })
-        let sshKeyText = try #require(decrypt(sshKey.content.text))
+        let sshKeyText = try #require(sshKey.content.text)
         #expect(sshKeyText == "Notę jak zwykle\n\nVault: Personal")
 
         // MARK: Custom items -> Secure Notes
         let apiNote = try #require(notes.first { $0.name == "API tytuł (Custom)" })
-        let apiText = try #require(decrypt(apiNote.content.text))
+        let apiText = try #require(apiNote.content.text)
         #expect(apiText == "Notatka\n\nVault: Personal")
 
         let dbNote = try #require(notes.first { $0.name == "Baza danych tytuł (Custom)" })
-        let dbText = try #require(decrypt(dbNote.content.text))
+        let dbText = try #require(dbNote.content.text)
         #expect(dbText == "Notatka\n\nVault: Personal")
 
         let serverNote = try #require(notes.first { $0.name == "Tytuł serwer (Custom)" })
-        let serverText = try #require(decrypt(serverNote.content.text))
+        let serverText = try #require(serverNote.content.text)
         #expect(serverText == "Notę\n\nVault: Personal")
 
         let licenseNote = try #require(notes.first { $0.name == "Licencja softu (Custom)" })
-        let licenseText = try #require(decrypt(licenseNote.content.text))
+        let licenseText = try #require(licenseNote.content.text)
         #expect(licenseText == "Notę\n\nVault: Personal")
 
         let socialNote = try #require(notes.first { $0.name == "Social Security no (Custom)" })
-        let socialText = try #require(decrypt(socialNote.content.text))
+        let socialText = try #require(socialNote.content.text)
         #expect(socialText == "Notę\n\nVault: Personal")
 
         let medicalNote = try #require(notes.first { $0.name == "Medical wpis (Custom)" })
-        let medicalText = try #require(decrypt(medicalNote.content.text))
+        let medicalText = try #require(medicalNote.content.text)
         #expect(medicalText == "Notę\n\nVault: Personal")
 
         let rewardsNote = try #require(notes.first { $0.name == "Rewars próg (Custom)" })
-        let rewardsText = try #require(decrypt(rewardsNote.content.text))
+        let rewardsText = try #require(rewardsNote.content.text)
         #expect(rewardsText == "Notka\n\nVault: Personal")
     }
 

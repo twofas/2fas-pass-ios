@@ -177,7 +177,7 @@ private extension ExternalServiceImportInteractor.DashlaneImporter {
                 let name = dict["title"].formattedName
                 let uris: [PasswordURI]? = {
                     guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
-                    let uri = PasswordURI(uri: urlString, match: .domain)
+                    let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
                     return [uri]
                 }()
                 let username = dict["username"]?.nonBlankTrimmedOrNil

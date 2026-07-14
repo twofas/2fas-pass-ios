@@ -128,6 +128,10 @@ private extension CredentialExchangeImporter {
         var wifi: ASImportableCredential.WiFi?
         var firstUnsupportedCredential: ASImportableCredential?
 
+        if let subtitle = importableItem.subtitle?.nonBlankTrimmedOrNil {
+            notes.append(subtitle)
+        }
+
         for credential in credentials {
             switch credential {
             case .basicAuthentication(let value):
@@ -228,10 +232,16 @@ private extension CredentialExchangeImporter {
     }
 
     func makeItemID(from data: Data) -> ItemID {
-        guard data.count == 16 else { return ItemID() }
-        return data.withUnsafeBytes { buffer in
-            UUID(uuid: buffer.load(as: uuid_t.self))
+        if data.count == 16 {
+            return data.withUnsafeBytes { buffer in
+                UUID(uuid: buffer.load(as: uuid_t.self))
+            }
         }
+        if let string = String(data: data, encoding: .utf8),
+           let uuid = UUID(uuidString: string) {
+            return uuid
+        }
+        return ItemID()
     }
 
     func makeMetadataDates(from importableItem: ASImportableItem) -> (creationDate: Date, modificationDate: Date) {
@@ -304,7 +314,7 @@ private extension CredentialExchangeImporter {
             guard let urls = importableItem.scope?.urls, !urls.isEmpty else { return nil }
             return urls.compactMap { url in
                 guard let urlString = url.absoluteString.nonBlankTrimmedOrNil else { return nil }
-                return PasswordURI(uri: urlString, match: .domain)
+                return PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
             }
         }()
 

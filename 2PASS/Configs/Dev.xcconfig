@@ -5,3 +5,4 @@
 // See LICENSE file for full terms
 
 PRODUCT_BUNDLE_IDENTIFIER = com.twofas.org.TwoPASS.dev
+URL_SCHEME = dev-twofaspass

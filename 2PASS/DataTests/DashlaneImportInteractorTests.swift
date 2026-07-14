@@ -24,7 +24,6 @@ struct DashlaneImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -42,13 +41,13 @@ struct DashlaneImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         mockMainRepository.withSelectedVault(nil)
         let data = try loadDashlaneWiFiTestData()
 
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.dashlaneMobile, content: .file(data))
-        }
+        // Parsing no longer requires a vault; items carry the placeholder vault ID.
+        let result = try await interactor.importService(.dashlaneMobile, content: .file(data))
+        #expect(!result.items.isEmpty)
     }
 
     @Test
@@ -204,8 +203,7 @@ extension DashlaneImportInteractorTests {
         func importDashlaneWiFiFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: mockURIInteractor,
+                    uriInteractor: mockURIInteractor,
                 paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
             )
 
@@ -219,12 +217,12 @@ extension DashlaneImportInteractorTests {
 
             // MARK: Item #1 - "internet 2fas" WiFi network
             let wifi1 = try #require(result.items.first?.asWiFi)
-            #expect(wifi1.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(wifi1.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(wifi1.name == "internet 2fas")
             #expect(wifi1.content.name == "internet 2fas")
             #expect(wifi1.content.ssid == "2fas internet")
 
-            let password = try #require(decrypt(wifi1.content.password))
+            let password = try #require(wifi1.content.password)
             #expect(password == "12346700018488")
 
             #expect(wifi1.content.securityType == .none)

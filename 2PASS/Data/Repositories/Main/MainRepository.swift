@@ -20,17 +20,17 @@ enum HMACStringReturnType {
 }
 
 protocol MainRepository: AnyObject {
-    
+
     var isMainAppProcess: Bool { get }
-    
+
     // MARK: - AutoFill
     var isAutoFillEnabled: Bool { get }
     var didAutoFillStatusChanged: NotificationCenter.Notifications { get }
     @discardableResult func refreshAutoFillStatus() async -> Bool
-    
+
     @MainActor @available(iOS 18, *)
     func requestAutoFillPermissions() async
-    
+
     // MARK: - Push Notifications
     var isPushNotificationsEnabled: Bool { get }
     var didPushNotificationsStatusChanged: NotificationCenter.Notifications { get }
@@ -38,53 +38,57 @@ protocol MainRepository: AnyObject {
     var canRequestPushNotificationsPermissions: Bool { get }
     func requestPushNotificationsPermissions() async
     func sendPushNotification(_ text: String) async
-    
+
     var pushNotificationToken: String? { get }
     func savePushNotificationToken(_ token: String?)
-    
+
     // MARK: - Security
     var isUserLoggedIn: Bool { get }
     var isAppInBackground: Bool { get }
     func setIsAppInBackground(_ isInBackground: Bool)
-    
+
     var isOnboardingCompleted: Bool { get }
     func finishOnboarding()
-    
+
     var isConnectOnboardingCompleted: Bool { get }
     func finishConnectOnboarding()
-    
+
     var shouldShowQuickSetup: Bool { get }
     func setShouldShowQuickSetup(_ value: Bool)
-    
+
     var lastAppUpdatePromptDate: Date? { get }
     func setLastAppUpdatePromptDate(_ date: Date)
     func clearLastAppUpdatePromptDate()
-    
+
+    var lastAppReviewPromptDate: Date? { get }
+    func setLastAppReviewPromptDate(_ date: Date)
+    func clearLastAppReviewPromptDate()
+ 
     var minimalAppVersionSupported: String? { get }
     func setMinimalAppVersionSupported(_ version: String)
     func clearMinimalAppVersionSupported()
-    
+
     // MARK: - Biometry
     var biometryType: BiometryType { get }
     var isBiometryEnabled: Bool { get }
     var isBiometryAvailable: Bool { get }
     var isBiometryLockedOut: Bool { get }
     func disableBiometry()
-    
+
     func reloadAuthContext()
-    
+
     func saveBiometryFingerprint(_ data: Data)
     func clearBiometryFingerpring()
     var biometryFingerpring: Data? { get }
-    
+
     func authenticateUsingBiometry(
         reason: String,
         completion: @escaping (BiometricAuthResult) -> Void
     )
-    
+
     var requestedForBiometryToLogin: Bool { get }
     func setRequestedForBiometryToLogin(_ requested: Bool)
-    
+
     // MARK: App lock
     var appLockAttempts: AppLockAttempts { get }
     func setAppLockAttempts(_ value: AppLockAttempts)
@@ -92,19 +96,19 @@ protocol MainRepository: AnyObject {
     var appLockBlockTime: AppLockBlockTime? { get }
     func setAppLockBlockTime(_ value: AppLockBlockTime)
     func clearAppLockBlockTime()
-    
+
     var lockAppUntil: Date? { get }
     func setLockAppUntil(date: Date)
     func clearLockAppUntil()
-    
+
     var incorrectLoginCountAttemp: Int { get }
     func setIncorrectLoginCountAttempt(_ count: Int)
     func clearIncorrectLoginCountAttempt()
-    
+
     var incorrectBiometryCountAttemp: Int { get }
     func setIncorrectBiometryCountAttempt(_ count: Int)
     func clearIncorrectBiometryCountAttempt()
-        
+
     // MARK: - General
     var currentAppVersion: String { get }
     var currentBuildVersion: String { get }
@@ -113,29 +117,28 @@ protocol MainRepository: AnyObject {
     func migrateLegacyValuesToSharedDefaults()
     func setCrashlyticsEnabled(_ enabled: Bool)
     var isCrashlyticsEnabled: Bool { get }
-    
+
     func initialPermissionStateSetChildren(_ children: [PermissionsStateChildDataControllerProtocol])
     func initialPermissionStateInitialize()
-    
+
     var appBundleIdentifier: String? { get }
     var appDisplayName: String? { get }
     var dateOfFirstRun: Date? { get }
     func saveDateOfFirstRun(_ date: Date)
-    
+    func clearDateOfFirstRun()
+
     func setActiveSearchEnabled(_ enabled: Bool)
     var isActiveSearchEnabled: Bool { get }
-    
+
     var jsonEncoder: JSONEncoder { get }
     var jsonDecoder: JSONDecoder { get }
-    
-    var cloudSync: CloudSync { get }
-    
+
     var deviceName: String { get }
     func setDeviceName(_ name: String)
     var deviceModelName: String { get }
     var deviceType: DeviceType { get }
     var systemVersion: String { get }
-    
+
     func checkFileSize(for url: URL) -> Int?
     func readFileData(from url: URL) async -> Data?
     func fileExists(at url: URL) -> Bool
@@ -143,24 +146,24 @@ protocol MainRepository: AnyObject {
     func isDirectory(at url: URL) -> Bool?
     func readFilesFromFolder(at url: URL, withExtension ext: String, maxFileSize: Int) -> [String: Data]?
     func readLocalFile(at url: URL) -> Data?
-    
+
     var is2FASAuthInstalled: Bool { get }
-    
+
     // MARK: - Encryption
     var deviceID: UUID? { get }
     func saveDeviceID(_ deviceID: UUID)
     func clearDeviceID()
     func generateUUID() -> UUID
-    
+
     func generateEntropy() -> Data?
     func createSeed(from entropy: Data) -> Seed
     func createCRC(from: Data) -> UInt8
     func create11BitPacks(from entropy: Data, seed: Data) -> [Int]
     func createWords(from bitPacks: [Int]) -> [String]?
     func createSalt(from words: [String]) -> Salt?
-    
+
     func hmac(key: String, message: String) -> String?
-    
+
     func normalizeStringIntoHEXData(_ string: String) -> String?
     func generateMasterKey(
         with masterPassword: String,
@@ -169,7 +172,7 @@ protocol MainRepository: AnyObject {
         kdfSpec: KDFSpec
     ) -> Data?
     var isSecureEnclaveAvailable: Bool { get }
-    
+
     func createSecureEnclaveAccessControl(needAuth: Bool) -> SecAccessControl?
     func createSecureEnclavePrivateKey(
         accessControl: SecAccessControl,
@@ -185,26 +188,27 @@ protocol MainRepository: AnyObject {
         _ data: Data,
         key: SymmetricKey
     ) -> Data?
-    
+
     func encrypt(_ data: Data, key: SymmetricKey, nonce: Data) -> Data?
     func encryptWithoutNonce(_ data: Data, key: SymmetricKey, nonce: Data) -> Data?
     func decrypt(_ data: Data, key: SymmetricKey, nonce: Data) -> Data?
     func generateRandom(byteCount: Int) -> Data?
-    
+
     func importBIP0039Words() -> [String]?
     func createSeedHashHexForExport(forVault vaultID: VaultID) -> String?
     func createReferenceForExport(forVault vaultID: VaultID) -> String?
-    
+
+
     /// Used for Biometry, encrypted using Biometry Key
     var isMasterKeyStored: Bool { get }
     func decryptStoredMasterKey() -> MasterKeyEncrypted?
     func saveMasterKey(_ key: MasterKeyEncrypted)
     func clearMasterKey()
-    
+
     var biometryKey: BiometryKey? { get }
     func saveBiometryKey(_ data: BiometryKey)
     func clearBiometryKey()
-    
+
     /// Decrypted key from Vault entity (persistent storage)
     func trustedKeyFromVault(_ vaultID: VaultID) -> TrustedKey?
 
@@ -228,37 +232,37 @@ protocol MainRepository: AnyObject {
     func hasCachedKeys(for vaultID: VaultID) -> Bool
     func clearCachedKeys(for vaultID: VaultID)
     func preparedCachedKeys(for vaultID: VaultID)
-    
+
     /// Generated on first start
     var appKey: AppKey? { get }
     func saveAppKey(_ data: AppKey)
     func clearAppKey()
-    
+
     /// Empheral storage
     var seed: Seed? { get }
     func setSeed(_ data: Seed)
     func clearSeed()
-    
+
     var entropy: Entropy? { get }
     func setEntropy(_ entropy: Entropy)
     func clearEntropy()
-    
+
     var words: [String]? { get }
     func setWords(_ words: [String])
     func clearWords()
-    
+
     var salt: Data? { get }
     func setSalt(_ salt: Data)
     func clearSalt()
-    
+
     var masterPassword: MasterPassword? { get }
     func setMasterPassword(_ masterPassword: MasterPassword)
     func clearMasterPassword()
-    
+
     var empheralMasterKey: MasterKey? { get }
     func setEmpheralMasterKey(_ masterKey: MasterKey)
     func clearEmpheralMasterKey()
-    
+
     func clearAllEmphemeral()
 
     /// Used for veryfiying the Master Key
@@ -279,7 +283,7 @@ protocol MainRepository: AnyObject {
     var masterKeyEntropy: Entropy? { get }
     func saveMasterKeyEntropy(_ string: Entropy)
     func clearMasterKeyEntropy()
-    
+
     func generateMetadataKey(using masterKey: String) -> String?
     func generateTrustedKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?
     func generateSecureKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String?
@@ -292,13 +296,13 @@ protocol MainRepository: AnyObject {
     func create11BitPacks(from decimals: [Int]) -> [UInt16]
     func create4BitPacksFrom11BitPacks(_ data: [UInt16]) -> [UInt8]
     func convertWordsTo4BitPacksAndCRC(_ words: [String]) -> (bitPacks: Data, crc: UInt8)?
-    
+
     // MARK: - Storage
     var storageError: ((String) -> Void)? { get set }
-    
+
     // MARK: - In Memory
     // MARK: Item
-    
+
     func createItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -386,7 +390,7 @@ protocol MainRepository: AnyObject {
         contentType: ItemContentType,
         contentVersion: Int
     )
-    
+
     func updateItem(
         itemID: ItemID,
         vaultID: VaultID,
@@ -465,11 +469,11 @@ protocol MainRepository: AnyObject {
         itemID: ItemID,
         checkInTrash: Bool
     ) -> ItemData?
-    
+
     func listItems(
         options: ItemsListOptions
     ) -> [ItemData]
-    
+
     func listTrashedItems() -> [ItemData]
     func deleteItem(itemID: ItemID)
     func deleteAllItems()
@@ -481,7 +485,7 @@ protocol MainRepository: AnyObject {
     func destroyInMemoryStorage()
 
     func extractItemName(fromContent data: Data) -> String?
-    
+
     // MARK: Tags
     func createTag(_ tag: ItemTagData)
     func updateTag(_ tag: ItemTagData)
@@ -490,13 +494,13 @@ protocol MainRepository: AnyObject {
     func getTag(for tagID: ItemTagID) -> ItemTagData?
     func listTags(options: TagListOptions) -> [ItemTagData]
     func batchUpdateRencryptedTags(_ tags: [ItemTagData], date: Date)
-    
+
     // MARK: - Encrypted Storage
-    
+
     func saveEncryptedStorage()
-    
+
     // MARK: Encrypted Items
-    
+
     func createEncryptedItem(
         itemID: ItemID,
         creationDate: Date,
@@ -536,13 +540,13 @@ protocol MainRepository: AnyObject {
     func addEncryptedItem(_ itemID: ItemID, to vaultID: VaultID)
     func deleteEncryptedItem(itemID: ItemID)
     func deleteAllEncryptedItems()
-    
+
     func requiresReencryptionMigration() -> Bool
     func loadEncryptedStore(completion: @escaping Callback)
     func loadEncryptedStoreWithReencryptionMigration(completion: @escaping (Bool) -> Void)
-    
+
     // MARK: Encrypted Vaults
-    
+
     func listEncryptedVaults() -> [VaultEncryptedData]
     func getEncryptedVault(for vaultID: VaultID) -> VaultEncryptedData?
     func createEncryptedVault(
@@ -564,6 +568,8 @@ protocol MainRepository: AnyObject {
         icon: String?
     )
     func deleteEncryptedVault(_ vaultID: VaultID)
+    func markVaultContentModified(vaultID: VaultID)
+    func backfillVaultContentModificationDate(vaultID: VaultID)
     func deleteAllVaults()
 
     // MARK: Deleted Items
@@ -581,7 +587,7 @@ protocol MainRepository: AnyObject {
     func updateEncryptedWebBrowser(_ data: WebBrowserEncryptedData)
     func deleteEncryptedWebBrowser(id: UUID)
     func listEncryptedWebBrowsers() -> [WebBrowserEncryptedData]
-    
+
     // MARK: - Encrypted Tags
     func createEncryptedTag(_ tag: ItemTagEncryptedData)
     func updateEncryptedTag(_ tag: ItemTagEncryptedData)
@@ -591,30 +597,17 @@ protocol MainRepository: AnyObject {
     func encryptedTagBatchUpdate(_ tags: [ItemTagEncryptedData])
     func deleteAllEncryptedTags(in vault: VaultID)
     func deleteAllEncryptedTags()
-    
+
     // MARK: - Sort
     var sortType: SortType? { get }
     func setSortType(_ sortType: SortType)
-            
+
     // MARK: - Camera
     var permission: CameraPermissionState { get }
     var isCameraPresent: Bool { get }
     func checkForPermission() -> CameraPermissionState
     func requestPermission(result: @escaping (CameraPermissionState) -> Void)
-    
-    // MARK: - Cloud
-    var isCloudBackupConnected: Bool { get }
-    var cloudCurrentState: CloudState { get }
-    func enableCloudBackup()
-    func disableCloudBackup()
-    func clearBackup()
-    func synchronizeBackup(fromPush: Bool)
-    func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void)
-    func cloudDeleteVault(id: VaultID) async throws
-    var lastSuccessCloudSyncDate: Date? { get }
-    func setLastSuccessCloudSyncDate(_ date: Date)
-    func clearLastSuccessCloudSyncDate()
-    
+
     // MARK: - Cloud Cache
     func cloudCacheCreateItem(
         itemID: ItemID,
@@ -695,7 +688,7 @@ protocol MainRepository: AnyObject {
     func cloudCacheListAllDeletedItems(limit: Int?) -> [CloudDataDeletedItem]
     func cloudCacheDeleteDeletedItem(itemID: DeletedItemID)
     func cloudCacheDeleteAllDeletedItems()
-    
+
     // MARK: - Cloud Cached Tags
     var cloudCacheIsInitializingNewStore: Bool { get }
     func cloudCacheMarkInitializingNewStoreAsHandled()
@@ -722,18 +715,15 @@ protocol MainRepository: AnyObject {
     func cloudCacheListAllTags(limit: Int?) -> [CloudDataTagItem]
     func cloudCacheDeleteTag(tagID: ItemTagID)
     func cloudCacheDeleteAllTags()
-    
+
     func cloudCacheSave()
-    
+
     // MARK: - System
-    var syncHasError: Bool { get }
-    func setSyncHasError(_ value: Bool)
-    
     func copyToClipboard(_ str: String)
     func positiveFeedback()
     func negativeFeedback()
     func warningFeedback()
-    
+
     // MARK: - Config
     var currentDefaultProtectionLevel: ItemProtectionLevel { get }
     func setDefaultProtectionLevel(_ value: ItemProtectionLevel)
@@ -743,62 +733,48 @@ protocol MainRepository: AnyObject {
     func setShareLinkConfig(_ data: Data)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
-    
+    var defaultURIMatchRule: PasswordURI.Match { get }
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
+
     // MARK: - Network
     func fetchFile(from url: URL, completion: @escaping (Result<Data, NetworkError>) -> Void)
-    
+
     func cachedImage(from url: URL) -> Data?
     func fetchIconImage(from url: URL) async throws -> Data
 
     // MARK: - Image
     func resizeImage(from data: Data, to size: CGSize) -> Data?
-    
+
     // MARK: - Logs
     func listAllLogs() -> [LogEntry]
     func removeAllLogs()
     func removeOldStoreLogs()
-    
-    // MARK: - WebDAV Backup
-    func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)
-    func webDAVGetLock(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)
-    func webDAVGetVault(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteIndex(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteLock(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVWriteDecryptedVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVMove(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVDeleteLock(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void)
-    func webDAVSetBackupConfig(_ config: BackupWebDAVConfig)
-    var webDAVSavedConfig: BackupWebDAVConfig? { get }
-    func webDAVSaveSavedConfig(_ config: BackupWebDAVConfig)
-    func webDAVEncodeLock(timestamp: Int, deviceId: UUID) -> Data?
-    func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)?
-    func webDAVEncodeIndex(_ index: WebDAVIndex) -> Data?
-    func webDAVDecodeIndex(_ data: Data) -> WebDAVIndex?
-    func webDAVClearConfig()
-    func webDAVSeedHash(forVault vaultID: VaultID) -> String?
-    
-    var webDAVIsConnected: Bool { get }
-    func webDAVSetIsConnected(_ isConnected: Bool)
-    func webDAVClearIsConnected()
-    
-    var webDAVHasLocalChanges: Bool { get }
-    func webDAVSetHasLocalChanges()
-    func webDAVClearHasLocalChanges()
-    
-    var webDAVState: WebDAVState { get }
-    func webDAVSetState(_ state: WebDAVState)
-    func webDAVClearState()
-    
-    var webDAVLastSync: WebDAVLock? { get }
-    func webDAVSetLastSync(_ lastSync: WebDAVLock)
-    func webDAVClearLastSync()
-    
+
+    // MARK: - Backup Sync config persistence
+    func loadBackupConfigs() -> [BackupConfig]
+    func saveBackupConfigs(_ configs: [BackupConfig])
+
+    func loadLastSyncDates() -> [BackupConfig.ID: Date]
+    func saveLastSyncDates(_ dates: [BackupConfig.ID: Date])
+
+    func migrateLegacyBackupConfigs()
+
+    var cachedS3RecoveryConfig: S3ServiceConfig? { get }
+    var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? { get }
+    func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig)
+    func saveCachedWebDAVRecoveryConfig(_ config: BackupWebDAVConfig)
+    func clearCachedRecoveryConfigs()
+
     var webDAVWriteDecryptedCopy: Bool { get }
     func webDAVSetWriteDecryptedCopy(_ writeDecryptedCopy: Bool)
-    
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool { get }
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool)
+
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>)
+    func clearVaultOverrideAwaiting(configID: BackupConfig.ID)
+
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { get }
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>)
+    func clearDeviceRegistrationAwaiting(configID: BackupConfig.ID)
 
     // MARK: 2FAS Web Service
     func appNotifications() async throws -> AppNotifications
@@ -807,10 +783,10 @@ protocol MainRepository: AnyObject {
     // MARK: Share Service
     func createSharedSecret(data: Data, validForSeconds: Int, singleUse: Bool) async throws -> CreateShareSecretResponse
     func fetchSharedSecret(id: String) async throws -> SharedSecretResponse
-    
+
     // MARK: - Scan
     func scan(image: UIImage, completion: @escaping (Result<[String], ScanImageError>) -> Void)
-    
+
     // MARK: - Screen Capture
     var screenCaptureAllowedUntil: Date? { get }
     func setScreenCaptureAllowedUntil(_ date: Date)
@@ -821,7 +797,7 @@ protocol MainRepository: AnyObject {
     func setTimeOffset(_ offset: TimeInterval)
     func checkTimeOffset(completion: @escaping (TimeInterval?) -> Void)
     var currentDate: Date { get }
-    
+
     // MARK: - Payment
     var paymentUserId: String? { get }
     var paymentSubscriptionPlan: SubscriptionPlan { get }
@@ -831,12 +807,20 @@ protocol MainRepository: AnyObject {
     func paymentUpdatePaymentStatus(subscriptionName: String)
     func paymentSubscriptionPrice(subscriptionName: String) async -> String?
     func paymentRunCachedPromotedPurchase()
-    
+
     var isOverridedSubscriptionPlan: Bool { get }
     func overrideSubscriptionPlan(_ plan: SubscriptionPlan)
     func clearOverrideSubscriptionPlan()
-    
+
     // MARK: - URI Cache
     func uriCacheSet(originalUri: String, parsedUri: String)
     func uriCacheGet(originalUri: String) -> String?
+
+    // MARK: - Backup Sync Container
+    var backupSyncContainer: BackupSyncContainer { get }
+
+#if DEBUG
+    // MARK: - E2E Connect (debug test seam)
+    var isE2EConnectCameraForced: Bool { get }
+#endif
 }

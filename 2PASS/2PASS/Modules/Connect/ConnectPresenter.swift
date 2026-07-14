@@ -23,17 +23,24 @@ final class ConnectPresenter {
     var destination: ConnectDestination?
     
     private(set) var isCameraAllowed: Bool
-    
-    let cameraPresenter: ConnectCameraPresenter
+
+    let onScannedQRCode: Callback
+    let onScanAgain: Callback
+
     private(set) var introPresenter: ConnectIntroPresenter?
 
     private let interactor: ConnectModuleInteracting
-    
+
     init(interactor: ConnectModuleInteracting, onScannedQRCode: @escaping Callback, onScanAgain: @escaping Callback) {
         self.interactor = interactor
+        self.onScannedQRCode = onScannedQRCode
+        self.onScanAgain = onScanAgain
+        #if DEBUG
+        self.isCameraAllowed = interactor.isE2ECameraForced || interactor.isCameraAllowed
+        #else
         self.isCameraAllowed = interactor.isCameraAllowed
-        
-        self.cameraPresenter = .init(onScannedQRCode: onScannedQRCode, onScanAgain: onScanAgain)
+        #endif
+
         self.introPresenter = .init(onContinue: { [weak self] in
             self?.onIntroContinue()
         })

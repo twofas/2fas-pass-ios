@@ -6,6 +6,7 @@
 
 import UIKit
 import Common
+import CommonUI
 import SwiftUI
 
 final class AppNotificationsPresenter {
@@ -24,7 +25,8 @@ final class AppNotificationsPresenter {
         guard presentedViewController == nil else {
             return
         }
-        
+
+        window.windowScene = UIApplication.shared.activeWindowScene
         window.isHidden = false
         
         let rootViewController = UIHostingController(rootView: AppNotificationsPresenterView(

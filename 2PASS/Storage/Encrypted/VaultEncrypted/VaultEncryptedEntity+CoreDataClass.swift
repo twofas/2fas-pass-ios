@@ -56,6 +56,18 @@ final class VaultEncryptedEntity: NSManagedObject {
         entity.color = color
         entity.icon = icon
     }
+
+    @nonobjc static func setContentModificationDate(
+        on context: NSManagedObjectContext,
+        vaultID: VaultID,
+        date: Date
+    ) {
+        guard let entity = getEntity(on: context, vaultID: vaultID) else {
+            Log("VaultEncryptedEntity: Can't find entity for vaultID: \(vaultID)", module: .storage)
+            return
+        }
+        entity.contentModificationDate = date
+    }
     
     @nonobjc static func getEntity(
         on context: NSManagedObjectContext,

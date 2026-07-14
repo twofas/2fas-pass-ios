@@ -68,8 +68,17 @@ public enum Config {
     // Screen Recording
     public static let screenRecordingAllowanceDuration: Duration = .seconds(5 * 60)
     
+    public static let debugUseDevIconsKey = "debugUseDevIcons"
+
     public static func iconURL(forDomain domain: String) -> URL? {
-        URL(string: "https://icon.2fas.com/\(domain)/favicon.png")
+        #if DEBUG
+        let host = UserDefaults.standard.bool(forKey: debugUseDevIconsKey)
+            ? "dev-icons.2fas.com"
+            : "icon.2fas.com"
+        return URL(string: "https://\(host)/\(domain)/favicon.png")
+        #else
+        return URL(string: "https://icon.2fas.com/\(domain)/favicon.png")
+        #endif
     }
     
     public static func defaultIconLabel(forName name: String) -> String {
@@ -120,12 +129,16 @@ public enum Config {
         public static let apiKey = "appl_yjcWohjWjdFeWjdyYEUuCcTPagb"
         public static let subscriptionId = "unlimited" // entitlement_id
         #endif
-        
+
         public static let freeEntitlements = SubscriptionPlan.Entitlements(itemsLimit: 200, connectedBrowsersLimit: 1, multiDeviceSync: false)
         public static let premiumEntitlements = SubscriptionPlan.Entitlements(itemsLimit: nil, connectedBrowsersLimit: nil, multiDeviceSync: true)
     }
     
+    #if PROD
     public static let deepLinkScheme = "twofaspass"
+    #else
+    public static let deepLinkScheme = "dev-twofaspass"
+    #endif
 
     public static let twofasAuthCheckLink = URL(string: "twofasauth://")!
     public static let twofasAuthOpenLink = URL(string: "twofasauth://open")!

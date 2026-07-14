@@ -58,8 +58,7 @@
 		54E7B1062D6F320C002B1462 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C27D99F72BD596630008203F /* Assets.xcassets */; };
 		54E7B1092D6F366F002B1462 /* CommonUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C0900A2D6E658300954E76 /* CommonUI.framework */; };
 		54FBB7A52E0D70CC0026E87B /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 54FBB7A42E0D70CC0026E87B /* Settings.bundle */; };
-		8F0DB9F42D3C300300CBD6A1 /* OnboardingInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F0DB9F32D3C2FFD00CBD6A1 /* OnboardingInfoView.swift */; };
-		8F0DB9F82D3C37A500CBD6A1 /* OnboardingInfoPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F0DB9F72D3C37A300CBD6A1 /* OnboardingInfoPresenter.swift */; };
+		5CE7DE1B2BD596620008203F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE7DE1A2BD596620008203F /* SceneDelegate.swift */; };
 		8F1D89FF2D2DEE6400960ABF /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1D89FE2D2DEE6400960ABF /* Lottie */; };
 		8F1D8A052D2DF77B00960ABF /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1D8A042D2DF77600960ABF /* SetupVaultView.swift */; };
 		8F6D5B272D2C3CC9002A7574 /* OnboardingPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6D5B262D2C3CC3002A7574 /* OnboardingPageView.swift */; };
@@ -318,9 +317,9 @@
 		54C090532D6E6B4C00954E76 /* ModuleInteractorFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleInteractorFactory.swift; sourceTree = "<group>"; };
 		54DBB7692E789EEE003E7342 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		54DBB76A2E789EEE003E7342 /* AppIcon.dev.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.dev.icon; sourceTree = "<group>"; };
+		54E2BDBD2FAFAED1009F0A6F /* de */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = de; path = "de.lproj/vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		54FBB7A42E0D70CC0026E87B /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
-		8F0DB9F32D3C2FFD00CBD6A1 /* OnboardingInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingInfoView.swift; sourceTree = "<group>"; };
-		8F0DB9F72D3C37A300CBD6A1 /* OnboardingInfoPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingInfoPresenter.swift; sourceTree = "<group>"; };
+		5CE7DE1A2BD596620008203F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		8F1D8A042D2DF77600960ABF /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		8F6D5B262D2C3CC3002A7574 /* OnboardingPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPageView.swift; sourceTree = "<group>"; };
 		8F6D5B282D2C3CCC002A7574 /* OnboardingPagePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPagePresenter.swift; sourceTree = "<group>"; };
@@ -471,7 +470,7 @@
 		54B66D912D86DA7700AB4691 /* PushNotifications */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PushNotifications; sourceTree = "<group>"; };
 		54B671632D86EC3100AB4691 /* About */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = About; sourceTree = "<group>"; };
 		54B6719F2D87260900AB4691 /* Debug */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Debug; sourceTree = "<group>"; };
-		54B676172D87719800AB4691 /* Sync */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sync; sourceTree = "<group>"; };
+		54B676172D87719800AB4691 /* BackupSync */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = BackupSync; sourceTree = "<group>"; };
 		54BB9E4E2DC8A90800BDD13F /* AppNotifications */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppNotifications; sourceTree = "<group>"; };
 		54BB9E582DC8AC4800BDD13F /* NotificationService */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54BB9E622DC8AC4800BDD13F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = NotificationService; sourceTree = "<group>"; };
 		54C0900B2D6E658300954E76 /* CommonUI */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54E7B1032D6F209E002B1462 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 54C090142D6E658300954E76 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 54E7B1042D6F209E002B1462 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CommonUI; sourceTree = "<group>"; };
@@ -595,21 +594,11 @@
 			path = Interactors;
 			sourceTree = "<group>";
 		};
-		8F0DB9F22D3C2FED00CBD6A1 /* InfoView */ = {
-			isa = PBXGroup;
-			children = (
-				8F0DB9F72D3C37A300CBD6A1 /* OnboardingInfoPresenter.swift */,
-				8F0DB9F32D3C2FFD00CBD6A1 /* OnboardingInfoView.swift */,
-			);
-			path = InfoView;
-			sourceTree = "<group>";
-		};
 		8F6D5B252D2C3CBC002A7574 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
 				5402A74C2D63A2180092765B /* OnboardingStepsStack.swift */,
 				544617952D419437003A14E1 /* OnboardingFlowController.swift */,
-				8F0DB9F22D3C2FED00CBD6A1 /* InfoView */,
 				8F6F40EF2D387E3B0010F7CE /* SetupComplete */,
 				8F6F40E22D386EDC0010F7CE /* OnboardingStepDimmedView.swift */,
 				8F6F40DF2D386DD60010F7CE /* Halfway */,
@@ -825,6 +814,7 @@
 			isa = PBXGroup;
 			children = (
 				C27D99EE2BD596620008203F /* AppDelegate.swift */,
+				5CE7DE1A2BD596620008203F /* SceneDelegate.swift */,
 				C2B0B8222C1E050500D26D11 /* Modules */,
 				C267F93F2BE30046005F7B89 /* Common */,
 				54C090542D6E6B4C00954E76 /* Interactors */,
@@ -947,7 +937,7 @@
 				5415B8402E2A796000FBEE71 /* Logs */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
-				54B676172D87719800AB4691 /* Sync */,
+				54B676172D87719800AB4691 /* BackupSync */,
 				54B66D912D86DA7700AB4691 /* PushNotifications */,
 				54B664C52D85820A00AB4691 /* KnownBrowsers */,
 				54B6643F2D84E09700AB4691 /* AutofillSettings */,
@@ -1207,7 +1197,7 @@
 				54B66D912D86DA7700AB4691 /* PushNotifications */,
 				54B671632D86EC3100AB4691 /* About */,
 				54B6719F2D87260900AB4691 /* Debug */,
-				54B676172D87719800AB4691 /* Sync */,
+				54B676172D87719800AB4691 /* BackupSync */,
 				54BB9E4E2DC8A90800BDD13F /* AppNotifications */,
 				54C7EBFD2D5CCE35000E79D0 /* SwiftUI */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
@@ -1338,6 +1328,7 @@
 				Base,
 				pl,
 				en,
+				de,
 			);
 			mainGroup = C27D99E22BD596620008203F;
 			packageReferences = (
@@ -1578,9 +1569,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				544617862D413B4B003A14E1 /* OnboardingPagesRouter.swift in Sources */,
-				8F0DB9F82D3C37A500CBD6A1 /* OnboardingInfoPresenter.swift in Sources */,
 				C267F9262BE2CAB8005F7B89 /* RootPresenter.swift in Sources */,
-				8F0DB9F42D3C300300CBD6A1 /* OnboardingInfoView.swift in Sources */,
 				544617902D415002003A14E1 /* GenerateSecretKeyModuleInteractor.swift in Sources */,
 				C267F92B2BE2DD64005F7B89 /* RootFlowController.swift in Sources */,
 				5402A74D2D63A2180092765B /* OnboardingStepsStack.swift in Sources */,
@@ -1608,6 +1597,7 @@
 				5402A8CE2D6452DF0092765B /* InteractiveProgressAnimator.swift in Sources */,
 				8F6D5B2B2D2C9317002A7574 /* OnboardingPagesView.swift in Sources */,
 				C27D99EF2BD596620008203F /* AppDelegate.swift in Sources */,
+				5CE7DE1B2BD596620008203F /* SceneDelegate.swift in Sources */,
 				8F6F40F12D387E4D0010F7CE /* SetupCompleteView.swift in Sources */,
 				C28E9E2C2C1CE5A8008B99F8 /* MainPresenter.swift in Sources */,
 				5402A76C2D63A2EA0092765B /* ShieldProgressStyle.swift in Sources */,
@@ -1729,6 +1719,7 @@
 			children = (
 				54128C8E2F28CA8E00DA9D16 /* Base */,
 				54128C912F28CA9200DA9D16 /* pl */,
+				54E2BDBD2FAFAED1009F0A6F /* de */,
 			);
 			name = "vault-decription-kit-template.pdf";
 			sourceTree = "<group>";
@@ -1813,7 +1804,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Prod.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 374;
+				CURRENT_PROJECT_VERSION = 410;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -1833,7 +1824,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2628,7 +2619,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 374;
+				CURRENT_PROJECT_VERSION = 410;
 				ENABLE_MODULE_VERIFIER = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
@@ -2649,7 +2640,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2669,7 +2660,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 374;
+				CURRENT_PROJECT_VERSION = 410;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -2689,7 +2680,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

@@ -16,7 +16,7 @@ final class ItemsImportInteractor {
     private let fileIconInteractor: FileIconInteracting
     private let itemsInteractor: ItemsInteracting
     private let deletedItemsInteractor: DeletedItemsInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
     private let tagInteractor: TagInteracting
     private let mainRepository: MainRepository
     
@@ -24,14 +24,14 @@ final class ItemsImportInteractor {
         fileIconInteractor: FileIconInteracting,
         itemsInteractor: ItemsInteracting,
         deletedItemsInteractor: DeletedItemsInteracting,
-        syncChangeTriggerInteractor: SyncChangeTriggerInteracting,
+        syncTriggerInteractor: BackupSyncTriggerInteracting,
         tagInteractor: TagInteracting,
         mainRepository: MainRepository
     ) {
         self.fileIconInteractor = fileIconInteractor
         self.itemsInteractor = itemsInteractor
         self.deletedItemsInteractor = deletedItemsInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
         self.tagInteractor = tagInteractor
         self.mainRepository = mainRepository
     }
@@ -44,6 +44,7 @@ extension ItemsImportInteractor: ItemsImportInteracting {
     }
     
     func importDeleted(_ deleted: [DeletedItemData]) {
+        guard !deleted.isEmpty else { return }
         deletedItemsInteractor.createDeletedItems(deleted)
         Log("ItemsImportInteractor - deleted items to import: \(deleted.count)", module: .interactor)
         itemsInteractor.saveStorage()
@@ -58,7 +59,7 @@ private extension ItemsImportInteractor {
         var exists = 0
         var new = 0
         var failure = 0
-        
+
         let localTags = tagInteractor.listAllTags()
         let localItems = itemsInteractor.listAllItems()
         
@@ -124,7 +125,7 @@ private extension ItemsImportInteractor {
          
             if let current {
                 exists += 1
-                if current.modificationDate >= item.modificationDate {
+                if current.modificationDate > item.modificationDate {
                     imported += 1
                     switch current.trashedStatus {
                     case .no: break
@@ -133,6 +134,7 @@ private extension ItemsImportInteractor {
                 } else {
                     do {
                         try itemsInteractor.updateItem(item.update(
+                            id: current.id,
                             creationDate: adjustDateIfNeeded(item.creationDate),
                             modificationDate: adjustDateIfNeeded(item.modificationDate)
                         ))
@@ -156,10 +158,8 @@ private extension ItemsImportInteractor {
         }
         Log("PasswordImportInteractor - imported: \(imported), new: \(new), exists: \(exists), failure: \(failure)", module: .interactor)
         itemsInteractor.saveStorage()
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
 
-        NotificationCenter.default.post(name: .didImportItems, object: nil)
-        
         return imported
     }
     

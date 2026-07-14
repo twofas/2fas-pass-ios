@@ -12,16 +12,18 @@ protocol CustomizationModuleInteracting: AnyObject {
     func setDeviceName(_ name: String)
     var defaultPassswordListAction: PasswordListAction { get }
     func setDefaultPassswordListAction(_ action: PasswordListAction)
+    var defaultURIMatchRule: PasswordURI.Match { get }
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match)
 }
 
 final class CustomizationModuleInteractor: CustomizationModuleInteracting {
 
     private let configInteractor: ConfigInteracting
-    private let syncChangeTriggerInteractor: SyncChangeTriggerInteracting
+    private let syncTriggerInteractor: BackupSyncTriggerInteracting
 
-    init(configInteractor: ConfigInteracting, syncChangeTriggerInteractor: SyncChangeTriggerInteracting) {
+    init(configInteractor: ConfigInteracting, syncTriggerInteractor: BackupSyncTriggerInteracting) {
         self.configInteractor = configInteractor
-        self.syncChangeTriggerInteractor = syncChangeTriggerInteractor
+        self.syncTriggerInteractor = syncTriggerInteractor
     }
     
     var deviceName: String {
@@ -30,7 +32,7 @@ final class CustomizationModuleInteractor: CustomizationModuleInteracting {
 
     func setDeviceName(_ name: String) {
         configInteractor.setDeviceName(name)
-        syncChangeTriggerInteractor.trigger()
+        syncTriggerInteractor.syncAll()
     }
 
     var defaultPassswordListAction: PasswordListAction {
@@ -39,5 +41,13 @@ final class CustomizationModuleInteractor: CustomizationModuleInteracting {
     
     func setDefaultPassswordListAction(_ action: PasswordListAction) {
         configInteractor.setDefaultPassswordListAction(action)
+    }
+
+    var defaultURIMatchRule: PasswordURI.Match {
+        configInteractor.defaultURIMatchRule
+    }
+
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
+        configInteractor.setDefaultURIMatchRule(rule)
     }
 }

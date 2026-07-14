@@ -11,7 +11,7 @@ public final class CloudSync {
     private var cloudHandler: CloudHandler?
     private var syncHandler: SyncHandler?
     private var mergeHandler: MergeHandler?
-    
+
     public var userToggledState: UserToggledState? {
         get {
             cloudHandler?.userToggledState
@@ -22,16 +22,16 @@ public final class CloudSync {
     }
     public var currentState: CloudCurrentState { cloudHandler?.currentState ?? .unknown }
     public var isConnected: Bool { cloudHandler?.isConnected ?? false }
-    
+
     public init() {}
-    
+
     public func setup(
         localStorage: LocalStorage,
         cloudCacheStorage: CloudCacheStorage,
         encryptionHandler: EncryptionHandler,
-        deviceID: DeviceID,
         jsonDecoder: JSONDecoder,
-        jsonEncoder: JSONEncoder
+        jsonEncoder: JSONEncoder,
+        context: BackupSyncContext
     ) {
         guard cloudHandler == nil else { return }
         let cacheHandler = CacheHandler(cloudCacheStorage: cloudCacheStorage, jsonDecoder: jsonDecoder)
@@ -39,7 +39,7 @@ public final class CloudSync {
             localStorage: localStorage,
             cloudCacheStorage: cloudCacheStorage,
             encryptionHandler: encryptionHandler,
-            deviceID: deviceID,
+            context: context,
             jsonDecoder: jsonDecoder,
             jsonEncoder: jsonEncoder
         )
@@ -58,19 +58,16 @@ public final class CloudSync {
             cloudAvailability: cloudAvailability,
             syncHandler: syncHandler,
             mergeHandler: mergeHandler,
-            cacheHandler: cacheHandler
+            cacheHandler: cacheHandler,
+            context: context
         )
         checkForMigration(cloudCacheStorage: cloudCacheStorage)
     }
-    
-    public func setMultiDeviceSyncEnabled(_ enabled: Bool, takingOver: Bool = false) {
-        mergeHandler?.setMultiDeviceSyncEnabled(enabled, takingOver: takingOver)
+
+    public func setTakingOverVault(_ takingOver: Bool) {
+        mergeHandler?.setTakingOverVault(takingOver)
     }
-    
-    public func setVaultID(_ vaultID: VaultID) {
-        cloudHandler?.setVaultID(vaultID: vaultID)
-    }
-    
+
     public func synchronize(fromPush: Bool = false) {
         cloudHandler?.synchronize(fromPush: fromPush)
     }
@@ -78,21 +75,39 @@ public final class CloudSync {
     public func checkState() {
         cloudHandler?.checkState()
     }
-    
+
     public func enable() {
         cloudHandler?.enable()
     }
-    
+
     public func disable(notify: Bool) {
         cloudHandler?.disable(notify: notify)
     }
-    
+
     public func clearBackup() {
         cloudHandler?.clearBackup()
     }
-    
+
     public func setCurrentDate(_ date: Date) {
         syncHandler?.setCurrentDate(date)
+    }
+
+    @discardableResult
+    func addStateChangedHandler(_ handler: @escaping (CloudCurrentState) -> Void) -> UUID? {
+        cloudHandler?.addStateChangedHandler(handler)
+    }
+
+    func removeStateChangedHandler(_ id: UUID) {
+        cloudHandler?.removeStateChangedHandler(id)
+    }
+
+    @discardableResult
+    func addFinishedSyncHandler(_ handler: @escaping (Bool) -> Void) -> UUID? {
+        cloudHandler?.addFinishedSyncHandler(handler)
+    }
+
+    func removeFinishedSyncHandler(_ id: UUID) {
+        cloudHandler?.removeFinishedSyncHandler(id)
     }
 }
 

@@ -39,7 +39,6 @@ struct KeePassXCImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -79,7 +78,7 @@ struct KeePassXCImportInteractorTests {
         #expect(result.items.count == 1)
         #expect(result.tags.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -88,7 +87,7 @@ struct KeePassXCImportInteractorTests {
         #expect(testLogin.name == "Sample Entry")
         #expect(testLogin.content.username == "user")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "pass")
 
         let expectedNotes = """
@@ -117,7 +116,7 @@ struct KeePassXCImportInteractorTests {
         let personalTagId = try #require(tagIdByName["Personal"])
         let workTagId = try #require(tagIdByName["Work"])
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -170,8 +169,7 @@ extension KeePassXCImportInteractorTests {
         func importCSVFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -192,10 +190,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #1 - "Pierwszy element"
             let firstItem = try #require(logins.first { $0.name == "Pierwszy element" })
-            #expect(firstItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(firstItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(firstItem.content.username == "Arthur")
 
-            let firstPassword = try #require(decrypt(firstItem.content.password))
+            let firstPassword = try #require(firstItem.content.password)
             #expect(firstPassword == "l<~A_AH_KSgJ<NERw($P")
 
             #expect(firstItem.content.uris?.count == 1)
@@ -210,10 +208,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #2 - "Drugi element"
             let secondItem = try #require(logins.first { $0.name == "Drugi element" })
-            #expect(secondItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(secondItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(secondItem.content.username == "Morgan")
 
-            let secondPassword = try #require(decrypt(secondItem.content.password))
+            let secondPassword = try #require(secondItem.content.password)
             #expect(secondPassword == "~M\"e5iS**h*U\\[\"7aT%\\")
 
             #expect(secondItem.content.uris?.count == 1)
@@ -228,10 +226,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #3 - "Element z custom fieldami"
             let thirdItem = try #require(logins.first { $0.name == "Element z custom fieldami" })
-            #expect(thirdItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(thirdItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(thirdItem.content.username == "Erunestian")
 
-            let thirdPassword = try #require(decrypt(thirdItem.content.password))
+            let thirdPassword = try #require(thirdItem.content.password)
             #expect(thirdPassword == "0:Eg4V7N][/:GOFDF44_")
 
             #expect(thirdItem.content.uris?.count == 1)
@@ -246,10 +244,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #4 - "Login do podgrupy"
             let fourthItem = try #require(logins.first { $0.name == "Login do podgrupy" })
-            #expect(fourthItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(fourthItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(fourthItem.content.username == "2")
 
-            let fourthPassword = try #require(decrypt(fourthItem.content.password))
+            let fourthPassword = try #require(fourthItem.content.password)
             #expect(fourthPassword == "us~a@8RdFZPgHtG(F)%a")
 
             #expect(fourthItem.content.uris?.count == 1)
@@ -267,8 +265,7 @@ extension KeePassXCImportInteractorTests {
         func importXMLFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -291,10 +288,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #1 - "Pierwszy element"
             let firstItem = try #require(logins.first { $0.name == "Pierwszy element" })
-            #expect(firstItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(firstItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(firstItem.content.username == "Arthur")
 
-            let firstPassword = try #require(decrypt(firstItem.content.password))
+            let firstPassword = try #require(firstItem.content.password)
             #expect(firstPassword == "l<~A_AH_KSgJ<NERw($P")
 
             #expect(firstItem.content.uris?.count == 1)
@@ -309,10 +306,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #2 - "Drugi element"
             let secondItem = try #require(logins.first { $0.name == "Drugi element" })
-            #expect(secondItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(secondItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(secondItem.content.username == "Morgan")
 
-            let secondPassword = try #require(decrypt(secondItem.content.password))
+            let secondPassword = try #require(secondItem.content.password)
             #expect(secondPassword == "~M\"e5iS**h*U\\[\"7aT%\\")
 
             #expect(secondItem.content.uris?.count == 1)
@@ -327,10 +324,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #3 - "Element z custom fieldami"
             let thirdItem = try #require(logins.first { $0.name == "Element z custom fieldami" })
-            #expect(thirdItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(thirdItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(thirdItem.content.username == "Erunestian")
 
-            let thirdPassword = try #require(decrypt(thirdItem.content.password))
+            let thirdPassword = try #require(thirdItem.content.password)
             #expect(thirdPassword == "0:Eg4V7N][/:GOFDF44_")
 
             #expect(thirdItem.content.uris?.count == 1)
@@ -351,10 +348,10 @@ extension KeePassXCImportInteractorTests {
 
             // MARK: Login #4 - "Login do podgrupy"
             let fourthItem = try #require(logins.first { $0.name == "Login do podgrupy" })
-            #expect(fourthItem.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(fourthItem.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(fourthItem.content.username == "2")
 
-            let fourthPassword = try #require(decrypt(fourthItem.content.password))
+            let fourthPassword = try #require(fourthItem.content.password)
             #expect(fourthPassword == "us~a@8RdFZPgHtG(F)%a")
 
             #expect(fourthItem.content.uris?.count == 1)

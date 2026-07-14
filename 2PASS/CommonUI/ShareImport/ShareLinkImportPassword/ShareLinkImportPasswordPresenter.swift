@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Foundation
+import Data
 
 @Observable
 final class ShareLinkImportPasswordPresenter {
@@ -34,6 +35,8 @@ final class ShareLinkImportPasswordPresenter {
 
         do {
             try onSubmit(password)
+        } catch ShareLinkInteractorError.decryptionFailed {
+            errorDescription = String(localized: .shareLinkImportIncorrectPassword)
         } catch {
             errorDescription = error.localizedDescription
         }

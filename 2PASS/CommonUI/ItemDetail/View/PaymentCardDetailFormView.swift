@@ -143,5 +143,6 @@ struct PaymentCardDetailFormView: View {
         .onAppear {
             selectedField = nil
         }
+        .clearSelectionOnLeavingApp($selectedField)
     }
 }

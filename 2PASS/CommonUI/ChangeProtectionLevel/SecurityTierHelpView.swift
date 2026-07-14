@@ -42,12 +42,12 @@ struct SecurityTierHelpView: View {
                         }
                         
                         highlight {
-                            VStack(alignment: .leading, spacing: 0) {
+                            VStack(alignment: .leading, spacing: Spacing.s) {
                                 sectionHeadline {
                                     Text(.securityTiersHelpLocalFirstSectionFigureTitle)
                                 }
                                 
-                                Image(.securityTiersLevelsFigure)
+                                SecurityTierLevelsFigureView()
                             }
                         }
                     }

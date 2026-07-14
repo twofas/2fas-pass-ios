@@ -13,7 +13,7 @@ struct CoreDataMigrationStep {
     let mappingModel: NSMappingModel
     
     // MARK: Init
-
+    
     init<V: CoreDataModelVersionProtocol>(
         sourceVersion: V,
         destinationVersion: V,

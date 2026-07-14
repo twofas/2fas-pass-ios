@@ -38,7 +38,7 @@ extension ExternalServiceImportInteractor {
                     let name = dict["name"].formattedName
                     let uris: [PasswordURI]? = {
                         guard let urlString = dict["url"]?.nonBlankTrimmedOrNil else { return nil }
-                        let uri = PasswordURI(uri: urlString, match: .domain)
+                        let uri = PasswordURI(uri: urlString, match: context.defaultURIMatchRule)
                         return [uri]
                     }()
                     let username = dict["username"]?.nonBlankTrimmedOrNil

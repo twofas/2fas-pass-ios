@@ -135,6 +135,16 @@ extension ItemEditorNavigationFlowController: ItemEditorFlowControllerParent {
 
         navigationController.present(scannerViewController, animated: true)
     }
+
+    func itemEditorItemChangedOnOtherDevice(deleted: Bool) {
+        let title = String(localized: deleted ? .loginErrorDeletedOtherDevice : .loginErrorEditedOtherDevice)
+        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: String(localized: .commonClose), style: .cancel) { [weak self] _ in
+            self?.parent?.closeItemEditor(with: .failure(.userCancelled))
+        })
+        let presenter = navigationController.presentedViewController ?? navigationController
+        presenter?.present(alert, animated: true)
+    }
 }
 
 extension ItemEditorNavigationFlowController: ChangeProtectionLevelFlowControllerParent {

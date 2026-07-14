@@ -22,7 +22,8 @@ public final class EncryptedStorageDataSourceImpl {
         let migrator = CoreDataMigrator(momdSubdirectory: "ColdStorage", versions: [
             EncryptedStorageModelVersion("ColdStorage"),
             EncryptedStorageModelVersion("ColdStorage2", requiresReencryption: true),
-            EncryptedStorageModelVersion("ColdStorage3", requiresReencryption: true)
+            EncryptedStorageModelVersion("ColdStorage3"),
+            EncryptedStorageModelVersion("ColdStorage4", requiresReencryption: true)
         ])
         self.migrator = migrator
         self.coreDataStack = CoreDataStack(
@@ -39,7 +40,7 @@ public final class EncryptedStorageDataSourceImpl {
 }
 
 extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
-    
+
     public var requiresReencryptionMigration: Bool {
         guard let storeURL = coreDataStack.storeURL else { return false }
         return migrator.pendingDestinationVersions(at: storeURL)
@@ -78,8 +79,9 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         )
         guard let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID) else { return }
         vault.addToItems(entity)
+        markVaultContentModified(vaultID)
     }
-    
+
     public func updateEncryptedItem(
         itemID: ItemID,
         modificationDate: Date,
@@ -104,14 +106,16 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         )
         guard let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID), let entity else { return }
         vault.addToItems(entity)
+        markVaultContentModified(vaultID)
     }
-    
+
     public func batchUpdateRencryptedItems(_ items: [ItemEncryptedData], date: Date) {
         guard let currentVaultID = items.first?.vaultID else {
             Log("Error while getting current vaultID for batch update")
             return
         }
         let listAll = ItemEncryptedEntity.listItems(on: context, vaultID: currentVaultID)
+        var didModify = false
         for item in items {
             if let entity = listAll.first(where: { $0.itemID == item.itemID }) {
                 ItemEncryptedEntity.update(
@@ -125,9 +129,13 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
                     content: item.content,
                     tagIds: item.tagIds
                 )
+                didModify = true
             } else {
                 Log("Error while searching for Item Encrypted Entity \(item.itemID)")
             }
+        }
+        if didModify {
+            markVaultContentModified(currentVaultID)
         }
     }
     
@@ -185,15 +193,21 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
               let vault = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID)
         else { return }
         vault.addToItems(entity)
+        markVaultContentModified(vaultID)
     }
-    
+
     public func deleteEncryptedItem(itemID: ItemID) {
         guard let entity = ItemEncryptedEntity.getEntity(on: context, itemID: itemID) else { return }
+        let vaultID = entity.vault.vaultID
         ItemEncryptedEntity.delete(on: context, entity: entity)
+        markVaultContentModified(vaultID)
     }
-    
+
     public func deleteAllEncryptedItems(in vaultID: VaultID?) {
         ItemEncryptedEntity.deleteAllEncryptedItems(on: context, vaultID: vaultID)
+        if let vaultID {
+            markVaultContentModified(vaultID)
+        }
     }
     
     // MARK: Encrypted Vaults
@@ -254,7 +268,7 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         guard let entity = VaultEncryptedEntity.getEntity(on: context, vaultID: vaultID) else { return }
         VaultEncryptedEntity.delete(on: context, entity: entity)
     }
-    
+
     public func createDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID) {
         DeletedItemEncryptedEntity.create(
             on: context,
@@ -263,8 +277,9 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             deletedAt: deletedAt,
             vaultID: vaultID
         )
+        markVaultContentModified(vaultID)
     }
-    
+
     public func updateDeletedItem(id: DeletedItemID, kind: DeletedItemData.Kind, deletedAt: Date, in vaultID: VaultID) {
         DeletedItemEncryptedEntity.update(
             on: context,
@@ -273,10 +288,14 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             deletedAt: deletedAt,
             vaultID: vaultID
         )
+        markVaultContentModified(vaultID)
     }
 
     public func updateDeletedItems(_ items: [DeletedItemData]) {
         DeletedItemEncryptedEntity.bulkUpdate(on: context, items: items)
+        for vaultID in Set(items.map(\.vaultID)) {
+            markVaultContentModified(vaultID)
+        }
     }
 
     public func deletedItem(id: DeletedItemID) -> DeletedItemData? {
@@ -292,12 +311,14 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
         DeletedItemEncryptedEntity.listItems(on: context, vaultID: vaultID, limit: limit)
             .map({ $0.toData })
     }
-    
+
     public func deleteDeletedItem(id: DeletedItemID) {
         guard let entity = DeletedItemEncryptedEntity.getEntity(on: context, itemID: id) else {
             return
         }
+        let vaultID = entity.vaultID
         DeletedItemEncryptedEntity.delete(on: context, entity: entity)
+        markVaultContentModified(vaultID)
     }
 
     public func removeDuplicatedDeletedItems() {
@@ -331,16 +352,21 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
     
     public func createEncryptedTag(_ tag: ItemTagEncryptedData) {
         TagEncryptedEntity.create(from: tag, on: context)
+        markVaultContentModified(tag.vaultID)
     }
-    
+
     public func updateEncryptedTag(_ tag: ItemTagEncryptedData) {
         TagEncryptedEntity.update(from: tag, on: context)
+        markVaultContentModified(tag.vaultID)
     }
-    
+
     public func deleteEncryptedTag(tagID: ItemTagID) {
-        TagEncryptedEntity.delete(on: context, tagID: tagID)
+        guard let entity = TagEncryptedEntity.find(tagID: tagID, on: context) else { return }
+        let vaultID = entity.vaultID
+        TagEncryptedEntity.delete(on: context, entity: entity)
+        markVaultContentModified(vaultID)
     }
-    
+
     public func listEncryptedTags(in vaultID: VaultID) -> [ItemTagEncryptedData] {
         TagEncryptedEntity.list(on: context, in: vaultID)
             .map(ItemTagEncryptedData.init)
@@ -353,18 +379,23 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             .reduce(into: [:]) { result, entity in
                 result[entity.tagID] = entity
             }
+        var modifiedVaultIDs = Set<VaultID>()
         for tag in tags {
             if let entity = existing[tag.tagID] {
                 entity.update(from: tag)
+                modifiedVaultIDs.insert(tag.vaultID)
             } else {
                 Log("Error while searching for Tag Encrypted Entity \(tag.tagID)")
             }
         }
+        modifiedVaultIDs.forEach(markVaultContentModified)
     }
-    
+
     public func deleteAllEncryptedTags(in vault: VaultID) {
         let listAll = TagEncryptedEntity.list(on: context, in: vault)
+        guard !listAll.isEmpty else { return }
         listAll.forEach { TagEncryptedEntity.delete(on: context, entity: $0) }
+        markVaultContentModified(vault)
     }
 
     public func listAllEncryptedTags() -> [ItemTagEncryptedData] {
@@ -377,8 +408,20 @@ extension EncryptedStorageDataSourceImpl: EncryptedStorageDataSource {
             try? self?.coreDataStack.context.save()
         }
     }
-    
+
     public func save() {
         coreDataStack.save()
+    }
+
+    public func markVaultContentModified(_ vaultID: VaultID) {
+        VaultEncryptedEntity.setContentModificationDate(on: context, vaultID: vaultID, date: Date())
+    }
+
+    public func backfillContentModificationDate(in vaultID: VaultID) {
+        let item = ItemEncryptedEntity.latestModificationDate(on: context, vaultID: vaultID)
+        let deleted = DeletedItemEncryptedEntity.latestDeletionDate(on: context, vaultID: vaultID)
+        let tag = TagEncryptedEntity.latestModificationDate(on: context, vaultID: vaultID)
+        guard let derived = [item, deleted, tag].compactMap({ $0 }).max() else { return }
+        VaultEncryptedEntity.setContentModificationDate(on: context, vaultID: vaultID, date: derived)
     }
 }

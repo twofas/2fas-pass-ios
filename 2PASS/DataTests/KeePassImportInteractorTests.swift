@@ -40,7 +40,6 @@ struct KeePassImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -99,7 +98,7 @@ struct KeePassImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -108,7 +107,7 @@ struct KeePassImportInteractorTests {
         #expect(testLogin.name == "Entry with extras")
         #expect(testLogin.content.username == "extrauser")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "extrapass123")
 
         // Notes should contain original note plus unknown headers as additional info (exact match)
@@ -133,7 +132,7 @@ struct KeePassImportInteractorTests {
         let result = try await interactor.importService(.keePass, content: .file(csvData))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -159,7 +158,7 @@ struct KeePassImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -168,7 +167,7 @@ struct KeePassImportInteractorTests {
         #expect(testLogin.name == "Sample Entry")
         #expect(testLogin.content.username == "User Name")
 
-        let password = try #require(decrypt(testLogin.content.password))
+        let password = try #require(testLogin.content.password)
         #expect(password == "Password")
 
         #expect(testLogin.content.uris?.first?.uri == "https://keepass.info/")
@@ -185,13 +184,13 @@ struct KeePassImportInteractorTests {
         let result = try await interactor.importService(.keePass, content: .file(data))
 
         // THEN
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let testLogin = try #require(logins.first)
-        #expect(testLogin.vaultId == testVaultID)
+        #expect(testLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
         #expect(testLogin.metadata.protectionLevel == .normal)
         #expect(testLogin.metadata.trashedStatus == .no)
         #expect(testLogin.metadata.tagIds == nil)
@@ -211,15 +210,16 @@ struct KeePassImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.keePass, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.keePass, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     @Test
@@ -268,20 +268,20 @@ struct KeePassImportInteractorTests {
         // THEN
         #expect(result.items.count == 2)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
 
         let githubLogin = logins.first { $0.name == "GitHub" }
         #expect(githubLogin?.content.username == "developer")
-        let githubPassword = decrypt(githubLogin?.content.password)
+        let githubPassword = githubLogin?.content.password
         #expect(githubPassword == "secretpass123")
         #expect(githubLogin?.content.notes == "Work account")
 
         let gmailLogin = logins.first { $0.name == "Gmail" }
         #expect(gmailLogin?.content.username == "personal@gmail.com")
-        let gmailPassword = decrypt(gmailLogin?.content.password)
+        let gmailPassword = gmailLogin?.content.password
         #expect(gmailPassword == "gmailpass456")
         #expect(gmailLogin?.content.notes == "Personal email")
     }
@@ -300,7 +300,7 @@ struct KeePassImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -326,7 +326,7 @@ struct KeePassImportInteractorTests {
         // THEN
         #expect(result.items.count == 1)
 
-        let logins = result.items.compactMap { item -> LoginItemData? in
+        let logins = result.items.compactMap { item -> LoginItemDecryptedData? in
             if case .login(let login) = item { return login }
             return nil
         }
@@ -378,8 +378,7 @@ extension KeePassImportInteractorTests {
         func importCSVFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -399,10 +398,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #1 - "Sample Entry"
             let sampleEntry = try #require(logins.first { $0.name == "Sample Entry" })
-            #expect(sampleEntry.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(sampleEntry.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(sampleEntry.content.username == "User Name")
 
-            let samplePassword = try #require(decrypt(sampleEntry.content.password))
+            let samplePassword = try #require(sampleEntry.content.password)
             #expect(samplePassword == "Password")
 
             #expect(sampleEntry.content.uris?.count == 1)
@@ -417,10 +416,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #2 - "Sample Entry #2"
             let sampleEntry2 = try #require(logins.first { $0.name == "Sample Entry #2" })
-            #expect(sampleEntry2.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(sampleEntry2.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(sampleEntry2.content.username == "Michael321")
 
-            let sample2Password = try #require(decrypt(sampleEntry2.content.password))
+            let sample2Password = try #require(sampleEntry2.content.password)
             #expect(sample2Password == "12345")
 
             #expect(sampleEntry2.content.uris?.count == 1)
@@ -433,10 +432,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #3 - "Login z dodatkami"
             let loginZDodatkami = try #require(logins.first { $0.name == "Login z dodatkami" })
-            #expect(loginZDodatkami.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(loginZDodatkami.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(loginZDodatkami.content.username == "Batman")
 
-            let loginZPassword = try #require(decrypt(loginZDodatkami.content.password))
+            let loginZPassword = try #require(loginZDodatkami.content.password)
             #expect(loginZPassword == "lwqU3RF0vyYE088f3nYS")
 
             #expect(loginZDodatkami.content.uris == nil) // Empty URL field
@@ -447,10 +446,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #4 - "Entry with extras" (CRITICAL TEST - Unknown Fields)
             let entryWithExtras = try #require(logins.first { $0.name == "Entry with extras" })
-            #expect(entryWithExtras.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(entryWithExtras.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(entryWithExtras.content.username == "extrauser")
 
-            let extrasPassword = try #require(decrypt(entryWithExtras.content.password))
+            let extrasPassword = try #require(entryWithExtras.content.password)
             #expect(extrasPassword == "extrapass123")
 
             #expect(entryWithExtras.content.uris?.count == 1)
@@ -475,8 +474,7 @@ extension KeePassImportInteractorTests {
         func importXMLFile() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -501,10 +499,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #1 - "Sample Entry"
             let sampleEntry = try #require(logins.first { $0.name == "Sample Entry" })
-            #expect(sampleEntry.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(sampleEntry.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(sampleEntry.content.username == "User Name")
 
-            let samplePassword = try #require(decrypt(sampleEntry.content.password))
+            let samplePassword = try #require(sampleEntry.content.password)
             #expect(samplePassword == "Password")
 
             #expect(sampleEntry.content.uris?.count == 1)
@@ -519,10 +517,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #2 - "Sample Entry #2"
             let sampleEntry2 = try #require(logins.first { $0.name == "Sample Entry #2" })
-            #expect(sampleEntry2.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(sampleEntry2.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(sampleEntry2.content.username == "Michael321")
 
-            let sample2Password = try #require(decrypt(sampleEntry2.content.password))
+            let sample2Password = try #require(sampleEntry2.content.password)
             #expect(sample2Password == "12345")
 
             #expect(sampleEntry2.content.uris?.count == 1)
@@ -537,10 +535,10 @@ extension KeePassImportInteractorTests {
 
             // MARK: Login #3 - "Login z dodatkami"
             let loginZDodatkami = try #require(logins.first { $0.name == "Login z dodatkami" })
-            #expect(loginZDodatkami.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(loginZDodatkami.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(loginZDodatkami.content.username == "Batman")
 
-            let loginZPassword = try #require(decrypt(loginZDodatkami.content.password))
+            let loginZPassword = try #require(loginZDodatkami.content.password)
             #expect(loginZPassword == "lwqU3RF0vyYE088f3nYS")
 
             #expect(loginZDodatkami.content.uris == nil)

@@ -11,11 +11,11 @@ import SwiftUI
 
 @Observable
 final class ItemDetailPresenter {
-    
+
     var createdAt: String? {
         formPresenter?.createdAt
     }
-    
+
     var modifiedAt: String? {
         formPresenter?.modifiedAt
     }
@@ -27,10 +27,11 @@ final class ItemDetailPresenter {
     private let itemID: ItemID
     private let flowController: ItemDetailFlowControlling
     private let interactor: ItemDetailModuleInteracting
-    private let notificationCenter: NotificationCenter
     private let toastPresenter: ToastPresenter
     private let autoFillEnvironment: AutoFillEnvironment?
-    
+    @ObservationIgnored
+    private var storageDidChangeToken: Notifications.ObservationToken?
+
     enum Form {
         case login(LoginDetailFormPresenter)
         case secureNote(SecureNoteFormPresenter)
@@ -54,7 +55,7 @@ final class ItemDetailPresenter {
             return nil
         }
     }
-    
+
     init(
         itemID: ItemID,
         flowController: ItemDetailFlowControlling,
@@ -64,34 +65,31 @@ final class ItemDetailPresenter {
         self.itemID = itemID
         self.flowController = flowController
         self.interactor = interactor
-        self.notificationCenter = .default
         self.toastPresenter = .shared
         self.autoFillEnvironment = autoFillEnvironment
-        
-        notificationCenter.addObserver(self, selector: #selector(syncFinished), name: .webDAVStateChange, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(iCloudSyncFinished), name: .cloudRefreshLocalData, object: nil)
     }
-    
+
     deinit {
-        notificationCenter.removeObserver(self)
+        storageDidChangeToken?.cancel()
     }
 }
 
 extension ItemDetailPresenter {
-    
+
+    @MainActor
     func onAppear() {
         guard let item = interactor.fetchItem(for: itemID) else {
             flowController.close()
             return
         }
-        
+
         let configuration = ItemDetailFormConfiguration(
             flowController: flowController,
             interactor: interactor,
             toastPresenter: toastPresenter,
             autoFillEnvironment: autoFillEnvironment
         )
-        
+
         switch item {
         case .login(let item):
             form = .login(
@@ -112,6 +110,18 @@ extension ItemDetailPresenter {
         case .raw:
             fatalError("Unsupported content type")
         }
+
+        // Register synchronously so a save posted before the observer is live isn't dropped.
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
+            guard let self, message.affects([.items, .tags]) else { return }
+            self.refreshState()
+        }
+    }
+
+    func onDisappear() {
+        storageDidChangeToken?.cancel()
+        storageDidChangeToken = nil
     }
 
     func onEdit() {
@@ -124,20 +134,7 @@ extension ItemDetailPresenter {
 }
 
 private extension ItemDetailPresenter {
-    
-    @objc
-    func syncFinished(_ event: Notification) {
-        guard let e = event.userInfo?[Notification.webDAVState] as? WebDAVState, e == .synced else {
-            return
-        }
-        refreshState()
-    }
-    
-    @objc
-    func iCloudSyncFinished() {
-        refreshState()
-    }
-    
+
     func refreshState() {
         Task { @MainActor in
             formPresenter?.reload()

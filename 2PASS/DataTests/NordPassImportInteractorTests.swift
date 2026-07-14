@@ -24,7 +24,6 @@ struct NordPassImportInteractorTests {
 
         interactor = ExternalServiceImportInteractor(
             mainRepository: mockMainRepository,
-            vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
             uriInteractor: mockURIInteractor,
             paymentCardUtilityInteractor: mockPaymentCardUtilityInteractor
         )
@@ -44,15 +43,16 @@ struct NordPassImportInteractorTests {
     }
 
     @Test
-    func missingVaultThrowsWrongFormat() async throws {
+    func missingVaultStillParses() async throws {
         // GIVEN
         mockMainRepository.withSelectedVault(nil)
         let data = try loadNordPassTestData()
 
-        // WHEN/THEN
-        await #expect(throws: ExternalServiceImportError.wrongFormat) {
-            try await interactor.importService(.nordPass, content: .file(data))
-        }
+        // WHEN
+        let result = try await interactor.importService(.nordPass, content: .file(data))
+
+        // THEN - parsing no longer requires a vault; items carry the placeholder vault ID
+        #expect(!result.items.isEmpty)
     }
 
     @Test
@@ -109,8 +109,7 @@ extension NordPassImportInteractorTests {
         func importNordPassCSV() async throws {
             let interactor = ExternalServiceImportInteractor(
                 mainRepository: mockMainRepository,
-                vaultsInteractor: VaultsInteractor(mainRepository: mockMainRepository),
-                uriInteractor: uriInteractor,
+                    uriInteractor: uriInteractor,
                 paymentCardUtilityInteractor: paymentCardUtilityInteractor
             )
 
@@ -135,7 +134,7 @@ extension NordPassImportInteractorTests {
 
             // Verify all tags have correct vault ID
             for tag in result.tags {
-                #expect(tag.vaultID == mockMainRepository.selectedVault?.vaultID)
+                #expect(tag.vaultID == ExternalServiceImportInteractor.placeholderVaultID)
             }
 
             // Extract items by type
@@ -149,10 +148,10 @@ extension NordPassImportInteractorTests {
 
             // MARK: Login #1 - "Login dla Maćka"
             let loginMacka = try #require(logins.first { $0.name == "Login dla Maćka" })
-            #expect(loginMacka.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(loginMacka.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(loginMacka.content.username == "Rafael")
 
-            let loginMackaPassword = try #require(decrypt(loginMacka.content.password))
+            let loginMackaPassword = try #require(loginMacka.content.password)
             #expect(loginMackaPassword == "UXcDQuZuE9ohNoWAgnFi")
 
             #expect(loginMacka.content.uris?.count == 1)
@@ -177,10 +176,10 @@ extension NordPassImportInteractorTests {
 
             // MARK: Login #2 - "Password"
             let passwordLogin = try #require(logins.first { $0.name == "Password" })
-            #expect(passwordLogin.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(passwordLogin.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(passwordLogin.content.username == "rafols")
 
-            let passwordLoginPassword = try #require(decrypt(passwordLogin.content.password))
+            let passwordLoginPassword = try #require(passwordLogin.content.password)
             #expect(passwordLoginPassword == "y8gL676v7iyNrQWL7shE")
 
             // Primary URL + 2 additional URLs from JSON array
@@ -204,16 +203,16 @@ extension NordPassImportInteractorTests {
 
             // MARK: Credit Card - "Karta kredytowa Nordpass"
             let creditCard = try #require(cards.first { $0.name == "Karta kredytowa Nordpass" })
-            #expect(creditCard.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(creditCard.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
             #expect(creditCard.content.cardHolder == "Rafael")
 
-            let cardNumber = try #require(decrypt(creditCard.content.cardNumber))
+            let cardNumber = try #require(creditCard.content.cardNumber)
             #expect(cardNumber == "6739428148934312")
 
-            let securityCode = try #require(decrypt(creditCard.content.securityCode))
+            let securityCode = try #require(creditCard.content.securityCode)
             #expect(securityCode == "420")
 
-            let expirationDate = try #require(decrypt(creditCard.content.expirationDate))
+            let expirationDate = try #require(creditCard.content.expirationDate)
             #expect(expirationDate == "12/30")
 
             #expect(creditCard.content.cardNumberMask == "4312")
@@ -239,9 +238,9 @@ extension NordPassImportInteractorTests {
 
             // MARK: Secure Note - "Bezpieczna notatka"
             let secureNote = try #require(notes.first { $0.name == "Bezpieczna notatka" })
-            #expect(secureNote.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(secureNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-            let noteText = try #require(decrypt(secureNote.content.text))
+            let noteText = try #require(secureNote.content.text)
             #expect(noteText == "Notatka Nordpassowa")
 
             #expect(secureNote.metadata.protectionLevel == .normal)
@@ -255,9 +254,9 @@ extension NordPassImportInteractorTests {
 
             // MARK: Identity (converted to Secure Note) - "Moje dane kontaktowe (Identity)"
             let identityNote = try #require(notes.first { $0.name == "Moje dane kontaktowe (Identity)" })
-            #expect(identityNote.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(identityNote.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-            let identityText = try #require(decrypt(identityNote.content.text))
+            let identityText = try #require(identityNote.content.text)
             // Verify all identity fields are present (formatDictionary capitalizes first letter, replaces _ with space)
             let expectedIdentityText = """
                 Address 1: Szara 13
@@ -282,9 +281,9 @@ extension NordPassImportInteractorTests {
 
             // MARK: Document #1 (converted to Secure Note) - "Tożsamość (Document)"
             let docTozsamosc = try #require(notes.first { $0.name == "Tożsamość (Document)" })
-            #expect(docTozsamosc.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(docTozsamosc.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-            let docTozsamoscText = try #require(decrypt(docTozsamosc.content.text))
+            let docTozsamoscText = try #require(docTozsamosc.content.text)
             // Document has no identity fields, only custom field (hidden type) + note
             let expectedDocTozsamoscText = """
                 Ukryty tekst: Sono stelte
@@ -299,9 +298,9 @@ extension NordPassImportInteractorTests {
 
             // MARK: Document #2 (converted to Secure Note) - "Prawko (Document)"
             let docPrawko = try #require(notes.first { $0.name == "Prawko (Document)" })
-            #expect(docPrawko.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(docPrawko.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-            let docPrawkoText = try #require(decrypt(docPrawko.content.text))
+            let docPrawkoText = try #require(docPrawko.content.text)
             #expect(docPrawkoText == "Notatka do prawka")
 
             #expect(docPrawko.metadata.tagIds?.count == 1)
@@ -309,9 +308,9 @@ extension NordPassImportInteractorTests {
 
             // MARK: Document #3 (converted to Secure Note) - "Paszport (Document)"
             let docPaszport = try #require(notes.first { $0.name == "Paszport (Document)" })
-            #expect(docPaszport.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(docPaszport.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-            let docPaszportText = try #require(decrypt(docPaszport.content.text))
+            let docPaszportText = try #require(docPaszport.content.text)
             #expect(docPaszportText == "Notatka do paszportu")
 
             #expect(docPaszport.metadata.tagIds?.count == 1)
@@ -319,9 +318,9 @@ extension NordPassImportInteractorTests {
 
             // MARK: Document #4 (converted to Secure Note) - "Randomowy dokument (Document)"
             let docRandom = try #require(notes.first { $0.name == "Randomowy dokument (Document)" })
-            #expect(docRandom.vaultId == mockMainRepository.selectedVault?.vaultID)
+            #expect(docRandom.vaultId == ExternalServiceImportInteractor.placeholderVaultID)
 
-            let docRandomText = try #require(decrypt(docRandom.content.text))
+            let docRandomText = try #require(docRandom.content.text)
             #expect(docRandomText == "Coś")
 
             // No folder = no tags

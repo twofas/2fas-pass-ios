@@ -104,9 +104,7 @@ struct LoginDetailFormView: View {
             selectedField = nil
         }
         .padding(.horizontal, Spacing.l)
-        .onAppear {
-            selectedField = nil
-        }
+        .clearSelectionOnLeavingApp($selectedField)
         .onDisappear {
             presenter.onDisappear()
         }

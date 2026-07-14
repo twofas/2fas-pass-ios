@@ -7,9 +7,16 @@
 import Foundation
 import Common
 import Data
+import Backup
+
+enum VaultRecoveryFileSource: Sendable {
+    case webDAV
+    case s3
+    case localFile
+}
 
 enum VaultRecoveryData {
-    case file(ExchangeVaultVersioned)
+    case file(ExchangeVaultVersioned, source: VaultRecoveryFileSource)
     case cloud(VaultRawData)
     case localVault
 }
@@ -18,7 +25,7 @@ extension VaultRecoveryData {
 
     var vaultSeedHash: String? {
         switch self {
-        case .file(let vault):
+        case .file(let vault, _):
             vault.encryption?.seedHash
         case .cloud(let vaultData):
             vaultData.seedHash
@@ -26,10 +33,10 @@ extension VaultRecoveryData {
             nil
         }
     }
-    
+
     var vaultID: UUID? {
         switch self {
-        case .file(let vault):
+        case .file(let vault, _):
             UUID(uuidString: vault.vaultID)
         case .cloud(let vaultData):
             vaultData.vaultID

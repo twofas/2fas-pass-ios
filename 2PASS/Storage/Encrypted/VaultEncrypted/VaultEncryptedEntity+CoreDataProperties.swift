@@ -20,6 +20,7 @@ extension VaultEncryptedEntity {
     @NSManaged var updatedAt: Date
     @NSManaged var color: String?
     @NSManaged var icon: String?
+    @NSManaged var contentModificationDate: Date?
     @NSManaged var items: Set<ItemEncryptedEntity>?
 }
 
@@ -50,7 +51,8 @@ extension VaultEncryptedEntity {
             updatedAt: updatedAt,
             isEmpty: items?.isEmpty ?? true,
             color: color,
-            icon: icon
+            icon: icon,
+            contentModificationDate: contentModificationDate
         )
     }
 }

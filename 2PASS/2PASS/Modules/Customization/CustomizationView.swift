@@ -37,7 +37,19 @@ struct CustomizationView: View {
                 Text(.settingsEntryLoginClickActionDescription)
                     .settingsFooter()
             }
-            
+
+            Section {
+                Button {
+                    presenter.onChangeDefaultURIMatchRule()
+                } label: {
+                    LabeledContent(String(localized: .settingsEntryDefaultUriMatchRule), value: presenter.selectedDefaultURIMatchRuleDescription)
+                        .labeledContentStyle(.navigationSettings)
+                }
+            } footer: {
+                Text(.settingsEntryDefaultUriMatchRuleDescription)
+                    .settingsFooter()
+            }
+
             Section {
                 Button {
                     presenter.onManageTags()

@@ -8,27 +8,25 @@ import SwiftUI
 import CommonUI
 
 struct KnownBrowsersView: View {
-    
+
     @State
     var presenter: KnownBrowsersPresenter
-    
+
     @Environment(\.colorScheme)
     private var colorScheme
-    
+
     var body: some View {
         SettingsDetailsForm(.knownBrowsersTitle) {
             if presenter.isEmptyList == false {
                 Section {
                     ForEach(presenter.browsers) { browser in
-                        KnownBrowsersCell(data: browser, identicon: presenter.identicon(for: browser))
-                            .swipeActions(edge: .trailing) {
-                                Button {
-                                    presenter.onDelete(browser)
-                                } label: {
-                                    Label(.knownBrowserDeleteButton, systemImage: "trash")
-                                }
-                                .tint(.danger500)
+                        KnownBrowsersCell(
+                            data: browser,
+                            identicon: presenter.identicon(for: browser),
+                            onDelete: {
+                                presenter.onDelete(browser)
                             }
+                        )
                     }
                 } header: {
                     Text(.knownBrowsersHeader)
@@ -36,7 +34,7 @@ struct KnownBrowsersView: View {
                     Text(.knownBrowsersDescription)
                         .settingsFooter()
                 }
-                .listRowInsets(EdgeInsets(Spacing.s))
+                .listRowInsets(EdgeInsets(top: Spacing.s, leading: Spacing.s, bottom: Spacing.s, trailing: Spacing.l))
             }
         }
         .overlay {

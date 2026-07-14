@@ -62,6 +62,9 @@ final class MockMainRepository: MainRepository {
     private var stubbedIsMainAppProcess: Bool = true
     var isMainAppProcess: Bool { stubbedIsMainAppProcess }
 
+    private var stubbedIsE2EConnectCameraForced: Bool = false
+    var isE2EConnectCameraForced: Bool { stubbedIsE2EConnectCameraForced }
+
     @discardableResult
     func withIsMainAppProcess(_ value: Bool) -> Self {
         stubbedIsMainAppProcess = value
@@ -258,6 +261,25 @@ final class MockMainRepository: MainRepository {
     }
 
     func clearLastAppUpdatePromptDate() {
+        recordCall()
+    }
+
+    private var stubbedLastAppReviewPromptDate: Date?
+    var lastAppReviewPromptDate: Date? { stubbedLastAppReviewPromptDate }
+
+    @discardableResult
+    func withLastAppReviewPromptDate(_ value: Date?) -> Self {
+        stubbedLastAppReviewPromptDate = value
+        return self
+    }
+
+    private(set) var capturedLastAppReviewPromptDate: Date?
+    func setLastAppReviewPromptDate(_ date: Date) {
+        recordCall()
+        capturedLastAppReviewPromptDate = date
+    }
+
+    func clearLastAppReviewPromptDate() {
         recordCall()
     }
 
@@ -499,7 +521,7 @@ final class MockMainRepository: MainRepository {
         recordCall()
         capturedLastKnownAppVersion = version
     }
-    
+
     private(set) var didMigrateLegacyValuesToSharedDefaults = false
     func migrateLegacyValuesToSharedDefaults() {
         recordCall()
@@ -562,6 +584,10 @@ final class MockMainRepository: MainRepository {
         capturedDateOfFirstRun = date
     }
 
+    func clearDateOfFirstRun() {
+        recordCall()
+    }
+
     private(set) var capturedActiveSearchEnabled: Bool?
     func setActiveSearchEnabled(_ enabled: Bool) {
         recordCall()
@@ -592,15 +618,6 @@ final class MockMainRepository: MainRepository {
     @discardableResult
     func withJsonDecoder(_ value: JSONDecoder) -> Self {
         stubbedJsonDecoder = value
-        return self
-    }
-
-    private var stubbedCloudSync: CloudSync = CloudSync()
-    var cloudSync: CloudSync { stubbedCloudSync }
-
-    @discardableResult
-    func withCloudSync(_ value: CloudSync) -> Self {
-        stubbedCloudSync = value
         return self
     }
 
@@ -2086,6 +2103,16 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func markVaultContentModified(vaultID: VaultID) {
+        recordCall()
+    }
+
+    var backfillVaultContentModificationDateVaultIDs: [VaultID] = []
+    func backfillVaultContentModificationDate(vaultID: VaultID) {
+        recordCall()
+        backfillVaultContentModificationDateVaultIDs.append(vaultID)
+    }
+
     func deleteAllVaults() {
         recordCall()
     }
@@ -2296,84 +2323,6 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    // MARK: Cloud
-
-    private var stubbedIsCloudBackupConnected: Bool = false
-    var isCloudBackupConnected: Bool { stubbedIsCloudBackupConnected }
-
-    @discardableResult
-    func withIsCloudBackupConnected(_ value: Bool) -> Self {
-        stubbedIsCloudBackupConnected = value
-        return self
-    }
-
-    private var stubbedCloudCurrentState: CloudState = .unknown
-    var cloudCurrentState: CloudState { stubbedCloudCurrentState }
-
-    @discardableResult
-    func withCloudCurrentState(_ value: CloudState) -> Self {
-        stubbedCloudCurrentState = value
-        return self
-    }
-
-    func enableCloudBackup() {
-        recordCall()
-    }
-
-    func disableCloudBackup() {
-        recordCall()
-    }
-
-    func clearBackup() {
-        recordCall()
-    }
-
-    func synchronizeBackup(fromPush: Bool) {
-        recordCall()
-    }
-
-    private var stubbedCloudListVaultsToRecover: (@escaping (Result<[VaultRawData], Error>) -> Void) -> Void = { $0(.success([])) }
-    func cloudListVaultsToRecover(completion: @escaping (Result<[VaultRawData], Error>) -> Void) {
-        recordCall()
-        stubbedCloudListVaultsToRecover(completion)
-    }
-
-    @discardableResult
-    func withCloudListVaultsToRecover(_ handler: @escaping (@escaping (Result<[VaultRawData], Error>) -> Void) -> Void) -> Self {
-        stubbedCloudListVaultsToRecover = handler
-        return self
-    }
-
-    private var stubbedCloudDeleteVault: (VaultID) async throws -> Void = { _ in }
-    func cloudDeleteVault(id: VaultID) async throws {
-        recordCall()
-        try await stubbedCloudDeleteVault(id)
-    }
-
-    @discardableResult
-    func withCloudDeleteVault(_ handler: @escaping (VaultID) async throws -> Void) -> Self {
-        stubbedCloudDeleteVault = handler
-        return self
-    }
-
-    private var stubbedLastSuccessCloudSyncDate: Date?
-    var lastSuccessCloudSyncDate: Date? { stubbedLastSuccessCloudSyncDate }
-
-    @discardableResult
-    func withLastSuccessCloudSyncDate(_ value: Date?) -> Self {
-        stubbedLastSuccessCloudSyncDate = value
-        return self
-    }
-
-    private(set) var capturedLastSuccessCloudSyncDate: Date?
-    func setLastSuccessCloudSyncDate(_ date: Date) {
-        recordCall()
-        capturedLastSuccessCloudSyncDate = date
-    }
-
-    func clearLastSuccessCloudSyncDate() {
-        recordCall()
-    }
 
     // MARK: Cloud Cache
 
@@ -2632,15 +2581,6 @@ final class MockMainRepository: MainRepository {
 
     // MARK: System
 
-    var stubbedSyncHasError: Bool = false
-    var syncHasError: Bool { stubbedSyncHasError }
-
-    var capturedSyncHasError: Bool?
-    func setSyncHasError(_ value: Bool) {
-        recordCall()
-        capturedSyncHasError = value
-    }
-
     func copyToClipboard(_ str: String) {
         recordCall()
     }
@@ -2745,152 +2685,83 @@ final class MockMainRepository: MainRepository {
 
     // MARK: WebDAV Backup
 
-    var stubbedWebDAVGetIndex: Result<Data, BackupWebDAVSyncError> = .success(Data())
-    func webDAVGetIndex(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
+    var stubbedBackupConfigs: [BackupConfig] = []
+
+    func loadBackupConfigs() -> [BackupConfig] {
         recordCall()
-        completion(stubbedWebDAVGetIndex)
+        return stubbedBackupConfigs
     }
 
-    var stubbedWebDAVGetLock: Result<Data, BackupWebDAVSyncError> = .success(Data())
-    func webDAVGetLock(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
+    var capturedSaveBackupConfigs: [BackupConfig]?
+    func saveBackupConfigs(_ configs: [BackupConfig]) {
         recordCall()
-        completion(stubbedWebDAVGetLock)
+        capturedSaveBackupConfigs = configs
+        stubbedBackupConfigs = configs
     }
 
-    var stubbedWebDAVGetVault: Result<Data, BackupWebDAVSyncError> = .success(Data())
-    func webDAVGetVault(completion: @escaping (Result<Data, BackupWebDAVSyncError>) -> Void) {
+    var stubbedLastSyncDates: [BackupConfig.ID: Date] = [:]
+
+    func loadLastSyncDates() -> [BackupConfig.ID: Date] {
         recordCall()
-        completion(stubbedWebDAVGetVault)
+        return stubbedLastSyncDates
     }
 
-    var stubbedWebDAVWriteIndex: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteIndex(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
+    var capturedSaveLastSyncDates: [BackupConfig.ID: Date]?
+    func saveLastSyncDates(_ dates: [BackupConfig.ID: Date]) {
         recordCall()
-        completion(stubbedWebDAVWriteIndex)
+        capturedSaveLastSyncDates = dates
+        stubbedLastSyncDates = dates
     }
 
-    var stubbedWebDAVWriteLock: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteLock(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
+    var stubbedLegacyWebDAVSavedConfig: BackupWebDAVConfig?
+    var legacyWebDAVSavedConfig: BackupWebDAVConfig? {
         recordCall()
-        completion(stubbedWebDAVWriteLock)
+        return stubbedLegacyWebDAVSavedConfig
     }
 
-    var stubbedWebDAVWriteVault: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
+    func clearLegacyWebDAVSavedConfig() {
         recordCall()
-        completion(stubbedWebDAVWriteVault)
+        stubbedLegacyWebDAVSavedConfig = nil
     }
 
-    var stubbedWebDAVWriteDecryptedVault: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVWriteDecryptedVault(fileContents: Data, completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
+    var migrateLegacyBackupConfigsCallCount = 0
+    func migrateLegacyBackupConfigs() {
         recordCall()
-        completion(stubbedWebDAVWriteDecryptedVault)
+        migrateLegacyBackupConfigsCallCount += 1
     }
 
-    var stubbedWebDAVMove: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVMove(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
+    var stubbedCachedS3RecoveryConfig: S3ServiceConfig?
+    var cachedS3RecoveryConfig: S3ServiceConfig? {
         recordCall()
-        completion(stubbedWebDAVMove)
+        return stubbedCachedS3RecoveryConfig
     }
 
-    var stubbedWebDAVDeleteLock: Result<Void, BackupWebDAVSyncError> = .success(())
-    func webDAVDeleteLock(completion: @escaping (Result<Void, BackupWebDAVSyncError>) -> Void) {
+    var stubbedCachedWebDAVRecoveryConfig: BackupWebDAVConfig?
+    var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? {
         recordCall()
-        completion(stubbedWebDAVDeleteLock)
+        return stubbedCachedWebDAVRecoveryConfig
     }
 
-    func webDAVSetBackupConfig(_ config: BackupWebDAVConfig) {
+    var capturedSaveCachedS3RecoveryConfig: S3ServiceConfig?
+    func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig) {
         recordCall()
+        capturedSaveCachedS3RecoveryConfig = config
+        stubbedCachedS3RecoveryConfig = config
     }
 
-    var stubbedWebDAVSavedConfig: BackupWebDAVConfig?
-    var webDAVSavedConfig: BackupWebDAVConfig? { stubbedWebDAVSavedConfig }
-
-    var capturedWebDAVSavedConfig: BackupWebDAVConfig?
-    func webDAVSaveSavedConfig(_ config: BackupWebDAVConfig) {
+    var capturedSaveCachedWebDAVRecoveryConfig: BackupWebDAVConfig?
+    func saveCachedWebDAVRecoveryConfig(_ config: BackupWebDAVConfig) {
         recordCall()
-        capturedWebDAVSavedConfig = config
+        capturedSaveCachedWebDAVRecoveryConfig = config
+        stubbedCachedWebDAVRecoveryConfig = config
     }
 
-    var stubbedWebDAVEncodeLock: Data?
-    func webDAVEncodeLock(timestamp: Int, deviceId: UUID) -> Data? {
+    var didClearCachedRecoveryConfigs: Bool = false
+    func clearCachedRecoveryConfigs() {
         recordCall()
-        return stubbedWebDAVEncodeLock
-    }
-
-    var stubbedWebDAVDecodeLock: (timestamp: Int, deviceId: UUID)?
-    func webDAVDecodeLock(_ data: Data) -> (timestamp: Int, deviceId: UUID)? {
-        recordCall()
-        return stubbedWebDAVDecodeLock
-    }
-
-    var stubbedWebDAVEncodeIndex: Data?
-    func webDAVEncodeIndex(_ index: WebDAVIndex) -> Data? {
-        recordCall()
-        return stubbedWebDAVEncodeIndex
-    }
-
-    var stubbedWebDAVDecodeIndex: WebDAVIndex?
-    func webDAVDecodeIndex(_ data: Data) -> WebDAVIndex? {
-        recordCall()
-        return stubbedWebDAVDecodeIndex
-    }
-
-    func webDAVClearConfig() {
-        recordCall()
-    }
-
-    var stubbedWebDAVSeedHash: String?
-    func webDAVSeedHash(forVault vaultID: VaultID) -> String? { stubbedWebDAVSeedHash }
-
-    var stubbedWebDAVIsConnected: Bool = false
-    var webDAVIsConnected: Bool { stubbedWebDAVIsConnected }
-
-    var capturedWebDAVIsConnected: Bool?
-    func webDAVSetIsConnected(_ isConnected: Bool) {
-        recordCall()
-        capturedWebDAVIsConnected = isConnected
-    }
-
-    func webDAVClearIsConnected() {
-        recordCall()
-    }
-
-    var stubbedWebDAVHasLocalChanges: Bool = false
-    var webDAVHasLocalChanges: Bool { stubbedWebDAVHasLocalChanges }
-
-    func webDAVSetHasLocalChanges() {
-        recordCall()
-    }
-
-    func webDAVClearHasLocalChanges() {
-        recordCall()
-    }
-
-    var stubbedWebDAVState: WebDAVState = .idle
-    var webDAVState: WebDAVState { stubbedWebDAVState }
-
-    var capturedWebDAVState: WebDAVState?
-    func webDAVSetState(_ state: WebDAVState) {
-        recordCall()
-        capturedWebDAVState = state
-    }
-
-    func webDAVClearState() {
-        recordCall()
-    }
-
-    var stubbedWebDAVLastSync: WebDAVLock?
-    var webDAVLastSync: WebDAVLock? { stubbedWebDAVLastSync }
-
-    var capturedWebDAVLastSync: WebDAVLock?
-    func webDAVSetLastSync(_ lastSync: WebDAVLock) {
-        recordCall()
-        capturedWebDAVLastSync = lastSync
-    }
-
-    func webDAVClearLastSync() {
-        recordCall()
+        didClearCachedRecoveryConfigs = true
+        stubbedCachedS3RecoveryConfig = nil
+        stubbedCachedWebDAVRecoveryConfig = nil
     }
 
     var stubbedWebDAVWriteDecryptedCopy: Bool = false
@@ -2902,13 +2773,38 @@ final class MockMainRepository: MainRepository {
         capturedWebDAVWriteDecryptedCopy = writeDecryptedCopy
     }
 
-    var stubbedWebDAVAwaitsVaultOverrideAfterPasswordChange: Bool = false
-    var webDAVAwaitsVaultOverrideAfterPasswordChange: Bool { stubbedWebDAVAwaitsVaultOverrideAfterPasswordChange }
+    var stubbedVaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> = []
+    var vaultOverrideAwaitingConfigIDs: Set<BackupConfig.ID> { stubbedVaultOverrideAwaitingConfigIDs }
 
-    var capturedWebDAVAwaitsVaultOverrideAfterPasswordChange: Bool?
-    func setWebDAVAwaitsVaultOverrideAfterPasswordChange(_ value: Bool) {
+    var capturedMarkVaultOverrideAwaiting: Set<BackupConfig.ID>?
+    func markVaultOverrideAwaiting(configIDs: Set<BackupConfig.ID>) {
         recordCall()
-        capturedWebDAVAwaitsVaultOverrideAfterPasswordChange = value
+        capturedMarkVaultOverrideAwaiting = configIDs
+        stubbedVaultOverrideAwaitingConfigIDs.formUnion(configIDs)
+    }
+
+    var capturedClearVaultOverrideAwaiting: BackupConfig.ID?
+    func clearVaultOverrideAwaiting(configID: BackupConfig.ID) {
+        recordCall()
+        capturedClearVaultOverrideAwaiting = configID
+        stubbedVaultOverrideAwaitingConfigIDs.remove(configID)
+    }
+
+    var stubbedDeviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> = []
+    var deviceRegistrationAwaitingConfigIDs: Set<BackupConfig.ID> { stubbedDeviceRegistrationAwaitingConfigIDs }
+
+    var capturedMarkDeviceRegistrationAwaiting: Set<BackupConfig.ID>?
+    func markDeviceRegistrationAwaiting(configIDs: Set<BackupConfig.ID>) {
+        recordCall()
+        capturedMarkDeviceRegistrationAwaiting = configIDs
+        stubbedDeviceRegistrationAwaitingConfigIDs.formUnion(configIDs)
+    }
+
+    var capturedClearDeviceRegistrationAwaiting: BackupConfig.ID?
+    func clearDeviceRegistrationAwaiting(configID: BackupConfig.ID) {
+        recordCall()
+        capturedClearDeviceRegistrationAwaiting = configID
+        stubbedDeviceRegistrationAwaitingConfigIDs.remove(configID)
     }
 
     // MARK: 2FAS Web Service
@@ -3021,6 +2917,24 @@ final class MockMainRepository: MainRepository {
         return stubbedURICache[originalUri]
     }
 
+    // MARK: Backup Sync Container
+
+    var stubbedBackupSyncContainer: BackupSyncContainer = BackupSyncContainer()
+    var backupSyncContainer: BackupSyncContainer {
+        recordCall()
+        return stubbedBackupSyncContainer
+    }
+
+    var stubbedDefaultURIMatchRule: PasswordURI.Match = .domain
+    var defaultURIMatchRule: PasswordURI.Match { stubbedDefaultURIMatchRule }
+
+    var capturedDefaultURIMatchRule: PasswordURI.Match?
+    func setDefaultURIMatchRule(_ rule: PasswordURI.Match) {
+        recordCall()
+        capturedDefaultURIMatchRule = rule
+        stubbedDefaultURIMatchRule = rule
+    }
+
     // MARK: Metadata key derivation
 
     private var stubbedGenerateMetadataKey: (String) -> String? = { _ in nil }
@@ -3073,8 +2987,10 @@ final class MockMainRepository: MainRepository {
     private(set) var stubbedScreenCaptureAllowedUntil: Date?
     var screenCaptureAllowedUntil: Date? { stubbedScreenCaptureAllowedUntil }
 
+    var capturedScreenCaptureAllowedUntil: Date?
     func setScreenCaptureAllowedUntil(_ date: Date) {
         recordCall()
+        capturedScreenCaptureAllowedUntil = date
         stubbedScreenCaptureAllowedUntil = date
     }
 
