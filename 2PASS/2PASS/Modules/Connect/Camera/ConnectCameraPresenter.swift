@@ -9,24 +9,18 @@ import Data
 import Common
 import CommonUI
 
-enum ConnectCameraDestination: Identifiable {
-    case connecting(ConnectSession, onScanAgain: Callback)
-
-    var id: String {
-        switch self {
-        case .connecting(let session, _):
-            "connecting_\(session.sessionId)"
-        }
-    }
-}
-
 @Observable
 final class ConnectCameraPresenter {
-    var destination: ConnectCameraDestination?
     var showInvalidCodeError = false
 
-    private let onScanAgain: Callback
-    private let _onScannedQRCode: Callback
+    /// Bumped on every successfully verified scan; drives the selection haptic in the camera view.
+    private(set) var scanFeedbackTrigger = 0
+
+    /// Hands the scanned session to the host, which owns the acceptance-sheet presentation for both
+    /// layouts (it dismisses the split's Connect modal or switches off the Connect tab first, then
+    /// presents the sheet from a parent that survives).
+    private let onScannedSession: (ConnectSession) -> Void
+
     private let scanDebouncer = ScanDebouncer()
 
     private let interactor: ConnectCameraModuleInteracting
@@ -35,10 +29,9 @@ final class ConnectCameraPresenter {
     @ObservationIgnored private var e2eObservationTask: Task<Void, Never>?
 #endif
 
-    init(interactor: ConnectCameraModuleInteracting, onScannedQRCode: @escaping Callback, onScanAgain: @escaping Callback) {
+    init(interactor: ConnectCameraModuleInteracting, onScannedSession: @escaping (ConnectSession) -> Void) {
         self.interactor = interactor
-        self._onScannedQRCode = onScannedQRCode
-        self.onScanAgain = onScanAgain
+        self.onScannedSession = onScannedSession
     }
 
 #if DEBUG
@@ -79,8 +72,8 @@ final class ConnectCameraPresenter {
             }
 
             self.showInvalidCodeError = false
-            self.destination = .connecting(session, onScanAgain: self.onScanAgain)
-            self._onScannedQRCode()
+            self.scanFeedbackTrigger += 1
+            self.onScannedSession(session)
         }
     }
 

@@ -26,8 +26,7 @@ struct ConnectCameraView: View {
                 presenter.onCodeLost()
             }
         )
-        .sensoryFeedback(.selection, trigger: presenter.destination?.id)
-        .router(router: ConnectCameraRouter(), destination: $presenter.destination)
+        .sensoryFeedback(.selection, trigger: presenter.scanFeedbackTrigger)
         .onAppear {
             presenter.onAppear()
         }
@@ -40,7 +39,6 @@ struct ConnectCameraView: View {
 #Preview {
     ConnectCameraView(presenter: .init(
         interactor: ModuleInteractorFactory.shared.connectCameraModuleInteractor(),
-        onScannedQRCode: {},
-        onScanAgain: {}
+        onScannedSession: { _ in }
     ))
 }

@@ -31,7 +31,6 @@ enum MasterPasswordDestination: RouterDestination {
 
 private struct Constants {
     static let saveDelayForHideKeyboard: Duration = .milliseconds(500)
-    static let pushDelayAfterConfirm: Duration = .milliseconds(600) // Starting a push after a modal dismiss sets the destination to nil.
 }
 
 @Observable
@@ -107,9 +106,8 @@ extension MasterPasswordPresenter {
         case .change:
             destination = .confirmChange(onConfirm: { [weak self] in
                 self?.destination = nil
-                
+
                 Task { @MainActor in
-                    try await Task.sleep(for: Constants.pushDelayAfterConfirm)
                     self?.performChangePassword()
                 }
             })

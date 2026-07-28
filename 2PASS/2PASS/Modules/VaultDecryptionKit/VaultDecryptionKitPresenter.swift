@@ -75,7 +75,6 @@ final class VaultDecryptionKitPresenter {
         switch kind {
         case .onboarding:
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(700))
                 isPDFSaving = false
                 destination = .setupComplete
             }

@@ -11,11 +11,44 @@ protocol MainViewControlling: AnyObject {
     func hideBadge()
 }
 
+/// A top-level Main destination that exists both as a tab (narrow layout) and as a modal section over
+/// the split (wide layout). Passwords is the split's base content, so it has no section — the absence
+/// of a section (`nil`) maps to the Passwords tab.
+enum MainSection {
+    case connect
+    case settings
+}
+
 final class MainViewController: UITabBarController {
-    var presenter: MainPresenter!
+    /// Optional because this tab bar also serves as the split view's `.compact` column, where the
+    /// split (not the tab bar) owns the presenter and forwards lifecycle. Only set it when the tab
+    /// bar is itself the presenter-driven root.
+    var presenter: MainPresenter?
     
-    private let badgeIndex: Int = 2
+    /// Single owner of the section → tab slot mapping. The host coordinators swap their placeholder
+    /// and real controllers by these indices, so a tab reorder only ever happens here.
+    static let passwordsTabIndex: Int = 0
+    static let connectTabIndex: Int = 1
+    static let settingsTabIndex: Int = 2
     private let badge = "1"
+
+    /// Selects the tab matching `section`; `nil` selects the Passwords tab (the split's base content).
+    func select(_ section: MainSection?) {
+        switch section {
+        case .none: selectedIndex = Self.passwordsTabIndex
+        case .connect: selectedIndex = Self.connectTabIndex
+        case .settings: selectedIndex = Self.settingsTabIndex
+        }
+    }
+
+    /// The section the selected tab maps to, or `nil` when the Passwords tab is selected.
+    var selectedSection: MainSection? {
+        switch selectedIndex {
+        case Self.connectTabIndex: return .connect
+        case Self.settingsTabIndex: return .settings
+        default: return nil
+        }
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -33,12 +66,12 @@ final class MainViewController: UITabBarController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        presenter.viewDidAppear()
+        presenter?.viewDidAppear()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        presenter.viewWillDisappear()
+        presenter?.viewWillDisappear()
     }
     
     private func changeStyling() {
@@ -84,10 +117,10 @@ final class MainViewController: UITabBarController {
 
 extension MainViewController: MainViewControlling {
     func showBadge() {
-        viewControllers?[safe: badgeIndex]?.tabBarItem.badgeValue = badge
+        viewControllers?[safe: Self.settingsTabIndex]?.tabBarItem.badgeValue = badge
     }
-    
+
     func hideBadge() {
-        viewControllers?[safe: badgeIndex]?.tabBarItem.badgeValue = nil
+        viewControllers?[safe: Self.settingsTabIndex]?.tabBarItem.badgeValue = nil
     }
 }

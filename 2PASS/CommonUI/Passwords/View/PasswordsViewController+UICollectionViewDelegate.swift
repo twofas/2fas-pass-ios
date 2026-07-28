@@ -11,19 +11,16 @@ extension PasswordsViewController: UICollectionViewDelegate {
     // MARK: - Scroll View Delegate
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        // Only the standalone list installs the inline picker; the split's list column has none.
         guard let contentTypePicker else { return }
 
-        if UIDevice.isiPad {
-            contentTypePicker.alpha = presenter.showContentTypePicker ? 1 : 0
-        } else {
-            let offset = scrollView.adjustedContentInset.top + scrollView.contentOffset.y
-            setContentTypePickerOffset(min(0, -offset))
-            contentTypePicker.alpha = presenter.showContentTypePicker ? (1 - (offset / contentTypePicker.frame.height)) : 0
-        }
+        let offset = scrollView.adjustedContentInset.top + scrollView.contentOffset.y
+        setContentTypePickerOffset(min(0, -offset))
+        contentTypePicker.alpha = presenter.showContentTypePicker ? (1 - (offset / contentTypePicker.frame.height)) : 0
     }
-    
+
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        guard presenter.showContentTypePicker, UIDevice.isiPad == false else { return }
+        guard presenter.showContentTypePicker else { return }
         guard let contentTypePicker else { return }
         
         let topInset = -scrollView.adjustedContentInset.top
@@ -43,6 +40,7 @@ extension PasswordsViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView.isEditing {
             updateSelectionUI()
+            persistSelection()
         } else {
             collectionView.deselectItem(at: indexPath, animated: false)
             presenter.onDidSelectAt(indexPath)
@@ -52,6 +50,7 @@ extension PasswordsViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         if collectionView.isEditing {
             updateSelectionUI()
+            persistSelection()
         }
     }
     

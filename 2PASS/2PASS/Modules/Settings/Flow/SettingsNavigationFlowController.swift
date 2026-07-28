@@ -22,14 +22,22 @@ final class SettingsNavigationFlowController: NavigationFlowController {
         let flowController = SettingsNavigationFlowController()
         flowController.parent = parent
 
-        let settingsViewController = UIHostingController(rootView: SettingsRouter.buildView())
+        let settingsViewController = UIHostingController(rootView: SettingsRouter.buildView(usesSplitLayout: false).ignoresSafeArea())
         settingsViewController.tabBarItem = UITabBarItem(
             title: String(localized: .commonSettings),
             image: UIImage(systemName: "gear"),
             selectedImage: UIImage(systemName: "gear")
         )
-        
+
         viewController.addTab(settingsViewController)
+    }
+
+    /// iPad: builds the Settings root view controller for presenting modally.
+    static func makeRootViewController(
+        parent: SettingsNavigationFlowControllerParent,
+        onClose: (() -> Void)? = nil
+    ) -> UIViewController {
+        UIHostingController(rootView: SettingsRouter.buildView(onClose: onClose))
     }
 }
 

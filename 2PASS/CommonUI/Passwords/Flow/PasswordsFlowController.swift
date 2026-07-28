@@ -9,14 +9,32 @@ import Common
 import SwiftUI
 
 public protocol PasswordsFlowControllerParent: AnyObject {
+    var isDetailColumnVisible: Bool { get }
+
+    /// The item shown in the currently hosted detail (split column or pushed onto the list nav),
+    /// or `nil` when none is alive. Lets the presenter reconcile its persisted selection against
+    /// the detail's real lifetime — a back-swipe pop leaves no other trace. `nil` where details
+    /// aren't tracked (AutoFill).
+    var openDetailItemID: ItemID? { get }
+
     func passwordsToItemDetail(itemID: ItemID)
     func selectItem(id: ItemID, contentType: ItemContentType)
+    func clearDetailSelection()
+    func showMultiselectDetail(selectedCount: Int)
+    func showEmptyVaultDetail()
     func cancel()
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
+
+    /// Restores `phrase` into the split's detail-column search bar (no-op where the list owns its own
+    /// search bar). Lets a phrase set in the other layout survive a layout switch.
+    func restoreItemsSearchPhrase(_ phrase: String?)
 }
 
 protocol PasswordsFlowControlling: AnyObject {
+    var isDetailColumnVisible: Bool { get }
+    var openDetailItemID: ItemID? { get }
+
     func toContentTypeSelection(sourceItem: UIBarButtonItem?)
     func toEditItem(itemID: ItemID)
     func toItemDetail(itemID: ItemID)
@@ -26,10 +44,15 @@ protocol PasswordsFlowControlling: AnyObject {
     func toBulkTagsSelection(selectedItems: [ItemData])
 
     func selectItem(id: ItemID, contentType: ItemContentType)
+    func clearDetailSelection()
+    func showMultiselectDetail(selectedCount: Int)
+    func showEmptyVaultDetail()
     func cancel()
 
     func toQuickSetup()
     func toPremiumPlanPrompt(itemsLimit: Int)
+
+    func restoreItemsSearchPhrase(_ phrase: String?)
 
     @MainActor
     func toConfirmDelete() async -> Bool
@@ -47,20 +70,24 @@ public final class PasswordsFlowController: FlowController {
     public static func setAsRoot(
         on navigationController: UINavigationController,
         parent: PasswordsFlowControllerParent,
-        autoFillEnvironment: AutoFillEnvironment? = nil
+        autoFillEnvironment: AutoFillEnvironment? = nil,
+        filterState: PasswordsFilterState = PasswordsFilterState(),
+        layout: PasswordsListLayout = .standalone
     ) {
         let view = PasswordsViewController()
         let flowController = PasswordsFlowController(viewController: view)
         flowController.parent = parent
         flowController.autoFillEnvironment = autoFillEnvironment
-        
+
         let interactor = ModuleInteractorFactory.shared.passwordInteractor()
-        
+
         let presenter = PasswordsPresenter(
             autoFillEnvironment: autoFillEnvironment,
             flowController: flowController,
-            interactor: interactor
+            interactor: interactor,
+            filterState: filterState
         )
+        view.listLayout = layout
         view.presenter = presenter
         presenter.view = view
 
@@ -69,6 +96,14 @@ public final class PasswordsFlowController: FlowController {
 }
 
 extension PasswordsFlowController: PasswordsFlowControlling {
+
+    var isDetailColumnVisible: Bool {
+        parent?.isDetailColumnVisible ?? false
+    }
+
+    var openDetailItemID: ItemID? {
+        parent?.openDetailItemID
+    }
 
     func toContentTypeSelection(sourceItem: UIBarButtonItem?) {
         if shouldCreateLoginDirectly {
@@ -108,10 +143,15 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     
     func toBulkProtectionLevelSelection(selectedItems: [ItemData]) {
         bulkProtectionLevelItemIDs = selectedItems.map(\.id)
+        // The split column reports a compact size class, but the sheet is still presented as a form
+        // sheet, so it should match the regular-width layout rather than the compact preferred height.
+        let prefersDefaultSheetSize = viewController.traitCollection.horizontalSizeClass == .regular
+            || viewController.listLayout == .splitColumn
         BulkProtectionLevelFlowController.present(
             on: viewController,
             parent: self,
-            selectedItems: selectedItems
+            selectedItems: selectedItems,
+            prefersDefaultSheetSize: prefersDefaultSheetSize
         )
     }
 
@@ -127,7 +167,23 @@ extension PasswordsFlowController: PasswordsFlowControlling {
     func selectItem(id: ItemID, contentType: ItemContentType) {
         parent?.selectItem(id: id, contentType: contentType)
     }
-    
+
+    func clearDetailSelection() {
+        parent?.clearDetailSelection()
+    }
+
+    func showMultiselectDetail(selectedCount: Int) {
+        parent?.showMultiselectDetail(selectedCount: selectedCount)
+    }
+
+    func showEmptyVaultDetail() {
+        parent?.showEmptyVaultDetail()
+    }
+
+    func restoreItemsSearchPhrase(_ phrase: String?) {
+        parent?.restoreItemsSearchPhrase(phrase)
+    }
+
     func cancel() {
         parent?.cancel()
     }

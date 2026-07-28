@@ -28,7 +28,6 @@ enum AppSecurityRouteDestination: RouterDestination {
 }
 
 private struct Constants {
-    static let pushDelayAfterCurrentPassword: Duration = .milliseconds(600) // Starting a push after a modal dismiss sets the destination to nil.
     static let enablingBiometryDelayAfterCurrentPassword: Duration = .milliseconds(600)
 }
 
@@ -125,7 +124,6 @@ extension AppSecurityPresenter {
                     self?.destination = nil
                     
                     Task { @MainActor in
-                        try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
                         self?.showLimitedOfFailedAttemptsPicker()
                     }
                 })
@@ -148,7 +146,6 @@ extension AppSecurityPresenter {
             self?.destination = nil
             
             Task { @MainActor in
-                try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
                 self?.destination = .changePassword(onResult: { _ in
                     self?.interactor.clearEncryptionData()
                     self?.destination = nil
@@ -171,7 +168,6 @@ extension AppSecurityPresenter {
                         self?.destination = nil
 
                         Task { @MainActor in
-                            try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
                             self?.performEnableScreenCapture()
                         }
                     }
@@ -197,7 +193,6 @@ extension AppSecurityPresenter {
                     
                     if self?.interactor.userLoggedIn() == true {
                         Task { @MainActor in
-                            try await Task.sleep(for: Constants.pushDelayAfterCurrentPassword)
                             self?.showVaultDecryptionKit()
                         }
                     } else {

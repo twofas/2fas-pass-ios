@@ -26,6 +26,8 @@ struct StepView<Title, Accesssory, Footer>: View where Title: View, Accesssory: 
     
     private var completed: Bool
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(@ViewBuilder title: () -> Title, subtitle: Text, @ViewBuilder accessory: () -> Accesssory, @ViewBuilder footer: () -> Footer) {
         self.title = title()
         self.subtitle = subtitle
@@ -64,7 +66,7 @@ struct StepView<Title, Accesssory, Footer>: View where Title: View, Accesssory: 
         .padding(Spacing.l)
         .background {
             RoundedRectangle(cornerRadius: Constants.backgroundCornerRadius)
-                .foregroundStyle(.neutral50)
+                .foregroundStyle(colorScheme == .dark ? .neutral100 : .neutral50)
                 .opacity(completed ? Constants.backgroundCompletedOpacity : 1)
         }
         .animation(.easeInOut(duration: Constants.completedAnimationDuration).delay(Constants.completedAnimationDelay), value: completed)

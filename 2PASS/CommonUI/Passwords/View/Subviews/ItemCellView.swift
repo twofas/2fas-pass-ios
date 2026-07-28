@@ -12,12 +12,29 @@ private struct Constants {
     static let maxTagIndicatorsCount = 3
     static let tagIndicatorBorderWidth: CGFloat = 2
     static let tagIndicatorTotalSize = ItemTagColorMetrics.small.size + tagIndicatorBorderWidth * 2
+    /// Rounded, inset selection highlight used in the iPad split layout.
+    static let selectedCornerRadius: CGFloat = 20
+    static let selectedBackgroundHorizontalInset: CGFloat = Spacing.s
+    static let selectedBackgroundVerticalInset: CGFloat = 0
+    static let multiselectReservedWidth: CGFloat = 28
+    static let multiselectIndicatorSize: CGFloat = 22
+    static let multiselectCheckmarkSize: CGFloat = 13
 }
 
 class ItemCellView: UICollectionViewListCell {
 
     var menuAction: ((PasswordCellMenu, ItemID, URL?) -> Void)?
     var normalizeURI: (String) -> URL? = { _ in nil }
+
+    /// When `true`, the selected state uses a rounded, inset highlight (the iPad split layout, where
+    /// selection persists to mark the item shown in the detail column). The standalone list uses an
+    /// edge-to-edge fill instead.
+    var usesInsetSelectionHighlight: Bool = false {
+        didSet {
+            guard usesInsetSelectionHighlight != oldValue else { return }
+            setNeedsUpdateConfiguration()
+        }
+    }
 
     private let iconRenderer = IconRenderer()
     private let listContentView = UIListContentView(configuration: .cell())
@@ -56,15 +73,14 @@ class ItemCellView: UICollectionViewListCell {
     }
         
     private func commonInit() {
-        listContentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(listContentView)
-        listContentView.pinToParent()
-        
+        listContentView.pinToParentMargin()
+
         iconRenderer.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(iconRenderer)
-        
+                
         NSLayoutConstraint.activate([
-            iconRenderer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Spacing.l),
+            iconRenderer.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             iconRenderer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             iconRenderer.widthAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
             iconRenderer.heightAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
@@ -80,6 +96,8 @@ class ItemCellView: UICollectionViewListCell {
     }
 
     override func updateConfiguration(using state: UICellConfigurationState) {
+        directionalLayoutMargins.leading = Spacing.l
+
         let resolvedBackgroundColor = setupBackground(with: state)
         setupContent(with: state, backgroundColor: resolvedBackgroundColor)
     }
@@ -91,6 +109,18 @@ class ItemCellView: UICollectionViewListCell {
         // Use neutral gray for selected state
         if state.isSelected {
             config.backgroundColor = UIColor(resource: .neutral100)
+
+            // In the split layout the selection persists (it marks the item shown in the detail
+            // column), so give it a rounded, inset highlight instead of an edge-to-edge fill.
+            if usesInsetSelectionHighlight {
+                config.cornerRadius = Constants.selectedCornerRadius
+                config.backgroundInsets = NSDirectionalEdgeInsets(
+                    top: Constants.selectedBackgroundVerticalInset,
+                    leading: Constants.selectedBackgroundHorizontalInset,
+                    bottom: Constants.selectedBackgroundVerticalInset,
+                    trailing: Constants.selectedBackgroundHorizontalInset
+                )
+            }
         }
 
         backgroundConfiguration = config
@@ -114,7 +144,7 @@ class ItemCellView: UICollectionViewListCell {
         }
 
         content.directionalLayoutMargins = .zero
-        content.directionalLayoutMargins.leading = Spacing.l + CGFloat(Config.iconDimension) + Spacing.m
+        content.directionalLayoutMargins.leading = CGFloat(Config.iconDimension) + Spacing.l
 
         listContentView.configuration = content
 
@@ -201,7 +231,7 @@ private extension UICellConfigurationState {
 }
 
 private extension ItemCellView {
-    
+
     func menuAccessoryConfiguration(for cellData: ItemCellData, isHidden: Bool) -> UICellAccessory.CustomViewConfiguration {
         menuButton.menu = menu(for: cellData)
         menuButton.frame.size = CGSize(width: 40, height: Constants.minimalCellHeight)

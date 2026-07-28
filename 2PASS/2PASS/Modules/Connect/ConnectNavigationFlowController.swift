@@ -5,7 +5,9 @@
 // See LICENSE file for full terms
 
 import UIKit
+import Common
 import CommonUI
+import Data
 import SwiftUI
 
 protocol ConnectNavigationFlowControllerParent: AnyObject {
@@ -13,24 +15,27 @@ protocol ConnectNavigationFlowControllerParent: AnyObject {
 
 final class ConnectNavigationFlowController: NavigationFlowController {
     private weak var parent: ConnectNavigationFlowControllerParent?
-    private weak var tabBarController: UITabBarController?
-    
-    static func showAsTab(
-        in viewController: UITabBarController,
-        parent: ConnectNavigationFlowControllerParent
-    ) {
-        let view = ConnectRouter.buildView(onScannedQRCode: {
-            viewController.selectedIndex = 0
-        }, onScanAgain: {
-            viewController.selectedIndex = 1
-        })
-        
-        let connectViewController = UIHostingController(rootView: view)
-        connectViewController.tabBarItem = UITabBarItem(
+
+    /// Builds the single shared Connect view controller (one hosting controller, one presenter chain,
+    /// one camera session) that the host coordinator reparents between the tab bar's Connect slot and
+    /// a modal over the iPad split. Per-layout behavior is switched at runtime via
+    /// `ConnectPresenter.apply(isModalPresentation:)`, not baked in here.
+    static func makeShared(
+        parent: ConnectNavigationFlowControllerParent,
+        onClose: @escaping Callback,
+        onScannedSession: @escaping (ConnectSession) -> Void
+    ) -> (viewController: UIViewController, presenter: ConnectPresenter) {
+        let build = ConnectRouter.buildView(onClose: onClose, onScannedSession: onScannedSession)
+        let viewController = UIHostingController(rootView: build.view)
+        viewController.tabBarItem = makeConnectTabBarItem()
+        return (viewController, build.presenter)
+    }
+
+    static func makeConnectTabBarItem() -> UITabBarItem {
+        UITabBarItem(
             title: String(localized: .bottomBarConnect),
             image: UIImage(systemName: "personalhotspot"),
             selectedImage: UIImage(systemName: "personalhotspot")
         )
-        viewController.addTab(connectViewController)
     }
 }

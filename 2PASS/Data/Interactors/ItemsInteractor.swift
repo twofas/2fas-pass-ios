@@ -24,6 +24,15 @@ public enum ItemsInteractorGetError: Error {
     case noEntity
 }
 
+/// Tag and protection-level item counts for the filter UI (sidebar, filter menu), gathered in a
+/// single pass over the not-trashed items.
+public struct ItemFilterCounts {
+    /// Includes items of every content type — a tag counts everything it's attached to.
+    public let byTag: [ItemTagID: Int]
+    /// Restricted to known content types, mirroring what the filtered list can display.
+    public let byProtectionLevel: [ItemProtectionLevel: Int]
+}
+
 public protocol ItemsInteracting: AnyObject {
     var hasItems: Bool { get }
     var itemsCount: Int { get }
@@ -81,8 +90,7 @@ public protocol ItemsInteracting: AnyObject {
         completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     )
     
-    func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int
-    func itemCountsByTag() -> [ItemTagID: Int]
+    func itemFilterCounts() -> ItemFilterCounts
 }
 
 final class ItemsInteractor {
@@ -952,23 +960,16 @@ extension ItemsInteractor: ItemsInteracting {
         return true
     }
     
-    func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int {
-        mainRepository.listItems(options: .allNotTrashed)
-            .filter {
-                if let contentType, $0.contentType != contentType {
-                    return false
-                }
-                return $0.tagIds?.contains(tagID) ?? false
-            }
-            .count
-    }
-
-    func itemCountsByTag() -> [ItemTagID: Int] {
-        var counts: [ItemTagID: Int] = [:]
+    func itemFilterCounts() -> ItemFilterCounts {
+        var byTag: [ItemTagID: Int] = [:]
+        var byProtectionLevel: [ItemProtectionLevel: Int] = [:]
         for item in mainRepository.listItems(options: .allNotTrashed) {
-            item.tagIds?.forEach { counts[$0, default: 0] += 1 }
+            item.tagIds?.forEach { byTag[$0, default: 0] += 1 }
+            if ItemContentType.allKnownTypes.contains(item.contentType) {
+                byProtectionLevel[item.protectionLevel, default: 0] += 1
+            }
         }
-        return counts
+        return ItemFilterCounts(byTag: byTag, byProtectionLevel: byProtectionLevel)
     }
 }
 

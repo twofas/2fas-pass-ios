@@ -100,7 +100,6 @@ struct QuickSetupView: View {
         }
         .interactiveDismissDisabled()
         .tint(.brand500)
-        .background(Color.base0)
         .router(router: QuickSetupRouter(), destination: $presenter.destination)
         .sensoryFeedback(.selection, trigger: appearFeedback)
         .toast(Text(.quickSetupIcloudSyncFailure), isPresented: $presenter.showVaultSyncFailure, style: .failure)

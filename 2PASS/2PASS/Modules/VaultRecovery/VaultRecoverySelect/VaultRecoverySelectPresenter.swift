@@ -109,8 +109,6 @@ extension VaultRecoverySelectPresenter {
             self?.destination = nil
             
             Task { @MainActor in
-                try await Task.sleep(for: .milliseconds(700))
-                
                 guard let self else { return }
                 self.destination = .enterMasterPassword(
                     flowContext: self.flowContext,

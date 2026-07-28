@@ -26,6 +26,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     var isSearching: Bool { get }
     func setSearchPhrase(_ searchPhrase: String?)
 
+    func itemExists(_ itemID: ItemID) -> Bool
     func moveToTrash(_ itemID: ItemID)
     func moveToTrash(_ itemIDs: [ItemID])
     func copyUsername(_ itemID: ItemID) -> Bool
@@ -42,8 +43,7 @@ protocol PasswordsModuleInteracting: AnyObject {
     func normalizedURL(for uri: String) -> URL?
     func listAllTags() -> [ItemTagData]
     func getTag(for tagID: ItemTagID) -> ItemTagData?
-    func countItemsForTag(_ tagID: ItemTagID) -> Int
-    func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int
+    func itemFilterCounts() -> ItemFilterCounts
     func updateProtectionLevel(_ protectionLevel: ItemProtectionLevel, for itemIDs: [ItemID]) throws(ItemsInteractorSaveError)
     func applyTagChanges(to itemIDs: [ItemID], tagsToAdd: Set<ItemTagID>, tagsToRemove: Set<ItemTagID>) throws
 }
@@ -207,6 +207,10 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         passwordListInteractor.setSortType(sortType)
     }
     
+    func itemExists(_ itemID: ItemID) -> Bool {
+        itemsInteractor.getItem(for: itemID, checkInTrash: false) != nil
+    }
+
     func moveToTrash(_ itemID: ItemID) {
         Log("PasswordsModuleInteractor: Move to trash: \(itemID)", module: .moduleInteractor)
         let deletedPassword = itemsInteractor.getItem(for: itemID, checkInTrash: false)
@@ -345,20 +349,8 @@ extension PasswordsModuleInteractor: PasswordsModuleInteracting {
         tagInteractor.getTag(for: tagID)
     }
 
-    func countItemsForTag(_ tagID: ItemTagID) -> Int {
-        itemsInteractor.getItemCountForTag(tagID: tagID, contentType: nil)
-    }
-
-    func countItemsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
-        itemsInteractor.listItems(
-            searchPhrase: nil,
-            tagId: nil,
-            vaultId: nil,
-            contentTypes: .allKnownTypes,
-            protectionLevel: protectionLevel,
-            sortBy: currentSortType,
-            trashed: .no
-        ).count
+    func itemFilterCounts() -> ItemFilterCounts {
+        itemsInteractor.itemFilterCounts()
     }
 
     func updateProtectionLevel(_ protectionLevel: ItemProtectionLevel, for itemIDs: [ItemID]) throws(ItemsInteractorSaveError) {

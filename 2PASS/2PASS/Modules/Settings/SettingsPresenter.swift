@@ -7,7 +7,11 @@
 import Foundation
 import CommonUI
 
-enum SettingsDestination: RouterDestination {
+// String-backed so `id` resolves to the raw value rather than `self`. The `RouterDestination`
+// default `hash(into:)` combines `id`; with the inferred `ID == Self` it would combine `self`,
+// recursing infinitely the first time the value is hashed (e.g. via `.id(_:)`). A String id routes
+// to the `where ID == String` overloads and hashes safely.
+enum SettingsDestination: String, RouterDestination {
     case security
     case customization
     case autoFill
@@ -22,6 +26,8 @@ enum SettingsDestination: RouterDestination {
     case helpCenter
     case discord
     case debug
+
+    var id: String { rawValue }
 }
 
 @Observable

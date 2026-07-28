@@ -28,6 +28,28 @@ final class ContentTypeSelectionViewController: UIViewController {
         configurePopoverSize()
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        // This selection is a popover anchored to the "+" bar button. When the app is resized (iPad
+        // multitasking, Stage Manager, rotation) the anchor moves and the Main layout may even swap
+        // between the sidebar split and the tab bar, leaving the popover orphaned or mis-anchored.
+        // Per Apple's guidance, dismiss it on a size change instead of trying to reposition it — via the
+        // same cancel path as the close button so the parent flow controller cleans up consistently.
+        //
+        // Only act on a genuine resize while the popover is the bare, fully-settled top screen. Skip it:
+        // - while the popover runs its own present/dismiss animation (UIKit also calls this then) —
+        //   closing there tears the popover down mid-transition and crashes;
+        // - once a type has been picked and the item editor is presented on top of the popover — the
+        //   dismiss would cascade down the chain and kill the in-progress editor.
+        guard modalPresentationStyle == .popover,
+              isBeingPresented == false,
+              isBeingDismissed == false,
+              presentedViewController == nil,
+              viewIfLoaded?.window != nil else { return }
+        onClose?()
+    }
+
     private func setupContentTypeSelectionView() {
         let contentTypeSelectionView = ContentTypeSelectionView(
             onSelect: { [weak self] contentType in

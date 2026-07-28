@@ -39,7 +39,11 @@ struct ConnectPermissionsView: View {
     
     @State
     var presenter: ConnectPermissionsPresenter
-    
+
+    /// True when presented as a sheet (it owns its navigation bar + Cancel item). When pushed onto a
+    /// parent stack (modal Connect on iPad) this is false, so it doesn't nest a second navigation bar.
+    var usesNavigationStack: Bool = true
+
     @Environment(\.dismiss)
     private var dismiss
     
@@ -57,7 +61,22 @@ struct ConnectPermissionsView: View {
     @Environment(\.dismissFlow) private var dismissFlow
     
     var body: some View {
-        NavigationStack {
+        if usesNavigationStack {
+            NavigationStack {
+                mainContent
+                    .toolbar {
+                        ToolbarCancelItem {
+                            dismiss()
+                        }
+                    }
+            }
+            .presentationDragIndicator(.visible)
+        } else {
+            mainContent
+        }
+    }
+
+    private var mainContent: some View {
             VStack(spacing: 0) {
                 ProgressView(value: presenter.progress)
                     .progressViewStyle(ShieldProgressStyle())
@@ -182,13 +201,6 @@ struct ConnectPermissionsView: View {
                 .animation(.easeInOut(duration: Constants.showContinueButtonAnimationDuration).delay(Constants.showContinueButtonDelay), value: appearAnimation)
                 .animation(presenter.isWaitingForUser ? .easeInOut(duration: Constants.showContinueButtonAnimationDuration) : .easeInOut(duration: Constants.showContinueButtonAnimationDuration).delay(Constants.showContinueButtonDelay), value: presenter.isWaitingForUser)
             }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    ToolbarCancelButton {
-                        dismiss()
-                    }
-                }
-            }
             .onAppear {
                 if presenter.stepsStatus[.camera] == nil {
                     Task {
@@ -217,9 +229,6 @@ struct ConnectPermissionsView: View {
                     }
                 }
             }
-            .background(.base0)
-        }
-        .presentationDragIndicator(.visible)
     }
 }
 

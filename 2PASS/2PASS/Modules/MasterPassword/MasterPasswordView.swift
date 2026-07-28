@@ -188,7 +188,6 @@ struct MasterPasswordView: View {
             } catch {}
         }
         .router(router: MasterPasswordRouter(), destination: $presenter.destination)
-        .background(Color(.mainBackground))
         .readableContentMargins()
     }
     

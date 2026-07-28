@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import Common
+import CommonUI
 
 struct TransferItemsFlowContext {
     
@@ -32,7 +33,7 @@ struct TransferItemsFlowContext {
     }
 }
 
-enum TransferItemsServicesListDestination: Identifiable {
+enum TransferItemsServicesListDestination: RouterDestination {
     case transferInstructions(ExternalService, onClose: Callback)
     case upgradePlanPrompt(itemsLimit: Int)
     

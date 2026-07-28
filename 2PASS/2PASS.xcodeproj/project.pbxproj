@@ -58,6 +58,7 @@
 		54E7B1062D6F320C002B1462 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C27D99F72BD596630008203F /* Assets.xcassets */; };
 		54E7B1092D6F366F002B1462 /* CommonUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54C0900A2D6E658300954E76 /* CommonUI.framework */; };
 		54FBB7A52E0D70CC0026E87B /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 54FBB7A42E0D70CC0026E87B /* Settings.bundle */; };
+		54FCFB242FE2C46D003A4729 /* MainContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54FCFB232FE2C46D003A4729 /* MainContainerViewController.swift */; };
 		5CE7DE1B2BD596620008203F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE7DE1A2BD596620008203F /* SceneDelegate.swift */; };
 		8F1D89FF2D2DEE6400960ABF /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1D89FE2D2DEE6400960ABF /* Lottie */; };
 		8F1D8A052D2DF77B00960ABF /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1D8A042D2DF77600960ABF /* SetupVaultView.swift */; };
@@ -134,6 +135,10 @@
 		C2F81EBC2BE42325008FD374 /* RootModuleInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F81EBB2BE42325008FD374 /* RootModuleInteractor.swift */; };
 		C2F81EC82BE42858008FD374 /* Data.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F81EC22BE42858008FD374 /* Data.framework */; };
 		C2F81EC92BE42858008FD374 /* Data.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C2F81EC22BE42858008FD374 /* Data.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FE01010101010101010101A2 /* MainSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01010101010101010101A1 /* MainSplitViewController.swift */; };
+		FE01010101010101010101B2 /* MainSplitFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01010101010101010101B1 /* MainSplitFlowController.swift */; };
+		FE01010101010101010101C2 /* PasswordsHostCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01010101010101010101C1 /* PasswordsHostCoordinator.swift */; };
+		FE01010101010101010101D2 /* ConnectHostCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01010101010101010101D1 /* ConnectHostCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -319,6 +324,7 @@
 		54DBB76A2E789EEE003E7342 /* AppIcon.dev.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.dev.icon; sourceTree = "<group>"; };
 		54E2BDBD2FAFAED1009F0A6F /* de */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = de; path = "de.lproj/vault-decription-kit-template.pdf"; sourceTree = "<group>"; };
 		54FBB7A42E0D70CC0026E87B /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		54FCFB232FE2C46D003A4729 /* MainContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContainerViewController.swift; sourceTree = "<group>"; };
 		5CE7DE1A2BD596620008203F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		8F1D8A042D2DF77600960ABF /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		8F6D5B262D2C3CC3002A7574 /* OnboardingPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPageView.swift; sourceTree = "<group>"; };
@@ -379,6 +385,10 @@
 		C2F489502D3C761C00F3761B /* CloudCached.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudCached.swift; sourceTree = "<group>"; };
 		C2F81EBB2BE42325008FD374 /* RootModuleInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootModuleInteractor.swift; sourceTree = "<group>"; };
 		C2F81EC22BE42858008FD374 /* Data.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Data.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE01010101010101010101A1 /* MainSplitViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitViewController.swift; sourceTree = "<group>"; };
+		FE01010101010101010101B1 /* MainSplitFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitFlowController.swift; sourceTree = "<group>"; };
+		FE01010101010101010101C1 /* PasswordsHostCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordsHostCoordinator.swift; sourceTree = "<group>"; };
+		FE01010101010101010101D1 /* ConnectHostCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectHostCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -906,6 +916,8 @@
 			isa = PBXGroup;
 			children = (
 				C28E9E2D2C1CE5EE008B99F8 /* MainViewController.swift */,
+				FE01010101010101010101A1 /* MainSplitViewController.swift */,
+				54FCFB232FE2C46D003A4729 /* MainContainerViewController.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -922,6 +934,9 @@
 			isa = PBXGroup;
 			children = (
 				C28E9E292C1CE436008B99F8 /* MainFlowController.swift */,
+				FE01010101010101010101B1 /* MainSplitFlowController.swift */,
+				FE01010101010101010101C1 /* PasswordsHostCoordinator.swift */,
+				FE01010101010101010101D1 /* ConnectHostCoordinator.swift */,
 			);
 			path = Flow;
 			sourceTree = "<group>";
@@ -1571,6 +1586,7 @@
 				C267F92B2BE2DD64005F7B89 /* RootFlowController.swift in Sources */,
 				5402A74D2D63A2180092765B /* OnboardingStepsStack.swift in Sources */,
 				C246BB002C46FE01007CF48D /* SocialChannel.swift in Sources */,
+				54FCFB242FE2C46D003A4729 /* MainContainerViewController.swift in Sources */,
 				C28E9E2A2C1CE436008B99F8 /* MainFlowController.swift in Sources */,
 				5402A74A2D63A1E90092765B /* SetupCompleteModuleInteractor.swift in Sources */,
 				C25577212DC819790025C09F /* ExternalService+.swift in Sources */,
@@ -1587,6 +1603,10 @@
 				544617882D413C51003A14E1 /* SetupVaultRouter.swift in Sources */,
 				8FDFEA442D3478BA00A1899A /* GenerateSecretKeyView.swift in Sources */,
 				C28E9E2E2C1CE5EE008B99F8 /* MainViewController.swift in Sources */,
+				FE01010101010101010101A2 /* MainSplitViewController.swift in Sources */,
+				FE01010101010101010101B2 /* MainSplitFlowController.swift in Sources */,
+				FE01010101010101010101C2 /* PasswordsHostCoordinator.swift in Sources */,
+				FE01010101010101010101D2 /* ConnectHostCoordinator.swift in Sources */,
 				C2AA587F2CCE8A4800DC3613 /* BackupImportParseError+LocalizedDescription.swift in Sources */,
 				C267F9222BE2CA6E005F7B89 /* RootViewController.swift in Sources */,
 				8F6F40E12D386DED0010F7CE /* HalfwayView.swift in Sources */,
@@ -1801,7 +1821,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Prod.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 410;
+				CURRENT_PROJECT_VERSION = 433;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -1821,7 +1841,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9.1;
+				MARKETING_VERSION = 1.10.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2616,7 +2636,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 410;
+				CURRENT_PROJECT_VERSION = 433;
 				ENABLE_MODULE_VERIFIER = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
@@ -2637,7 +2657,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9.1;
+				MARKETING_VERSION = 1.10.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2657,7 +2677,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 410;
+				CURRENT_PROJECT_VERSION = 433;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -2677,7 +2697,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9.1;
+				MARKETING_VERSION = 1.10.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

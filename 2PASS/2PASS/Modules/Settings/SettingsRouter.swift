@@ -9,8 +9,12 @@ import SwiftUI
 
 struct SettingsRouter: Router {
 
-    static func buildView() -> some View {
-        SettingsView(presenter: .init(interactor: ModuleInteractorFactory.shared.settingsInteractor()))
+    static func buildView(usesSplitLayout: Bool = true, onClose: (() -> Void)? = nil) -> some View {
+        SettingsView(
+            presenter: .init(interactor: ModuleInteractorFactory.shared.settingsInteractor()),
+            usesSplitLayout: usesSplitLayout
+        )
+        .onClose(onClose)
     }
     
     func routingType(for destination: SettingsDestination?) -> RoutingType? {

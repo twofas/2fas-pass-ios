@@ -13,26 +13,34 @@ private struct Constants {
 }
 
 class ItemListLayout: UICollectionViewCompositionalLayout {
-            
+
+    static let minimumCellWidth: CGFloat = 310
+
+    /// Number of grid columns for the given available width and content size category. Shared with
+    /// the view controller so it can tell when the list is rendering as a multi-column grid without
+    /// duplicating the sizing math.
+    static func numberOfColumns(forAvailableWidth availableWidth: CGFloat, contentSizeCategory: UIContentSizeCategory) -> Int {
+        var columns = Int(availableWidth / minimumCellWidth)
+        let layoutMultiplier = contentSizeCategory.layoutMultiplier
+        if columns > 1 && layoutMultiplier != 1.0 {
+            let newSize = minimumCellWidth * layoutMultiplier
+            columns = Int(availableWidth / newSize)
+        }
+        if columns < 1 {
+            columns = 1
+        }
+        return columns
+    }
+
     init(topInset: CGFloat, showSectionHeaders: Bool) {
         let config = UICollectionViewCompositionalLayoutConfiguration()
         config.interSectionSpacing = Spacing.l
-        
+
         super.init(sectionProvider: { sectionOffset, environment in
-            let minimumCellWidth: CGFloat = 310
-            let itemsInRow: Int = {
-                let availableWidth = environment.container.effectiveContentSize.width
-                var columns = Int(availableWidth / minimumCellWidth)
-                let layoutMultiplier = environment.traitCollection.preferredContentSizeCategory.layoutMultiplier
-                if columns > 1 && layoutMultiplier != 1.0 {
-                    let newSize = minimumCellWidth * layoutMultiplier
-                    columns = Int(availableWidth / newSize)
-                }
-                if columns < 1 {
-                    columns = 1
-                }
-                return columns
-            }()
+            let itemsInRow = ItemListLayout.numberOfColumns(
+                forAvailableWidth: environment.container.effectiveContentSize.width,
+                contentSizeCategory: environment.traitCollection.preferredContentSizeCategory
+            )
 
             let itemSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),

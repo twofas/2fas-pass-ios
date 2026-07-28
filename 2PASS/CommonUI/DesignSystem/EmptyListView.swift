@@ -6,12 +6,12 @@
 
 import SwiftUI
 
-public struct EmptyListView: View {
+public struct EmptyListView<Icon>: View where Icon: View {
     
     let text: Text
-    let icon: Image?
+    let icon: Icon?
     
-    public init(_ text: Text, icon: Image? = nil) {
+    public init(_ text: Text, icon: Icon? = nil) {
         self.text = text
         self.icon = icon
     }
@@ -34,7 +34,15 @@ public struct EmptyListView: View {
     }
 }
 
-extension EmptyListView {
+extension EmptyListView where Icon == EmptyView {
+    
+    public init(_ text: Text) {
+        self.text = text
+        self.icon = nil
+    }
+}
+
+extension EmptyListView where Icon == EmptyView {
     
     public init(_ text: LocalizedStringResource) {
         self.init(Text(text))

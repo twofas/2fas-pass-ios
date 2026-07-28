@@ -10,8 +10,11 @@ import Common
 
 struct ConnectPermissionsRouter {
     
-    static func buildView(onFinish: @escaping Callback) -> some View {
-        ConnectPermissionsView(presenter: .init(interactor: ModuleInteractorFactory.shared.connectPermissionsModuleInteractor()))
-            .environment(\.dismissFlow, .init(action: onFinish))
+    static func buildView(onFinish: @escaping Callback, usesNavigationStack: Bool = true) -> some View {
+        ConnectPermissionsView(
+            presenter: .init(interactor: ModuleInteractorFactory.shared.connectPermissionsModuleInteractor()),
+            usesNavigationStack: usesNavigationStack
+        )
+        .environment(\.dismissFlow, .init(action: onFinish))
     }
 }

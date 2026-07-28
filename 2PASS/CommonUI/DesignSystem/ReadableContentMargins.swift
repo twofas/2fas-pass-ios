@@ -28,7 +28,7 @@ private struct ScrollReadableContentMarginsViewModifier: ViewModifier {
         if horizontalSizeClass == .regular {
             GeometryReader { proxy in
                 content
-                    .contentMargins(.horizontal, max(0, (proxy.size.width - 600) / 2), for: .scrollContent)
+                    .contentMargins(.horizontal, max(0, floor(proxy.size.width - 600) / 2), for: .scrollContent)
             }
         } else {
             content

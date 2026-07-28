@@ -46,6 +46,7 @@ struct SettingsDetailsForm<Content, Header>: View where Content: View, Header: V
         .contentMargins(.top, hasHeader ? Spacing.l : nil)
         .scrollBounceBehavior(.basedOnSize)
         .toolbarTitleDisplayMode(.inline)
+        .navigationBarHidden(false)
         .navigationTitle(navigationTitle)
         .onPreferenceChange(SettingsFormTopBarTitleHiddenPreferenceKey.self) { hidden in
             hideNavigationBarTitle = hidden ?? false

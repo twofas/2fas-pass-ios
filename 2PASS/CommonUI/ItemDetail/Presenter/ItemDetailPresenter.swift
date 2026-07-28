@@ -24,7 +24,7 @@ final class ItemDetailPresenter {
         formPresenter?.tags ?? []
     }
 
-    private let itemID: ItemID
+    let itemID: ItemID
     private let flowController: ItemDetailFlowControlling
     private let interactor: ItemDetailModuleInteracting
     private let toastPresenter: ToastPresenter

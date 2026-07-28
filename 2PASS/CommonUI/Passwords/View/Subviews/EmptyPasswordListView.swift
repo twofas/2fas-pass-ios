@@ -18,25 +18,17 @@ struct EmptyPasswordListView: View {
     }
     
     var body: some View {
-        VStack {
-            VStack {
-                Spacer()
-                
-                VStack(spacing: Spacing.xll) {
-                    Image(systemName: "lock.rectangle.stack")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 85, height: 85)
-                        .foregroundStyle(.brand500)
-                    
-                    Text(.homeEmptyTitle)
-                        .font(.title2Emphasized)
-                }
-                
-                Spacer()
-            }
-            
+        VStack(spacing: Spacing.xll) {
             Spacer()
+
+            Image(systemName: "lock.rectangle.stack")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 85, height: 85)
+                .foregroundStyle(.brand500)
+
+            Text(.homeEmptyTitle)
+                .font(.title2Emphasized)
 
             if showQuickSetup {
                 Button {
@@ -49,8 +41,9 @@ struct EmptyPasswordListView: View {
                     }
                 }
                 .buttonStyle(.bezeledGray(fillSpace: false))
-                .padding(.bottom, Spacing.xxl4)
             }
+
+            Spacer()
         }
         .ignoresSafeArea(.keyboard)
     }

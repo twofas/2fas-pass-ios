@@ -27,6 +27,7 @@ private class IconFetcherProxy: RemoteImageCollectionFetcher {
 
 final class PasswordsPresenter {
     weak var view: PasswordsViewControlling?
+    weak var sidebar: PasswordsSidebarViewControlling?
 
     var selectedSort: SortType {
         interactor.currentSortType
@@ -37,16 +38,22 @@ final class PasswordsPresenter {
     }
 
     var selectedFilterTag: ItemTagData? {
-        didSet {
+        get { filterState.selectedTag }
+        set {
+            filterState.selectedTag = newValue
+            clearSelectionForFilterChange()
             view?.filterDidChange()
-            reload()
+            reload(sidebarUpdate: .selection)
         }
     }
 
     var selectedFilterProtectionLevel: ItemProtectionLevel? {
-        didSet {
+        get { filterState.selectedProtectionLevel }
+        set {
+            filterState.selectedProtectionLevel = newValue
+            clearSelectionForFilterChange()
             view?.filterDidChange()
-            reload()
+            reload(sidebarUpdate: .selection)
         }
     }
 
@@ -58,7 +65,13 @@ final class PasswordsPresenter {
         }
     }
 
-    private(set) var contentTypeFilter: ItemContentTypeFilter = .all
+    var contentTypeFilter: ItemContentTypeFilter {
+        filterState.contentTypeFilter
+    }
+
+    /// Item shown in the detail column of the iPad split layout. Kept in sync with both
+    /// taps and `reload()`-driven auto-selection so the two share one source of truth.
+    private(set) var selectedDetailItemID: ItemID?
 
     private(set) var itemsCount: Int = 0
     private(set) var hasSuggestedItems = false
@@ -75,6 +88,8 @@ final class PasswordsPresenter {
     private let iconsDataSource: RemoteImageCollectionDataSource<ItemCellData>
     private let flowController: PasswordsFlowControlling
     private let interactor: PasswordsModuleInteracting
+    /// Filter selections shared with the other layout representation so switching layouts keeps them.
+    private let filterState: PasswordsFilterState
     private let toastPresenter: ToastPresenter
     private var listData: [Int: [ItemData]] = [:]
     private var tagColorsByID: [ItemTagID: ItemTagColor] = [:]
@@ -84,10 +99,11 @@ final class PasswordsPresenter {
         isViewReady && interactor.isUserLoggedIn
     }
 
-    init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting) {
+    init(autoFillEnvironment: AutoFillEnvironment? = nil, flowController: PasswordsFlowControlling, interactor: PasswordsModuleInteracting, filterState: PasswordsFilterState = PasswordsFilterState()) {
         self.autoFillEnvironment = autoFillEnvironment
         self.flowController = flowController
         self.interactor = interactor
+        self.filterState = filterState
         self.toastPresenter = .shared
         self.iconsDataSource = RemoteImageCollectionDataSource(fetcher: IconFetcherProxy(interactor: interactor))
     }
@@ -102,15 +118,41 @@ extension PasswordsPresenter {
     @MainActor
     func viewWillAppear() {
         isViewReady = true
+
+        // Re-apply the shared filter state: the other layout representation may have changed the
+        // search phrase or filters while this one was off-screen. The search phrase lives in the
+        // interactor, so push it back before reloading; the banner/search bar are refreshed below.
+        interactor.setSearchPhrase(filterState.searchPhrase)
+        restoreSearchBars()
         refreshSelectedFilterTag()
+        view?.filterDidChange()
         reload()
 
         // Register synchronously so a save posted before the observer is live isn't dropped.
         storageDidChangeToken?.cancel()
         storageDidChangeToken = NotificationCenter.default.addObserver(of: VaultDataDidChange.self) { [weak self] message in
             guard let self, message.affects([.items, .tags]) else { return }
-            self.reload()
+            // The only animated reload: a real data change (first item added, last item removed) is a
+            // meaningful transition, unlike the layout/appearance-driven reloads which apply instantly.
+            self.reload(animated: true)
         }
+    }
+
+    /// Re-runs the list reload after the shared subtree is reparented between the split and the tab
+    /// bar. The empty-state placement (blank list + detail empty screen vs the list's own empty screen)
+    /// is decided inside the reload, and the reparent can skip the `viewWillAppear` that normally
+    /// triggers it — see `PasswordsNavigationFlowController.reloadListAfterReparent`.
+    @MainActor
+    func reloadAfterReparent() {
+        reload()
+    }
+
+    @MainActor
+    func viewDidAppear() {
+        // UISearchController drops a text set during the appearance transition, so re-assert the
+        // restored phrase once the bar is laid out — covers both the standalone list's own search bar
+        // and the split's detail-column search bar.
+        restoreSearchBars()
     }
 
     @MainActor
@@ -119,15 +161,85 @@ extension PasswordsPresenter {
         storageDidChangeToken = nil
     }
 
-    private func refreshSelectedFilterTag() {
-        guard let selectedFilterTag else { return }
+    /// Pushes the shared search phrase into whichever search bar this representation uses: the
+    /// standalone list's own bar (`view`) and/or the split's detail-column bar (`flowController`).
+    private func restoreSearchBars() {
+        view?.restoreSearchPhrase(filterState.searchPhrase)
+        flowController.restoreItemsSearchPhrase(filterState.searchPhrase)
+    }
 
-        if let tag = interactor.getTag(for: selectedFilterTag.tagID) {
-            if tag != selectedFilterTag {
-                self.selectedFilterTag = tag
+    /// The shared multiselect state, read by the view to reconcile its collection-view selection after
+    /// each data apply (more reliable than appearance callbacks, which the split's list column may skip).
+    var isSelecting: Bool { filterState.isSelecting }
+    var selectedItemIDs: Set<ItemID> { filterState.selectedItemIDs }
+
+    /// Called by the view when editing mode toggles. Clears the stored selection when leaving editing.
+    func onEditingChanged(_ isSelecting: Bool) {
+        filterState.isSelecting = isSelecting
+        if isSelecting {
+            // Entering multiselect: drop the split layout's persisted detail item and show the
+            // selection summary in the detail column instead of the previously-viewed item.
+            selectedDetailItemID = nil
+            updateMultiselectDetail()
+        } else {
+            filterState.selectedItemIDs = []
+            // Leaving multiselect: restore the detail column to its placeholder.
+            flowController.clearDetailSelection()
+        }
+    }
+
+    /// Called by the view whenever the selected rows change while editing.
+    func onSelectionChanged(_ selectedItemIDs: Set<ItemID>) {
+        filterState.selectedItemIDs = selectedItemIDs
+        // Keep the split's detail column in sync with the live selection.
+        updateMultiselectDetail()
+    }
+
+    /// Changing a filter drops the multiselect selection: keeping IDs the new filter hides would
+    /// let bulk actions act on items the user can no longer see, and would silently re-select them
+    /// when the filter is lifted. Clearing the shared state is enough for every consumer — the view
+    /// deselects its rows in `reconcileSelection()` after the reload's snapshot apply, and the reload
+    /// that every caller triggers next refreshes the split detail's selection summary
+    /// (via `updateDetailSelectionIfNeeded`).
+    private func clearSelectionForFilterChange() {
+        guard filterState.isSelecting, filterState.selectedItemIDs.isEmpty == false else { return }
+        filterState.selectedItemIDs = []
+    }
+
+    /// Reflects the current multiselect selection in the iPad split's detail column: a single
+    /// selected item shows its full detail, otherwise the detail shows the selected count. No-op
+    /// where there's no detail column (iPhone, AutoFill).
+    private func updateMultiselectDetail() {
+        guard flowController.isDetailColumnVisible else { return }
+
+        let selectedItemIDs = filterState.selectedItemIDs
+        if selectedItemIDs.count == 1, let itemID = selectedItemIDs.first {
+            // Reloads land here repeatedly (sync ticks, viewWillAppear, filter changes); rebuilding
+            // the hosted preview for the same item would reset its scroll position and revealed
+            // fields. The detail observes `VaultDataDidChange` and refreshes itself in place, so a
+            // same-item update needs no swap — mirroring the count branch, which updates the hosted
+            // summary instead of replacing it.
+            if flowController.openDetailItemID != itemID {
+                flowController.toItemDetail(itemID: itemID)
             }
         } else {
-            self.selectedFilterTag = nil
+            flowController.showMultiselectDetail(selectedCount: selectedItemIDs.count)
+        }
+    }
+
+    /// Validates the persisted tag filter against current data (the tag may have been renamed or
+    /// deleted in the other layout). Writes straight to `filterState` rather than through
+    /// `selectedFilterTag` so it doesn't trigger an extra `filterDidChange()`/`reload()` — the caller
+    /// (`viewWillAppear`) already does both right after.
+    private func refreshSelectedFilterTag() {
+        guard let selectedTag = filterState.selectedTag else { return }
+
+        if let tag = interactor.getTag(for: selectedTag.tagID) {
+            if tag != selectedTag {
+                filterState.selectedTag = tag
+            }
+        } else {
+            filterState.selectedTag = nil
         }
     }
 
@@ -149,25 +261,27 @@ extension PasswordsPresenter {
 
     func onSelectSort(_ sortType: SortType) {
         interactor.setSortType(sortType)
-        reload()
+        reload(sidebarUpdate: .none)
     }
 
     func onSetSearchPhrase(_ searchPhrase: String?) {
+        filterState.searchPhrase = searchPhrase
         interactor.setSearchPhrase(searchPhrase)
-        reload()
+        reload(sidebarUpdate: .none)
     }
 
     func onSetContentTypeFilter(_ filter: ItemContentTypeFilter) {
-        view?.clearSelectionForContentTypeChange()
-        contentTypeFilter = filter
-        reload()
+        filterState.contentTypeFilter = filter
+        clearSelectionForFilterChange()
+        reload(sidebarUpdate: .selection)
     }
 
     func onClearSearchPhrase() {
+        filterState.searchPhrase = nil
         interactor.setSearchPhrase(nil)
 
         Task { @MainActor in // fix animation
-            reload()
+            reload(sidebarUpdate: .none)
         }
     }
 
@@ -237,7 +351,11 @@ extension PasswordsPresenter {
 
         switch interactor.selectAction {
         case .viewDetails:
+            selectedDetailItemID = itemData.id
             flowController.selectItem(id: itemData.id, contentType: itemData.contentType)
+            if flowController.isDetailColumnVisible {
+                view?.highlightRow(for: itemData.id)
+            }
         case .copy:
             switch itemData {
             case .login:
@@ -281,12 +399,10 @@ extension PasswordsPresenter {
         interactor.listAllTags()
     }
 
-    func countPasswordsForTag(_ tagID: ItemTagID) -> Int {
-        interactor.countItemsForTag(tagID)
-    }
-
-    func countPasswordsForProtectionLevel(_ protectionLevel: ItemProtectionLevel) -> Int {
-        interactor.countItemsForProtectionLevel(protectionLevel)
+    /// Tag and protection-level counts for the sidebar and the list's filter menu, all from a single
+    /// storage pass instead of one query per tag / per protection level.
+    func itemFilterCounts() -> ItemFilterCounts {
+        interactor.itemFilterCounts()
     }
 
     func applyProtectionLevel(_ protectionLevel: ItemProtectionLevel, to itemIDs: [ItemID]) {
@@ -418,7 +534,23 @@ private extension PasswordsPresenter {
         listData[indexPath.section]?[safe: indexPath.item]
     }
 
-    func reload() {
+    /// What the sidebar must re-read after a reload. The counts are full-vault storage scans, so
+    /// reloads whose trigger cannot change them opt down to the cheaper levels instead of paying
+    /// the scans for bit-identical results.
+    enum SidebarUpdate {
+        /// Vault data (items or tags) may have changed: refresh the counts and the selection mirror.
+        case counts
+        /// Only the selected filter changed: mirror the selection state without refetching counts.
+        case selection
+        /// Nothing the sidebar shows changed (search phrase, sort): skip entirely.
+        case none
+    }
+
+    /// Reloads the list and re-applies the empty-state placement. `animated` is reserved for reloads
+    /// caused by an actual data change (see the `VaultDataDidChange` observer) — every other trigger
+    /// (appearance, reparent, search/filter/sort changes) applies instantly, because those reloads run
+    /// during layout or input handling where a fade reads as a stray flicker.
+    func reload(animated: Bool = false, sidebarUpdate: SidebarUpdate = .counts) {
         guard canLoadData else {
             return
         }
@@ -487,15 +619,95 @@ private extension PasswordsPresenter {
             view?.reloadData(newSnapshot: snapshot)
         }
 
+        let isFiltering = interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || (contentTypeFilter.contentType != nil && hasItems)
+
         if cellsCount == 0 {
-            if interactor.isSearching || selectedFilterTag != nil || selectedFilterProtectionLevel != nil || (contentTypeFilter.contentType != nil && hasItems) {
-                view?.showSearchEmptyScreen()
+            if isFiltering {
+                view?.showSearchEmptyScreen(animated: animated)
+            } else if flowController.isDetailColumnVisible {
+                // Empty vault in the iPad split: keep the list column blank and show the full
+                // "no items" empty screen in the wide detail column instead (see `updateDetailSelectionIfNeeded`).
+                view?.showList(animated: animated)
             } else {
-                view?.showEmptyScreen()
+                view?.showEmptyScreen(animated: animated)
             }
         } else {
-            view?.showList()
+            view?.showList(animated: animated)
         }
+
+        updateDetailSelectionIfNeeded(isEmptyVault: cellsCount == 0 && isFiltering == false)
+        switch sidebarUpdate {
+        case .counts:
+            sidebar?.reloadFilters()
+        case .selection:
+            sidebar?.reloadSelectedFilters()
+        case .none:
+            break
+        }
+    }
+
+    /// Keeps the iPad split's detail column in sync with the list: re-highlights the current
+    /// selection if it survived the reload. It never auto-selects an item. When the vault is empty
+    /// it shows the full "no items" screen in the detail column; for a filtered-empty list it falls
+    /// back to the placeholder. No-op on iPhone and in the AutoFill extension.
+    func updateDetailSelectionIfNeeded(isEmptyVault: Bool) {
+        guard autoFillEnvironment == nil else { return }
+
+        // Multiselect owns the detail column: it shows the selection summary (or the single selected
+        // item), and `selectedDetailItemID` is deliberately nil. Falling through would replace the
+        // summary with the placeholder on any reload that lands mid-selection (sync, filter change).
+        if filterState.isSelecting {
+            updateMultiselectDetail()
+            return
+        }
+
+        guard flowController.isDetailColumnVisible else {
+            // The persistent row highlight only marks the item open in the visible detail column.
+            // With the column hidden (tab layout), drop the highlight but keep `selectedDetailItemID`,
+            // so returning to the split restores both the parked detail and its highlight — unless
+            // the pushed detail itself is gone (a back/swipe pop leaves no other trace); keeping the
+            // ID then would re-highlight a row whose detail column shows only the placeholder.
+            view?.clearRowHighlight()
+            if flowController.openDetailItemID == nil {
+                selectedDetailItemID = nil
+            }
+            return
+        }
+
+        // Re-highlight only while the flow controller actually hosts that item's detail: the ID can
+        // outlive the detail (closed in the column, popped before a swap), and a highlight pointing
+        // at a placeholder column misreads as an open detail.
+        if let currentID = selectedDetailItemID, itemExistsInFilteredList(currentID),
+           flowController.openDetailItemID == currentID {
+            view?.highlightRow(for: currentID)
+            return
+        }
+
+        // While searching, keep the current detail selection unchanged: the selected item
+        // stays in the detail column even when the phrase filters its row out of the list.
+        // Only a selection gone from the vault itself (deleted mid-search) falls through to
+        // clear — the filtered list alone can't tell "filtered out" from "deleted".
+        if interactor.isSearching {
+            let selectionStillInVault = selectedDetailItemID.map { interactor.itemExists($0) } ?? true
+            if selectionStillInVault {
+                return
+            }
+        }
+
+        // Never auto-select an item. With no surviving selection, show the empty-vault
+        // detail for a truly empty vault, otherwise fall back to the placeholder.
+        selectedDetailItemID = nil
+        if isEmptyVault {
+            flowController.showEmptyVaultDetail()
+        } else {
+            flowController.clearDetailSelection()
+        }
+    }
+
+    /// Whether the item is present in the currently loaded (filtered) list — distinct from
+    /// `interactor.itemExists`, which checks the vault regardless of the active filters.
+    func itemExistsInFilteredList(_ id: ItemID) -> Bool {
+        listData.values.contains { $0.contains { $0.id == id } }
     }
 
     func makeCellData(for itemData: ItemData) -> ItemCellData? {

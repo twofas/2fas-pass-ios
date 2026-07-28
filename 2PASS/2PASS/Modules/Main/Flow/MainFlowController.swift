@@ -23,38 +23,74 @@ protocol MainFlowControlling: AnyObject {
 final class MainFlowController: FlowController {
     private weak var parent: MainFlowControllerParent?
     private weak var biometricPromptViewController: UIViewController?
-    
+    private var splitFlowController: MainSplitFlowController?
+
     static func embedAsRoot(
         in viewController: UIViewController,
         parent: MainFlowControllerParent
-    ) -> MainViewController {
-        let view = MainViewController()
-        let flowController = MainFlowController(viewController: view)
-        flowController.parent = parent
-        
+    ) -> UIViewController {
         let interactor = ModuleInteractorFactory.shared.mainModuleInteracting()
-                
+
+        // A width-driven container hosts both representations: the sidebar split at wide widths and the
+        // tab bar below the threshold (rendered as a floating top tab bar on iPadOS regular width).
+        let container = MainContainerViewController()
+        let flowController = MainFlowController(viewController: container)
+        flowController.parent = parent
+
         let presenter = MainPresenter(
             flowController: flowController,
             interactor: interactor
         )
-        view.presenter = presenter
-        presenter.view = view
-        
-        PasswordsNavigationFlowController.showAsTab(in: view, parent: flowController)
-        ConnectNavigationFlowController.showAsTab(in: view, parent: flowController)
-        SettingsNavigationFlowController.showAsTab(in: view, parent: flowController)
-        
-        viewController.placeChild(view)
-        
-        return view
+        container.presenter = presenter
+        presenter.view = container
+
+        // A single Passwords subtree (sidebar | list | detail) is built once and reparented between the
+        // two layouts by the host coordinator, so the open item, its scroll position, and any modal it
+        // presents survive a width-driven layout swap intact.
+        let passwordsFilterState = PasswordsFilterState()
+        let passwordsHost = PasswordsHostCoordinator(parent: flowController, filterState: passwordsFilterState)
+
+        // Wide layout: the sidebar split. Its sidebar (primary) and detail (secondary) columns are fixed;
+        // the list (supplementary) column is supplied by the host coordinator on attach.
+        let split = MainSplitViewController(style: .tripleColumn)
+        let coordinator = MainSplitFlowController(split: split, parent: flowController)
+        flowController.splitFlowController = coordinator
+        coordinator.start(subtree: passwordsHost.subtree)
+
+        // A single Connect instance (camera, presenters) shared the same way: it lives in the Connect
+        // tab slot in the narrow layout and is presented modally over the split in the wide one, so an
+        // in-progress scan survives a width-driven layout swap.
+        let connectHost = ConnectHostCoordinator(parent: flowController)
+
+        // Narrow / middle layout: the tab bar (Passwords / Connect / Settings). The Passwords and
+        // Connect slots start with placeholders; the host coordinators swap the shared instances into
+        // them when the tab bar is the active layout, keeping the Settings (2) tab index stable.
+        let tabBar = MainViewController()
+        tabBar.addTab(passwordsHost.passwordsTabSlotPlaceholder)
+        tabBar.addTab(connectHost.tabSlotPlaceholder)
+        SettingsNavigationFlowController.showAsTab(in: tabBar, parent: flowController)
+
+        passwordsHost.configure(split: split, tabBar: tabBar)
+        connectHost.configure(tabBar: tabBar, container: container, splitCoordinator: coordinator)
+        coordinator.connectHost = connectHost
+        container.configure(
+            split: split,
+            tabBar: tabBar,
+            splitCoordinator: coordinator,
+            passwordsHost: passwordsHost,
+            connectHost: connectHost
+        )
+
+        viewController.placeChild(container)
+
+        return container
     }
 }
 
 extension MainFlowController: MainFlowControlling {
     func toPayment() {
-        let controller = PaywallViewController(displayCloseButton: true) { [weak viewController] controller in
-            viewController?.dismiss(animated: true)
+        let controller = PaywallViewController(displayCloseButton: true) { controller in
+            controller.dismiss(animated: true)
         }
         viewController.topViewController.present(controller, animated: true, completion: nil)
     }
@@ -67,7 +103,7 @@ extension MainFlowController: MainFlowControlling {
 }
 
 extension MainFlowController {
-    var viewController: MainViewController { _viewController as! MainViewController }
+    var viewController: UIViewController { _viewController }
 }
 
 extension MainFlowController: PasswordsNavigationFlowControllerParent {
@@ -104,9 +140,9 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
     
     func toRequestEnableBiometry() {
         guard viewController.presentedViewController == nil else { return }
-        
+
         let vc = UIHostingController(rootView: BiometricPromptRouter.buildView(onClose: { [weak self] in
-            self?.viewController.dismiss(animated: true)
+            self?.dismissBiometricPrompt(animated: true)
         }))
         
         if let sheet = vc.sheetPresentationController {
@@ -120,15 +156,19 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
         }
         
         vc.isModalInPresentation = true
-        biometricPromptViewController = viewController
-        
+        biometricPromptViewController = vc
+
         viewController.present(vc, animated: true)
     }
-    
+
     func dismissRequestEnableBiometry() {
-        guard biometricPromptViewController != nil else { return }
-        biometricPromptViewController?.dismiss(animated: false)
-        biometricPromptViewController = nil
+        dismissBiometricPrompt(animated: false)
+    }
+
+    private func dismissBiometricPrompt(animated: Bool) {
+        guard let biometricPromptViewController else { return }
+        biometricPromptViewController.dismiss(animated: animated)
+        self.biometricPromptViewController = nil
     }
 }
 

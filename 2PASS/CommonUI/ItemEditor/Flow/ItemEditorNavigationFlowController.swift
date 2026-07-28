@@ -47,8 +47,15 @@ final class ItemEditorNavigationFlowController: NavigationFlowController {
             navi.preferredTransition = .zoom(options: options, sourceViewProvider: { _ in sourceView })
         }
         
-        navi.configureAsPhoneFullScreenModal()
-        
+        // Window-trait-driven, not device-driven: a compact iPad multitasking window takes the
+        // full-screen path designed for compact width, while iPhone behavior is unchanged
+        // (regular×regular never holds there — Max landscape is compact-height).
+        if viewController.isInRegularSizedWindow {
+            navi.configureAsLargeModal()
+        } else {
+            navi.configureAsFullScreenModal()
+        }
+
         viewController.present(navi, animated: true)
     }
 
@@ -123,7 +130,7 @@ extension ItemEditorNavigationFlowController: ItemEditorFlowControllerParent {
             rootView: WiFiNetworkQRCodeScannerRouter.buildView(onScanned: onScanned)
         )
 
-        if let sheet = scannerViewController.sheetPresentationController, UIDevice.isiPad == false {
+        if let sheet = scannerViewController.sheetPresentationController, navigationController.isInRegularSizedWindow == false {
             sheet.detents = [
                 .custom(identifier: Constants.wifiNetworkQRCodeScannerDetentIdentifier) { context in
                     min(context.maximumDetentValue, Constants.wifiNetworkQRCodeScannerMaxDetentValue)

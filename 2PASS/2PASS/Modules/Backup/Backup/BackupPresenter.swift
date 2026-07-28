@@ -184,8 +184,6 @@ extension BackupPresenter {
                     self?.destination = nil
                     
                     Task { @MainActor in
-                        try await Task.sleep(for: .milliseconds(700))
-                        
                         self?.destination = .export(onClose: { [weak self] in
                             self?.close()
                         })
@@ -207,7 +205,6 @@ extension BackupPresenter {
                     self?.destination = nil
 
                     Task { @MainActor in
-                        try await Task.sleep(for: .milliseconds(700))
                         self?.destination = .exportToAnotherApp(onClose: onClose)
                     }
                 })

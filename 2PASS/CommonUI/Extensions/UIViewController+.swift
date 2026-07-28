@@ -27,6 +27,16 @@ public extension UIViewController {
         isModalInPresentation = true
         definesPresentationContext = true
     }
+
+    /// True when this controller's window is regular in both size classes — the environments
+    /// (full-screen iPad, wide multitasking window) with room for large centered sheets. Falls back
+    /// to the controller's own traits when it isn't in a window yet. Use instead of
+    /// `UIDevice.isiPad` for presentation-style decisions: a compact iPad multitasking window
+    /// (1/3 Split View, Slide Over) correctly reads as not-regular and gets the compact treatment.
+    var isInRegularSizedWindow: Bool {
+        let traits = viewIfLoaded?.window?.traitCollection ?? traitCollection
+        return traits.horizontalSizeClass == .regular && traits.verticalSizeClass == .regular
+    }
     
     func placeChild(_ vc: UIViewController, container: UIView? = nil) {
         vc.willMove(toParent: self)
@@ -38,6 +48,16 @@ public extension UIViewController {
         }
         vc.view.pinToParent()
         vc.didMove(toParent: self)
+    }
+
+    /// Symmetric counterpart to `placeChild`: detaches this controller from its container in the
+    /// documented order (`willMove` → view removal → `removeFromParent`). Safe on a controller
+    /// that is only half-contained (e.g. an iOS 18 pop that removed the parent but left the view
+    /// attached) — each step is a no-op where it doesn't apply.
+    func unplaceFromParent() {
+        willMove(toParent: nil)
+        viewIfLoaded?.removeFromSuperview()
+        removeFromParent()
     }
 
     func configureAsPhoneFullScreenModal() {

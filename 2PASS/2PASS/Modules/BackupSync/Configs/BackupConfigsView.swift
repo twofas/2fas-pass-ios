@@ -111,7 +111,7 @@ struct BackupConfigsView: View {
                 EmptyListView(.backupConfigsEmptyDescription)
                     .listRowBackground(Color.clear)
                     .position(x: formSize.width / 2, y: headerBottomY + (formSize.height - headerBottomY) / Constants.emptyStateOffsetDivisor)
-                    .ignoresSafeArea()
+                    .ignoresSafeArea(.container, edges: .top)
             }
         }
         .contentMargins(.bottom, Spacing.l, for: .scrollContent)

@@ -7,6 +7,7 @@
 import UIKit
 import SwiftUI
 import Common
+import Data
 
 private struct Constants {
     static let maxSelectedTagBannerWidth: CGFloat = 500
@@ -19,8 +20,44 @@ private struct Constants {
 final class PasswordsViewController: UIViewController {
     var presenter: PasswordsPresenter!
 
+    /// How this list is embedded. Set by the flow controller before the view loads; drives every
+    /// layout decision that used to branch on `UIDevice.isiPad` (search bar, content-type picker,
+    /// filter banner placement, selection title, tab bar hiding).
+    var listLayout: PasswordsListLayout = .standalone
+
+    /// Set by the flow controller (`setReparenting`) for the duration of a host swap, when
+    /// `MainContainerViewController` moves this list between the split's supplementary column and the tab
+    /// bar. A swap fires unreliable appearance callbacks: spurious ones (detaching from the old host
+    /// fires `viewWillDisappear` with no matching `viewWillAppear` even though the list stays on screen)
+    /// and swallowed genuine ones (the pop that reveals the list when its open detail is lifted into the
+    /// split's column, or the list landing in an unselected tab). While this is set, appearance callbacks
+    /// are ignored; when it clears, `reconcileAppearanceState()` settles the appearance-paired state —
+    /// the vault-change observer, keyboard inset tracking — against the list's actual window attachment,
+    /// so neither a spurious nor a swallowed callback can desync it. The controlled reload for a swap is
+    /// driven by `reloadListAfterReparent` instead.
+    var isReparenting = false {
+        didSet {
+            guard oldValue, isReparenting == false else { return }
+            reconcileAppearanceState()
+        }
+    }
+
+    /// Whether the appearance-paired state (vault-change observer, keyboard inset tracking) is
+    /// currently active. Tracked explicitly so activation/deactivation are idempotent and can be
+    /// reconciled against ground truth after a host swap, instead of trusting UIKit's callback pairing.
+    private var isAppearanceStateActive = false
+
     private let searchController = CommonSearchController()
     private var layout: UICollectionViewCompositionalLayout!
+    /// Inputs the compositional layout was last built from. `reloadLayout` compares against them to
+    /// skip the full `setCollectionViewLayout` invalidation when nothing the layout depends on has
+    /// changed — callers (every `viewWillAppear`, picker toggles, layout swaps) can't tell in
+    /// advance whether the filter state actually moved while the list was off-screen.
+    private struct ListLayoutInputs: Equatable {
+        let topInset: CGFloat
+        let showSectionHeaders: Bool
+    }
+    private var appliedLayoutInputs: ListLayoutInputs?
     private(set) var passwordsList: PasswordsListView?
     private(set) var dataSource: UICollectionViewDiffableDataSource<ItemSectionData, ItemCellData>?
 
@@ -41,6 +78,10 @@ final class PasswordsViewController: UIViewController {
     private var isSearchTransitioning: Bool = false
 
     private let selectedTagBannerView = SelectedFilterView()
+    /// Constraints currently positioning `selectedTagBannerView`. Tracked so the banner can be
+    /// re-anchored (under-picker ↔ top-of-list) when the layout mode switches, without leaking the
+    /// previous anchoring.
+    private var selectedTagBannerConstraints: [NSLayoutConstraint] = []
 
     private var contentTypePickerViewController: UIViewController?
     private var contentTypePickerTopConstraint: NSLayoutConstraint?
@@ -68,16 +109,131 @@ final class PasswordsViewController: UIViewController {
         addContentTypePicker()
         
         if let contentTypePicker {
-            addSelectedTagBanner(contentTypePicker: contentTypePicker)
+            addSelectedTagBanner(below: contentTypePicker)
             addTopEdgeEffect(contentTypePicker: contentTypePicker)
+        } else if listLayout == .splitColumn {
+            // The split's list column has no inline picker, but a sidebar-set filter should still
+            // surface the selected-filter banner at the top of the list.
+            addSelectedTagBanner()
         }
-        
-        filterDidChange()
+
+        filterDidChange(animated: false)
+    }
+
+    /// The list's own search controller, exposed so the split's detail column can host the same bar
+    /// (and keep its typed phrase / cursor) while this list is embedded as the split's list column.
+    var ownSearchController: CommonSearchController { searchController }
+
+    /// Whether this list hosts its own search bar on its nav item: always in `.standalone`
+    /// (tab / AutoFill), and in `.splitColumn` only before iOS 26 (from iOS 26 the split's search bar
+    /// lives in the detail column instead).
+    private var hostsOwnSearchBar: Bool {
+        switch listLayout {
+        case .standalone: return true
+        case .splitColumn: return PasswordsListLayout.splitHostsSearchInDetailColumn == false
+        }
+    }
+
+    /// Switches this list between its standalone and split-column presentations at runtime, so a single
+    /// instance can be reparented between the tab bar and the iPad split without being rebuilt. Idempotent
+    /// and safe to call repeatedly; stores the value and defers to `viewDidLoad` if the view isn't loaded.
+    func applyLayout(_ newLayout: PasswordsListLayout) {
+        guard isViewLoaded else { listLayout = newLayout; return }
+        guard newLayout != listLayout else { return }
+        listLayout = newLayout
+
+        switch newLayout {
+        case .splitColumn:
+            // The list drops the inline picker + edge effect and re-anchors the filter banner to the
+            // top of the list. Its search bar moves to the detail column only on iOS 26+; before that
+            // it keeps (or restores) its own bar on the list column.
+            if PasswordsListLayout.splitHostsSearchInDetailColumn {
+                relinquishOwnSearchController()
+            } else {
+                reclaimOwnSearchController()
+            }
+            removeTopEdgeEffect()
+            removeContentTypePicker()
+            addSelectedTagBanner()
+        case .standalone:
+            // The list reclaims its own chrome: inline picker, edge effect, under-picker banner, search bar.
+            addContentTypePicker()
+            if let contentTypePicker {
+                addTopEdgeEffect(contentTypePicker: contentTypePicker)
+                addSelectedTagBanner(below: contentTypePicker)
+            }
+            reclaimOwnSearchController()
+
+            // Follow the presenter's picker visibility rather than showing unconditionally: on an
+            // empty vault it stays hidden, and the `hasItems` didSet can't correct an unconditional
+            // show because the value doesn't change across the swap (false → false). Constraint/alpha
+            // only — the single layout rebuild happens in the `filterDidChange` closing this method.
+            setContentTypePickerVisible(presenter.showContentTypePicker)
+        }
+
+        // Re-evaluate the cell highlight (split column vs grid) on the next layout pass without rebuilding
+        // the data source, then refresh banner/edge/layout state and the multiselect title placement.
+        lastEvaluatedListBoundsSize = nil
+        appliedInsetSelectionHighlight = nil
+        view.setNeedsLayout()
+        filterDidChange(animated: false)
+        if isEditing { updateSelectionUI() }
+    }
+
+    /// Removes this list's own search bar from its nav item so the detail column can host it (split mode).
+    private func relinquishOwnSearchController() {
+        if navigationItem.searchController === searchController {
+            navigationItem.searchController = nil
+        }
+    }
+
+    /// Re-installs this list's own search bar on its nav item (standalone mode).
+    private func reclaimOwnSearchController() {
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+    }
+
+    /// Cells use the inset selection highlight when the list renders as a multi-column grid or as the
+    /// split's list column. Read by the cell registration (see `setupDataSource`).
+    var usesInsetSelectionHighlight: Bool {
+        listLayout == .splitColumn || isShowingMultipleColumns
+    }
+
+    /// Whether the grid is currently laying items out in more than one column. Mirrors the column math
+    /// in `ItemListLayout` using the list's current content width.
+    private var isShowingMultipleColumns: Bool {
+        guard let passwordsList else { return false }
+        let availableWidth = passwordsList.bounds.inset(by: passwordsList.adjustedContentInset).width
+        return ItemListLayout.numberOfColumns(
+            forAvailableWidth: availableWidth,
+            contentSizeCategory: traitCollection.preferredContentSizeCategory
+        ) > 1
+    }
+
+    /// Last list bounds size we evaluated the highlight for, and the value applied for it. A bounds
+    /// change can flip the multi-column state, so we re-evaluate on every bounds change and reconfigure
+    /// the cells when the highlight actually changes — without rebuilding the data source.
+    private var lastEvaluatedListBoundsSize: CGSize?
+    private var appliedInsetSelectionHighlight: Bool?
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        guard let boundsSize = passwordsList?.bounds.size, boundsSize != lastEvaluatedListBoundsSize else { return }
+        lastEvaluatedListBoundsSize = boundsSize
+
+        let current = usesInsetSelectionHighlight
+        guard current != appliedInsetSelectionHighlight else { return }
+        appliedInsetSelectionHighlight = current
+
+        guard var snapshot = dataSource?.snapshot(), snapshot.numberOfItems > 0 else { return }
+        snapshot.reconfigureItems(snapshot.itemIdentifiers)
+        dataSource?.apply(snapshot, animatingDifferences: false)
     }
 
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
-        
+
         if isSearchTransitioning {
             UIView.animate(withDuration: Constants.searchTransitioningLayoutAnimationDuration) {
                 self.view.layoutIfNeeded()
@@ -90,14 +246,53 @@ final class PasswordsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        presenter.viewWillAppear()
-        startSafeAreaKeyboardAdjustment()
+        // A host swap fires unreliable appearance callbacks; ignore them — clearing `isReparenting`
+        // reconciles the appearance-paired state afterwards.
+        guard isReparenting == false else { return }
+        activateAppearanceState()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard isReparenting == false else { return }
+        // Idempotent — catches an appearance whose `viewWillAppear` was swallowed inside a swap
+        // bracket but whose transition completed after it ended.
+        activateAppearanceState()
+        // Re-apply after the appearance transition completes; a text set in viewWillAppear can be
+        // dropped before the search bar is laid out, leaving the restored phrase invisible.
+        presenter.viewDidAppear()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        guard isReparenting == false else { return }
+        deactivateAppearanceState()
+    }
+
+    private func activateAppearanceState() {
+        guard isAppearanceStateActive == false else { return }
+        isAppearanceStateActive = true
+        presenter.viewWillAppear()
+        startSafeAreaKeyboardAdjustment()
+    }
+
+    private func deactivateAppearanceState() {
+        guard isAppearanceStateActive else { return }
+        isAppearanceStateActive = false
         presenter.viewWillDisappear()
         stopSafeAreaKeyboardAdjustment()
+    }
+
+    /// Settles the appearance-paired state on ground truth once a host swap's callback churn is over:
+    /// a swap can swallow a genuine appear (the pop revealing the list on tab→split) or a genuine
+    /// disappear (the list landing in an unselected tab, or being covered by the reopened detail, on
+    /// split→tab), so the callbacks alone can leave the state stuck. Window attachment is the fact.
+    private func reconcileAppearanceState() {
+        if viewIfLoaded?.window != nil {
+            activateAppearanceState()
+        } else {
+            deactivateAppearanceState()
+        }
     }
 
     override func setEditing(_ editing: Bool, animated: Bool) {
@@ -105,23 +300,39 @@ final class PasswordsViewController: UIViewController {
         
         if editing == false {
             navigationItem.title = String(localized: .homeTitle)
-            navigationItem.searchController = searchController
+            if hostsOwnSearchBar {
+                navigationItem.searchController = searchController
+            }
 
             if presenter.isAutoFillExtension {
                 navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
             } else {
                 navigationItem.leftBarButtonItem = nil
             }
-        } else if UIDevice.isiPad {
-            navigationItem.searchController = nil
+        } else if listLayout == .splitColumn {
+            // When the detail column hosts the search bar (iOS 26+) the list's nav item has none, so
+            // this is a no-op there; pre-26 the list keeps its own bar (disabled below) during
+            // multiselect, mirroring standalone.
+            if hostsOwnSearchBar == false {
+                navigationItem.searchController = nil
+            }
+            // The selection count lives in the detail column for the split, so clear the list
+            // column's title while multiselecting instead of leaving the stale "Home" title.
+            navigationItem.title = nil
         }
 
         searchController.searchBar.isEnabled = !editing
 
         passwordsList?.isEditing = editing
-        if editing == false {
-            clearSelection()
-        }
+        // Clear the current selection on every editing transition. Entering multiselect drops the
+        // split layout's persistent detail highlight so it starts with nothing selected; exiting
+        // clears the multiselect checkmarks. `reconcileSelection` re-applies any cross-layout
+        // selection afterwards, so this doesn't fight the restore.
+        clearSelection()
+
+        // Mirror the editing state into the shared list state so the other layout resumes in (or out
+        // of) multiselect after a layout switch.
+        presenter.onEditingChanged(editing)
 
         updateNavigationBarButtons(animated: animated)
         updateTabBarAndToolbar(isEditing: editing, animated: animated)
@@ -174,19 +385,31 @@ final class PasswordsViewController: UIViewController {
         }
     }
     
-    func reloadLayout() {
+    func reloadLayout(animated: Bool) {
         view.layoutIfNeeded()
 
         let hasActiveFilter = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
-        UIView.animate(withDuration: Constants.changeScrollContentInsetAnimationDuration) {
-            self.passwordsList?.contentInset.top = (hasActiveFilter ? self.selectedTagBannerView.frame.height + Spacing.m + (self.presenter.showContentTypePicker ? 0 : Spacing.l) : 0)
+        // The split's list sits below a top-anchored banner; give it extra room so the first row clears it.
+        let bannerExtraSpacing = listLayout == .splitColumn ? Spacing.l : 0
+        let topContentInset: CGFloat = hasActiveFilter
+            ? selectedTagBannerView.frame.height + Spacing.m + (presenter.showContentTypePicker ? 0 : Spacing.l) + bannerExtraSpacing
+            : 0
+        if passwordsList?.contentInset.top != topContentInset {
+            UIView.animate(withDuration: Constants.changeScrollContentInsetAnimationDuration) {
+                self.passwordsList?.contentInset.top = topContentInset
+            }
         }
 
+        guard listLayoutInputs != appliedLayoutInputs else { return }
         layout = makeLayout()
-        passwordsList?.setCollectionViewLayout(layout, animated: true)
+        passwordsList?.setCollectionViewLayout(layout, animated: animated)
     }
     
     func filterDidChange() {
+        filterDidChange(animated: true)
+    }
+    
+    func filterDidChange(animated: Bool) {
         selectedTagBannerView.setTag(presenter.selectedFilterTag)
         selectedTagBannerView.setProtectionLevel(presenter.selectedFilterProtectionLevel)
 
@@ -199,8 +422,7 @@ final class PasswordsViewController: UIViewController {
         }
 
         updateNavigationBarButtons()
-        reloadLayout()
-        clearSelection()
+        reloadLayout(animated: animated)
     }
     
     func setContentTypePickerOffset(_ offset: CGFloat) {
@@ -210,16 +432,76 @@ final class PasswordsViewController: UIViewController {
     }
     
     func showContentTypeFilterPicker(_ flag: Bool) {
+        setContentTypePickerVisible(flag)
+        reloadLayout(animated: true)
+    }
+
+    /// Constraint/alpha part of `showContentTypeFilterPicker`, without the layout reload — for
+    /// callers that already end with their own `reloadLayout` pass (`applyLayout`).
+    private func setContentTypePickerVisible(_ flag: Bool) {
         contentTypePickerHeightConstraint?.constant = flag ? Constants.contentTypePickerHeight : 0
         contentTypePicker?.alpha = flag ? 1 : 0
-        
-        reloadLayout()
+    }
+
+    /// Reflects the shared search phrase in this list's own search bar (iPhone). On iPad the list has
+    /// no search bar — the field is hosted in the split's detail column — so this is a no-op there.
+    /// Setting the text directly doesn't notify the search delegate, so it won't re-trigger filtering;
+    /// the presenter already pushes the phrase into the interactor before reloading.
+    func restoreSearchPhrase(_ phrase: String?) {
+        let text = phrase ?? ""
+        if searchController.searchBar.text != text {
+            searchController.searchBar.text = text
+        }
     }
     
     func clearSelection() {
         passwordsList?.indexPathsForSelectedItems?.forEach { indexPath in
             passwordsList?.deselectItem(at: indexPath, animated: false)
         }
+        updateSelectionUI()
+    }
+
+    /// Reconciles this list's editing mode and selected rows to the shared multiselect state so a
+    /// selection started in the other layout continues here. Called from `reloadData`'s apply
+    /// completion, when the snapshot's index paths are valid. Programmatic selection doesn't notify
+    /// the delegate, so it won't loop.
+    func reconcileSelection() {
+        guard presenter.isSelecting else {
+            if isEditing {
+                setEditing(false, animated: false)
+            }
+            return
+        }
+
+        // Captured before `setEditing`, whose `updateSelectionUI` transiently rewrites the shared set.
+        let ids = presenter.selectedItemIDs
+
+        if isEditing == false {
+            setEditing(true, animated: false)
+        }
+
+        guard let dataSource, let passwordsList else { return }
+
+        let cellByID = Dictionary(
+            dataSource.snapshot().itemIdentifiers.map { ($0.itemID, $0) },
+            uniquingKeysWith: { existing, _ in existing }
+        )
+        let currentlySelected = passwordsList.indexPathsForSelectedItems ?? []
+
+        // Deselect anything no longer in the target set.
+        for indexPath in currentlySelected {
+            if let id = dataSource.itemIdentifier(for: indexPath)?.itemID, ids.contains(id) == false {
+                passwordsList.deselectItem(at: indexPath, animated: false)
+            }
+        }
+        // Select everything in the target set that isn't already selected.
+        for id in ids {
+            guard let cell = cellByID[id], let indexPath = dataSource.indexPath(for: cell) else { continue }
+            if currentlySelected.contains(indexPath) == false {
+                passwordsList.selectItem(at: indexPath, animated: false, scrollPosition: [])
+            }
+        }
+
         updateSelectionUI()
     }
 }
@@ -270,6 +552,7 @@ private extension PasswordsViewController {
         }
 
         updateSelectionUI()
+        persistSelection()
     }
 
     @objc
@@ -289,9 +572,21 @@ private extension PasswordsViewController {
         presentBulkTagsSelection(for: selectedItemIDs)
     }
     
+    /// True only while a split view is actively showing its sidebar (iPad wide layout), where the
+    /// sidebar owns the filters. When the list is standalone (tab layout, iPhone), the list's own
+    /// menu owns the filters. Derived from `listLayout` — the coordinator sets it synchronously
+    /// before the swap's button/layout updates run, whereas `splitViewController.isCollapsed`
+    /// still reports its initial `true` between the first attach and the split's first layout
+    /// pass, which left the more button's filter dot showing alongside the sidebar's own filters.
+    private var isShowingSplitSidebar: Bool {
+        listLayout == .splitColumn
+    }
+
     func filterBarButton() -> UIBarButtonItem {
         let button = FilterButton()
-        button.isFilterActive = presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil
+        // While the split's sidebar is showing, the active-filter state lives there, so don't mark the list's more button.
+        button.isFilterActive = isShowingSplitSidebar == false
+            && (presenter.selectedFilterTag != nil || presenter.selectedFilterProtectionLevel != nil)
         button.menu = filterMenu()
         button.showsMenuAsPrimaryAction = true
         button.clipsToBounds = false
@@ -316,33 +611,51 @@ private extension PasswordsViewController {
         return filterButton
     }
     
-    func makeLayout() -> UICollectionViewCompositionalLayout {
-        ItemListLayout(
-            topInset: presenter.showContentTypePicker ? (contentTypePicker?.frame.height ?? 0) + Spacing.l : 0,
+    private var listLayoutInputs: ListLayoutInputs {
+        ListLayoutInputs(
+            topInset: presenter.showContentTypePicker && contentTypePicker != nil ? (contentTypePicker?.frame.height ?? 0) + Spacing.l : 0,
             showSectionHeaders: presenter.hasSuggestedItems
+        )
+    }
+
+    func makeLayout() -> UICollectionViewCompositionalLayout {
+        let inputs = listLayoutInputs
+        appliedLayoutInputs = inputs
+        return ItemListLayout(
+            topInset: inputs.topInset,
+            showSectionHeaders: inputs.showSectionHeaders
         )
     }
     
     func addContentTypePicker() {
+        // In the split, the content-type filter lives in the sidebar, so the inline picker (and its
+        // dependent selected-tag banner / edge effect) is omitted for the list column.
+        guard listLayout == .standalone else { return }
+        // Idempotent: a repeat call (e.g. after a layout switch back to standalone) must not add a
+        // duplicate child / subview.
+        guard contentTypePickerViewController == nil else { return }
+
         let filters = ItemContentTypeFilter.allKnown
-        
-        contentTypePickerViewController = UIHostingController(rootView: ItemContentTypePickerUIKitWrapper(
-            initialFilter: filters[0],
+
+        // Seed from the shared filter state, not a constant: the picker is rebuilt on every swap back
+        // to standalone, and a filter picked in the split's sidebar must stay selected (and clearable)
+        // in the rebuilt inline picker.
+        let pickerController = UIHostingController(rootView: ItemContentTypePickerUIKitWrapper(
+            initialFilter: presenter.contentTypeFilter,
             filters: filters,
             onChange: { [weak self] filter in
                 self?.presenter.onSetContentTypeFilter(filter)
             }
         ))
-        
-        guard let contentTypePicker else {
-            return
-        }
-        
+        contentTypePickerViewController = pickerController
+
+        let contentTypePicker = pickerController.view!
         contentTypePicker.translatesAutoresizingMaskIntoConstraints = false
         contentTypePicker.backgroundColor = .clear
-        
+
+        addChild(pickerController)
         view.addSubview(contentTypePicker)
-        
+
         let contentTypePickerTopConstraint = contentTypePicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: contentTypePickerTopOffset)
         let contentTypePickerHeightConstraint = contentTypePicker.heightAnchor.constraint(equalToConstant: 0)
         NSLayoutConstraint.activate([
@@ -353,28 +666,54 @@ private extension PasswordsViewController {
         ])
         self.contentTypePickerTopConstraint = contentTypePickerTopConstraint
         self.contentTypePickerHeightConstraint = contentTypePickerHeightConstraint
+
+        pickerController.didMove(toParent: self)
+    }
+
+    /// Tears down the inline content-type picker child (split mode has no inline picker). Symmetric to
+    /// `addContentTypePicker`, including deactivating its constraints so the offset setters become no-ops.
+    func removeContentTypePicker() {
+        guard let pickerController = contentTypePickerViewController else { return }
+        pickerController.unplaceFromParent()
+        contentTypePickerTopConstraint?.isActive = false
+        contentTypePickerTopConstraint = nil
+        contentTypePickerHeightConstraint?.isActive = false
+        contentTypePickerHeightConstraint = nil
+        contentTypePickerViewController = nil
     }
     
-    func addSelectedTagBanner(contentTypePicker: UIView) {
+    /// Installs the selected-filter banner. With `contentTypePicker` the banner hangs below the
+    /// inline picker (standalone list); without it, it anchors to the top safe area (the split's
+    /// list column, which has no inline picker).
+    func addSelectedTagBanner(below contentTypePicker: UIView? = nil) {
+        resetSelectedTagBanner()
         selectedTagBannerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(selectedTagBannerView)
 
-        let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.l)
-        top.priority = .defaultHigh
-        NSLayoutConstraint.activate([
-            selectedTagBannerView.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor, constant: Spacing.m),
-            top,
-            selectedTagBannerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l),
-            selectedTagBannerView.trailingAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
-        ])
+        // Anchor the leading edge so the banner width resolves to the chips' intrinsic size; a
+        // centerX-only layout leaves the width ambiguous and collapses the chip's label.
+        let leading = selectedTagBannerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l)
+        leading.priority = .defaultHigh
 
-        if UIDevice.isiPad {
-            selectedTagBannerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        if let contentTypePicker {
+            let top = selectedTagBannerView.topAnchor.constraint(equalTo: contentTypePicker.bottomAnchor, constant: Spacing.l)
+            top.priority = .defaultHigh
+
+            selectedTagBannerConstraints = [
+                selectedTagBannerView.topAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.topAnchor, constant: Spacing.m),
+                top,
+                selectedTagBannerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l),
+                selectedTagBannerView.trailingAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l),
+                leading
+            ]
         } else {
-            let leading = selectedTagBannerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: Spacing.l)
-            leading.priority = .defaultHigh
-            leading.isActive = true
+            selectedTagBannerConstraints = [
+                selectedTagBannerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Spacing.m),
+                leading,
+                selectedTagBannerView.trailingAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -Spacing.l)
+            ]
         }
+        NSLayoutConstraint.activate(selectedTagBannerConstraints)
 
         selectedTagBannerView.onTagClose = { [weak self] _ in
             self?.presenter.onClearFilterTag()
@@ -384,25 +723,46 @@ private extension PasswordsViewController {
             self?.presenter.onClearFilterProtectionLevel()
         }
     }
-    
+
+    /// Split variant: pin the selected-filter banner to the top of the list (no inline picker to follow).
+
+    /// Deactivates the banner's current anchoring so it can be re-anchored for the other layout mode.
+    private func resetSelectedTagBanner() {
+        NSLayoutConstraint.deactivate(selectedTagBannerConstraints)
+        selectedTagBannerConstraints = []
+    }
+
     func addTopEdgeEffect(contentTypePicker: UIView) {
         if #available(iOS 26.0, *), let passwordsList {
+            guard edgeEffectView == nil else { return }
+
             let effectView = EdgeEffectView(edge: .top, scrollView: passwordsList)
-            
+
             effectView.translatesAutoresizingMaskIntoConstraints = false
             view?.insertSubview(effectView, at: 0)
-            
+
             edgeEffectToSelectedTagConstraint = effectView.bottomAnchor.constraint(equalTo: selectedTagBannerView.bottomAnchor)
             edgeEffectToContentTypePickerConstraint = effectView.bottomAnchor.constraint(equalTo: contentTypePicker.bottomAnchor)
-            
+
             NSLayoutConstraint.activate([
                 effectView.topAnchor.constraint(equalTo: view.topAnchor),
                 effectView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
                 effectView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             ])
-            
+
             edgeEffectView = effectView
         }
+    }
+
+    /// Tears down the top edge effect (no inline picker in split mode for it to track). Must run before
+    /// `removeContentTypePicker`, since one of its constraints is pinned to the picker.
+    func removeTopEdgeEffect() {
+        edgeEffectToContentTypePickerConstraint?.isActive = false
+        edgeEffectToContentTypePickerConstraint = nil
+        edgeEffectToSelectedTagConstraint?.isActive = false
+        edgeEffectToSelectedTagConstraint = nil
+        edgeEffectView?.removeFromSuperview()
+        edgeEffectView = nil
     }
     
     func setupPasswordsList() {
@@ -418,9 +778,17 @@ private extension PasswordsViewController {
 
     func setupNavigationItems() {
         searchController.delegate = self
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
+
+        // In the iOS 26+ split the items search lives in the detail column (far right of the screen),
+        // not on the list column. Every other case — the standalone list (tab bar, AutoFill) and the
+        // pre-26 split list column — hosts its own search bar.
+        if hostsOwnSearchBar {
+            navigationItem.searchController = searchController
+            navigationItem.hidesSearchBarWhenScrolling = false
+        }
+
         navigationItem.largeTitleDisplayMode = .never
+
         title = String(localized: .homeTitle)
         
         updateNavigationBarButtons()
@@ -488,6 +856,7 @@ private extension PasswordsViewController {
         guard let passwordsList else { return }
 
         let cellRegistration = UICollectionView.CellRegistration<ItemCellView, ItemCellData> { [weak self] cell, indexPath, item in
+            cell.usesInsetSelectionHighlight = self?.usesInsetSelectionHighlight ?? false
             cell.update(with: item)
             
             if let url = item.iconType.iconURL, let cachedData = self?.presenter.cachedImage(from: url) {
@@ -581,13 +950,6 @@ private extension PasswordsViewController {
             : String(localized: .homeSelectionSelectAll)
     }
 
-    func selectionCountTitle(for count: Int) -> String {
-        if UIDevice.isiPad {
-            String(localized: .commonItemsCount(Int32(count)))
-        } else {
-            String(localized: .homeSelectionCount(Int32(count)))
-        }
-    }
 
     func updateNavigationBarButtons(animated: Bool = false) {
         if animated, let navigationBar = navigationController?.navigationBar {
@@ -639,8 +1001,8 @@ private extension PasswordsViewController {
         navigationController?.setToolbarHidden(!isEditing, animated: animated)
 
         guard let tabBar = tabBarController?.tabBar else { return }
-            
-        if #available(iOS 26.0, *), UIDevice.isiPad == false  {
+
+        if #available(iOS 26.0, *) {
             if isEditing {
                 if animated {
                     tabBar.isHidden = false
@@ -681,7 +1043,10 @@ private extension PasswordsViewController {
     func filterMenuItems() -> [UIMenuElement] {
         var menuItems: [UIMenuElement] = []
         menuItems.append(sortMenu())
-        menuItems.append(tagMenu())
+        // Filters live in the sidebar while the split shows it, so omit them from the list's menu then.
+        if isShowingSplitSidebar == false {
+            menuItems.append(tagMenu())
+        }
         if isEditing == false, presenter.isAutoFillExtension == false {
             let selectSection = UIMenu(title: "", options: .displayInline, children: [selectMenuAction()])
             menuItems.append(selectSection)
@@ -690,9 +1055,12 @@ private extension PasswordsViewController {
     }
     
     func tagMenu() -> UIMenu {
+        // One storage pass for every row's count, instead of one query per level / per tag.
+        let counts = presenter.itemFilterCounts()
+
         // Create protection level actions
         let protectionLevelActions = ItemProtectionLevel.allCases.map { level in
-            let count = presenter.countPasswordsForProtectionLevel(level)
+            let count = counts.byProtectionLevel[level] ?? 0
             let title = "\(level.title) (\(count))"
             return UIAction(
                 title: title,
@@ -715,7 +1083,7 @@ private extension PasswordsViewController {
             tagActions = [noTagsLabel]
         } else {
             tagActions = tags.map { tag in
-                let count = presenter.countPasswordsForTag(tag.tagID)
+                let count = counts.byTag[tag.tagID] ?? 0
                 let title = "\(tag.name) (\(count))"
                 let colorImage = UIImage.circleImage(
                     color: UIColor(tag.color),
@@ -779,11 +1147,24 @@ extension PasswordsViewController: CommonSearchDataSourceSearchable {
 extension PasswordsViewController {
     func updateSelectionUI() {
         guard isEditing else { return }
-        navigationItem.title = selectionCountTitle(for: selectedItemIDs.count)
+        let selectedItemIDs = selectedItemIDs
+        // The split layout reports the count in its detail column instead, so keep the list column's
+        // title clear there; only the standalone list shows the count in its navigation title.
+        if listLayout == .standalone {
+            navigationItem.title = String(localized: .homeSelectionCount(Int32(selectedItemIDs.count)))
+        }
         selectAllButton?.title = selectAllButtonTitle()
         deleteBarButton?.isEnabled = selectedItemIDs.isEmpty == false
         protectionLevelBarButton?.isEnabled = selectedItemIDs.isEmpty == false
         tagsBarButton?.isEnabled = selectedItemIDs.isEmpty == false
+    }
+
+    /// Persists the current selection to the shared state. Called only from genuine user selection
+    /// actions (tap, select-all) — never from transient clears like `clearSelection()`, which would
+    /// otherwise wipe the shared selection the other layout is about to restore.
+    func persistSelection() {
+        guard isEditing else { return }
+        presenter.onSelectionChanged(Set(selectedItemIDs))
     }
 }
 

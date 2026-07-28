@@ -6,26 +6,41 @@
 
 import Common
 import CommonUI
+import Data
 import SwiftUI
 
 struct ConnectRouter: Router {
     
-    static func buildView(onScannedQRCode: @escaping Callback, onScanAgain: @escaping Callback) -> some View {
-        ConnectView(presenter: .init(
+    static func buildView(
+        onClose: @escaping Callback,
+        onScannedSession: @escaping (ConnectSession) -> Void
+    ) -> (view: some View, presenter: ConnectPresenter) {
+        let presenter = ConnectPresenter(
             interactor: ModuleInteractorFactory.shared.connectModuleInteractor(),
-            onScannedQRCode: onScannedQRCode,
-            onScanAgain: onScanAgain)
+            cameraInteractor: ModuleInteractorFactory.shared.connectCameraModuleInteractor(),
+            onScannedSession: onScannedSession
         )
+        let view = ConnectView(presenter: presenter)
+            .onClose(onClose)
+        return (view, presenter)
     }
-    
+
     func routingType(for destination: ConnectDestination?) -> RoutingType? {
-        .sheet
+        switch destination {
+        case .permissions(_, let routingType):
+            routingType
+        case nil:
+            nil
+        }
     }
-    
+
     func view(for destination: ConnectDestination) -> some View {
         switch destination {
-        case .permissions(let onFinish):
-            ConnectPermissionsRouter.buildView(onFinish: onFinish)
+        case .permissions(let onFinish, let routingType):
+            ConnectPermissionsRouter.buildView(
+                onFinish: onFinish,
+                usesNavigationStack: routingType == .sheet
+            )
         }
     }
 }

@@ -63,3 +63,4 @@ struct ForgotMasterPasswordRouter: Router {
         }
     }
 }
+

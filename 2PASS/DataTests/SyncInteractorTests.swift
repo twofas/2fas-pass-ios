@@ -151,8 +151,7 @@ private final class NoopItemsInteractor: ItemsInteracting {
         tags: [ItemTagData],
         completion: @escaping (Result<Void, ItemsInteractorReencryptError>) -> Void
     ) {}
-    func getItemCountForTag(tagID: ItemTagID, contentType: ItemContentType?) -> Int { 0 }
-    func itemCountsByTag() -> [ItemTagID: Int] { [:] }
+    func itemFilterCounts() -> ItemFilterCounts { ItemFilterCounts(byTag: [:], byProtectionLevel: [:]) }
 }
 
 private final class NoopItemsImportInteractor: ItemsImportInteracting {

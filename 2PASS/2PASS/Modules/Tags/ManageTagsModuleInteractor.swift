@@ -35,7 +35,7 @@ final class ManageTagsModuleInteractor: ManageTagsModuleInteracting {
     }
     
     func itemCountsByTag() -> [ItemTagID: Int] {
-        itemsInteractor.itemCountsByTag()
+        itemsInteractor.itemFilterCounts().byTag
     }
 }
 

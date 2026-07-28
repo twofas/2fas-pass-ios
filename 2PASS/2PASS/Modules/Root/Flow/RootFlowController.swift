@@ -74,7 +74,7 @@ final class RootFlowController: FlowController {
         return window
     }()
         
-    private var mainViewController: MainViewController?
+    private var mainViewController: UIViewController?
     private var activeViewController: UIViewController?
     private var isScreenCaptureBlocked = false
     

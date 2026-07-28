@@ -29,7 +29,8 @@ final class BulkProtectionLevelFlowController: FlowController {
     static func present(
         on viewController: UIViewController,
         parent: BulkProtectionLevelFlowControllerParent,
-        selectedItems: [ItemData]
+        selectedItems: [ItemData],
+        prefersDefaultSheetSize: Bool
     ) {
         let view = BulkProtectionLevelViewController()
         let flowController = BulkProtectionLevelFlowController(viewController: view)
@@ -38,7 +39,7 @@ final class BulkProtectionLevelFlowController: FlowController {
         view.presenter = presenter
 
         let navigationController = UINavigationController(rootViewController: view)
-        flowController.configureSheet(for: navigationController)
+        flowController.configureSheet(for: navigationController, prefersDefaultSheetSize: prefersDefaultSheetSize)
         viewController.present(navigationController, animated: true)
     }
 }
@@ -89,8 +90,16 @@ private extension BulkProtectionLevelFlowController {
         static let sheetHeight: CGFloat = 340
     }
 
-    func configureSheet(for navigationController: UINavigationController) {
+    func configureSheet(for navigationController: UINavigationController, prefersDefaultSheetSize: Bool) {
         guard let sheet = navigationController.sheetPresentationController else { return }
+
+        // Where the sheet is presented as a form sheet (regular width and the iPad split column),
+        // keep its default size instead of clamping to the compact-width preferred height.
+        guard !prefersDefaultSheetSize else {
+            sheet.prefersGrabberVisible = true
+            return
+        }
+
         let identifier = UISheetPresentationController.Detent.Identifier("bulkProtectionLevel")
         let detent = UISheetPresentationController.Detent.custom(identifier: identifier) { context in
             min(Constants.sheetHeight, context.maximumDetentValue)

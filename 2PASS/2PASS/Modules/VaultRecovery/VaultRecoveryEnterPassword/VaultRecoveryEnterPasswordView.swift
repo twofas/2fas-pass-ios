@@ -12,7 +12,7 @@ struct VaultRecoveryEnterPasswordView: View {
         case password
     }
     
-    @Bindable
+    @State
     var presenter: VaultRecoveryEnterPasswordPresenter
     
     @FocusState

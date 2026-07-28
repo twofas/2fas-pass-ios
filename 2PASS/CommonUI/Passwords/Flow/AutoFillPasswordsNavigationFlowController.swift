@@ -53,6 +53,18 @@ public final class AutofillPasswordsNavigationFlowController: NavigationFlowCont
 }
 
 extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerParent {
+    public var isDetailColumnVisible: Bool { false }
+
+    public var openDetailItemID: ItemID? { nil }
+
+    public func clearDetailSelection() {}
+
+    public func showMultiselectDetail(selectedCount: Int) {}
+
+    public func showEmptyVaultDetail() {}
+
+    public func restoreItemsSearchPhrase(_ phrase: String?) {}
+
     public func passwordsToItemDetail(itemID: ItemID) {
         ItemDetailFlowController.push(
             on: navigationController,
@@ -100,6 +112,20 @@ extension AutofillPasswordsNavigationFlowController: PasswordsFlowControllerPare
 }
 
 extension AutofillPasswordsNavigationFlowController: ItemDetailFlowControllerParent {
+    func itemDetailToEdit(_ itemID: ItemID) {
+        // AutoFill never reparents its subtree, so its own nav is a stable in-window host and parent.
+        ItemEditorNavigationFlowController.present(
+            on: navigationController,
+            parent: self,
+            editItemID: itemID
+        )
+    }
+
+    func itemDetailModalPresenter() -> UIViewController {
+        // AutoFill never reparents its subtree, so its own nav is a stable in-window host.
+        navigationController
+    }
+
     func itemDetailClose() {
         navigationController.popToRootViewController(animated: true)
     }
@@ -107,5 +133,11 @@ extension AutofillPasswordsNavigationFlowController: ItemDetailFlowControllerPar
     @available(iOS 18.0, *)
     func itemDetailAutoFillTextToInsert(_ text: String) {
         parent?.textToInsert(text)
+    }
+}
+
+extension AutofillPasswordsNavigationFlowController: ItemEditorNavigationFlowControllerParent {
+    func closeItemEditor(with result: SaveItemResult) {
+        navigationController.dismiss(animated: true)
     }
 }

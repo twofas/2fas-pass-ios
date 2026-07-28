@@ -5,9 +5,7 @@ struct ManageTagsRouter: Router {
 
     @MainActor
     static func buildView() -> some View {
-        NavigationStack {
-            ManageTagsView(presenter: ManageTagsPresenter(interactor: ModuleInteractorFactory.shared.manageTagsModuleInteractor()))
-        }
+        ManageTagsView(presenter: ManageTagsPresenter(interactor: ModuleInteractorFactory.shared.manageTagsModuleInteractor()))
     }
     
     func routingType(for destination: ManageTagsDestination?) -> RoutingType? {
