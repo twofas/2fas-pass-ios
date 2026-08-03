@@ -246,8 +246,7 @@ extension ConnectInteractor {
     ) throws -> ConnectPairingWebSocketSession.EncryptedTransferData {
         guard let nonceS = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
               let nonceD = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
-              let nonceT = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount),
-              let nonceE = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount) else {
+              let nonceT = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount) else {
             throw ConnectError.encryptionFailure
         }
 
@@ -260,14 +259,7 @@ extension ConnectInteractor {
             throw ConnectError.encryptionFailure
         }
 
-        let expirationDateEnc: Data? = {
-            if let expirationDate = paymentStatusInteractor.plan.expirationDate,
-               let expirationTimestamp = "\(expirationDate.exportTimestamp))".data(using: .utf8) {
-                return mainRepository.encrypt(expirationTimestamp, key: encryptionDataKey, nonce: nonceE)
-            } else {
-                return nil
-            }
-        }()
+        let expirationDateEnc = encryptedSubscriptionExpirationDate(using: encryptionDataKey)
 
         let sha256Gzip = SHA256.hash(data: gzipVaultsDataEnc)
 

@@ -272,6 +272,7 @@ extension ConnectSchemaV2 {
         let totalChunks: Int
         let totalSize: Int
         let sha256GzipVaultDataEnc: String
+        let expirationDateEnc: String?
     }
 }
 

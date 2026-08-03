@@ -558,7 +558,8 @@ extension ConnectInteractor {
             status: .accept,
             totalChunks: chunkCount,
             totalSize: gzipVaultsDataEnc.count,
-            sha256GzipVaultDataEnc: Data(sha256Gzip).base64EncodedString()
+            sha256GzipVaultDataEnc: Data(sha256Gzip).base64EncodedString(),
+            expirationDateEnc: encryptedSubscriptionExpirationDate(using: encryptionDataKey)?.base64EncodedString()
         )
 
         let responseData = try mainRepository.jsonEncoder.encode(sync)

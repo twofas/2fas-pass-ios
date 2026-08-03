@@ -120,4 +120,14 @@ final class ConnectInteractor: ConnectInteracting {
             outputByteCount: 32
         )
     }
+
+    func encryptedSubscriptionExpirationDate(using encryptionDataKey: SymmetricKey) -> Data? {
+        guard let expirationDate = paymentStatusInteractor.plan.expirationDate,
+              let expirationTimestamp = "\(expirationDate.exportTimestamp)".data(using: .utf8),
+              let nonce = mainRepository.generateRandom(byteCount: Config.Connect.nonceByteCount) else {
+            return nil
+        }
+
+        return mainRepository.encrypt(expirationTimestamp, key: encryptionDataKey, nonce: nonce)
+    }
 }
