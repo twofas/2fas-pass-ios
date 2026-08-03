@@ -26075,6 +26075,75 @@
         }
       }
     },
+    "trash_remove_all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete All"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skasuj wszystkie"
+          }
+        }
+      }
+    },
+    "trash_remove_all_confirm_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bist du sicher, dass du alle Einträge im Papierkorb dauerhaft löschen möchtest? Du kannst das Ganze nicht rückgängig machen!"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to permanently delete all Items in the Trash? This cannot be undone!"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na pewno chcesz trwale skasować wszystkie elementy z kosza? Tej akcji nie można cofnąć!"
+          }
+        }
+      }
+    },
+    "trash_remove_all_confirm_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Einträge löschen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete All Items?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skasować wszystkie elementy?"
+          }
+        }
+      }
+    },
     "trash_remove_permanently" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -26117,6 +26186,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Przywróć"
+          }
+        }
+      }
+    },
+    "trash_restore_all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle wiederherstellen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore All"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywróć wszystkie"
           }
         }
       }

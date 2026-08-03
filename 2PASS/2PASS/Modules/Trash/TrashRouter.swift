@@ -17,6 +17,8 @@ struct TrashRouter: Router {
         switch destination {
         case .confirmDelete:
             .alert(title: String(localized: .trashDeleteConfirmTitleIos), message: String(localized: .trashDeleteConfirmBodyIos))
+        case .confirmRemoveAll:
+            .alert(title: String(localized: .trashRemoveAllConfirmTitle), message: String(localized: .trashRemoveAllConfirmBody))
         case .upgradePlanPrompt:
             .sheet
         case nil:
@@ -33,6 +35,9 @@ struct TrashRouter: Router {
             Button(.commonYes, role: .destructive) {
                 onFinish(true)
             }
+        case .confirmRemoveAll(let onConfirm):
+            Button(.trashRemoveAll, role: .destructive, action: onConfirm)
+            Button(.commonCancel, role: .cancel, action: {})
         case .upgradePlanPrompt(let limit):
             PremiumPromptRouter.buildView(
                 title: Text(.paywallNoticeItemsLimitRestoreTitle),

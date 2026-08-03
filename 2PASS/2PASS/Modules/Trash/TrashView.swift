@@ -50,7 +50,38 @@ struct TrashView: View {
         .onDisappear {
             presenter.onDisappear()
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                if presenter.isTrashEmpty == false {
+                    bulkActionsMenu
+                }
+            }
+        }
         .router(router: TrashRouter(), destination: $presenter.destination)
+    }
+
+    private var bulkActionsMenu: some View {
+        Menu {
+            Button {
+                presenter.onRestoreAll()
+            } label: {
+                HStack {
+                    Image(systemName: "arrow.2.squarepath")
+                    Text(.trashRestoreAll)
+                }
+            }
+
+            Button(role: ButtonRole.destructive) {
+                presenter.onRemoveAll()
+            } label: {
+                HStack {
+                    Image(systemName: "trash")
+                    Text(.trashRemoveAll)
+                }
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+        }
     }
 }
 

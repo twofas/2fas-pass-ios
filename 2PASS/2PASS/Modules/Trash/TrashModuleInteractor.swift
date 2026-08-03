@@ -63,6 +63,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
         Log("TrashModuleInteractor: Deleting item: \(itemID)", module: .moduleInteractor)
         itemsInteractor.deleteItem(for: itemID)
         itemsInteractor.saveStorage()
+        syncTriggerInteractor.syncAll()
     }
     
     func restore(with itemID: ItemID) {
@@ -87,6 +88,7 @@ extension TrashModuleInteractor: TrashModuleInteracting {
             itemsInteractor.deleteItem(for: item.id)
         }
         itemsInteractor.saveStorage()
+        syncTriggerInteractor.syncAll()
     }
     
     func cachedImage(from url: URL) -> Data? {

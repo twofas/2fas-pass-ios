@@ -12,11 +12,13 @@ import CommonUI
 
 enum TrashDestination: RouterDestination {
     case confirmDelete(id: ItemID, onFinish: (Bool) -> Void)
+    case confirmRemoveAll(onConfirm: Callback)
     case upgradePlanPrompt(limitItems: Int)
-    
+
     var id: String {
         switch self {
         case .confirmDelete(let id, _): "confirmDelete_\(id)"
+        case .confirmRemoveAll: "confirmRemoveAll"
         case .upgradePlanPrompt: "upgradePlanPrompt"
         }
     }
@@ -41,7 +43,6 @@ private class IconFetcherProxy: RemoteImageCollectionFetcher {
 
 @Observable
 final class TrashPresenter {
-    var showMenu: ((Bool) -> Void)?
     var isTrashEmpty = true
     var items: [TrashItemData] = []
     
@@ -155,8 +156,10 @@ extension TrashPresenter {
         })
     }
 
-    func onEmptyTrash() {
-        interactor.emptyTrash()
+    func onRemoveAll() {
+        destination = .confirmRemoveAll(onConfirm: { [weak self] in
+            self?.interactor.emptyTrash()
+        })
     }
 
     func onRestoreAll() {
@@ -166,9 +169,11 @@ extension TrashPresenter {
 
 private extension TrashPresenter {
     func reload() {
-        isTrashEmpty = interactor.isTrashEmpty
-        showMenu?(!isTrashEmpty)
-        items = interactor.list()
+        // Single fetch: `interactor.isTrashEmpty` lists the trashed items too, so asking it
+        // separately would hit storage twice on every change notification.
+        let trashedItems = interactor.list()
+        isTrashEmpty = trashedItems.isEmpty
+        items = trashedItems
             .compactMap({ item -> TrashItemData? in
                 switch item.trashedStatus {
                 case .no: return nil
