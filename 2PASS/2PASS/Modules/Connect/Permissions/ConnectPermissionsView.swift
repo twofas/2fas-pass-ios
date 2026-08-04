@@ -59,6 +59,10 @@ struct ConnectPermissionsView: View {
     
     @Environment(\.openURL) private var openURL
     @Environment(\.dismissFlow) private var dismissFlow
+
+    private var contentAppearAnimation: Bool {
+        presenter.stepsStatus[.camera] == nil ? appearAnimation : true
+    }
     
     var body: some View {
         if usesNavigationStack {
@@ -100,7 +104,7 @@ struct ConnectPermissionsView: View {
                         }
                     )
                     .completed(presenter.stepsStatus[.camera] == .success)
-                    .stepAppearAnimation(appearAnimation, delay: Constants.firstStepAppearDelay)
+                    .stepAppearAnimation(contentAppearAnimation, delay: Constants.firstStepAppearDelay)
                     .matchedGeometryEffect(id: ConnectPermissionsPresenter.Step.camera, in: namespace)
                     
                     StepView(
@@ -111,20 +115,25 @@ struct ConnectPermissionsView: View {
                         }
                     )
                     .completed(presenter.stepsStatus[.pushNotifications] == .success)
-                    .stepAppearAnimation(appearAnimation, delay: Constants.secondStepAppearDelay)
+                    .stepAppearAnimation(contentAppearAnimation, delay: Constants.secondStepAppearDelay)
                     .matchedGeometryEffect(id: ConnectPermissionsPresenter.Step.pushNotifications, in: namespace)
                 }
-                .appearAnimationTrigger(presenter.stepsStatus[.camera] == nil ? appearAnimation : true)
+                .appearAnimationTrigger(contentAppearAnimation)
                 .sensoryFeedback(.selection, trigger: firstStepSelectedFeedback)
                 .sensoryFeedback(.selection, trigger: secondStepSelectedFeedback)
                 .sensoryFeedback(.selection, trigger: finishSelectedFeedback)
                 .overlay {
-                    RoundedRectangle(cornerRadius: Constants.SelectedStepFrame.cornerRadius)
-                        .stroke(.brand300, lineWidth: Constants.SelectedStepFrame.lineWidth)
-                        .matchedGeometryEffect(id: presenter.currentStep, in: namespace, isSource: false)
-                        .opacity(visibleSelectedStep ? 1 : 0)
-                        .animation(.easeInOut, value: visibleSelectedStep)
-                        .animation(.smooth(duration: Constants.moveSelectedFrameAnimationDuration).delay(Constants.moveSelectedFrameAnimationDelay), value: presenter.currentStep)
+                    // Inserted lazily instead of dimmed via opacity: a matched-geometry target that
+                    // exists before its source step records geometry collapses to a zero frame at
+                    // the origin and then visibly animates to the step frame when shown right on
+                    // appear (camera permission already granted).
+                    if visibleSelectedStep {
+                        RoundedRectangle(cornerRadius: Constants.SelectedStepFrame.cornerRadius)
+                            .stroke(.brand300, lineWidth: Constants.SelectedStepFrame.lineWidth)
+                            .matchedGeometryEffect(id: presenter.currentStep, in: namespace, isSource: false)
+                            .transition(.opacity)
+                            .animation(.smooth(duration: Constants.moveSelectedFrameAnimationDuration).delay(Constants.moveSelectedFrameAnimationDelay), value: presenter.currentStep)
+                    }
                 }
                 .padding(.horizontal, Spacing.xl)
                 .onAppear {
@@ -132,7 +141,9 @@ struct ConnectPermissionsView: View {
                         try await Task.sleep(for: Constants.selectStepAnimationDelay)
                         
                         if presenter.isFinished == false {
-                            visibleSelectedStep = true
+                            withAnimation(.easeInOut) {
+                                visibleSelectedStep = true
+                            }
                         }
                     }
                 }
@@ -146,8 +157,10 @@ struct ConnectPermissionsView: View {
                 })
                 .onChange(of: presenter.isFinished, { _, newValue in
                     if newValue {
-                        visibleSelectedStep = false
-                        
+                        withAnimation(.easeInOut) {
+                            visibleSelectedStep = false
+                        }
+
                         Task {
                             try await Task.sleep(for: Constants.finishSelectedFeedbackDelay)
                             finishSelectedFeedback = true
@@ -196,9 +209,9 @@ struct ConnectPermissionsView: View {
                 .padding(.bottom, Spacing.l)
                 .buttonStyle(.filled)
                 .controlSize(.large)
-                .opacity(appearAnimation ? 1 : 0)
+                .opacity(contentAppearAnimation ? 1 : 0)
                 .opacity(presenter.isWaitingForUser ? 0 : 1)
-                .animation(.easeInOut(duration: Constants.showContinueButtonAnimationDuration).delay(Constants.showContinueButtonDelay), value: appearAnimation)
+                .animation(.easeInOut(duration: Constants.showContinueButtonAnimationDuration).delay(Constants.showContinueButtonDelay), value: contentAppearAnimation)
                 .animation(presenter.isWaitingForUser ? .easeInOut(duration: Constants.showContinueButtonAnimationDuration) : .easeInOut(duration: Constants.showContinueButtonAnimationDuration).delay(Constants.showContinueButtonDelay), value: presenter.isWaitingForUser)
             }
             .onAppear {
@@ -225,7 +238,7 @@ struct ConnectPermissionsView: View {
                         appearAnimation = true
                         firstStepSelected = true
                         dimmedBorder = true
-                        visibleSelectedStep = true
+                        visibleSelectedStep = presenter.isFinished == false
                     }
                 }
             }
