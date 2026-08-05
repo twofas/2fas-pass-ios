@@ -9642,13 +9642,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You signed in using your Decryption Kit. Set a new Master Password now so you can unlock the app without it."
+            "value" : "You signed in using your Decryption Kit. Set a new Master Password now to unlock the app."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zalogowałeś się przy użyciu zestawu deszyfrującego. Ustaw teraz nowe hasło główne, aby odblokowywać aplikację bez niego."
+            "value" : "Zalogowałeś się przy użyciu zestawu deszyfrującego. Ustaw nowe hasło główne do odblokowywania aplikacji."
           }
         }
       }
@@ -9682,19 +9682,19 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Masterkennwort ändern?"
+            "value" : "Möchtest du dein Masterkennwort ändern?"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change your Master Password?"
+            "value" : "Do you want to change your Master Password?"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zmienić hasło główne?"
+            "value" : "Czy chcesz zmienić hasło główne?"
           }
         }
       }
@@ -26294,7 +26294,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore All"
+            "value" : "Restore all"
           }
         },
         "pl" : {
