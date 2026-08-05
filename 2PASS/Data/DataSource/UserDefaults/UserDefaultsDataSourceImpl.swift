@@ -441,7 +441,7 @@ extension UserDefaultsDataSourceImpl: UserDefaultsDataSource {
         case .free:
             return SubscriptionPlan.free
         case .premium:
-            let expireDate = Date(timeIntervalSinceReferenceDate: userDefaults.double(forKey: Keys.debugSubscriptionPlanExpireDate.rawValue))
+            let expireDate = Date(timeIntervalSinceReferenceDate: sharedDefaults.double(forKey: Keys.debugSubscriptionPlanExpireDate.rawValue))
             return SubscriptionPlan(planType: .premium, paymentInfo: .init(expirationDate: expireDate, willRenew: true))
         default:
             return nil
