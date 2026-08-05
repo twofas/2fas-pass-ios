@@ -47,6 +47,9 @@ protocol MainRepository: AnyObject {
     var isAppInBackground: Bool { get }
     func setIsAppInBackground(_ isInBackground: Bool)
 
+    var didLoginUsingDecryptionKit: Bool { get }
+    func setDidLoginUsingDecryptionKit(_ value: Bool)
+
     var isOnboardingCompleted: Bool { get }
     func finishOnboarding()
 

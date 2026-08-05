@@ -470,6 +470,7 @@
 		54571D752D688AC200FC2DB3 /* AutoFill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54571D832D688AC200FC2DB3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = AutoFill; sourceTree = "<group>"; };
 		547139D72D89644100A81142 /* AppSecurity */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppSecurity; sourceTree = "<group>"; };
 		548E54142E326EDB00DA22A7 /* QuickSetup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = QuickSetup; sourceTree = "<group>"; };
+		54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ChangePasswordPrompt; sourceTree = "<group>"; };
 		549B1F652E8C01DA00228FE2 /* RestoreVault */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = RestoreVault; sourceTree = "<group>"; };
 		54A825872D82DA3700CBC463 /* Settings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Settings; sourceTree = "<group>"; };
 		54AFB3212DA441BB00EE00E9 /* Connect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Connect; sourceTree = "<group>"; };
@@ -948,6 +949,7 @@
 				C2A7469E2C1B9CF5005E7CE6 /* Main */,
 				54FD31A22E45644E00DFAC70 /* Tags */,
 				548E54142E326EDB00DA22A7 /* QuickSetup */,
+				54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */,
 				5415B8402E2A796000FBEE71 /* Logs */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
@@ -1203,6 +1205,7 @@
 				548E54142E326EDB00DA22A7 /* QuickSetup */,
 				549B1F652E8C01DA00228FE2 /* RestoreVault */,
 				54A825872D82DA3700CBC463 /* Settings */,
+				54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */,
 				54AFB3212DA441BB00EE00E9 /* Connect */,
 				54B6643F2D84E09700AB4691 /* AutofillSettings */,
 				54B664B42D85752200AB4691 /* Trash */,

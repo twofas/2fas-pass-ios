@@ -779,8 +779,10 @@ extension MainRepositoryImpl {
         clearWords()
         clearSalt()
         clearEmpheralMasterKey()
-        
+
         clearVault()
+
+        _didLoginUsingDecryptionKit = false
     }
     
     func generateTrustedKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String? {

@@ -29,7 +29,10 @@ public protocol LoginInteracting: AnyObject {
     
     var shouldRequestForBiometryToLogin: Bool { get }
     func finishRequestForBiometryToLogin()
-    
+
+    var shouldRequestPasswordChange: Bool { get }
+    func finishRequestForPasswordChange()
+
     var didLoginLock: NotificationCenter.Notifications { get }
     var didLoginUnlock: NotificationCenter.Notifications { get }
     var appLockRemainingSeconds: Int? { get }
@@ -124,7 +127,15 @@ extension LoginInteractor: LoginInteracting {
     func finishRequestForBiometryToLogin() {
         mainRepository.setRequestedForBiometryToLogin(true)
     }
-    
+
+    var shouldRequestPasswordChange: Bool {
+        mainRepository.didLoginUsingDecryptionKit
+    }
+
+    func finishRequestForPasswordChange() {
+        mainRepository.setDidLoginUsingDecryptionKit(false)
+    }
+
     var canUseBiometryToLogin: Bool {
         biometryInteractor.canUseBiometryForLogin && !securityInteractor.isAppLocked
     }
@@ -322,7 +333,9 @@ extension LoginInteractor: LoginInteracting {
         guard useMasterKey(masterKey) else {
             return false
         }
-        
+
+        mainRepository.setDidLoginUsingDecryptionKit(true)
+
         await withCheckedContinuation { continuation in
             userLoggedInUsingMasterKey(masterKey) { [weak self] in
                 self?.protectionInteractor.clearAfterInit()

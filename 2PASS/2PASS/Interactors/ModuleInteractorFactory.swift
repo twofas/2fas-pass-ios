@@ -41,6 +41,13 @@ extension ModuleInteractorFactory {
             changePasswordInteractor: InteractorFactory.shared.changePasswordInteractor()
         )
     }
+
+    func changePasswordPromptModuleInteractor() -> ChangePasswordPromptModuleInteracting {
+        ChangePasswordPromptModuleInteractor(
+            protectionInteractor: InteractorFactory.shared.protectionInteractor(),
+            loginInteractor: InteractorFactory.shared.loginInteractor()
+        )
+    }
     
     func settingsInteractor() -> SettingsModuleInteracting {
         SettingsModuleInteractor(

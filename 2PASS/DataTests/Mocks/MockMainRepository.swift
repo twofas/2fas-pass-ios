@@ -202,6 +202,22 @@ final class MockMainRepository: MainRepository {
         capturedIsAppInBackground = isInBackground
     }
 
+    private var stubbedDidLoginUsingDecryptionKit: Bool = false
+    var didLoginUsingDecryptionKit: Bool { stubbedDidLoginUsingDecryptionKit }
+
+    @discardableResult
+    func withDidLoginUsingDecryptionKit(_ value: Bool) -> Self {
+        stubbedDidLoginUsingDecryptionKit = value
+        return self
+    }
+
+    private(set) var capturedDidLoginUsingDecryptionKit: Bool?
+    func setDidLoginUsingDecryptionKit(_ value: Bool) {
+        recordCall()
+        capturedDidLoginUsingDecryptionKit = value
+        stubbedDidLoginUsingDecryptionKit = value
+    }
+
     private var stubbedIsOnboardingCompleted: Bool = false
     var isOnboardingCompleted: Bool { stubbedIsOnboardingCompleted }
 

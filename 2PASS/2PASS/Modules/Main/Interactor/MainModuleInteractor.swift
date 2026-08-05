@@ -14,6 +14,7 @@ protocol MainModuleInteracting: AnyObject {
     var reviewRequests: AsyncStream<Void> { get }
     var shouldShowQuickSetup: Bool { get }
     var shouldRequestForBiometryToLogin: Bool { get }
+    var shouldRequestPasswordChange: Bool { get }
 
     func viewIsVisible()
 }
@@ -62,6 +63,10 @@ final class MainModuleInteractor {
 extension MainModuleInteractor: MainModuleInteracting {
     var shouldRequestForBiometryToLogin: Bool {
         loginInteractor.shouldRequestForBiometryToLogin
+    }
+
+    var shouldRequestPasswordChange: Bool {
+        loginInteractor.shouldRequestPasswordChange
     }
 
     var shouldShowQuickSetup: Bool {

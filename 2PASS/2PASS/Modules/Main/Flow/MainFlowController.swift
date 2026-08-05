@@ -17,12 +17,15 @@ protocol MainFlowControlling: AnyObject {
     func toPayment()
     func toRequestEnableBiometry()
     func dismissRequestEnableBiometry()
+    func toRequestChangePassword()
+    func dismissRequestChangePassword()
     @MainActor func requestStoreReview()
 }
 
 final class MainFlowController: FlowController {
     private weak var parent: MainFlowControllerParent?
     private weak var biometricPromptViewController: UIViewController?
+    private weak var changePasswordPromptViewController: UIViewController?
     private var splitFlowController: MainSplitFlowController?
 
     static func embedAsRoot(
@@ -169,6 +172,40 @@ extension MainFlowController: PasswordsNavigationFlowControllerParent {
         guard let biometricPromptViewController else { return }
         biometricPromptViewController.dismiss(animated: animated)
         self.biometricPromptViewController = nil
+    }
+
+    func toRequestChangePassword() {
+        guard viewController.presentedViewController == nil else { return }
+
+        let vc = UIHostingController(rootView: ChangePasswordPromptRouter.buildView(onClose: { [weak self] in
+            self?.dismissChangePasswordPrompt(animated: true)
+        }))
+
+        if let sheet = vc.sheetPresentationController {
+            sheet.detents = [.custom(resolver: { context in
+                if context.containerTraitCollection.userInterfaceIdiom == .phone {
+                    return ChangePasswordPromptViewConstants.sheetHeight
+                } else {
+                    return context.maximumDetentValue
+                }
+            })]
+        }
+
+        vc.isModalInPresentation = true
+        changePasswordPromptViewController = vc
+
+        viewController.present(vc, animated: true)
+    }
+
+    func dismissRequestChangePassword() {
+        dismissChangePasswordPrompt(animated: false)
+    }
+
+    private func dismissChangePasswordPrompt(animated: Bool) {
+        guard let changePasswordPromptViewController else { return }
+        let presenting = changePasswordPromptViewController.presentingViewController ?? changePasswordPromptViewController
+        presenting.dismiss(animated: animated)
+        self.changePasswordPromptViewController = nil
     }
 }
 

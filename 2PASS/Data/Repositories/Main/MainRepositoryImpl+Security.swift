@@ -18,4 +18,12 @@ extension MainRepositoryImpl {
     func setIsAppInBackground(_ isInBackground: Bool) {
         _isInBackground = isInBackground
     }
+
+    var didLoginUsingDecryptionKit: Bool {
+        _didLoginUsingDecryptionKit
+    }
+
+    func setDidLoginUsingDecryptionKit(_ value: Bool) {
+        _didLoginUsingDecryptionKit = value
+    }
 }

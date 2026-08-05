@@ -62,7 +62,12 @@ final class MainPresenter {
     func viewDidAppear() {
         interactor.viewIsVisible()
 
-        if interactor.shouldShowQuickSetup {
+        if interactor.shouldRequestPasswordChange {
+            Task { @MainActor in
+                try await Task.sleep(for: waitingTime)
+                flowController.toRequestChangePassword()
+            }
+        } else if interactor.shouldShowQuickSetup {
             Task { @MainActor in
                 try await Task.sleep(for: waitingTime)
                 flowController.toQuickSetup()
@@ -77,5 +82,6 @@ final class MainPresenter {
 
     func viewWillDisappear() {
         flowController.dismissRequestEnableBiometry()
+        flowController.dismissRequestChangePassword()
     }
 }
