@@ -33,7 +33,7 @@ public struct LoginRouter: Router {
     public func routingType(for destination: LoginDestination?) -> RoutingType? {
         switch destination {
         case .forgotMasterPassword:
-            return .fullScreenCover
+            return .sheet
         case nil:
             return nil
         }

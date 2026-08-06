@@ -9,12 +9,13 @@ import Common
 
 struct ForgotMasterPasswordRouter: Router {
 
+    @ViewBuilder
     static func buildView(
         config: LoginModuleInteractorConfig,
         onSuccess: @escaping Callback,
         onClose: @escaping Callback
     ) -> some View {
-        NavigationStack {
+        let content = NavigationStack {
             ForgotMasterPasswordView(
                 presenter: .init(
                     interactor: ModuleInteractorFactory.shared.forgotMasterPasswordModuleInteractor(config: config),
@@ -24,6 +25,14 @@ struct ForgotMasterPasswordRouter: Router {
             )
         }
         .background(.background)
+        .interactiveDismissDisabled()
+
+        if #available(iOS 18.0, *) {
+            content
+                .presentationSizing(.page)
+        } else {
+            content
+        }
     }
 
     @ViewBuilder
