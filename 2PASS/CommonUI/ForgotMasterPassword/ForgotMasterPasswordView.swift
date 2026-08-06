@@ -49,6 +49,7 @@ struct ForgotMasterPasswordView: View {
         }
         .padding(.horizontal, Spacing.xl)
         .padding(.bottom, Spacing.m)
+        .readableContentMargins()
         .router(
             router: ForgotMasterPasswordRouter(),
             destination: $presenter.destination
