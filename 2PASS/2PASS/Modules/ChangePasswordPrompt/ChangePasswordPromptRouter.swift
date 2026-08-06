@@ -33,7 +33,7 @@ struct ChangePasswordPromptRouter: Router {
     func view(for destination: ChangePasswordPromptDestination) -> some View {
         switch destination {
         case .changeMasterPassword(let onFinish, let onClose):
-            NavigationStack {
+            let content = NavigationStack {
                 MasterPasswordRouter.buildView(kind: .change, onFinish: onFinish, onClose: onClose)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
@@ -41,12 +41,20 @@ struct ChangePasswordPromptRouter: Router {
                         }
                     }
             }
+            .interactiveDismissDisabled()
+
+            if #available(iOS 18.0, *) {
+                content
+                    .presentationSizing(.page)
+            } else {
+                content
+            }
         }
     }
 
     func routingType(for destination: ChangePasswordPromptDestination?) -> RoutingType? {
         switch destination {
-        case .changeMasterPassword: .fullScreenCover
+        case .changeMasterPassword: .sheet
         case nil: nil
         }
     }
