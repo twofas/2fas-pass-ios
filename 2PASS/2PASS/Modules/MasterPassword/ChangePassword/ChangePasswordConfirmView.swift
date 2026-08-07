@@ -10,15 +10,35 @@ import Common
 
 private struct Constants {
     static let iconFontSize = 49.0
+    static let sheetHeight = 500.0
 }
 
 struct ChangePasswordConfirmView: View {
-    
+
     let onConfirm: Callback
-    
+
     @Environment(\.dismiss) private var dismiss
-    
+
+    @Environment(\.windowSizeClasses) private var windowSizeClasses
+
+    @ViewBuilder
     var body: some View {
+        if windowSizeClasses.horizontal == .regular {
+            if #available(iOS 18.0, *) {
+                content
+                    .frame(idealHeight: Constants.sheetHeight)
+                    .presentationSizing(.form.fitted(horizontal: false, vertical: true))
+            } else {
+                content
+            }
+        } else {
+            content
+                .presentationDetents([.height(Constants.sheetHeight)])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: Spacing.s) {
             Spacer()
             
@@ -57,8 +77,6 @@ struct ChangePasswordConfirmView: View {
         .multilineTextAlignment(.center)
         .padding(.horizontal, Spacing.xl)
         .padding(.bottom, Spacing.xl)
-        .presentationDetents([.height(500)])
-        .presentationDragIndicator(.visible)
         .ignoresSafeArea(.keyboard)
     }
 }

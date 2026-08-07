@@ -6,6 +6,7 @@
 
 import UIKit
 import Common
+import CommonUI
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -28,6 +29,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         window.rootViewController = rootViewController
         window.makeKeyAndVisible()
+
+        WindowSizeClasses.shared.startObserving(window)
 
         rootViewController.presenter.initialize()
 
