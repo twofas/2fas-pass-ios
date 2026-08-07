@@ -51,6 +51,14 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
         )
         protectionInteractor.setMasterKey(for: masterPassword)
         biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
+            if enableBiometryLogin && !result {
+                Log(
+                    "ChangePasswordInteractor: Re-encrypting Master Key for biometry failed - disabling biometry",
+                    module: .interactor,
+                    severity: .error
+                )
+                self?.biometryInteractor.setBiometryEnabled(false) { _ in }
+            }
             self?.protectionInteractor.saveEncryptionReference()
             self?.protectionInteractor.updateExistingVault()
             self?.protectionInteractor.setupKeys()

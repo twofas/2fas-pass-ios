@@ -207,7 +207,7 @@ extension ProtectionInteractor: ProtectionInteracting {
         guard let appKey = mainRepository.appKey else {
             return false
         }
-        return mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) != nil
+        return (try? mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey)) != nil
     }
     
     func verifyMasterKeyUsingVault(_ masterKey: MasterKey) -> Bool {

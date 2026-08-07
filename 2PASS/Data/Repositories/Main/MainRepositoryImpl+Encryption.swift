@@ -259,7 +259,7 @@ extension MainRepositoryImpl {
         }
     }
     
-    func createSymmetricKeyFromSecureEnclave(from key: Data) -> SymmetricKey? {
+    func createSymmetricKeyFromSecureEnclave(from key: Data) throws(SecureEnclaveKeyError) -> SymmetricKey {
         do {
             let privateKey = try SecureEnclave.P256.KeyAgreement.PrivateKey(
                 dataRepresentation: key,
@@ -275,7 +275,12 @@ extension MainRepositoryImpl {
             return symmetricKey
         } catch {
             Log("Error while creating symmetric key: \(error)", module: .mainRepository, severity: .error)
-            return nil
+            switch (error as? LAError)?.code {
+            case .userCancel, .appCancel, .systemCancel, .userFallback, .notInteractive:
+                throw SecureEnclaveKeyError.cancelled
+            default:
+                throw SecureEnclaveKeyError.other(error)
+            }
         }
     }
     
@@ -372,7 +377,7 @@ extension MainRepositoryImpl {
             Log("Can't get Master Key - it's nil", module: .mainRepository, severity: .error)
             return nil
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: biometryKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: biometryKey) else {
             Log("Can't get Symmetric Key from Biometry Key while getting Master Key!",
                 module: .mainRepository,
                 severity: .error
@@ -393,7 +398,7 @@ extension MainRepositoryImpl {
             Log("Can't save Master Key - no Biometry Key!", module: .mainRepository, severity: .error)
             return
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: biometryKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: biometryKey) else {
             Log(
                 "Can't get Symmetric Key from Biometry Key while saving Master Key!",
                 module: .mainRepository,
@@ -424,7 +429,7 @@ extension MainRepositoryImpl {
             return nil
         }
         
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
@@ -466,7 +471,7 @@ extension MainRepositoryImpl {
             Log("Can't get Trusted Key - no App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
@@ -489,7 +494,7 @@ extension MainRepositoryImpl {
             Log("Can't save Trusted Key - no App Key!", module: .mainRepository, severity: .error)
             return
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
@@ -511,7 +516,7 @@ extension MainRepositoryImpl {
             Log("Can't get Secure Key - no App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
@@ -534,7 +539,7 @@ extension MainRepositoryImpl {
             Log("Can't save Secure Key - no App Key!", module: .mainRepository, severity: .error)
             return
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
@@ -566,7 +571,7 @@ extension MainRepositoryImpl {
             Log("Can't get External Key - no App Key!", module: .mainRepository, severity: .error)
             return nil
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
@@ -589,7 +594,7 @@ extension MainRepositoryImpl {
             Log("Can't save External Key - no App Key!", module: .mainRepository, severity: .error)
             return
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
@@ -615,7 +620,7 @@ extension MainRepositoryImpl {
             Log("Can't save Encryption Reference - no App Key!", module: .mainRepository, severity: .error)
             return
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }
@@ -637,7 +642,7 @@ extension MainRepositoryImpl {
             Log("Can't verify Encryption Reference - no App Key!", module: .mainRepository, severity: .error)
             return false
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return false
         }
@@ -668,7 +673,7 @@ extension MainRepositoryImpl {
     
     var masterKeyEntropy: Entropy? {
         guard let appKey, let mke = keychainDataSource.masterKeyEntropy else { return nil }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return nil
         }
@@ -680,7 +685,7 @@ extension MainRepositoryImpl {
             Log("Can't save Master Key Entropy - no App Key!", module: .mainRepository, severity: .error)
             return
         }
-        guard let symm = createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let symm = try? createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("Can't get Symmetric Key from App Key!", module: .mainRepository, severity: .error)
             return
         }

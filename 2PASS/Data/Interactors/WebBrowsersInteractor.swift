@@ -119,7 +119,7 @@ final class WebBrowsersInteractor: WebBrowsersInteracting {
             return nil
         }
         
-        guard let key = mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let key = try? mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log("WebBrowsersInteractor - Can't get Symmetric Key from App Key", module: .interactor, severity: .error)
             return nil
         }

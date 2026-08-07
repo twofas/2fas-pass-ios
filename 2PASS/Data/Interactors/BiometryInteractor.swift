@@ -109,10 +109,19 @@ extension BiometryInteractor: BiometryInteracting {
             
             Log("BiometryInteractor: Creating Symmetric Key from Secure Enclave", module: .interactor)
 
-            if let symm = self?.mainRepository.createSymmetricKeyFromSecureEnclave(from: bioKey) {
-                self?.encryptAndSaveMasterKey(masterKey, symmetricKey: symm, completion: completion)
+            do {
+                if let symm = try self?.mainRepository.createSymmetricKeyFromSecureEnclave(from: bioKey) {
+                    self?.encryptAndSaveMasterKey(masterKey, symmetricKey: symm, completion: completion)
+                    return
+                }
+            } catch SecureEnclaveKeyError.cancelled {
+                Log(
+                    "BiometryInteractor: Creating Symmetric Key cancelled - skipping retry",
+                    module: .interactor
+                )
+                completion(false)
                 return
-            }
+            } catch {}
 
             Log(
                 "BiometryInteractor: Can't create Symmetric Key from Biometry Key - removing and retrying",
@@ -133,7 +142,7 @@ extension BiometryInteractor: BiometryInteracting {
                     return
                 }
 
-                guard let symm = self?.mainRepository.createSymmetricKeyFromSecureEnclave(
+                guard let symm = try? self?.mainRepository.createSymmetricKeyFromSecureEnclave(
                     from: newBioKey
                 ) else {
                     Log(
@@ -208,7 +217,7 @@ extension BiometryInteractor: BiometryInteracting {
                         result(.failure)
                         return
                     }
-                    guard let symmKey = self?.mainRepository.createSymmetricKeyFromSecureEnclave(from: bioKey) else {
+                    guard let symmKey = try? self?.mainRepository.createSymmetricKeyFromSecureEnclave(from: bioKey) else {
                         Log(
                             "BiometryInteractor: Can't create Symmetric Key from Biometry Key!",
                             module: .interactor,

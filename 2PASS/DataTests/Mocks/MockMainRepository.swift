@@ -945,14 +945,18 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
-    private var stubbedCreateSymmetricKeyFromSecureEnclave: (Data) -> SymmetricKey? = { _ in nil }
-    func createSymmetricKeyFromSecureEnclave(from key: Data) -> SymmetricKey? {
+    private var stubbedCreateSymmetricKeyFromSecureEnclave: (Data) throws(SecureEnclaveKeyError) -> SymmetricKey = { _ in
+        throw SecureEnclaveKeyError.other(CryptoKitError.authenticationFailure)
+    }
+    func createSymmetricKeyFromSecureEnclave(from key: Data) throws(SecureEnclaveKeyError) -> SymmetricKey {
         recordCall()
-        return stubbedCreateSymmetricKeyFromSecureEnclave(key)
+        return try stubbedCreateSymmetricKeyFromSecureEnclave(key)
     }
 
     @discardableResult
-    func withCreateSymmetricKeyFromSecureEnclave(_ handler: @escaping (Data) -> SymmetricKey?) -> Self {
+    func withCreateSymmetricKeyFromSecureEnclave(
+        _ handler: @escaping (Data) throws(SecureEnclaveKeyError) -> SymmetricKey
+    ) -> Self {
         stubbedCreateSymmetricKeyFromSecureEnclave = handler
         return self
     }

@@ -70,7 +70,7 @@ extension MainRepositoryImpl {
     func loadBackupConfigs() -> [BackupConfig] {
         guard let data = userDefaultsDataSource.backupConfigsBlob,
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let plaintext = decrypt(data, key: symmetricKey)
         else { return [] }
         return (try? jsonDecoder.decode([BackupConfig].self, from: plaintext)) ?? []
@@ -79,7 +79,7 @@ extension MainRepositoryImpl {
     func saveBackupConfigs(_ configs: [BackupConfig]) {
         guard let plaintext = try? jsonEncoder.encode(configs),
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let encrypted = encrypt(plaintext, key: symmetricKey)
         else { return }
         userDefaultsDataSource.saveBackupConfigsBlob(encrypted)
@@ -102,7 +102,7 @@ extension MainRepositoryImpl {
     var legacyWebDAVSavedConfig: BackupWebDAVConfig? {
         guard let data = userDefaultsDataSource.legacyWebDAVSavedConfig,
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let plaintext = decrypt(data, key: symmetricKey)
         else { return nil }
         return try? jsonDecoder.decode(BackupWebDAVConfig.self, from: plaintext)
@@ -145,7 +145,7 @@ extension MainRepositoryImpl {
     var cachedS3RecoveryConfig: S3ServiceConfig? {
         guard let blob = _cachedS3RecoveryConfig,
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let plaintext = decrypt(blob, key: symmetricKey)
         else { return nil }
         return try? jsonDecoder.decode(S3ServiceConfig.self, from: plaintext)
@@ -154,7 +154,7 @@ extension MainRepositoryImpl {
     var cachedWebDAVRecoveryConfig: BackupWebDAVConfig? {
         guard let blob = _cachedWebDAVRecoveryConfig,
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let plaintext = decrypt(blob, key: symmetricKey)
         else { return nil }
         return try? jsonDecoder.decode(BackupWebDAVConfig.self, from: plaintext)
@@ -163,7 +163,7 @@ extension MainRepositoryImpl {
     func saveCachedS3RecoveryConfig(_ config: S3ServiceConfig) {
         guard let plaintext = try? jsonEncoder.encode(config),
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let encrypted = encrypt(plaintext, key: symmetricKey)
         else { return }
         _cachedS3RecoveryConfig = encrypted
@@ -172,7 +172,7 @@ extension MainRepositoryImpl {
     func saveCachedWebDAVRecoveryConfig(_ config: BackupWebDAVConfig) {
         guard let plaintext = try? jsonEncoder.encode(config),
               let appKey,
-              let symmetricKey = createSymmetricKeyFromSecureEnclave(from: appKey),
+              let symmetricKey = try? createSymmetricKeyFromSecureEnclave(from: appKey),
               let encrypted = encrypt(plaintext, key: symmetricKey)
         else { return }
         _cachedWebDAVRecoveryConfig = encrypted

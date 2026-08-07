@@ -19,6 +19,11 @@ enum HMACStringReturnType {
     case base64
 }
 
+enum SecureEnclaveKeyError: Error {
+    case cancelled
+    case other(Error)
+}
+
 protocol MainRepository: AnyObject {
 
     var isMainAppProcess: Bool { get }
@@ -181,7 +186,7 @@ protocol MainRepository: AnyObject {
         accessControl: SecAccessControl,
         completion: @escaping (Data?) -> Void
     )
-    func createSymmetricKeyFromSecureEnclave(from key: Data) -> SymmetricKey?
+    func createSymmetricKeyFromSecureEnclave(from key: Data) throws(SecureEnclaveKeyError) -> SymmetricKey
     func createSymmetricKey(from key: Data) -> SymmetricKey
     func getKey(isPassword: Bool, protectionLevel: ItemProtectionLevel) -> SymmetricKey?
 

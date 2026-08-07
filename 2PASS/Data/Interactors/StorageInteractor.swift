@@ -253,7 +253,7 @@ extension StorageInteractor: StorageInteracting {
             Log("StorageInteractor - initialize. Can't generate Trusted Key!", module: .interactor, severity: .error)
             return nil
         }
-        guard let appKeySymm = mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let appKeySymm = try? mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log(
                 "StorageInteractor - initialize. Can't get Symmetric Key from App Key",
                 module: .interactor,
@@ -304,7 +304,7 @@ extension StorageInteractor: StorageInteracting {
             Log("StorageInteractor - update. Can't generate Trusted Key!", module: .interactor, severity: .error)
             return false
         }
-        guard let appKeySymm = mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
+        guard let appKeySymm = try? mainRepository.createSymmetricKeyFromSecureEnclave(from: appKey) else {
             Log(
                 "StorageInteractor - update. Can't get Symmetric Key from App Key",
                 module: .interactor,
