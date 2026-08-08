@@ -24,7 +24,6 @@ public enum LoginBiometryResult {
 
 public protocol LoginInteracting: AnyObject {
     var canUseBiometryToLogin: Bool { get }
-    var prefillMasterPassword: String? { get }
     var biometryType: BiometryType { get }
     
     var shouldRequestForBiometryToLogin: Bool { get }
@@ -116,10 +115,6 @@ final class LoginInteractor {
 }
 
 extension LoginInteractor: LoginInteracting {
-    var prefillMasterPassword: String? {
-        mainRepository.masterPassword
-    }
-    
     var shouldRequestForBiometryToLogin: Bool {
         biometryInteractor.isBiometryAvailable && biometryInteractor.isBiometryEnabled == false && mainRepository.requestedForBiometryToLogin == false && mainRepository.empheralMasterKey != nil
     }

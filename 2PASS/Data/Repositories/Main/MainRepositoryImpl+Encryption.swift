@@ -784,6 +784,7 @@ extension MainRepositoryImpl {
         clearWords()
         clearSalt()
         clearEmpheralMasterKey()
+        clearMasterPassword()
 
         clearVault()
 

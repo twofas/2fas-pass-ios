@@ -110,7 +110,6 @@ public final class LoginPresenter {
         self.biometryType = interactor.biometryType
         self.notficationCenter = .default
 
-        loginInput = interactor.prefillMasterPassword ?? ""
         observeLoginStatus()
         isBiometryAllowed = interactor.isBiometryAllowed
         isBiometryAvailable = interactor.isBiometryAvailable

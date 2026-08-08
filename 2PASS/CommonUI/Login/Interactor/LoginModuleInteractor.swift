@@ -15,8 +15,6 @@ public protocol LoginModuleInteracting: AnyObject {
     var loginType: LoginModuleInteractorConfig.LoginType { get }
     var showForgotPassword: Bool { get }
 
-    var prefillMasterPassword: String? { get }
-    
     var isBiometryAllowed: Bool { get }
     var isBiometryAvailable: Bool { get }
     var biometryType: BiometryType { get }
@@ -120,10 +118,6 @@ extension LoginModuleInteractor: LoginModuleInteracting {
     
     var isAppLocked: Bool {
         loginInteractor.isAppLocked
-    }
-    
-    var prefillMasterPassword: String? {
-        loginInteractor.prefillMasterPassword
     }
     
     var shouldRequestForBiometryToLogin: Bool {
