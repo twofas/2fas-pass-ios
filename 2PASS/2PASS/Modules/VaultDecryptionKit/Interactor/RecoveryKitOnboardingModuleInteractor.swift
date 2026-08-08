@@ -11,7 +11,7 @@ import Common
 final class RecoveryKitOnboardingModuleInteractor {
     private let startupInteractor: StartupInteracting
     private let recoveryKitInteractor: RecoveryKitInteracting
-    
+
     init(startupInteractor: StartupInteracting, recoveryKitInteractor: RecoveryKitInteracting) {
         self.startupInteractor = startupInteractor
         self.recoveryKitInteractor = recoveryKitInteractor
@@ -19,7 +19,7 @@ final class RecoveryKitOnboardingModuleInteractor {
 }
 
 extension RecoveryKitOnboardingModuleInteractor: RecoveryKitModuleInteracting {
-        
+
     func generateRecoveryKitPDF(includeMasterKey: Bool, completion: @escaping (URL?) -> Void) {
         guard let entropy = startupInteractor.entropy,
               let words = startupInteractor.words
@@ -28,6 +28,7 @@ extension RecoveryKitOnboardingModuleInteractor: RecoveryKitModuleInteracting {
                 "RecoveryKitInteractor: Error - no encryption elements for generating Recovery Kit PDF",
                 module: .moduleInteractor
             )
+            completion(nil)
             return
         }
 

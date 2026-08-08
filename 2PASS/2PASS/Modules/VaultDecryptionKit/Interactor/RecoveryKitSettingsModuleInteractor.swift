@@ -11,14 +11,24 @@ import Common
 final class RecoveryKitSettingsModuleInteractor {
     private let protectionInteractor: ProtectionInteracting
     private let recoveryKitInteractor: RecoveryKitInteracting
-    
-    init(protectionInteractor: ProtectionInteracting, recoveryKitInteractor: RecoveryKitInteracting) {
+    private let securityInteractor: SecurityInteracting
+
+    init(
+        protectionInteractor: ProtectionInteracting,
+        recoveryKitInteractor: RecoveryKitInteracting,
+        securityInteractor: SecurityInteracting
+    ) {
         self.protectionInteractor = protectionInteractor
         self.recoveryKitInteractor = recoveryKitInteractor
+        self.securityInteractor = securityInteractor
     }
 }
 
-extension RecoveryKitSettingsModuleInteractor: RecoveryKitModuleInteracting {
+extension RecoveryKitSettingsModuleInteractor: RecoveryKitSettingsModuleInteracting {
+
+    var didLogoutApp: NotificationCenter.Notifications {
+        securityInteractor.didLogoutApp
+    }
 
     func generateRecoveryKitPDF(includeMasterKey: Bool, completion: @escaping (URL?) -> Void) {
         guard let words = protectionInteractor.words,
@@ -29,6 +39,7 @@ extension RecoveryKitSettingsModuleInteractor: RecoveryKitModuleInteracting {
                 "RecoveryKitSettingsInteractor: Error - no elements for generating Recovery Kit PDF",
                 module: .moduleInteractor
             )
+            completion(nil)
             return
         }
         

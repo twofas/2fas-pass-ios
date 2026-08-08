@@ -10,3 +10,7 @@ protocol RecoveryKitModuleInteracting: AnyObject {
     func generateRecoveryKitPDF(includeMasterKey: Bool, completion: @escaping (URL?) -> Void)
     func clear()
 }
+
+protocol RecoveryKitSettingsModuleInteracting: RecoveryKitModuleInteracting {
+    var didLogoutApp: NotificationCenter.Notifications { get }
+}

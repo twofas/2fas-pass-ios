@@ -93,6 +93,12 @@ struct VaultDecryptionKitView: View {
         }
         .router(router: VaultDecryptionKitRouter(), destination: $presenter.destination)
         .readableContentMargins()
+        .onAppear {
+            presenter.onAppear()
+        }
+        .onDisappear {
+            presenter.onDisappear()
+        }
     }
     
     private var documentImage: Image {

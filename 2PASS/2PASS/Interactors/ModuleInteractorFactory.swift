@@ -79,14 +79,16 @@ extension ModuleInteractorFactory {
             )
         )
     }
-    
+
     func recoveryKitSettingsModuleInteractor() -> RecoveryKitModuleInteracting {
         RecoveryKitSettingsModuleInteractor(
             protectionInteractor: InteractorFactory.shared.protectionInteractor(),
             recoveryKitInteractor: InteractorFactory.shared.recoveryKitInteractor(
-            translations: .default,
-            pdfConfig: .default
-        ))
+                translations: .default,
+                pdfConfig: .default
+            ),
+            securityInteractor: InteractorFactory.shared.securityInteractor()
+        )
     }
     
     func eventLogModuleInteractor() -> EventLogModuleInteracting {
