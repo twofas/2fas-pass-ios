@@ -61,6 +61,9 @@ struct ForgotMasterPasswordRecoveryView: View {
         .onAppear {
             presenter.onAppear()
         }
+        .onDisappear {
+            presenter.onDisappear()
+        }
         .navigationBarBackButtonHidden()
     }
 }

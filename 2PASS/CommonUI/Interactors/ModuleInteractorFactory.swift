@@ -127,7 +127,8 @@ public final class ModuleInteractorFactory {
         ForgotMasterPasswordRecoveryModuleInteractor(
             loginConfig: config,
             protectionInteractor: InteractorFactory.shared.protectionInteractor(),
-            loginInteractor: InteractorFactory.shared.loginInteractor()
+            loginInteractor: InteractorFactory.shared.loginInteractor(),
+            securityInteractor: InteractorFactory.shared.securityInteractor()
         )
     }
 

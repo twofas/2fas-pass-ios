@@ -28,6 +28,9 @@ final class ForgotMasterPasswordRecoveryPresenter {
 
     private var hasStarted = false
 
+    @ObservationIgnored
+    private var logoutObservationTask: Task<Void, Never>?
+
     init(
         interactor: ForgotMasterPasswordRecoveryModuleInteracting,
         entropy: Entropy,
@@ -57,13 +60,33 @@ final class ForgotMasterPasswordRecoveryPresenter {
     }
 
     func onAppear() {
+        observeLogout()
         guard !hasStarted else { return }
         hasStarted = true
         recover()
     }
+
+    func onDisappear() {
+        logoutObservationTask?.cancel()
+        logoutObservationTask = nil
+    }
+
+    deinit {
+        logoutObservationTask?.cancel()
+    }
 }
 
 private extension ForgotMasterPasswordRecoveryPresenter {
+    func observeLogout() {
+        guard logoutObservationTask == nil else { return }
+        logoutObservationTask = Task { @MainActor [weak self, interactor] in
+            for await _ in interactor.didLogoutApp {
+                guard let self, case .success = self.result else { continue }
+                self.onClose()
+            }
+        }
+    }
+
     func recover() {
         guard interactor.isAppLocked == false else {
             result = .failure(.appLocked)
