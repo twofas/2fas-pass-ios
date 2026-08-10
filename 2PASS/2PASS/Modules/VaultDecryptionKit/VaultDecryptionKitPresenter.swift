@@ -47,33 +47,18 @@ final class VaultDecryptionKitPresenter {
     
     private(set) var isPDFSaving: Bool = false
 
-    @ObservationIgnored
-    private var logoutObservationTask: Task<Void, Never>?
-
     init(kind: VaultDecryptionKitKind, interactor: RecoveryKitModuleInteracting, onFinish: @escaping Callback) {
         self.kind = kind
         self.interactor = interactor
         self.onFinish = onFinish
     }
 
-    deinit {
-        logoutObservationTask?.cancel()
-    }
-
     func onAppear() {
-        guard logoutObservationTask == nil,
-              let interactor = interactor as? RecoveryKitSettingsModuleInteracting
-        else { return }
-        logoutObservationTask = Task { @MainActor [weak self] in
-            for await _ in interactor.didLogoutApp {
-                self?.closeAfterLogout()
-            }
-        }
+        (interactor as? RecoveryKitSettingsModuleInteracting)?.setRetainsEncryptionDataAfterLogin(true)
     }
 
     func onDisappear() {
-        logoutObservationTask?.cancel()
-        logoutObservationTask = nil
+        (interactor as? RecoveryKitSettingsModuleInteracting)?.setRetainsEncryptionDataAfterLogin(false)
     }
 
     func onSaveRecoveryKit() {
@@ -117,10 +102,5 @@ final class VaultDecryptionKitPresenter {
                 self.includeMasterKey = $0
             })
         )
-    }
-
-    private func closeAfterLogout() {
-        destination = nil
-        onFinish()
     }
 }

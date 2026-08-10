@@ -12,5 +12,5 @@ protocol RecoveryKitModuleInteracting: AnyObject {
 }
 
 protocol RecoveryKitSettingsModuleInteracting: RecoveryKitModuleInteracting {
-    var didLogoutApp: NotificationCenter.Notifications { get }
+    func setRetainsEncryptionDataAfterLogin(_ shouldRetain: Bool)
 }

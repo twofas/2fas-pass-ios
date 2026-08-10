@@ -49,7 +49,23 @@ extension ChangePasswordInteractor: ChangePasswordInteracting {
             "ChangePasswordInteractor: Changing Master Password. Enable biometry: \(enableBiometryLogin)",
             module: .interactor
         )
+        if protectionInteractor.salt == nil {
+            Log("ChangePasswordInteractor: Restoring encryption data before password change", module: .interactor)
+            protectionInteractor.restoreEntropy()
+            protectionInteractor.createSeed()
+            protectionInteractor.createSalt()
+        }
         protectionInteractor.setMasterKey(for: masterPassword)
+        guard protectionInteractor.masterKey != nil else {
+            Log(
+                "ChangePasswordInteractor: Can't derive Master Key - aborting password change",
+                module: .interactor,
+                severity: .error
+            )
+            completion()
+            return
+        }
+        protectionInteractor.setShouldRetainEncryptionDataAfterLogin(true)
         biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
             if enableBiometryLogin && !result {
                 Log(

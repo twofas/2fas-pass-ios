@@ -945,6 +945,16 @@ final class MockMainRepository: MainRepository {
         return self
     }
 
+    var stubbedShouldRetainEncryptionDataAfterLogin = false
+    var shouldRetainEncryptionDataAfterLogin: Bool {
+        recordCall()
+        return stubbedShouldRetainEncryptionDataAfterLogin
+    }
+    func setShouldRetainEncryptionDataAfterLogin(_ shouldRetain: Bool) {
+        recordCall()
+        stubbedShouldRetainEncryptionDataAfterLogin = shouldRetain
+    }
+
     private var stubbedCreateSymmetricKeyFromSecureEnclave: (Data) throws(SecureEnclaveKeyError) -> SymmetricKey = { _ in
         throw SecureEnclaveKeyError.other(CryptoKitError.authenticationFailure)
     }

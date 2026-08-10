@@ -31,6 +31,7 @@ final class MainRepositoryImpl: MainRepository {
     var _empheralSalt: Data?
     var _empheralMasterPassword: MasterPassword?
     var _didLoginUsingDecryptionKit = false
+    var _shouldRetainEncryptionDataAfterLogin = false
     var _isInBackground = false
     var _isAutoFillEnabled: Bool = false
     var _pushNotificationToken: String?

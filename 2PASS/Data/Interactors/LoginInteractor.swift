@@ -231,7 +231,7 @@ extension LoginInteractor: LoginInteracting {
             securityInteractor.markCorrectLogin()
             userLoggedIn(using: masterPassword) { [weak self] in
                 completion(.success)
-                self?.protectionInteractor.clearAfterInit()
+                self?.protectionInteractor.clearAfterLogin()
             }
             return
         }
@@ -333,7 +333,7 @@ extension LoginInteractor: LoginInteracting {
 
         await withCheckedContinuation { continuation in
             userLoggedInUsingMasterKey(masterKey) { [weak self] in
-                self?.protectionInteractor.clearAfterInit()
+                self?.protectionInteractor.clearAfterLogin()
                 continuation.resume()
             }
         }
@@ -399,7 +399,7 @@ private extension LoginInteractor {
             if login {
                 userLoggedIn(using: masterPassword) { [weak self] in
                     completion(.success)
-                    self?.protectionInteractor.clearAfterInit()
+                    self?.protectionInteractor.clearAfterLogin()
                 }
             } else {
                 completion(.success)
@@ -449,7 +449,7 @@ private extension LoginInteractor {
                 if login {
                     self?.userLoggedInUsingMasterKey(masterKey, completion: { [weak self] in
                         completion(.success)
-                        self?.protectionInteractor.clearAfterInit()
+                        self?.protectionInteractor.clearAfterLogin()
                     })
                 } else {
                     self?.protectionInteractor.restoreEntropy()

@@ -30,6 +30,7 @@ final class ChangePasswordPromptModuleInteractor: ChangePasswordPromptModuleInte
     }
 
     func clearEncryptionData() {
+        protectionInteractor.setShouldRetainEncryptionDataAfterLogin(false)
         protectionInteractor.clearAfterInit()
     }
 

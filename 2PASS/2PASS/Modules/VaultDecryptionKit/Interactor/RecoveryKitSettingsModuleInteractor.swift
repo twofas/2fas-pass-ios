@@ -11,23 +11,17 @@ import Common
 final class RecoveryKitSettingsModuleInteractor {
     private let protectionInteractor: ProtectionInteracting
     private let recoveryKitInteractor: RecoveryKitInteracting
-    private let securityInteractor: SecurityInteracting
 
-    init(
-        protectionInteractor: ProtectionInteracting,
-        recoveryKitInteractor: RecoveryKitInteracting,
-        securityInteractor: SecurityInteracting
-    ) {
+    init(protectionInteractor: ProtectionInteracting, recoveryKitInteractor: RecoveryKitInteracting) {
         self.protectionInteractor = protectionInteractor
         self.recoveryKitInteractor = recoveryKitInteractor
-        self.securityInteractor = securityInteractor
     }
 }
 
 extension RecoveryKitSettingsModuleInteractor: RecoveryKitSettingsModuleInteracting {
 
-    var didLogoutApp: NotificationCenter.Notifications {
-        securityInteractor.didLogoutApp
+    func setRetainsEncryptionDataAfterLogin(_ shouldRetain: Bool) {
+        protectionInteractor.setShouldRetainEncryptionDataAfterLogin(shouldRetain)
     }
 
     func generateRecoveryKitPDF(includeMasterKey: Bool, completion: @escaping (URL?) -> Void) {

@@ -130,6 +130,7 @@ extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
     }
     
     func clearEncryptionData() {
+        protectionInteractor.setShouldRetainEncryptionDataAfterLogin(false)
         protectionInteractor.clearAfterInit()
     }
     

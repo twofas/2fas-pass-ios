@@ -56,7 +56,9 @@ public protocol ProtectionInteracting: AnyObject {
     func setupKeys()
     func selectVault()
     func clearAfterInit()
+    func clearAfterLogin()
     func updateExistingVault()
+    func setShouldRetainEncryptionDataAfterLogin(_ shouldRetain: Bool)
     
     var hasEncryptionReference: Bool { get }
     func createNewVault(with vaultID: VaultID, creationDate: Date?, modificationDate: Date?)
@@ -160,6 +162,7 @@ extension ProtectionInteractor: ProtectionInteracting {
     
     func clearApp() {
         Log("ProtectionInteractor: Clear All!", module: .interactor)
+        mainRepository.setShouldRetainEncryptionDataAfterLogin(false)
         mainRepository.clearAppKey()
         mainRepository.clearBiometryKey()
         mainRepository.clearMasterKey()
@@ -254,6 +257,10 @@ extension ProtectionInteractor: ProtectionInteracting {
         return false
     }
     
+    func setShouldRetainEncryptionDataAfterLogin(_ shouldRetain: Bool) {
+        mainRepository.setShouldRetainEncryptionDataAfterLogin(shouldRetain)
+    }
+
     func restoreEntropy() {
         Log("ProtectionInteractor: Restoring Entropy", module: .interactor)
         guard let entropy = mainRepository.masterKeyEntropy else {
@@ -561,6 +568,18 @@ extension ProtectionInteractor: ProtectionInteracting {
         mainRepository.clearWords()
         mainRepository.clearMasterPassword()
         mainRepository.clearEntropy()
+    }
+
+    func clearAfterLogin() {
+        guard mainRepository.shouldRetainEncryptionDataAfterLogin else {
+            clearAfterInit()
+            return
+        }
+        Log(
+            "ProtectionInteractor: Retaining encryption data after login for a pending Decryption Kit flow",
+            module: .interactor
+        )
+        mainRepository.clearMasterPassword()
     }
     
     func createNewVault(with vaultID: VaultID, creationDate: Date?, modificationDate: Date?) {

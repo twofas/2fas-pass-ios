@@ -269,6 +269,11 @@ protocol MainRepository: AnyObject {
 
     func clearAllEmphemeral()
 
+    /// When set, a successful login keeps the restored encryption data (all but the Master Password) in memory
+    /// for a pending flow that ends with saving the Decryption Kit. Survives logout on purpose.
+    var shouldRetainEncryptionDataAfterLogin: Bool { get }
+    func setShouldRetainEncryptionDataAfterLogin(_ shouldRetain: Bool)
+
     func hasCachedKeys() -> Bool
     func preparedCachedKeys()
 

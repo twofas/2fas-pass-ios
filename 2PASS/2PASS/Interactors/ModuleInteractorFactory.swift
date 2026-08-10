@@ -86,8 +86,7 @@ extension ModuleInteractorFactory {
             recoveryKitInteractor: InteractorFactory.shared.recoveryKitInteractor(
                 translations: .default,
                 pdfConfig: .default
-            ),
-            securityInteractor: InteractorFactory.shared.securityInteractor()
+            )
         )
     }
     

@@ -790,6 +790,14 @@ extension MainRepositoryImpl {
 
         _didLoginUsingDecryptionKit = false
     }
+
+    var shouldRetainEncryptionDataAfterLogin: Bool {
+        _shouldRetainEncryptionDataAfterLogin
+    }
+
+    func setShouldRetainEncryptionDataAfterLogin(_ shouldRetain: Bool) {
+        _shouldRetainEncryptionDataAfterLogin = shouldRetain
+    }
     
     func generateTrustedKeyForVaultID(_ vaultID: VaultID, using masterKey: String) -> String? {
         hmac(key: masterKey, message: vaultID.exportString() + "/tKey")
