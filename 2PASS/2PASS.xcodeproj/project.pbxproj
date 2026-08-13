@@ -470,7 +470,6 @@
 		54571D752D688AC200FC2DB3 /* AutoFill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (54571D832D688AC200FC2DB3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = AutoFill; sourceTree = "<group>"; };
 		547139D72D89644100A81142 /* AppSecurity */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppSecurity; sourceTree = "<group>"; };
 		548E54142E326EDB00DA22A7 /* QuickSetup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = QuickSetup; sourceTree = "<group>"; };
-		54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ChangePasswordPrompt; sourceTree = "<group>"; };
 		549B1F652E8C01DA00228FE2 /* RestoreVault */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = RestoreVault; sourceTree = "<group>"; };
 		54A825872D82DA3700CBC463 /* Settings */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Settings; sourceTree = "<group>"; };
 		54AFB3212DA441BB00EE00E9 /* Connect */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Connect; sourceTree = "<group>"; };
@@ -489,6 +488,7 @@
 		54D6B3282D91EBE80013185C /* VaultDecryptionKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultDecryptionKit; sourceTree = "<group>"; };
 		54D768E82DFAA4DF000CB649 /* ManageSubscription */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ManageSubscription; sourceTree = "<group>"; };
 		54DBC5D62E950EC000092B00 /* InMemory */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InMemory; sourceTree = "<group>"; };
+		54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ChangePasswordPrompt; sourceTree = "<group>"; };
 		54EABA602DD252760018189F /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
 		54FD31A22E45644E00DFAC70 /* Tags */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tags; sourceTree = "<group>"; };
 		C2B0FC1C2CE91C4D005CFADD /* Backup */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C2B0FC232CE91C4D005CFADD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Backup; sourceTree = "<group>"; };
@@ -1205,7 +1205,6 @@
 				548E54142E326EDB00DA22A7 /* QuickSetup */,
 				549B1F652E8C01DA00228FE2 /* RestoreVault */,
 				54A825872D82DA3700CBC463 /* Settings */,
-				54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */,
 				54AFB3212DA441BB00EE00E9 /* Connect */,
 				54B6643F2D84E09700AB4691 /* AutofillSettings */,
 				54B664B42D85752200AB4691 /* Trash */,
@@ -1218,6 +1217,7 @@
 				54C7EBFD2D5CCE35000E79D0 /* SwiftUI */,
 				54D6B3282D91EBE80013185C /* VaultDecryptionKit */,
 				54D768E82DFAA4DF000CB649 /* ManageSubscription */,
+				54E1C2D02F2B4433008A1B2C /* ChangePasswordPrompt */,
 				54EABA602DD252760018189F /* Backup */,
 				54FD31A22E45644E00DFAC70 /* Tags */,
 				C8DDE0B8ABFFDE9B897416CE /* CredentialExchange */,
@@ -1824,7 +1824,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Prod.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 433;
+				CURRENT_PROJECT_VERSION = 441;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -1844,7 +1844,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10.0;
+				MARKETING_VERSION = 1.10.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2639,7 +2639,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 433;
+				CURRENT_PROJECT_VERSION = 441;
 				ENABLE_MODULE_VERIFIER = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
@@ -2660,7 +2660,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10.0;
+				MARKETING_VERSION = 1.10.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2680,7 +2680,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = 2PASS/Dev.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 433;
+				CURRENT_PROJECT_VERSION = 441;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 2PASS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "2FAS Pass";
@@ -2700,7 +2700,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10.0;
+				MARKETING_VERSION = 1.10.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "2FAS Pass";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
