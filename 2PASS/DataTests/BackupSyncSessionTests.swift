@@ -160,12 +160,12 @@ import Backup
         )
         let webDAV = FakeSynchronizer(kind: .webDAV)
 
-        let session = BackupSyncSession(services: [iCloud, webDAV])
+        let session = BackupSyncSession(services: [webDAV, iCloud])
         let results = await session.run()
 
-        #expect(results.map(\.kind) == [.iCloud, .webDAV])
+        #expect(results.map(\.kind) == [.webDAV, .iCloud])
         #expect(iCloud.recording.calls == 1)
-        #expect(webDAV.recording.calls == 2, "iCloud's appliedRemoteChanges must re-queue the WebDAV peer")
+        #expect(webDAV.recording.calls == 2, "iCloud's appliedRemoteChanges must re-queue the WebDAV peer that ran before it")
     }
 
     // MARK: - Convergence loop
