@@ -193,16 +193,22 @@ final class RootPresenter {
     
     // MARK: - Notifications
     
-    func handleRemoteNotification(userInfo: [AnyHashable: Any]) {
-        interactor.handleRemoteNotification()
+    /// Returns after the Connect fetch, so the system's push window covers it; the fetch needs no session,
+    /// the queue waits for the login and `handleUserWasLoggedIn` shows it. The sync is only started, never awaited.
+    @MainActor
+    func handleRemoteNotification(userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult {
+        let didStartSync = interactor.handleRemoteNotification()
         
-        if interactor.isConnectNotification(userInfo: userInfo) {
-            Task { @MainActor in
-                let notifications = try await interactor.fetchAppNotifications()
-                appNotificationsQueue = notifications
-                
-                showAppNotificationIfNeeded()
-            }
+        guard interactor.isConnectNotification(userInfo: userInfo) else {
+            return didStartSync ? .newData : .noData
+        }
+        do {
+            appNotificationsQueue = try await interactor.fetchAppNotifications()
+            showAppNotificationIfNeeded()
+            return .newData
+        } catch {
+            Log("Failed to fetch app notifications after a push: \(error)", module: .moduleInteractor)
+            return .failed
         }
     }
     

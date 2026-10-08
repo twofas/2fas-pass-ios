@@ -63,7 +63,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
         Log("App received Remote Notification")
-        rootPresenter?.handleRemoteNotification(userInfo: userInfo)
+        Task { @MainActor [rootPresenter] in
+            let result = await rootPresenter?.handleRemoteNotification(userInfo: userInfo) ?? .noData
+            completionHandler(result)
+        }
     }
 }
 

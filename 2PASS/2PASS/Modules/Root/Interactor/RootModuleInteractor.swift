@@ -38,7 +38,8 @@ protocol RootModuleInteracting: AnyObject {
 
     func start() async -> StartupInteractorStartResult
 
-    func handleRemoteNotification()
+    /// Returns `false` when no session is open to act on the push.
+    func handleRemoteNotification() -> Bool
     func handleDidReceiveRegistrationToken(_ token: String?)
 
     func isConnectNotification(userInfo: [AnyHashable: Any]) -> Bool
@@ -184,11 +185,12 @@ extension RootModuleInteractor: RootModuleInteracting {
         rootInteractor.applicationDidBecomeActive()
     }
 
-    func handleRemoteNotification() {
+    func handleRemoteNotification() -> Bool {
         guard securityInteractor.isUserLoggedIn && isUserSetUp else {
-            return
+            return false
         }
         syncTriggerInteractor.handlePushNotification()
+        return true
     }
 
     func fetchAppNotifications() async throws -> [AppNotification] {
