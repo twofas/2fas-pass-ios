@@ -51,6 +51,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         Log("App did register for Remote Notifications. Device Token: \(String(data: deviceToken, encoding: .utf8) ?? "<error>")")
 
         Messaging.messaging().apnsToken = deviceToken
+        Messaging.messaging().token { _, error in
+            guard let error else { return }
+            Log("Firebase failed to provide the FCM token: \(error)", severity: .error)
+        }
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -73,6 +77,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: MessagingDelegate {
 
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        if let fcmToken {
+            Log("Firebase delivered the FCM token: \(fcmToken.count) characters", severity: .info)
+        } else {
+            Log("Firebase delivered no FCM token", severity: .error)
+        }
         rootPresenter?.handleDidReceiveRegistrationToken(fcmToken)
     }
 }
