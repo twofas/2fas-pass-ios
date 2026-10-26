@@ -120,7 +120,5 @@ struct HalfwayView: View {
 }
 
 #Preview {
-    OnboardingStepsStack {
-        HalfwayRouter.buildView()
-    }
+    HalfwayRouter.buildView()
 }

@@ -27,9 +27,21 @@ struct VaultDecryptionKitView: View {
             content
                 .onboardingStepTopPadding()
                 .onboardingStepProgress(Constants.stepProgess)
-            
+                .flowBarTrailingItem(systemImage: "gearshape") {
+                    presenter.onSettings()
+                }
+
         case .settings:
             content
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            presenter.onSettings()
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                    }
+                }
         }
     }
     
@@ -82,15 +94,6 @@ struct VaultDecryptionKitView: View {
             .padding(.bottom, Spacing.xl)
         }
         .padding(.horizontal, Spacing.xl)
-        .slideToolbarTrailingItems {
-            settingsButton
-                .padding(.horizontal, Spacing.s)
-        }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                settingsButton
-            }
-        }
         .router(router: VaultDecryptionKitRouter(), destination: $presenter.destination)
         .readableContentMargins()
         .onAppear {
@@ -106,15 +109,6 @@ struct VaultDecryptionKitView: View {
             Image(.vaultDecryptionKitDocumentSeedMasterkey)
         } else {
             Image(.vaultDecryptionKitDocumentSeed)
-        }
-    }
-
-    private var settingsButton: some View {
-        Button {
-            presenter.onSettings()
-        } label: {
-            Image(systemName: "gearshape")
-                .slideNavigationButtonLabel()
         }
     }
 }
