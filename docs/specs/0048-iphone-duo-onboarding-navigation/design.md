@@ -138,6 +138,12 @@ shows no shield. The progress animates as today
 (`changeProgressAnimationDuration`, the ease-in-out of the visibility).
 (Amended 2026-10-26 while planning: the preference keys stay; only the
 reader moves from the stack to the host's root.)
+(Amended 2026-10-26 after the first build: the shield enters and leaves
+with the screen that claims it — an offset of the screen's width over the
+slide's length, `SlideNavigationController.slideDuration` — as it did when
+it was part of the pushed step; only within a claiming screen does it hide
+in place by opacity, as on the Master Password's focused field. The model
+keeps `isClaimed` beside `isVisible` for the two.)
 
 ### D5. The bar is the system's; its look follows the routing kind
 

@@ -17,7 +17,12 @@ private struct Constants {
 @MainActor @Observable
 final class OnboardingProgress {
     var progress: Float = 0
-    var isVisible: Bool = false
+
+    // A screen that claims a progress has the shield; it enters and leaves with that screen.
+    var isClaimed: Bool = false
+
+    // Within a claiming screen the shield can hide in place (the Master Password's focused field).
+    var isVisible: Bool = true
 }
 
 /// Wraps one hosted screen: reads its progress preferences and writes the model, on change and on every appearance.
@@ -56,11 +61,13 @@ struct OnboardingProgressReporter<Content: View>: View {
 
     private func report() {
         progress.progress = claimedProgress ?? 0
-        progress.isVisible = claimedProgress != nil && (claimedVisibility ?? true)
+        progress.isClaimed = claimedProgress != nil
+        progress.isVisible = claimedVisibility ?? true
     }
 }
 
-/// The shield above the whole stack, so it never moves with a screen.
+/// The shield above the whole stack: it slides in and out with the screen that claims it, as a
+/// part of that screen would, and stays in place while the steps slide beneath it.
 struct OnboardingProgressOverlayView: View {
 
     let progress: OnboardingProgress
@@ -70,6 +77,20 @@ struct OnboardingProgressOverlayView: View {
     }
 
     var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                if progress.isClaimed {
+                    shield
+                        .transition(.offset(x: proxy.size.width))
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .animation(.spring(duration: SlideNavigationController.slideDuration, bounce: 0), value: progress.isClaimed)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private var shield: some View {
         ZStack {
             if progress.isVisible {
                 ProgressView(value: progress.progress)
@@ -79,9 +100,7 @@ struct OnboardingProgressOverlayView: View {
                     .transition(.opacity)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(.easeInOut(duration: Constants.changeProgressAnimationDuration), value: progress.isVisible)
-        .allowsHitTesting(false)
     }
 }
 

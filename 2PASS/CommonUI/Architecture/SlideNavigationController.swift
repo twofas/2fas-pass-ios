@@ -9,13 +9,15 @@ import UIKit
 
 private struct Constants {
     static let keyboardHideWait: Duration = .milliseconds(500)
-    static let slideDuration: TimeInterval = 0.5
 }
 
 /// One system-owned navigation stack whose screens are SwiftUI views; a `.slide` push keeps the
 /// onboarding's slide transition and a transparent bar, a `.system` push is the plain UIKit one.
 @MainActor
 public final class SlideNavigationController: UINavigationController {
+
+    /// The slide's length, for an overlay that wants to enter and leave with a `.slide` screen.
+    public static let slideDuration: TimeInterval = 0.5
 
     private let decorate: (AnyView) -> AnyView
     private let keyboardObserver = KeyboardObserver()
@@ -202,7 +204,7 @@ private final class HostedScreen: UIHostingController<AnyView> {
 
 private final class SlideAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     let isPresenting: Bool
-    let duration: TimeInterval = Constants.slideDuration
+    let duration: TimeInterval = SlideNavigationController.slideDuration
 
     init(isPresenting: Bool) {
         self.isPresenting = isPresenting
