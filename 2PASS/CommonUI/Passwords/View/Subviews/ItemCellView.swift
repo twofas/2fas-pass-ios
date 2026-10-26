@@ -16,9 +16,9 @@ private struct Constants {
     static let selectedCornerRadius: CGFloat = 20
     static let selectedBackgroundHorizontalInset: CGFloat = Spacing.s
     static let selectedBackgroundVerticalInset: CGFloat = 0
-    static let multiselectReservedWidth: CGFloat = 28
-    static let multiselectIndicatorSize: CGFloat = 22
-    static let multiselectCheckmarkSize: CGFloat = 13
+    /// The icon's distance from the content view's leading edge; in editing mode the edge already sits past the multiselect circle.
+    static let iconLeading: CGFloat = Spacing.l
+    static let editingIconLeading: CGFloat = Spacing.s
 }
 
 class ItemCellView: UICollectionViewListCell {
@@ -38,6 +38,7 @@ class ItemCellView: UICollectionViewListCell {
 
     private let iconRenderer = IconRenderer()
     private let listContentView = UIListContentView(configuration: .cell())
+    private var iconLeadingConstraint: NSLayoutConstraint?
 
     private var cellData: ItemCellData?
     private var loginIconImage: UIImage?
@@ -73,14 +74,24 @@ class ItemCellView: UICollectionViewListCell {
     }
         
     private func commonInit() {
+        // The leading side is measured from the content view's edge, not its layout margin: in
+        // editing mode UIKit shifts the content view past the multiselect accessory and the margin
+        // left over is its own, size-class dependent one, which is a few points on wide phones.
+        listContentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(listContentView)
-        listContentView.pinToParentMargin()
 
         iconRenderer.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(iconRenderer)
+
+        let iconLeadingConstraint = iconRenderer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.iconLeading)
+        self.iconLeadingConstraint = iconLeadingConstraint
                 
         NSLayoutConstraint.activate([
-            iconRenderer.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            listContentView.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
+            listContentView.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor),
+            listContentView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            listContentView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            iconLeadingConstraint,
             iconRenderer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             iconRenderer.widthAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
             iconRenderer.heightAnchor.constraint(equalToConstant: CGFloat(Config.iconDimension)),
@@ -143,8 +154,11 @@ class ItemCellView: UICollectionViewListCell {
             content.secondaryTextProperties.numberOfLines = 1
         }
 
+        let iconLeading = state.isEditing ? Constants.editingIconLeading : Constants.iconLeading
+        iconLeadingConstraint?.constant = iconLeading
+
         content.directionalLayoutMargins = .zero
-        content.directionalLayoutMargins.leading = CGFloat(Config.iconDimension) + Spacing.l
+        content.directionalLayoutMargins.leading = iconLeading + CGFloat(Config.iconDimension) + Spacing.l
 
         listContentView.configuration = content
 
