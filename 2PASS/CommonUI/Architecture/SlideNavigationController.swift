@@ -43,13 +43,14 @@ public final class SlideNavigationController: UINavigationController {
 
     /// A passthrough SwiftUI layer over the whole stack, pinned to the view's edges.
     public func setOverlay<Overlay: View>(_ overlay: Overlay) {
-        overlayController?.unplaceFromParent()
+        overlayController?.view.removeFromSuperview()
 
+        // Only the view joins the hierarchy: `addChild` on a navigation controller pushes the child.
         let controller = UIHostingController(rootView: overlay)
         controller.view.backgroundColor = .clear
         controller.view.isUserInteractionEnabled = false
-        placeChild(controller)
-        view.bringSubviewToFront(controller.view)
+        view.addSubview(controller.view)
+        controller.view.pinToParent()
         overlayController = controller
     }
 
