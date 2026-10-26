@@ -22,16 +22,34 @@ final class OnboardingFlowController: NavigationFlowController {
         let flowController = OnboardingFlowController()
         flowController.parent = parent
 
-        let view = OnboardingPagesRouter.buildView(onLogin: { [weak parent] in
+        let navigation = MainActor.assumeIsolated {
+            makeNavigationController(parent: parent)
+        }
+        flowController.navigationController = navigation
+
+        viewController.placeChild(navigation)
+
+        return navigation
+    }
+
+    // One stack for the pages, the steps and the recovery flow; every hosted screen is wrapped
+    // with the shield's reporter and the flow's environment (spec 0048 D1, D4).
+    @MainActor
+    private static func makeNavigationController(parent: OnboardingNavigationFlowControllerParent) -> SlideNavigationController {
+        let progress = OnboardingProgress()
+        let dismissFlow = DismissFlowAction(action: { [weak parent] in
             parent?.onboardingToLoggedIn()
         })
-        
-        let vc = UIHostingController(rootView: view)
-        vc.view.backgroundColor = UIColor(resource: .mainBackground)
-        vc.navigationController?.navigationItem.backButtonDisplayMode = .minimal
-                
-        viewController.placeChild(vc)
-        
-        return vc
+        let navigation = SlideNavigationController(root: OnboardingPagesRouter.buildView()) { screen in
+            AnyView(
+                OnboardingProgressReporter(progress: progress, content: screen)
+                    .environment(\.dismissFlow, dismissFlow)
+                    .tint(.brand500)
+            )
+        }
+        navigation.setOverlay(OnboardingProgressOverlayView(progress: progress))
+        navigation.view.backgroundColor = UIColor(resource: .mainBackground)
+        navigation.navigationBar.tintColor = UIColor(resource: .brand500)
+        return navigation
     }
 }

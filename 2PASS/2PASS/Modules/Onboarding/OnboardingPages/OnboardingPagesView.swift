@@ -57,5 +57,5 @@ struct OnboardingPagesView: View {
 }
 
 #Preview {
-    OnboardingPagesRouter.buildView(onLogin: {})
+    OnboardingPagesRouter.buildView()
 }

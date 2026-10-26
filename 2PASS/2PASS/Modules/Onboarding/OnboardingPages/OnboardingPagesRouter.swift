@@ -11,18 +11,14 @@ import CommonUI
 struct OnboardingPagesRouter: Router {
     
     @ViewBuilder
-    static func buildView(onLogin: @escaping Callback) -> some View {
-        NavigationStack {
-            OnboardingPagesView(presenter: OnboardingPagesPresenter())
-        }
-        .environment(\.dismissFlow, DismissFlowAction(action: onLogin))
-        .tint(.brand500)
+    static func buildView() -> some View {
+        OnboardingPagesView(presenter: OnboardingPagesPresenter())
     }
     
     func routingType(for destination: OnboardingPagesDestination?) -> RoutingType? {
         switch destination {
         case .getStarted?:
-            return .push
+            return .slidePush
         case .recover?:
             return .push
         case .none:
@@ -34,9 +30,7 @@ struct OnboardingPagesRouter: Router {
     func view(for destination: OnboardingPagesDestination) -> some View {
         switch destination {
         case .getStarted:
-            OnboardingStepsStack {
-                SetupVaultRouter.buildView()
-            }
+            SetupVaultRouter.buildView()
         case .recover:
             VaultRecoveryRouter.buildView()
         }
