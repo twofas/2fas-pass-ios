@@ -8,7 +8,7 @@ import SwiftUI
 import CommonUI
 
 private struct Constants {
-    static let progressTopPadding: CGFloat = 44 + 16 // default navigation bar height + padding
+    static let progressTopPadding: CGFloat = 16 // below the safe area, which holds the bar where there is one
     static let contentTopPadding: CGFloat = 106 // below the system bar, which sits in the safe area
     static let changeProgressAnimationDuration: TimeInterval = 0.1
 }
@@ -35,6 +35,10 @@ struct OnboardingProgressReporter<Content: View>: View {
     @State private var claimedProgress: Float?
     @State private var claimedVisibility: Bool?
 
+    // The first appearance reports through the preferences, whose initial delivery may follow it;
+    // a reappearance after a pop reports what was claimed.
+    @State private var hasAppeared = false
+
     init(progress: OnboardingProgress, content: Content) {
         self.progress = progress
         self.content = content
@@ -44,18 +48,17 @@ struct OnboardingProgressReporter<Content: View>: View {
         content
             .onPreferenceChange(OnboardingProgressPreferenceKey.self) { value in
                 claimedProgress = value
+                report()
             }
             .onPreferenceChange(OnboardingProgressVisibilityPreferenceKey.self) { value in
                 claimedVisibility = value
-            }
-            .onChange(of: claimedProgress) {
-                report()
-            }
-            .onChange(of: claimedVisibility) {
                 report()
             }
             .onAppear {
-                report()
+                if hasAppeared {
+                    report()
+                }
+                hasAppeared = true
             }
     }
 

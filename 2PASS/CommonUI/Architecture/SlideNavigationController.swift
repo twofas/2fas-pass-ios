@@ -22,6 +22,7 @@ public final class SlideNavigationController: UINavigationController {
     private let decorate: (AnyView) -> AnyView
     private let keyboardObserver = KeyboardObserver()
     private var overlayController: UIViewController?
+    private let overlayInsets = OverlayInsets()
 
     // The stack as last shown; the screens missing from it after a transition were popped.
     private var shownControllers: [UIViewController] = []
@@ -48,7 +49,7 @@ public final class SlideNavigationController: UINavigationController {
         overlayController?.view.removeFromSuperview()
 
         // Only the view joins the hierarchy: `addChild` on a navigation controller pushes the child.
-        let controller = UIHostingController(rootView: overlay)
+        let controller = UIHostingController(rootView: OverlayRoot(insets: overlayInsets, overlay: overlay))
         controller.view.backgroundColor = .clear
         controller.view.isUserInteractionEnabled = false
         view.addSubview(controller.view)
@@ -61,6 +62,13 @@ public final class SlideNavigationController: UINavigationController {
 
         if let overlayView = overlayController?.view {
             view.bringSubviewToFront(overlayView)
+        }
+
+        // The overlay's safe area follows the shown screen's, so it clears the bar where there is one
+        // and nothing where the system moved the items elsewhere.
+        let barInset = max(0, (topViewController?.view.safeAreaInsets.top ?? 0) - view.safeAreaInsets.top)
+        if overlayInsets.top != barInset {
+            overlayInsets.top = barInset
         }
     }
 
@@ -91,7 +99,7 @@ public final class SlideNavigationController: UINavigationController {
         let screen = host(view, kind: kind)
         screen.onPop = onPop
 
-        afterHidingKeyboard { [weak self] in
+        afterHidingKeyboard(forSlide: kind == .slide) { [weak self] in
             guard let self else { return }
 
             // The back button a screen shows belongs to the item below it, so it is set before the push.
@@ -101,14 +109,17 @@ public final class SlideNavigationController: UINavigationController {
     }
 
     private func pop(to screen: UIViewController) {
-        afterHidingKeyboard { [weak self] in
+        let leavingSlide = (viewControllers.last as? HostedScreen)?.kind == .slide
+        afterHidingKeyboard(forSlide: leavingSlide) { [weak self] in
             guard let self, viewControllers.contains(screen), topViewController !== screen else { return }
             popToViewController(screen, animated: true)
         }
     }
 
-    private func afterHidingKeyboard(_ navigate: @escaping @MainActor () -> Void) {
-        guard keyboardObserver.isKeyboardVisible else {
+    // The slide moves the whole screen, keyboard included, so it waits for the keyboard to leave first;
+    // the system transition handles the keyboard itself.
+    private func afterHidingKeyboard(forSlide isSlide: Bool, _ navigate: @escaping @MainActor () -> Void) {
+        guard isSlide, keyboardObserver.isKeyboardVisible else {
             navigate()
             return
         }
@@ -158,6 +169,22 @@ extension SlideNavigationController: UINavigationControllerDelegate {
             screen.onPop = nil
             onPop?()
         }
+    }
+}
+
+@MainActor @Observable
+private final class OverlayInsets {
+    var top: CGFloat = 0
+}
+
+/// Pads the overlay's safe area by the bar's height, so it lays out as the screen under it does.
+private struct OverlayRoot<Overlay: View>: View {
+    let insets: OverlayInsets
+    let overlay: Overlay
+
+    var body: some View {
+        overlay
+            .safeAreaPadding(.top, insets.top)
     }
 }
 

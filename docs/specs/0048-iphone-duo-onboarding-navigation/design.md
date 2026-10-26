@@ -144,6 +144,11 @@ slide's length, `SlideNavigationController.slideDuration` — as it did when
 it was part of the pushed step; only within a claiming screen does it hide
 in place by opacity, as on the Master Password's focused field. The model
 keeps `isClaimed` beside `isVisible` for the two.)
+(Amended 2026-10-26 after the review: the overlay's safe area is padded by
+the shown screen's bar inset — the difference between the hosted screen's
+and the stack's top safe inset — so the shield sits 16 pt below the bar
+where the system shows one and 16 pt below the safe area where it does not,
+and the content's 106 pt clears it on every device.)
 
 ### D5. The bar is the system's; its look follows the routing kind
 
@@ -186,7 +191,11 @@ This is the same shape as today's outer `NavigationStack`, only UIKit-backed.
 ### D7. What stays as it is
 
 Keyboard hiding with the 500 ms wait before a push or a pop that a presenter
-drives (today's `SlideNavigationStack` behaviour); the system Back button and
+drives (today's `SlideNavigationStack` behaviour; amended 2026-10-26 after
+the review: only when the moving screen is a `.slide` one, since the slide
+moves the keyboard with the screen, while the system transition of the
+recovery screens handles the keyboard itself, as it did under the
+`NavigationStack`); the system Back button and
 the swipe pop at once, the keyboard leaving with the transition as UIKit does
 everywhere else — the builder verifies this on the Master Password step,
 whose field is focused. `dismissFlow`/`onLogin` reaching `RootFlowController`,
