@@ -91,6 +91,9 @@ public final class SlideNavigationController: UINavigationController {
                 .onPreferenceChange(FlowBarTrailingItemPreferenceKey.self) { [weak screen] item in
                     screen?.trailingItem = item
                 }
+                .onPreferenceChange(FlowOverlayClaimPreferenceKey.self) { [weak screen] claims in
+                    screen?.claimsOverlay = claims
+                }
         )
         return screen
     }
@@ -144,7 +147,12 @@ extension SlideNavigationController: UINavigationControllerDelegate {
         guard (movingScreen as? HostedScreen)?.kind == .slide else {
             return nil
         }
-        return SlideAnimator(isPresenting: operation == .push)
+
+        // The overlay rides with the moving screen when the screen that stays shows nothing in it,
+        // so what the overlay holds enters and leaves as a part of the screen that claims it.
+        let stayingScreen = operation == .push ? fromVC : toVC
+        let overlayRides = (stayingScreen as? HostedScreen)?.claimsOverlay != true
+        return SlideAnimator(isPresenting: operation == .push, overlay: overlayRides ? overlayController?.view : nil)
     }
 
     public func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
@@ -193,6 +201,7 @@ private final class HostedScreen: UIHostingController<AnyView> {
 
     let kind: FlowPushKind
     var onPop: (@MainActor () -> Void)?
+    var claimsOverlay = false
 
     var trailingItem: FlowBarItem? {
         didSet {
@@ -233,8 +242,13 @@ private final class SlideAnimator: NSObject, UIViewControllerAnimatedTransitioni
     let isPresenting: Bool
     let duration: TimeInterval = SlideNavigationController.slideDuration
 
-    init(isPresenting: Bool) {
+    // The stack's overlay view when it moves with the screen; a snapshot stands in for it on the
+    // way out, since the content it shows may leave before the slide ends.
+    private let overlay: UIView?
+
+    init(isPresenting: Bool, overlay: UIView?) {
         self.isPresenting = isPresenting
+        self.overlay = overlay
     }
 
     func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
@@ -250,6 +264,7 @@ private final class SlideAnimator: NSObject, UIViewControllerAnimatedTransitioni
 
         let containerView = transitionContext.containerView
         let screenWidth = containerView.bounds.width
+        let ridingOverlay = ridingOverlayView(screenWidth: screenWidth)
 
         if isPresenting {
             toView.transform = CGAffineTransform(translationX: screenWidth, y: 0)
@@ -263,17 +278,47 @@ private final class SlideAnimator: NSObject, UIViewControllerAnimatedTransitioni
             if self.isPresenting {
                 fromView.transform = CGAffineTransform(translationX: -screenWidth, y: 0)
                 toView.transform = .identity
+                ridingOverlay?.transform = .identity
             } else {
                 fromView.transform = CGAffineTransform(translationX: screenWidth, y: 0)
                 toView.transform = .identity
+                ridingOverlay?.transform = CGAffineTransform(translationX: screenWidth, y: 0)
             }
         }
         animator.addCompletion { _ in
             fromView.transform = .identity
             toView.transform = .identity
+            self.endRide(of: ridingOverlay)
 
             transitionContext.completeTransition(true)
         }
         animator.startAnimation()
+    }
+
+    // Entering: the overlay itself starts off screen and comes in with the screen. Leaving: a
+    // snapshot of it goes out with the screen while the overlay is hidden.
+    private func ridingOverlayView(screenWidth: CGFloat) -> UIView? {
+        guard let overlay else { return nil }
+
+        if isPresenting {
+            overlay.transform = CGAffineTransform(translationX: screenWidth, y: 0)
+            return overlay
+        }
+        guard let snapshot = overlay.snapshotView(afterScreenUpdates: false) else { return nil }
+        snapshot.frame = overlay.frame
+        overlay.superview?.insertSubview(snapshot, aboveSubview: overlay)
+        overlay.isHidden = true
+        return snapshot
+    }
+
+    private func endRide(of ridingOverlay: UIView?) {
+        guard let overlay, let ridingOverlay else { return }
+
+        if ridingOverlay === overlay {
+            overlay.transform = .identity
+        } else {
+            ridingOverlay.removeFromSuperview()
+            overlay.isHidden = false
+        }
     }
 }

@@ -82,3 +82,21 @@ extension View {
         preference(key: FlowBarTrailingItemPreferenceKey.self, value: FlowBarItem(systemImage: systemImage, action: action))
     }
 }
+
+struct FlowOverlayClaimPreferenceKey: PreferenceKey {
+    static var defaultValue: Bool {
+        false
+    }
+    
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
+    }
+}
+
+extension View {
+    
+    /// Says the stack's overlay shows this screen's content, so it enters and leaves with the screen.
+    public func flowOverlayClaim(_ claims: Bool) -> some View {
+        preference(key: FlowOverlayClaimPreferenceKey.self, value: claims)
+    }
+}

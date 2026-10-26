@@ -60,6 +60,7 @@ struct OnboardingProgressReporter<Content: View>: View {
                 }
                 hasAppeared = true
             }
+            .flowOverlayClaim(claimedProgress != nil)
     }
 
     private func report() {
@@ -69,8 +70,8 @@ struct OnboardingProgressReporter<Content: View>: View {
     }
 }
 
-/// The shield above the whole stack: it slides in and out with the screen that claims it, as a
-/// part of that screen would, and stays in place while the steps slide beneath it.
+/// The shield above the whole stack: the stack's slide carries it in and out with the screen that
+/// claims it (`flowOverlayClaim`), and it stays in place while the steps slide beneath it.
 struct OnboardingProgressOverlayView: View {
 
     let progress: OnboardingProgress
@@ -80,16 +81,13 @@ struct OnboardingProgressOverlayView: View {
     }
 
     var body: some View {
-        GeometryReader { proxy in
-            ZStack {
-                if progress.isClaimed {
-                    shield
-                        .transition(.offset(x: proxy.size.width))
-                }
+        ZStack {
+            if progress.isClaimed {
+                shield
+                    .transition(.identity)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .animation(.spring(duration: SlideNavigationController.slideDuration, bounce: 0), value: progress.isClaimed)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .allowsHitTesting(false)
     }
 

@@ -139,11 +139,15 @@ shows no shield. The progress animates as today
 (Amended 2026-10-26 while planning: the preference keys stay; only the
 reader moves from the stack to the host's root.)
 (Amended 2026-10-26 after the first build: the shield enters and leaves
-with the screen that claims it — an offset of the screen's width over the
-slide's length, `SlideNavigationController.slideDuration` — as it did when
-it was part of the pushed step; only within a claiming screen does it hide
-in place by opacity, as on the Master Password's focused field. The model
-keeps `isClaimed` beside `isVisible` for the two.)
+with the screen that claims it, as it did when it was part of the pushed
+step; only within a claiming screen does it hide in place by opacity, as on
+the Master Password's focused field. The model keeps `isClaimed` beside
+`isVisible` for the two. A SwiftUI transition could not match the slide
+frame for frame, so the ride is `SlideAnimator`'s: a hosted screen says
+`flowOverlayClaim(_:)` through CommonUI's preference, and when the screen
+that stays claims nothing the animator moves the overlay view with the
+moving screen — the view itself on the way in, a snapshot of it on the way
+out, since the model empties it at the revealed screen's appearance.)
 (Amended 2026-10-26 after the review: the overlay's safe area is padded by
 the shown screen's bar inset — the difference between the hosted screen's
 and the stack's top safe inset — so the shield sits 16 pt below the bar
