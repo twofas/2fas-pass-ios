@@ -57,6 +57,14 @@ public final class SlideNavigationController: UINavigationController {
         overlayController = controller
     }
 
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // A navigation delegate that answers `animationControllerFor` silences UIKit's own gesture
+        // delegate, so the swipe back is judged here: on a `.system` screen alone (D2).
+        interactivePopGestureRecognizer?.delegate = self
+    }
+
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
@@ -166,8 +174,6 @@ extension SlideNavigationController: UINavigationControllerDelegate {
     }
 
     public func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
-        interactivePopGestureRecognizer?.isEnabled = (viewController as? HostedScreen)?.kind == .system && viewControllers.count > 1
-
         let current = viewControllers
         let popped = shownControllers.filter { current.contains($0) == false }
         shownControllers = current
@@ -193,6 +199,17 @@ private struct OverlayRoot<Overlay: View>: View {
     var body: some View {
         overlay
             .safeAreaPadding(.top, insets.top)
+    }
+}
+
+extension SlideNavigationController: UIGestureRecognizerDelegate {
+
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer === interactivePopGestureRecognizer else { return true }
+
+        return viewControllers.count > 1
+            && (viewControllers.last as? HostedScreen)?.kind == .system
+            && transitionCoordinator == nil
     }
 }
 
