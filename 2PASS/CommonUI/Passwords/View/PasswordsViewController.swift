@@ -56,6 +56,7 @@ final class PasswordsViewController: UIViewController {
     private struct ListLayoutInputs: Equatable {
         let topInset: CGFloat
         let showSectionHeaders: Bool
+        let division: ClosedRange<CGFloat>?
     }
     private var appliedLayoutInputs: ListLayoutInputs?
     private(set) var passwordsList: PasswordsListView?
@@ -107,6 +108,13 @@ final class PasswordsViewController: UIViewController {
         setupDataSource()
         
         addContentTypePicker()
+
+        if #available(iOS 27.1, *) {
+            // The division region moves with the hinge, not with the bounds; a layout pass re-reads it.
+            view.addInteraction(UIHingeInteraction { [weak self] _, _ in
+                self?.view.setNeedsLayout()
+            })
+        }
         
         if let contentTypePicker {
             addSelectedTagBanner(below: contentTypePicker)
@@ -173,7 +181,7 @@ final class PasswordsViewController: UIViewController {
 
         // Re-evaluate the cell highlight (split column vs grid) on the next layout pass without rebuilding
         // the data source, then refresh banner/edge/layout state and the multiselect title placement.
-        lastEvaluatedListBoundsSize = nil
+        lastEvaluatedColumnsKey = nil
         appliedInsetSelectionHighlight = nil
         view.setNeedsLayout()
         filterDidChange(animated: false)
@@ -200,27 +208,41 @@ final class PasswordsViewController: UIViewController {
     }
 
     /// Whether the grid is currently laying items out in more than one column. Mirrors the column math
-    /// in `ItemListLayout` using the list's current content width.
+    /// in `ItemListLayout` using the list's current content width and division.
     private var isShowingMultipleColumns: Bool {
         guard let passwordsList else { return false }
-        let availableWidth = passwordsList.bounds.inset(by: passwordsList.adjustedContentInset).width
-        return ItemListLayout.numberOfColumns(
-            forAvailableWidth: availableWidth,
-            contentSizeCategory: traitCollection.preferredContentSizeCategory
-        ) > 1
+        let content = passwordsList.bounds.inset(by: passwordsList.adjustedContentInset)
+        guard content.width > 0 else { return false }
+        return ItemListLayout.columnArrangement(
+            contentX: content.minX...content.maxX,
+            division: passwordsList.verticalDivisionX,
+            contentSizeCategory: traitCollection.preferredContentSizeCategory,
+            layoutDirection: traitCollection.layoutDirection
+        ).numberOfColumns > 1
     }
 
-    /// Last list bounds size we evaluated the highlight for, and the value applied for it. A bounds
-    /// change can flip the multi-column state, so we re-evaluate on every bounds change and reconfigure
-    /// the cells when the highlight actually changes — without rebuilding the data source.
-    private var lastEvaluatedListBoundsSize: CGSize?
+    /// What the column count was last evaluated for, and the highlight applied for it. A bounds change
+    /// or a moved division can flip the multi-column state, so we re-evaluate on every change of either
+    /// and reconfigure the cells when the highlight actually changes — without rebuilding the data source.
+    private struct ColumnsEvaluationKey: Equatable {
+        let boundsSize: CGSize
+        let division: ClosedRange<CGFloat>?
+    }
+    private var lastEvaluatedColumnsKey: ColumnsEvaluationKey?
     private var appliedInsetSelectionHighlight: Bool?
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        guard let boundsSize = passwordsList?.bounds.size, boundsSize != lastEvaluatedListBoundsSize else { return }
-        lastEvaluatedListBoundsSize = boundsSize
+        guard let passwordsList else { return }
+        let key = ColumnsEvaluationKey(boundsSize: passwordsList.bounds.size, division: passwordsList.verticalDivisionX)
+        guard key != lastEvaluatedColumnsKey else { return }
+        lastEvaluatedColumnsKey = key
+
+        // A fold or unfold moves the division with no bounds change and no `reloadLayout` call.
+        if appliedLayoutInputs?.division != key.division {
+            applyLayoutIfInputsChanged(animated: false)
+        }
 
         let current = usesInsetSelectionHighlight
         guard current != appliedInsetSelectionHighlight else { return }
@@ -400,6 +422,10 @@ final class PasswordsViewController: UIViewController {
             }
         }
 
+        applyLayoutIfInputsChanged(animated: animated)
+    }
+
+    private func applyLayoutIfInputsChanged(animated: Bool) {
         guard listLayoutInputs != appliedLayoutInputs else { return }
         layout = makeLayout()
         passwordsList?.setCollectionViewLayout(layout, animated: animated)
@@ -614,7 +640,8 @@ private extension PasswordsViewController {
     private var listLayoutInputs: ListLayoutInputs {
         ListLayoutInputs(
             topInset: presenter.showContentTypePicker && contentTypePicker != nil ? (contentTypePicker?.frame.height ?? 0) + Spacing.l : 0,
-            showSectionHeaders: presenter.hasSuggestedItems
+            showSectionHeaders: presenter.hasSuggestedItems,
+            division: passwordsList?.verticalDivisionX
         )
     }
 
@@ -623,7 +650,8 @@ private extension PasswordsViewController {
         appliedLayoutInputs = inputs
         return ItemListLayout(
             topInset: inputs.topInset,
-            showSectionHeaders: inputs.showSectionHeaders
+            showSectionHeaders: inputs.showSectionHeaders,
+            division: inputs.division
         )
     }
     
