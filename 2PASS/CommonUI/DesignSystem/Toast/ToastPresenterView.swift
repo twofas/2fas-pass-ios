@@ -121,6 +121,7 @@ struct ToastPresenterView: View {
                 .opacity(controller.isPresented ? 1 : 0)
                 .animation(.easeInOut(duration: Constants.opacityAnimationDuration), value: controller.isPresented)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onChange(of: controller.isPresented, { oldValue, newValue in
             guard newValue else {
                 return

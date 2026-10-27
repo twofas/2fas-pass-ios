@@ -152,7 +152,5 @@ struct SetupVaultView: View {
 }
 
 #Preview {
-    OnboardingStepsStack {
-        SetupVaultRouter.buildView()
-    }
+    SetupVaultRouter.buildView()
 }

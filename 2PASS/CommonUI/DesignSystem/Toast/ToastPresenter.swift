@@ -24,7 +24,8 @@ final public class ToastPresenter {
 
     public static let shared = ToastPresenter()
     
-    private let window = UIWindow()
+    /// Fills the scene and takes no touches; made for the first toast and dropped with the last, so no geometry outlives a fold.
+    private var window: UIWindow?
 
     private var preseted: [UUID: ToastPresentationController] = [:]
     
@@ -35,8 +36,7 @@ final public class ToastPresenter {
             self.preseted[id] = nil
             
             if self.preseted.isEmpty {
-                self.window.rootViewController = nil
-                self.window.isHidden = true
+                self.removeWindow()
             }
             
             onDismiss()
@@ -52,15 +52,9 @@ final public class ToastPresenter {
         let toastViewController = UIHostingController(rootView: toastView)
         toastViewController.view.backgroundColor = .clear
         
-        let toastSize = toastViewController.sizeThatFits(in: UIScreen.main.bounds.size)
-        window.frame = CGRect(x: 0, y: 0, width: toastSize.width, height: toastSize.height)
-        window.center.x = UIScreen.main.bounds.width / 2.0
-        window.windowLevel = .alert
-        window.windowScene = UIApplication.shared.activeWindowScene
-
+        let window = self.window ?? makeWindow()
         window.rootViewController = toastViewController
         window.isHidden = false
-        window.backgroundColor = .clear
         
         return id
     }
@@ -77,9 +71,24 @@ final public class ToastPresenter {
             }
         } else {
             self.preseted = [:]
-            self.window.rootViewController = nil
-            self.window.isHidden = true
+            removeWindow()
         }
+    }
+    
+    private func makeWindow() -> UIWindow {
+        let window = UIWindow()
+        window.windowScene = UIApplication.shared.activeWindowScene
+        window.windowLevel = .alert
+        window.backgroundColor = .clear
+        window.isUserInteractionEnabled = false
+        self.window = window
+        return window
+    }
+    
+    private func removeWindow() {
+        window?.rootViewController = nil
+        window?.isHidden = true
+        window = nil
     }
 }
 

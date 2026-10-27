@@ -10,11 +10,59 @@ private struct Constants {
     static let gridCellHeight: CGFloat = 68
     static let firstSectionHeaderOffset: CGFloat = 44
     static let sectionHeaderHeight: CGFloat = 28
+    static let minimumDividedSideWidth: CGFloat = 200
 }
 
 class ItemListLayout: UICollectionViewCompositionalLayout {
 
     static let minimumCellWidth: CGFloat = 310
+
+    /// How a row's columns sit in the content width: across the whole width, or as two runs on either
+    /// side of a division (iPhone Duo's hinge, in the layout's coordinate space) that no cell may cross.
+    enum ColumnArrangement: Equatable {
+        case continuous(columns: Int)
+        case divided(leading: Side, trailing: Side)
+
+        struct Side: Equatable {
+            let width: CGFloat
+            let columns: Int
+        }
+
+        var numberOfColumns: Int {
+            switch self {
+            case .continuous(let columns): columns
+            case .divided(let leading, let trailing): leading.columns + trailing.columns
+            }
+        }
+    }
+
+    /// The arrangement for a content span and a division, both as X ranges in the same coordinate space.
+    /// A division outside the span, or leaving a side too narrow for a cell, is ignored.
+    static func columnArrangement(
+        contentX: ClosedRange<CGFloat>,
+        division: ClosedRange<CGFloat>?,
+        contentSizeCategory: UIContentSizeCategory,
+        layoutDirection: UITraitEnvironmentLayoutDirection
+    ) -> ColumnArrangement {
+        let width = contentX.upperBound - contentX.lowerBound
+        guard let division else {
+            return .continuous(columns: numberOfColumns(forAvailableWidth: width, contentSizeCategory: contentSizeCategory))
+        }
+        let leftWidth = division.lowerBound - contentX.lowerBound
+        let rightWidth = contentX.upperBound - division.upperBound
+        guard leftWidth >= Constants.minimumDividedSideWidth, rightWidth >= Constants.minimumDividedSideWidth else {
+            return .continuous(columns: numberOfColumns(forAvailableWidth: width, contentSizeCategory: contentSizeCategory))
+        }
+        let left = ColumnArrangement.Side(
+            width: leftWidth,
+            columns: numberOfColumns(forAvailableWidth: leftWidth, contentSizeCategory: contentSizeCategory)
+        )
+        let right = ColumnArrangement.Side(
+            width: rightWidth,
+            columns: numberOfColumns(forAvailableWidth: rightWidth, contentSizeCategory: contentSizeCategory)
+        )
+        return layoutDirection == .rightToLeft ? .divided(leading: right, trailing: left) : .divided(leading: left, trailing: right)
+    }
 
     /// Number of grid columns for the given available width and content size category. Shared with
     /// the view controller so it can tell when the list is rendering as a multi-column grid without
@@ -32,14 +80,19 @@ class ItemListLayout: UICollectionViewCompositionalLayout {
         return columns
     }
 
-    init(topInset: CGFloat, showSectionHeaders: Bool) {
+    /// `division` is the X range the cells must not cross, in the collection view's coordinate space.
+    init(topInset: CGFloat, showSectionHeaders: Bool, division: ClosedRange<CGFloat>?) {
         let config = UICollectionViewCompositionalLayoutConfiguration()
         config.interSectionSpacing = Spacing.l
 
         super.init(sectionProvider: { sectionOffset, environment in
-            let itemsInRow = ItemListLayout.numberOfColumns(
-                forAvailableWidth: environment.container.effectiveContentSize.width,
-                contentSizeCategory: environment.traitCollection.preferredContentSizeCategory
+            let container = environment.container
+            let contentMinX = container.contentInsets.leading
+            let arrangement = ItemListLayout.columnArrangement(
+                contentX: contentMinX...(contentMinX + container.effectiveContentSize.width),
+                division: division,
+                contentSizeCategory: environment.traitCollection.preferredContentSizeCategory,
+                layoutDirection: environment.traitCollection.layoutDirection
             )
 
             let itemSize = NSCollectionLayoutSize(
@@ -48,16 +101,38 @@ class ItemListLayout: UICollectionViewCompositionalLayout {
             )
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
-            let groupSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1.0 / CGFloat(itemsInRow)),
-                heightDimension: .absolute(Constants.gridCellHeight)
-            )
-
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: groupSize,
-                repeatingSubitem: item,
-                count: itemsInRow
-            )
+            let group: NSCollectionLayoutGroup
+            switch arrangement {
+            case .continuous(let columns):
+                group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1.0 / CGFloat(columns)),
+                        heightDimension: .absolute(Constants.gridCellHeight)
+                    ),
+                    repeatingSubitem: item,
+                    count: columns
+                )
+            case .divided(let leading, let trailing):
+                // One row is two runs of cells with the division's width left empty between them.
+                let sideGroup = { (side: ColumnArrangement.Side) in
+                    NSCollectionLayoutGroup.horizontal(
+                        layoutSize: NSCollectionLayoutSize(
+                            widthDimension: .absolute(side.width),
+                            heightDimension: .absolute(Constants.gridCellHeight)
+                        ),
+                        repeatingSubitem: item,
+                        count: side.columns
+                    )
+                }
+                group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1.0),
+                        heightDimension: .absolute(Constants.gridCellHeight)
+                    ),
+                    subitems: [sideGroup(leading), sideGroup(trailing)]
+                )
+                group.interItemSpacing = .fixed(container.effectiveContentSize.width - leading.width - trailing.width)
+            }
 
             let section = NSCollectionLayoutSection(group: group)
             if sectionOffset == 0 {

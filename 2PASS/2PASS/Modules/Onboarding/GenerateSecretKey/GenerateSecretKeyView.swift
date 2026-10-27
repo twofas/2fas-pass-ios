@@ -209,7 +209,5 @@ struct GenerateSecretKeyView: View {
 }
 
 #Preview {
-    OnboardingStepsStack {
-        GenerateSecretKeyRouter.buildView()
-    }
+    GenerateSecretKeyRouter.buildView()
 }

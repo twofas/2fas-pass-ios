@@ -8,7 +8,7 @@ import SwiftUI
 import CommonUI
 
 private struct Constants {
-    static let contentTopPaddingForHideProgress = 44.0 + 16.0
+    static let contentTopPaddingForHideProgress = 16.0
     
     static let stepProgressVisibilityAnimationDuration = 0.3
     
@@ -268,9 +268,7 @@ struct MasterPasswordView: View {
 }
 
 #Preview {
-    OnboardingStepsStack {
-        MasterPasswordRouter.buildView(kind: .onboarding, onFinish: {}, onClose: {})
-    }
+    MasterPasswordRouter.buildView(kind: .onboarding, onFinish: {}, onClose: {})
 }
 
 #Preview {

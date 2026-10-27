@@ -12,4 +12,14 @@ final class PasswordsListView: UICollectionView {
         
         keyboardDismissMode = .onDrag
     }
+
+    /// The X range of the active vertical division crossing the list (iPhone Duo's hinge while the
+    /// device is folded), in the list's coordinate space; `nil` on a flat or hingeless display.
+    var verticalDivisionX: ClosedRange<CGFloat>? {
+        guard #available(iOS 27.1, *) else { return nil }
+        return reservedRegions(kind: .division)
+            .filter { region in region.isActive && region.frame.height >= region.frame.width }
+            .map { region in region.frame.minX...region.frame.maxX }
+            .first { range in bounds.minX < range.lowerBound && range.upperBound < bounds.maxX }
+    }
 }

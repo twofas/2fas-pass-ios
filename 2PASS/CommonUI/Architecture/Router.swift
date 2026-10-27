@@ -85,12 +85,16 @@ struct RoutingModifier<R: Router>: ViewModifier {
     let router: R
     @Binding var destination: R.Destination?
 
+    // The UIKit flow stack this screen sits in, if any; `.push` and `.slidePush` go to it
+    // instead of the SwiftUI navigation modifiers.
+    @Environment(\.flowNavigation) private var flowNavigation
+
     // Per-channel latched copies of `destination`. Presentation is driven by these, so a
     // dismiss callback arriving after `destination` already moved to another channel can
     // only clear its own latch — never the new destination.
     @State private var sheetItem: R.Destination?
     @State private var fullScreenCoverItem: R.Destination?
-    @State private var slidePushItem: R.Destination?
+    @State private var flowPushItem: R.Destination?
     @State private var alertItem: R.Destination?
     @State private var fileImporterItem: R.Destination?
 
@@ -107,18 +111,15 @@ struct RoutingModifier<R: Router>: ViewModifier {
                 // a `useNavigationPath` set inside the sheet still wins, being deeper in the hierarchy.
                 router.view(for: liveValue(for: item))
                     .environment(\.navigationPath, nil)
+                    .environment(\.flowNavigation, nil)
                     .onAppear {
                         presentedModals.insert(.sheet)
                     }
             }
-            .slideNavigationDestination(isPresented: slidePushBinding) {
-                if let slidePushItem {
-                    router.view(for: liveValue(for: slidePushItem))
-                }
-            }
             .fullScreenCover(item: fullScreenCoverBinding, onDismiss: { completeDismissal(of: .fullScreenCover) }) { item in
                 router.view(for: liveValue(for: item))
                     .environment(\.navigationPath, nil)
+                    .environment(\.flowNavigation, nil)
                     .onAppear {
                         presentedModals.insert(.fullScreenCover)
                     }
@@ -150,6 +151,7 @@ struct RoutingModifier<R: Router>: ViewModifier {
 
     // MARK: - Destination distribution
 
+    @MainActor
     private func sync() {
         let target = destination.flatMap { router.routingType(for: $0) }
 
@@ -159,8 +161,10 @@ struct RoutingModifier<R: Router>: ViewModifier {
         if fullScreenCoverItem != nil, target != .fullScreenCover {
             fullScreenCoverItem = nil
         }
-        if slidePushItem != nil, target != .slidePush {
-            slidePushItem = nil
+        if flowPushItem != nil, isFlowPush(target) == false {
+            // Clearing `destination` from a presenter pops back to this screen, whatever sits above it.
+            flowPushItem = nil
+            flowNavigation?.pop()
         }
         if alertItem != nil, isAlert(target) == false {
             alertItem = nil
@@ -186,10 +190,22 @@ struct RoutingModifier<R: Router>: ViewModifier {
             alertItem = destination
         case .fileImporter:
             fileImporterItem = destination
-        case .slidePush:
-            slidePushItem = destination
-        case .push, .actionSheet:
+        case .push, .slidePush:
+            pushOntoFlow(destination, kind: target == .slidePush ? .slide : .system)
+        case .actionSheet:
             break
+        }
+    }
+
+    // Without a flow stack a `.push` is the SwiftUI navigation modifiers' and a `.slidePush` does nothing.
+    @MainActor
+    private func pushOntoFlow(_ destination: R.Destination, kind: FlowPushKind) {
+        guard let flowNavigation, flowPushItem == nil else { return }
+
+        flowPushItem = destination
+        flowNavigation.push(AnyView(router.view(for: liveValue(for: destination))), kind: kind) {
+            flowPushItem = nil
+            clearDestination(afterDismissing: destination)
         }
     }
 
@@ -198,6 +214,7 @@ struct RoutingModifier<R: Router>: ViewModifier {
             || (presentedModals.contains(.fullScreenCover) && fullScreenCoverItem == nil)
     }
 
+    @MainActor
     private func completeDismissal(of channel: ModalChannel) {
         presentedModals.remove(channel)
         sync()
@@ -225,6 +242,10 @@ struct RoutingModifier<R: Router>: ViewModifier {
         case .push, .slidePush, .actionSheet:
             return false
         }
+    }
+
+    private func isFlowPush(_ type: RoutingType?) -> Bool {
+        type == .push || type == .slidePush
     }
 
     private func isAlert(_ type: RoutingType?) -> Bool {
@@ -260,17 +281,6 @@ struct RoutingModifier<R: Router>: ViewModifier {
             set: { newValue in
                 guard newValue == nil, let dismissed = fullScreenCoverItem else { return }
                 fullScreenCoverItem = nil
-                clearDestination(afterDismissing: dismissed)
-            }
-        )
-    }
-
-    private var slidePushBinding: Binding<Bool> {
-        Binding(
-            get: { slidePushItem != nil },
-            set: { isPresented in
-                guard isPresented == false, let dismissed = slidePushItem else { return }
-                slidePushItem = nil
                 clearDestination(afterDismissing: dismissed)
             }
         )
@@ -422,6 +432,10 @@ private struct RoutingNavigationStackByItemModifier<R: Router>: ViewModifier {
     let router: R
     @Binding var destination: R.Destination?
 
+    // A flow stack takes every `.push` (see `RoutingModifier`); no `navigationDestination` may
+    // fire then, there being no `NavigationStack` around the hosted screen.
+    @Environment(\.flowNavigation) private var flowNavigation
+
     // Keeps the pushed view's content stable while a pop animates after `destination`
     // was cleared or re-routed to another channel.
     @State private var pushedItem: R.Destination?
@@ -429,13 +443,13 @@ private struct RoutingNavigationStackByItemModifier<R: Router>: ViewModifier {
     private var pushDestinationProxy: Binding<Bool> {
         Binding<Bool>(
             get: {
-                guard let destination else {
+                guard flowNavigation == nil, let destination else {
                     return false
                 }
                 return router.routingType(for: destination) == .push
             },
             set: {
-                guard $0 == false else { return }
+                guard $0 == false, flowNavigation == nil else { return }
                 if let destination, router.routingType(for: destination) == .push {
                     self.destination = nil
                 }

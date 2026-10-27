@@ -15,10 +15,13 @@ struct ShareLinkItemView: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var iconCardHeight: CGFloat?
-    @State private var iconCardSize: CGSize?
-    @State private var frozenIconCardHeight: CGFloat?
-    @State private var frozenIconCardSize: CGSize?
+    // The card is an overlay of the stack, placed between the title and the lower block by
+    // measurements in the stack's coordinate space; "Continue" freezes its place and its room.
+    @State private var titleBottom: CGFloat?
+    @State private var lowerTop: CGFloat?
+    @State private var cardHeight: CGFloat?
+    @State private var frozenCardTop: CGFloat?
+    @State private var frozenRoom: CGFloat?
     
     private enum Constants {
         // Layout
@@ -29,8 +32,8 @@ struct ShareLinkItemView: View {
         static let iconCardCornerRadius: CGFloat = 40
         static let linkBadgeWidth: CGFloat = 260
         static let iconFrameWidth: CGFloat = 24
-        static let fullSizeCardExtra: CGFloat = 70
-        static let linkOffset: CGFloat = 35
+        static let badgeRoom: CGFloat = 70 // the "link generated" badge with the spacing above it
+        static let contentSpace = "shareLinkContent"
 
         // Scale
         static let paymentCardScale: CGFloat = 0.65
@@ -104,185 +107,198 @@ struct ShareLinkItemView: View {
     }
 
     private var content: some View {
-        GeometryReader { _ in
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                    .frame(maxHeight: Spacing.xs)
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+                .frame(maxHeight: Spacing.xs)
 
-                Text(.shareLinkItemTitle)
-                    .font(.title1Emphasized)
-                    .zIndex(1)
+            Text(.shareLinkItemTitle)
+                .font(.title1Emphasized)
+                .zIndex(1)
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.frame(in: .named(Constants.contentSpace)).maxY
+                } action: { bottom in
+                    titleBottom = bottom
+                }
 
-                Spacer(minLength: 0)
+            // The card's room; the card itself is `cardColumn`, the stack's overlay.
+            Spacer(minLength: 0)
 
-                iconCard
-                    .padding(.horizontal, Spacing.l)
+            lowerBlock
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.frame(in: .named(Constants.contentSpace)).minY
+                } action: { top in
+                    lowerTop = top
+                }
+        }
+        .coordinateSpace(.named(Constants.contentSpace))
+        .overlay(alignment: .top) {
+            cardColumn
+        }
+    }
 
-                Spacer(minLength: 0)
-
-                ZStack(alignment: .bottom) {
-                    if case .idle = presenter.uploadState {
-                        configurationControls
-                            .transition(
-                                .modifier(
-                                    active: BlurModifier(radius: Constants.blurRadius, opacity: 0),
-                                    identity: BlurModifier(radius: 0, opacity: 1)
-                                )
+    // The controls, leaving on "Continue", and the summary that takes their place.
+    private var lowerBlock: some View {
+        VStack(spacing: 0) {
+            ZStack(alignment: .bottom) {
+                if case .idle = presenter.uploadState {
+                    configurationControls
+                        .transition(
+                            .modifier(
+                                active: BlurModifier(radius: Constants.blurRadius, opacity: 0),
+                                identity: BlurModifier(radius: 0, opacity: 1)
                             )
-                    }
-                }
-                .animation(.easeInOut(duration: Constants.transitionDuration), value: uploadState.isUploading)
-                .fixedSize(horizontal: false, vertical: true)
-
-                if presenter.uploadState.isUploading || presenter.uploadState.isSuccess {
-                    successSummary
-                        .opacity(uploadState.isSuccess ? 1 : 0)
-                        .animation(
-                            .easeInOut(duration: Constants.transitionDuration)
-                                .delay(Constants.successAnimationDelay),
-                            value: uploadState.isSuccess
                         )
-                        .fixedSize(horizontal: false, vertical: true)
                 }
+            }
+            .animation(.easeInOut(duration: Constants.transitionDuration), value: uploadState.isUploading)
+            .fixedSize(horizontal: false, vertical: true)
+
+            if presenter.uploadState.isUploading || presenter.uploadState.isSuccess {
+                successSummary
+                    .opacity(uploadState.isSuccess ? 1 : 0)
+                    .animation(
+                        .easeInOut(duration: Constants.transitionDuration)
+                            .delay(Constants.successAnimationDelay),
+                        value: uploadState.isSuccess
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
     
     // MARK: - Icon Card
 
-    @ViewBuilder
-    private var iconCard: some View {
-        GeometryReader { proxy in
-            VStack(spacing: Spacing.l) {
-                Group {
-                    if presenter.isPaymentCard {
-                        CardView(
-                            issuer: presenter.cardIssuer,
-                            name: presenter.name,
-                            cardNumberMask: presenter.cardNumberMask
-                        )
-                        .scaleEffect(Constants.paymentCardScale)
-                        .offset(y: Spacing.xxs)
-                        .frame(width: Constants.cardSize.width, height: Constants.cardSize.height)
-                        .cardGlassEffect(
-                            cornerRadius: Constants.paymentCardCornerRadius,
-                            tint: glassAccentColor?.opacity(uploadState.isSuccess ? Constants.paymentGlassTintOpacity : 0.00)
-                        )
-                        .overlay {
-                            ShareLinkProgressBorder(
-                                cornerRadius: Constants.paymentCardCornerRadius,
-                                phase: borderPhase
-                            )
-                        }
-                        
-                    } else {
-                        VStack(spacing: Spacing.l) {
-                            IconRendererView(content: presenter.iconContent)
-                            Text(presenter.name)
-                                .font(.title3Emphasized)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding(.horizontal, Spacing.xll)
-                        .offset(y: Spacing.xxs)
-                        .frame(minWidth: Constants.cardMinWidth, maxHeight: Constants.cardSize.height)
-                        .cardGlassEffect(
-                            cornerRadius: Constants.iconCardCornerRadius,
-                            tint: glassAccentColor?.opacity(uploadState.isSuccess ? Constants.iconGlassTintOpacity : 0.00)
-                        )
-                        .overlay {
-                            ShareLinkProgressBorder(
-                                cornerRadius: Constants.iconCardCornerRadius,
-                                phase: borderPhase
-                            )
-                        }
-                    }
-                }
+    // The card with the badge under it, anchored by its top: once frozen, nothing in this chain
+    // changes on "Continue" but the card's scale, and the badge enters below without moving it.
+    private var cardColumn: some View {
+        VStack(spacing: Spacing.l) {
+            iconCard
                 .scaleEffect(uploadState.isUploading ? Constants.uploadingScale : 1)
-                .onGeometryChange(for: CGFloat.self) { proxy in
-                    proxy.size.height
-                } action: { height in
-                    if frozenIconCardHeight == nil {
-                        iconCardHeight = height
-                    }
-                }
-                .frame(height: frozenIconCardHeight)
                 .animation(
                     .spring(response: Constants.springResponse, dampingFraction: Constants.springDamping),
                     value: uploadState.isUploading
                 )
-                
-                if uploadState.isSuccess, proxy.size.height > fullSizeCard {
-                    HStack {
-                        Text(.shareLinkItemLinkGenerated)
-                            .font(.headline)
-                        Spacer()
-                        Image(systemName: "checkmark.circle")
-                            .foregroundStyle(.success500)
-                    }
-                    .padding(.leading, Spacing.xs)
-                    .padding(.horizontal, Spacing.l)
-                    .padding(.vertical, Spacing.m)
-                    .frame(width: Constants.linkBadgeWidth)
-                    .cardGlassEffect(cornerRadius: Constants.iconCardCornerRadius)
-                    .transition(
-                        .modifier(
-                            active: BlurModifier(
-                                radius: Constants.blurRadius,
-                                opacity: 0,
-                                scale: Constants.blurBadgeScale,
-                                offsetY: Constants.blurBadgeOffsetY
-                            ),
-                            identity: BlurModifier(radius: 0, opacity: 1, scale: 1, offsetY: 0)
-                        )
+
+            if uploadState.isSuccess, badgeFits {
+                HStack {
+                    Text(.shareLinkItemLinkGenerated)
+                        .font(.headline)
+                    Spacer()
+                    Image(systemName: "checkmark.circle")
+                        .foregroundStyle(.success500)
+                }
+                .padding(.leading, Spacing.xs)
+                .padding(.horizontal, Spacing.l)
+                .padding(.vertical, Spacing.m)
+                .frame(width: Constants.linkBadgeWidth)
+                .cardGlassEffect(cornerRadius: Constants.iconCardCornerRadius)
+                .transition(
+                    .modifier(
+                        active: BlurModifier(
+                            radius: Constants.blurRadius,
+                            opacity: 0,
+                            scale: Constants.blurBadgeScale,
+                            offsetY: Constants.blurBadgeOffsetY
+                        ),
+                        identity: BlurModifier(radius: 0, opacity: 1, scale: 1, offsetY: 0)
+                    )
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Spacing.l)
+        .padding(.top, cardTop ?? 0)
+        .opacity(cardTop == nil ? 0 : 1)
+        .animation(.smooth(duration: Constants.smoothDuration), value: uploadState.isSuccess)
+    }
+
+    @ViewBuilder
+    private var iconCard: some View {
+        Group {
+            if presenter.isPaymentCard {
+                CardView(
+                    issuer: presenter.cardIssuer,
+                    name: presenter.name,
+                    cardNumberMask: presenter.cardNumberMask
+                )
+                .scaleEffect(Constants.paymentCardScale)
+                .offset(y: Spacing.xxs)
+                .frame(width: Constants.cardSize.width, height: Constants.cardSize.height)
+                .cardGlassEffect(
+                    cornerRadius: Constants.paymentCardCornerRadius,
+                    tint: glassAccentColor?.opacity(uploadState.isSuccess ? Constants.paymentGlassTintOpacity : 0.00)
+                )
+                .overlay {
+                    ShareLinkProgressBorder(
+                        cornerRadius: Constants.paymentCardCornerRadius,
+                        phase: borderPhase
+                    )
+                }
+            } else {
+                VStack(spacing: Spacing.l) {
+                    IconRendererView(content: presenter.iconContent)
+                    Text(presenter.name)
+                        .font(.title3Emphasized)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, Spacing.xll)
+                .offset(y: Spacing.xxs)
+                .frame(minWidth: Constants.cardMinWidth, maxHeight: cardMaxHeight)
+                .cardGlassEffect(
+                    cornerRadius: Constants.iconCardCornerRadius,
+                    tint: glassAccentColor?.opacity(uploadState.isSuccess ? Constants.iconGlassTintOpacity : 0.00)
+                )
+                .overlay {
+                    ShareLinkProgressBorder(
+                        cornerRadius: Constants.iconCardCornerRadius,
+                        phase: borderPhase
                     )
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.s)
-            .position(
-                cordPosition(in: proxy)
-            )
-            .animation(.smooth(duration: Constants.smoothDuration), value: uploadState.isSuccess)
-            .onAppear {
-                iconCardSize = proxy.size
-            }
-            .onChange(of: proxy.size) { _, newSize in
-                if frozenIconCardSize == nil {
-                    iconCardSize = newSize
-                }
-            }
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { height in
+            cardHeight = height
         }
     }
-    
-    private var fullSizeCard: CGFloat {
-        (iconCardHeight ?? 0) + Spacing.xl + Constants.fullSizeCardExtra
+
+    // The room between the title and the lower block, as it is now or as "Continue" froze it.
+    private var room: CGFloat? {
+        if let frozenRoom {
+            return frozenRoom
+        }
+        guard let titleBottom, let lowerTop else {
+            return nil
+        }
+        return lowerTop - titleBottom
     }
-    
-    private func cordPosition(in proxy: GeometryProxy) -> CGPoint {
-        guard let frozenSize = frozenIconCardSize else {
-            return CGPoint(
-                x: proxy.size.width / 2,
-                y: proxy.size.height / 2
-            )
-        }
 
-        let center = CGPoint(x: frozenSize.width / 2, y: frozenSize.height / 2)
-        let fullSize = fullSizeCard
-        let isLinkGenerated = proxy.size.height > fullSize
-        let linkOffset = Constants.linkOffset
-
-        if frozenSize.height > fullSize {
-            return CGPoint(
-                x: center.x,
-                y: center.y + (presenter.uploadState.isSuccess && isLinkGenerated ? linkOffset : 0)
-            )
-        } else {
-            return CGPoint(
-                x: center.x,
-                y: proxy.size.height / 2 - (!presenter.uploadState.isSuccess && isLinkGenerated ? linkOffset : 0)
-            )
+    private var cardMaxHeight: CGFloat {
+        guard let room else {
+            return Constants.cardSize.height
         }
+        return min(Constants.cardSize.height, max(0, room - Spacing.s * 2))
+    }
+
+    // The card's top in the stack's space: centred in the room until "Continue" froze it.
+    private var cardTop: CGFloat? {
+        if let frozenCardTop {
+            return frozenCardTop
+        }
+        guard let titleBottom, let lowerTop, let cardHeight else {
+            return nil
+        }
+        return (titleBottom + lowerTop - cardHeight) / 2
+    }
+
+    // Whether the badge fits between the card and the lower block, which the controls' departure lowered.
+    private var badgeFits: Bool {
+        guard let cardTop, let cardHeight, let lowerTop else {
+            return false
+        }
+        return lowerTop - (cardTop + cardHeight) >= Constants.badgeRoom
     }
 
     private func rowIcon(_ systemName: String) -> some View {
@@ -371,9 +387,9 @@ struct ShareLinkItemView: View {
             }
 
             Button(.commonContinue) {
-                frozenIconCardHeight = iconCardHeight
-                frozenIconCardSize = iconCardSize
-                
+                frozenCardTop = cardTop
+                frozenRoom = room
+
                 presenter.onContinue()
             }
             .buttonStyle(.filled)

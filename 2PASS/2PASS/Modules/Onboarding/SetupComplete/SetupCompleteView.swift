@@ -103,7 +103,5 @@ struct SetupCompleteView: View {
 }
 
 #Preview {
-    OnboardingStepsStack {
-        SetupCompleteRouter.buildView()
-    }
+    SetupCompleteRouter.buildView()
 }
