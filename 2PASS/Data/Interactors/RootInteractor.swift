@@ -77,6 +77,7 @@ extension RootInteractor: RootInteracting {
         Log("RootInteractor: app will enter foreground", module: .interactor)
         securityInteractor.applicationWillEnterForeground()
         mainRepository.initialPermissionStateInitialize()
+        mainRepository.clearDeliveredPushNotifications()
     }
     
     func applicationDidBecomeActive() {

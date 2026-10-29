@@ -43,6 +43,7 @@ protocol MainRepository: AnyObject {
     var canRequestPushNotificationsPermissions: Bool { get }
     func requestPushNotificationsPermissions() async
     func sendPushNotification(_ text: String) async
+    func clearDeliveredPushNotifications()
 
     var pushNotificationToken: String? { get }
     func savePushNotificationToken(_ token: String?)

@@ -161,6 +161,10 @@ final class MockMainRepository: MainRepository {
         recordCall()
     }
 
+    func clearDeliveredPushNotifications() {
+        recordCall()
+    }
+
     private var stubbedPushNotificationToken: String?
     var pushNotificationToken: String? { stubbedPushNotificationToken }
 

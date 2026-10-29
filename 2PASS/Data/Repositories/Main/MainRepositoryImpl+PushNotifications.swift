@@ -53,4 +53,18 @@ extension MainRepositoryImpl {
             Log("Sending push notification failed: \(error)", module: .mainRepository, severity: .error)
         }
     }
+    
+    /// Removes every delivered notification from Notification Center and resets the badge; the app on screen shows
+    /// what a push announced, so nothing stays behind for the person to dismiss.
+    func clearDeliveredPushNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllDeliveredNotifications()
+        Task {
+            do {
+                try await center.setBadgeCount(0)
+            } catch {
+                Log("Resetting the badge failed: \(error)", module: .mainRepository, severity: .error)
+            }
+        }
+    }
 }
