@@ -175,16 +175,8 @@ extension MainRepositoryImpl {
         salt: Data,
         kdfSpec: KDFSpec
     ) -> Data? {
-        guard let hexPassword = normalizeStringIntoHEXData(masterPassword) else {
-            Log("Can't create HEX from Master Password", module: .mainRepository, severity: .error)
-            return nil
-        }
-        let seed = seed.hexEncodedString()
-        let key = "\(seed)\(hexPassword)"
-        guard let passwordData = Data(hexString: key) else {
-            Log("Can't create HEX from Key", module: .mainRepository, severity: .error)
-            return nil
-        }
+        var passwordData = argon2Password(seed: seed, masterPassword: masterPassword)
+        defer { passwordData.resetBytes(in: 0..<passwordData.count) }
         let variant: Argon2.Variant = {
             switch kdfSpec.kdfType {
             case .argon2d: .d
