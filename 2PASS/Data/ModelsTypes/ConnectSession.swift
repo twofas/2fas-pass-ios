@@ -35,8 +35,10 @@ public struct ConnectSession: Identifiable {
             return false
         }
         
-        let key = Data(hexString: pkPersBeHex)!
-        let signature = Data(hexString: signatureHex)!
+        guard let key = Data(hexString: pkPersBeHex),
+              let signature = Data(hexString: signatureHex) else {
+            return false
+        }
 
         do {
             let publicKey = try P256.Signing.PublicKey(compressedRepresentation: key)
