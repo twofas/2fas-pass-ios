@@ -122,7 +122,8 @@ public struct TwoFASButtonStyle: ButtonStyle {
             }
         }
         .modify {
-            if #available(iOS 26, *), colorStyle != .borderless, allowGlassEffect {
+            // A disabled button takes no touch, so it gets no interactive glass and no glass edge around its fill.
+            if #available(iOS 26, *), colorStyle != .borderless, allowGlassEffect, isEnabled {
                 $0.glassEffect(.regular.interactive())
             } else {
                 $0
