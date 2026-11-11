@@ -120,6 +120,10 @@ public enum Config {
         
         public static let notificationExpiryOffset: TimeInterval = 120
     }
+
+    public enum Clipboard {
+        public static let secureValueLifetime: TimeInterval = 60
+    }
     
     public enum Payment {
         #if PROD

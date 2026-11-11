@@ -5,6 +5,7 @@
 // See LICENSE file for full terms
 
 import UIKit
+import Common
 
 extension MainRepositoryImpl {
     func copyToClipboard(_ str: String, isSecure: Bool) {
@@ -12,7 +13,7 @@ extension MainRepositoryImpl {
             UIPasteboard.general.setItems(
                 [[UIPasteboard.typeAutomatic: str]],
                 options: [
-                    .expirationDate: Date().addingTimeInterval(60)
+                    .expirationDate: Date().addingTimeInterval(Config.Clipboard.secureValueLifetime)
                 ]
             )
         } else {
