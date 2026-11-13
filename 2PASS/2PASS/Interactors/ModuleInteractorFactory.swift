@@ -470,7 +470,6 @@ extension ModuleInteractorFactory {
             autoFillStatusInteractor: InteractorFactory.shared.autoFillStatusInteractor(),
             configsInteractor: InteractorFactory.shared.backupSyncConfigsInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
-            configInteractor: InteractorFactory.shared.configInteractor(),
             quickSetupInteractor: InteractorFactory.shared.quickSetupInteractor()
         )
     }

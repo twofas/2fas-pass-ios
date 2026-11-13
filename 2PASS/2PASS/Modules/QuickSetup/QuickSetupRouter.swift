@@ -18,8 +18,6 @@ struct QuickSetupRouter: Router {
     
     func routingType(for destination: QuickSetupDestination?) -> RoutingType? {
         switch destination {
-        case .defaultSecurityTier:
-            return .push
         case .importExport, .transferItems, .syncNotAllowed:
             return .sheet
         case nil:
@@ -29,8 +27,6 @@ struct QuickSetupRouter: Router {
     
     func view(for destination: QuickSetupDestination) -> some View {
         switch destination {
-        case .defaultSecurityTier:
-            DefaultSecurityTierRouter.buildView()
         case .importExport(let onClose):
             NavigationStack {
                 BackupRouter.buildView(flowContext: .quickSetup(onClose: onClose))

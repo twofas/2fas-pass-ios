@@ -11,15 +11,12 @@ import Data
 import Backup
 
 enum QuickSetupDestination: RouterDestination {
-    case defaultSecurityTier
     case importExport(onClose: Callback)
     case transferItems(onClose: Callback)
     case syncNotAllowed
 
     var id: String {
         switch self {
-        case .defaultSecurityTier:
-            "defaultSecurityTier"
         case .importExport:
             "importExport"
         case .transferItems:
@@ -66,19 +63,15 @@ final class QuickSetupPresenter {
     }
     private var _iCloudSyncEnabled: Bool = false
 
-    private(set) var defaultSecurityTier: ItemProtectionLevel
-
     private let interactor: QuickSetupModuleInteracting
 
     init(interactor: QuickSetupModuleInteracting) {
         self.interactor = interactor
         self._autofillIsEnabled = interactor.isAutoFillEnabled
         self._iCloudSyncEnabled = interactor.isCloudEnabled
-        self.defaultSecurityTier = interactor.defaultSecurityTier
     }
 
     func onAppear() async {
-        defaultSecurityTier = interactor.defaultSecurityTier
         _iCloudSyncEnabled = interactor.isCloudEnabled
 
         await withTaskGroup() { group in
@@ -92,10 +85,6 @@ final class QuickSetupPresenter {
                 await self.observeConfigsChanged()
             }
         }
-    }
-
-    func onChangeDefaultSecurityTier() {
-        destination = .defaultSecurityTier
     }
 
     func onImportItems() {

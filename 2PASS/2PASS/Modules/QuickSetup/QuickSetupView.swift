@@ -10,7 +10,6 @@ import CommonUI
 private struct Constants {
     static let firstStepAppearDelay: TimeInterval = 0.3
     static let secondStepAppearDelay: TimeInterval = 0.45
-    static let thirdStepAppearDelay: TimeInterval = 0.6
     static let buttonsAppearDelay: Duration = .milliseconds(900)
     static let buttonsAppearFeedbackDelay: Duration = .milliseconds(150)
 }
@@ -71,9 +70,6 @@ struct QuickSetupView: View {
                             }
                         )
                         .stepAppearAnimation(appearAnimation, delay: Constants.secondStepAppearDelay)
-                        
-                        securityTierStep
-                            .stepAppearAnimation(appearAnimation, delay: Constants.thirdStepAppearDelay)
                     }
                     .padding(.top, Spacing.m)
                     .padding(.horizontal, Spacing.xll)
@@ -133,47 +129,6 @@ struct QuickSetupView: View {
                 .foregroundStyle(.neutral600)
         }
         .padding(.horizontal, Spacing.xll)
-    }
-    
-    private var securityTierStep: some View {
-        StepView(
-            title: Text(.quickSetupSecurityTierTitle),
-            subtitle: Text(.quickSetupSecurityTierDescription),
-            accessory: {},
-            footer: {
-                Divider()
-                    .padding(.top, Spacing.xs)
-                
-                Button {
-                    presenter.onChangeDefaultSecurityTier()
-                } label: {
-                    HStack(spacing: Spacing.s) {
-                        Text(.quickSetupSecurityTierDefaultLabel)
-                            .font(.body)
-                            .foregroundStyle(.neutral950)
-                        
-                        Spacer()
-                        
-                        Label {
-                            Text(presenter.defaultSecurityTier.title)
-                                .foregroundStyle(.neutral500)
-                        } icon: {
-                            presenter.defaultSecurityTier.icon
-                                .renderingMode(.template)
-                                .foregroundStyle(.accent)
-                        }
-                        .labelStyle(.rowValue)
-                        
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.neutral400)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .contentShape(Rectangle())
-                .padding(.top, Spacing.xs)
-                .buttonStyle(.plain)
-            }
-        )
     }
     
     private var importButtons: some View {

@@ -31,10 +31,6 @@ protocol QuickSetupModuleInteracting: AnyObject {
     var configsDidChange: Notifications.MessageSequence<BackupConfigsDidChange> { get }
 
     var syncPremiumNeededScreen: NotificationCenter.Notifications { get }
-
-    // MARK: Security Tier
-
-    var defaultSecurityTier: ItemProtectionLevel { get }
 }
 
 final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
@@ -42,20 +38,17 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
     private let autoFillStatusInteractor: AutoFillStatusInteracting
     private let configsInteractor: BackupSyncConfigsInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
-    private let configInteractor: ConfigInteracting
     private let quickSetupInteractor: QuickSetupInteracting
 
     init(
         autoFillStatusInteractor: AutoFillStatusInteracting,
         configsInteractor: BackupSyncConfigsInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
-        configInteractor: ConfigInteracting,
         quickSetupInteractor: QuickSetupInteracting
     ) {
         self.autoFillStatusInteractor = autoFillStatusInteractor
         self.configsInteractor = configsInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
-        self.configInteractor = configInteractor
         self.quickSetupInteractor = quickSetupInteractor
     }
 
@@ -98,10 +91,6 @@ final class QuickSetupModuleInteractor: QuickSetupModuleInteracting {
 
     var syncPremiumNeededScreen: NotificationCenter.Notifications {
         NotificationCenter.default.notifications(named: .presentSyncPremiumNeededScreen)
-    }
-
-    var defaultSecurityTier: ItemProtectionLevel {
-        configInteractor.currentDefaultProtectionLevel
     }
 
     func finishQuickSetup() {
