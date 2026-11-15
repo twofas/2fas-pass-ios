@@ -49,6 +49,7 @@ struct BiometricPromptView: View {
                     .font(.subheadline)
                     .foregroundStyle(.neutral600)
             }
+            .fixedSize(horizontal: false, vertical: true)
             
             Spacer()
             
