@@ -207,6 +207,28 @@ struct RoutingModifier<R: Router>: ViewModifier {
             flowPushItem = nil
             clearDestination(afterDismissing: destination)
         }
+        popWhenDestinationLeavesFlow(flowNavigation)
+    }
+
+    // A covered screen's hosting view is off the window and runs no `onChange` until it returns,
+    // so the pop a presenter asks for by clearing `destination` is observed here instead.
+    @MainActor
+    private func popWhenDestinationLeavesFlow(_ flowNavigation: FlowNavigationAction) {
+        withObservationTracking {
+            _ = destination?.id
+        } onChange: {
+            // Called before the value changes; the new one is read on the next turn.
+            Task { @MainActor in
+                guard flowPushItem != nil else { return }
+
+                guard isFlowPush(destination.flatMap { router.routingType(for: $0) }) == false else {
+                    popWhenDestinationLeavesFlow(flowNavigation)
+                    return
+                }
+                flowPushItem = nil
+                flowNavigation.pop()
+            }
+        }
     }
 
     private var hasDismissalInFlight: Bool {
