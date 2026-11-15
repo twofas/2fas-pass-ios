@@ -120,7 +120,7 @@ extension MasterPasswordPresenter {
     }
     
     private func performChangePassword() {
-        interactor.createMasterPassword(firstInput, enableBiometryLogin: false) { [weak self] in
+        interactor.createMasterPassword(firstInput, enableBiometryLogin: enablesBiometryLogin) { [weak self] in
             guard let self else { return }
             switch kind {
             case .onboarding:
@@ -141,7 +141,12 @@ extension MasterPasswordPresenter {
 }
 
 private extension MasterPasswordPresenter {
-    
+
+    // Onboarding alone asks, through the system's own biometry prompt; a refusal leaves it off.
+    var enablesBiometryLogin: Bool {
+        kind == .onboarding && interactor.isBiometryAvailable
+    }
+
     func updateState() {
         isSaveEnabled = false
         
