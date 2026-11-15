@@ -98,7 +98,7 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                 return false
             }
 
-            await biometryInteractor.enableBiometryIfAvailable()
+            await biometryInteractor.setUpBiometryForNewMasterKey()
 
             guard startupInteractor.createVault(for: vaultID, creationDate: creationDate, modificationDate: modificationDate) else {
                 return false

@@ -22,7 +22,7 @@ public enum BiometryInteractorLoginResult {
 public protocol BiometryInteracting: AnyObject {
     var isBiometryLocked: Bool { get }
     var canUseBiometryForLogin: Bool { get }
-    var canUseBiometryForOnboarding: Bool { get }
+    var canEnableBiometry: Bool { get }
     var isBiometryEnabled: Bool { get }
     var isBiometryAvailable: Bool { get }
     var isBiometryLockedOut: Bool { get }
@@ -31,16 +31,16 @@ public protocol BiometryInteracting: AnyObject {
     
     func setBiometryEnabled(_ enabled: Bool, completion: @escaping (Bool) -> Void)
 
-    /// Turns biometry on when the device can use it, else off. Needs the master key in memory:
-    /// call it once the key is verified and before it is cleared.
-    @MainActor func enableBiometryIfAvailable() async
-    
+    /// Clears the earlier biometry state, then turns biometry on when the device can use it.
+    /// Needs the master key in memory: call it once the key is verified and before it is cleared.
+    @MainActor @discardableResult func setUpBiometryForNewMasterKey() async -> Bool
+
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void)
 }
 
 public extension BiometryInteracting {
 
-    @discardableResult
+    @MainActor @discardableResult
     func setBiometryEnabled(_ enabled: Bool) async -> Bool {
         await withCheckedContinuation { continuation in
             setBiometryEnabled(enabled) { isEnabled in
@@ -81,7 +81,7 @@ extension BiometryInteractor: BiometryInteracting {
         isBiometryEnabled && isBiometryAvailable && !isBiometryLockedOut && !isBiometryLocked
     }
     
-    var canUseBiometryForOnboarding: Bool {
+    var canEnableBiometry: Bool {
         isBiometryAvailable && !isBiometryLockedOut
     }
     
@@ -202,8 +202,14 @@ extension BiometryInteractor: BiometryInteracting {
     }
 
     @MainActor
-    func enableBiometryIfAvailable() async {
-        await setBiometryEnabled(canUseBiometryForOnboarding)
+    func setUpBiometryForNewMasterKey() async -> Bool {
+        await setBiometryEnabled(false)
+
+        guard canEnableBiometry else { return false }
+
+        // The system prompt is the one request: a refusal must not bring the enable sheet next.
+        mainRepository.setRequestedForBiometryToLogin(true)
+        return await setBiometryEnabled(true)
     }
 
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void) {

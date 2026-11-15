@@ -88,7 +88,7 @@ final class StartupInteractor {
 
 extension StartupInteractor: StartupInteracting {
     var canUseBiometry: Bool {
-        biometryInteractor.canUseBiometryForOnboarding
+        biometryInteractor.canEnableBiometry
     }
     
     var words: [String]? {
@@ -206,14 +206,19 @@ extension StartupInteractor: StartupInteracting {
         if let masterPassword {
             protectionInteractor.setMasterKey(for: masterPassword)
         }
-        let enablesBiometry = enableBiometryLogin && biometryInteractor.canUseBiometryForOnboarding
-        biometryInteractor.setBiometryEnabled(enablesBiometry) { [weak self] result in
-            self?.protectionInteractor.saveEncryptionReference()
-            self?.protectionInteractor.createNewVault(with: .init())
-            self?.protectionInteractor.selectVault()
-            self?.protectionInteractor.setupKeys()
-            self?.protectionInteractor.saveEntropy()
-            self?.storageInteractor.initialize {
+        
+        Task { @MainActor in
+            if enableBiometryLogin {
+                await biometryInteractor.setUpBiometryForNewMasterKey()
+            } else {
+                await biometryInteractor.setBiometryEnabled(false)
+            }
+            protectionInteractor.saveEncryptionReference()
+            protectionInteractor.createNewVault(with: .init())
+            protectionInteractor.selectVault()
+            protectionInteractor.setupKeys()
+            protectionInteractor.saveEntropy()
+            storageInteractor.initialize {
                 completion()
             }
         }
@@ -282,8 +287,8 @@ extension StartupInteractor: StartupInteracting {
                 
         protectionInteractor.clearAppKeyStorage()
         
-        await biometryInteractor.enableBiometryIfAvailable()
-        
+        await biometryInteractor.setBiometryEnabled(false)
+
         let createAppKeySuccess = await withCheckedContinuation { continuatioon in
             protectionInteractor.createAppKey { result in
                 continuatioon.resume(returning: result)
@@ -306,6 +311,8 @@ extension StartupInteractor: StartupInteracting {
                 continuation.resume()
             }
         }
+
+        await biometryInteractor.setUpBiometryForNewMasterKey()
 
         protectionInteractor.clearAfterInit()
 
