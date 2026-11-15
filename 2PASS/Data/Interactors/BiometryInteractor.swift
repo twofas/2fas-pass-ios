@@ -29,6 +29,10 @@ public protocol BiometryInteracting: AnyObject {
     var biometryType: BiometryType { get }
     
     func setBiometryEnabled(_ enabled: Bool, completion: @escaping (Bool) -> Void)
+
+    /// Needs the master key in memory: call it once the key is verified and before it is cleared.
+    @MainActor func enableBiometryIfAvailable() async
+    
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void)
 }
 
@@ -177,6 +181,16 @@ extension BiometryInteractor: BiometryInteracting {
         mainRepository.saveMasterKey(encrypted)
         mainRepository.reloadAuthContext()
         completion(true)
+    }
+
+    @MainActor
+    func enableBiometryIfAvailable() async {
+        let isAvailable = canUseBiometryForOnboarding
+        await withCheckedContinuation { continuation in
+            setBiometryEnabled(isAvailable) { _ in
+                continuation.resume()
+            }
+        }
     }
 
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void) {

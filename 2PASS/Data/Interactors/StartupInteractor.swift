@@ -281,11 +281,7 @@ extension StartupInteractor: StartupInteracting {
                 
         protectionInteractor.clearAppKeyStorage()
         
-        await withCheckedContinuation { continuation in
-            biometryInteractor.setBiometryEnabled(false) { _ in
-                continuation.resume()
-            }
-        }
+        await biometryInteractor.enableBiometryIfAvailable()
         
         let createAppKeySuccess = await withCheckedContinuation { continuatioon in
             protectionInteractor.createAppKey { result in

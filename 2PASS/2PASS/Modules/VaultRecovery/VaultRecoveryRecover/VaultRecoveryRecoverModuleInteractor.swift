@@ -22,6 +22,7 @@ final class VaultRecoveryRecoverModuleInteractor {
     let kind: VaultRecoveryRecoverKind
     private let itemsImportInteractor: ItemsImportInteracting
     private let startupInteractor: StartupInteracting
+    private let biometryInteractor: BiometryInteracting
     private let importInteractor: ImportInteracting
     private let onboardingInteractor: OnboardingInteracting
     private let syncTriggerInteractor: BackupSyncTriggerInteracting
@@ -34,6 +35,7 @@ final class VaultRecoveryRecoverModuleInteractor {
         kind: VaultRecoveryRecoverKind,
         itemsImportInteractor: ItemsImportInteracting,
         startupInteractor: StartupInteracting,
+        biometryInteractor: BiometryInteracting,
         importInteractor: ImportInteracting,
         onboardingInteractor: OnboardingInteracting,
         syncTriggerInteractor: BackupSyncTriggerInteracting,
@@ -43,6 +45,7 @@ final class VaultRecoveryRecoverModuleInteractor {
         self.kind = kind
         self.itemsImportInteractor = itemsImportInteractor
         self.startupInteractor = startupInteractor
+        self.biometryInteractor = biometryInteractor
         self.importInteractor = importInteractor
         self.onboardingInteractor = onboardingInteractor
         self.syncTriggerInteractor = syncTriggerInteractor
@@ -94,6 +97,8 @@ extension VaultRecoveryRecoverModuleInteractor: VaultRecoveryRecoverModuleIntera
                 Log("VaultRecoveryRecoverModuleInteractor - error while validating reference: \(error)")
                 return false
             }
+
+            await biometryInteractor.enableBiometryIfAvailable()
 
             guard startupInteractor.createVault(for: vaultID, creationDate: creationDate, modificationDate: modificationDate) else {
                 return false

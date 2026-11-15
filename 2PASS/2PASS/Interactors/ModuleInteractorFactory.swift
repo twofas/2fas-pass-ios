@@ -227,6 +227,7 @@ extension ModuleInteractorFactory {
             kind: kind,
             itemsImportInteractor: InteractorFactory.shared.itemsImportInteractor(),
             startupInteractor: InteractorFactory.shared.startupInteractor(),
+            biometryInteractor: InteractorFactory.shared.biometryInteractor(),
             importInteractor: InteractorFactory.shared.importInteractor(),
             onboardingInteractor: InteractorFactory.shared.onboardingInteractor(),
             syncTriggerInteractor: InteractorFactory.shared.backupSyncTriggerInteractor(),
