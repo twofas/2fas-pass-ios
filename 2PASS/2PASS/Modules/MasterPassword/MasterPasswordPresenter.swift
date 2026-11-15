@@ -144,7 +144,7 @@ private extension MasterPasswordPresenter {
 
     // Onboarding alone asks, through the system's own biometry prompt; a refusal leaves it off.
     var enablesBiometryLogin: Bool {
-        kind == .onboarding && interactor.isBiometryAvailable
+        kind == .onboarding
     }
 
     func updateState() {

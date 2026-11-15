@@ -49,10 +49,19 @@ extension MainRepositoryImpl {
     }
     
     var isBiometryLockedOut: Bool {
+        evaluateBiometryPolicy() == .biometryLockout
+    }
+    
+    var isBiometryDeniedForApp: Bool {
+        // A refusal and missing hardware share one reason; only existing hardware reports its type.
+        evaluateBiometryPolicy() == .biometryNotAvailable && authContext.biometryType != .none
+    }
+    
+    // Asks the system whether biometry can be used now; the error it answers with, `nil` when it can.
+    private func evaluateBiometryPolicy() -> LAError.Code? {
         var error: NSError?
         _ = authContext.canEvaluatePolicy(LAPolicy.deviceOwnerAuthenticationWithBiometrics, error: &error)
-        guard let err = error else { return false }
-        return err.code == LAError.biometryLockout.rawValue
+        return error.flatMap { LAError.Code(rawValue: $0.code) }
     }
     
     func authenticateUsingBiometry(

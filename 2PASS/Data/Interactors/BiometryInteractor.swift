@@ -26,14 +26,28 @@ public protocol BiometryInteracting: AnyObject {
     var isBiometryEnabled: Bool { get }
     var isBiometryAvailable: Bool { get }
     var isBiometryLockedOut: Bool { get }
+    var isBiometryDeniedForApp: Bool { get }
     var biometryType: BiometryType { get }
     
     func setBiometryEnabled(_ enabled: Bool, completion: @escaping (Bool) -> Void)
 
-    /// Needs the master key in memory: call it once the key is verified and before it is cleared.
+    /// Turns biometry on when the device can use it, else off. Needs the master key in memory:
+    /// call it once the key is verified and before it is cleared.
     @MainActor func enableBiometryIfAvailable() async
     
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void)
+}
+
+public extension BiometryInteracting {
+
+    @discardableResult
+    func setBiometryEnabled(_ enabled: Bool) async -> Bool {
+        await withCheckedContinuation { continuation in
+            setBiometryEnabled(enabled) { isEnabled in
+                continuation.resume(returning: isEnabled)
+            }
+        }
+    }
 }
 
 final class BiometryInteractor {
@@ -81,6 +95,10 @@ extension BiometryInteractor: BiometryInteracting {
     
     var isBiometryLockedOut: Bool {
         mainRepository.isBiometryLockedOut
+    }
+    
+    var isBiometryDeniedForApp: Bool {
+        mainRepository.isBiometryDeniedForApp
     }
     
     var biometryType: BiometryType {
@@ -185,12 +203,7 @@ extension BiometryInteractor: BiometryInteracting {
 
     @MainActor
     func enableBiometryIfAvailable() async {
-        let isAvailable = canUseBiometryForOnboarding
-        await withCheckedContinuation { continuation in
-            setBiometryEnabled(isAvailable) { _ in
-                continuation.resume()
-            }
-        }
+        await setBiometryEnabled(canUseBiometryForOnboarding)
     }
 
     func loginUsingBiometry(reason: String, result: @escaping (BiometryInteractorLoginResult) -> Void) {

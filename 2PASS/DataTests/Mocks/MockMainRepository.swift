@@ -351,6 +351,7 @@ final class MockMainRepository: MainRepository {
 
     private var stubbedIsBiometryLockedOut: Bool = false
     var isBiometryLockedOut: Bool { stubbedIsBiometryLockedOut }
+    var isBiometryDeniedForApp: Bool { false }
 
     @discardableResult
     func withIsBiometryLockedOut(_ value: Bool) -> Self {

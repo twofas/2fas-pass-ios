@@ -206,7 +206,8 @@ extension StartupInteractor: StartupInteracting {
         if let masterPassword {
             protectionInteractor.setMasterKey(for: masterPassword)
         }
-        biometryInteractor.setBiometryEnabled(enableBiometryLogin) { [weak self] result in
+        let enablesBiometry = enableBiometryLogin && biometryInteractor.canUseBiometryForOnboarding
+        biometryInteractor.setBiometryEnabled(enablesBiometry) { [weak self] result in
             self?.protectionInteractor.saveEncryptionReference()
             self?.protectionInteractor.createNewVault(with: .init())
             self?.protectionInteractor.selectVault()

@@ -82,6 +82,9 @@ protocol MainRepository: AnyObject {
     var isBiometryEnabled: Bool { get }
     var isBiometryAvailable: Bool { get }
     var isBiometryLockedOut: Bool { get }
+
+    /// The device has biometry, but the person refused it to this app in the system settings.
+    var isBiometryDeniedForApp: Bool { get }
     func disableBiometry()
 
     func reloadAuthContext()

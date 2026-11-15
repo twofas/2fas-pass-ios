@@ -27,11 +27,7 @@ final class BiometricPromptModuleInteractor: BiometricPromptModuleInteracting {
     }
     
     func enableBiometric() async -> Bool {
-        await withCheckedContinuation { continuation in
-            biometryInteractor.setBiometryEnabled(true) { success in
-                continuation.resume(returning: success)
-            }
-        }
+        await biometryInteractor.setBiometryEnabled(true)
     }
     
     func finish() {

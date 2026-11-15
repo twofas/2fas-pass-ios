@@ -33,6 +33,8 @@ private struct Constants {
 
 @Observable
 final class AppSecurityPresenter {
+    let appSettingsURL = URL(string: UIApplication.openSettingsURLString)
+
     var lockInteraction = false
     var destination: AppSecurityRouteDestination? {
         didSet {
@@ -75,6 +77,7 @@ final class AppSecurityPresenter {
     private var screenCaptureAllowanceObserver: NSObjectProtocol?
 
     private(set) var isBiometryAvailable = false
+    private(set) var isBiometryDeniedForApp = false
     private(set) var enableBiometryToggle = false
 
     private var limitOfFailedAttempts: AppLockAttempts {
@@ -105,6 +108,7 @@ extension AppSecurityPresenter {
     
     func onAppear() {
         isBiometryAvailable = interactor.isBiometryAvailable
+        isBiometryDeniedForApp = interactor.isBiometryDeniedForApp
         enableBiometryToggle = true
         defaultSecurityTier = interactor.defaultSecurityTier
         _isScreenCaptureEnabled = interactor.isScreenCaptureEnabled

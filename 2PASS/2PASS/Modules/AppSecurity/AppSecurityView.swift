@@ -21,6 +21,12 @@ struct AppSecurityView: View {
             .router(router: AppSecurityRouter(), destination: $presenter.destination)
     }
     
+    private var biometricsDeniedNote: AttributedString {
+        var link = AttributedString(localized: .commonOpenSystemSettings)
+        link.link = presenter.appSettingsURL
+        return AttributedString(localized: .settingsEntryBiometricsNotAvailable) + " " + link
+    }
+    
     @ViewBuilder
     private var content: some View {
         SettingsDetailsForm(.settingsEntrySecurity) {
@@ -45,6 +51,8 @@ struct AppSecurityView: View {
             } footer: {
                 if presenter.isBiometryAvailable {
                     Text(.settingsEntryBiometricsDescription)
+                } else if presenter.isBiometryDeniedForApp {
+                    Text(biometricsDeniedNote)
                 } else {
                     Text(.settingsEntryBiometricsNotAvailable)
                 }

@@ -12,6 +12,7 @@ protocol AppSecurityModuleInteracting: AnyObject {
     var lockSection: Callback? { get set }
     var isBiometryEnabled: Bool { get }
     var isBiometryAvailable: Bool { get }
+    var isBiometryDeniedForApp: Bool { get }
     var limitOfFailedAttempts: AppLockAttempts { get set }
     var defaultSecurityTier: ItemProtectionLevel { get }
 
@@ -55,6 +56,7 @@ final class AppSecurityModuleInteractor {
 extension AppSecurityModuleInteractor: AppSecurityModuleInteracting {
     var isBiometryEnabled: Bool { biometryInteractor.isBiometryEnabled }
     var isBiometryAvailable: Bool { biometryInteractor.isBiometryAvailable }
+    var isBiometryDeniedForApp: Bool { biometryInteractor.isBiometryDeniedForApp }
 
     var isScreenCaptureEnabled: Bool { configInteractor.isScreenCaptureAllowed }
 
