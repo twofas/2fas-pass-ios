@@ -10,7 +10,7 @@ import CommonUI
 import Data
 
 enum VaultRecoveryScanQRCodeIntroDestination: RouterDestination {
-    case camera(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData, onTryAgain: Callback)
+    case camera(onScanned: (Entropy, MasterKey?) -> Void)
 
     var id: String {
         switch self {
@@ -24,21 +24,13 @@ final class VaultRecoveryScanQRCodeIntroPresenter {
     
     var destination: VaultRecoveryScanQRCodeIntroDestination?
     
-    private let flowContext: VaultRecoveryFlowContext
-    private let recoveryData: VaultRecoveryData
+    private let onScanned: (Entropy, MasterKey?) -> Void
     
-    init(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData) {
-        self.flowContext = flowContext
-        self.recoveryData = recoveryData
+    init(onScanned: @escaping (Entropy, MasterKey?) -> Void) {
+        self.onScanned = onScanned
     }
     
     func onContinue() {
-        destination = .camera(
-            flowContext: flowContext,
-            recoveryData: recoveryData,
-            onTryAgain: { [weak self] in
-                self?.destination = nil
-            }
-        )
+        destination = .camera(onScanned: onScanned)
     }
 }

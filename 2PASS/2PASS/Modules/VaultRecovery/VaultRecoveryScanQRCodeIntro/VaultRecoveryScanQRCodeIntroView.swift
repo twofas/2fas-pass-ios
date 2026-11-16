@@ -15,6 +15,9 @@ struct VaultRecoveryScanQRCodeIntroView: View {
     @Environment(\.colorScheme)
     private var colorScheme
     
+    @Environment(\.dismiss)
+    private var dismiss
+    
     var body: some View {
         VStack {
             HeaderContentView(
@@ -47,6 +50,13 @@ struct VaultRecoveryScanQRCodeIntroView: View {
         }
         .padding(.vertical, Spacing.l)
         .padding(.horizontal, Spacing.xl)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                ToolbarCancelButton {
+                    dismiss()
+                }
+            }
+        }
         .router(router: VaultRecoveryScanQRCodeIntroRouter(), destination: $presenter.destination)
         .readableContentMargins()
     }

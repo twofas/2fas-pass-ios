@@ -9,46 +9,22 @@ import Data
 import Common
 import CommonUI
 
-enum VaultRecoveryCameraDestination: RouterDestination {
-    case vaultRecovery(entropy: Entropy, masterKey: MasterKey, recoveryData: VaultRecoveryData, onTryAgain: Callback)
-    case enterMasterPassword(flowContext: VaultRecoveryFlowContext, entropy: Entropy, recoveryData: VaultRecoveryData, onTryAgain: Callback)
-    case importVault(BackupImportInput, onClose: Callback)
-    case importFailed(onSelectVault: Callback, onSelectDecryptionKit: Callback)
-
-    var id: String {
-        switch self {
-        case .vaultRecovery: "vaultRecovery"
-        case .enterMasterPassword: "enterMasterPassword"
-        case .importVault: "importVault"
-        case .importFailed: "importFailed"
-        }
-    }
-}
-
 @MainActor @Observable
 final class VaultRecoveryCameraPresenter {
     var freezeCamera = false
     var isCameraAvailable: Bool?
     var showInvalidCodeError = false
 
-    var destination: VaultRecoveryCameraDestination?
-
     private let interactor: VaultRecoveryCameraModuleInteracting
-    private let flowContext: VaultRecoveryFlowContext
-    private let recoveryData: VaultRecoveryData
-    private let onTryAgain: Callback
+    private let onScanned: (Entropy, MasterKey?) -> Void
     private let scanDebouncer = ScanDebouncer()
 
     init(
         interactor: VaultRecoveryCameraModuleInteracting,
-        flowContext: VaultRecoveryFlowContext,
-        recoveryData: VaultRecoveryData,
-        onTryAgain: @escaping Callback
+        onScanned: @escaping (Entropy, MasterKey?) -> Void
     ) {
         self.interactor = interactor
-        self.flowContext = flowContext
-        self.recoveryData = recoveryData
-        self.onTryAgain = onTryAgain
+        self.onScanned = onScanned
     }
 
     func onAppear() {
@@ -87,47 +63,13 @@ private extension VaultRecoveryCameraPresenter {
                 if let result = self?.interactor.parseQRCodeContents(code) {
                     self?.freezeCamera = true
                     self?.showInvalidCodeError = false
-                    self?.navigateToNextScreen(entropy: result.entropy, masterKey: result.masterKey)
+                    self?.onScanned(result.entropy, result.masterKey)
                 } else {
                     self?.freezeCamera = false
                     self?.showInvalidCodeError = true
                 }
             }
         )
-    }
-
-    func navigateToNextScreen(entropy: Entropy, masterKey: MasterKey?) {
-        guard interactor.validateEntropy(entropy, for: recoveryData) else {
-            destination = .importFailed(onSelectVault: { [weak self] in
-                self?.flowContext.onClose()
-            }, onSelectDecryptionKit: { [weak self] in
-                self?.destination = nil
-            })
-            return
-        }
-
-        if let masterKey {
-            switch flowContext.kind {
-            case .onboarding, .restoreVault:
-                destination = .vaultRecovery(
-                    entropy: entropy,
-                    masterKey: masterKey,
-                    recoveryData: recoveryData,
-                    onTryAgain: onTryAgain
-                )
-            case .importVault:
-                switch recoveryData {
-                case .cloud:
-                    fatalError("Unsupported importing vault from cloud")
-                case .localVault:
-                    fatalError("Unsupported importing vault from local database")
-                case .file(let vault, _):
-                    destination = .importVault(.encrypted(entropy: entropy, masterKey: masterKey, vault: vault), onClose: flowContext.onClose)
-                }
-            }
-        } else {
-            destination = .enterMasterPassword(flowContext: flowContext, entropy: entropy, recoveryData: recoveryData, onTryAgain: onTryAgain)
-        }
     }
 
     func scheduleLost() {

@@ -5,48 +5,17 @@
 // See LICENSE file for full terms
 
 import SwiftUI
-import Common
 import CommonUI
+import Data
 
-struct VaultRecoveryCameraRouter: Router {
+struct VaultRecoveryCameraRouter {
 
     @MainActor @ViewBuilder
-    static func buildView(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData, onTryAgain: @escaping Callback) -> some View {
+    static func buildView(onScanned: @escaping (Entropy, MasterKey?) -> Void) -> some View {
         let presenter = VaultRecoveryCameraPresenter(
             interactor: ModuleInteractorFactory.shared.vaultRecoveryCameraModuleInteractor(),
-            flowContext: flowContext,
-            recoveryData: recoveryData,
-            onTryAgain: onTryAgain
+            onScanned: onScanned
         )
         VaultRecoveryCameraView(presenter: presenter)
-    }
-
-    @ViewBuilder
-    func view(for destination: VaultRecoveryCameraDestination) -> some View {
-        switch destination {
-        case .vaultRecovery(let entropy, let masterKey, let recoveryData, let onTryAgain):
-            VaultRecoveryRecoverRouter.buildView(
-                kind: .recoverEncrypted(entropy: entropy, masterKey: masterKey, recoveryData: recoveryData),
-                onTryAgain: onTryAgain
-            )
-        case .enterMasterPassword(let flowContext, let entropy, let recoveryData, let onTryAgain):
-            VaultRecoveryEnterPasswordRouter.buildView(
-                flowContext: flowContext,
-                entropy: entropy,
-                recoveryData: recoveryData,
-                onTryAgain: onTryAgain
-            )
-        case .importVault(let input, let onClose):
-            BackupImportImportingRouter.buildView(input: input, onClose: onClose)
-        case .importFailed(let onSelectVault, let onSelectDecryptionKit):
-            VaultRecoveryWrongDecryptionKitRouter.buildView(onSelectVault: onSelectVault, onSelectDecryptionKit: onSelectDecryptionKit)
-        }
-    }
-
-    func routingType(for destination: VaultRecoveryCameraDestination?) -> RoutingType? {
-        switch destination {
-        case .vaultRecovery, .enterMasterPassword, .importVault, .importFailed: .push
-        case nil: nil
-        }
     }
 }

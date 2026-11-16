@@ -7,6 +7,7 @@
 import SwiftUI
 import Common
 import CommonUI
+import Data
 
 struct VaultRecoverySelectRouter: Router {
     
@@ -24,8 +25,8 @@ struct VaultRecoverySelectRouter: Router {
     @ViewBuilder
     func view(for destination: VaultRecoverySelectDestination) -> some View {
         switch destination {
-        case .camera(let flowContext, let recoveryData):
-            VaultRecoveryScanQRCodeIntroRouter.buildView(flowContext: flowContext, recoveryData: recoveryData)
+        case .camera(let onScanned):
+            VaultRecoveryScanQRCodeIntroRouter.buildView(onScanned: onScanned)
         case .manually(let recoveryData, let onEntropy):
             VaultRecoveryEnterWordsRouter.buildView(recoveryData: recoveryData, onEntropy: onEntropy)
         case .errorOpeningFile(_, let onClose):
@@ -47,7 +48,8 @@ struct VaultRecoverySelectRouter: Router {
     func routingType(for destination: VaultRecoverySelectDestination?) -> RoutingType? {
         switch destination {
         case .manually: .sheet
-        case .camera, .enterMasterPassword, .vaultRecovery, .importVault, .importFailed: .push
+        case .camera: .fullScreenCover
+        case .enterMasterPassword, .vaultRecovery, .importVault, .importFailed: .push
         case .errorOpeningFile(let message, _): .alert(title: String(localized: .commonError), message: message)
         case nil: nil
         }

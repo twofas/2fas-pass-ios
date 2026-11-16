@@ -52,7 +52,7 @@ enum VaultRecoverySelectDestination: Identifiable {
         }
     }
     
-    case camera(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData)
+    case camera(onScanned: (Entropy, MasterKey?) -> Void)
     case manually(recoveryData: VaultRecoveryData, onEntropy: (Entropy) -> Void)
     case errorOpeningFile(message: String, onClose: Callback)
     case vaultRecovery(
@@ -97,7 +97,13 @@ final class VaultRecoverySelectPresenter {
 
 extension VaultRecoverySelectPresenter {
     func onCamera() {
-        destination = .camera(flowContext: flowContext, recoveryData: recoveryData)
+        destination = .camera(onScanned: { [weak self] entropy, masterKey in
+            self?.destination = nil
+
+            Task { @MainActor in
+                self?.handleDecryptionKit(entropy: entropy, masterKey: masterKey)
+            }
+        })
     }
     
     func onFiles() {
@@ -196,55 +202,62 @@ private extension VaultRecoverySelectPresenter {
                     return
                 }
 
-                guard interactor.validateEntropy(parseResult.entropy, for: self.recoveryData) else {
-                    Task { @MainActor [weak self] in
-                        self?.destination = .importFailed(onSelectVault: { [weak self] in
-                            self?.flowContext.onClose()
-                        }, onSelectDecryptionKit: { [weak self] in
-                            self?.destination = nil
-                        })
-                    }
-                    return
-                }
-
                 DispatchQueue.main.async {
-                    if let masterKey = parseResult.masterKey {
-                        switch self.flowContext.kind {
-                        case .onboarding, .restoreVault:
-                            self.destination = .vaultRecovery(
-                                entropy: parseResult.entropy,
-                                masterKey: masterKey,
-                                recoveryData: self.recoveryData,
-                                onTryAgain: { [weak self] in
-                                    self?.destination = nil
-                                }
-                            )
-                        case .importVault:
-                            switch self.recoveryData {
-                            case .cloud:
-                                fatalError("Unsupported importing vault from cloud")
-                            case .localVault:
-                                fatalError("Unsupported importing local vault")
-                            case .file(let file, _):
-                                self.destination = .importVault(
-                                    .encrypted(entropy: parseResult.entropy, masterKey: masterKey, vault: file),
-                                    onClose: self.flowContext.onClose
-                                )
-                            }
-                        }
-                    } else {
-                        self.destination = .enterMasterPassword(
-                            flowContext: self.flowContext,
-                            entropy: parseResult.entropy,
-                            recoveryData: self.recoveryData,
-                            onTryAgain: { [weak self] in
-                                self?.destination = nil
-                            }
-                        )
-                    }
+                    self.handleDecryptionKit(entropy: parseResult.entropy, masterKey: parseResult.masterKey)
                 }
             case .failure:
                 showError()
+            }
+        }
+    }
+
+    func handleDecryptionKit(entropy: Entropy, masterKey: MasterKey?) {
+        guard interactor.validateEntropy(entropy, for: recoveryData) else {
+            destination = .importFailed(onSelectVault: { [weak self] in
+                self?.flowContext.onClose()
+            }, onSelectDecryptionKit: { [weak self] in
+                self?.destination = nil
+            })
+            return
+        }
+
+        continueRecovery(entropy: entropy, masterKey: masterKey)
+    }
+
+    func continueRecovery(entropy: Entropy, masterKey: MasterKey?) {
+        guard let masterKey else {
+            destination = .enterMasterPassword(
+                flowContext: flowContext,
+                entropy: entropy,
+                recoveryData: recoveryData,
+                onTryAgain: { [weak self] in
+                    self?.destination = nil
+                }
+            )
+            return
+        }
+
+        switch flowContext.kind {
+        case .onboarding, .restoreVault:
+            destination = .vaultRecovery(
+                entropy: entropy,
+                masterKey: masterKey,
+                recoveryData: recoveryData,
+                onTryAgain: { [weak self] in
+                    self?.destination = nil
+                }
+            )
+        case .importVault:
+            switch recoveryData {
+            case .cloud:
+                fatalError("Unsupported importing vault from cloud")
+            case .localVault:
+                fatalError("Unsupported importing local vault")
+            case .file(let file, _):
+                destination = .importVault(
+                    .encrypted(entropy: entropy, masterKey: masterKey, vault: file),
+                    onClose: flowContext.onClose
+                )
             }
         }
     }

@@ -33,10 +33,11 @@ struct VaultRecoveryCameraView: View {
                 presenter.onToAppSettings()
             }
         )
-        .sensoryFeedback(.selection, trigger: presenter.destination?.id)
+        .sensoryFeedback(.selection, trigger: presenter.freezeCamera) { _, isFrozen in
+            isFrozen
+        }
         .onAppear {
             presenter.onAppear()
         }
-        .router(router: VaultRecoveryCameraRouter(), destination: $presenter.destination)
     }
 }

@@ -6,11 +6,14 @@
 
 import SwiftUI
 import CommonUI
+import Data
 
 struct VaultRecoveryScanQRCodeIntroRouter: Router {
 
-    static func buildView(flowContext: VaultRecoveryFlowContext, recoveryData: VaultRecoveryData) -> some View {
-        VaultRecoveryScanQRCodeIntroView(presenter: .init(flowContext: flowContext, recoveryData: recoveryData))
+    static func buildView(onScanned: @escaping (Entropy, MasterKey?) -> Void) -> some View {
+        NavigationStack {
+            VaultRecoveryScanQRCodeIntroView(presenter: .init(onScanned: onScanned))
+        }
     }
 
     func routingType(for destination: VaultRecoveryScanQRCodeIntroDestination?) -> RoutingType? {
@@ -22,8 +25,8 @@ struct VaultRecoveryScanQRCodeIntroRouter: Router {
 
     func view(for destination: VaultRecoveryScanQRCodeIntroDestination) -> some View {
         switch destination {
-        case .camera(let flowContext, let recoveryData, let onTryAgain):
-            VaultRecoveryCameraRouter.buildView(flowContext: flowContext, recoveryData: recoveryData, onTryAgain: onTryAgain)
+        case .camera(let onScanned):
+            VaultRecoveryCameraRouter.buildView(onScanned: onScanned)
         }
     }
 }
