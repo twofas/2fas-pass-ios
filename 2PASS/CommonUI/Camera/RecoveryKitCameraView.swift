@@ -8,16 +8,16 @@ import SwiftUI
 import Common
 
 /// Shared container view for recovery kit QR code scanning.
-/// Handles camera availability state and displays either the scanning view or a no-access fallback.
+/// `isCameraAvailable` is `nil` until the camera permission is answered; nothing but black is shown then.
 public struct RecoveryKitCameraView: View {
-    let isCameraAvailable: Bool
+    let isCameraAvailable: Bool?
     let showInvalidCodeError: Bool
     let onCodeFound: (String) -> Void
     let onCodeLost: () -> Void
     let onAppSettings: () -> Void
 
     public init(
-        isCameraAvailable: Bool,
+        isCameraAvailable: Bool?,
         showInvalidCodeError: Bool,
         onCodeFound: @escaping (String) -> Void,
         onCodeLost: @escaping () -> Void,
@@ -32,7 +32,8 @@ public struct RecoveryKitCameraView: View {
 
     public var body: some View {
         Group {
-            if isCameraAvailable {
+            switch isCameraAvailable {
+            case true:
                 ScanQRCodeCameraView(
                     title: Text(.restoreQrCodeCameraTitle),
                     description: Text(.restoreQrCodeCameraDescription),
@@ -40,8 +41,11 @@ public struct RecoveryKitCameraView: View {
                     codeFound: onCodeFound,
                     codeLost: onCodeLost
                 )
-            } else {
+            case false:
                 NoAccessCameraView(onSettings: onAppSettings)
+            case nil:
+                Color.black
+                    .ignoresSafeArea()
             }
         }
         .colorScheme(.light)

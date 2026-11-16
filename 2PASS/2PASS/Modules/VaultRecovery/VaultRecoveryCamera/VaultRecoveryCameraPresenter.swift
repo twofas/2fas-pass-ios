@@ -28,7 +28,7 @@ enum VaultRecoveryCameraDestination: RouterDestination {
 @MainActor @Observable
 final class VaultRecoveryCameraPresenter {
     var freezeCamera = false
-    var isCameraAvailable = false
+    var isCameraAvailable: Bool?
     var showInvalidCodeError = false
 
     var destination: VaultRecoveryCameraDestination?

@@ -28,7 +28,7 @@ public enum ForgotMasterPasswordDecryptionKitCameraDestination: RouterDestinatio
 @MainActor @Observable
 final class ForgotMasterPasswordDecryptionKitCameraPresenter {
     var freezeCamera = false
-    var isCameraAvailable = false
+    var isCameraAvailable: Bool?
     var showInvalidCodeError = false
 
     var destination: ForgotMasterPasswordDecryptionKitCameraDestination?
