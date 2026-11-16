@@ -47,8 +47,6 @@ struct VaultRecoveryScanQRCodeIntroView: View {
         }
         .padding(.vertical, Spacing.l)
         .padding(.horizontal, Spacing.xl)
-        .navigationTitle(.restoreDecryptVaultOptionScanQr)
-        .navigationBarTitleDisplayMode(.inline)
         .router(router: VaultRecoveryScanQRCodeIntroRouter(), destination: $presenter.destination)
         .readableContentMargins()
     }
