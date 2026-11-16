@@ -13,12 +13,14 @@ enum VaultRecoveryCameraDestination: RouterDestination {
     case vaultRecovery(entropy: Entropy, masterKey: MasterKey, recoveryData: VaultRecoveryData, onTryAgain: Callback)
     case enterMasterPassword(flowContext: VaultRecoveryFlowContext, entropy: Entropy, recoveryData: VaultRecoveryData, onTryAgain: Callback)
     case importVault(BackupImportInput, onClose: Callback)
+    case importFailed(onSelectVault: Callback, onSelectDecryptionKit: Callback)
 
     var id: String {
         switch self {
         case .vaultRecovery: "vaultRecovery"
         case .enterMasterPassword: "enterMasterPassword"
         case .importVault: "importVault"
+        case .importFailed: "importFailed"
         }
     }
 }
@@ -95,6 +97,15 @@ private extension VaultRecoveryCameraPresenter {
     }
 
     func navigateToNextScreen(entropy: Entropy, masterKey: MasterKey?) {
+        guard interactor.validateEntropy(entropy, for: recoveryData) else {
+            destination = .importFailed(onSelectVault: { [weak self] in
+                self?.flowContext.onClose()
+            }, onSelectDecryptionKit: { [weak self] in
+                self?.destination = nil
+            })
+            return
+        }
+
         if let masterKey {
             switch flowContext.kind {
             case .onboarding, .restoreVault:

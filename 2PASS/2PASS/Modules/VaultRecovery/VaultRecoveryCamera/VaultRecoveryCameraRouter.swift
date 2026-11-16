@@ -38,12 +38,14 @@ struct VaultRecoveryCameraRouter: Router {
             )
         case .importVault(let input, let onClose):
             BackupImportImportingRouter.buildView(input: input, onClose: onClose)
+        case .importFailed(let onSelectVault, let onSelectDecryptionKit):
+            VaultRecoveryWrongDecryptionKitRouter.buildView(onSelectVault: onSelectVault, onSelectDecryptionKit: onSelectDecryptionKit)
         }
     }
 
     func routingType(for destination: VaultRecoveryCameraDestination?) -> RoutingType? {
         switch destination {
-        case .vaultRecovery, .enterMasterPassword, .importVault: .push
+        case .vaultRecovery, .enterMasterPassword, .importVault, .importFailed: .push
         case nil: nil
         }
     }

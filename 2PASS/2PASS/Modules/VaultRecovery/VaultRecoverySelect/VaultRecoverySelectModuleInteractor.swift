@@ -59,11 +59,6 @@ extension VaultRecoverySelectModuleInteractor: VaultRecoverySelectModuleInteract
         guard let vaultSeedHash = data.vaultSeedHash, let vaultID = data.vaultID else {
             return false
         }
-        guard let seedHash = importInteractor.generateSeedHash(from: entropy, vaultID: vaultID) else {
-            return false
-        }
-        
-        let seedHashBase64 = Data(hexString: seedHash)?.base64EncodedString()
-        return seedHashBase64 == vaultSeedHash
+        return importInteractor.validateEntropy(entropy, using: vaultSeedHash, vaultID: vaultID)
     }
 }

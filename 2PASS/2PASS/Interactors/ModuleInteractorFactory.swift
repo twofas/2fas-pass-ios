@@ -253,7 +253,8 @@ extension ModuleInteractorFactory {
     func vaultRecoveryCameraModuleInteractor() -> VaultRecoveryCameraModuleInteracting {
         VaultRecoveryCameraModuleInteractor(
             cameraPermissionInteractor: InteractorFactory.shared.cameraPermissionsInteractor(),
-            recoveryKitScanner: InteractorFactory.shared.recoveryKitScanCameraInteractor()
+            recoveryKitScanner: InteractorFactory.shared.recoveryKitScanCameraInteractor(),
+            importInteractor: InteractorFactory.shared.importInteractor()
         )
     }
     

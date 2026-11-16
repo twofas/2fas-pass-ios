@@ -83,6 +83,7 @@ public protocol ImportInteracting: AnyObject {
     )
     func extractUnencryptedDeletedItems(from file: ExchangeVaultVersioned) -> [DeletedItemData]
     func validateWords(_ words: [String], using seedHash: String, vaultID: VaultID) -> Bool
+    func validateEntropy(_ entropy: Entropy, using seedHash: String, vaultID: VaultID) -> Bool
     func validateReference(
         _ reference: String,
         using masterKey: MasterKey,
@@ -411,6 +412,14 @@ extension ImportInteractor: ImportInteracting {
             return false
         }
         return comparisionSeedHash == externalSeedHashHexString
+    }
+    
+    func validateEntropy(_ entropy: Entropy, using seedHash: String, vaultID: VaultID) -> Bool {
+        guard let comparisonSeedHash = generateSeedHash(from: entropy, vaultID: vaultID) else {
+            Log("ImportInteractor: Can't create SeedHash for entropy validation", module: .interactor)
+            return false
+        }
+        return Data(hexString: comparisonSeedHash)?.base64EncodedString() == seedHash
     }
     
     func isVaultReadyForImport() -> Bool {
