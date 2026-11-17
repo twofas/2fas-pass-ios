@@ -14,8 +14,11 @@ private struct Constants {
             static let size: CGFloat = 298
             static let borderSize: CGFloat = 220
             static let borderWidth: CGFloat = 5
+
+            /// The ring at its largest: grown by the press and with its stroke.
+            static let footprint: CGFloat = borderSize * Animation.finalProgressScale + borderWidth
         }
-        
+
         enum TickSuccess {
             static let size: CGFloat = 40
             static let borderSize: CGFloat = 80
@@ -81,12 +84,30 @@ struct GenerateSecretKeyView: View {
             }
             .animation(.default, value: presenter.isFinished)
             
-            Spacer(minLength: 0)
+            keyAnimation()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             bottomButton()
                 .padding(.bottom, Spacing.xl)
         }
-        .overlay {
+        .sensoryFeedback(.success, trigger: presenter.isFinished)
+        .onAppear { presenter.onAppear() }
+        .onChange(of: generateSecretKeyAnimator.isFinished) { _, newValue in
+            if newValue {
+                presenter.onFinishGenerating()
+            }
+        }
+        .router(router: GenerateSecretKeyRouter(), destination: $presenter.destination)
+        .onboardingStepTopPadding()
+        .onboardingStepProgress(presenter.isFinished ? Constants.StepProgress.end : Constants.StepProgress.start)
+    }
+    
+    /// Sits in the layout between the header and the button and shrinks to the space left, so it never covers the text.
+    private func keyAnimation() -> some View {
+        GeometryReader { proxy in
+            let fit = min(1, min(proxy.size.width, proxy.size.height) / Constants.Lottie.SecretKey.footprint)
+            let pressScale: CGFloat = 1 + (Constants.Animation.finalProgressScale - 1) * generateSecretKeyAnimator.progress
+
             ZStack {
                 ZStack {
                     if presenter.isFinished {
@@ -102,24 +123,14 @@ struct GenerateSecretKeyView: View {
                     }
                 }
                 .frame(width: Constants.Lottie.SecretKey.size, height: Constants.Lottie.SecretKey.size)
-                
+
                 lottieBorders()
             }
-            .scaleEffect(1 + (Constants.Animation.finalProgressScale - 1) * generateSecretKeyAnimator.progress)
-            .padding(.bottom, 30)
-            .sensoryFeedback(.success, trigger: presenter.isFinished)
+            .scaleEffect(fit * pressScale)
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .onAppear { presenter.onAppear() }
-        .onChange(of: generateSecretKeyAnimator.isFinished) { _, newValue in
-            if newValue {
-                presenter.onFinishGenerating()
-            }
-        }
-        .router(router: GenerateSecretKeyRouter(), destination: $presenter.destination)
-        .onboardingStepTopPadding()
-        .onboardingStepProgress(presenter.isFinished ? Constants.StepProgress.end : Constants.StepProgress.start)
     }
-    
+
     private func lottieBorders() -> some View {
         ZStack {
             Circle()
