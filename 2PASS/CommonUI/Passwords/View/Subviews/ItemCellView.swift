@@ -39,6 +39,7 @@ class ItemCellView: UICollectionViewListCell {
     private let iconRenderer = IconRenderer()
     private let listContentView = UIListContentView(configuration: .cell())
     private var iconLeadingConstraint: NSLayoutConstraint?
+    private var listLeadingConstraint: NSLayoutConstraint?
 
     private var cellData: ItemCellData?
     private var loginIconImage: UIImage?
@@ -85,11 +86,14 @@ class ItemCellView: UICollectionViewListCell {
 
         let iconLeadingConstraint = iconRenderer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.iconLeading)
         self.iconLeadingConstraint = iconLeadingConstraint
-                
+
+        let listLeadingConstraint = listContentView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
+        self.listLeadingConstraint = listLeadingConstraint
+
         NSLayoutConstraint.activate([
             listContentView.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
             listContentView.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor),
-            listContentView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            listLeadingConstraint,
             listContentView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
             iconLeadingConstraint,
             iconRenderer.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -157,8 +161,12 @@ class ItemCellView: UICollectionViewListCell {
         let iconLeading = state.isEditing ? Constants.editingIconLeading : Constants.iconLeading
         iconLeadingConstraint?.constant = iconLeading
 
+        // The text moves with the icon through a constraint, so both ride the editing animation;
+        // a margin changed in the configuration would be applied at once and the text would jump.
+        listLeadingConstraint?.constant = iconLeading - Constants.iconLeading
+
         content.directionalLayoutMargins = .zero
-        content.directionalLayoutMargins.leading = iconLeading + CGFloat(Config.iconDimension) + Spacing.l
+        content.directionalLayoutMargins.leading = Constants.iconLeading + CGFloat(Config.iconDimension) + Spacing.l
 
         listContentView.configuration = content
 
