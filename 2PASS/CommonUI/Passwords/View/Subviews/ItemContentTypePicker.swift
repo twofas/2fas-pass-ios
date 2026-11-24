@@ -224,6 +224,9 @@ private struct ItemContentTypeFilterButton: View {
             backgroundedContent
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(filter.title))
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
     @ViewBuilder
