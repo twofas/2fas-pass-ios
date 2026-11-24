@@ -23,6 +23,9 @@ private struct Constants {
             static let size: CGFloat = 40
             static let borderSize: CGFloat = 80
             static let borderWidth: CGFloat = 2
+
+            /// The tick's ring as shown: still grown by the finished press, with its stroke.
+            static let footprint: CGFloat = borderSize * Animation.finalProgressScale + borderWidth
         }
     }
     
@@ -60,6 +63,12 @@ struct GenerateSecretKeyView: View {
         animationDuration: Constants.Animation.generateDuration,
         cancelAnimationDuration: Constants.Animation.cancelDuration
     )
+
+    @State
+    private var headerHeight: CGFloat = 0
+
+    @State
+    private var generatingHeaderHeight: CGFloat = 0
     
     var body: some View {
         VStack(spacing: 0) {
@@ -73,16 +82,26 @@ struct GenerateSecretKeyView: View {
                     .frame(maxWidth: .infinity)
                     .transition(.move(edge: .trailing))
                 } else {
-                    HeaderContentView(
-                        title: Text(.onboardingGenerateSecretKeyTitle),
-                        subtitle: Text(.onboardingGenerateSecretKeyDescription)
-                    )
-                    .readableContentMargins()
-                    .frame(maxWidth: .infinity)
-                    .transition(.move(edge: .leading))
+                    generatingHeader()
+                        .transition(.move(edge: .leading))
                 }
             }
             .animation(.default, value: presenter.isFinished)
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.height
+            } action: { height in
+                headerHeight = height
+            }
+            .background(alignment: .top) {
+                generatingHeader()
+                    .fixedSize(horizontal: false, vertical: true)
+                    .hidden()
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        proxy.size.height
+                    } action: { height in
+                        generatingHeaderHeight = height
+                    }
+            }
             
             keyAnimation()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -102,6 +121,23 @@ struct GenerateSecretKeyView: View {
         .onboardingStepProgress(presenter.isFinished ? Constants.StepProgress.end : Constants.StepProgress.start)
     }
     
+    private func generatingHeader() -> some View {
+        HeaderContentView(
+            title: Text(.onboardingGenerateSecretKeyTitle),
+            subtitle: Text(.onboardingGenerateSecretKeyDescription)
+        )
+        .readableContentMargins()
+        .frame(maxWidth: .infinity)
+    }
+
+    /// How far the tick moves up to stay where the generation's centre was, limited to the room the space has for it.
+    private func centreCorrection(in height: CGFloat, fit: CGFloat) -> CGFloat {
+        guard generatingHeaderHeight > 0 else { return 0 }
+        let shift = (headerHeight - generatingHeaderHeight) / 2
+        let room = max(0, (height - Constants.Lottie.TickSuccess.footprint * fit) / 2)
+        return min(max(shift, -room), room)
+    }
+
     /// Sits in the layout between the header and the button and shrinks to the space left, so it never covers the text.
     private func keyAnimation() -> some View {
         GeometryReader { proxy in
@@ -128,6 +164,7 @@ struct GenerateSecretKeyView: View {
             }
             .scaleEffect(fit * pressScale)
             .frame(width: proxy.size.width, height: proxy.size.height)
+            .offset(y: -centreCorrection(in: proxy.size.height, fit: fit))
         }
     }
 
