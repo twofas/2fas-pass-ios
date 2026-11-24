@@ -45,7 +45,7 @@ final class MasterPasswordPresenter {
     
     var firstInput = "" {
         didSet {
-            guard oldValue != secondInput else { return }
+            guard oldValue != firstInput else { return }
             updateState()
             showError = false
         }
@@ -94,6 +94,7 @@ extension MasterPasswordPresenter {
             withAnimation {
                 isRetype = true
             }
+            updateState()
             return
         }
         
