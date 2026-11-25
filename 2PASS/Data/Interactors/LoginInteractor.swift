@@ -96,6 +96,7 @@ final class LoginInteractor {
     private let securityInteractor: SecurityInteracting
     private let storageInteractor: StorageInteracting
     private let biometryInteractor: BiometryInteracting
+    private let migrationInteractor: MigrationInteracting
     private let notificationCenter: NotificationCenter
     
     init(
@@ -103,13 +104,15 @@ final class LoginInteractor {
         protectionInteractor: ProtectionInteracting,
         securityInteractor: SecurityInteracting,
         storageInteractor: StorageInteracting,
-        biometryInteractor: BiometryInteracting
+        biometryInteractor: BiometryInteracting,
+        migrationInteractor: MigrationInteracting
     ) {
         self.mainRepository = mainRepository
         self.protectionInteractor = protectionInteractor
         self.securityInteractor = securityInteractor
         self.storageInteractor = storageInteractor
         self.biometryInteractor = biometryInteractor
+        self.migrationInteractor = migrationInteractor
         self.notificationCenter = .default
     }
 }
@@ -472,6 +475,7 @@ private extension LoginInteractor {
     func userLoggedIn(using masterPassword: String, completion: @escaping () -> Void) {
         Log("LoginInteractor: User logged in using Master Password", module: .interactor)
         protectionInteractor.setMasterKey(for: masterPassword)
+        selectVaultIfStoreLoaded()
         protectionInteractor.setupKeys()
         storageInteractor.initialize { [weak self] in
             completion()
@@ -485,10 +489,18 @@ private extension LoginInteractor {
         protectionInteractor.createSeed()
         protectionInteractor.createSalt()
         protectionInteractor.setMasterKey(masterKey)
+        selectVaultIfStoreLoaded()
         protectionInteractor.setupKeys()
         storageInteractor.initialize { [weak self] in
             completion()
             self?.notificationCenter.post(name: .userLoggedIn, object: nil)
         }
+    }
+    
+    /// With a re-encryption migration pending the store is loaded only by `storageInteractor.initialize`,
+    /// which selects the vault itself.
+    func selectVaultIfStoreLoaded() {
+        guard !migrationInteractor.requiresReencryptionMigration() else { return }
+        protectionInteractor.selectVault()
     }
 }

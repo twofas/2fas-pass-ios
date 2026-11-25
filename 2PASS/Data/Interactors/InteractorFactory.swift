@@ -159,7 +159,8 @@ public final class InteractorFactory {
             protectionInteractor: protectionInteractor(),
             securityInteractor: securityInteractor(),
             storageInteractor: storageInteractor(),
-            biometryInteractor: biometryInteractor()
+            biometryInteractor: biometryInteractor(),
+            migrationInteractor: migrationInteractor()
         )
     }
     
