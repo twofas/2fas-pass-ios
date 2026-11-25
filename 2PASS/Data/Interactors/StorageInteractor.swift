@@ -93,21 +93,19 @@ extension StorageInteractor: StorageInteracting {
         let vaultID: VaultID
         if let selectedVault = mainRepository.selectedVault {
             vaultID = selectedVault.vaultID
-        } else {
-            if let vault = mainRepository.listEncryptedVaults().first {
-                vaultID = vault.vaultID
-            } else {
-                guard let createdVaultID = createNewVault(masterKey: masterKey, appKey: appKey) else {
-                    Log(
-                        "StorageInteractor - initialize. Can't create new vault!",
-                        module: .interactor,
-                        severity: .error
-                    )
-                    return
-                }
-                vaultID = createdVaultID
-            }
+        } else if let vault = mainRepository.listEncryptedVaults().first {
+            vaultID = vault.vaultID
             mainRepository.selectVault(vaultID)
+        } else if let createdVaultID = createNewVault(masterKey: masterKey, appKey: appKey) {
+            vaultID = createdVaultID
+            mainRepository.selectVault(vaultID)
+        } else {
+            Log(
+                "StorageInteractor - initialize. Can't create new vault!",
+                module: .interactor,
+                severity: .error
+            )
+            return
         }
         
         mainRepository.createInMemoryStorage()
